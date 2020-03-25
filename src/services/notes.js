@@ -124,6 +124,8 @@ async function createNewNote(params) {
 
     await copyChildAttributes(parentNote, note);
 
+    await scanForLinks(note);
+
     await triggerNoteTitleChanged(note);
     await triggerChildNoteCreated(note, parentNote);
 
@@ -265,24 +267,32 @@ function findRelationMapLinks(content, foundLinks) {
 const imageUrlToNoteIdMapping = {};
 
 async function downloadImage(noteId, imageUrl) {
-    const imageBuffer = await request.getImage(imageUrl);
-    const parsedUrl = url.parse(imageUrl);
-    const title = path.basename(parsedUrl.pathname);
+    try {
+        const imageBuffer = await request.getImage(imageUrl);
+        const parsedUrl = url.parse(imageUrl);
+        const title = path.basename(parsedUrl.pathname);
 
-    const imageService = require('../services/image');
-    const {note} = await imageService.saveImage(noteId, imageBuffer, title, true);
+        const imageService = require('../services/image');
+        const {note} = await imageService.saveImage(noteId, imageBuffer, title, true);
 
-    await note.addLabel('imageUrl', imageUrl);
+        await note.addLabel('imageUrl', imageUrl);
 
-    imageUrlToNoteIdMapping[imageUrl] = note.noteId;
+        imageUrlToNoteIdMapping[imageUrl] = note.noteId;
+
+        log.info(`Download of ${imageUrl} succeeded and was saved as image note ${note.noteId}`);
+    }
+    catch (e) {
+        log.error(`Downoad of ${imageUrl} for note ${noteId} failed with error: ${e.message} ${e.stack}`);
+    }
 }
 
+/** url => download promise */
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
     const quoted = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    return content.replace(new RegExp(quoted, "g"), `api/images/${imageNote.noteId}/${imageNote.title}`);
+    return content.replace(new RegExp(`\s+src=[\"']${quoted}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
 async function downloadImages(noteId, content) {
@@ -294,6 +304,7 @@ async function downloadImages(noteId, content) {
 
         if (!url.startsWith('api/images/')) {
             if (url in downloadImagePromises) {
+                // download is already in progress
                 continue;
             }
 
@@ -321,12 +332,22 @@ async function downloadImages(noteId, content) {
                 continue;
             }
 
+            // this is done asynchronously, it would be too slow to wait for the download
+            // given that save can be triggered very often
             downloadImagePromises[url] = downloadImage(noteId, url);
         }
     }
 
     Promise.all(Object.values(downloadImagePromises)).then(() => {
         setTimeout(async () => {
+            // the normal expected flow of the offline image saving is that users will paste the image(s)
+            // which will get asynchronously downloaded, during that time they keep editing the note
+            // once the download is finished, the image note representing downloaded image will be used
+            // to replace the IMG link.
+            // However there's another flow where user pastes the image and leaves the note before the images
+            // are downloaded and the IMG references are not updated. For this occassion we have this code
+            // which upon the download of all the images will update the note if the links have not been fixed before
+
             const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
 
             const origNote = await repository.getNote(noteId);
@@ -341,8 +362,11 @@ async function downloadImages(noteId, content) {
                 }
             }
 
+            // update only if the links have not been already fixed.
             if (updatedContent !== origContent) {
                 await origNote.setContent(updatedContent);
+
+                console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
             }
         }, 5000);
     });
@@ -632,8 +656,7 @@ async function getUndeletedParentBranches(noteId, deleteId) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-async function scanForLinks(noteId) {
-    const note = await repository.getNote(noteId);
+async function scanForLinks(note) {
     if (!note || !['text', 'relation-map'].includes(note.type)) {
         return;
     }

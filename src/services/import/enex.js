@@ -298,7 +298,7 @@ async function importEnex(taskContext, file, parentNote) {
         // save updated content with links to files/images
         await noteEntity.setContent(content);
 
-        await noteService.scanForLinks(noteEntity.noteId);
+        await noteService.scanForLinks(noteEntity);
 
         await updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
     }
