@@ -14,6 +14,10 @@ const hoistedNoteService = require('../services/hoisted_note');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const noteRevisionService = require('../services/note_revisions');
+const attributeService = require('../services/attributes');
+const request = require('./request');
+const path = require('path');
+const url = require('url');
 
 async function getNewNotePosition(parentNoteId) {
     const maxNotePos = await sql.getValue(`
@@ -161,31 +165,6 @@ async function createNewNoteWithTarget(target, targetBranchId, params) {
     }
 }
 
-// methods below should be probably just backend API methods
-async function createJsonNote(parentNoteId, title, content = {}, params = {}) {
-    params.parentNoteId = parentNoteId;
-    params.title = title;
-
-    params.type = "code";
-    params.mime = "application/json";
-
-    params.content = JSON.stringify(content, null, '\t');
-
-    return await createNewNote(params);
-}
-
-async function createTextNote(parentNoteId, title, content = "", params = {}) {
-    params.parentNoteId = parentNoteId;
-    params.title = title;
-
-    params.type = "text";
-    params.mime = "text/html";
-
-    params.content = content;
-
-    return await createNewNote(params);
-}
-
 async function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
     await protectNote(note, protect);
 
@@ -283,6 +262,90 @@ function findRelationMapLinks(content, foundLinks) {
     }
 }
 
+const imageUrlToNoteIdMapping = {};
+
+async function downloadImage(noteId, imageUrl) {
+    const imageBuffer = await request.getImage(imageUrl);
+    const parsedUrl = url.parse(imageUrl);
+    const title = path.basename(parsedUrl.pathname);
+
+    const imageService = require('../services/image');
+    const {note} = await imageService.saveImage(noteId, imageBuffer, title, true);
+
+    await note.addLabel('imageUrl', imageUrl);
+
+    imageUrlToNoteIdMapping[imageUrl] = note.noteId;
+}
+
+const downloadImagePromises = {};
+
+function replaceUrl(content, url, imageNote) {
+    return content.replace(new RegExp(url, "g"), `api/images/${imageNote.noteId}/${imageNote.title}`);
+}
+
+async function downloadImages(noteId, content) {
+    const re = /<img\s.*?src=['"]([^'">]+)['"]/ig;
+    let match;
+
+    while (match = re.exec(content)) {
+        const url = match[1];
+
+        if (!url.startsWith('api/images/')) {
+            if (url in downloadImagePromises) {
+                continue;
+            }
+
+            if (url in imageUrlToNoteIdMapping) {
+                const imageNote = await repository.getNote(imageUrlToNoteIdMapping[url]);
+
+                if (imageNote || imageNote.isDeleted) {
+                    delete imageUrlToNoteIdMapping[url];
+                }
+                else {
+                    content = replaceUrl(content, url, imageNote);
+
+                    continue;
+                }
+            }
+
+            const existingImage = (await attributeService.getNotesWithLabel('imageUrl', url))
+                .find(note => note.type === 'image');
+
+            if (existingImage) {
+                imageUrlToNoteIdMapping[url] = existingImage.noteId;
+
+                content = replaceUrl(content, url, existingImage);
+
+                continue;
+            }
+
+            downloadImagePromises[url] = downloadImage(noteId, url);
+        }
+    }
+
+    await Promise.all(Object.values(downloadImagePromises)).then(() => {
+        setTimeout(async () => {
+            const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
+
+            const origNote = await repository.getNote(noteId);
+            const origContent = await origNote.getContent();
+            let updatedContent = origContent;
+
+            for (const url in imageUrlToNoteIdMapping) {
+                const imageNote = imageNotes.find(note => note.noteId === imageUrlToNoteIdMapping[url]);
+
+                if (imageNote) {
+                    updatedContent = replaceUrl(updatedContent, url, imageNote);
+                }
+            }
+
+            if (updatedContent !== origContent) {
+                await origNote.setContent(updatedContent);
+            }
+        }, 5000);
+    });
+}
+
 async function saveLinks(note, content) {
     if (note.type !== 'text' && note.type !== 'relation-map') {
         return content;
@@ -299,6 +362,8 @@ async function saveLinks(note, content) {
         content = findInternalLinks(content, foundLinks);
         content = findExternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
+
+        downloadImages(note.noteId, content);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

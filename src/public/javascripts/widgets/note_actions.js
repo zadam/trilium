@@ -6,6 +6,11 @@ const TPL = `
     .note-actions .dropdown-menu {
         width: 15em;
     }
+    
+    .note-actions .dropdown-item[disabled], .note-actions .dropdown-item[disabled]:hover {
+        color: var(--muted-text-color) !important;
+        background-color: transparent !important;
+    }
     </style>
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
@@ -46,8 +51,18 @@ export default class NoteActionsWidget extends TabAwareWidget {
     }
 
     refreshWithNote(note) {
-        this.$showSourceButton.prop('disabled', !['text', 'relation-map', 'search', 'code'].includes(note.type));
-        this.$exportNoteButton.prop('disabled', note.type !== 'text');
+        if (['text', 'relation-map', 'search', 'code'].includes(note.type)) {
+            this.$showSourceButton.removeAttr('disabled');
+        } else {
+            this.$showSourceButton.attr('disabled', 'disabled');
+        }
+
+        if (note.type === 'text') {
+            this.$exportNoteButton.removeAttr('disabled');
+        }
+        else {
+            this.$exportNoteButton.attr('disabled', 'disabled');
+        }
     }
 
     triggerEvent(e, eventName) {

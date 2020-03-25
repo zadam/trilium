@@ -158,7 +158,7 @@ function getContentDisposition(filename) {
     return `file; filename="${sanitizedFilename}"; filename*=UTF-8''${sanitizedFilename}`;
 }
 
-const STRING_MIME_TYPES = ["application/x-javascript"];
+const STRING_MIME_TYPES = ["application/x-javascript", "image/svg"];
 
 function isStringNote(type, mime) {
     return ["text", "code", "relation-map", "search"].includes(type)

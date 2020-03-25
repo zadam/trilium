@@ -3,6 +3,7 @@
 const utils = require('./utils');
 const log = require('./log');
 const url = require('url');
+const syncOptions = require('./sync_options');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
 // this allows to support system proxy
@@ -78,12 +79,60 @@ function exec(opts) {
         catch (e) {
             reject(generateError(opts, e.message));
         }
-    })
+    });
+}
+
+async function getImage(imageUrl) {
+    const opts = {
+        method: 'GET',
+        url: imageUrl,
+        proxy: await syncOptions.getSyncProxy()
+    };
+
+    const client = getClient(opts);
+    const proxyAgent = getProxyAgent(opts);
+    const parsedTargetUrl = url.parse(opts.url);
+
+    return await new Promise(async (resolve, reject) => {
+        try {
+            const request = client.request({
+                method: opts.method,
+                // url is used by electron net module
+                url: opts.url,
+                // 4 fields below are used by http and https node modules
+                protocol: parsedTargetUrl.protocol,
+                host: parsedTargetUrl.hostname,
+                port: parsedTargetUrl.port,
+                path: parsedTargetUrl.path,
+                timeout: opts.timeout,
+                headers: {},
+                agent: proxyAgent
+            });
+
+            request.on('error', err => reject(generateError(opts, err)));
+
+            request.on('response', response => {
+                if (![200, 201, 204].includes(response.statusCode)) {
+                    reject(generateError(opts, response.statusCode + ' ' + response.statusMessage));
+                }
+
+                const chunks = []
+
+                response.on('data', chunk => chunks.push(chunk));
+                response.on('end', () => resolve(Buffer.concat(chunks)));
+            });
+
+            request.end(undefined);
+        }
+        catch (e) {
+            reject(generateError(opts, e.message));
+        }
+    });
 }
 
 function getProxyAgent(opts) {
     if (!opts.proxy) {
-        return;
+        return null;
     }
 
     const {protocol} = url.parse(opts.url);
@@ -122,5 +171,6 @@ function generateError(opts, message) {
 }
 
 module.exports = {
-    exec
+    exec,
+    getImage
 };

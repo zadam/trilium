@@ -13,23 +13,35 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const noteRevisionService = require('./note_revisions.js');
+const isSvg = require('is-svg');
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
-    const origImageFormat = imageType(uploadBuffer);
+    const origImageFormat = getImageType(uploadBuffer);
 
-    if (origImageFormat.ext === "webp") {
+    if (origImageFormat && ["webp", "svg"].includes(origImageFormat.ext)) {
         // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
         shrinkImageSwitch = false;
     }
 
     const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer, originalName) : uploadBuffer;
 
-    const imageFormat = imageType(finalImageBuffer);
+    const imageFormat = getImageType(finalImageBuffer);
 
     return {
         buffer: finalImageBuffer,
         imageFormat
     };
+}
+
+function getImageType(buffer) {
+    if (isSvg(buffer)) {
+        return {
+            ext: 'svg'
+        }
+    }
+    else {
+        return imageType(buffer);
+    }
 }
 
 async function updateImage(noteId, uploadBuffer, originalName) {
