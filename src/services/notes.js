@@ -280,11 +280,13 @@ async function downloadImage(noteId, imageUrl) {
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
-    return content.replace(new RegExp(url, "g"), `api/images/${imageNote.noteId}/${imageNote.title}`);
+    const quoted = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    return content.replace(new RegExp(quoted, "g"), `api/images/${imageNote.noteId}/${imageNote.title}`);
 }
 
 async function downloadImages(noteId, content) {
-    const re = /<img\s.*?src=['"]([^'">]+)['"]/ig;
+    const re = /<img.*?\ssrc=['"]([^'">]+)['"]/ig;
     let match;
 
     while (match = re.exec(content)) {
@@ -323,7 +325,7 @@ async function downloadImages(noteId, content) {
         }
     }
 
-    await Promise.all(Object.values(downloadImagePromises)).then(() => {
+    Promise.all(Object.values(downloadImagePromises)).then(() => {
         setTimeout(async () => {
             const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
 
@@ -344,6 +346,8 @@ async function downloadImages(noteId, content) {
             }
         }, 5000);
     });
+
+    return content;
 }
 
 async function saveLinks(note, content) {
@@ -363,7 +367,7 @@ async function saveLinks(note, content) {
         content = findExternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
 
-        downloadImages(note.noteId, content);
+        content = await downloadImages(note.noteId, content);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

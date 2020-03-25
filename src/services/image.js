@@ -44,6 +44,12 @@ function getImageType(buffer) {
     }
 }
 
+function getImageMimeFromExtension(ext) {
+    ext = ext.toLowerCase();
+
+    return 'image/' + (ext === 'svg' ? 'svg+xml' : ext);
+}
+
 async function updateImage(noteId, uploadBuffer, originalName) {
     const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, true);
 
@@ -51,7 +57,7 @@ async function updateImage(noteId, uploadBuffer, originalName) {
 
     await noteRevisionService.createNoteRevision(note);
 
-    note.mime = 'image/' + imageFormat.ext.toLowerCase();
+    note.mime = getImageMimeFromExtension(imageFormat.ext);
 
     await note.setContent(buffer);
 
@@ -72,7 +78,7 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
         title: fileName,
         content: buffer,
         type: 'image',
-        mime: 'image/' + imageFormat.ext.toLowerCase(),
+        mime: getImageMimeFromExtension(imageFormat.ext),
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
 

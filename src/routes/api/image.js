@@ -18,7 +18,7 @@ async function returnImage(req, res) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
-    image.mime = image.mime.replace("image/svg", "image/svg+xml");
+
     res.set('Content-Type', image.mime);
 
     res.send(await image.getContent());
