@@ -15,7 +15,7 @@ async function getNote(req) {
     }
 
     if (note.isStringNote()) {
-        await note.getContent();
+        note.content = await note.getContent();
 
         if (note.type === 'file') {
             note.content = note.content.substr(0, 10000);

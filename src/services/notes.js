@@ -668,7 +668,7 @@ async function scanForLinks(note) {
         await note.setContent(newContent);
     }
     catch (e) {
-        log.error(`Could not scan for links note ${noteId}: ${e.message}`);
+        log.error(`Could not scan for links note ${note.noteId}: ${e.message} ${e.stack}`);
     }
 }
 

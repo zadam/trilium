@@ -256,6 +256,10 @@ function openDialog($dialog) {
 }
 
 function isHtmlEmpty(html) {
+    if (!html) {
+        return true;
+    }
+
     html = html.toLowerCase();
 
     return $("<div>").html(html).text().trim().length === 0

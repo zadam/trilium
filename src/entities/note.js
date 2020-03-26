@@ -95,15 +95,16 @@ class Note extends Entity {
                     this.content = "";
                 }
             }
-
-            if (this.isStringNote()) {
-                this.content = this.content === null
-                    ? ""
-                    : this.content.toString("UTF-8");
-            }
         }
 
-        return this.content;
+        if (this.isStringNote()) {
+            return this.content === null
+                ? ""
+                : this.content.toString("UTF-8");
+        }
+        else {
+            return this.content;
+        }
     }
 
     /** @returns {Promise<*>} */
