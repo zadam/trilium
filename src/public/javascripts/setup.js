@@ -75,6 +75,8 @@ function SetupModel() {
                 return;
             }
 
+            this.step('new-document-in-progress');
+
             // not using server.js because it loads too many dependencies
             $.post('api/setup/new-document', {
                 username: username,
