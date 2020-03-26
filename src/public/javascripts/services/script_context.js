@@ -5,6 +5,8 @@ import treeCache from './tree_cache.js';
 async function ScriptContext(startNoteId, allNoteIds, originEntity = null, $container = null) {
     const modules = {};
 
+    await treeCache.initializedPromise;
+
     const startNote = await treeCache.getNote(startNoteId);
     const allNotes = await treeCache.getNotes(allNoteIds);
 
