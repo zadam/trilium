@@ -9,7 +9,7 @@ import treeCache from "../../services/tree_cache.js";
 import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
 
-const ENABLE_INSPECTOR = true;
+const ENABLE_INSPECTOR = false;
 
 const mentionSetup = {
     feeds: [
@@ -142,10 +142,6 @@ export default class TextTypeWidget extends TypeWidget {
 
     async doRefresh(note) {
         this.textEditor.isReadOnly = note.hasLabel('readOnly');
-
-        // make sure internal link targets are in cache so that sync CKEditor referenceLink widget can pick them up
-        const internalLinkNoteIds = note.getOwnedRelations('internalLink').map(note => note.value);
-        await treeCache.getNotes(internalLinkNoteIds, true);
 
         const noteComplement = await treeCache.getNoteComplement(note.noteId);
 
