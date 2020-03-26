@@ -387,12 +387,10 @@ function BackendScriptApi(currentNote, apiParams) {
     this.sql = sql;
 
     /**
-     * Trigger tree refresh in all connected clients. This is required when some tree change happens in
-     * the backend.
-     *
-     * @returns {Promise<void>}
+     * @method
+     * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
      */
-    this.refreshTree = ws.refreshTree;
+    this.refreshTree = () => {};
 
     /**
      * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
