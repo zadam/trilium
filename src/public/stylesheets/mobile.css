@@ -115,4 +115,5 @@ span.fancytree-expander {
     /* large left padding is necessary for ckeditor gutter in detail-only (smartphone) layout */
     padding-left: 35px;
     padding-top: 10px;
+    min-height: 150px !important;
 }
