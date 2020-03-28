@@ -14,7 +14,7 @@ export async function showDialog() {
         import('./options/advanced.js'),
         import('./options/appearance.js'),
         import('./options/code_notes.js'),
-        import('./options/change_password.js'),
+        import('./options/credentials.js'),
         import('./options/other.js'),
         import('./options/sync.js'),
         import('./options/keyboard_shortcuts.js'),
