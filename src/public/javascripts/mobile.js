@@ -9,9 +9,16 @@ import utils from "./services/utils.js";
 import treeUtils from "./services/tree_utils.js";
 import linkService from "./services/link.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
+import server from "./services/server.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
+
+// required for CKEditor image upload plugin
+window.glob.getActiveNode = treeService.getActiveNode;
+window.glob.getHeaders = server.getHeaders;
+window.glob.noteChanged = noteDetailService.noteChanged;
+window.glob.refreshTree = treeService.reload;
 window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
 window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
 window.glob.loadIncludedNote = async (noteId, el) => {
