@@ -262,9 +262,10 @@ function isHtmlEmpty(html) {
 
     html = html.toLowerCase();
 
-    return $("<div>").html(html).text().trim().length === 0
-        && !html.includes('<img')
-        && !html.includes('<section');
+    return !html.includes('<img')
+        && !html.includes('<section')
+        // line below will actually attempt to load images so better to check for images first
+        && $("<div>").html(html).text().trim().length === 0;
 }
 
 async function clearBrowserCache() {
