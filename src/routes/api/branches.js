@@ -32,6 +32,7 @@ async function moveBranchToParent(req) {
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
     const newBranch = branchToMove.createClone(parentNoteId, newNotePos);
+    newBranch.isExpanded = true;
     await newBranch.save();
 
     branchToMove.isDeleted = true;

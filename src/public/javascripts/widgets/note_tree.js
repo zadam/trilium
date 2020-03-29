@@ -460,6 +460,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
+        const activeNode = this.getActiveNode();
+        const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
+        const activeNoteId = activeNode ? activeNode.data.noteId : null;
+
         const noteIdsToUpdate = new Set();
         const noteIdsToReload = new Set();
 
@@ -515,9 +519,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        const activeNode = this.getActiveNode();
-        const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
-
         for (const noteId of loadResults.getNoteIds()) {
             noteIdsToUpdate.add(noteId);
         }
@@ -554,9 +555,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         if (activeNotePath) {
-            const node = await this.expandToNote(activeNotePath);
+            let node = await this.expandToNote(activeNotePath);
 
-            node.setActive(true, {noEvents: true});
+            if (node.data.noteId !== activeNoteId) {
+                // if the active note has been moved elsewhere then it won't be found by the path
+                // so we switch to the alternative of trying to find it by noteId
+                const notesById = this.getNodesByNoteId(activeNoteId);
+
+                // if there are multiple clones then we'd rather not activate any one
+                node = notesById.length === 1 ? notesById[0] : null;
+            }
+
+            if (node) {
+                node.setActive(true, {noEvents: true});
+            }
         }
     }
 
