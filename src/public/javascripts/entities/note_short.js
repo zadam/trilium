@@ -183,7 +183,10 @@ class NoteShort {
 
         if (this.noteId !== 'root') {
             for (const parentNote of this.getParentNotes()) {
-                attrArrs.push(parentNote.getInheritableAttributes());
+                // these virtual parent-child relationships are also loaded into frontend tree cache
+                if (parentNote.type !== 'search') {
+                    attrArrs.push(parentNote.getInheritableAttributes());
+                }
             }
         }
 

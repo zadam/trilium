@@ -74,9 +74,17 @@ export default class StandardTopWidget extends BasicWidget {
         this.$widget.find(".jump-to-note-dialog-button").on('click', () => this.triggerCommand('jumpToNote'));
         this.$widget.find(".recent-changes-button").on('click', () => this.triggerCommand('showRecentChanges'));
 
-        this.$widget.find(".enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
-        this.$widget.find(".leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);
+        this.$enterProtectedSessionButton = this.$widget.find(".enter-protected-session-button");
+        this.$enterProtectedSessionButton.on('click', protectedSessionService.enterProtectedSession);
+
+        this.$leaveProtectedSessionButton = this.$widget.find(".leave-protected-session-button");
+        this.$leaveProtectedSessionButton.on('click', protectedSessionService.leaveProtectedSession);
 
         return this.$widget
+    }
+
+    protectedSessionStartedEvent() {
+        this.$enterProtectedSessionButton.hide();
+        this.$leaveProtectedSessionButton.show();
     }
 }
