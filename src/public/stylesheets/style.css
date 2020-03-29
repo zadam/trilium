@@ -201,6 +201,7 @@ span.fancytree-node.archived {
 .icon-action.disabled {
     color: var(--muted-text-color) !important;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .ui-widget-content a:not(.ui-tabs-anchor) {
@@ -271,6 +272,7 @@ div.ui-tooltip {
 
 .dropdown-menu .disabled {
     color: #888 !important;
+    pointer-events: none;
 }
 
 .dropdown-menu a:hover:not(.disabled), .dropdown-item:hover:not(.disabled) {

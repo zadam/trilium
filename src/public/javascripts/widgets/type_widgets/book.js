@@ -158,44 +158,60 @@ export default class BookTypeWidget extends TypeWidget {
             this.$help.show();
         }
 
+        const imageLinks = note.getRelations('imageLink');
+
         for (const childNote of childNotes) {
-            const childNotePath = this.notePath + '/' + childNote.noteId;
-
-            const $content = $('<div class="note-book-content">')
-                .css("max-height", ZOOMS[this.zoomLevel].height);
-
-            const $card = $('<div class="note-book-card">')
-                .attr('data-note-id', childNote.noteId)
-                .css("flex-basis", ZOOMS[this.zoomLevel].width)
-                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath,  {showTooltip: false})))
-                .append($content);
-
-            try {
-                const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
-
-                $card.addClass("type-" + type);
-                $content.append(renderedContent);
-            }
-            catch (e) {
-                console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
-
-                $content.append("rendering error");
+            // image is already visible in the parent note so no need to display it separately in the book
+            if (imageLinks.find(rel => rel.value === childNote.noteId)) {
+                continue;
             }
 
-            const childCount = childNote.getChildNoteIds().length;
-
-            if (childCount > 0) {
-                const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
-
-                $card.append($('<div class="note-book-children">')
-                    .append($(`<a class="note-book-open-children-button no-print" href="javascript:">+ Show ${label}</a>`))
-                    .append($(`<a class="note-book-hide-children-button no-print" href="javascript:">- Hide ${label}</a>`).hide())
-                    .append($('<div class="note-book-children-content">'))
-                );
-            }
+            const $card = await this.renderNote(childNote);
 
             $container.append($card);
         }
+    }
+
+    async renderNote(note) {
+        const notePath = this.notePath + '/' + note.noteId;
+
+        const $content = $('<div class="note-book-content">')
+            .css("max-height", ZOOMS[this.zoomLevel].height);
+
+        const $card = $('<div class="note-book-card">')
+            .attr('data-note-id', note.noteId)
+            .css("flex-basis", ZOOMS[this.zoomLevel].width)
+            .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(notePath, {showTooltip: false})))
+            .append($content);
+
+        try {
+            const {type, renderedContent} = await noteContentRenderer.getRenderedContent(note);
+
+            $card.addClass("type-" + type);
+            $content.append(renderedContent);
+        } catch (e) {
+            console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
+
+            $content.append("rendering error");
+        }
+
+        const imageLinks = note.getRelations('imageLink');
+
+        const childCount = note.getChildNoteIds()
+            .filter(childNoteId => !imageLinks.find(rel => rel.value === childNoteId))
+            .length;
+
+        if (childCount > 0) {
+            const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
+
+            $card.append($('<div class="note-book-children">')
+                .append($(`<a class="note-book-open-children-button no-print" href="javascript:">+ Show ${label}</a>`))
+                .append($(`<a class="note-book-hide-children-button no-print" href="javascript:">- Hide ${label}</a>`).hide())
+                .append($('<div class="note-book-children-content">'))
+            );
+        }
+
+        return $card;
     }
 
     /** @return {boolean} true if this is "auto book" activated (empty text note) and not explicit book note */

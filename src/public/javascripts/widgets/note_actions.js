@@ -10,6 +10,7 @@ const TPL = `
     .note-actions .dropdown-item[disabled], .note-actions .dropdown-item[disabled]:hover {
         color: var(--muted-text-color) !important;
         background-color: transparent !important;
+        pointer-events: none; /* makes it unclickable */
     }
     </style>
 
@@ -63,15 +64,5 @@ export default class NoteActionsWidget extends TabAwareWidget {
         else {
             this.$exportNoteButton.attr('disabled', 'disabled');
         }
-    }
-
-    triggerEvent(e, eventName) {
-        const $item = $(e.target).closest('dropdown-item');
-
-        if ($item.is('[disabled]')) {
-            return;
-        }
-
-        this.triggerEvent(eventName);
     }
 }
