@@ -512,7 +512,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
         await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
 
-        await this.refresh();
+        this.loadNotesAndRelations();
     }
 
     saveData() {
@@ -620,7 +620,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
         this.saveData();
 
-        await this.refresh();
+        this.loadNotesAndRelations();
     }
 
     getMousePosition(evt) {
