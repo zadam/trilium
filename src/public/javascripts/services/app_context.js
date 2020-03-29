@@ -18,9 +18,9 @@ class AppContext extends Component {
     }
 
     async start() {
-        this.showWidgets();
-
         await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
+
+        this.showWidgets();
 
         this.tabManager.loadTabs();
 
