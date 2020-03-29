@@ -310,12 +310,6 @@ div.ui-tooltip {
     background-color: var(--active-item-background-color) !important;
 }
 
-
-
-.note-detail-render {
-    min-height: 500px;
-}
-
 .CodeMirror {
     font-family: "Liberation Mono", "Lucida Console", monospace;
     height: auto;
@@ -454,11 +448,6 @@ table.promoted-attributes-in-tooltip {
 
 table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th {
     padding: 10px;
-}
-
-.note-detail-render-help, .note-detail-book-help {
-    margin: 50px;
-    padding: 20px;
 }
 
 .tooltip {

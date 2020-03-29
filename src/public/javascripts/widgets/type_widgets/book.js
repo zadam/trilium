@@ -49,7 +49,7 @@ const TPL = `
                 title="Zoom Out"></button>
     </div>
 
-    <div class="note-detail-book-help alert alert-warning">
+    <div class="note-detail-book-help alert alert-warning" style="margin: 50px; padding: 20px;">
         This note of type Book doesn't have any child notes so there's nothing to display. See <a href="https://github.com/zadam/trilium/wiki/Book-note">wiki</a> for details.
     </div>
 
