@@ -75,7 +75,8 @@ class TreeContextMenu {
             { title: "Advanced", uiIcon: "empty", enabled: true, items: [
                     { title: 'Collapse subtree <kbd data-command="collapseSubtree"></kbd>', command: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
                     { title: "Force note sync", command: "forceNoteSync", uiIcon: "refresh", enabled: noSelectedNotes },
-                    { title: 'Sort alphabetically <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
+                    { title: 'Sort alphabetically <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
+                    { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "history", enabled: noSelectedNotes }
                 ] },
             { title: "----" },
             { title: "Protect subtree", command: "protectSubtree", uiIcon: "check-shield", enabled: noSelectedNotes },

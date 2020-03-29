@@ -9,10 +9,14 @@ import hoistedNoteService from "../services/hoisted_note.js";
 const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
 
-export async function showDialog() {
+export async function showDialog(ancestorNoteId) {
     utils.openDialog($dialog);
 
-    const result = await server.get('recent-changes/' + hoistedNoteService.getHoistedNoteId());
+    if (!ancestorNoteId) {
+        ancestorNoteId = hoistedNoteService.getHoistedNoteId();
+    }
+
+    const result = await server.get('recent-changes/' + ancestorNoteId);
 
     // preload all notes into cache
     await treeCache.getNotes(result.map(r => r.noteId), true);

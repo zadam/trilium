@@ -737,6 +737,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         treeService.sortAlphabetically(node.data.noteId);
     }
 
+    async recentChangesInSubtreeCommand({node}) {
+        const recentChangesDialog = await import('../dialogs/recent_changes.js');
+
+        recentChangesDialog.showDialog(node.data.noteId);
+    }
+
     selectAllNotesInParentCommand({node}) {
         for (const child of node.getParent().getChildren()) {
             child.setSelected(true);
