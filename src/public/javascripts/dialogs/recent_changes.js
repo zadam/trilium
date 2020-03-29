@@ -4,6 +4,7 @@ import server from '../services/server.js';
 import treeService from "../services/tree.js";
 import treeCache from "../services/tree_cache.js";
 import appContext from "../services/app_context.js";
+import hoistedNoteService from "../services/hoisted_note.js";
 
 const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
@@ -11,7 +12,7 @@ const $content = $("#recent-changes-content");
 export async function showDialog() {
     utils.openDialog($dialog);
 
-    const result = await server.get('recent-changes');
+    const result = await server.get('recent-changes/' + hoistedNoteService.getHoistedNoteId());
 
     // preload all notes into cache
     await treeCache.getNotes(result.map(r => r.noteId), true);

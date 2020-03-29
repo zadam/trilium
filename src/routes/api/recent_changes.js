@@ -3,45 +3,73 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
+const noteCacheService = require('../../services/note_cache');
 
-async function getRecentChanges() {
-    const recentChanges = await sql.getRows(
+async function getRecentChanges(req) {
+    const {ancestorNoteId} = req.params;
+
+    const noteRows = await sql.getRows(
         `
         SELECT * FROM (
-            SELECT 
-                notes.noteId,
-                notes.isDeleted AS current_isDeleted,
-                notes.deleteId AS current_deleteId,
-                notes.isErased AS current_isErased,
-                notes.title AS current_title,
-                notes.isProtected AS current_isProtected,
-                note_revisions.title,
-                note_revisions.utcDateCreated AS date
-            FROM 
-                note_revisions
-                JOIN notes USING(noteId)
-            ORDER BY
-                note_revisions.utcDateCreated DESC
-            LIMIT 200
+            SELECT note_revisions.noteId,
+                   note_revisions.noteRevisionId,
+                   note_revisions.utcDateCreated AS date
+            FROM note_revisions
+            ORDER BY note_revisions.utcDateCreated DESC
         )
         UNION ALL SELECT * FROM (
-            SELECT
-                notes.noteId,
-                notes.isDeleted AS current_isDeleted,
-                notes.deleteId AS current_deleteId,
-                notes.isErased AS current_isErased,
-                notes.title AS current_title,
-                notes.isProtected AS current_isProtected,
-                notes.title,
-                notes.utcDateModified AS date
-            FROM
-                notes
-            ORDER BY
-                utcDateModified DESC
-            LIMIT 200
+            SELECT 
+                   notes.noteId,
+                   NULL AS noteRevisionId,
+                   utcDateModified AS date 
+            FROM notes 
+            ORDER BY utcDateModified DESC
         )
-        ORDER BY date DESC 
-        LIMIT 200`);
+        ORDER BY date DESC`);
+
+    const recentChanges = [];
+
+    for (const noteRow of noteRows) {
+        if (!noteCacheService.isInAncestor(noteRow.noteId, ancestorNoteId)) {
+            continue;
+        }
+
+        if (noteRow.noteRevisionId) {
+            recentChanges.push(await sql.getRow(`
+                SELECT 
+                    notes.noteId,
+                    notes.isDeleted AS current_isDeleted,
+                    notes.deleteId AS current_deleteId,
+                    notes.isErased AS current_isErased,
+                    notes.title AS current_title,
+                    notes.isProtected AS current_isProtected,
+                    note_revisions.title,
+                    note_revisions.utcDateCreated AS date
+                FROM 
+                    note_revisions
+                    JOIN notes USING(noteId)
+                WHERE noteRevisionId = ?`, [noteRow.noteRevisionId]));
+        }
+        else {
+            recentChanges.push(await sql.getRow(`
+                SELECT
+                    notes.noteId,
+                    notes.isDeleted AS current_isDeleted,
+                    notes.deleteId AS current_deleteId,
+                    notes.isErased AS current_isErased,
+                    notes.title AS current_title,
+                    notes.isProtected AS current_isProtected,
+                    notes.title,
+                    notes.utcDateModified AS date
+                FROM
+                    notes
+                WHERE noteId = ?`, [noteRow.noteId]));
+        }
+
+        if (recentChanges.length >= 200) {
+            break;
+        }
+    }
 
     for (const change of recentChanges) {
         if (change.current_isProtected) {
