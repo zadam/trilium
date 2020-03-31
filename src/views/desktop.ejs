@@ -12,30 +12,30 @@
 
 <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
 
-<% include dialogs/about.ejs %>
-<% include dialogs/add_link.ejs %>
-<% include dialogs/attributes.ejs %>
-<% include dialogs/branch_prefix.ejs %>
-<% include dialogs/export.ejs %>
-<% include dialogs/import.ejs %>
-<% include dialogs/jump_to_note.ejs %>
-<% include dialogs/markdown_import.ejs %>
-<% include dialogs/note_revisions.ejs %>
-<% include dialogs/note_source.ejs %>
-<% include dialogs/options.ejs %>
-<% include dialogs/protected_session_password.ejs %>
-<% include dialogs/recent_changes.ejs %>
-<% include dialogs/sql_console.ejs %>
-<% include dialogs/info.ejs %>
-<% include dialogs/prompt.ejs %>
-<% include dialogs/confirm.ejs %>
-<% include dialogs/help.ejs %>
-<% include dialogs/note_info.ejs %>
-<% include dialogs/link_map.ejs %>
-<% include dialogs/clone_to.ejs %>
-<% include dialogs/move_to.ejs %>
-<% include dialogs/backend_log.ejs %>
-<% include dialogs/include_note.ejs %>
+<%- include('dialogs/about.ejs') %>
+<%- include('dialogs/add_link.ejs') %>
+<%- include('dialogs/attributes.ejs') %>
+<%- include('dialogs/branch_prefix.ejs') %>
+<%- include('dialogs/export.ejs') %>
+<%- include('dialogs/import.ejs') %>
+<%- include('dialogs/jump_to_note.ejs') %>
+<%- include('dialogs/markdown_import.ejs') %>
+<%- include('dialogs/note_revisions.ejs') %>
+<%- include('dialogs/note_source.ejs') %>
+<%- include('dialogs/options.ejs') %>
+<%- include('dialogs/protected_session_password.ejs') %>
+<%- include('dialogs/recent_changes.ejs') %>
+<%- include('dialogs/sql_console.ejs') %>
+<%- include('dialogs/info.ejs') %>
+<%- include('dialogs/prompt.ejs') %>
+<%- include('dialogs/confirm.ejs') %>
+<%- include('dialogs/help.ejs') %>
+<%- include('dialogs/note_info.ejs') %>
+<%- include('dialogs/link_map.ejs') %>
+<%- include('dialogs/clone_to.ejs') %>
+<%- include('dialogs/move_to.ejs') %>
+<%- include('dialogs/backend_log.ejs') %>
+<%- include('dialogs/include_note.ejs') %>
 
 <script type="text/javascript">
     window.baseApiUrl = 'api/';
@@ -60,8 +60,8 @@
 <script src="libraries/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 <!-- Include Fancytree skin and library -->
-<link href="libraries/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
-<script src="libraries/fancytree/jquery.fancytree-all-deps.js"></script>
+<link href="libraries/fancytree/skin-win8/ui.fancytree.min.css" rel="stylesheet">
+<script src="libraries/fancytree/jquery.fancytree-all-deps.min.js"></script>
 
 <script src="libraries/jquery.hotkeys.js"></script>
 <script src="libraries/jquery.fancytree.hotkeys.js"></script>

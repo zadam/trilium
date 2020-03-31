@@ -3,7 +3,7 @@ import treeCache from "./tree_cache.js";
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 
-async function prepareTree() {
+async function prepareRootNode() {
     await treeCache.initializedPromise;
 
     const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
@@ -18,7 +18,7 @@ async function prepareTree() {
         hoistedBranch = (await hoistedNote.getBranches())[0];
     }
 
-    return [ await prepareNode(hoistedBranch) ];
+    return await prepareNode(hoistedBranch);
 }
 
 async function prepareBranch(note) {
@@ -167,7 +167,7 @@ function getExtraClasses(note) {
 }
 
 export default {
-    prepareTree,
+    prepareRootNode,
     prepareBranch,
     getExtraClasses,
     getIcon

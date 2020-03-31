@@ -1,6 +1,6 @@
-/*! jQuery Fancytree Plugin - 2.34.0 - 2019-12-26T14:16:19Z
+/*! jQuery Fancytree Plugin - 2.35.0 - 2020-03-27T22:41:58Z
   * https://github.com/mar10/fancytree
-  * Copyright (c) 2019 Martin Wendt; Licensed MIT
+  * Copyright (c) 2020 Martin Wendt; Licensed MIT
  */
 /*! jQuery UI - v1.12.1 - 2018-05-20
 * http://jqueryui.com
@@ -1361,12 +1361,12 @@ var uniqueId = $.fn.extend( {
  * Tree view control with support for lazy loading and much more.
  * https://github.com/mar10/fancytree/
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 /** Core Fancytree module.
@@ -1405,7 +1405,7 @@ var uniqueId = $.fn.extend( {
 		REX_HTML = /[&<>"'/]/g, // Escape those characters
 		REX_TOOLTIP = /[<>"'/]/g, // Don't escape `&` in tooltips
 		RECURSIVE_REQUEST_ERROR = "$recursive_request",
-		// CLIPBOARD = null,
+		INVALID_REQUEST_TARGET_ERROR = "$request_target_invalid",
 		ENTITY_MAP = {
 			"&": "&amp;",
 			"<": "&lt;",
@@ -2206,7 +2206,7 @@ var uniqueId = $.fn.extend( {
 		 *
 		 * @param {FancytreeNode} node source node
 		 * @param {string} [mode=child] 'before' | 'after' | 'child'
-		 * @param {Function} [map] callback function(NodeData) that could modify the new node
+		 * @param {Function} [map] callback function(NodeData, FancytreeNode) that could modify the new node
 		 * @returns {FancytreeNode} new
 		 */
 		copyTo: function(node, mode, map) {
@@ -2970,10 +2970,9 @@ var uniqueId = $.fn.extend( {
 		 * @deprecated since 2014-02-16: use load() instead.
 		 */
 		lazyLoad: function(discard) {
-			this.warn(
+			$.error(
 				"FancytreeNode.lazyLoad() is deprecated since 2014-02-16. Use .load() instead."
 			);
-			return this.load(discard);
 		},
 		/**
 		 * Load all children of a lazy node if neccessary. The <i>expanded</i> state is maintained.
@@ -3496,9 +3495,9 @@ var uniqueId = $.fn.extend( {
 
 			// this.debug("scrollIntoView(), scrollTop=" + scrollTop, opts.scrollOfs);
 			// _assert($(this.span).is(":visible"), "scrollIntoView node is invisible"); // otherwise we cannot calc offsets
-			if (!this.isVisible()) {
+			if (this.isRootNode() || !this.isVisible()) {
 				// We cannot calc offsets for hidden elements
-				this.warn("scrollIntoView(): node is invisible.");
+				this.info("scrollIntoView(): node is invisible.");
 				return _getResolvedPromise();
 			}
 			if (isParentWindow) {
@@ -3610,7 +3609,7 @@ var uniqueId = $.fn.extend( {
 			return this.tree._callHook("nodeSetSelected", this, flag, opts);
 		},
 		/**Mark a lazy node as 'error', 'loading', 'nodata', or 'ok'.
-		 * @param {string} status 'error'|'empty'|'ok'
+		 * @param {string} status 'error'|'loading'|'nodata'|'ok'
 		 * @param {string} [message]
 		 * @param {string} [details]
 		 */
@@ -3671,7 +3670,7 @@ var uniqueId = $.fn.extend( {
 		 *
 		 * @param {boolean} [recursive=false] include child nodes
 		 * @param {function} [callback] callback(dict, node) is called for every node, in order to allow modifications.
-		 *     Return `false` to ignore this node or "skip" to include this node without its children.
+		 *     Return `false` to ignore this node or `"skip"` to include this node without its children.
 		 * @returns {NodeData}
 		 */
 		toDict: function(recursive, callback) {
@@ -3703,7 +3702,7 @@ var uniqueId = $.fn.extend( {
 				}
 			}
 			if (recursive) {
-				if (this.hasChildren()) {
+				if ($.isArray(this.children)) {
 					dict.children = [];
 					for (i = 0, l = this.children.length; i < l; i++) {
 						node = this.children[i];
@@ -4328,8 +4327,8 @@ var uniqueId = $.fn.extend( {
 				// case "copy":
 				// 	clipboard = {
 				// 		mode: cmd,
-				// 		data: node.toDict(function(n) {
-				// 			delete n.key;
+				// 		data: node.toDict(function(d, n) {
+				// 			delete d.key;
 				// 		}),
 				// 	};
 				// 	break;
@@ -5613,12 +5612,16 @@ var uniqueId = $.fn.extend( {
 			nodeLoadChildren: function(ctx, source) {
 				var ajax,
 					delay,
-					dfd,
-					res,
+					ajaxDfd = null,
+					resultDfd,
+					isAsync = true,
 					tree = ctx.tree,
 					node = ctx.node,
+					nodePrevParent = node.parent,
+					tag = "nodeLoadChildren",
 					requestId = Date.now();
 
+				// `source` is a callback: use the returned result instead:
 				if ($.isFunction(source)) {
 					source = source.call(tree, { type: "source" }, ctx);
 					_assert(
@@ -5626,23 +5629,15 @@ var uniqueId = $.fn.extend( {
 						"source callback must not return another function"
 					);
 				}
-				if (source.url) {
-					if (node._requestId) {
-						node.warn(
-							"Recursive load request #" +
-								requestId +
-								" while #" +
-								node._requestId +
-								" is pending."
-						);
-						// } else {
-						// 	node.debug("Send load request #" + requestId);
-					}
+				// `source` is already a promise:
+				if ($.isFunction(source.then)) {
+					// _assert($.isFunction(source.always), "Expected jQuery?");
+					ajaxDfd = source;
+				} else if (source.url) {
 					// `source` is an Ajax options object
 					ajax = $.extend({}, ctx.options.ajax, source);
-					node._requestId = requestId;
 					if (ajax.debugDelay) {
-						// simulate a slow server
+						// Simulate a slow server
 						delay = ajax.debugDelay;
 						delete ajax.debugDelay; // remove debug option
 						if ($.isArray(delay)) {
@@ -5656,30 +5651,74 @@ var uniqueId = $.fn.extend( {
 								Math.round(delay) +
 								" ms ..."
 						);
-						dfd = $.Deferred(function(dfd) {
+						ajaxDfd = $.Deferred(function(ajaxDfd) {
 							setTimeout(function() {
 								$.ajax(ajax)
 									.done(function() {
-										dfd.resolveWith(this, arguments);
+										ajaxDfd.resolveWith(this, arguments);
 									})
 									.fail(function() {
-										dfd.rejectWith(this, arguments);
+										ajaxDfd.rejectWith(this, arguments);
 									});
 							}, delay);
 						});
 					} else {
-						dfd = $.ajax(ajax);
+						ajaxDfd = $.ajax(ajax);
 					}
+				} else if ($.isPlainObject(source) || $.isArray(source)) {
+					// `source` is already a constant dict or list, but we convert
+					// to a thenable for unified processing.
+					// 2020-01-03: refactored.
+					// `ajaxDfd = $.when(source)` would do the trick, but the returned
+					// promise will resolve async, which broke some tests and
+					// would probably also break current implementations out there.
+					// So we mock-up a thenable that resolves synchronously:
+					ajaxDfd = {
+						then: function(resolve, reject) {
+							resolve(source, null, null);
+						},
+					};
+					isAsync = false;
+				} else {
+					$.error("Invalid source type: " + source);
+				}
 
-					// Defer the deferred: we want to be able to reject, even if ajax
-					// resolved ok.
-					source = new $.Deferred();
-					dfd.done(function(data, textStatus, jqXHR) {
+				// Check for overlapping requests
+				if (node._requestId) {
+					node.warn(
+						"Recursive load request #" +
+							requestId +
+							" while #" +
+							node._requestId +
+							" is pending."
+					);
+					node._requestId = requestId;
+					// 	node.debug("Send load request #" + requestId);
+				}
+
+				if (isAsync) {
+					tree.debugTime(tag);
+					tree.nodeSetStatus(ctx, "loading");
+				}
+
+				// The async Ajax request has now started...
+				// Defer the deferred:
+				// we want to be able to reject invalid responses, even if
+				// the raw HTTP Ajax XHR resolved as Ok.
+				// We use the ajaxDfd.then() syntax here, which is compatible with
+				// jQuery and ECMA6.
+				// However resultDfd is a jQuery deferred, which is currently the
+				// expected result type of nodeLoadChildren()
+				resultDfd = new $.Deferred();
+				ajaxDfd.then(
+					function(data, textStatus, jqXHR) {
+						// ajaxDfd was resolved, but we reject or resolve resultDfd
+						// depending on the response data
 						var errorObj, res;
 
 						if (
-							(this.dataType === "json" ||
-								this.dataType === "jsonp") &&
+							(source.dataType === "json" ||
+								source.dataType === "jsonp") &&
 							typeof data === "string"
 						) {
 							$.error(
@@ -5690,21 +5729,28 @@ var uniqueId = $.fn.extend( {
 							// The expected request time stamp is later than `requestId`
 							// (which was kept as as closure variable to this handler function)
 							// node.warn("Ignored load response for obsolete request #" + requestId + " (expected #" + node._requestId + ")");
-							source.rejectWith(this, [RECURSIVE_REQUEST_ERROR]);
+							resultDfd.rejectWith(this, [
+								RECURSIVE_REQUEST_ERROR,
+							]);
 							return;
 							// } else {
 							// 	node.debug("Response returned for load request #" + requestId);
 						}
-						// postProcess is similar to the standard ajax dataFilter hook,
-						// but it is also called for JSONP
+						if (node.parent === null && nodePrevParent !== null) {
+							resultDfd.rejectWith(this, [
+								INVALID_REQUEST_TARGET_ERROR,
+							]);
+							return;
+						}
+						// Allow to adjust the received response data in the `postProcess` event.
 						if (ctx.options.postProcess) {
+							// The handler may either
+							//   - modify `ctx.response` in-place (and leave `ctx.result` undefined)
+							//     => res = undefined
+							//   - return a replacement in `ctx.result`
+							//     => res = <new data>
+							//   If res contains an `error` property, an error status is displayed
 							try {
-								// The handler may either
-								//   - modify `ctx.response` in-place (and leave `ctx.result` undefined)
-								//     => res = undefined
-								//   - return a replacement in `ctx.result`
-								//     => res = <new data>
-								// If res contains an `error` property, an error status is displayed
 								res = tree._triggerNodeEvent(
 									"postProcess",
 									ctx,
@@ -5712,7 +5758,7 @@ var uniqueId = $.fn.extend( {
 									{
 										response: data,
 										error: null,
-										dataType: this.dataType,
+										dataType: source.dataType,
 									}
 								);
 							} catch (e) {
@@ -5723,6 +5769,8 @@ var uniqueId = $.fn.extend( {
 								};
 							}
 							if (res.error) {
+								// Either postProcess failed with an exception, or the returned
+								// result object has an 'error' property attached:
 								errorObj = $.isPlainObject(res.error)
 									? res.error
 									: { message: res.error };
@@ -5731,7 +5779,7 @@ var uniqueId = $.fn.extend( {
 									null,
 									errorObj
 								);
-								source.rejectWith(this, [errorObj]);
+								resultDfd.rejectWith(this, [errorObj]);
 								return;
 							}
 							if (
@@ -5749,175 +5797,158 @@ var uniqueId = $.fn.extend( {
 							ctx.options.enableAspx
 						) {
 							// Process ASPX WebMethod JSON object inside "d" property
+							// (only if no postProcess event was defined)
+							if (ctx.options.enableAspx === 42) {
+								tree.warn(
+									"The default for enableAspx will change to `false` in the fututure. " +
+										"Pass `enableAspx: true` or implement postProcess to silence this warning."
+								);
+							}
 							data =
 								typeof data.d === "string"
 									? $.parseJSON(data.d)
 									: data.d;
 						}
-						source.resolveWith(this, [data]);
-					}).fail(function(jqXHR, textStatus, errorThrown) {
+						resultDfd.resolveWith(this, [data]);
+					},
+					function(jqXHR, textStatus, errorThrown) {
+						// ajaxDfd was rejected, so we reject resultDfd as well
 						var errorObj = tree._makeHookContext(node, null, {
 							error: jqXHR,
 							args: Array.prototype.slice.call(arguments),
 							message: errorThrown,
 							details: jqXHR.status + ": " + errorThrown,
 						});
-						source.rejectWith(this, [errorObj]);
-					});
-				}
-				// #383: accept and convert ECMAScript 6 Promise
-				if ($.isFunction(source.then) && $.isFunction(source.catch)) {
-					dfd = source;
-					source = new $.Deferred();
-					dfd.then(
-						function(value) {
-							source.resolve(value);
-						},
-						function(reason) {
-							source.reject(reason);
-						}
-					);
-				}
-				if ($.isFunction(source.promise)) {
-					// `source` is a deferred, i.e. ajax request
-					// _assert(!node.isLoading(), "recursive load");
-					tree.nodeSetStatus(ctx, "loading");
+						resultDfd.rejectWith(this, [errorObj]);
+					}
+				);
 
-					source
-						.done(function(children) {
-							tree.nodeSetStatus(ctx, "ok");
-							node._requestId = null;
-						})
-						.fail(function(error) {
-							var ctxErr;
+				// The async Ajax request has now started.
+				// resultDfd will be resolved/rejected after the response arrived,
+				// was postProcessed, and checked.
+				// Now we implement the UI update and add the data to the tree.
+				// We also return this promise to the caller.
+				resultDfd
+					.done(function(data) {
+						tree.nodeSetStatus(ctx, "ok");
+						var children, metaData, noDataRes;
 
-							if (error === RECURSIVE_REQUEST_ERROR) {
-								node.warn(
-									"Ignored response for obsolete load request #" +
-										requestId +
-										" (expected #" +
-										node._requestId +
-										")"
-								);
-								return;
-							} else if (
-								error.node &&
-								error.error &&
-								error.message
-							) {
-								// error is already a context object
-								ctxErr = error;
-							} else {
-								ctxErr = tree._makeHookContext(node, null, {
-									error: error, // it can be jqXHR or any custom error
-									args: Array.prototype.slice.call(arguments),
-									message: error
-										? error.message || error.toString()
-										: "",
-								});
-								if (ctxErr.message === "[object Object]") {
-									ctxErr.message = "";
+						if ($.isPlainObject(data)) {
+							// We got {foo: 'abc', children: [...]}
+							// Copy extra properties to tree.data.foo
+							_assert(
+								node.isRootNode(),
+								"source may only be an object for root nodes (expecting an array of child objects otherwise)"
+							);
+							_assert(
+								$.isArray(data.children),
+								"if an object is passed as source, it must contain a 'children' array (all other properties are added to 'tree.data')"
+							);
+							metaData = data;
+							children = data.children;
+							delete metaData.children;
+							// Copy some attributes to tree.data
+							$.each(TREE_ATTRS, function(i, attr) {
+								if (metaData[attr] !== undefined) {
+									tree[attr] = metaData[attr];
+									delete metaData[attr];
 								}
-							}
-							node.warn(
-								"Load children failed (" + ctxErr.message + ")",
-								ctxErr
-							);
-							if (
-								tree._triggerNodeEvent(
-									"loadError",
-									ctxErr,
-									null
-								) !== false
-							) {
-								tree.nodeSetStatus(
-									ctx,
-									"error",
-									ctxErr.message,
-									ctxErr.details
+							});
+							// Copy all other attributes to tree.data.NAME
+							$.extend(tree.data, metaData);
+						} else {
+							children = data;
+						}
+						_assert(
+							$.isArray(children),
+							"expected array of children"
+						);
+						node._setChildren(children);
+
+						if (tree.options.nodata && children.length === 0) {
+							if ($.isFunction(tree.options.nodata)) {
+								noDataRes = tree.options.nodata.call(
+									tree,
+									{ type: "nodata" },
+									ctx
 								);
+							} else if (
+								tree.options.nodata === true &&
+								node.isRootNode()
+							) {
+								noDataRes = tree.options.strings.noData;
+							} else if (
+								typeof tree.options.nodata === "string" &&
+								node.isRootNode()
+							) {
+								noDataRes = tree.options.nodata;
 							}
-						});
-				} else {
-					if (ctx.options.postProcess) {
-						// #792: Call postProcess for non-deferred source
-						res = tree._triggerNodeEvent(
-							"postProcess",
-							ctx,
-							ctx.originalEvent,
-							{
-								response: source,
-								error: null,
-								dataType: typeof source,
+							if (noDataRes) {
+								node.setStatus("nodata", noDataRes);
 							}
-						);
-
-						if (
-							$.isArray(res) ||
-							($.isPlainObject(res) && $.isArray(res.children))
-						) {
-							// Use `ctx.result` if valid
-							// (otherwise use existing data, which may have been modified in-place)
-							source = res;
 						}
-					}
-				}
-				// $.when(source) resolves also for non-deferreds
-				return $.when(source).done(function(children) {
-					var metaData, noDataRes;
+						// trigger fancytreeloadchildren
+						tree._triggerNodeEvent("loadChildren", node);
+					})
+					.fail(function(error) {
+						var ctxErr;
 
-					if ($.isPlainObject(children)) {
-						// We got {foo: 'abc', children: [...]}
-						// Copy extra properties to tree.data.foo
-						_assert(
-							node.isRootNode(),
-							"source may only be an object for root nodes (expecting an array of child objects otherwise)"
-						);
-						_assert(
-							$.isArray(children.children),
-							"if an object is passed as source, it must contain a 'children' array (all other properties are added to 'tree.data')"
-						);
-						metaData = children;
-						children = children.children;
-						delete metaData.children;
-						// Copy some attributes to tree.data
-						$.each(TREE_ATTRS, function(i, attr) {
-							if (metaData[attr] !== undefined) {
-								tree[attr] = metaData[attr];
-								delete metaData[attr];
-							}
-						});
-						// Copy all other attributes to tree.data.NAME
-						$.extend(tree.data, metaData);
-					}
-					_assert($.isArray(children), "expected array of children");
-					node._setChildren(children);
-
-					if (tree.options.nodata && children.length === 0) {
-						if ($.isFunction(tree.options.nodata)) {
-							noDataRes = tree.options.nodata.call(
-								tree,
-								{ type: "nodata" },
-								ctx
+						if (error === RECURSIVE_REQUEST_ERROR) {
+							node.warn(
+								"Ignored response for obsolete load request #" +
+									requestId +
+									" (expected #" +
+									node._requestId +
+									")"
 							);
-						} else if (
-							tree.options.nodata === true &&
-							node.isRootNode()
-						) {
-							noDataRes = tree.options.strings.nodata;
-						} else if (
-							typeof tree.options.nodata === "string" &&
-							node.isRootNode()
-						) {
-							noDataRes = tree.options.nodata;
+							return;
+						} else if (error === INVALID_REQUEST_TARGET_ERROR) {
+							node.warn(
+								"Lazy parent node was removed while loading: discarding response."
+							);
+							return;
+						} else if (error.node && error.error && error.message) {
+							// error is already a context object
+							ctxErr = error;
+						} else {
+							ctxErr = tree._makeHookContext(node, null, {
+								error: error, // it can be jqXHR or any custom error
+								args: Array.prototype.slice.call(arguments),
+								message: error
+									? error.message || error.toString()
+									: "",
+							});
+							if (ctxErr.message === "[object Object]") {
+								ctxErr.message = "";
+							}
 						}
-						if (noDataRes) {
-							node.setStatus("nodata", noDataRes);
+						node.warn(
+							"Load children failed (" + ctxErr.message + ")",
+							ctxErr
+						);
+						if (
+							tree._triggerNodeEvent(
+								"loadError",
+								ctxErr,
+								null
+							) !== false
+						) {
+							tree.nodeSetStatus(
+								ctx,
+								"error",
+								ctxErr.message,
+								ctxErr.details
+							);
 						}
-					}
-					// trigger fancytreeloadchildren
-					tree._triggerNodeEvent("loadChildren", node);
-				});
+					})
+					.always(function() {
+						node._requestId = null;
+						if (isAsync) {
+							tree.debugTimeEnd(tag);
+						}
+					});
+
+				return resultDfd.promise();
 			},
 			/** [Not Implemented]  */
 			nodeLoadKeyPath: function(ctx, keyPathList) {
@@ -7591,7 +7622,7 @@ var uniqueId = $.fn.extend( {
 				clickFolderMode: 4,
 				debugLevel: null, // 0..4 (null: use global setting $.ui.fancytree.debugLevel)
 				disabled: false, // TODO: required anymore?
-				enableAspx: true,
+				enableAspx: 42, // TODO: this is truethy, but distinguishable from true: default will change to false in the future
 				escapeTitles: false,
 				extensions: [],
 				// fx: { height: "toggle", duration: 200 },
@@ -8028,7 +8059,7 @@ var uniqueId = $.fn.extend( {
 		{
 			/** Version number `"MAJOR.MINOR.PATCH"`
 			 * @type {string} */
-			version: "2.34.0", // Set to semver by 'grunt release'
+			version: "2.35.0", // Set to semver by 'grunt release'
 			/** @type {string}
 			 * @description `"production" for release builds` */
 			buildType: "production", // Set to 'production' by 'grunt build'
@@ -8658,13 +8689,13 @@ var uniqueId = $.fn.extend( {
  * Add a child counter bubble to tree nodes.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 // To keep the global namespace clean, we wrap everything in a closure.
@@ -8745,7 +8776,7 @@ var uniqueId = $.fn.extend( {
 		} else {
 			$badge.remove();
 		}
-		if (extOpts.deep && !node.isTopLevel() && !node.isRoot()) {
+		if (extOpts.deep && !node.isTopLevel() && !node.isRootNode()) {
 			node.parent.updateCounters();
 		}
 	};
@@ -8783,7 +8814,7 @@ var uniqueId = $.fn.extend( {
 		// Every extension must be registered by a unique name.
 		name: "childcounter",
 		// Version information should be compliant with [semver](http://semver.org)
-		version: "2.34.0",
+		version: "2.35.0",
 
 		// Extension specific options and their defaults.
 		// This options will be available as `tree.options.childcounter.hideExpanded`
@@ -8889,13 +8920,13 @@ var uniqueId = $.fn.extend( {
  * Support faster lookup of nodes by key and shared ref-ids.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -9253,7 +9284,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "clones",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			highlightActiveClones: true, // set 'fancytree-active-clone' on active clones and all peers
@@ -9410,13 +9441,13 @@ var uniqueId = $.fn.extend( {
  * Drag-and-drop support (native HTML5).
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 /*
@@ -10201,6 +10232,10 @@ var uniqueId = $.fn.extend( {
 					node.debug("Reject dropping below own ancestor.");
 					DRAG_ENTER_RESPONSE = false;
 					break;
+				} else if (dndOpts.preventLazyParents && !node.isLoaded()) {
+					node.warn("Drop over unloaded target node prevented.");
+					DRAG_ENTER_RESPONSE = false;
+					break;
 				}
 				$dropMarker.show();
 
@@ -10209,6 +10244,7 @@ var uniqueId = $.fn.extend( {
 				r = dndOpts.dragEnter(node, data);
 
 				res = normalizeDragEnterResponse(r);
+				// alert("res:" + JSON.stringify(res))
 				DRAG_ENTER_RESPONSE = res;
 
 				allowDrop = res && (res.over || res.before || res.after);
@@ -10254,6 +10290,7 @@ var uniqueId = $.fn.extend( {
 					} else if (
 						dndOpts.autoExpandMS &&
 						Date.now() - DRAG_OVER_STAMP > dndOpts.autoExpandMS &&
+						!node.isLoading() &&
 						(!dndOpts.dragExpand ||
 							dndOpts.dragExpand(node, data) !== false)
 					) {
@@ -10420,7 +10457,7 @@ var uniqueId = $.fn.extend( {
 
 	$.ui.fancytree.registerExtension({
 		name: "dnd5",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			autoExpandMS: 1500, // Expand nodes after n milliseconds of hovering
@@ -10431,6 +10468,7 @@ var uniqueId = $.fn.extend( {
 			// dropEffect: "auto", // 'copy'|'link'|'move'|'auto'(calculate from `effectAllowed`+modifier keys) or callback(node, data) that returns such string.
 			dropEffectDefault: "move", // Default dropEffect ('copy', 'link', or 'move') when no modifier is pressed (overide in dragDrag, dragOver).
 			preventForeignNodes: false, // Prevent dropping nodes from different Fancytrees
+			preventLazyParents: true, // Prevent dropping items on unloaded lazy Fancytree nodes
 			preventNonNodes: false, // Prevent dropping items other than Fancytree nodes
 			preventRecursion: true, // Prevent dropping nodes on own descendants
 			preventSameParent: false, // Prevent dropping nodes under same direct parent
@@ -10548,13 +10586,13 @@ var uniqueId = $.fn.extend( {
  * Make node titles editable.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -10756,7 +10794,7 @@ var uniqueId = $.fn.extend( {
 		// Re-enable mouse and keyboard handling
 		tree.widget._bind();
 
-		if (local.lastDraggableAttrValue) {
+		if (node && local.lastDraggableAttrValue) {
 			node.span.draggable = true;
 		}
 
@@ -10846,7 +10884,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "edit",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			adjustWidthOfs: 4, // null: don't adjust input size to content
@@ -10952,13 +10990,13 @@ var uniqueId = $.fn.extend( {
  * Remove or highlight tree nodes, based on a filter.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -11296,7 +11334,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "filter",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			autoApply: true, // Re-apply last filter if lazy data is loaded
@@ -11411,13 +11449,13 @@ var uniqueId = $.fn.extend( {
  * Use glyph-fonts, ligature-fonts, or SVG icons instead of icon sprites.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -11600,7 +11638,7 @@ var uniqueId = $.fn.extend( {
 
 	$.ui.fancytree.registerExtension({
 		name: "glyph",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			preset: null, // 'awesome3', 'awesome4', 'bootstrap3', 'material'
@@ -11634,7 +11672,7 @@ var uniqueId = $.fn.extend( {
 
 			res = this._super(ctx);
 
-			if (node.isRoot()) {
+			if (node.isRootNode()) {
 				return res;
 			}
 			span = $span.children("span.fancytree-expander").get(0);
@@ -11749,13 +11787,13 @@ var uniqueId = $.fn.extend( {
  * Support keyboard navigation for trees with embedded input controls.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -11872,7 +11910,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "gridnav",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			autofocusInput: false, // Focus first embedded input if node gets activated
@@ -11974,13 +12012,13 @@ var uniqueId = $.fn.extend( {
  * Allow multiple selection of nodes  by mouse or keyboard.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -12009,7 +12047,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "multi",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			allowNoSelect: false, //
@@ -12106,13 +12144,13 @@ var uniqueId = $.fn.extend( {
  *
  * @depends: js-cookie or jquery-cookie
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -12312,7 +12350,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "persist",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			cookieDelimiter: "~",
@@ -12600,13 +12638,13 @@ var uniqueId = $.fn.extend( {
  * Render tree as table (aka 'tree grid', 'table tree').
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -12689,7 +12727,7 @@ var uniqueId = $.fn.extend( {
 
 	$.ui.fancytree.registerExtension({
 		name: "table",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			checkboxColumnIdx: null, // render the checkboxes into the this column index (default: nodeColumnIdx)
@@ -13150,13 +13188,13 @@ var uniqueId = $.fn.extend( {
  *
  * @see http://jqueryui.com/themeroller/
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -13179,7 +13217,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "themeroller",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			activeClass: "ui-state-active", // Class added to active node
@@ -13270,13 +13308,13 @@ var uniqueId = $.fn.extend( {
  * Support for 100% wide selection bars.
  * (Extension module for jquery.fancytree.js: https://github.com/mar10/fancytree/)
  *
- * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
+ * Copyright (c) 2008-2020, Martin Wendt (https://wwWendt.de)
  *
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.34.0
- * @date 2019-12-26T14:16:19Z
+ * @version 2.35.0
+ * @date 2020-03-27T22:41:58Z
  */
 
 (function(factory) {
@@ -13406,7 +13444,7 @@ var uniqueId = $.fn.extend( {
 	 */
 	$.ui.fancytree.registerExtension({
 		name: "wide",
-		version: "2.34.0",
+		version: "2.35.0",
 		// Default options for this extension.
 		options: {
 			iconWidth: null, // Adjust this if @fancy-icon-width != "16px"

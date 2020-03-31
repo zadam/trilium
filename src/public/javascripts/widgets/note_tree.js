@@ -68,13 +68,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        this.initialized = treeBuilder.prepareTree().then(treeData => this.initFancyTree(treeData));
+        this.initialized = this.initFancyTree();
 
         return this.$widget;
     }
 
-    async initFancyTree(treeData) {
-        utils.assertArguments(treeData);
+    async initFancyTree() {
+        const treeData = [await treeBuilder.prepareRootNode()];
 
         this.$widget.fancytree({
             autoScroll: true,
@@ -414,8 +414,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
 
-    async reload(notes) {
-        await this.tree.reload(notes);
+    async reload() {
+        const rootNode = await treeBuilder.prepareRootNode();
+
+        await this.tree.reload([rootNode]);
     }
 
     // must be event since it's triggered from outside the tree
@@ -581,13 +583,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async reloadTreeFromCache() {
-        const notes = await treeBuilder.prepareTree();
-
         const activeNode = this.getActiveNode();
 
         const activeNotePath = activeNode !== null ? treeService.getNotePath(activeNode) : null;
 
-        await this.reload(notes);
+        await this.reload();
 
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);
