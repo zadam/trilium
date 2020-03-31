@@ -48,7 +48,9 @@ export async function showDialog(widget) {
     $autoComplete.on('autocomplete:cursorchanged', function(event, suggestion, dataset) {
         const noteId = treeService.getNoteIdFromNotePath(suggestion.path);
 
-        setDefaultLinkTitle(noteId);
+        if (noteId) {
+            setDefaultLinkTitle(noteId);
+        }
     });
 
     noteAutocompleteService.showRecentNotes($autoComplete);

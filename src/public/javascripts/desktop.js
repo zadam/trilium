@@ -195,8 +195,6 @@ if (utils.isElectron()) {
             items,
             selectMenuItemHandler: ({command, spellingSuggestion}) => {
                 if (command === 'replaceMisspelling') {
-                    console.log("Replacing missspeling", spellingSuggestion);
-
                     webContents.insertText(spellingSuggestion);
                 }
             }

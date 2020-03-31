@@ -40,7 +40,7 @@ export default class ChangePasswordOptions {
         this.$form.on('submit', () => this.save());
     }
 
-    optionsLoaded(options) {console.log(options);
+    optionsLoaded(options) {
         this.$username.text(options.username);
     }
 

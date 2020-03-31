@@ -7,6 +7,7 @@ import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
+import utils from "../../services/utils.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -165,10 +166,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             toastService.showMessage("Click on canvas to place new note");
 
-            // reloading tree so that the new note appears there
-            // no need to wait for it to finish
-            treeService.reload();
-
             this.clipboard = { noteId: note.noteId, title };
         });
 
@@ -208,10 +205,9 @@ export default class RelationMapTypeWidget extends TypeWidget {
             this.jsPlumbInstance.remove(this.noteIdToId(noteId));
 
             if (confirmDialog.isDeleteNoteChecked()) {
-                await server.remove("notes/" + noteId);
+                const taskId = utils.randomString(10);
 
-                // to force it to disappear from the tree
-                treeService.reload();
+                await server.remove(`notes/${noteId}?taskId=${taskId}&last=true`);
             }
 
             this.mapData.notes = this.mapData.notes.filter(note => note.noteId !== noteId);
