@@ -282,7 +282,7 @@ async function downloadImage(noteId, imageUrl) {
         log.info(`Download of ${imageUrl} succeeded and was saved as image note ${note.noteId}`);
     }
     catch (e) {
-        log.error(`Downoad of ${imageUrl} for note ${noteId} failed with error: ${e.message} ${e.stack}`);
+        log.error(`Download of ${imageUrl} for note ${noteId} failed with error: ${e.message} ${e.stack}`);
     }
 }
 
@@ -296,13 +296,17 @@ function replaceUrl(content, url, imageNote) {
 }
 
 async function downloadImages(noteId, content) {
-    const re = /<img.*?\ssrc=['"]([^'">]+)['"]/ig;
+    const re = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
     let match;
 
-    while (match = re.exec(content)) {
-        const url = match[1];
+    const origContent = content;
 
-        if (!url.startsWith('api/images/')) {
+    while (match = re.exec(origContent)) {
+        const url = match[1].toLowerCase();
+
+        if (!url.startsWith('api/images/')
+            // this is and exception for the web clipper's "imageId"
+            && (url.length !== 20 || url.startsWith('http'))) {
             if (url in downloadImagePromises) {
                 // download is already in progress
                 continue;
@@ -386,12 +390,19 @@ async function saveLinks(note, content) {
     const foundLinks = [];
 
     if (note.type === 'text') {
+        console.time("LINKS");
+
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
         content = findExternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
 
+        console.timeEnd("LINKS");
+        console.time("IMAGES");
+
         content = await downloadImages(note.noteId, content);
+
+        console.timeEnd("IMAGES");
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

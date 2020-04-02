@@ -114,7 +114,7 @@ async function addImagesToNote(images, note, content) {
 
             console.log(`Replacing ${imageId} with ${url}`);
 
-            rewrittenContent = rewrittenContent.replace(imageId, url);
+            rewrittenContent = utils.replaceAll(rewrittenContent, imageId, url);
         }
     }
 

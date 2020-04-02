@@ -166,6 +166,12 @@ function isStringNote(type, mime) {
         || STRING_MIME_TYPES.includes(mime);
 }
 
+function replaceAll(string, replaceWhat, replaceWith) {
+    const escapedWhat = replaceWhat.replace(/([\/,!\\^${}\[\]().*+?|<>\-&])/g, "\\$&");
+
+    return string.replace(new RegExp(escapedWhat, "g"), replaceWith);
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -191,5 +197,6 @@ module.exports = {
     crash,
     sanitizeFilenameForHeader,
     getContentDisposition,
-    isStringNote
+    isStringNote,
+    replaceAll
 };

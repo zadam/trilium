@@ -559,7 +559,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         if (activeNotePath) {
             let node = await this.expandToNote(activeNotePath);
 
-            if (node.data.noteId !== activeNoteId) {
+            if (node && node.data.noteId !== activeNoteId) {
                 // if the active note has been moved elsewhere then it won't be found by the path
                 // so we switch to the alternative of trying to find it by noteId
                 const notesById = this.getNodesByNoteId(activeNoteId);
