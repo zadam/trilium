@@ -266,12 +266,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showError = toastService.showError;
 
     /**
-     * Refresh tree
-     *
      * @method
-     * @returns {Promise<void>}
+     * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
      */
-    this.refreshTree = treeService.reload;
+    this.refreshTree = () => {};
 
     /**
      * Create note link (jQuery object) for given note.
