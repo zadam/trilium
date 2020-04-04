@@ -10,6 +10,7 @@ const cls = require('./cls');
 const syncTableService = require('./sync_table');
 const optionsService = require('./options');
 const Branch = require('../entities/branch');
+const dateUtils = require('./date_utils');
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -289,8 +290,22 @@ class ConsistencyChecks {
             async ({noteId}) => {
                 if (this.autoFix) {
                     const note = await repository.getNote(noteId);
-                    // empty string might be wrong choice for some note types (and protected notes) but it's a best guess
-                    await note.setContent(note.isErased ? null : '');
+
+                    if (note.isProtected) {
+                        // this is wrong for non-erased notes but we cannot set a valid value for protected notes
+                        await sql.upsert("note_contents", "noteId", {
+                            noteId: noteId,
+                            content: null,
+                            hash: "consistency_checks",
+                            utcDateModified: dateUtils.utcNowDateTime()
+                        });
+
+                        await syncTableService.addNoteContentSync(noteId);
+                    }
+                    else {
+                        // empty string might be wrong choice for some note types but it's a best guess
+                        await note.setContent(note.isErased ? null : '');
+                    }
 
                     logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
                 } else {
@@ -303,11 +318,12 @@ class ConsistencyChecks {
                     FROM notes
                              JOIN note_contents USING (noteId)
                     WHERE isDeleted = 0
+                      AND isProtected = 0
                       AND content IS NULL`,
             async ({noteId}) => {
                 if (this.autoFix) {
                     const note = await repository.getNote(noteId);
-                    // empty string might be wrong choice for some note types (and protected notes) but it's a best guess
+                    // empty string might be wrong choice for some note types but it's a best guess
                     await note.setContent('');
 
                     logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
@@ -367,7 +383,8 @@ class ConsistencyChecks {
                     SELECT note_revisions.noteRevisionId
                     FROM note_revisions
                              LEFT JOIN note_revision_contents USING (noteRevisionId)
-                    WHERE note_revision_contents.noteRevisionId IS NULL`,
+                    WHERE note_revision_contents.noteRevisionId IS NULL
+                      AND note_revisions.isProtected = 0`,
             async ({noteRevisionId}) => {
                 if (this.autoFix) {
                     const noteRevision = await repository.getNoteRevision(noteRevisionId);
