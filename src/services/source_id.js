@@ -30,13 +30,19 @@ async function generateSourceId() {
 }
 
 async function refreshSourceIds() {
-    allSourceIds = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY utcDateCreated DESC");
+    const sourceIdsArr = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY utcDateCreated DESC");
+
+    allSourceIds = {};
+
+    for (const sourceId of sourceIdsArr) {
+        allSourceIds[sourceId] = true;
+    }
 }
 
-let allSourceIds = [];
+let allSourceIds = {};
 
 function isLocalSourceId(srcId) {
-    return allSourceIds.includes(srcId);
+    return !!allSourceIds[srcId];
 }
 
 const currentSourceId = createSourceId();

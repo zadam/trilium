@@ -130,7 +130,7 @@ async function pullSync(syncContext) {
         const lastSyncedPull = await getLastSyncedPull();
         const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
-        const startDate = new Date();
+        const startDate = Date.now();
 
         const resp = await syncRequest(syncContext, 'GET', changesUri);
         stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
@@ -145,8 +145,7 @@ async function pullSync(syncContext) {
             break;
         }
 
-        log.info("Pulled " + rows.length + " changes from " + changesUri + " in "
-            + (Date.now() - startDate.getTime()) + "ms");
+        log.info(`Pulled ${rows.length} changes from ${changesUri} in ${Date.now() - startDate}ms`);
 
         for (const {sync, entity} of rows) {
             if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
@@ -156,7 +155,13 @@ async function pullSync(syncContext) {
                     appliedPulls++;
                 }
 
-                await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
+                const startTime = Date.now();
+
+                const updated = await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
+
+                if (updated) {
+                    log.info(`Updated ${sync.entityName} ${sync.entityId} in ${Date.now() - startTime}ms`);
+                }
             }
 
             stats.outstandingPulls = resp.maxSyncId - sync.id;

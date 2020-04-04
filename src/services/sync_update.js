@@ -6,40 +6,41 @@ const eventService = require('./events');
 async function updateEntity(sync, entity, sourceId) {
     // can be undefined for options with isSynced=false
     if (!entity) {
-        return;
+        return false;
     }
 
     const {entityName} = sync;
+    let updated;
 
     if (entityName === 'notes') {
-        await updateNote(entity, sourceId);
+        updated = await updateNote(entity, sourceId);
     }
     else if (entityName === 'note_contents') {
-        await updateNoteContent(entity, sourceId);
+        updated = await updateNoteContent(entity, sourceId);
     }
     else if (entityName === 'branches') {
-        await updateBranch(entity, sourceId);
+        updated = await updateBranch(entity, sourceId);
     }
     else if (entityName === 'note_revisions') {
-        await updateNoteRevision(entity, sourceId);
+        updated = await updateNoteRevision(entity, sourceId);
     }
     else if (entityName === 'note_revision_contents') {
-        await updateNoteRevisionContent(entity, sourceId);
+        updated = await updateNoteRevisionContent(entity, sourceId);
     }
     else if (entityName === 'note_reordering') {
-        await updateNoteReordering(sync.entityId, entity, sourceId);
+        updated = await updateNoteReordering(sync.entityId, entity, sourceId);
     }
     else if (entityName === 'options') {
-        await updateOptions(entity, sourceId);
+        updated = await updateOptions(entity, sourceId);
     }
     else if (entityName === 'recent_notes') {
-        await updateRecentNotes(entity, sourceId);
+        updated = await updateRecentNotes(entity, sourceId);
     }
     else if (entityName === 'attributes') {
-        await updateAttribute(entity, sourceId);
+        updated = await updateAttribute(entity, sourceId);
     }
     else if (entityName === 'api_tokens') {
-        await updateApiToken(entity, sourceId);
+        updated = await updateApiToken(entity, sourceId);
     }
     else {
         throw new Error(`Unrecognized entity type ${entityName}`);
@@ -47,12 +48,15 @@ async function updateEntity(sync, entity, sourceId) {
 
     // currently making exception for protected notes and note revisions because here
     // the title and content are not available decrypted as listeners would expect
-    if (!['notes', 'note_contents', 'note_revisions', 'note_revision_contents'].includes(entityName) || !entity.isProtected) {
+    if (updated &&
+        (!['notes', 'note_contents', 'note_revisions', 'note_revision_contents'].includes(entityName) || !entity.isProtected)) {
         await eventService.emit(eventService.ENTITY_SYNCED, {
             entityName,
             entity
         });
     }
+
+    return updated;
 }
 
 function shouldWeUpdateEntity(localEntity, remoteEntity) {
@@ -85,8 +89,10 @@ async function updateNote(remoteEntity, sourceId) {
             await syncTableService.addNoteSync(remoteEntity.noteId, sourceId);
         });
 
-        log.info("Update/sync note " + remoteEntity.noteId);
+        return true;
     }
+
+    return false;
 }
 
 async function updateNoteContent(remoteEntity, sourceId) {
@@ -101,15 +107,17 @@ async function updateNoteContent(remoteEntity, sourceId) {
             await syncTableService.addNoteContentSync(remoteEntity.noteId, sourceId);
         });
 
-        log.info("Update/sync note content for noteId=" + remoteEntity.noteId);
+        return true;
     }
+
+    return false;
 }
 
 async function updateBranch(remoteEntity, sourceId) {
     const localEntity = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [remoteEntity.branchId]);
 
-    await sql.transactional(async () => {
-        if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+    if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+        await sql.transactional(async () => {
             // isExpanded is not synced unless it's a new branch instance
             // otherwise in case of full new sync we'll get all branches (even root) collapsed.
             if (localEntity) {
@@ -119,10 +127,12 @@ async function updateBranch(remoteEntity, sourceId) {
             await sql.replace('branches', remoteEntity);
 
             await syncTableService.addBranchSync(remoteEntity.branchId, sourceId);
+        });
 
-            log.info("Update/sync branch " + remoteEntity.branchId);
-        }
-    });
+        return true;
+    }
+
+    return false;
 }
 
 async function updateNoteRevision(remoteEntity, sourceId) {
@@ -142,17 +152,19 @@ async function updateNoteRevision(remoteEntity, sourceId) {
 async function updateNoteRevisionContent(remoteEntity, sourceId) {
     const localEntity = await sql.getRowOrNull("SELECT * FROM note_revision_contents WHERE noteRevisionId = ?", [remoteEntity.noteRevisionId]);
 
-    await sql.transactional(async () => {
-        if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+    if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+        await sql.transactional(async () => {
             remoteEntity.content = remoteEntity.content === null ? null : Buffer.from(remoteEntity.content, 'base64');
 
             await sql.replace('note_revision_contents', remoteEntity);
 
             await syncTableService.addNoteRevisionContentSync(remoteEntity.noteRevisionId, sourceId);
+        });
 
-            log.info("Update/sync note revision content " + remoteEntity.noteRevisionId);
-        }
-    });
+        return true;
+    }
+
+    return false;
 }
 
 async function updateNoteReordering(entityId, remote, sourceId) {
@@ -163,6 +175,8 @@ async function updateNoteReordering(entityId, remote, sourceId) {
 
         await syncTableService.addNoteReorderingSync(entityId, sourceId);
     });
+
+    return true;
 }
 
 async function updateOptions(remoteEntity, sourceId) {
@@ -172,13 +186,17 @@ async function updateOptions(remoteEntity, sourceId) {
         return;
     }
 
-    await sql.transactional(async () => {
-        if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+    if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+        await sql.transactional(async () => {
             await sql.replace('options', remoteEntity);
 
             await syncTableService.addOptionsSync(remoteEntity.name, sourceId, true);
-        }
-    });
+        });
+
+        return true;
+    }
+
+    return false;
 }
 
 async function updateRecentNotes(remoteEntity, sourceId) {
@@ -190,7 +208,11 @@ async function updateRecentNotes(remoteEntity, sourceId) {
 
             await syncTableService.addRecentNoteSync(remoteEntity.noteId, sourceId);
         });
+
+        return true;
     }
+
+    return false;
 }
 
 async function updateAttribute(remoteEntity, sourceId) {
@@ -203,8 +225,10 @@ async function updateAttribute(remoteEntity, sourceId) {
             await syncTableService.addAttributeSync(remoteEntity.attributeId, sourceId);
         });
 
-        log.info("Update/sync attribute " + remoteEntity.attributeId);
+        return true;
     }
+
+    return false;
 }
 
 async function updateApiToken(entity, sourceId) {
@@ -217,8 +241,10 @@ async function updateApiToken(entity, sourceId) {
             await syncTableService.addApiTokenSync(entity.apiTokenId, sourceId);
         });
 
-        log.info("Update/sync API token " + entity.apiTokenId);
+        return true;
     }
+
+    return false;
 }
 
 module.exports = {

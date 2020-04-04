@@ -114,14 +114,22 @@ async function forceNoteSync(req) {
 }
 
 async function getChanged(req) {
+    const startTime = Date.now();
+
     const lastSyncId = parseInt(req.query.lastSyncId);
 
     const syncs = await sql.getRows("SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastSyncId]);
 
-    return {
+    const ret = {
         syncs: await syncService.getSyncRecords(syncs),
         maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
     };
+
+    if (ret.syncs.length > 0) {
+        log.info(`Returning ${ret.syncs.length} in ${Date.now() - startTime}ms`);
+    }
+
+    return ret;
 }
 
 async function update(req) {

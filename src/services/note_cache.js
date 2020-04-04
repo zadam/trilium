@@ -447,7 +447,7 @@ async function findSimilarNotes(title) {
     return results.length > 50 ? results.slice(0, 50) : results;
 }
 
-eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED], async ({entityName, entity}) => {
+eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  async ({entityName, entity}) => {
     // note that entity can also be just POJO without methods if coming from sync
 
     if (!loaded) {
@@ -478,8 +478,9 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
         const branch = entity;
 
         if (branch.isDeleted) {
-            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
-            childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId);
+            if (branch.noteId in childToParent) {
+                childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId);
+            }
 
             delete prefixes[branch.noteId + '-' + branch.parentNoteId];
             delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
