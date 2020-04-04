@@ -33,19 +33,25 @@ async function addEntitySync(entityName, entityId, sourceId, isSynced) {
 }
 
 async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
-    const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
+    const startTime = Date.now();
 
-    for (const entityId of entityIds) {
-        if (entityName === 'options') {
-            const isSynced = await sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
+    await sql.transactional(async () => {
+        const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
 
-            if (!isSynced) {
-                continue;
+        for (const entityId of entityIds) {
+            if (entityName === 'options') {
+                const isSynced = await sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
+
+                if (!isSynced) {
+                    continue;
+                }
             }
-        }
 
-        await insertEntitySync(entityName, entityId, 'content-check', true);
-    }
+            await insertEntitySync(entityName, entityId, 'content-check', true);
+        }
+    });
+
+    log.info(`Added sector ${sector} of ${entityName} to sync queue in ${Date.now() - startTime}ms.`);
 }
 
 async function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {

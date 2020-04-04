@@ -145,29 +145,25 @@ async function pullSync(syncContext) {
             break;
         }
 
-        log.info(`Pulled ${rows.length} changes from ${changesUri} in ${Date.now() - startDate}ms`);
+        await sql.transactional(async () => {
+            for (const {sync, entity} of rows) {
+                if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
+                    if (appliedPulls === 0 && sync.entity !== 'recent_notes') { // send only for first
+                        ws.syncPullInProgress();
 
-        for (const {sync, entity} of rows) {
-            if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
-                if (appliedPulls === 0 && sync.entity !== 'recent_notes') { // send only for first
-                    ws.syncPullInProgress();
+                        appliedPulls++;
+                    }
 
-                    appliedPulls++;
+                    await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
                 }
 
-                const startTime = Date.now();
-
-                const updated = await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
-
-                if (updated) {
-                    log.info(`Updated ${sync.entityName} ${sync.entityId} in ${Date.now() - startTime}ms`);
-                }
+                stats.outstandingPulls = resp.maxSyncId - sync.id;
             }
 
-            stats.outstandingPulls = resp.maxSyncId - sync.id;
-        }
+            await setLastSyncedPull(rows[rows.length - 1].sync.id);
+        });
 
-        await setLastSyncedPull(rows[rows.length - 1].sync.id);
+        log.info(`Pulled and updated ${rows.length} changes from ${changesUri} in ${Date.now() - startDate}ms`);
     }
 
     if (appliedPulls > 0) {
@@ -257,8 +253,6 @@ async function checkContentHash(syncContext) {
         await syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
 
         await syncRequest(syncContext, 'POST', `/api/sync/queue-sector/${entityName}/${sector}`);
-
-        log.info(`Added sector ${sector} of ${entityName} to sync queue.`);
     }
 
     return failedChecks.length > 0;

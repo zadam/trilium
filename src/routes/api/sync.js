@@ -126,7 +126,7 @@ async function getChanged(req) {
     };
 
     if (ret.syncs.length > 0) {
-        log.info(`Returning ${ret.syncs.length} in ${Date.now() - startTime}ms`);
+        log.info(`Returning ${ret.syncs.length} sync records in ${Date.now() - startTime}ms`);
     }
 
     return ret;

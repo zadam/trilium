@@ -18,6 +18,9 @@ async function createConnection() {
 const dbConnection = new Promise(async (resolve, reject) => {
     // no need to create new connection now since DB stays the same all the time
     const db = await createConnection();
+
+    db.run('PRAGMA journal_mode = WAL;');
+
     sql.setDbConnection(db);
 
     resolve();
