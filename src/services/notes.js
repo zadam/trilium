@@ -390,19 +390,12 @@ async function saveLinks(note, content) {
     const foundLinks = [];
 
     if (note.type === 'text') {
-        console.time("LINKS");
-
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
         content = findExternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
 
-        console.timeEnd("LINKS");
-        console.time("IMAGES");
-
         content = await downloadImages(note.noteId, content);
-
-        console.timeEnd("IMAGES");
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);
