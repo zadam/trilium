@@ -1,6 +1,7 @@
 import treeService from "./tree.js";
 import linkService from "./link.js";
 import treeCache from "./tree_cache.js";
+import utils from "./utils.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -74,13 +75,18 @@ async function renderTooltip(note, noteComplement) {
         return '<div>Note has been deleted.</div>';
     }
 
-    const attributes = await note.getAttributes();
+    const attributes = note.getAttributes();
 
     let content = '';
-    const promoted = attributes.filter(attr =>
-        (attr.type === 'label-definition' || attr.type === 'relation-definition')
-        && !attr.name.startsWith("child:")
-        && attr.value.isPromoted);
+
+    const promoted = attributes
+        .filter(attr => attr.type === 'label-definition' || attr.type === 'relation-definition')
+        .filter(attr => !attr.name.startsWith("child:"))
+        .filter(attr => {
+            const json = attr.jsonValue;
+
+            return json && json.isPromoted;
+        });
 
     if (promoted.length > 0) {
         const $table = $("<table>").addClass("promoted-attributes-in-tooltip");
@@ -116,12 +122,12 @@ async function renderTooltip(note, noteComplement) {
         content += $table.prop('outerHTML');
     }
 
-    if (note.type === 'text') {
+    if (note.type === 'text' && !utils.isHtmlEmpty(noteComplement.content)) {
         // surround with <div> for a case when note's content is pure text (e.g. "[protected]") which
         // then fails the jquery non-empty text test
         content += '<div>' + noteComplement.content + '</div>';
     }
-    else if (note.type === 'code') {
+    else if (note.type === 'code' && noteComplement.content && noteComplement.content.trim()) {
         content += $("<pre>")
             .text(noteComplement.content)
             .prop('outerHTML');
@@ -132,10 +138,6 @@ async function renderTooltip(note, noteComplement) {
             .prop('outerHTML');
     }
     // other types of notes don't have tooltip preview
-
-    if (!$(content).text().trim() && note.type !== 'image') {
-        return "";
-    }
 
     return content;
 }

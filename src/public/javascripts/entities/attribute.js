@@ -27,6 +27,15 @@ class Attribute {
         return await this.treeCache.getNote(this.noteId);
     }
 
+    get jsonValue() {
+        try {
+            return JSON.parse(this.value);
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
     get toString() {
         return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name}, value=${this.value})`;
     }

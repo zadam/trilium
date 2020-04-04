@@ -40,10 +40,14 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
 
         const attributes = note.getAttributes();
 
-        const promoted = attributes.filter(attr =>
-            (attr.type === 'label-definition' || attr.type === 'relation-definition')
-            && !attr.name.startsWith("child:")
-            && attr.value.isPromoted);
+        const promoted = attributes
+            .filter(attr => attr.type === 'label-definition' || attr.type === 'relation-definition')
+            .filter(attr => !attr.name.startsWith("child:"))
+            .filter(attr => {
+                const json = attr.jsonValue;
+
+                return json && json.isPromoted;
+            });
 
         const hidePromotedAttributes = attributes.some(attr => attr.type === 'label' && attr.name === 'hidePromotedAttributes');
 
@@ -89,7 +93,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     }
 
     async createPromotedAttributeRow(definitionAttr, valueAttr) {
-        const definition = definitionAttr.value;
+        const definition = definitionAttr.jsonValue;
         const $tr = $("<tr>");
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")

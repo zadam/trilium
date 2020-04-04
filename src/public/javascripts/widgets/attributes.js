@@ -34,7 +34,7 @@ export default class AttributesWidget extends CollapsibleWidget {
             .attr("href", "javascript:")
             .text("+show inherited")
             .on('click', async () => {
-                const attributes = await note.getAttributes();
+                const attributes = note.getAttributes();
                 const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.noteId);
 
                 if (inheritedAttributes.length === 0) {
