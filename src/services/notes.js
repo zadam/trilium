@@ -122,9 +122,9 @@ async function createNewNote(params) {
         isExpanded: !!params.isExpanded
     }).save();
 
-    await copyChildAttributes(parentNote, note);
-
     await scanForLinks(note);
+
+    await copyChildAttributes(parentNote, note);
 
     await triggerNoteTitleChanged(note);
     await triggerChildNoteCreated(note, parentNote);
