@@ -55,7 +55,9 @@ async function addClipping(req) {
 
     const rewrittenContent = await addImagesToNote(images, clippingNote, content);
 
-    await clippingNote.setContent(await clippingNote.getContent() + '<p>' + rewrittenContent + '</p>');
+    const existingContent = await clippingNote.getContent();
+
+    await clippingNote.setContent(existingContent + (existingContent.trim() ? "<br/>" : "") + rewrittenContent);
 
     return {
         noteId: clippingNote.noteId

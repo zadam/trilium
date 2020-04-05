@@ -419,12 +419,14 @@ async function saveLinks(note, content) {
             && existingLink.name === foundLink.name);
 
         if (!existingLink) {
-            await new Attribute({
+            const newLink = await new Attribute({
                 noteId: note.noteId,
                 type: foundLink.name === 'externalLink' ? 'label' : 'relation',
                 name: foundLink.name,
                 value: foundLink.value,
             }).save();
+
+            existingLinks.push(newLink);
         }
         else if (existingLink.isDeleted) {
             existingLink.isDeleted = false;

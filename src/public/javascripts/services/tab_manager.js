@@ -204,7 +204,8 @@ export default class TabManager extends Component {
     async activateOrOpenNote(noteId) {
         for (const tabContext of this.getTabContexts()) {
             if (tabContext.note && tabContext.note.noteId === noteId) {
-                await tabContext.activate();
+                this.activateTab(tabContext.tabId);
+
                 return;
             }
         }
