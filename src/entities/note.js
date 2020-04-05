@@ -811,11 +811,9 @@ class Note extends Entity {
             SELECT * 
             FROM attributes 
             WHERE noteId = ? AND 
-                  isDeleted = 0 AND 
-                  ((type = 'relation' AND 
-                    name IN ('internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'))
-                  OR
-                   (type = 'label' AND name = 'externalLink'))`, [this.noteId]);
+                  isDeleted = 0 AND
+                  type = 'relation' AND
+                  name IN ('internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink')`, [this.noteId]);
     }
 
     /**

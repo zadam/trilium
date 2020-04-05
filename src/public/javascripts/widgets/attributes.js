@@ -69,19 +69,7 @@ export default class AttributesWidget extends CollapsibleWidget {
     async renderAttributes(attributes, $container) {
         for (const attribute of attributes) {
             if (attribute.type === 'label') {
-                if (attribute.name === 'externalLink') {
-                    $container.append('@' + attribute.name + "=");
-                    $container.append(
-                        $('<a>')
-                            .text(attribute.value)
-                            .attr('href', attribute.value)
-                            .addClass('external')
-                    );
-                    $container.append(" ");
-                }
-                else {
-                    $container.append(utils.formatLabel(attribute) + " ");
-                }
+                $container.append(utils.formatLabel(attribute) + " ");
             } else if (attribute.type === 'relation') {
                 if (attribute.value) {
                     $container.append('@' + attribute.name + "=");
