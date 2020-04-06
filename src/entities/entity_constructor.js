@@ -6,6 +6,7 @@ const RecentNote = require('../entities/recent_note');
 const ApiToken = require('../entities/api_token');
 const Option = require('../entities/option');
 const repository = require('../services/repository');
+const cls = require('./cls');
 
 const ENTITY_NAME_TO_ENTITY = {
     "attributes": Attribute,
@@ -32,9 +33,13 @@ function createEntityFromRow(row) {
 
     if (row.attributeId) {
         entity = new Attribute(row);
+
+        cls.setEntityToCache('attributes', row.attributeId, entity);
     }
     else if (row.noteRevisionId) {
         entity = new NoteRevision(row);
+
+        cls.setEntityToCache('note_revisions', row.noteRevisionId, entity);
     }
     else if (row.branchId && row.notePath) {
         entity = new RecentNote(row);
@@ -44,9 +49,13 @@ function createEntityFromRow(row) {
     }
     else if (row.branchId) {
         entity = new Branch(row);
+
+        cls.setEntityToCache('branches', row.branchId, entity);
     }
     else if (row.noteId) {
         entity = new Note(row);
+
+        cls.setEntityToCache('notes', row.noteId, entity);
     }
     else if (row.name) {
         entity = new Option(row);
