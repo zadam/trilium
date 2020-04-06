@@ -317,6 +317,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                     return match;
                 }
             });
+
+            const includeNoteLinks = (noteMeta.attributes || [])
+                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
+
+            for (const link of includeNoteLinks) {
+                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+            }
         }
 
         if (type === 'relation-map' && noteMeta) {
