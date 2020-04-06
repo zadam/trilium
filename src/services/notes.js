@@ -544,16 +544,22 @@ async function deleteBranch(branch, deleteId, taskContext) {
         note.deleteId = deleteId;
         await note.save();
 
+        console.log("Deleting note", note.noteId);
+
         for (const attribute of await note.getOwnedAttributes()) {
             attribute.isDeleted = true;
             attribute.deleteId = deleteId;
             await attribute.save();
+
+            console.log("Deleting note's", note.noteId, "attribute", attribute.attributeId);
         }
 
         for (const relation of await note.getTargetRelations()) {
             relation.isDeleted = true;
             relation.deleteId = deleteId;
             await relation.save();
+
+            console.log("Deleting note's", note.noteId, "target relation", relation.attributeId);
         }
 
         return true;

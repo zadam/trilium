@@ -37,9 +37,21 @@ async function getEntity(query, params = []) {
     return entityConstructor.createEntityFromRow(row);
 }
 
+async function getCachedEntity(entityName, entityId, query) {
+    let entity = cls.getEntityFromCache(entityName, entityId);
+
+    if (!entity) {
+        entity = await getEntity(query, [entityId]);
+
+        cls.setEntityToCache(entityName, entityId, entity);
+    }
+
+    return entity;
+}
+
 /** @returns {Promise<Note|null>} */
 async function getNote(noteId) {
-    return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    return await getCachedEntity('notes', noteId, "SELECT * FROM notes WHERE noteId = ?");
 }
 
 /** @returns {Promise<Note[]>} */
@@ -59,17 +71,17 @@ async function getNotes(noteIds) {
 
 /** @returns {Promise<NoteRevision|null>} */
 async function getNoteRevision(noteRevisionId) {
-    return await getEntity("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
+    return await getCachedEntity('note_revisions', noteRevisionId, "SELECT * FROM note_revisions WHERE noteRevisionId = ?");
 }
 
 /** @returns {Promise<Branch|null>} */
 async function getBranch(branchId) {
-    return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
+    return await getCachedEntity('branches', branchId, "SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
 /** @returns {Promise<Attribute|null>} */
 async function getAttribute(attributeId) {
-    return await getEntity("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]);
+    return await getCachedEntity('attributes', attributeId, "SELECT * FROM attributes WHERE attributeId = ?");
 }
 
 /** @returns {Promise<Option|null>} */

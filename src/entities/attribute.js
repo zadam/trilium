@@ -45,11 +45,7 @@ class Attribute extends Entity {
      * @returns {Promise<Note|null>}
      */
     async getNote() {
-        if (!this.__note) {
-            this.__note = await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
-        }
-
-        return this.__note;
+        return await repository.getNote(this.noteId);
     }
 
     /**
@@ -64,11 +60,7 @@ class Attribute extends Entity {
             return null;
         }
 
-        if (!this.__targetNote) {
-            this.__targetNote = await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.value]);
-        }
-
-        return this.__targetNote;
+        return await repository.getNote(this.value);
     }
 
     /**

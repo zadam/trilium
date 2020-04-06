@@ -37,6 +37,14 @@ function reset() {
     clsHooked.reset();
 }
 
+function getEntityFromCache(entityName, entityId) {
+    return namespace.get(entityName + '-' + entityId);
+}
+
+function setEntityToCache(entityName, entityId, entity) {
+    return namespace.set(entityName + '-' + entityId, entity);
+}
+
 module.exports = {
     init,
     wrap,
@@ -46,5 +54,7 @@ module.exports = {
     isEntityEventsDisabled,
     reset,
     getSyncRows,
-    addSyncRow
+    addSyncRow,
+    getEntityFromCache,
+    setEntityToCache
 };

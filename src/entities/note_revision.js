@@ -48,7 +48,7 @@ class NoteRevision extends Entity {
     }
 
     async getNote() {
-        return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
+        return await repository.getNote(this.noteId);
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
