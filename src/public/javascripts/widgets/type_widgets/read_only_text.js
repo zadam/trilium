@@ -24,16 +24,16 @@ const TPL = `
     }
     </style>
 
-    <div class="alert alert-warning" title="This note is long so for performance reasons only text preview is shown by default.">
-        Text preview is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
+    <div class="alert alert-warning">
+        Read only text view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
     </div>
 
     <div class="note-detail-text-preview-content"></div>
 </div>
 `;
 
-export default class TextPreviewTypeWidget extends TypeWidget {
-    static getType() { return "text-preview"; }
+export default class ReadOnlyTextTypeWidget extends TypeWidget {
+    static getType() { return "read-only-text"; }
 
     doRender() {
         this.$widget = $(TPL);

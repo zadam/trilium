@@ -6,7 +6,7 @@ const RecentNote = require('../entities/recent_note');
 const ApiToken = require('../entities/api_token');
 const Option = require('../entities/option');
 const repository = require('../services/repository');
-const cls = require('./cls');
+const cls = require('../services/cls');
 
 const ENTITY_NAME_TO_ENTITY = {
     "attributes": Attribute,

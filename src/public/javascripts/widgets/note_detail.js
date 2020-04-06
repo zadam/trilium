@@ -18,7 +18,7 @@ import appContext from "../services/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import noteCreateService from "../services/note_create.js";
 import DeletedTypeWidget from "./type_widgets/deleted.js";
-import TextPreviewTypeWidget from "./type_widgets/text_preview.js";
+import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 
 const TPL = `
 <div class="note-detail">
@@ -37,7 +37,7 @@ const typeWidgetClasses = {
     'empty': EmptyTypeWidget,
     'deleted': DeletedTypeWidget,
     'text': TextTypeWidget,
-    'text-preview': TextPreviewTypeWidget,
+    'read-only-text': ReadOnlyTextTypeWidget,
     'code': CodeTypeWidget,
     'file': FileTypeWidget,
     'image': ImageTypeWidget,
@@ -181,8 +181,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (type === 'text' && !this.tabContext.textPreviewDisabled) {
             const noteComplement = await this.tabContext.getNoteComplement();
 
-            if (noteComplement.content && noteComplement.content.length > 10000) {
-                type = 'text-preview';
+            if (note.hasLabel('readOnly') ||
+                (noteComplement.content && noteComplement.content.length > 10000)) {
+                type = 'read-only-text';
             }
         }
 
