@@ -8,6 +8,7 @@ import keyboardActionService from "../../services/keyboard_actions.js";
 import treeCache from "../../services/tree_cache.js";
 import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
+import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -78,32 +79,18 @@ const TPL = `
 </div>
 `;
 
-export default class EditableTextTypeWidget extends TypeWidget {
+export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     static getType() { return "editable-text"; }
 
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-text-editor');
 
-        this.$widget.on("dblclick", "img", e => {
-            const $img = $(e.target);
-            const src = $img.prop("src");
-
-            const match = src.match(/\/api\/images\/([A-Za-z0-9]+)\//);
-
-            if (match) {
-                const noteId = match[1];
-
-                appContext.tabManager.getActiveTabContext().setNote(noteId);
-            }
-            else {
-                window.open(src, '_blank');
-            }
-        });
-
         this.initialized = this.initEditor();
 
         keyboardActionService.setupActionsForElement('text-detail', this.$widget, this);
+
+        super.doRender();
 
         return this.$widget;
     }
@@ -248,20 +235,6 @@ export default class EditableTextTypeWidget extends TypeWidget {
 
     addIncludeNoteToTextCommand() {
         import("../../dialogs/include_note.js").then(d => d.showDialog(this));
-    }
-
-    async loadIncludedNote(noteId, el) {
-        const note = await treeCache.getNote(noteId);
-
-        if (note) {
-            $(el).empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
-                showTooltip: false
-            })));
-
-            const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
-
-            $(el).append(renderedContent);
-        }
     }
 
     addIncludeNote(noteId) {

@@ -1,25 +1,25 @@
-import TypeWidget from "./type_widget.js";
-import appContext from "../../services/app_context.js";
 import treeCache from "../../services/tree_cache.js";
+import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
+import treeService from "../../services/tree.js";
 
 const TPL = `
-<div class="note-detail-text-preview note-detail-printable">
+<div class="note-detail-readonly-text note-detail-printable">
     <style>
-    .note-detail-text-preview h1 { font-size: 2.0em; }
-    .note-detail-text-preview h2 { font-size: 1.8em; }
-    .note-detail-text-preview h3 { font-size: 1.6em; }
-    .note-detail-text-preview h4 { font-size: 1.4em; }
-    .note-detail-text-preview h5 { font-size: 1.2em; }
-    .note-detail-text-preview h6 { font-size: 1.1em; }
+    .note-detail-readonly-text h1 { font-size: 2.0em; }
+    .note-detail-readonly-text h2 { font-size: 1.8em; }
+    .note-detail-readonly-text h3 { font-size: 1.6em; }
+    .note-detail-readonly-text h4 { font-size: 1.4em; }
+    .note-detail-readonly-text h5 { font-size: 1.2em; }
+    .note-detail-readonly-text h6 { font-size: 1.1em; }
     
-    .note-detail-text-preview {
-        overflow: auto;
+    .note-detail-readonly-text {
+        overflow: auto;y 
         height: 100%;
         padding: 10px;
         font-family: var(--detail-text-font-family);
     }
         
-    .note-detail-text-preview p:first-child, .note-detail-text::before {
+    .note-detail-readonly-text p:first-child, .note-detail-text::before {
         margin-top: 0;
     }
     </style>
@@ -28,38 +28,25 @@ const TPL = `
         Read only text view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
     </div>
 
-    <div class="note-detail-text-preview-content"></div>
+    <div class="note-detail-readonly-text-content"></div>
 </div>
 `;
 
-export default class ReadOnlyTextTypeWidget extends TypeWidget {
+export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
     static getType() { return "read-only-text"; }
 
     doRender() {
         this.$widget = $(TPL);
-        this.$content = this.$widget.find('.note-detail-text-preview-content');
 
-        this.$widget.on("dblclick", "img", e => {
-            const $img = $(e.target);
-            const src = $img.prop("src");
-
-            const match = src.match(/\/api\/images\/([A-Za-z0-9]+)\//);
-
-            if (match) {
-                const noteId = match[1];
-
-                appContext.tabManager.getActiveTabContext().setNote(noteId);
-            }
-            else {
-                window.open(src, '_blank');
-            }
-        });
+        this.$content = this.$widget.find('.note-detail-readonly-text-content');
 
         this.$widget.find('a.edit-note').on('click', () => {
             this.tabContext.textPreviewDisabled = true;
 
             this.triggerEvent('textPreviewDisabled', {tabContext: this.tabContext});
         });
+
+        super.doRender();
 
         return this.$widget;
     }
@@ -76,5 +63,18 @@ export default class ReadOnlyTextTypeWidget extends TypeWidget {
         const noteComplement = await treeCache.getNoteComplement(note.noteId);
 
         this.$content.html(noteComplement.content);
+
+        this.$content.find("a.reference-link").each(async (_, el) => {
+            const notePath = $(el).attr('href');
+            const noteId = treeService.getNoteIdFromNotePath(notePath);
+
+            this.loadReferenceLinkTitle(noteId, $(el));
+        });
+
+        this.$content.find("section").each(async (_, el) => {
+            const noteId = $(el).attr('data-note-id');
+
+            this.loadIncludedNote(noteId, $(el));
+        });
     }
 }
