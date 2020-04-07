@@ -56,7 +56,7 @@ import SimilarNotesWidget from "./widgets/similar_notes.js";
 import WhatLinksHereWidget from "./widgets/what_links_here.js";
 import SidePaneToggles from "./widgets/side_pane_toggles.js";
 import EmptyTypeWidget from "./widgets/type_widgets/empty.js";
-import TextTypeWidget from "./widgets/type_widgets/text.js";
+import TextTypeWidget from "./widgets/type_widgets/editable_text.js";
 import CodeTypeWidget from "./widgets/type_widgets/code.js";
 import FileTypeWidget from "./widgets/type_widgets/file.js";
 import ImageTypeWidget from "./widgets/type_widgets/image.js";

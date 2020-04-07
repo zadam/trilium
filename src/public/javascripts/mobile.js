@@ -5,7 +5,7 @@ import noteContentRenderer from "./services/note_content_renderer.js";
 import appContext from "./services/app_context.js";
 import FlexContainer from "./widgets/flex_container.js";
 import EmptyTypeWidget from "./widgets/type_widgets/empty.js";
-import TextTypeWidget from "./widgets/type_widgets/text.js";
+import TextTypeWidget from "./widgets/type_widgets/editable_text.js";
 import CodeTypeWidget from "./widgets/type_widgets/code.js";
 import FileTypeWidget from "./widgets/type_widgets/file.js";
 import ImageTypeWidget from "./widgets/type_widgets/image.js";

@@ -78,8 +78,8 @@ const TPL = `
 </div>
 `;
 
-export default class TextTypeWidget extends TypeWidget {
-    static getType() { return "text"; }
+export default class EditableTextTypeWidget extends TypeWidget {
+    static getType() { return "editable-text"; }
 
     doRender() {
         this.$widget = $(TPL);

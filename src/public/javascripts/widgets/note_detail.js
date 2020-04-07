@@ -5,7 +5,7 @@ import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
 import EmptyTypeWidget from "./type_widgets/empty.js";
-import TextTypeWidget from "./type_widgets/text.js";
+import EditableTextTypeWidget from "./type_widgets/editable_text.js";
 import CodeTypeWidget from "./type_widgets/code.js";
 import FileTypeWidget from "./type_widgets/file.js";
 import ImageTypeWidget from "./type_widgets/image.js";
@@ -36,7 +36,7 @@ const TPL = `
 const typeWidgetClasses = {
     'empty': EmptyTypeWidget,
     'deleted': DeletedTypeWidget,
-    'text': TextTypeWidget,
+    'editable-text': EditableTextTypeWidget,
     'read-only-text': ReadOnlyTextTypeWidget,
     'code': CodeTypeWidget,
     'file': FileTypeWidget,
@@ -185,6 +185,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
                 (noteComplement.content && noteComplement.content.length > 10000)) {
                 type = 'read-only-text';
             }
+        }
+
+        if (type === 'text') {
+            type = 'editable-text';
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
