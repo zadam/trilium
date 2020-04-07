@@ -3,35 +3,84 @@ import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 
 const TPL = `
-<div class="dropdown hide-in-zen-mode">
+<div style="display: flex; flex-direction: row; padding: 10px;">
     <style>
     .note-path-list a.current {
         font-weight: bold;
     }
+    
+    .note-path-list-button {
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        margin-left: 5px;
+        position: relative;
+        top: -2px;
+    }
+    
+    .note-path-list-button::after {
+        display: none !important; // disabling the standard caret
+    }
+    
+    .current-path {
+        flex-grow: 1;
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+    }
     </style>
 
-    <button class="btn btn-sm dropdown-toggle note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="note-path-count">1 path</span>
+    <div class="current-path"></div>
 
-        <span class="caret"></span>
-    </button>
-    <ul class="note-path-list dropdown-menu" aria-labelledby="note-path-list-button">
-    </ul>
+    <div class="dropdown hide-in-zen-mode">
+        <button class="btn btn-sm dropdown-toggle note-path-list-button bx bx-caret-down" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <ul class="note-path-list dropdown-menu dropdown-menu-right" aria-labelledby="note-path-list-button">
+        </ul>
+    </div>
 </div>`;
 
 export default class NotePathsWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
-        this.$notePathList = this.$widget.find(".note-path-list");
-        this.$notePathCount = this.$widget.find(".note-path-count");
+        this.$currentPath = this.$widget.find('.current-path');
+        this.$dropdown = this.$widget.find(".dropdown");
 
-        this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
+        this.$notePathList = this.$dropdown.find(".note-path-list");
+
+        this.$dropdown.on('show.bs.dropdown', () => this.renderDropdown());
 
         return this.$widget;
     }
 
     async refreshWithNote(note, notePath) {
+        let noteIdsPath = treeService.parseNotePath(notePath);
+        noteIdsPath = noteIdsPath.slice(0, noteIdsPath.length - 1);
+
+        this.$currentPath.empty();
+
+        let parentNoteId = 'root';
+        let curPath = '';
+
+        for (let i = 0; i < noteIdsPath.length; i++) {
+            const noteId = noteIdsPath[i];
+
+            curPath += (curPath ? '/' : '') + noteId;
+
+            this.$currentPath.append(
+                $("<a>")
+                    .attr('href', '#' + curPath)
+                    .addClass('no-tooltip-preview')
+                    .text(await treeService.getNoteTitle(noteId, parentNoteId))
+            );
+
+            if (i !== noteIdsPath.length - 1) {
+                this.$currentPath.append(' / ');
+            }
+
+            parentNoteId = noteId;
+        }
+
         const pathCount = note.noteId === 'root'
             ? 1 // root doesn't have any parent, but it's still technically 1 path
             : note.getBranchIds().length;
@@ -47,7 +96,7 @@ export default class NotePathsWidget extends TabAwareWidget {
             return;
         }
 
-        const pathSegments = this.notePath.split("/");
+        const pathSegments = treeService.parseNotePath(this.notePath);
         const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
 
         for (const parentNote of this.note.getParentNotes()) {

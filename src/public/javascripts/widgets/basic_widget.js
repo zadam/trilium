@@ -55,7 +55,12 @@ class BasicWidget extends Component {
         }
 
         for (const key in this.attrs) {
-            $widget.attr(key, this.attrs[key]);
+            if (key === 'style') {
+                $widget.attr(key, $widget.attr('style') + ';' + this.attrs[key]);
+            }
+            else {
+                $widget.attr(key, this.attrs[key]);
+            }
         }
 
         for (const className of this.classes) {

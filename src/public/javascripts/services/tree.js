@@ -263,6 +263,16 @@ function getHashValueFromAddress() {
     return str.split("-");
 }
 
+function parseNotePath(notePath) {
+    let noteIds = notePath.split('/');
+
+    if (noteIds[0] !== 'root') {
+        noteIds = ['root'].concat(noteIds);
+    }
+
+    return noteIds;
+}
+
 export default {
     sortAlphabetically,
     resolveNotePath,
@@ -274,5 +284,6 @@ export default {
     getNoteIdAndParentIdFromNotePath,
     getNoteTitle,
     getNotePathTitle,
-    getHashValueFromAddress
+    getHashValueFromAddress,
+    parseNotePath
 };

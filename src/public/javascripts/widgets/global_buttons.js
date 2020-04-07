@@ -6,7 +6,6 @@ const WIDGET_TPL = `
     .global-buttons {
         display: flex;
         justify-content: space-around;
-        padding: 3px 0 3px 0;
         border: 1px solid var(--main-border-color);
         border-radius: 7px;
         margin: 3px 5px 5px 5px;
