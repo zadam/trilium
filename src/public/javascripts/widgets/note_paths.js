@@ -61,8 +61,7 @@ export default class NotePathsWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note, notePath) {
-        let noteIdsPath = treeService.parseNotePath(notePath);
-        noteIdsPath = noteIdsPath.slice(0, noteIdsPath.length - 1);
+        const noteIdsPath = treeService.parseNotePath(notePath);
 
         this.$currentPath.empty();
 
