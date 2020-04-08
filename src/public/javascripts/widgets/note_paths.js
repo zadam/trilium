@@ -1,6 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
+import hoistedNoteService from "../services/hoisted_note.js";
 
 const TPL = `
 <div class="note-paths-widget">
@@ -68,12 +69,18 @@ export default class NotePathsWidget extends TabAwareWidget {
         let parentNoteId = 'root';
         let curPath = '';
 
+        let passedHoistedNote = false;
+
         for (let i = 0; i < noteIdsPath.length; i++) {
             const noteId = noteIdsPath[i];
 
             curPath += (curPath ? '/' : '') + noteId;
 
-            if (noteId !== 'root' || noteIdsPath.length < 3) {
+            if (noteId === hoistedNoteService.getHoistedNoteId()) {
+                passedHoistedNote = true;
+            }
+
+            if (passedHoistedNote && (noteId !== hoistedNoteService.getHoistedNoteId() || noteIdsPath.length - i < 3)) {
                 this.$currentPath.append(
                     $("<a>")
                         .attr('href', '#' + curPath)

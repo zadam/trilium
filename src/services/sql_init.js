@@ -8,6 +8,7 @@ const sql = require('./sql');
 const cls = require('./cls');
 const utils = require('./utils');
 const optionService = require('./options');
+const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
 
@@ -55,7 +56,7 @@ async function isDbInitialized() {
 async function initDbConnection() {
     await cls.init(async () => {
         if (!await isDbInitialized()) {
-            log.info("DB not initialized, please visit setup page to see instructions on how to initialize Trilium.");
+            log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
 
             return;
         }

@@ -790,7 +790,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     forceNoteSyncCommand({node}) {
-        syncService.forceNoteSync(noteId);
+        syncService.forceNoteSync(node.data.noteId);
     }
 
     editNoteTitleCommand({node}) {
