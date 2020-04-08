@@ -3,8 +3,15 @@ import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 
 const TPL = `
-<div style="display: flex; flex-direction: row; padding: 10px;">
+<div class="note-paths-widget">
     <style>
+    .note-paths-widget {
+        display: flex; 
+        flex-direction: row;
+        border-bottom: 1px solid var(--main-border-color);
+        padding: 5px 10px 5px 10px;
+    }
+    
     .note-path-list a.current {
         font-weight: bold;
     }
@@ -67,29 +74,30 @@ export default class NotePathsWidget extends TabAwareWidget {
 
             curPath += (curPath ? '/' : '') + noteId;
 
-            this.$currentPath.append(
-                $("<a>")
-                    .attr('href', '#' + curPath)
-                    .addClass('no-tooltip-preview')
-                    .text(await treeService.getNoteTitle(noteId, parentNoteId))
-            );
+            if (noteId !== 'root' || noteIdsPath.length < 3) {
+                this.$currentPath.append(
+                    $("<a>")
+                        .attr('href', '#' + curPath)
+                        .addClass('no-tooltip-preview')
+                        .text(await treeService.getNoteTitle(noteId, parentNoteId))
+                );
 
-            if (i !== noteIdsPath.length - 1) {
-                this.$currentPath.append(' / ');
+                if (i !== noteIdsPath.length - 1) {
+                    this.$currentPath.append(' / ');
+                }
             }
 
             parentNoteId = noteId;
         }
-
-        const pathCount = note.noteId === 'root'
-            ? 1 // root doesn't have any parent, but it's still technically 1 path
-            : note.getBranchIds().length;
-
-        this.$notePathCount.html(pathCount + " path" + (pathCount > 1 ? "s" : ""));
     }
 
     async renderDropdown() {
         this.$notePathList.empty();
+        this.$notePathList.append(
+            $("<div>")
+                .addClass("dropdown-header")
+                .text('This note is placed into the following paths:')
+        );
 
         if (this.noteId === 'root') {
             await this.addPath('root', true);
@@ -109,7 +117,7 @@ export default class NotePathsWidget extends TabAwareWidget {
         }
 
         const cloneLink = $("<div>")
-            .addClass("dropdown-item")
+            .addClass("dropdown-header")
             .append(
                 $('<button class="btn btn-sm">')
                     .text('Clone note to new location...')
