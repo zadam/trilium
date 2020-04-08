@@ -13,7 +13,7 @@ const TPL = `
     .note-detail-readonly-text h6 { font-size: 1.1em; }
     
     .note-detail-readonly-text {
-        overflow: auto;y 
+        overflow: auto;
         height: 100%;
         padding: 10px;
         font-family: var(--detail-text-font-family);

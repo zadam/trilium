@@ -67,6 +67,8 @@ async function addClipping(req) {
 async function createNote(req) {
     const {title, content, pageUrl, images, clipType} = req.body;
 
+    log.info(`Creating clipped note from ${pageUrl}`);
+
     const clipperInbox = await getClipperInboxNote();
 
     const {note} = await noteService.createNewNote({

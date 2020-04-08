@@ -51,6 +51,8 @@ function getImageMimeFromExtension(ext) {
 }
 
 async function updateImage(noteId, uploadBuffer, originalName) {
+    log.info(`Updating image ${noteId}: ${originalName}`);
+
     const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, true);
 
     const note = await repository.getNote(noteId);
@@ -67,6 +69,8 @@ async function updateImage(noteId, uploadBuffer, originalName) {
 }
 
 async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
+    log.info(`Saving image ${originalName}`);
+
     const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, shrinkImageSwitch);
 
     const fileName = sanitizeFilename(originalName);
