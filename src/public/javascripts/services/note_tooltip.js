@@ -59,7 +59,8 @@ async function mouseEnterHandler() {
             boundary: 'window',
             title: html,
             html: true,
-            template: '<div class="tooltip note-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+            template: '<div class="tooltip note-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
+            sanitize: false
         });
 
         $(this).tooltip('show');
@@ -123,9 +124,7 @@ async function renderTooltip(note, noteComplement) {
     }
 
     if (note.type === 'text' && !utils.isHtmlEmpty(noteComplement.content)) {
-        // surround with <div> for a case when note's content is pure text (e.g. "[protected]") which
-        // then fails the jquery non-empty text test
-        content += '<div>' + noteComplement.content + '</div>';
+        content += '<div class="ck-content">' + noteComplement.content + '</div>';
     }
     else if (note.type === 'code' && noteComplement.content && noteComplement.content.trim()) {
         content += $("<pre>")

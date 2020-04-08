@@ -12,7 +12,7 @@ async function getRenderedContent(note) {
     if (type === 'text') {
         const fullNote = await server.get('notes/' + note.noteId);
 
-        $rendered = $("<div>").html(fullNote.content);
+        $rendered = $('<div class="ck-content">').html(fullNote.content);
     }
     else if (type === 'code') {
         const fullNote = await server.get('notes/' + note.noteId);

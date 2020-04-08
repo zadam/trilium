@@ -227,7 +227,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
         await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
 
         this.$widget.find('.note-detail-printable:visible').printThis({
-            header: $("<h2>").text(this.note && this.note.title).prop('outerHTML') ,
+            header: $("<h2>").text(this.note && this.note.title).prop('outerHTML'),
+            footer: "<script>document.body.className += ' ck-content';</script>",
             importCSS: false,
             loadCSS: [
                 "libraries/codemirror/codemirror.css",
