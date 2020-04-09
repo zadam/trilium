@@ -2,6 +2,7 @@ const log = require('./log');
 const dataDir = require('./data_dir');
 const fs = require('fs');
 const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
@@ -13,7 +14,10 @@ const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
 
 async function createConnection() {
-    return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
+    return await sqlite.open({
+        filename: dataDir.DOCUMENT_PATH,
+        driver: sqlite3.Database
+    });
 }
 
 const dbConnection = new Promise(async (resolve, reject) => {
