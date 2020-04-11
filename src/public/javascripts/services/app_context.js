@@ -20,11 +20,15 @@ class AppContext extends Component {
     async start() {
         await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
 
+        $("#loading-indicator").hide();
+
         this.showWidgets();
 
         this.tabManager.loadTabs();
 
-        setTimeout(() => bundleService.executeStartupBundles(), 2000);
+        if (utils.isDesktop()) {
+            setTimeout(() => bundleService.executeStartupBundles(), 2000);
+        }
     }
 
     showWidgets() {

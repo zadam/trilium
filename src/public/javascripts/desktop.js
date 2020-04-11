@@ -1,3 +1,6 @@
+import treeCache from './services/tree_cache.js';
+import options from "./services/options.js";
+import appContext from "./services/app_context.js";
 import glob from './services/glob.js';
 import link from './services/link.js';
 import ws from './services/ws.js';
@@ -14,7 +17,6 @@ import server from './services/server.js';
 import Entrypoints from './services/entrypoints.js';
 import noteTooltipService from './services/note_tooltip.js';
 import bundle from "./services/bundle.js";
-import treeCache from "./services/tree_cache.js";
 import libraryLoader from "./services/library_loader.js";
 import hoistedNoteService from './services/hoisted_note.js';
 import noteTypeService from './widgets/note_type.js';
@@ -25,9 +27,7 @@ import dateNoteService from './services/date_notes.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
-import options from "./services/options.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
-import appContext from "./services/app_context.js";
 import FlexContainer from "./widgets/flex_container.js";
 import GlobalMenuWidget from "./widgets/global_menu.js";
 import TabRowWidget from "./widgets/tab_row.js";
@@ -68,6 +68,10 @@ import BookTypeWidget from "./widgets/type_widgets/book.js";
 import contextMenu from "./services/context_menu.js";
 import DesktopLayout from "./widgets/desktop_layout.js";
 import bundleService from "./services/bundle.js";
+import NoteShort from "./entities/note_short.js"
+import NoteCompletement from "./entities/note_complement.js"
+import Branch from "./entities/branch.js"
+import Attribute from "./entities/attribute.js"
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {

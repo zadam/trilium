@@ -4,7 +4,6 @@ import utils from "../services/utils.js";
 import contextMenu from "../services/context_menu.js";
 import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
-import TreeContextMenu from "../services/tree_context_menu.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";
@@ -236,8 +235,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
-            const treeContextMenu = new TreeContextMenu(this, node);
-            treeContextMenu.show(e);
+            import("../services/tree_context_menu.js").then(({default: TreeContextMenu}) => {
+                const treeContextMenu = new TreeContextMenu(this, node);
+                treeContextMenu.show(e);
+            });
 
             return false; // blocks default browser right click menu
         });

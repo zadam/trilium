@@ -1,7 +1,6 @@
 import server from "../../services/server.js";
 import linkService from "../../services/link.js";
 import libraryLoader from "../../services/library_loader.js";
-import treeService from "../../services/tree.js";
 import contextMenu from "../../services/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
