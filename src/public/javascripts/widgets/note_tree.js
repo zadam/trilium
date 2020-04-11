@@ -134,9 +134,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         return false;
                     }
 
-                    node.setSelected(true);
-
-                    const notes = this.getSelectedNodes().map(node => ({
+                    const notes = this.getSelectedOrActiveNodes(node).map(node => ({
                         noteId: node.data.noteId,
                         title: node.title
                     }));

@@ -743,7 +743,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .include-note {
-    margin: 20px;
+    margin-bottom: 10px;
     padding: 20px;
     border-radius: 10px;
     background-color: var(--accented-background-color);
