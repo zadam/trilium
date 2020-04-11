@@ -77,7 +77,7 @@
     "yazl": "^2.5.1"
   },
   "devDependencies": {
-    "electron": "9.0.0-beta.14",
+    "electron": "9.0.0-beta.15",
     "electron-builder": "22.4.1",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.1",

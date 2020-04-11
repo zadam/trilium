@@ -20,6 +20,14 @@ export async function showDialog(widget) {
     updateTitleFormGroupVisibility();
     $addLinkTitleSettings.find('input[type=radio]').on('change', updateTitleFormGroupVisibility);
 
+    // with selection hyper link is implied
+    if (textTypeWidget.hasSelection()) {
+        $addLinkTitleSettings.find("input[value='hyper-link']").prop("checked", true);
+    }
+    else {
+        $addLinkTitleSettings.find("input[value='reference-link']").prop("checked", true);
+    }
+
     utils.openDialog($dialog);
 
     $autoComplete.val('').trigger('focus');
