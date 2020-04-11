@@ -237,12 +237,13 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         import("../../dialogs/include_note.js").then(d => d.showDialog(this));
     }
 
-    addIncludeNote(noteId) {
+    addIncludeNote(noteId, boxSize) {
         this.textEditor.model.change( writer => {
             // Insert <includeNote>*</includeNote> at the current selection position
             // in a way that will result in creating a valid model structure
             this.textEditor.model.insertContent(writer.createElement('includeNote', {
-                noteId: noteId
+                noteId: noteId,
+                boxSize: boxSize
             }));
         } );
     }

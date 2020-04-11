@@ -864,3 +864,13 @@ body {
 .hidden-int, .hidden-ext {
     display: none !important;
 }
+
+.include-note.box-size-small {
+    max-height: 12em;
+    overflow: auto;
+}
+
+.include-note.box-size-medium {
+    max-height: 25em;
+    overflow: auto;
+}

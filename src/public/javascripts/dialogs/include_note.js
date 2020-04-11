@@ -25,13 +25,15 @@ async function includeNote(notePath) {
     const noteId = treeService.getNoteIdFromNotePath(notePath);
     const note = await treeCache.getNote(noteId);
 
+    const boxSize = $("input[name='include-note-box-size']:checked").val();
+
     if (note.type === 'image') {
         // there's no benefit to use insert note functionlity for images
         // so we'll just add an IMG tag
         textTypeWidget.addImage(noteId);
     }
     else {
-        textTypeWidget.addIncludeNote(noteId);
+        textTypeWidget.addIncludeNote(noteId, boxSize);
     }
 }
 
