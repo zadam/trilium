@@ -55,7 +55,7 @@ export default class FileTypeWidget extends TypeWidget {
 
         this.$openButton.on('click', () => {
             if (utils.isElectron()) {
-                const open = require("open");
+                const open = utils.dynamicRequire("open");
 
                 open(this.getFileUrl(), {url: true});
             }

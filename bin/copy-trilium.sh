@@ -22,8 +22,14 @@ cp -r README.md $DIR/
 cp -r LICENSE $DIR/
 cp -r config-sample.ini $DIR/
 cp -r electron.js $DIR/
+cp webpack-* $DIR/
 
 # run in subshell (so we return to original dir)
-(cd $DIR && npm install --only=prod)
+(cd $DIR && npm install --only=prod && npm run webpack)
 
 find $DIR/libraries -name "*.map" -type f -delete
+
+rm -r $DIR/src/public/javascripts
+
+sed -i -e 's/javascripts\/desktop.js/dist\/desktop.js/g' $DIR/src/views/desktop.ejs
+sed -i -e 's/javascripts\/mobile.js/dist\/mobile.js/g' $DIR/src/views/mobile.ejs

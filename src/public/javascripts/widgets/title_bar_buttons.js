@@ -30,13 +30,13 @@ export default class TitleBarButtonsWidget extends BasicWidget {
 
         $minimizeBtn.on('click', () => {
             $minimizeBtn.trigger('blur');
-            const {remote} = require('electron');
+            const {remote} = utils.dynamicRequire('electron');
             remote.BrowserWindow.getFocusedWindow().minimize();
         });
 
         $maximizeBtn.on('click', () => {
             $maximizeBtn.trigger('blur');
-            const {remote} = require('electron');
+            const {remote} = utils.dynamicRequire('electron');
             const focusedWindow = remote.BrowserWindow.getFocusedWindow();
 
             if (focusedWindow.isMaximized()) {
@@ -48,7 +48,7 @@ export default class TitleBarButtonsWidget extends BasicWidget {
 
         $closeBtn.on('click', () => {
             $closeBtn.trigger('blur');
-            const {remote} = require('electron');
+            const {remote} = utils.dynamicRequire('electron');
             remote.BrowserWindow.getFocusedWindow().close();
         });
 

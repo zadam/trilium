@@ -35,7 +35,7 @@ async function getRenderedContent(note) {
         $downloadButton.on('click', () => utils.download(getFileUrl()));
         $openButton.on('click', () => {
             if (utils.isElectron()) {
-                const open = require("open");
+                const open = utils.dynamicRequire("open");
 
                 open(getFileUrl(), {url: true});
             }

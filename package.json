@@ -17,7 +17,8 @@
     "start-electron": "TRILIUM_ENV=dev electron .",
     "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
-    "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
+    "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
+    "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js"
   },
   "dependencies": {
     "async-mutex": "0.2.1",
@@ -82,7 +83,9 @@
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.1",
     "jsdoc": "3.6.4",
-    "lorem-ipsum": "2.0.3"
+    "lorem-ipsum": "2.0.3",
+    "webpack": "5.0.0-beta.14",
+    "webpack-cli": "4.0.0-beta.8"
   },
   "optionalDependencies": {
     "electron-installer-debian": "2.0.1"

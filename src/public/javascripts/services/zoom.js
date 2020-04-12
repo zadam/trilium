@@ -1,5 +1,6 @@
 import options from "./options.js";
 import Component from "../widgets/component.js";
+import utils from "../services/utils.js";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
@@ -14,7 +15,7 @@ export default class ZoomService extends Component {
     setZoomFactor(zoomFactor) {
         zoomFactor = parseFloat(zoomFactor);
     
-        const webFrame = require('electron').webFrame;
+        const webFrame = utils.dynamicRequire('electron').webFrame;
         webFrame.setZoomFactor(zoomFactor);
     }
     
@@ -30,7 +31,7 @@ export default class ZoomService extends Component {
     }
     
     getCurrentZoom() {
-        return require('electron').webFrame.getZoomFactor();
+        return utils.dynamicRequire('electron').webFrame.getZoomFactor();
     }
 
     zoomOutEvent() {

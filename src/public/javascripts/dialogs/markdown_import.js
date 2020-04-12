@@ -34,7 +34,7 @@ export async function importMarkdownInline() {
     }
 
     if (utils.isElectron()) {
-        const {clipboard} = require('electron');
+        const {clipboard} = utils.dynamicRequire('electron');
         const text = clipboard.readText();
 
         convertMarkdownToHtml(text);

@@ -52,7 +52,7 @@ async function call(method, url, data, headers = {}) {
     const start = Date.now();
 
     if (utils.isElectron()) {
-        const ipc = require('electron').ipcRenderer;
+        const ipc = utils.dynamicRequire('electron').ipcRenderer;
         const requestId = i++;
 
         resp = await new Promise((resolve, reject) => {
@@ -135,7 +135,7 @@ function ajax(url, method, data, headers) {
 }
 
 if (utils.isElectron()) {
-    const ipc = require('electron').ipcRenderer;
+    const ipc = utils.dynamicRequire('electron').ipcRenderer;
 
     ipc.on('server-response', (event, arg) => {
         if (REQUEST_LOGGING_ENABLED) {

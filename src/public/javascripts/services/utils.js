@@ -99,7 +99,7 @@ function download(url) {
     url += '?' + Date.now(); // don't use cache
 
     if (isElectron()) {
-        const remote = require('electron').remote;
+        const remote = utils.dynamicRequire('electron').remote;
 
         remote.getCurrentWebContents().downloadURL(url);
     }
@@ -270,7 +270,7 @@ function isHtmlEmpty(html) {
 
 async function clearBrowserCache() {
     if (isElectron()) {
-        const win = require('electron').remote.getCurrentWindow();
+        const win = utils.dynamicRequire('electron').remote.getCurrentWindow();
         await win.webContents.session.clearCache();
     }
 }
@@ -298,6 +298,15 @@ function copySelectionToClipboard() {
 
 function isCKEditorInitialized() {
     return !!(window && window.cutToNote);
+}
+
+function dynamicRequire(moduleName) {
+    if (typeof __non_webpack_require__ !== 'undefined') {
+        return __non_webpack_require__(moduleName);
+    }
+    else {
+        return require(moduleName);
+    }
 }
 
 export default {
@@ -337,5 +346,6 @@ export default {
     getUrlForDownload,
     normalizeShortcut,
     copySelectionToClipboard,
-    isCKEditorInitialized
+    isCKEditorInitialized,
+    dynamicRequire
 };

@@ -133,7 +133,7 @@ async function checkOutstandingSyncs() {
     const { stats, initialized } = await $.get('api/sync/stats');
 
     if (initialized) {
-        const remote = require('electron').remote;
+        const remote = utils.dynamicRequire('electron').remote;
         remote.app.relaunch();
         remote.app.exit(0);
     }

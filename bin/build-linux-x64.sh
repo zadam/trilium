@@ -12,6 +12,8 @@ echo "Copying required linux-x64 binaries"
 rm -r $SRC_DIR/node_modules/sqlite3/lib/binding/*
 rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
 
+rm -r $SRC_DIR/src/public/dist/*.mobile.*
+
 cp -r bin/deps/linux-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
 cp bin/deps/linux-x64/image/pngquant $SRC_DIR/node_modules/pngquant-bin/vendor/
 
