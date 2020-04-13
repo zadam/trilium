@@ -27,13 +27,21 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         const note = await treeCache.getNote(noteId);
 
         if (note) {
-            $el.empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
+            const $link = await linkService.createNoteLink(note.noteId, {
                 showTooltip: false
-            })));
+            });
+
+            $el.empty().append(
+                $('<h4 class="include-note-title">')
+                    .append($link)
+            );
 
             const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
 
-            $el.append(renderedContent);
+            $el.append(
+                $('<div class="include-note-content">')
+                    .append(renderedContent)
+            );
         }
     }
 

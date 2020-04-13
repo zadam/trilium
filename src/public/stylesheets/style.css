@@ -744,13 +744,23 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 
 .include-note {
     margin-bottom: 10px;
-    padding: 20px;
+    padding: 10px;
     border-radius: 10px;
     background-color: var(--accented-background-color);
 }
 
 .include-note.ck-placeholder::before { /* remove placeholder in otherwise empty note */
     content: '' !important;
+}
+
+.include-note.box-size-small .include-note-content {
+    max-height: 10em;
+    overflow: auto;
+}
+
+.include-note.box-size-medium .include-note-content {
+    max-height: 20em;
+    overflow: auto;
 }
 
 .alert-warning {
@@ -863,14 +873,4 @@ body {
 
 .hidden-int, .hidden-ext {
     display: none !important;
-}
-
-.include-note.box-size-small {
-    max-height: 12em;
-    overflow: auto;
-}
-
-.include-note.box-size-medium {
-    max-height: 25em;
-    overflow: auto;
 }
