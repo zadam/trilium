@@ -226,7 +226,7 @@ function findInternalLinks(content, foundLinks) {
 }
 
 function findIncludeNoteLinks(content, foundLinks) {
-    const re = /<section class="include-note" data-note-id="([a-zA-Z0-9]+)">/g;
+    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9]+)"[^>]*>/g;
     let match;
 
     while (match = re.exec(content)) {
