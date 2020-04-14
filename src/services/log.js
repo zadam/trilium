@@ -33,7 +33,7 @@ function error(message) {
     console.trace(message);
 }
 
-const requestBlacklist = [ "/libraries", "/javascripts", "/images", "/stylesheets" ];
+const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets" ];
 
 function request(req) {
     for (const bl of requestBlacklist) {

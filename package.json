@@ -16,9 +16,9 @@
     "start-server": "TRILIUM_ENV=dev node ./src/www",
     "start-electron": "TRILIUM_ENV=dev electron .",
     "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
-    "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
+    "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
-    "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js"
+    "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js"
   },
   "dependencies": {
     "async-mutex": "0.2.1",
@@ -51,7 +51,7 @@
     "imagemin-pngquant": "8.0.0",
     "ini": "1.3.5",
     "is-svg": "4.2.1",
-    "jimp": "0.10.1",
+    "jimp": "0.10.2",
     "mime-types": "2.1.26",
     "multer": "1.4.2",
     "node-abi": "2.15.0",
@@ -62,11 +62,11 @@
     "rimraf": "3.0.2",
     "sanitize-filename": "1.6.3",
     "sax": "1.2.4",
-    "semver": "7.2.2",
+    "semver": "7.3.2",
     "serve-favicon": "2.5.0",
     "session-file-store": "1.4.0",
     "simple-node-logger": "18.12.24",
-    "sqlite": "4.0.6",
+    "sqlite": "4.0.7",
     "sqlite3": "4.1.1",
     "string-similarity": "4.0.1",
     "tar-stream": "2.1.2",
@@ -78,7 +78,7 @@
     "yazl": "^2.5.1"
   },
   "devDependencies": {
-    "electron": "9.0.0-beta.15",
+    "electron": "9.0.0-beta.16",
     "electron-builder": "22.4.1",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.1",

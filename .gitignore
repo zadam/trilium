@@ -1,7 +1,7 @@
 .DS_Store
 node_modules/
 dist/
-src/public/dist/
+src/public/app-dist/
 npm-debug.log
 yarn-error.log
 *.db

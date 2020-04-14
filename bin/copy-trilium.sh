@@ -29,7 +29,7 @@ cp webpack-* $DIR/
 
 find $DIR/libraries -name "*.map" -type f -delete
 
-rm -r $DIR/src/public/javascripts
+rm -r $DIR/src/public/app
 
-sed -i -e 's/javascripts\/desktop.js/dist\/desktop.js/g' $DIR/src/views/desktop.ejs
-sed -i -e 's/javascripts\/mobile.js/dist\/mobile.js/g' $DIR/src/views/mobile.ejs
+sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' $DIR/src/views/desktop.ejs
+sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' $DIR/src/views/mobile.ejs

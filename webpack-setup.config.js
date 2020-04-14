@@ -3,12 +3,12 @@ const path = require('path');
 module.exports = {
     mode: 'production',
     entry: {
-        mobile: './src/public/app/mobile.js',
+        mobile: './src/public/app/setup.js',
     },
     output: {
         publicPath: '/dist/',
         path: path.resolve(__dirname, 'src/public/app-dist'),
-        filename: 'mobile.js'
+        filename: 'setup.js'
     },
     devtool: 'source-map'
 };

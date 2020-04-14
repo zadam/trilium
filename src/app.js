@@ -45,7 +45,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/libraries', express.static(path.join(__dirname, '..', 'libraries')));
 app.use('/images', express.static(path.join(__dirname, '..', 'images')));
-app.use('/dist', express.static(path.join(__dirname, '..', 'dist')));
 const sessionParser = session({
     secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
