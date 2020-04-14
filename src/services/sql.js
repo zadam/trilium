@@ -9,6 +9,16 @@ function setDbConnection(connection) {
     dbConnection = connection;
 }
 
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
+    process.on(eventType, () => {
+        if (dbConnection) {
+            // closing connection is especially important to fold -wal file into the main DB file
+            // (see https://sqlite.org/tempfiles.html for details)
+            dbConnection.close();
+        }
+    });
+});
+
 async function insert(tableName, rec, replace = false) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
