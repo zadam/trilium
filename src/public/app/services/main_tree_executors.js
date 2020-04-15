@@ -42,6 +42,8 @@ export default class MainTreeExecutors extends Component {
         await ws.waitForMaxKnownSyncId();
 
         appContext.tabManager.getActiveTabContext().setNote(note.noteId);
+
+        appContext.triggerCommand('focusAndSelectTitle');
     }
 
     async createNoteAfterCommand() {
@@ -63,5 +65,7 @@ export default class MainTreeExecutors extends Component {
         await ws.waitForMaxKnownSyncId();
 
         appContext.tabManager.getActiveTabContext().setNote(note.noteId);
+
+        appContext.triggerCommand('focusAndSelectTitle');
     }
 }
