@@ -21,7 +21,7 @@
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js"
   },
   "dependencies": {
-    "async-mutex": "0.2.1",
+    "async-mutex": "0.2.2",
     "axios": "0.19.2",
     "body-parser": "1.19.0",
     "cls-hooked": "4.2.2",

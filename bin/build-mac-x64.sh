@@ -19,7 +19,7 @@ cp bin/deps/mac-x64/image/cjpeg $SRC_DIR/node_modules/mozjpeg/vendor/
 cp bin/deps/mac-x64/image/pngquant $SRC_DIR/node_modules/pngquant-bin/vendor/
 cp bin/deps/mac-x64/image/gifsicle $SRC_DIR/node_modules/giflossy/vendor/
 
-rm -r $SRC_DIR/src/public/dist/*.mobile.*
+rm -r $SRC_DIR/src/public/app-dist/*.mobile.*
 
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=images/app-icons/mac/icon.icns
 

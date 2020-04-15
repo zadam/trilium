@@ -6,7 +6,7 @@ module.exports = {
         mobile: './src/public/app/setup.js',
     },
     output: {
-        publicPath: '/dist/',
+        publicPath: 'app-dist/',
         path: path.resolve(__dirname, 'src/public/app-dist'),
         filename: 'setup.js'
     },
