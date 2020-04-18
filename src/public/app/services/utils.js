@@ -239,7 +239,7 @@ function focusSavedElement() {
     $lastFocusedElement = null;
 }
 
-function openDialog($dialog) {
+async function openDialog($dialog) {
     closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -253,6 +253,9 @@ function openDialog($dialog) {
             focusSavedElement();
         }
     });
+
+    const keyboardActionsService = (await import("./keyboard_actions.js")).default;
+    keyboardActionsService.updateDisplayedShortcuts($dialog);
 }
 
 function isHtmlEmpty(html) {
