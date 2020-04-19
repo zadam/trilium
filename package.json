@@ -36,7 +36,7 @@
     "electron-find": "1.0.6",
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
-    "express-session": "1.17.0",
+    "express-session": "1.17.1",
     "file-type": "14.1.4",
     "fs-extra": "9.0.0",
     "helmet": "3.22.0",
@@ -78,8 +78,8 @@
     "yazl": "^2.5.1"
   },
   "devDependencies": {
-    "electron": "9.0.0-beta.16",
-    "electron-builder": "22.4.1",
+    "electron": "9.0.0-beta.17",
+    "electron-builder": "22.5.1",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.1",
     "jsdoc": "3.6.4",
