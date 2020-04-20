@@ -68,7 +68,7 @@ async function createMainWindow() {
 
     if (spellcheckEnabled) {
         const languageCodes = (await optionService.getOption('spellCheckLanguageCode'))
-            .split('/')
+            .split(',')
             .map(code => code.trim());
 
         webContents.session.setSpellCheckerLanguages(languageCodes);

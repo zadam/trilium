@@ -1,4 +1,4 @@
-import optionsService from "../../services/options.js";
+import utils from "../../services/utils.js";
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 
@@ -20,7 +20,9 @@ const TPL = `
         <input type="text" class="form-control" id="spell-check-language-code" placeholder="for example &quot;en-US&quot;, &quot;de-AT&quot;">
     </div>
 
-    <p>Multiple languages can be separated by comman. Changes to the spell check options will take effect after application restart.</p>
+    <p>Multiple languages can be separated by comma, e.g. <code>en-US, de-DE, cs</code>. Changes to the spell check options will take effect after application restart.</p>
+    
+    <p><strong>Available language codes: </strong> <span id="available-language-codes"></span></p>
 </div>
 
 <div>
@@ -94,6 +96,14 @@ export default class ProtectedSessionOptions {
 
             return false;
         });
+
+        this.$availableLanguageCodes = $("#available-language-codes");
+
+        if (utils.isElectron()) {
+            const {webContents} = utils.dynamicRequire('electron').remote.getCurrentWindow();
+
+            this.$availableLanguageCodes.text(webContents.session.availableSpellCheckerLanguages.join(', '));
+        }
 
         this.$eraseNotesAfterTimeInSeconds = $("#erase-notes-after-time-in-seconds");
 
