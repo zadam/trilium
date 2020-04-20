@@ -84,6 +84,7 @@ export default class NotePathsWidget extends TabAwareWidget {
                 this.$currentPath.append(
                     $("<a>")
                         .attr('href', '#' + curPath)
+                        .attr('data-note-path', curPath)
                         .addClass('no-tooltip-preview')
                         .text(await treeService.getNoteTitle(noteId, parentNoteId))
                 );

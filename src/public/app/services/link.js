@@ -162,6 +162,7 @@ $(document).on('contextmenu', 'a.ck-link-actions__preview', newTabContextMenu);
 $(document).on('contextmenu', '.note-detail-text a', newTabContextMenu);
 $(document).on('contextmenu', "a[data-action='note']", newTabContextMenu);
 $(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
+$(document).on('contextmenu', ".note-paths-widget a", newTabContextMenu);
 
 export default {
     getNotePathFromUrl,
