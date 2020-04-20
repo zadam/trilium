@@ -5,6 +5,8 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
+npm run webpack
+
 DIR=$1
 
 rm -rf $DIR
@@ -25,7 +27,7 @@ cp -r electron.js $DIR/
 cp webpack-* $DIR/
 
 # run in subshell (so we return to original dir)
-(cd $DIR && npm install --only=prod && npm run webpack)
+(cd $DIR && npm install --only=prod)
 
 find $DIR/libraries -name "*.map" -type f -delete
 
