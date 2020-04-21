@@ -18,13 +18,11 @@ async function getNoteRevision(req) {
 
     if (noteRevision.type === 'file') {
         if (noteRevision.isStringNote()) {
-            await noteRevision.getContent();
-
-            noteRevision.content = noteRevision.content.substr(0, 10000);
+            noteRevision.content = (await noteRevision.getContent()).substr(0, 10000);
         }
     }
     else {
-        await noteRevision.getContent();
+        noteRevision.content = await noteRevision.getContent();
 
         if (noteRevision.content && noteRevision.type === 'image') {
             noteRevision.content = noteRevision.content.toString('base64');
