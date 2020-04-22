@@ -57,29 +57,37 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
     }
 
+    /**
+     * widget.hasBeenAlreadyShown is intended for lazy loading of cached tabs - initial note switches of new tabs
+     * are not executed, we're waiting for the first tab activation and then we update the tab. After this initial
+     * activation further note switches are always propagated to the tabs.
+     */
     handleEventInChildren(name, data) {
-        // stop propagation of the event to the children, individual tab widget should not know about tab switching
-        // since they are per-tab
-        if (name === 'tabNoteSwitchedAndActivated') {
-            name = 'tabNoteSwitched';
-        }
-
-        if (name === 'tabNoteSwitched') {
+        if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
             const widget = this.widgets[data.tabContext.tabId];
 
-            if (widget) {
-                return widget.handleEvent(name, data);
+            if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+                return widget.handleEvent('tabNoteSwitched', data);
             }
             else {
                 return Promise.resolve();
             }
         }
 
-        if (name !== 'activeTabChanged') {
+        if (name === 'activeTabChanged') {
+            const widget = this.widgets[data.tabContext.tabId];
+
+            if (widget.hasBeenAlreadyShown) {
+                return Promise.resolve();
+            }
+            else {
+                widget.hasBeenAlreadyShown = true;
+
+                return widget.handleEvent(name, data);
+            }
+        } else {
             return super.handleEventInChildren(name, data);
         }
-
-        return Promise.resolve();
     }
 }
