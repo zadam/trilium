@@ -68,6 +68,8 @@ export default class TabCachingWidget extends TabAwareWidget {
             const widget = this.widgets[data.tabContext.tabId];
 
             if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+                widget.hasBeenAlreadyShown = true;
+
                 return widget.handleEvent('tabNoteSwitched', data);
             }
             else {

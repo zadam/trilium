@@ -11,7 +11,11 @@ const env = require('../services/env');
 async function index(req, res) {
     const options = await optionService.getOptionsMap();
 
-    const view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
+    let view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
+
+    if (req.query.extra) {
+        view = 'extra';
+    }
 
     const csrfToken = req.csrfToken();
     log.info(`Generated CSRF token ${csrfToken} with secret ${res.getHeader('set-cookie')}`);

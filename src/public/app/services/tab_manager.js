@@ -29,8 +29,10 @@ export default class TabManager extends Component {
         return this.children;
     }
 
-    async loadTabs() {
-        const openTabs = options.getJson('openTabs') || [];
+    async loadTabs(loadExistingTabs) {
+        const openTabs = loadExistingTabs
+            ? (options.getJson('openTabs') || [])
+            : [];
 
         // if there's notePath in the URL, make sure it's open and active
         // (useful, among others, for opening clipped notes from clipper)

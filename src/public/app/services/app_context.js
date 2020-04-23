@@ -17,14 +17,14 @@ class AppContext extends Component {
         this.layout = layout;
     }
 
-    async start() {
+    async start(loadExistingTabs = true) {
         await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
 
         $("#loading-indicator").hide();
 
         this.showWidgets();
 
-        this.tabManager.loadTabs();
+        this.tabManager.loadTabs(loadExistingTabs);
 
         if (utils.isDesktop()) {
             setTimeout(() => bundleService.executeStartupBundles(), 2000);
@@ -99,6 +99,19 @@ class AppContext extends Component {
         await treeCache.loadInitialTree();
 
         this.triggerEvent('treeCacheReloaded');
+    }
+
+    async openInNewWindow(notePath) {
+        if (utils.isElectron()) {
+            const {ipcRenderer} = utils.dynamicRequire('electron');
+
+            ipcRenderer.send('create-extra-window', {notePath});
+        }
+        else {
+            const url = 'http://127.0.0.1:37740/#' + notePath;
+
+            window.open(url);
+        }
     }
 }
 

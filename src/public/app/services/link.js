@@ -113,11 +113,15 @@ function newTabContextMenu(e) {
         x: e.pageX,
         y: e.pageY,
         items: [
-            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "arrow-up-right"}
+            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "arrow-up-right"},
+            {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "arrow-up-right"}
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
                 appContext.tabManager.openTabWithNote(notePath);
+            }
+            else if (command === 'openNoteInNewWindow') {
+                appContext.openInNewWindow(notePath);
             }
         }
     });

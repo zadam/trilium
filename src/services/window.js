@@ -7,12 +7,36 @@ const log = require('./log');
 const sqlInit = require('./sql_init');
 const cls = require('./cls');
 const keyboardActionsService = require('./keyboard_actions');
+const {ipcMain} = require('electron');
 
 // Prevent window being garbage collected
 /** @type {Electron.BrowserWindow} */
 let mainWindow;
 /** @type {Electron.BrowserWindow} */
 let setupWindow;
+
+async function createExtraWindow(notePath) {
+    const {BrowserWindow} = require('electron');
+    const win = new BrowserWindow({
+        height: 600,
+        width: 800,
+        title: 'Trilium Notes',
+        webPreferences: {
+            enableRemoteModule: true,
+            nodeIntegration: true,
+            spellcheck: await optionService.getOptionBool('spellCheckEnabled')
+        },
+        frame: await optionService.getOptionBool('nativeTitleBarVisible'),
+        icon: getIcon()
+    });
+
+    win.setMenuBarVisibility(false);
+    win.loadURL('http://127.0.0.1:' + await port + '/?extra=1#' + notePath);
+}
+
+ipcMain.on('create-extra-window', (event, arg) => {
+    createExtraWindow(arg.notePath);
+});
 
 async function createMainWindow() {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
@@ -141,5 +165,6 @@ module.exports = {
     createMainWindow,
     createSetupWindow,
     closeSetupWindow,
+    createExtraWindow,
     registerGlobalShortcuts
 };
