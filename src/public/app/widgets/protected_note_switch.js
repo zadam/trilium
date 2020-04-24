@@ -5,12 +5,12 @@ const TPL = `
 <div class="btn-group btn-group-xs">
     <button type="button"
             class="btn btn-sm icon-button bx bx-check-shield protect-button"
-            title="Protected note can be viewed and edited only after entering password">
+            title="Set this note as protected which means it will possible to view and edit this note only after entering password">
     </button>
 
     <button type="button"
             class="btn btn-sm icon-button bx bx-shield-x unprotect-button"
-            title="Not protected note can be viewed without entering password">
+            title="Set this note as unprotected which will make it viewable and editable without entering password">
     </button>
 </div>`;``;
 
