@@ -12,7 +12,9 @@ const VIRTUAL_ATTRIBUTES = [
     "type",
     "mime",
     "text",
-    "parentCount"
+    "parentCount",
+    "attributeName",
+    "attributeValue"
 ];
 
 module.exports = function(filters, selectedColumns = 'notes.*') {
@@ -33,10 +35,28 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
 
             // forcing to use particular index since SQLite query planner would often choose something pretty bad
             joins[alias] = `LEFT JOIN attributes AS ${alias} INDEXED BY IDX_attributes_noteId_index `
-                + `ON ${alias}.noteId = notes.noteId `
-                + `AND ${alias}.name = '${property}' AND ${alias}.isDeleted = 0`;
+                + `ON ${alias}.noteId = notes.noteId AND ${alias}.isDeleted = 0`
+                + `AND ${alias}.name = '${property}' `;
 
             accessor = `${alias}.value`;
+        }
+        else if (['attributeType', 'attributeName', 'attributeValue'].includes(property)) {
+            const alias = "attr_filter";
+
+            if (!(alias in joins)) {
+                joins[alias] = `LEFT JOIN attributes AS ${alias} INDEXED BY IDX_attributes_noteId_index `
+                    + `ON ${alias}.noteId = notes.noteId AND ${alias}.isDeleted = 0`;
+            }
+
+            if (property === 'attributeType') {
+                accessor = `${alias}.type`
+            } else if (property === 'attributeName') {
+                accessor = `${alias}.name`
+            } else if (property === 'attributeValue') {
+                accessor = `${alias}.value`
+            } else {
+                throw new Error(`Unrecognized property ${property}`);
+            }
         }
         else if (property === 'content') {
             const alias = "note_contents";
@@ -73,78 +93,84 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
         });
     }
 
-    let where = '1';
     const params = [];
 
-    for (const filter of filters) {
-        if (['isarchived', 'in', 'orderby', 'limit'].includes(filter.name.toLowerCase())) {
-            continue; // these are not real filters
-        }
+    function parseWhereFilters(filters) {
+        let whereStmt = '';
 
-        where += " " + filter.relation + " ";
+        for (const filter of filters) {
+            if (['isarchived', 'in', 'orderby', 'limit'].includes(filter.name.toLowerCase())) {
+                continue; // these are not real filters
+            }
 
-        const accessor = getAccessor(filter.name);
+            if (whereStmt) {
+                whereStmt += " " + filter.relation + " ";
+            }
 
-        if (filter.operator === 'exists') {
-            where += `${accessor} IS NOT NULL`;
-        }
-        else if (filter.operator === 'not-exists') {
-            where += `${accessor} IS NULL`;
-        }
-        else if (filter.operator === '=' || filter.operator === '!=') {
-            where += `${accessor} ${filter.operator} ?`;
-            params.push(filter.value);
-        }
-        else if (filter.operator === '*=' || filter.operator === '!*=') {
-            where += `${accessor}`
+            if (filter.children) {
+                whereStmt += "(" + parseWhereFilters(filter.children) + ")";
+                continue;
+            }
+
+            const accessor = getAccessor(filter.name);
+
+            if (filter.operator === 'exists') {
+                whereStmt += `${accessor} IS NOT NULL`;
+            } else if (filter.operator === 'not-exists') {
+                whereStmt += `${accessor} IS NULL`;
+            } else if (filter.operator === '=' || filter.operator === '!=') {
+                whereStmt += `${accessor} ${filter.operator} ?`;
+                params.push(filter.value);
+            } else if (filter.operator === '*=' || filter.operator === '!*=') {
+                whereStmt += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
                     + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '');
-        }
-        else if (filter.operator === '=*' || filter.operator === '!=*') {
-            where += `${accessor}`
+            } else if (filter.operator === '=*' || filter.operator === '!=*') {
+                whereStmt += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
                     + ` LIKE ` + utils.prepareSqlForLike('', filter.value, '%');
+            } else if (filter.operator === '*=*' || filter.operator === '!*=*') {
+                const columns = filter.name === 'text' ? [getAccessor("title"), getAccessor("content")] : [accessor];
+
+                let condition = "(" + columns.map(column =>
+                    `${column}` + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '%'))
+                    .join(" OR ") + ")";
+
+                if (filter.operator.includes('!')) {
+                    condition = "NOT(" + condition + ")";
+                }
+
+                if (['text', 'title', 'content'].includes(filter.name)) {
+                    // for title/content search does not make sense to search for protected notes
+                    condition = `(${condition} AND notes.isProtected = 0)`;
+                }
+
+                whereStmt += condition;
+            } else if ([">", ">=", "<", "<="].includes(filter.operator)) {
+                let floatParam;
+
+                // from https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+                if (/^[+-]?([0-9]*[.])?[0-9]+$/.test(filter.value)) {
+                    floatParam = parseFloat(filter.value);
+                }
+
+                if (floatParam === undefined || isNaN(floatParam)) {
+                    // if the value can't be parsed as float then we assume that string comparison should be used instead of numeric
+                    whereStmt += `${accessor} ${filter.operator} ?`;
+                    params.push(filter.value);
+                } else {
+                    whereStmt += `CAST(${accessor} AS DECIMAL) ${filter.operator} ?`;
+                    params.push(floatParam);
+                }
+            } else {
+                throw new Error("Unknown operator " + filter.operator);
+            }
         }
-        else if (filter.operator === '*=*' || filter.operator === '!*=*') {
-            const columns = filter.name === 'text' ? [getAccessor("title"), getAccessor("content")] : [accessor];
 
-            let condition = "(" + columns.map(column =>
-                `${column}` + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '%'))
-                .join(" OR ") + ")";
-
-            if (filter.operator.includes('!')) {
-                condition = "NOT(" + condition + ")";
-            }
-
-            if (['text', 'title', 'content'].includes(filter.name)) {
-                // for title/content search does not make sense to search for protected notes
-                condition = `(${condition} AND notes.isProtected = 0)`;
-            }
-
-            where += condition;
-        }
-        else if ([">", ">=", "<", "<="].includes(filter.operator)) {
-            let floatParam;
-
-            // from https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
-            if (/^[+-]?([0-9]*[.])?[0-9]+$/.test(filter.value)) {
-                floatParam = parseFloat(filter.value);
-            }
-
-            if (floatParam === undefined || isNaN(floatParam)) {
-                // if the value can't be parsed as float then we assume that string comparison should be used instead of numeric
-                where += `${accessor} ${filter.operator} ?`;
-                params.push(filter.value);
-            }
-            else {
-                where += `CAST(${accessor} AS DECIMAL) ${filter.operator} ?`;
-                params.push(floatParam);
-            }
-        }
-        else {
-            throw new Error("Unknown operator " + filter.operator);
-        }
+        return whereStmt;
     }
+
+    const where = parseWhereFilters(filters);
 
     if (orderBy.length === 0) {
         // if no ordering is given then order at least by note title
