@@ -42,8 +42,9 @@ async function loadNoteRevisions(noteId, noteRevId) {
     revisionItems = await server.get(`notes/${noteId}/revisions`);
 
     for (const item of revisionItems) {
+        const formattedTime = utils.formatTime(utils.parseDate(item.dateLastEdited));
         $list.append($('<a class="dropdown-item" tabindex="0">')
-            .text(item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`)
+            .text(formattedTime + ` (${item.contentLength} bytes)`)
             .attr('data-note-revision-id', item.noteRevisionId));
     }
 
