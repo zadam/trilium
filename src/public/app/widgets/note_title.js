@@ -29,6 +29,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.spacedUpdate = new SpacedUpdate(async () => {
             const title = this.$noteTitle.val();
 
+            protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
+
             await server.put(`notes/${this.noteId}/change-title`, {title});
         });
     }

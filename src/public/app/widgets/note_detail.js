@@ -61,6 +61,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
             const dto = note.dto;
             dto.content = this.getTypeWidget().getContent();
 
+            protectedSessionHolder.touchProtectedSessionIfNecessary(note);
+
             await server.put('notes/' + noteId, dto, this.componentId);
         });
     }

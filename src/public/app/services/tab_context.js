@@ -69,10 +69,7 @@ class TabContext extends Component {
             }
         }, 5000);
 
-        if (this.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
-            // FIXME: there are probably more places where this should be done
-            protectedSessionHolder.touchProtectedSession();
-        }
+        protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
         if (triggerSwitchEvent) {
             this.triggerEvent('tabNoteSwitched', {
