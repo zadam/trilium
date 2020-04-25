@@ -39,9 +39,16 @@ function touchProtectedSession() {
     }
 }
 
+function touchProtectedSessionIfNecessary(note) {
+    if (note && note.isProtected && isProtectedSessionAvailable()) {
+        touchProtectedSession();
+    }
+}
+
 export default {
     setProtectedSessionId,
     resetProtectedSession,
     isProtectedSessionAvailable,
-    touchProtectedSession
+    touchProtectedSession,
+    touchProtectedSessionIfNecessary
 };

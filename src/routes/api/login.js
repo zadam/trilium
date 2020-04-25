@@ -27,7 +27,7 @@ async function loginSync(req) {
 
     // login token is valid for 5 minutes
     if (Math.abs(timestamp.getTime() - now.getTime()) > 5 * 60 * 1000) {
-        return [400, { message: 'Auth request time is out of sync' }];
+        return [400, { message: 'Auth request time is out of sync, please check that both client and server have correct time.' }];
     }
 
     const syncVersion = req.body.syncVersion;

@@ -101,12 +101,6 @@ class AppContext extends Component {
         return $(el).closest(".component").prop('component');
     }
 
-    async protectedSessionStartedEvent() {
-        await treeCache.loadInitialTree();
-
-        this.triggerEvent('treeCacheReloaded');
-    }
-
     async openInNewWindow(notePath) {
         if (utils.isElectron()) {
             const {ipcRenderer} = utils.dynamicRequire('electron');
