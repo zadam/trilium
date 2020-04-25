@@ -13,18 +13,24 @@ import MobileScreenSwitcherExecutor from "../widgets/mobile_screen_switcher.js";
 import MainTreeExecutors from "./main_tree_executors.js";
 
 class AppContext extends Component {
+    constructor(isMainWindow) {
+        super();
+
+        this.isMainWindow = isMainWindow;
+    }
+
     setLayout(layout) {
         this.layout = layout;
     }
 
-    async start(loadExistingTabs = true) {
+    async start() {
         await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
 
         $("#loading-indicator").hide();
 
         this.showWidgets();
 
-        this.tabManager.loadTabs(loadExistingTabs);
+        this.tabManager.loadTabs();
 
         if (utils.isDesktop()) {
             setTimeout(() => bundleService.executeStartupBundles(), 2000);
@@ -115,7 +121,7 @@ class AppContext extends Component {
     }
 }
 
-const appContext = new AppContext();
+const appContext = new AppContext(window.glob.isMainWindow);
 
 // we should save all outstanding changes before the page/app is closed
 $(window).on('beforeunload', () => {

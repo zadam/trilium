@@ -35,7 +35,7 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
 
             // forcing to use particular index since SQLite query planner would often choose something pretty bad
             joins[alias] = `LEFT JOIN attributes AS ${alias} INDEXED BY IDX_attributes_noteId_index `
-                + `ON ${alias}.noteId = notes.noteId AND ${alias}.isDeleted = 0`
+                + `ON ${alias}.noteId = notes.noteId AND ${alias}.isDeleted = 0 `
                 + `AND ${alias}.name = '${property}' `;
 
             accessor = `${alias}.value`;

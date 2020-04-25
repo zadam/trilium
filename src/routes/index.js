@@ -13,10 +13,6 @@ async function index(req, res) {
 
     let view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
 
-    if (req.query.extra) {
-        view = 'extra';
-    }
-
     const csrfToken = req.csrfToken();
     log.info(`Generated CSRF token ${csrfToken} with secret ${res.getHeader('set-cookie')}`);
 
@@ -30,7 +26,8 @@ async function index(req, res) {
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,
         appCssNoteIds: await getAppCssNoteIds(),
-        isDev: env.isDev()
+        isDev: env.isDev(),
+        isMainWindow: !req.query.extra
     });
 }
 

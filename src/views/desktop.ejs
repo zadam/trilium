@@ -46,8 +46,9 @@
         maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
         instanceName: '<%= instanceName %>',
         csrfToken: '<%= csrfToken %>',
-        isDev: '<%= isDev %>',
-        appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>
+        isDev: <%= isDev %>,
+        appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>,
+        isMainWindow: <%= isMainWindow %>
     };
 </script>
 

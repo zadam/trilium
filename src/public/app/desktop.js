@@ -5,8 +5,9 @@ import bundleService from "./services/bundle.js";
 import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
 import contextMenu from "./services/context_menu.js";
-import DesktopLayout from "./widgets/desktop_layout.js";
+import DesktopMainWindowLayout from "./layouts/desktop_main_window_layout.js";
 import glob from "./services/glob.js";
+import DesktopExtraWindowLayout from "./layouts/desktop_extra_window_layout.js";
 
 glob.setupGlobs();
 
@@ -23,9 +24,11 @@ $('[data-toggle="tooltip"]').tooltip({
 macInit.init();
 
 bundleService.getWidgetBundlesByParent().then(widgetBundles => {
-    const desktopLayout = new DesktopLayout(widgetBundles);
+    const layout = window.glob.isMainWindow
+        ? new DesktopMainWindowLayout(widgetBundles)
+        : new DesktopExtraWindowLayout(widgetBundles);
 
-    appContext.setLayout(desktopLayout);
+    appContext.setLayout(layout);
     appContext.start();
 });
 

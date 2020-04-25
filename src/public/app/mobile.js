@@ -1,5 +1,5 @@
 import appContext from "./services/app_context.js";
-import MobileLayout from "./widgets/mobile_layout.js";
+import MobileLayout from "./layouts/mobile_layout.js";
 import glob from "./services/glob.js";
 
 glob.setupGlobs();

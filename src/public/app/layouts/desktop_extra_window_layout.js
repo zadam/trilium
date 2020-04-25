@@ -1,18 +1,18 @@
-import FlexContainer from "./flex_container.js";
-import GlobalMenuWidget from "./global_menu.js";
-import TabRowWidget from "./tab_row.js";
-import TitleBarButtonsWidget from "./title_bar_buttons.js";
-import NoteTreeWidget from "./note_tree.js";
-import TabCachingWidget from "./tab_caching_widget.js";
-import NoteTitleWidget from "./note_title.js";
-import RunScriptButtonsWidget from "./run_script_buttons.js";
-import ProtectedNoteSwitchWidget from "./protected_note_switch.js";
-import NoteTypeWidget from "./note_type.js";
-import NoteActionsWidget from "./note_actions.js";
-import PromotedAttributesWidget from "./promoted_attributes.js";
-import NoteDetailWidget from "./note_detail.js";
+import FlexContainer from "../widgets/flex_container.js";
+import GlobalMenuWidget from "../widgets/global_menu.js";
+import TabRowWidget from "../widgets/tab_row.js";
+import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
+import NoteTreeWidget from "../widgets/note_tree.js";
+import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import NoteTitleWidget from "../widgets/note_title.js";
+import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
+import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
+import NoteTypeWidget from "../widgets/note_type.js";
+import NoteActionsWidget from "../widgets/note_actions.js";
+import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
+import NoteDetailWidget from "../widgets/note_detail.js";
 
-export default class ExtraLayout {
+export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
         this.customWidgets = customWidgets;
     }

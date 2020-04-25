@@ -6,6 +6,7 @@ import treeCache from "./tree_cache.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
 import TabContext from "./tab_context.js";
+import appContext from "./app_context.js";
 
 export default class TabManager extends Component {
     constructor() {
@@ -14,6 +15,10 @@ export default class TabManager extends Component {
         this.activeTabId = null;
 
         this.tabsUpdate = new SpacedUpdate(async () => {
+            if (!appContext.isMainWindow) {
+                return;
+            }
+
             const openTabs = this.tabContexts
                 .map(tc => tc.getTabState())
                 .filter(t => !!t);
@@ -29,8 +34,8 @@ export default class TabManager extends Component {
         return this.children;
     }
 
-    async loadTabs(loadExistingTabs) {
-        const openTabs = loadExistingTabs
+    async loadTabs() {
+        const tabsToOpen = appContext.isMainWindow
             ? (options.getJson('openTabs') || [])
             : [];
 
@@ -41,17 +46,17 @@ export default class TabManager extends Component {
             const noteId = treeService.getNoteIdFromNotePath(notePath);
 
             if (noteId && await treeCache.noteExists(noteId)) {
-                for (const tab of openTabs) {
+                for (const tab of tabsToOpen) {
                     tab.active = false;
                 }
 
-                const foundTab = openTabs.find(tab => noteId === treeService.getNoteIdFromNotePath(tab.notePath));
+                const foundTab = tabsToOpen.find(tab => noteId === treeService.getNoteIdFromNotePath(tab.notePath));
 
                 if (foundTab) {
                     foundTab.active = true;
                 }
                 else {
-                    openTabs.push({
+                    tabsToOpen.push({
                         notePath: notePath,
                         active: true
                     });
@@ -61,7 +66,7 @@ export default class TabManager extends Component {
 
         let filteredTabs = [];
 
-        for (const openTab of openTabs) {
+        for (const openTab of tabsToOpen) {
             const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
 
             if (await treeCache.noteExists(noteId)) {

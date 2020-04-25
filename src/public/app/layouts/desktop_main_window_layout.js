@@ -1,30 +1,30 @@
-import FlexContainer from "./flex_container.js";
-import GlobalMenuWidget from "./global_menu.js";
-import TabRowWidget from "./tab_row.js";
-import TitleBarButtonsWidget from "./title_bar_buttons.js";
-import StandardTopWidget from "./standard_top_widget.js";
-import SidePaneContainer from "./side_pane_container.js";
-import GlobalButtonsWidget from "./global_buttons.js";
-import SearchBoxWidget from "./search_box.js";
-import SearchResultsWidget from "./search_results.js";
-import NoteTreeWidget from "./note_tree.js";
-import TabCachingWidget from "./tab_caching_widget.js";
-import NotePathsWidget from "./note_paths.js";
-import NoteTitleWidget from "./note_title.js";
-import RunScriptButtonsWidget from "./run_script_buttons.js";
-import ProtectedNoteSwitchWidget from "./protected_note_switch.js";
-import NoteTypeWidget from "./note_type.js";
-import NoteActionsWidget from "./note_actions.js";
-import PromotedAttributesWidget from "./promoted_attributes.js";
-import NoteDetailWidget from "./note_detail.js";
-import NoteInfoWidget from "./note_info.js";
-import CalendarWidget from "./calendar.js";
-import AttributesWidget from "./attributes.js";
-import LinkMapWidget from "./link_map.js";
-import NoteRevisionsWidget from "./note_revisions.js";
-import SimilarNotesWidget from "./similar_notes.js";
-import WhatLinksHereWidget from "./what_links_here.js";
-import SidePaneToggles from "./side_pane_toggles.js";
+import FlexContainer from "../widgets/flex_container.js";
+import GlobalMenuWidget from "../widgets/global_menu.js";
+import TabRowWidget from "../widgets/tab_row.js";
+import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
+import StandardTopWidget from "../widgets/standard_top_widget.js";
+import SidePaneContainer from "../widgets/side_pane_container.js";
+import GlobalButtonsWidget from "../widgets/global_buttons.js";
+import SearchBoxWidget from "../widgets/search_box.js";
+import SearchResultsWidget from "../widgets/search_results.js";
+import NoteTreeWidget from "../widgets/note_tree.js";
+import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import NotePathsWidget from "../widgets/note_paths.js";
+import NoteTitleWidget from "../widgets/note_title.js";
+import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
+import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
+import NoteTypeWidget from "../widgets/note_type.js";
+import NoteActionsWidget from "../widgets/note_actions.js";
+import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
+import NoteDetailWidget from "../widgets/note_detail.js";
+import NoteInfoWidget from "../widgets/note_info.js";
+import CalendarWidget from "../widgets/calendar.js";
+import AttributesWidget from "../widgets/attributes.js";
+import LinkMapWidget from "../widgets/link_map.js";
+import NoteRevisionsWidget from "../widgets/note_revisions.js";
+import SimilarNotesWidget from "../widgets/similar_notes.js";
+import WhatLinksHereWidget from "../widgets/what_links_here.js";
+import SidePaneToggles from "../widgets/side_pane_toggles.js";
 import appContext from "../services/app_context.js";
 
 const RIGHT_PANE_CSS = `
@@ -98,7 +98,7 @@ const RIGHT_PANE_CSS = `
 }
 </style>`;
 
-export default class DesktopLayout {
+export default class DesktopMainWindowLayout {
     constructor(customWidgets) {
         this.customWidgets = customWidgets;
     }
