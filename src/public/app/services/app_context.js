@@ -94,12 +94,6 @@ class AppContext extends Component {
     getComponentByEl(el) {
         return $(el).closest(".component").prop('component');
     }
-
-    async protectedSessionStartedEvent() {
-        await treeCache.loadInitialTree();
-
-        this.triggerEvent('treeCacheReloaded');
-    }
 }
 
 const appContext = new AppContext();

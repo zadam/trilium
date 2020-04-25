@@ -1,13 +1,10 @@
-import treeService from './tree.js';
 import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
-
-const $enterProtectedSessionButton = $("#enter-protected-session-button");
-const $leaveProtectedSessionButton = $("#leave-protected-session-button");
+import treeCache from "./tree_cache.js";
 
 let protectedSessionDeferred = null;
 
@@ -45,6 +42,10 @@ async function setupProtectedSession(password) {
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
     protectedSessionHolder.touchProtectedSession();
 
+    await treeCache.loadInitialTree();
+
+    await appContext.triggerEvent('treeCacheReloaded');
+
     appContext.triggerEvent('protectedSessionStarted');
 
     if (protectedSessionDeferred !== null) {
@@ -53,9 +54,6 @@ async function setupProtectedSession(password) {
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;
     }
-
-    $enterProtectedSessionButton.hide();
-    $leaveProtectedSessionButton.show();
 
     toastService.showMessage("Protected session has been started.");
 }
