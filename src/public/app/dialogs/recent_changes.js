@@ -32,10 +32,10 @@ export async function showDialog(ancestorNoteId) {
     for (const [dateDay, dayChanges] of groupedByDate) {
         const $changesList = $('<ul>');
 
-        const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append($changesList);
+        const dayEl = $('<div>').append($('<b>').text(dateDay)).append($changesList);
 
         for (const change of dayChanges) {
-            const formattedTime = utils.formatTime(utils.parseDate(change.date));
+            const formattedTime = change.date.substr(11, 5);
 
             let $noteLink;
 
@@ -82,7 +82,12 @@ export async function showDialog(ancestorNoteId) {
             }
 
             $changesList.append($('<li>')
-                .append(formattedTime + ' - ')
+                .append(
+                    $("<span>")
+                        .text(formattedTime)
+                        .attr("title", change.date)
+                )
+                .append(' - ')
                 .append($noteLink));
         }
 
@@ -92,23 +97,9 @@ export async function showDialog(ancestorNoteId) {
 
 function groupByDate(result) {
     const groupedByDate = new Map();
-    const dayCache = {};
 
     for (const row of result) {
-        let dateDay = utils.parseDate(row.date);
-        dateDay.setHours(0);
-        dateDay.setMinutes(0);
-        dateDay.setSeconds(0);
-        dateDay.setMilliseconds(0);
-
-        // this stupidity is to make sure that we always use the same day object because Map uses only
-        // reference equality
-        if (dayCache[dateDay]) {
-            dateDay = dayCache[dateDay];
-        }
-        else {
-            dayCache[dateDay] = dateDay;
-        }
+        const dateDay = row.date.substr(0, 10);
 
         if (!groupedByDate.has(dateDay)) {
             groupedByDate.set(dateDay, []);

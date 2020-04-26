@@ -13,17 +13,17 @@ async function getRecentChanges(req) {
         SELECT * FROM (
             SELECT note_revisions.noteId,
                    note_revisions.noteRevisionId,
-                   note_revisions.utcDateCreated AS date
+                   note_revisions.dateLastEdited AS date
             FROM note_revisions
-            ORDER BY note_revisions.utcDateCreated DESC
+            ORDER BY note_revisions.dateLastEdited DESC
         )
         UNION ALL SELECT * FROM (
             SELECT 
                    notes.noteId,
                    NULL AS noteRevisionId,
-                   utcDateModified AS date 
+                   dateModified AS date 
             FROM notes 
-            ORDER BY utcDateModified DESC
+            ORDER BY dateModified DESC
         )
         ORDER BY date DESC`);
 
@@ -44,7 +44,7 @@ async function getRecentChanges(req) {
                     notes.title AS current_title,
                     notes.isProtected AS current_isProtected,
                     note_revisions.title,
-                    note_revisions.utcDateCreated AS date
+                    note_revisions.dateCreated AS date
                 FROM 
                     note_revisions
                     JOIN notes USING(noteId)
@@ -60,7 +60,7 @@ async function getRecentChanges(req) {
                     notes.title AS current_title,
                     notes.isProtected AS current_isProtected,
                     notes.title,
-                    notes.utcDateModified AS date
+                    notes.dateModified AS date
                 FROM
                     notes
                 WHERE noteId = ?`, [noteRow.noteId]));
