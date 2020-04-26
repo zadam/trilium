@@ -322,6 +322,14 @@ export default class TabManager extends Component {
         }
     }
 
+    moveTabToNewWindowCommand({tabId}) {
+        const notePath = this.getTabContextById(tabId).notePath;
+
+        this.removeTab(tabId);
+
+        appContext.openInNewWindow(notePath);
+    }
+
     async hoistedNoteChangedEvent({hoistedNoteId}) {
         if (hoistedNoteId === 'root') {
             return;

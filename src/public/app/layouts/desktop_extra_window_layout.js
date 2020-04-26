@@ -30,7 +30,7 @@ export default class DesktopExtraWindowLayout {
                 .child(new TitleBarButtonsWidget()))
             .child(new FlexContainer('row')
                 .collapsible()
-                .child(new FlexContainer('column').id('center-pane')
+                .child(new FlexContainer('column').id('center-pane').css('flex-grow', '1')
                     .child(new FlexContainer('row').class('title-row')
                         .cssBlock('.title-row > * { margin: 5px; }')
                         .child(new NoteTitleWidget())

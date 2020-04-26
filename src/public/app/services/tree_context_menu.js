@@ -56,7 +56,8 @@ class TreeContextMenu {
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
 
         return [
-            { title: 'Open in new tab', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
+            { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
+            { title: 'Open in a new window', command: "openInWindow", uiIcon: "empty", enabled: noSelectedNotes },
             { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "plus",
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
@@ -110,6 +111,9 @@ class TreeContextMenu {
 
         if (command === 'openInTab') {
             appContext.tabManager.openTabWithNote(notePath);
+        }
+        else if (command === 'openInWindow') {
+            appContext.openInNewWindow(notePath);
         }
         else if (command === "insertNoteAfter") {
             const parentNoteId = this.node.data.parentNoteId;

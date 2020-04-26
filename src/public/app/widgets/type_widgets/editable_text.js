@@ -56,6 +56,7 @@ const TPL = `
         overflow: auto;
         height: 100%;
         font-family: var(--detail-text-font-family);
+        padding-left: 12px;
     }
     
     .note-detail-text-editor {
