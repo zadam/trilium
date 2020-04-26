@@ -1,13 +1,9 @@
 import libraryLoader from "../../services/library_loader.js";
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
-import TypeWidget from "./type_widget.js";
 import utils from "../../services/utils.js";
-import appContext from "../../services/app_context.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
 import treeCache from "../../services/tree_cache.js";
-import linkService from "../../services/link.js";
-import noteContentRenderer from "../../services/note_content_renderer.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 
 const ENABLE_INSPECTOR = false;

@@ -21,8 +21,8 @@ const TPL = `
     <div class="note-detail-code-editor"></div>
 </div>`;
 
-export default class CodeTypeWidget extends TypeWidget {
-    static getType() { return "code"; }
+export default class EditableCodeTypeWidget extends TypeWidget {
+    static getType() { return "editable-code"; }
 
     doRender() {
         this.$widget = $(TPL);

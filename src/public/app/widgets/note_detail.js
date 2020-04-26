@@ -6,7 +6,7 @@ import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
 import EmptyTypeWidget from "./type_widgets/empty.js";
 import EditableTextTypeWidget from "./type_widgets/editable_text.js";
-import CodeTypeWidget from "./type_widgets/code.js";
+import EditableCodeTypeWidget from "./type_widgets/editable_code.js";
 import FileTypeWidget from "./type_widgets/file.js";
 import ImageTypeWidget from "./type_widgets/image.js";
 import SearchTypeWidget from "./type_widgets/search.js";
@@ -19,6 +19,7 @@ import keyboardActionsService from "../services/keyboard_actions.js";
 import noteCreateService from "../services/note_create.js";
 import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
+import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 
 const TPL = `
 <div class="note-detail">
@@ -38,7 +39,8 @@ const typeWidgetClasses = {
     'deleted': DeletedTypeWidget,
     'editable-text': EditableTextTypeWidget,
     'read-only-text': ReadOnlyTextTypeWidget,
-    'code': CodeTypeWidget,
+    'editable-code': EditableCodeTypeWidget,
+    'read-only-code': ReadOnlyCodeTypeWidget,
     'file': FileTypeWidget,
     'image': ImageTypeWidget,
     'search': SearchTypeWidget,
@@ -189,8 +191,21 @@ export default class NoteDetailWidget extends TabAwareWidget {
             }
         }
 
+        if (type === 'code' && !this.tabContext.codePreviewDisabled) {
+            const noteComplement = await this.tabContext.getNoteComplement();
+
+            if (note.hasLabel('readOnly') ||
+                (noteComplement.content && noteComplement.content.length > 10000)) {
+                type = 'read-only-code';
+            }
+        }
+
         if (type === 'text') {
             type = 'editable-text';
+        }
+
+        if (type === 'code') {
+            type = 'editable-code';
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
@@ -271,6 +286,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     textPreviewDisabledEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
+            this.refresh();
+        }
+    }
+
+    codePreviewDisabledEvent({tabContext}) {
         if (this.isTab(tabContext.tabId)) {
             this.refresh();
         }

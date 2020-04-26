@@ -48,4 +48,10 @@ export default class TypeWidget extends TabAwareWidget {
             this.refresh();
         }
     }
+
+    codePreviewDisabledEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
+            this.refresh();
+        }
+    }
 }
