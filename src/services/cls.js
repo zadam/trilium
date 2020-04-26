@@ -13,6 +13,10 @@ function getSourceId() {
     return namespace.get('sourceId');
 }
 
+function getLocalNowDateTime() {
+    return namespace.get('localNowDateTime');
+}
+
 function disableEntityEvents() {
     namespace.set('disableEntityEvents', true);
 }
@@ -50,6 +54,7 @@ module.exports = {
     wrap,
     namespace,
     getSourceId,
+    getLocalNowDateTime,
     disableEntityEvents,
     isEntityEventsDisabled,
     reset,

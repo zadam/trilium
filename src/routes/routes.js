@@ -1,3 +1,5 @@
+"use strict";
+
 const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
@@ -82,6 +84,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
         try {
             const result = await cls.init(async () => {
                 cls.namespace.set('sourceId', req.headers['trilium-source-id']);
+                cls.namespace.set('localNowDateTime', req.headers['`trilium-local-now-datetime`']);
                 protectedSessionService.setProtectedSessionId(req);
 
                 if (transactional) {

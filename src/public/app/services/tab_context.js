@@ -58,6 +58,7 @@ class TabContext extends Component {
 
         this.autoBookDisabled = false;
         this.textPreviewDisabled = false;
+        this.codePreviewDisabled = false;
 
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds

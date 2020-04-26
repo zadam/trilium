@@ -8,6 +8,7 @@ function getHeaders(headers) {
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     const allHeaders = {
         'trilium-source-id': glob.sourceId,
+        'trilium-local-now-datetime': utils.localNowDateTime(),
         'x-csrf-token': glob.csrfToken
     };
 

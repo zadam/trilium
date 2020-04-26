@@ -40,6 +40,10 @@ function formatDateTime(date) {
     return formatDate(date) + " " + formatTime(date);
 }
 
+function localNowDateTime() {
+    return dayjs().format('YYYY-MM-DD HH:mm:ss.SSSZZ')
+}
+
 function now() {
     return formatTimeWithSeconds(new Date());
 }
@@ -321,6 +325,7 @@ export default {
     formatDate,
     formatDateISO,
     formatDateTime,
+    localNowDateTime,
     now,
     isElectron,
     isMac,

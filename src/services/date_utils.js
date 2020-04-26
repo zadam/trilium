@@ -1,17 +1,29 @@
 const dayjs = require('dayjs');
+const cls = require('./cls');
 
 function utcNowDateTime() {
     return utcDateStr(new Date());
 }
 
+// CLS date time is important in web deployments - server often runs in different time zone than user is located in
+// so we'd prefer client timezone to be used to record local dates. For this reason requests from client contain
+// "trilium-local-now-datetime" header which is then stored in CLS
 function localNowDateTime() {
-    return dayjs().format('YYYY-MM-DD HH:mm:ss.SSSZZ')
+    return cls.getLocalNowDateTime()
+        || dayjs().format('YYYY-MM-DD HH:mm:ss.SSSZZ')
 }
 
 function localNowDate() {
-    const date = new Date();
+    const clsDateTime = cls.getLocalNowDateTime();
 
-    return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    if (clsDateTime) {
+        return clsDateTime.substr(0, 10);
+    }
+    else {
+        const date = new Date();
+
+        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
 }
 
 function pad(num) {
