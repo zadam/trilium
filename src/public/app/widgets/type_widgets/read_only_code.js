@@ -13,7 +13,7 @@ const TPL = `
     }
     </style>
 
-    <div class="alert alert-warning no-print">
+    <div class="alert alert-warning no-print" style="margin-bottom: 0;">
         Read only code view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
     </div>
 
