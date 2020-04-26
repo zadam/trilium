@@ -1,7 +1,7 @@
-import CollapsibleWidget from "./collapsible_widget.js";
-import linkService from "../services/link.js";
-import server from "../services/server.js";
-import treeCache from "../services/tree_cache.js";
+import CollapsibleWidget from "../collapsible_widget.js";
+import linkService from "../../services/link.js";
+import server from "../../services/server.js";
+import treeCache from "../../services/tree_cache.js";
 
 export default class EditedNotesWidget extends CollapsibleWidget {
     get widgetTitle() { return "Edited notes on this day"; }

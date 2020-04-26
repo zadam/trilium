@@ -1,4 +1,4 @@
-import FlexContainer from "./flex_container.js";
+import FlexContainer from "../flex_container.js";
 
 export default class ScreenContainer extends FlexContainer {
     constructor(screenName, direction) {

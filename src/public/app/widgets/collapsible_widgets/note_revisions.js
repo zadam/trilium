@@ -1,5 +1,5 @@
-import server from "../services/server.js";
-import CollapsibleWidget from "./collapsible_widget.js";
+import server from "../../services/server.js";
+import CollapsibleWidget from "../collapsible_widget.js";
 
 const TPL = `
 <ul class="note-revision-list" style="max-height: 150px; overflow: auto;">
@@ -19,7 +19,7 @@ class NoteRevisionsWidget extends CollapsibleWidget {
     get headerActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
-            const attributesDialog = await import("../dialogs/note_revisions.js");
+            const attributesDialog = await import("../../dialogs/note_revisions.js");
             attributesDialog.showCurrentNoteRevisions(this.noteId);
         });
 

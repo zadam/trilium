@@ -1,4 +1,4 @@
-import BasicWidget from "./basic_widget.js";
+import BasicWidget from "../basic_widget.js";
 
 const TPL = `
 <button type="button" class="action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">

@@ -1,4 +1,4 @@
-import CollapsibleWidget from "./collapsible_widget.js";
+import CollapsibleWidget from "../collapsible_widget.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -21,7 +21,7 @@ export default class LinkMapWidget extends CollapsibleWidget {
     get headerActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
-            const linkMapDialog = await import("../dialogs/link_map.js");
+            const linkMapDialog = await import("../../dialogs/link_map.js");
             linkMapDialog.showDialog();
         });
 
@@ -66,7 +66,7 @@ export default class LinkMapWidget extends CollapsibleWidget {
         const $linkMapContainer = this.$body.find('.link-map-container');
         $linkMapContainer.attr("id", "link-map-container-" + linkMapContainerIdCtr++);
 
-        const LinkMapServiceClass = (await import('../services/link_map.js')).default;
+        const LinkMapServiceClass = (await import('../../services/link_map.js')).default;
 
         this.linkMapService = new LinkMapServiceClass(note, $linkMapContainer, {
             maxDepth: 1,

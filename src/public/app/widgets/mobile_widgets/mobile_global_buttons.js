@@ -1,4 +1,4 @@
-import BasicWidget from "./basic_widget.js";
+import BasicWidget from "../basic_widget.js";
 
 const WIDGET_TPL = `
 <div id="global-buttons">

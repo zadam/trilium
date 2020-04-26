@@ -1,7 +1,7 @@
-import utils from "../services/utils.js";
-import linkService from "../services/link.js";
-import ws from "../services/ws.js";
-import CollapsibleWidget from "./collapsible_widget.js";
+import utils from "../../services/utils.js";
+import linkService from "../../services/link.js";
+import ws from "../../services/ws.js";
+import CollapsibleWidget from "../collapsible_widget.js";
 
 export default class AttributesWidget extends CollapsibleWidget {
     get widgetTitle() { return "Attributes"; }
@@ -16,7 +16,7 @@ export default class AttributesWidget extends CollapsibleWidget {
     get headerActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
-            const attributesDialog = await import("../dialogs/attributes.js");
+            const attributesDialog = await import("../../dialogs/attributes.js");
             attributesDialog.showDialog();
         });
 

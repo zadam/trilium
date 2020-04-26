@@ -1,8 +1,8 @@
-import BasicWidget from "./basic_widget.js";
-import appContext from "../services/app_context.js";
-import contextMenu from "../services/context_menu.js";
-import noteCreateService from "../services/note_create.js";
-import branchService from "../services/branches.js";
+import BasicWidget from "../basic_widget.js";
+import appContext from "../../services/app_context.js";
+import contextMenu from "../../services/context_menu.js";
+import noteCreateService from "../../services/note_create.js";
+import branchService from "../../services/branches.js";
 
 const TPL = `<button type="button" class="action-button bx bx-menu"></button>`;
 
