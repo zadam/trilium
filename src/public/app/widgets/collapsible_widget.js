@@ -34,7 +34,8 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', this.componentId); // for toggle to work we need id
 
-        this.widgetName = this.constructor.name;
+        // not using constructor name because of webpack mangling class names ...
+        this.widgetName = this.widgetTitle.replace(/[^[a-zA-Z0-9]/g, "_");
 
         if (!options.is(this.widgetName + 'Collapsed')) {
             this.$bodyWrapper.collapse("show");
