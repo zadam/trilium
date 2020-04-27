@@ -99,7 +99,7 @@ function download(url) {
     url += '?' + Date.now(); // don't use cache
 
     if (isElectron()) {
-        const remote = utils.dynamicRequire('electron').remote;
+        const remote = dynamicRequire('electron').remote;
 
         remote.getCurrentWebContents().downloadURL(url);
     }
@@ -273,7 +273,7 @@ function isHtmlEmpty(html) {
 
 async function clearBrowserCache() {
     if (isElectron()) {
-        const win = utils.dynamicRequire('electron').remote.getCurrentWindow();
+        const win = dynamicRequire('electron').remote.getCurrentWindow();
         await win.webContents.session.clearCache();
     }
 }
