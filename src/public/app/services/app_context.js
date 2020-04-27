@@ -108,9 +108,9 @@ class AppContext extends Component {
             ipcRenderer.send('create-extra-window', {notePath});
         }
         else {
-            const url = 'http://127.0.0.1:37740/#' + notePath;
+            const url = window.location.protocol + '//' + window.location.host + window.location.pathname + '?extra=1#' + notePath;
 
-            window.open(url);
+            window.open(url, '', 'width=1000,height=800');
         }
     }
 }

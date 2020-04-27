@@ -18,8 +18,8 @@ let setupWindow;
 async function createExtraWindow(notePath) {
     const {BrowserWindow} = require('electron');
     const win = new BrowserWindow({
-        height: 600,
-        width: 800,
+        width: 1000,
+        height: 800,
         title: 'Trilium Notes',
         webPreferences: {
             enableRemoteModule: true,
