@@ -177,7 +177,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         // This function MUST be defined to enable dropping of items on the tree.
                         // data.hitMode is 'before', 'after', or 'over'.
 
-                        const selectedBranchIds = this.getSelectedNodes().map(node => node.data.branchId);
+                        const selectedBranchIds = this.getSelectedOrActiveNodes().map(node => node.data.branchId);
 
                         if (data.hitMode === "before") {
                             branchService.moveBeforeBranch(selectedBranchIds, node.data.branchId);
