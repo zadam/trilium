@@ -389,7 +389,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
+        node.folder = treeBuilder.getChildBranchesWithoutImages(note).length > 0
+                   || note.type === 'search';
         node.icon = treeBuilder.getIcon(note);
         node.extraClasses = treeBuilder.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
@@ -480,6 +481,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
             else if (attr.type === 'relation' && attr.name === 'template') {
                 // missing handling of things inherited from template
                 noteIdsToReload.add(attr.noteId);
+            }
+            else if (attr.type === 'relation' && attr.name === 'imageLink') {
+                const note = treeCache.getNoteFromCache(attr.noteId);
+
+                if (note && note.getChildNoteIds().includes(attr.value)) {
+                    // there's new/deleted imageLink betwen note and its image child - which can show/hide
+                    // the image (if there is a imageLink relation between parent and child then it is assumed to be "contained" in the note and thus does not have to be displayed in the tree)
+                    noteIdsToReload.add(attr.noteId);
+                }
             }
         }
 

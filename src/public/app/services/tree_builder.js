@@ -98,9 +98,8 @@ async function prepareNode(branch) {
         key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
-    if (note.hasChildren() || note.type === 'search') {
-        node.folder = true;
-    }
+    node.folder = getChildBranchesWithoutImages(note).length > 0
+               || note.type === 'search';
 
     return node;
 }
@@ -108,22 +107,29 @@ async function prepareNode(branch) {
 async function prepareRealBranch(parentNote) {
     utils.assertArguments(parentNote);
 
-    const childBranches = await parentNote.getChildBranches();
-
-    if (!childBranches) {
-        ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
-        return;
-    }
-
     const noteList = [];
 
-    for (const branch of childBranches) {
+    for (const branch of getChildBranchesWithoutImages(parentNote)) {
         const node = await prepareNode(branch);
 
         noteList.push(node);
     }
 
     return noteList;
+}
+
+function getChildBranchesWithoutImages(parentNote) {
+    const childBranches = parentNote.getChildBranches();
+
+    if (!childBranches) {
+        ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
+        return;
+    }
+
+    const imageLinks = parentNote.getRelations('imageLink');
+
+    // image is already visible in the parent note so no need to display it separately in the book
+    return childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
 }
 
 async function prepareSearchBranch(note) {
@@ -170,5 +176,6 @@ export default {
     prepareRootNode,
     prepareBranch,
     getExtraClasses,
-    getIcon
+    getIcon,
+    getChildBranchesWithoutImages
 }
