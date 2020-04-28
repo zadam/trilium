@@ -7,7 +7,14 @@ const TPL = `
     <style>
     .title-bar-buttons {
         margin-top: 4px;
-        min-width: 100px;
+        flex-shrink: 0;
+    }
+    
+    .title-bar-buttons button {
+        border: none;
+        font-size: 150%;
+        padding-left: 10px;
+        padding-right: 10px;
     }
     </style>
 

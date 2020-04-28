@@ -14,7 +14,7 @@ const TPL = `
     .global-menu button {
         margin-right: 10px;
         height: 33px;
-        border-bottom: none;
+        border: none;
     }
     
     .global-menu .dropdown-menu {
