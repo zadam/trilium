@@ -17,6 +17,10 @@ const TPL = `
         min-width: 5em;
         width: 100%;
     }
+    
+    .note-title-container input.note-title.protected {
+        text-shadow: 4px 4px 4px var(--muted-text-color);
+    }
     </style>
 
     <input autocomplete="off" value="" class="note-title" tabindex="1">
@@ -52,6 +56,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.val(note.title);
 
         this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
+console.trace("Refreshing - isProtected: ", !!note.isProtected);
+        this.$noteTitle.toggleClass("protected", !!note.isProtected);
     }
 
     async beforeNoteSwitchEvent({tabContext}) {
@@ -77,6 +83,12 @@ export default class NoteTitleWidget extends TabAwareWidget {
             this.$noteTitle
                 .trigger('focus')
                 .trigger('select');
+        }
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
         }
     }
 

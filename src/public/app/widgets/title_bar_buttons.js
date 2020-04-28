@@ -11,7 +11,8 @@ const TPL = `
     }
     
     .title-bar-buttons button {
-        border: none;
+        border: none !important;
+        background: none !important;
         font-size: 150%;
         padding-left: 10px;
         padding-right: 10px;
