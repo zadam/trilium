@@ -82,7 +82,7 @@ if (utils.isElectron()) {
             });
         }
 
-        if (params.linkURL.length !== 0 && params.mediaType === 'none') {
+        if (!["", "javascript:", "about:blank#blocked"].includes(params.linkURL) && params.mediaType === 'none') {
             items.push({
                 title: `Copy link`,
                 uiIcon: "copy",
