@@ -56,7 +56,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.val(note.title);
 
         this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
-console.trace("Refreshing - isProtected: ", !!note.isProtected);
+
         this.$noteTitle.toggleClass("protected", !!note.isProtected);
     }
 
