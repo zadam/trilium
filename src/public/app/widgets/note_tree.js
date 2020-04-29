@@ -262,6 +262,22 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return notes;
     }
 
+    expandTree(node = null) {
+        if (!node) {
+            const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+
+            node = this.getNodesByNoteId(hoistedNoteId)[0];
+        }
+
+        this.batchUpdate(async () => {
+            // trick - first force load of the whole subtree and then visit and expand.
+            // unfortunately the two steps can't be combined
+            await node.visitAndLoad(node => {}, true);
+
+            node.visit(node => node.setExpanded(true), true);
+        });
+    }
+
     collapseTree(node = null) {
         if (!node) {
             const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
@@ -269,9 +285,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
             node = this.getNodesByNoteId(hoistedNoteId)[0];
         }
 
-        node.setExpanded(false);
-
-        node.visit(node => node.setExpanded(false));
+        this.batchUpdate(() => {
+            node.visit(node => node.setExpanded(false), true);
+        });
     }
 
     /**
@@ -461,6 +477,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
         toastService.showMessage("Saved search note refreshed.");
     }
 
+    async batchUpdate(cb) {
+        let prevUpdate;
+
+        try {
+            // disable rendering during update for increased performance
+            prevUpdate = this.tree.enableUpdate(false);
+
+            await cb();
+        }
+        finally {
+            this.tree.enableUpdate(prevUpdate);
+        }
+    }
+
     async entitiesReloadedEvent({loadResults}) {
         const activeNode = this.getActiveNode();
         const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
@@ -542,28 +572,30 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        for (const noteId of noteIdsToUpdate) {
-            for (const node of this.getNodesByNoteId(noteId)) {
-                this.updateNode(node);
-            }
-        }
-
-        for (const parentNoteId of loadResults.getNoteReorderings()) {
-            for (const node of this.getNodesByNoteId(parentNoteId)) {
-                if (node.isLoaded()) {
-                    node.sortChildren((nodeA, nodeB) => {
-                        const branchA = treeCache.branches[nodeA.data.branchId];
-                        const branchB = treeCache.branches[nodeB.data.branchId];
-
-                        if (!branchA || !branchB) {
-                            return 0;
-                        }
-
-                        return branchA.notePosition - branchB.notePosition;
-                    });
+        await this.batchUpdate(async () => {
+            for (const noteId of noteIdsToUpdate) {
+                for (const node of this.getNodesByNoteId(noteId)) {
+                    this.updateNode(node);
                 }
             }
-        }
+
+            for (const parentNoteId of loadResults.getNoteReorderings()) {
+                for (const node of this.getNodesByNoteId(parentNoteId)) {
+                    if (node.isLoaded()) {
+                        node.sortChildren((nodeA, nodeB) => {
+                            const branchA = treeCache.branches[nodeA.data.branchId];
+                            const branchB = treeCache.branches[nodeB.data.branchId];
+
+                            if (!branchA || !branchB) {
+                                return 0;
+                            }
+
+                            return branchA.notePosition - branchB.notePosition;
+                        });
+                    }
+                }
+            }
+        });
 
         if (activeNotePath) {
             let node = await this.expandToNote(activeNotePath);
@@ -748,6 +780,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
     
             nextSibling.setSelected(true);
         }
+    }
+
+    expandSubtreeCommand({node}) {console.log("HQY!", node);
+        this.expandTree(node);
     }
 
     collapseSubtreeCommand({node}) {

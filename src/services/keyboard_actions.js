@@ -46,8 +46,15 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "note-tree"
     },
     {
+        actionName: "expandSubtree",
+        defaultShortcuts: [],
+        description: "Expand subtree of current note",
+        scope: "note-tree"
+    },
+    {
         actionName: "collapseTree",
         defaultShortcuts: ["Alt+C"],
+        description: "Collapses the complete note tree",
         scope: "note-tree"
     },
     {
