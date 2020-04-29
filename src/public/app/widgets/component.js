@@ -15,7 +15,7 @@ import Mutex from "../services/mutex.js";
  */
 export default class Component {
     constructor() {
-        this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
+        this.componentId = `comp-` + utils.randomString(8);
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();
