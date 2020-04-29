@@ -5,7 +5,21 @@
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$USER_HOME$/trilium-data/document.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/../trilium-data/document.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="document" uuid="066dc5f4-4097-429e-8cf1-3adc0a9d648a">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/dist/trilium linux x64/trilium-data/document.db</jdbc-url>
+      <libraries>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.16.1/xerial-sqlite-license.txt</url>
+        </library>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.16.1/sqlite-jdbc-3.16.1.jar</url>
+        </library>
+      </libraries>
     </data-source>
   </component>
 </project>
