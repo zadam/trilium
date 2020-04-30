@@ -220,7 +220,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     $span.append(refreshSearchButton);
                 }
             },
-            // this is done to automatically lazy load all expanded search notes after tree load
+            // this is done to automatically lazy load all expanded notes after tree load
             loadChildren: (event, data) => {
                 // semaphore since the conflict when two processes are trying to load the same data
                 // breaks the fancytree
@@ -441,12 +441,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
 
-    async reload() {
-        const rootNode = await treeBuilder.prepareRootNode();
-
-        await this.tree.reload([rootNode]);
-    }
-
     // must be event since it's triggered from outside the tree
     collapseTreeEvent() { this.collapseTree(); }
 
@@ -637,7 +631,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const activeNotePath = activeNode !== null ? treeService.getNotePath(activeNode) : null;
 
-        await this.reload();
+        const rootNode = await treeBuilder.prepareRootNode();
+
+        await this.batchUpdate(async () => {
+            await this.tree.reload([rootNode]);
+        });
 
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);

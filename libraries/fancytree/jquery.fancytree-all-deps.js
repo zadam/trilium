@@ -2986,7 +2986,7 @@ var uniqueId = $.fn.extend( {
 				self = this,
 				wasExpanded = this.isExpanded();
 
-			_assert(this.isLazy(), "load() requires a lazy node");
+			//_assert(this.isLazy(), "load() requires a lazy node");
 			// _assert( forceReload || this.isUndefined(), "Pass forceReload=true to re-load a lazy node" );
 			if (!forceReload && !this.isUndefined()) {
 				return _getResolvedPromise(this);

@@ -21,12 +21,12 @@ async function prepareRootNode() {
     return await prepareNode(hoistedBranch);
 }
 
-async function prepareBranch(note) {
+async function prepareChildren(note) {
     if (note.type === 'search') {
-        return await prepareSearchBranch(note);
+        return await prepareSearchNoteChildren(note);
     }
     else {
-        return await prepareRealBranch(note);
+        return await prepareNormalNoteChildren(note);
     }
 }
 
@@ -94,17 +94,24 @@ async function prepareNode(branch) {
         icon: getIcon(note),
         refKey: note.noteId,
         expanded: branch.isExpanded || hoistedNoteId === note.noteId,
-        lazy: true,
         key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
-    node.folder = getChildBranchesWithoutImages(note).length > 0
-               || note.type === 'search';
+    const childBranches = getChildBranchesWithoutImages(note);
+
+    node.folder = childBranches.length > 0
+               || note.type === 'search'
+
+    node.lazy = node.folder && !node.expanded;
+
+    if (node.folder && node.expanded) {
+        node.children = await prepareChildren(note);
+    }
 
     return node;
 }
 
-async function prepareRealBranch(parentNote) {
+async function prepareNormalNoteChildren(parentNote) {
     utils.assertArguments(parentNote);
 
     const noteList = [];
@@ -132,12 +139,12 @@ function getChildBranchesWithoutImages(parentNote) {
     return childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
 }
 
-async function prepareSearchBranch(note) {
+async function prepareSearchNoteChildren(note) {
     await treeCache.reloadNotes([note.noteId]);
 
     const newNote = await treeCache.getNote(note.noteId);
 
-    return await prepareRealBranch(newNote);
+    return await prepareNormalNoteChildren(newNote);
 }
 
 function getExtraClasses(note) {
@@ -174,7 +181,7 @@ function getExtraClasses(note) {
 
 export default {
     prepareRootNode,
-    prepareBranch,
+    prepareBranch: prepareChildren,
     getExtraClasses,
     getIcon,
     getChildBranchesWithoutImages
