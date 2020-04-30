@@ -44,7 +44,8 @@ async function loadNoteRevisions(noteId, noteRevId) {
     for (const item of revisionItems) {
         $list.append($('<a class="dropdown-item" tabindex="0">')
             .text(item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`)
-            .attr('data-note-revision-id', item.noteRevisionId));
+            .attr('data-note-revision-id', item.noteRevisionId))
+            .attr('title', 'This revision was last edited on ' + item.dateLastEdited);
     }
 
     $listDropdown.dropdown('show');

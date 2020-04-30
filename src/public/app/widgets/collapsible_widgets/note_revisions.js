@@ -59,6 +59,7 @@ class NoteRevisionsWidget extends CollapsibleWidget {
                 'data-action': 'note-revision',
                 'data-note-path': note.noteId,
                 'data-note-revision-id': item.noteRevisionId,
+                title: 'This revision was last edited on ' + item.dateLastEdited,
                 href: 'javascript:'
             }).text(item.dateLastEdited.substr(0, 16)));
 
