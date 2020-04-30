@@ -222,13 +222,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             // this is done to automatically lazy load all expanded search notes after tree load
             loadChildren: (event, data) => {
-                data.node.visit((subNode) => {
-                    // Load all lazy/unloaded child nodes
-                    // (which will trigger `loadChildren` recursively)
-                    if (subNode.isUndefined() && subNode.isExpanded()) {
-                        subNode.load();
-                    }
-                });
+                // semaphore since the conflict when two processes are trying to load the same data
+                // breaks the fancytree
+                if (!this.tree || !this.tree.autoLoadingDisabled) {
+                    data.node.visit((subNode) => {
+                        // Load all lazy/unloaded child nodes
+                        // (which will trigger `loadChildren` recursively)
+                        if (subNode.isUndefined() && subNode.isExpanded()) {
+                            subNode.load();
+                        }
+                    });
+                }
             }
         });
 
@@ -262,7 +266,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return notes;
     }
 
-    expandTree(node = null) {
+    async expandTree(node = null) {
         if (!node) {
             const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
@@ -270,11 +274,18 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         this.batchUpdate(async () => {
-            // trick - first force load of the whole subtree and then visit and expand.
-            // unfortunately the two steps can't be combined
-            await node.visitAndLoad(node => {}, true);
+            try {
+                this.tree.autoLoadingDisabled = true;
 
-            node.visit(node => node.setExpanded(true), true);
+                // trick - first force load of the whole subtree and then visit and expand.
+                // unfortunately the two steps can't be combined
+                await node.visitAndLoad(_ => {}, true);
+
+                node.visit(node => node.setExpanded(true), true);
+            }
+            finally {
+                this.tree.autoLoadingDisabled = false;
+            }
         });
     }
 
@@ -478,16 +489,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async batchUpdate(cb) {
-        let prevUpdate;
-
         try {
             // disable rendering during update for increased performance
-            prevUpdate = this.tree.enableUpdate(false);
+            this.tree.enableUpdate(false);
 
             await cb();
         }
         finally {
-            this.tree.enableUpdate(prevUpdate);
+            this.tree.enableUpdate(true);
         }
     }
 
@@ -782,7 +791,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    expandSubtreeCommand({node}) {console.log("HQY!", node);
+    expandSubtreeCommand({node}) {
         this.expandTree(node);
     }
 
