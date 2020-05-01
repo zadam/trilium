@@ -3,7 +3,6 @@ import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import contextMenu from "../services/context_menu.js";
 import treeCache from "../services/tree_cache.js";
-import treeBuilder from "../services/tree_builder.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";
@@ -15,17 +14,24 @@ import keyboardActionsService from "../services/keyboard_actions.js";
 import clipboard from "../services/clipboard.js";
 import protectedSessionService from "../services/protected_session.js";
 import syncService from "../services/sync.js";
+import options from "../services/options.js";
 
 const TPL = `
-<div class="tree">
+<div class="tree-wrapper">
     <style>
-    .tree {
-        overflow: auto;
+    .tree-wrapper {
         flex-grow: 1;
         flex-shrink: 1;
         flex-basis: 60%;
         font-family: var(--tree-font-family);
         font-size: var(--tree-font-size);
+        position: relative;
+        min-height: 0;
+    }
+    
+    .tree {
+        height: 100%;
+        overflow: auto;
     }
     
     .refresh-search-button {
@@ -40,19 +46,79 @@ const TPL = `
     .refresh-search-button:hover {
         border-color: var(--button-border-color);
     }
+    
+    .tree-settings-button {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 1000;
+    }
+    
+    .tree-settings-popup {
+        display: none; 
+        position: absolute; 
+        background-color: var(--accented-background-color); 
+        border: 1px solid var(--main-border-color); 
+        padding: 20px; 
+        z-index: 1000;
+        width: 300px; 
+        border-radius: 10px 0 10px 10px;
+    }
     </style>
+    
+    <button class="btn btn-sm icon-button bx bx-cog tree-settings-button" title="Tree settings"></button>
+    
+    <div class="tree-settings-popup">
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input hide-archived-notes" type="checkbox" value="">
+            
+                Hide archived notes
+            </label>
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input hide-included-images" type="checkbox" value="">
+                
+                Hide images included in a note
+            </label>
+        </div>
+    
+        <br/>
+    
+        <button class="btn btn-sm btn-primary save-tree-settings-button" type="submit">Save & apply changes</button>
+    </div>
+    
+    <div class="tree"></div>
 </div>
 `;
 
+const NOTE_TYPE_ICONS = {
+    "file": "bx bx-file",
+    "image": "bx bx-image",
+    "code": "bx bx-code",
+    "render": "bx bx-extension",
+    "search": "bx bx-file-find",
+    "relation-map": "bx bx-map-alt",
+    "book": "bx bx-book"
+};
+
 export default class NoteTreeWidget extends TabAwareWidget {
+    constructor(treeName) {
+        super();
+
+        this.treeName = treeName;
+    }
+
     doRender() {
         this.$widget = $(TPL);
+        this.$tree = this.$widget.find('.tree');
 
-        this.$widget.on("click", ".unhoist-button", hoistedNoteService.unhoist);
-        this.$widget.on("click", ".refresh-search-button", () => this.refreshSearch());
+        this.$tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
+        this.$tree.on("click", ".refresh-search-button", () => this.refreshSearch());
 
         // fancytree doesn't support middle click so this is a way to support it
-        this.$widget.on('mousedown', '.fancytree-title', e => {
+        this.$tree.on('mousedown', '.fancytree-title', e => {
             if (e.which === 2) {
                 const node = $.ui.fancytree.getNode(e);
 
@@ -67,20 +133,76 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
+        this.$treeSettingsPopup = this.$widget.find('.tree-settings-popup');
+        this.$hideArchivedNotesCheckbox = this.$treeSettingsPopup.find('.hide-archived-notes');
+        this.$hideIncludedImages = this.$treeSettingsPopup.find('.hide-included-images');
+
+        this.$treeSettingsButton = this.$widget.find('.tree-settings-button');
+        this.$treeSettingsButton.on("click", e => {
+            if (this.$treeSettingsPopup.is(":visible")) {
+                this.$treeSettingsPopup.hide();
+                return;
+            }
+
+            this.$hideArchivedNotesCheckbox.prop("checked", this.hideArchivedNotes);
+            this.$hideIncludedImages.prop("checked", this.hideIncludedImages);
+
+            let top = this.$treeSettingsButton[0].offsetTop;
+            let left = this.$treeSettingsButton[0].offsetLeft;
+            top += this.$treeSettingsButton.outerHeight();
+            left += this.$treeSettingsButton.outerWidth() - this.$treeSettingsPopup.outerWidth();
+
+            if (left < 0) {
+                left = 0;
+            }
+
+            this.$treeSettingsPopup.css({
+                display: "block",
+                top: top,
+                left: left
+            }).addClass("show");
+        });
+
+        this.$saveTreeSettingsButton = this.$treeSettingsPopup.find('.save-tree-settings-button');
+        this.$saveTreeSettingsButton.on('click', async () => {
+            await this.setHideArchivedNotes(this.$hideArchivedNotesCheckbox.prop("checked"));
+            await this.setHideIncludedImages(this.$hideIncludedImages.prop("checked"));
+
+            this.$treeSettingsPopup.hide();
+
+            this.reloadTreeFromCache();
+        });
+
         this.initialized = this.initFancyTree();
 
         return this.$widget;
     }
 
-    async initFancyTree() {
-        const treeData = [await treeBuilder.prepareRootNode()];
+    get hideArchivedNotes() {
+        return options.is("hideArchivedNotes_" + this.treeName);
+    }
 
-        this.$widget.fancytree({
+    async setHideArchivedNotes(val) {
+        await options.save("hideArchivedNotes_" + this.treeName, val.toString());
+    }
+
+    get hideIncludedImages() {
+        return options.is("hideIncludedImages_" + this.treeName);
+    }
+
+    async setHideIncludedImages(val) {
+        await options.save("hideIncludedImages_" + this.treeName, val.toString());
+    }
+
+    async initFancyTree() {
+        const treeData = [await this.prepareRootNode()];
+
+        this.$tree.fancytree({
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
             extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
             source: treeData,
-            scrollParent: this.$widget,
+            scrollParent: this.$tree,
             minExpandLevel: 2, // root can't be collapsed
             click: (event, data) => {
                 const targetType = data.targetType;
@@ -191,10 +313,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                 }
             },
-            lazyLoad: function(event, data) {
+            lazyLoad: (event, data) => {
                 const noteId = data.node.data.noteId;
 
-                data.result = treeCache.getNote(noteId).then(note => treeBuilder.prepareBranch(note));
+                data.result = treeCache.getNote(noteId).then(note => this.prepareChildren(note));
             },
             clones: {
                 highlightActiveClones: true
@@ -236,7 +358,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        this.$widget.on('contextmenu', '.fancytree-node', e => {
+        this.$tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
             import("../services/tree_context_menu.js").then(({default: TreeContextMenu}) => {
@@ -247,7 +369,191 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return false; // blocks default browser right click menu
         });
 
-        this.tree = $.ui.fancytree.getTree(this.$widget);
+        this.tree = $.ui.fancytree.getTree(this.$tree);
+    }
+
+    async prepareRootNode() {
+        await treeCache.initializedPromise;
+
+        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+
+        let hoistedBranch;
+
+        if (hoistedNoteId === 'root') {
+            hoistedBranch = treeCache.getBranch('root');
+        }
+        else {
+            const hoistedNote = await treeCache.getNote(hoistedNoteId);
+            hoistedBranch = (await hoistedNote.getBranches())[0];
+        }
+
+        return await this.prepareNode(hoistedBranch);
+    }
+
+    async prepareChildren(note) {
+        if (note.type === 'search') {
+            return await this.prepareSearchNoteChildren(note);
+        }
+        else {
+            return await this.prepareNormalNoteChildren(note);
+        }
+    }
+
+    getIconClass(note) {
+        const labels = note.getLabels('iconClass');
+
+        return labels.map(l => l.value).join(' ');
+    }
+
+    getIcon(note) {
+        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+
+        const iconClass = this.getIconClass(note);
+
+        if (iconClass) {
+            return iconClass;
+        }
+        else if (note.noteId === 'root') {
+            return "bx bx-chevrons-right";
+        }
+        else if (note.noteId === hoistedNoteId) {
+            return "bx bxs-arrow-from-bottom";
+        }
+        else if (note.type === 'text') {
+            if (note.hasChildren()) {
+                return "bx bx-folder";
+            }
+            else {
+                return "bx bx-note";
+            }
+        }
+        else {
+            return NOTE_TYPE_ICONS[note.type];
+        }
+    }
+
+    async prepareNode(branch) {
+        const note = await branch.getNote();
+
+        if (!note) {
+            throw new Error(`Branch has no note ` + branch.noteId);
+        }
+
+        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+
+        const node = {
+            noteId: note.noteId,
+            parentNoteId: branch.parentNoteId,
+            branchId: branch.branchId,
+            isProtected: note.isProtected,
+            noteType: note.type,
+            title: utils.escapeHtml(title),
+            extraClasses: this.getExtraClasses(note),
+            icon: this.getIcon(note),
+            refKey: note.noteId,
+            expanded: branch.isExpanded || hoistedNoteId === note.noteId,
+            key: utils.randomString(12) // this should prevent some "duplicate key" errors
+        };
+
+        const childBranches = await this.getChildBranches(note);
+
+        node.folder = childBranches.length > 0
+            || note.type === 'search'
+
+        node.lazy = node.folder && !node.expanded;
+
+        if (node.folder && node.expanded) {
+            node.children = await this.prepareChildren(note);
+        }
+
+        return node;
+    }
+
+    async prepareNormalNoteChildren(parentNote) {
+        utils.assertArguments(parentNote);
+
+        const noteList = [];
+
+        for (const branch of await this.getChildBranches(parentNote)) {
+            const node = await this.prepareNode(branch);
+
+            noteList.push(node);
+        }
+
+        return noteList;
+    }
+
+    async getChildBranches(parentNote) {
+        let childBranches = parentNote.getChildBranches();
+
+        if (!childBranches) {
+            ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
+            return;
+        }
+
+        if (this.hideIncludedImages) {
+            const imageLinks = parentNote.getRelations('imageLink');
+
+            // image is already visible in the parent note so no need to display it separately in the book
+            childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
+        }
+
+        if (this.hideArchivedNotes) {
+            const filteredBranches = [];
+
+            for (const childBranch of childBranches) {
+                const childNote = await childBranch.getNote();
+
+                if (!childNote.hasLabel('archived')) {
+                    filteredBranches.push(childBranch);
+                }
+            }
+
+            childBranches = filteredBranches;
+        }
+
+        return childBranches;
+    }
+
+    async prepareSearchNoteChildren(note) {
+        await treeCache.reloadNotes([note.noteId]);
+
+        const newNote = await treeCache.getNote(note.noteId);
+
+        return await this.prepareNormalNoteChildren(newNote);
+    }
+
+    getExtraClasses(note) {
+        utils.assertArguments(note);
+
+        const extraClasses = [];
+
+        if (note.isProtected) {
+            extraClasses.push("protected");
+        }
+
+        if (note.getParentNoteIds().length > 1) {
+            extraClasses.push("multiple-parents");
+        }
+
+        const cssClass = note.getCssClass();
+
+        if (cssClass) {
+            extraClasses.push(cssClass);
+        }
+
+        extraClasses.push(utils.getNoteTypeClass(note.type));
+
+        if (note.mime) { // some notes should not have mime type (e.g. render)
+            extraClasses.push(utils.getMimeTypeClass(note.mime));
+        }
+
+        if (note.hasLabel('archived')) {
+            extraClasses.push("archived");
+        }
+
+        return extraClasses.join(" ");
     }
 
     /** @return {FancytreeNode[]} */
@@ -374,6 +680,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 let foundChildNode = this.findChildNode(parentNode, childNoteId);
 
                 if (!foundChildNode) { // note might be recently created so we'll force reload and try again
+                    parentNode.lazy = true;
                     await parentNode.load(true);
 
                     foundChildNode = this.findChildNode(parentNode, childNoteId);
@@ -410,16 +717,16 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return this.getNodeFromPath(notePath, true, expandOpts);
     }
 
-    updateNode(node) {
+    async updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = treeBuilder.getChildBranchesWithoutImages(note).length > 0
+        node.folder = (await this.getChildBranches(note)).length > 0
                    || note.type === 'search';
-        node.icon = treeBuilder.getIcon(note);
-        node.extraClasses = treeBuilder.getExtraClasses(note);
+        node.icon = this.getIcon(note);
+        node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         node.renderTitle();
     }
@@ -476,6 +783,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async refreshSearch() {
         const activeNode = this.getActiveNode();
 
+        activeNode.lazy = true;
         activeNode.load(true);
         activeNode.setExpanded(true);
 
@@ -569,6 +877,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         for (const noteId of noteIdsToReload) {
             for (const node of this.getNodesByNoteId(noteId)) {
+                node.lazy = true;
                 await node.load(true);
 
                 this.updateNode(node);
@@ -631,7 +940,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const activeNotePath = activeNode !== null ? treeService.getNotePath(activeNode) : null;
 
-        const rootNode = await treeBuilder.prepareRootNode();
+        const rootNode = await this.prepareRootNode();
 
         await this.batchUpdate(async () => {
             await this.tree.reload([rootNode]);

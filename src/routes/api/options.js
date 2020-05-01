@@ -110,7 +110,9 @@ async function getUserThemes() {
 function isAllowed(name) {
     return ALLOWED_OPTIONS.has(name)
         || name.startsWith("keyboardShortcuts")
-        || name.endsWith("Collapsed");
+        || name.endsWith("Collapsed")
+        || name.startsWith("hideArchivedNotes")
+        || name.startsWith("hideIncludedImages");
 }
 
 module.exports = {

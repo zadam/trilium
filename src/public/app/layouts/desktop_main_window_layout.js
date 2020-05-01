@@ -103,7 +103,7 @@ export default class DesktopMainWindowLayout {
     }
 
     getRootWidget(appContext) {
-        appContext.mainTreeWidget = new NoteTreeWidget();
+        appContext.mainTreeWidget = new NoteTreeWidget("main");
 
         return new FlexContainer('column')
             .setParent(appContext)
