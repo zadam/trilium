@@ -61,7 +61,7 @@ const TPL = `
         border: 1px solid var(--main-border-color); 
         padding: 20px; 
         z-index: 1000;
-        width: 300px; 
+        width: 320px; 
         border-radius: 10px 0 10px 10px;
     }
     </style>
@@ -81,6 +81,8 @@ const TPL = `
                 <input class="form-check-input hide-included-images" type="checkbox" value="">
                 
                 Hide images included in a note
+                <span class="bx bx-info-circle" 
+                      title="Images which are shown in the parent text note will not be displayed in the tree"></span>
             </label>
         </div>
     
@@ -161,7 +163,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 top: top,
                 left: left
             }).addClass("show");
+
+            return false;
         });
+
+        this.$treeSettingsPopup.on("click", e => { e.stopPropagation(); });
+
+        $(document).on('click', () => this.$treeSettingsPopup.hide());
 
         this.$saveTreeSettingsButton = this.$treeSettingsPopup.find('.save-tree-settings-button');
         this.$saveTreeSettingsButton.on('click', async () => {
