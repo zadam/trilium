@@ -314,7 +314,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
             },
             lazyLoad: (event, data) => {
-                const noteId = data.node.data.noteId;
+                const {noteId, noteType} = data.node.data;
+
+                if (noteType === 'search') {
+                    const notePath = treeService.getNotePath(data.node.getParent());
+
+                    // this is a search cycle (search note is a descendant of its own search result)
+                    if (notePath.includes(noteId)) {
+                        data.result = [];
+                        return;
+                    }
+                }
 
                 data.result = treeCache.getNote(noteId).then(note => this.prepareChildren(note));
             },
@@ -452,22 +462,28 @@ export default class NoteTreeWidget extends TabAwareWidget {
             extraClasses: this.getExtraClasses(note),
             icon: this.getIcon(note),
             refKey: note.noteId,
+            lazy: true,
+            folder: await this.isFolder(note),
             expanded: branch.isExpanded || hoistedNoteId === note.noteId,
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
-
-        const childBranches = await this.getChildBranches(note);
-
-        node.folder = childBranches.length > 0
-            || note.type === 'search'
-
-        node.lazy = node.folder && !node.expanded;
 
         if (node.folder && node.expanded) {
             node.children = await this.prepareChildren(note);
         }
 
         return node;
+    }
+
+    async isFolder(note) {
+        if (note.type === 'search') {
+            return true;
+        }
+        else {
+            const childBranches = await this.getChildBranches(note);
+
+            return childBranches.length > 0;
+        }
     }
 
     async prepareNormalNoteChildren(parentNote) {
@@ -680,7 +696,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 let foundChildNode = this.findChildNode(parentNode, childNoteId);
 
                 if (!foundChildNode) { // note might be recently created so we'll force reload and try again
-                    parentNode.lazy = true;
                     await parentNode.load(true);
 
                     foundChildNode = this.findChildNode(parentNode, childNoteId);
@@ -723,8 +738,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = (await this.getChildBranches(note)).length > 0
-                   || note.type === 'search';
+        node.folder = await this.isFolder(note);
         node.icon = this.getIcon(note);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
@@ -783,7 +797,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async refreshSearch() {
         const activeNode = this.getActiveNode();
 
-        activeNode.lazy = true;
         activeNode.load(true);
         activeNode.setExpanded(true);
 
@@ -847,7 +860,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         }
                     }
 
-                    node.remove();
+                    if (node.getParent()) {
+                        node.remove();
+                    }
 
                     noteIdsToUpdate.add(branch.parentNoteId);
                 }
@@ -877,7 +892,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         for (const noteId of noteIdsToReload) {
             for (const node of this.getNodesByNoteId(noteId)) {
-                node.lazy = true;
                 await node.load(true);
 
                 this.updateNode(node);
