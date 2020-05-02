@@ -101,6 +101,15 @@ export default class LoadResults {
         this.options.includes(name);
     }
 
+    /**
+     * @return {boolean} true if there are changes which could affect the attributes (including inherited ones)
+     */
+    hasAttributeRelatedChanges() {
+        return Object.keys(this.noteIdToSourceId).length === 0
+            && this.branches.length === 0
+            && this.attributes.length === 0;
+    }
+
     isEmpty() {
         return Object.keys(this.noteIdToSourceId).length === 0
             && this.branches.length === 0

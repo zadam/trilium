@@ -6,6 +6,7 @@ import Branch from "../entities/branch.js";
 import Attribute from "../entities/attribute.js";
 import options from "./options.js";
 import treeCache from "./tree_cache.js";
+import noteAttributeCache from "./note_attribute_cache.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -359,6 +360,10 @@ async function processSyncRows(syncRows) {
     });
 
     if (!loadResults.isEmpty()) {
+        if (loadResults.hasAttributeRelatedChanges()) {
+            noteAttributeCache.invalidate();
+        }
+
         const appContext = (await import("./app_context.js")).default;
         await appContext.triggerEvent('entitiesReloaded', {loadResults});
     }

@@ -1,5 +1,6 @@
 import server from '../services/server.js';
 import Attribute from './attribute.js';
+import noteAttributeCache from "../services/note_attribute_cache.js";
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -156,9 +157,9 @@ class NoteShort {
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
             .map(attributeId => this.treeCache.attributes[attributeId])
-            .filter(attr => !!attr);
+            .filter(Boolean); // filter out nulls;
 
-        return this.__filterAttrs(attrs, type, name)
+        return this.__filterAttrs(attrs, type, name);
     }
 
     /**
@@ -167,43 +168,45 @@ class NoteShort {
      * @returns {Attribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
-        const ownedAttributes = this.getOwnedAttributes();
+        if (!(this.noteId in noteAttributeCache)) {
+            const ownedAttributes = this.getOwnedAttributes();
 
-        const attrArrs = [
-            ownedAttributes
-        ];
+            const attrArrs = [
+                ownedAttributes
+            ];
 
-        for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
-            const templateNote = this.treeCache.getNoteFromCache(templateAttr.value);
+            for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
+                const templateNote = this.treeCache.notes[templateAttr.value];
 
-            if (templateNote) {
-                attrArrs.push(templateNote.getAttributes());
-            }
-        }
-
-        if (this.noteId !== 'root') {
-            for (const parentNote of this.getParentNotes()) {
-                // these virtual parent-child relationships are also loaded into frontend tree cache
-                if (parentNote.type !== 'search') {
-                    attrArrs.push(parentNote.getInheritableAttributes());
+                if (templateNote) {
+                    attrArrs.push(templateNote.getAttributes());
                 }
             }
+
+            if (this.noteId !== 'root') {
+                for (const parentNote of this.getParentNotes()) {
+                    // these virtual parent-child relationships are also loaded into frontend tree cache
+                    if (parentNote.type !== 'search') {
+                        attrArrs.push(parentNote.getInheritableAttributes());
+                    }
+                }
+            }
+
+            noteAttributeCache.attributes[this.noteId] = attrArrs.flat();
         }
 
-        const attributes = attrArrs.flat();
-
-        return this.__filterAttrs(attributes, type, name);
+        return this.__filterAttrs(noteAttributeCache.attributes[this.noteId], type, name);
     }
 
     __filterAttrs(attributes, type, name) {
-        if (type && name) {
+        if (!type && !name) {
+            return attributes;
+        } else if (type && name) {
             return attributes.filter(attr => attr.type === type && attr.name === name);
         } else if (type) {
             return attributes.filter(attr => attr.type === type);
         } else if (name) {
             return attributes.filter(attr => attr.name === name);
-        } else {
-            return attributes;
         }
     }
 
