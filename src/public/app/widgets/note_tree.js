@@ -419,7 +419,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return labels.map(l => l.value).join(' ');
     }
 
-    getIcon(note) {
+    getIcon(note, isFolder) {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
         const iconClass = this.getIconClass(note);
@@ -434,7 +434,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return "bx bxs-arrow-from-bottom";
         }
         else if (note.type === 'text') {
-            if (note.hasChildren()) {
+            if (isFolder) {
                 return "bx bx-folder";
             }
             else {
@@ -456,6 +456,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
+        const isFolder = await this.isFolder(note);
+
         const node = {
             noteId: note.noteId,
             parentNoteId: branch.parentNoteId,
@@ -464,10 +466,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteType: note.type,
             title: utils.escapeHtml(title),
             extraClasses: this.getExtraClasses(note),
-            icon: this.getIcon(note),
+            icon: this.getIcon(note, isFolder),
             refKey: note.noteId,
             lazy: true,
-            folder: await this.isFolder(note),
+            folder: isFolder,
             expanded: branch.isExpanded || hoistedNoteId === note.noteId,
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
@@ -733,10 +735,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
+        const isFolder = await this.isFolder(note);
+
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = await this.isFolder(note);
-        node.icon = this.getIcon(note);
+        node.folder = isFolder;
+        node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         node.renderTitle();
