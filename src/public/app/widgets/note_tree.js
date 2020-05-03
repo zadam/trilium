@@ -486,7 +486,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return true;
         }
         else {
-            const childBranches = await this.getChildBranches(note);
+            const childBranches = this.getChildBranches(note);
 
             return childBranches.length > 0;
         }
@@ -497,7 +497,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const noteList = [];
 
-        for (const branch of await this.getChildBranches(parentNote)) {
+        for (const branch of this.getChildBranches(parentNote)) {
             const node = await this.prepareNode(branch);
 
             noteList.push(node);
@@ -506,7 +506,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return noteList;
     }
 
-    async getChildBranches(parentNote) {
+    getChildBranches(parentNote) {
         let childBranches = parentNote.getChildBranches();
 
         if (!childBranches) {
@@ -519,20 +519,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             // image is already visible in the parent note so no need to display it separately in the book
             childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
-        }
-
-        if (this.hideArchivedNotes) {
-            const filteredBranches = [];
-
-            for (const childBranch of childBranches) {
-                const childNote = await childBranch.getNote();
-
-                if (!childNote.hasLabel('archived')) {
-                    filteredBranches.push(childBranch);
-                }
-            }
-
-            childBranches = filteredBranches;
         }
 
         return childBranches;
