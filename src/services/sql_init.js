@@ -13,16 +13,11 @@ const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
 
-async function createConnection() {
-    return await sqlite.open({
+const dbConnection = new Promise(async (resolve, reject) => {
+    const db = await sqlite.open({
         filename: dataDir.DOCUMENT_PATH,
         driver: sqlite3.Database
     });
-}
-
-const dbConnection = new Promise(async (resolve, reject) => {
-    // no need to create new connection now since DB stays the same all the time
-    const db = await createConnection();
 
     db.run('PRAGMA journal_mode = WAL;');
 

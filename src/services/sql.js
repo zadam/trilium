@@ -163,6 +163,10 @@ async function executeScript(query) {
 }
 
 async function wrap(func, query) {
+    if (!dbConnection) {
+        throw new Error("DB connection not initialized yet");
+    }
+
     const thisError = new Error();
 
     try {

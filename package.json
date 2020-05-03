@@ -67,7 +67,7 @@
     "session-file-store": "1.4.0",
     "simple-node-logger": "18.12.24",
     "sqlite": "4.0.7",
-    "sqlite3": "4.2.0",
+    "sqlite3": "4.1.1",
     "string-similarity": "4.0.1",
     "tar-stream": "2.1.2",
     "turndown": "6.0.0",
@@ -78,7 +78,7 @@
     "yazl": "^2.5.1"
   },
   "devDependencies": {
-    "electron": "9.0.0-beta.21",
+    "electron": "9.0.0-beta.22",
     "electron-builder": "22.6.0",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.1",
