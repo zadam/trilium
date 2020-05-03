@@ -7,6 +7,108 @@ const utils = require('./utils');
 const hoistedNoteService = require('./hoisted_note');
 const stringSimilarity = require('string-similarity');
 
+/** @var {Object.<String, Note>} */
+let notes;
+/** @var {Object.<String, Branch>} */
+let branches
+/** @var {Object.<String, Attribute>} */
+let attributes;
+
+/** @var {Object.<String, Attribute[]>} */
+let noteAttributeCache = {};
+
+let childParentToBranch = {};
+
+class Note {
+    constructor(row) {
+        /** @param {string} */
+        this.noteId = row.noteId;
+        /** @param {string} */
+        this.title = row.title;
+        /** @param {boolean} */
+        this.isProtected = !!row.isProtected;
+        /** @param {Note[]} */
+        this.parents = [];
+        /** @param {Attribute[]} */
+        this.ownedAttributes = [];
+    }
+
+    /** @return {Attribute[]} */
+    get attributes() {
+        if (this.noteId in noteAttributeCache) {
+            const attrArrs = [
+                this.ownedAttributes
+            ];
+
+            for (const templateAttr of this.ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
+                const templateNote = notes[templateAttr.value];
+
+                if (templateNote) {
+                    attrArrs.push(templateNote.attributes);
+                }
+            }
+
+            if (this.noteId !== 'root') {
+                for (const parentNote of this.parents) {
+                    attrArrs.push(parentNote.inheritableAttributes);
+                }
+            }
+
+            noteAttributeCache[this.noteId] = attrArrs.flat();
+        }
+
+        return noteAttributeCache[this.noteId];
+    }
+
+    /** @return {Attribute[]} */
+    get inheritableAttributes() {
+        return this.attributes.filter(attr => attr.isInheritable);
+    }
+
+    hasAttribute(type, name) {
+        return this.attributes.find(attr => attr.type === type && attr.name === name);
+    }
+
+    get isArchived() {
+        return this.hasAttribute('label', 'archived');
+    }
+}
+
+class Branch {
+    constructor(row) {
+        /** @param {string} */
+        this.branchId = row.branchId;
+        /** @param {string} */
+        this.noteId = row.noteId;
+        /** @param {string} */
+        this.parentNoteId = row.parentNoteId;
+        /** @param {string} */
+        this.prefix = row.prefix;
+    }
+
+    /** @return {Note} */
+    get parentNote() {
+        return notes[this.parentNoteId];
+    }
+}
+
+class Attribute {
+    constructor(row) {
+        /** @param {string} */
+        this.attributeId = row.attributeId;
+        /** @param {string} */
+        this.noteId = row.noteId;
+        /** @param {string} */
+        this.type = row.type;
+        /** @param {string} */
+        this.name = row.name;
+        /** @param {string} */
+        this.value = row.value;
+        /** @param {boolean} */
+        this.isInheritable = row.isInheritable;
+    }
+}
+
 let loaded = false;
 let loadedPromiseResolve;
 /** Is resolved after the initial load */
@@ -15,49 +117,60 @@ let loadedPromise = new Promise(res => loadedPromiseResolve = res);
 let noteTitles = {};
 let protectedNoteTitles = {};
 let noteIds;
-let childParentToBranchId = {};
 const childToParent = {};
 let archived = {};
 
 // key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
 let prefixes = {};
 
-async function load() {
-    noteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
-    noteIds = Object.keys(noteTitles);
+async function getMappedRows(query, cb) {
+    const map = {};
+    const results = await sql.getRows(query, []);
 
-    prefixes = await sql.getMap(`
-            SELECT noteId || '-' || parentNoteId, prefix 
-            FROM branches 
-            WHERE isDeleted = 0 AND prefix IS NOT NULL AND prefix != ''`);
+    for (const row of results) {
+        const keys = Object.keys(row);
 
-    const branches = await sql.getRows(`SELECT branchId, noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
-
-    for (const rel of branches) {
-        childToParent[rel.noteId] = childToParent[rel.noteId] || [];
-        childToParent[rel.noteId].push(rel.parentNoteId);
-        childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
+        map[row[keys[0]]] = cb(row);
     }
 
-    archived = await sql.getMap(`SELECT noteId, isInheritable FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name = 'archived'`);
+    return map;
+}
+
+async function load() {
+    notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
+        row => new Note(row));
+
+    branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
+        row => new Branch(row));
+
+    attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
+        row => new Attribute(row));
+
+    for (const branch of branches) {
+        const childNote = notes[branch.noteId];
+
+        if (!childNote) {
+            console.log(`Cannot find child note ${branch.noteId} of a branch ${branch.branchId}`);
+            continue;
+        }
+
+        childNote.parents.push(branch.parentNote);
+        childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`] = branch;
+    }
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
-        await loadProtectedNotes();
-    }
-
-    for (const noteId in childToParent) {
-        resortChildToParent(noteId);
+        await decryptProtectedNotes();
     }
 
     loaded = true;
     loadedPromiseResolve();
 }
 
-async function loadProtectedNotes() {
-    protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
-
-    for (const noteId in protectedNoteTitles) {
-        protectedNoteTitles[noteId] = protectedSessionService.decryptString(protectedNoteTitles[noteId]);
+async function decryptProtectedNotes() {
+    for (const note of notes) {
+        if (note.isProtected) {
+            note.title = protectedSessionService.decryptString(note.title);
+        }
     }
 }
 
@@ -103,13 +216,9 @@ async function findNotes(query) {
     const tokens = allTokens.slice();
     let results = [];
 
-    let noteIds = Object.keys(noteTitles);
+    for (const noteId in notes) {
+        const note = notes[noteId];
 
-    if (protectedSessionService.isProtectedSessionAvailable()) {
-        noteIds = [...new Set(noteIds.concat(Object.keys(protectedNoteTitles)))];
-    }
-
-    for (const noteId of noteIds) {
         // autocomplete should be able to find notes by their noteIds as well (only leafs)
         if (noteId === query) {
             search(noteId, [], [], results);
@@ -117,22 +226,12 @@ async function findNotes(query) {
         }
 
         // for leaf note it doesn't matter if "archived" label is inheritable or not
-        if (noteId in archived) {
+        if (note.isArchived) {
             continue;
         }
 
-        const parents = childToParent[noteId];
-        if (!parents) {
-            continue;
-        }
-
-        for (const parentNoteId of parents) {
-            // for parent note archived needs to be inheritable
-            if (archived[parentNoteId] === 1) {
-                continue;
-            }
-
-            const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
+        for (const parentNote of note.parents) {
+            const title = getNoteTitle(note, parentNote).toLowerCase();
             const foundTokens = [];
 
             for (const token of tokens) {
@@ -144,7 +243,7 @@ async function findNotes(query) {
             if (foundTokens.length > 0) {
                 const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
 
-                search(parentNoteId, remainingTokens, [noteId], results);
+                search(parentNote, remainingTokens, [noteId], results);
             }
         }
     }
@@ -180,17 +279,21 @@ async function findNotes(query) {
     return apiResults;
 }
 
-function search(noteId, tokens, path, results) {
-    if (tokens.length === 0) {
-        const retPath = getSomePath(noteId, path);
+function getBranch(childNoteId, parentNoteId) {
+    return childParentToBranch[`${childNoteId}-${parentNoteId}`];
+}
 
-        if (retPath && !isNotePathArchived(retPath)) {
+function search(note, tokens, path, results) {
+    if (tokens.length === 0) {
+        const retPath = getSomePath(note, path);
+
+        if (retPath) {
             const thisNoteId = retPath[retPath.length - 1];
             const thisParentNoteId = retPath[retPath.length - 2];
 
             results.push({
                 noteId: thisNoteId,
-                branchId: childParentToBranchId[`${thisNoteId}-${thisParentNoteId}`],
+                branchId: getBranch(thisNoteId, thisParentNoteId),
                 pathArray: retPath,
                 titleArray: getNoteTitleArrayForPath(retPath)
             });
@@ -199,18 +302,12 @@ function search(noteId, tokens, path, results) {
         return;
     }
 
-    const parents = childToParent[noteId];
-    if (!parents || noteId === 'root') {
+    if (!note.parents.length === 0 || noteId === 'root') {
         return;
     }
 
-    for (const parentNoteId of parents) {
-        // archived must be inheritable
-        if (archived[parentNoteId] === 1) {
-            continue;
-        }
-
-        const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
+    for (const parentNote of note.parents) {
+        const title = getNoteTitle(note, parentNote).toLowerCase();
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -222,17 +319,18 @@ function search(noteId, tokens, path, results) {
         if (foundTokens.length > 0) {
             const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
 
-            search(parentNoteId, remainingTokens, path.concat([noteId]), results);
+            search(parentNote, remainingTokens, path.concat([noteId]), results);
         }
         else {
-            search(parentNoteId, tokens, path.concat([noteId]), results);
+            search(parentNote, tokens, path.concat([noteId]), results);
         }
     }
 }
 
 function isNotePathArchived(notePath) {
-    // if the note is archived directly
-    if (archived[notePath[notePath.length - 1]] !== undefined) {
+    const noteId = notePath[notePath.length - 1];
+
+    if (archived[noteId] !== undefined) {
         return true;
     }
 
@@ -268,8 +366,10 @@ function isInAncestor(noteId, ancestorNoteId) {
         return true;
     }
 
-    for (const parentNoteId of childToParent[noteId] || []) {
-        if (isInAncestor(parentNoteId, ancestorNoteId)) {
+    const note = notes[noteId];
+
+    for (const parentNote of notes.parents) {
+        if (isInAncestor(parentNote.noteId, ancestorNoteId)) {
             return true;
         }
     }
@@ -288,21 +388,19 @@ function getNoteTitleFromPath(notePath) {
     }
 }
 
-function getNoteTitle(noteId, parentNoteId) {
-    const prefix = prefixes[noteId + '-' + parentNoteId];
+function getNoteTitle(childNote, parentNote) {
+    let title;
 
-    let title = noteTitles[noteId];
-
-    if (!title) {
-        if (protectedSessionService.isProtectedSessionAvailable()) {
-            title = protectedNoteTitles[noteId];
-        }
-        else {
-            title = '[protected]';
-        }
+    if (childNote.isProtected) {
+        title = protectedSessionService.isProtectedSessionAvailable() ? childNote.title : '[protected]';
+    }
+    else {
+        title = childNote.title;
     }
 
-    return (prefix ? (prefix + ' - ') : '') + title;
+    const branch = getBranch(childNote.noteId, parentNote.noteId);
+
+    return (branch.prefix ? (branch.prefix + ' - ') : '') + title;
 }
 
 function getNoteTitleArrayForPath(path) {
@@ -540,7 +638,7 @@ function isAvailable(noteId) {
 }
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
-    loadedPromise.then(() => loadProtectedNotes());
+    loadedPromise.then(() => decryptProtectedNotes());
 });
 
 sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", load));
