@@ -362,17 +362,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             // this is done to automatically lazy load all expanded notes after tree load
             loadChildren: (event, data) => {
-                // semaphore since the conflict when two processes are trying to load the same data
-                // breaks the fancytree
-                if (!this.tree || !this.tree.autoLoadingDisabled) {
-                    data.node.visit((subNode) => {
-                        // Load all lazy/unloaded child nodes
-                        // (which will trigger `loadChildren` recursively)
-                        if (subNode.isUndefined() && subNode.isExpanded()) {
-                            subNode.load();
-                        }
-                    });
-                }
+                data.node.visit((subNode) => {
+                    // Load all lazy/unloaded child nodes
+                    // (which will trigger `loadChildren` recursively)
+                    if (subNode.isUndefined() && subNode.isExpanded()) {
+                        subNode.load();
+                    }
+                });
             }
         });
 
@@ -596,47 +592,30 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return notes;
     }
 
-    async expandTree(node = null) {
+    async setExpandedStatusForSubtree(node, isExpanded) {
         if (!node) {
             const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
             node = this.getNodesByNoteId(hoistedNoteId)[0];
         }
 
-        this.batchUpdate(async () => {
-            try {
-                this.tree.autoLoadingDisabled = true;
+        const {branchIds} = await server.put(`branches/${node.data.branchId}/expanded-subtree/${isExpanded ? 1 : 0}`);
 
-                // trick - first force load of the whole subtree and then visit and expand.
-                // unfortunately the two steps can't be combined
-                await node.visitAndLoad(_ => {}, true);
+        treeCache.getBranches(branchIds, true).forEach(branch => branch.isExpanded = isExpanded);
 
-                node.visit(node => {
-                    if (node.isFolder()) {
-                        node.setExpanded(true);
-                    }
-                }, true);
-            }
-            finally {
-                this.tree.autoLoadingDisabled = false;
-            }
+        await this.batchUpdate(async () => {
+            await node.load(true);
+
+            await node.setExpanded(isExpanded, {noEvents: true});
         });
     }
 
-    collapseTree(node = null) {
-        if (!node) {
-            const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+    async expandTree(node = null) {
+        await this.setExpandedStatusForSubtree(node, true);
+    }
 
-            node = this.getNodesByNoteId(hoistedNoteId)[0];
-        }
-
-        this.batchUpdate(() => {
-            node.visit(node => {
-                if (node.isFolder()) {
-                    node.setExpanded(false);
-                }
-            }, true);
-        });
+    async collapseTree(node = null) {
+        await this.setExpandedStatusForSubtree(node, false);
     }
 
     /**

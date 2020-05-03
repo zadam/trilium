@@ -127,6 +127,7 @@ function register(app) {
     apiRoute(PUT, '/api/branches/:branchId/move-before/:beforeBranchId', branchesApiRoute.moveBranchBeforeNote);
     apiRoute(PUT, '/api/branches/:branchId/move-after/:afterBranchId', branchesApiRoute.moveBranchAfterNote);
     apiRoute(PUT, '/api/branches/:branchId/expanded/:expanded', branchesApiRoute.setExpanded);
+    apiRoute(PUT, '/api/branches/:branchId/expanded-subtree/:expanded', branchesApiRoute.setExpandedForSubtree);
     apiRoute(DELETE, '/api/branches/:branchId', branchesApiRoute.deleteBranch);
 
     apiRoute(GET, '/api/autocomplete', autocompleteApiRoute.getAutocomplete);

@@ -118,6 +118,27 @@ async function setExpanded(req) {
     // we don't sync expanded label
 }
 
+async function setExpandedForSubtree(req) {
+    const {branchId, expanded} = req.params;
+
+    const branchIds = await sql.getColumn(`
+        WITH RECURSIVE
+        tree(branchId, noteId) AS (
+            SELECT branchId, noteId FROM branches WHERE branchId = ?
+            UNION
+            SELECT branches.branchId, branches.noteId FROM branches
+                JOIN tree ON branches.parentNoteId = tree.noteId
+            WHERE branches.isDeleted = 0
+        )
+        SELECT branchId FROM tree`, [branchId]);
+
+    await sql.executeMany(`UPDATE branches SET isExpanded = ${expanded} WHERE branchId IN (???)`, branchIds);
+
+    return {
+        branchIds
+    };
+}
+
 async function deleteBranch(req) {
     const last = req.query.last === 'true';
     const branch = await repository.getBranch(req.params.branchId);
@@ -149,6 +170,7 @@ module.exports = {
     moveBranchBeforeNote,
     moveBranchAfterNote,
     setExpanded,
+    setExpandedForSubtree,
     deleteBranch,
     setPrefix
 };

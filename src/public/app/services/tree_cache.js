@@ -246,10 +246,10 @@ class TreeCache {
         return this.notes[noteId];
     }
 
-    getBranches(branchIds) {
+    getBranches(branchIds, silentNotFoundError = false) {
         return branchIds
-            .map(branchId => this.getBranch(branchId))
-            .filter(b => b !== null);
+            .map(branchId => this.getBranch(branchId, silentNotFoundError))
+            .filter(b => !!b);
     }
 
     /** @return {Branch} */
