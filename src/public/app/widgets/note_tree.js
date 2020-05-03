@@ -611,7 +611,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 // unfortunately the two steps can't be combined
                 await node.visitAndLoad(_ => {}, true);
 
-                node.visit(node => node.setExpanded(true), true);
+                node.visit(node => {
+                    if (node.isFolder()) {
+                        node.setExpanded(true);
+                    }
+                }, true);
             }
             finally {
                 this.tree.autoLoadingDisabled = false;
@@ -627,7 +631,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         this.batchUpdate(() => {
-            node.visit(node => node.setExpanded(false), true);
+            node.visit(node => {
+                if (node.isFolder()) {
+                    node.setExpanded(false);
+                }
+            }, true);
         });
     }
 
