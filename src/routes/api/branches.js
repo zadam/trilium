@@ -114,14 +114,16 @@ async function moveBranchAfterNote(req) {
 async function setExpanded(req) {
     const {branchId, expanded} = req.params;
 
-    await sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
-    // we don't sync expanded label
+    if (branchId !== 'root') {
+        await sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
+        // we don't sync expanded label
+    }
 }
 
 async function setExpandedForSubtree(req) {
     const {branchId, expanded} = req.params;
 
-    const branchIds = await sql.getColumn(`
+    let branchIds = await sql.getColumn(`
         WITH RECURSIVE
         tree(branchId, noteId) AS (
             SELECT branchId, noteId FROM branches WHERE branchId = ?
@@ -131,6 +133,9 @@ async function setExpandedForSubtree(req) {
             WHERE branches.isDeleted = 0
         )
         SELECT branchId FROM tree`, [branchId]);
+
+    // root is always expanded
+    branchIds = branchIds.filter(branchId => branchId !== 'root');
 
     await sql.executeMany(`UPDATE branches SET isExpanded = ${expanded} WHERE branchId IN (???)`, branchIds);
 

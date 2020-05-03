@@ -606,7 +606,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.batchUpdate(async () => {
             await node.load(true);
 
-            await node.setExpanded(isExpanded, {noEvents: true});
+            if (node.data.noteId !== 'root') { // root is always expanded
+                await node.setExpanded(isExpanded, {noEvents: true});
+            }
         });
     }
 

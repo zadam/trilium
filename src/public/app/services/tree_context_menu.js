@@ -40,9 +40,9 @@ class TreeContextMenu {
     async getMenuItems() {
         const note = await treeCache.getNote(this.node.data.noteId);
         const branch = treeCache.getBranch(this.node.data.branchId);
-        const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === hoistedNoteService.getHoistedNoteId();
+        const parentNote = isNotRoot ? await treeCache.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
