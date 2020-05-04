@@ -265,6 +265,9 @@ export default class TabManager extends Component {
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
 
+        // remove dangling autocompletes after closing the tab
+        $(".algolia-autocomplete").remove();
+
         this.triggerEvent('tabRemoved', {tabId});
 
         this.tabsUpdate.scheduleUpdate();
