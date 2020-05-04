@@ -456,7 +456,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
-        const isFolder = await this.isFolder(note);
+        const isFolder = this.isFolder(note);
 
         const node = {
             noteId: note.noteId,
@@ -481,7 +481,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return node;
     }
 
-    async isFolder(note) {
+    isFolder(note) {
         if (note.type === 'search') {
             return true;
         }
@@ -717,11 +717,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return this.getNodeFromPath(notePath, true, expandOpts);
     }
 
-    async updateNode(node) {
+    updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
-        const isFolder = await this.isFolder(note);
+        const isFolder = this.isFolder(note);
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
