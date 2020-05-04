@@ -51,7 +51,7 @@ const TPL = `
         position: absolute;
         top: 10px;
         right: 20px;
-        z-index: 1000;
+        z-index: 100;
     }
     
     .tree-settings-popup {
@@ -512,6 +512,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
         if (!childBranches) {
             ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
             return;
+        }
+
+        if (parentNote.title === 'Siemens M55') {
+            console.log("this.hideIncludedImages", this.hideIncludedImages);
+            console.log("this.hideIncludedImages", this.hideIncludedImages);
+            console.log("parentNote.getRelations('imageLink')", parentNote.getRelations('imageLink'));
+            console.log("parentNote.getRelations('imageLink')", parentNote.getRelations('imageLink'));
+            const imageLinks = parentNote.getRelations('imageLink');
+            console.log("childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId))", childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId)));
         }
 
         if (this.hideIncludedImages) {

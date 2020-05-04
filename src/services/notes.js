@@ -290,7 +290,7 @@ async function downloadImages(noteId, content) {
     while (match = re.exec(origContent)) {
         const url = match[1];
 
-        if (!url.startsWith('api/images/')
+        if (!url.includes('api/images/')
             // this is and exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
             if (url in downloadImagePromises) {
