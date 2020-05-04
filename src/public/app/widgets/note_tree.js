@@ -514,15 +514,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return;
         }
 
-        if (parentNote.title === 'Siemens M55') {
-            console.log("this.hideIncludedImages", this.hideIncludedImages);
-            console.log("this.hideIncludedImages", this.hideIncludedImages);
-            console.log("parentNote.getRelations('imageLink')", parentNote.getRelations('imageLink'));
-            console.log("parentNote.getRelations('imageLink')", parentNote.getRelations('imageLink'));
-            const imageLinks = parentNote.getRelations('imageLink');
-            console.log("childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId))", childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId)));
-        }
-
         if (this.hideIncludedImages) {
             const imageLinks = parentNote.getRelations('imageLink');
 
