@@ -877,18 +877,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteIdsToUpdate.add(noteId);
         }
 
-        for (const noteId of noteIdsToReload) {
-            for (const node of this.getNodesByNoteId(noteId)) {
-                await node.load(true);
-
-                this.updateNode(node);
-            }
-        }
-
         await this.batchUpdate(async () => {
-            for (const noteId of noteIdsToUpdate) {
+            for (const noteId of noteIdsToReload) {
                 for (const node of this.getNodesByNoteId(noteId)) {
-                    this.updateNode(node);
+                    await node.load(true);
+
+                    noteIdsToUpdate.add(noteId);
                 }
             }
 
@@ -909,6 +903,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
             }
         });
+
+        // for some reason node update cannot be in the batchUpdate() block (node is not re-rendered)
+        for (const noteId of noteIdsToUpdate) {
+            for (const node of this.getNodesByNoteId(noteId)) {
+                this.updateNode(node);
+            }
+        }
 
         if (activeNotePath) {
             let node = await this.expandToNote(activeNotePath);
