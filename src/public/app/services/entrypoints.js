@@ -7,6 +7,7 @@ import Component from "../widgets/component.js";
 import toastService from "./toast.js";
 import noteCreateService from "./note_create.js";
 import ws from "./ws.js";
+import bundleService from "./bundle.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -198,5 +199,24 @@ export default class Entrypoints extends Component {
 
     async openNewWindowCommand() {
         this.openInWindowCommand({notePath: ''});
+    }
+
+    async runActiveNoteCommand() {
+        const note = appContext.tabManager.getActiveTabNote();
+
+        // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
+        if (!note || note.type !== 'code') {
+            return;
+        }
+
+        if (note.mime.endsWith("env=frontend")) {
+            await bundleService.getAndExecuteBundle(note.noteId);
+        }
+
+        if (note.mime.endsWith("env=backend")) {
+            await server.post('script/run/' + note.noteId);
+        }
+
+        toastService.showMessage("Note executed");
     }
 }
