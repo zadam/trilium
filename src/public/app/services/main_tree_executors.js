@@ -38,12 +38,6 @@ export default class MainTreeExecutors extends Component {
             isProtected: activeNote.isProtected,
             saveSelection: false
         });
-
-        await ws.waitForMaxKnownSyncId();
-
-        appContext.tabManager.getActiveTabContext().setNote(note.noteId);
-
-        appContext.triggerCommand('focusAndSelectTitle');
     }
 
     async createNoteAfterCommand() {
@@ -55,17 +49,11 @@ export default class MainTreeExecutors extends Component {
             return;
         }
 
-        const {note} = await noteCreateService.createNote(parentNoteId, {
+        await noteCreateService.createNote(parentNoteId, {
             target: 'after',
             targetBranchId: node.data.branchId,
             isProtected: isProtected,
-            saveSelection: true
+            saveSelection: false
         });
-
-        await ws.waitForMaxKnownSyncId();
-
-        appContext.tabManager.getActiveTabContext().setNote(note.noteId);
-
-        appContext.triggerCommand('focusAndSelectTitle');
     }
 }
