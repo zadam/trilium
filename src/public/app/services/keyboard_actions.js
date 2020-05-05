@@ -93,8 +93,8 @@ function updateDisplayedShortcuts($container) {
 		}
 	});
 
-	$container.find('button[data-command],a.icon-action[data-command],.kb-in-title').each(async (i, el) => {
-		const actionName = $(el).attr('data-command');
+	$container.find('[data-trigger-command]').each(async (i, el) => {
+		const actionName = $(el).attr('data-trigger-command');
 		const action = await getAction(actionName, true);
 
 		if (action) {

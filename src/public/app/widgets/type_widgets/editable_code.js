@@ -1,9 +1,6 @@
 import libraryLoader from "../../services/library_loader.js";
-import bundleService from "../../services/bundle.js";
-import toastService from "../../services/toast.js";
-import server from "../../services/server.js";
-import keyboardActionService from "../../services/keyboard_actions.js";
 import TypeWidget from "./type_widget.js";
+import keyboardActionService from "../../services/keyboard_actions.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
@@ -27,11 +24,8 @@ export default class EditableCodeTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-code-editor');
-        this.$executeScriptButton = this.$widget.find(".execute-script-button");
 
-        keyboardActionService.setElementActionHandler(this.$widget, 'runActiveNote', () => this.executeCurrentNote());
-
-        this.$executeScriptButton.on('click', () => this.executeCurrentNote());
+        keyboardActionService.setupActionsForElement('code-detail', this.$widget, this);
 
         this.initialized = this.initEditor();
 
@@ -104,26 +98,6 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     focus() {
         this.codeEditor.focus();
-    }
-
-    async executeCurrentNote() {
-        // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
-        if (this.note.type !== 'code') {
-            return;
-        }
-
-        // make sure note is saved so we load latest changes
-        await this.spacedUpdate.updateNowIfNecessary();
-
-        if (this.note.mime.endsWith("env=frontend")) {
-            await bundleService.getAndExecuteBundle(this.noteId);
-        }
-
-        if (this.note.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + this.noteId);
-        }
-
-        toastService.showMessage("Note executed");
     }
 
     cleanup() {
