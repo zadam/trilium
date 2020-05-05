@@ -82,7 +82,7 @@ export default class TabManager extends Component {
 
         if (filteredTabs.length === 0) {
             filteredTabs.push({
-                notePath: 'root',
+                notePath: this.isMainWindow ? 'root' : '',
                 active: true
             });
         }
@@ -196,7 +196,9 @@ export default class TabManager extends Component {
     async openTabWithNote(notePath, activate, tabId = null) {
         const tabContext = await this.openEmptyTab(tabId);
 
-        await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
+        if (notePath) {
+            await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
+        }
 
         if (activate) {
             this.activateTab(tabContext.tabId, false);
@@ -330,7 +332,7 @@ export default class TabManager extends Component {
 
         this.removeTab(tabId);
 
-        appContext.openInNewWindow(notePath);
+        this.triggerCommand('openInWindow', {notePath});
     }
 
     async hoistedNoteChangedEvent({hoistedNoteId}) {

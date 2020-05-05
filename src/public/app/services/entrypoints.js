@@ -182,4 +182,21 @@ export default class Entrypoints extends Component {
     }
 
     createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
+
+    async openInWindowCommand({notePath}) {
+        if (utils.isElectron()) {
+            const {ipcRenderer} = utils.dynamicRequire('electron');
+
+            ipcRenderer.send('create-extra-window', {notePath});
+        }
+        else {
+            const url = window.location.protocol + '//' + window.location.host + window.location.pathname + '?extra=1#' + notePath;
+
+            window.open(url, '', 'width=1000,height=800');
+        }
+    }
+
+    async openNewWindowCommand() {
+        this.openInWindowCommand({notePath: ''});
+    }
 }

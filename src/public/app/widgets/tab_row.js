@@ -258,9 +258,9 @@ export default class TabRowWidget extends BasicWidget {
                 x: e.pageX,
                 y: e.pageY,
                 items: [
-                    {title: "Move this tab to a new window", command: "moveTabToNewWindow", uiIcon: "empty"},
-                    {title: "Close all tabs", command: "removeAllTabs", uiIcon: "empty"},
-                    {title: "Close all tabs except for this", command: "removeAllTabsExceptForThis", uiIcon: "empty"},
+                    {title: "Move this tab to a new window", command: "moveTabToNewWindow", uiIcon: "window-open"},
+                    {title: "Close all tabs", command: "removeAllTabs", uiIcon: "x"},
+                    {title: "Close all tabs except for this", command: "removeAllTabsExceptForThis", uiIcon: "x"},
                 ],
                 selectMenuItemHandler: ({command}) => {
                     this.triggerCommand(command, {tabId});

@@ -193,7 +193,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
 
 
     {
-        separator: "Tabs"
+        separator: "Tabs & Windows"
     },
     {
         actionName: "openNewTab",
@@ -217,6 +217,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "activatePreviousTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : [],
         description: "Activates tab on the left",
+        scope: "window"
+    },
+    {
+        actionName: "openNewWindow",
+        defaultShortcuts: [],
+        description: "Open new empty window",
         scope: "window"
     },
 

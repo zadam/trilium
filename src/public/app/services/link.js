@@ -114,7 +114,7 @@ function newTabContextMenu(e) {
         y: e.pageY,
         items: [
             {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "arrow-up-right"},
-            {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "arrow-up-right"}
+            {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
