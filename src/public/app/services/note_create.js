@@ -48,8 +48,12 @@ async function createNote(parentNoteId, options = {}) {
     }
 
     if (options.activate) {
+        await ws.waitForMaxKnownSyncId();
+
         const activeTabContext = appContext.tabManager.getActiveTabContext();
-        activeTabContext.setNote(note.noteId);
+        await activeTabContext.setNote(note.noteId);
+
+        appContext.triggerCommand('focusAndSelectTitle');
     }
 
     return {note, branch};

@@ -23,4 +23,10 @@ export default class RunScriptButtonsWidget extends TabAwareWidget {
         this.$renderButton.toggle(note.type === 'render');
         this.$executeScriptButton.toggle(note.mime.startsWith('application/javascript'));
     }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
+        }
+    }
 }
