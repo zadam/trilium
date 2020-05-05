@@ -59,7 +59,7 @@ export default class MainTreeExecutors extends Component {
             target: 'after',
             targetBranchId: node.data.branchId,
             isProtected: isProtected,
-            saveSelection: true
+            saveSelection: false
         });
 
         await ws.waitForMaxKnownSyncId();

@@ -40,9 +40,9 @@ class TreeContextMenu {
     async getMenuItems() {
         const note = await treeCache.getNote(this.node.data.noteId);
         const branch = treeCache.getBranch(this.node.data.branchId);
-        const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === hoistedNoteService.getHoistedNoteId();
+        const parentNote = isNotRoot ? await treeCache.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
@@ -57,7 +57,7 @@ class TreeContextMenu {
 
         return [
             { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
-            { title: 'Open in a new window', command: "openInWindow", uiIcon: "empty", enabled: noSelectedNotes },
+            { title: 'Open in a new window', command: "openInWindow", uiIcon: "window-open", enabled: noSelectedNotes },
             { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "plus",
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
@@ -113,9 +113,6 @@ class TreeContextMenu {
         if (command === 'openInTab') {
             appContext.tabManager.openTabWithNote(notePath);
         }
-        else if (command === 'openInWindow') {
-            appContext.openInNewWindow(notePath);
-        }
         else if (command === "insertNoteAfter") {
             const parentNoteId = this.node.data.parentNoteId;
             const isProtected = await treeService.getParentProtectedStatus(this.node);
@@ -134,7 +131,7 @@ class TreeContextMenu {
             });
         }
         else {
-            this.treeWidget.triggerCommand(command, {node: this.node});
+            this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});
         }
     }
 }

@@ -51,7 +51,7 @@ const TPL = `
         position: absolute;
         top: 10px;
         right: 20px;
-        z-index: 1000;
+        z-index: 100;
     }
     
     .tree-settings-popup {
@@ -362,17 +362,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             // this is done to automatically lazy load all expanded notes after tree load
             loadChildren: (event, data) => {
-                // semaphore since the conflict when two processes are trying to load the same data
-                // breaks the fancytree
-                if (!this.tree || !this.tree.autoLoadingDisabled) {
-                    data.node.visit((subNode) => {
-                        // Load all lazy/unloaded child nodes
-                        // (which will trigger `loadChildren` recursively)
-                        if (subNode.isUndefined() && subNode.isExpanded()) {
-                            subNode.load();
-                        }
-                    });
-                }
+                data.node.visit((subNode) => {
+                    // Load all lazy/unloaded child nodes
+                    // (which will trigger `loadChildren` recursively)
+                    if (subNode.isUndefined() && subNode.isExpanded()) {
+                        subNode.load();
+                    }
+                });
             }
         });
 
@@ -423,7 +419,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return labels.map(l => l.value).join(' ');
     }
 
-    getIcon(note) {
+    getIcon(note, isFolder) {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
         const iconClass = this.getIconClass(note);
@@ -438,7 +434,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return "bx bxs-arrow-from-bottom";
         }
         else if (note.type === 'text') {
-            if (note.hasChildren()) {
+            if (isFolder) {
                 return "bx bx-folder";
             }
             else {
@@ -460,6 +456,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
+        const isFolder = this.isFolder(note);
+
         const node = {
             noteId: note.noteId,
             parentNoteId: branch.parentNoteId,
@@ -468,10 +466,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteType: note.type,
             title: utils.escapeHtml(title),
             extraClasses: this.getExtraClasses(note),
-            icon: this.getIcon(note),
+            icon: this.getIcon(note, isFolder),
             refKey: note.noteId,
             lazy: true,
-            folder: await this.isFolder(note),
+            folder: isFolder,
             expanded: branch.isExpanded || hoistedNoteId === note.noteId,
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
@@ -483,12 +481,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return node;
     }
 
-    async isFolder(note) {
+    isFolder(note) {
         if (note.type === 'search') {
             return true;
         }
         else {
-            const childBranches = await this.getChildBranches(note);
+            const childBranches = this.getChildBranches(note);
 
             return childBranches.length > 0;
         }
@@ -499,7 +497,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const noteList = [];
 
-        for (const branch of await this.getChildBranches(parentNote)) {
+        for (const branch of this.getChildBranches(parentNote)) {
             const node = await this.prepareNode(branch);
 
             noteList.push(node);
@@ -508,7 +506,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return noteList;
     }
 
-    async getChildBranches(parentNote) {
+    getChildBranches(parentNote) {
         let childBranches = parentNote.getChildBranches();
 
         if (!childBranches) {
@@ -521,20 +519,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             // image is already visible in the parent note so no need to display it separately in the book
             childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
-        }
-
-        if (this.hideArchivedNotes) {
-            const filteredBranches = [];
-
-            for (const childBranch of childBranches) {
-                const childNote = await childBranch.getNote();
-
-                if (!childNote.hasLabel('archived')) {
-                    filteredBranches.push(childBranch);
-                }
-            }
-
-            childBranches = filteredBranches;
         }
 
         return childBranches;
@@ -596,39 +580,32 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return notes;
     }
 
-    async expandTree(node = null) {
+    async setExpandedStatusForSubtree(node, isExpanded) {
         if (!node) {
             const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
             node = this.getNodesByNoteId(hoistedNoteId)[0];
         }
 
-        this.batchUpdate(async () => {
-            try {
-                this.tree.autoLoadingDisabled = true;
+        const {branchIds} = await server.put(`branches/${node.data.branchId}/expanded-subtree/${isExpanded ? 1 : 0}`);
 
-                // trick - first force load of the whole subtree and then visit and expand.
-                // unfortunately the two steps can't be combined
-                await node.visitAndLoad(_ => {}, true);
+        treeCache.getBranches(branchIds, true).forEach(branch => branch.isExpanded = isExpanded);
 
-                node.visit(node => node.setExpanded(true), true);
-            }
-            finally {
-                this.tree.autoLoadingDisabled = false;
+        await this.batchUpdate(async () => {
+            await node.load(true);
+
+            if (node.data.noteId !== 'root') { // root is always expanded
+                await node.setExpanded(isExpanded, {noEvents: true});
             }
         });
     }
 
-    collapseTree(node = null) {
-        if (!node) {
-            const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+    async expandTree(node = null) {
+        await this.setExpandedStatusForSubtree(node, true);
+    }
 
-            node = this.getNodesByNoteId(hoistedNoteId)[0];
-        }
-
-        this.batchUpdate(() => {
-            node.visit(node => node.setExpanded(false), true);
-        });
+    async collapseTree(node = null) {
+        await this.setExpandedStatusForSubtree(node, false);
     }
 
     /**
@@ -740,14 +717,16 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return this.getNodeFromPath(notePath, true, expandOpts);
     }
 
-    async updateNode(node) {
+    updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
+        const isFolder = this.isFolder(note);
+
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = await this.isFolder(note);
-        node.icon = this.getIcon(note);
+        node.folder = isFolder;
+        node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         node.renderTitle();
@@ -898,18 +877,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteIdsToUpdate.add(noteId);
         }
 
-        for (const noteId of noteIdsToReload) {
-            for (const node of this.getNodesByNoteId(noteId)) {
-                await node.load(true);
-
-                this.updateNode(node);
-            }
-        }
-
         await this.batchUpdate(async () => {
-            for (const noteId of noteIdsToUpdate) {
+            for (const noteId of noteIdsToReload) {
                 for (const node of this.getNodesByNoteId(noteId)) {
-                    this.updateNode(node);
+                    await node.load(true);
+
+                    noteIdsToUpdate.add(noteId);
                 }
             }
 
@@ -930,6 +903,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
             }
         });
+
+        // for some reason node update cannot be in the batchUpdate() block (node is not re-rendered)
+        for (const noteId of noteIdsToUpdate) {
+            for (const node of this.getNodesByNoteId(noteId)) {
+                this.updateNode(node);
+            }
+        }
 
         if (activeNotePath) {
             let node = await this.expandToNote(activeNotePath);

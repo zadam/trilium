@@ -8,6 +8,8 @@ const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
 /**
+ * FIXME: since there's no "full note" anymore we can rename this to Note
+ *
  * This note's representation is used in note tree and is kept in TreeCache.
  */
 class NoteShort {

@@ -57,6 +57,10 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
         this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
 
+        this.setProtectedStatus(note);
+    }
+
+    setProtectedStatus(note) {
         this.$noteTitle.toggleClass("protected", !!note.isProtected);
     }
 
@@ -88,7 +92,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
-            this.refresh();
+            // not updating the title specifically since the synced title might be older than what the user is currently typing
+            this.setProtectedStatus(this.note);
         }
     }
 

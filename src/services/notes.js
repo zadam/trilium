@@ -276,9 +276,9 @@ async function downloadImage(noteId, imageUrl) {
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
-    const quoted = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const quoted = url.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
 
-    return content.replace(new RegExp(`\s+src=[\"']${quoted}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quoted}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
 async function downloadImages(noteId, content) {
@@ -288,11 +288,11 @@ async function downloadImages(noteId, content) {
     const origContent = content;
 
     while (match = re.exec(origContent)) {
-        const url = match[1].toLowerCase();
+        const url = match[1];
 
-        if (!url.startsWith('api/images/')
+        if (!url.includes('api/images/')
             // this is and exception for the web clipper's "imageId"
-            && (url.length !== 20 || url.startsWith('http'))) {
+            && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
             if (url in downloadImagePromises) {
                 // download is already in progress
                 continue;
@@ -347,7 +347,7 @@ async function downloadImages(noteId, content) {
             for (const url in imageUrlToNoteIdMapping) {
                 const imageNote = imageNotes.find(note => note.noteId === imageUrlToNoteIdMapping[url]);
 
-                if (imageNote) {
+                if (imageNote && !imageNote.isDeleted) {
                     updatedContent = replaceUrl(updatedContent, url, imageNote);
                 }
             }
@@ -355,6 +355,8 @@ async function downloadImages(noteId, content) {
             // update only if the links have not been already fixed.
             if (updatedContent !== origContent) {
                 await origNote.setContent(updatedContent);
+
+                await scanForLinks(origNote);
 
                 console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
             }
@@ -376,11 +378,11 @@ async function saveLinks(note, content) {
     const foundLinks = [];
 
     if (note.type === 'text') {
+        content = await downloadImages(note.noteId, content);
+
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
-
-        content = await downloadImages(note.noteId, content);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

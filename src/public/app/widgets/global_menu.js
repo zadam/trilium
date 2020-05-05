@@ -1,5 +1,4 @@
 import BasicWidget from "./basic_widget.js";
-import keyboardActionService from "../services/keyboard_actions.js";
 import utils from "../services/utils.js";
 import syncService from "../services/sync.js";
 
@@ -37,6 +36,12 @@ const TPL = `
             <a class="dropdown-item sync-now-button" title="Trigger sync">
                 <span class="bx bx-refresh"></span>
                 Sync (<span id="outstanding-syncs-count">0</span>)
+            </a>
+
+            <a class="dropdown-item" data-trigger-command="openNewWindow">
+                <span class="bx bx-window-open"></span>
+                Open new window
+                <kbd data-command="openNewWindow"></kbd>
             </a>
 
             <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">

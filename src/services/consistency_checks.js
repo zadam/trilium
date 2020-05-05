@@ -617,6 +617,9 @@ class ConsistencyChecks {
 
         await this.findSyncRowsIssues();
 
+        // root branch should always be expanded
+        await sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
+
         if (this.unrecoveredConsistencyErrors) {
             // we run this only if basic checks passed since this assumes basic data consistency
 

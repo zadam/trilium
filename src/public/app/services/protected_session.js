@@ -31,6 +31,15 @@ function enterProtectedSession() {
     return dfd.promise();
 }
 
+async function reloadData() {
+    const allNoteIds = Object.keys(treeCache.notes);
+
+    await treeCache.loadInitialTree();
+
+    // make sure that all notes used in the application are loaded, including the ones not shown in the tree
+    await treeCache.reloadNotes(allNoteIds, true);
+}
+
 async function setupProtectedSession(password) {
     const response = await enterProtectedSessionOnServer(password);
 
@@ -42,7 +51,7 @@ async function setupProtectedSession(password) {
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
     protectedSessionHolder.touchProtectedSession();
 
-    await treeCache.loadInitialTree();
+    await reloadData();
 
     await appContext.triggerEvent('treeCacheReloaded');
 

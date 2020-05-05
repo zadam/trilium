@@ -60,20 +60,6 @@ module.exports = function (searchText) {
                 operator: '*=*',
                 value: searchText
             });
-
-            filters.push({
-                relation: 'or',
-                name: 'attributeName',
-                operator: '*=*',
-                value: searchText
-            });
-
-            filters.push({
-                relation: 'or',
-                name: 'attributeValue',
-                operator: '*=*',
-                value: searchText
-            });
         }
         else {
             const tokens = searchText.split(/\s+/);
@@ -81,27 +67,9 @@ module.exports = function (searchText) {
             for (const token of tokens) {
                 filters.push({
                     relation: 'and',
-                    name: 'sub',
-                    children: [
-                        {
-                            relation: 'or',
                             name: 'text',
                             operator: '*=*',
                             value: token
-                        },
-                        {
-                            relation: 'or',
-                            name: 'attributeName',
-                            operator: '*=*',
-                            value: token
-                        },
-                        {
-                            relation: 'or',
-                            name: 'attributeValue',
-                            operator: '*=*',
-                            value: token
-                        }
-                    ]
                 });
             }
         }
