@@ -21,15 +21,15 @@ const TPL = `
     </style>
 
     <tr>
-        <th nowrap>Note ID:</th>
+        <th>Note ID:</th>
         <td nowrap colspan="3" class="note-info-note-id"></td>
     </tr>
     <tr>
-        <th nowrap>Created:</th>
+        <th>Created:</th>
         <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-created"></td>
     </tr>
     <tr>
-        <th nowrap>Modified:</th>
+        <th>Modified:</th>
         <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-modified"></td>
     </tr>
     <tr>
