@@ -293,15 +293,11 @@ async function downloadImages(noteId, content) {
         if (!url.includes('api/images/')
             // this is and exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
-            if (url in downloadImagePromises) {
-                // download is already in progress
-                continue;
-            }
 
             if (url in imageUrlToNoteIdMapping) {
                 const imageNote = await repository.getNote(imageUrlToNoteIdMapping[url]);
 
-                if (imageNote || imageNote.isDeleted) {
+                if (!imageNote || imageNote.isDeleted) {
                     delete imageUrlToNoteIdMapping[url];
                 }
                 else {
@@ -322,6 +318,11 @@ async function downloadImages(noteId, content) {
                 continue;
             }
 
+            if (url in downloadImagePromises) {
+                // download is already in progress
+                continue;
+            }
+
             // this is done asynchronously, it would be too slow to wait for the download
             // given that save can be triggered very often
             downloadImagePromises[url] = downloadImage(noteId, url);
@@ -338,28 +339,30 @@ async function downloadImages(noteId, content) {
             // are downloaded and the IMG references are not updated. For this occassion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
-            const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
+            await sql.transactional(async () => {
+                const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
 
-            const origNote = await repository.getNote(noteId);
-            const origContent = await origNote.getContent();
-            let updatedContent = origContent;
+                const origNote = await repository.getNote(noteId);
+                const origContent = await origNote.getContent();
+                let updatedContent = origContent;
 
-            for (const url in imageUrlToNoteIdMapping) {
-                const imageNote = imageNotes.find(note => note.noteId === imageUrlToNoteIdMapping[url]);
+                for (const url in imageUrlToNoteIdMapping) {
+                    const imageNote = imageNotes.find(note => note.noteId === imageUrlToNoteIdMapping[url]);
 
-                if (imageNote && !imageNote.isDeleted) {
-                    updatedContent = replaceUrl(updatedContent, url, imageNote);
+                    if (imageNote && !imageNote.isDeleted) {
+                        updatedContent = replaceUrl(updatedContent, url, imageNote);
+                    }
                 }
-            }
 
-            // update only if the links have not been already fixed.
-            if (updatedContent !== origContent) {
-                await origNote.setContent(updatedContent);
+                // update only if the links have not been already fixed.
+                if (updatedContent !== origContent) {
+                    await origNote.setContent(updatedContent);
 
-                await scanForLinks(origNote);
+                    await scanForLinks(origNote);
 
-                console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
-            }
+                    console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
+                }
+            });
         }, 5000);
     });
 
