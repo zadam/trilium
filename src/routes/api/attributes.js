@@ -101,7 +101,7 @@ async function updateNoteAttributes(req) {
                 || (attribute.type === 'relation' && attribute.value !== attributeEntity.value)) {
 
                 if (attribute.type !== 'relation' || !!attribute.value.trim()) {
-                    const newAttribute = attribute.createClone(attribute.type, attribute.name, attribute.value);
+                    const newAttribute = attributeEntity.createClone(attribute.type, attribute.name, attribute.value);
                     await newAttribute.save();
                 }
 
@@ -139,6 +139,7 @@ async function updateNoteAttributes(req) {
     }
 
     const note = await repository.getNote(noteId);
+    note.invalidateAttributeCache();
 
     return await note.getAttributes();
 }
