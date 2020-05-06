@@ -50,7 +50,7 @@ class AppContext extends Component {
             const $component = $(this).closest(".component");
             const component = $component.prop("component");
 
-            component.triggerCommand(commandName);
+            component.triggerCommand(commandName, {$el: $(this)});
         });
 
         this.tabManager = new TabManager();
