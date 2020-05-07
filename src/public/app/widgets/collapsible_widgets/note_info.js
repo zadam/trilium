@@ -22,15 +22,15 @@ const TPL = `
 
     <tr>
         <th>Note ID:</th>
-        <td nowrap colspan="3" class="note-info-note-id"></td>
+        <td colspan="3" class="note-info-note-id"></td>
     </tr>
     <tr>
         <th>Created:</th>
-        <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-created"></td>
+        <td colspan="3" class="note-info-date-created"></td>
     </tr>
     <tr>
         <th>Modified:</th>
-        <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-modified"></td>
+        <td colspan="3" class="note-info-date-modified"></td>
     </tr>
     <tr>
         <th>Type:</th>
@@ -60,11 +60,11 @@ export default class NoteInfoWidget extends CollapsibleWidget {
 
         this.$noteId.text(note.noteId);
         this.$dateCreated
-            .text(noteComplement.dateCreated)
+            .text(noteComplement.dateCreated.substr(0, 16))
             .attr("title", noteComplement.dateCreated);
 
         this.$dateModified
-            .text(noteComplement.dateModified)
+            .text(noteComplement.dateModified.substr(0, 16))
             .attr("title", noteComplement.dateCreated);
 
         this.$type.text(note.type);
