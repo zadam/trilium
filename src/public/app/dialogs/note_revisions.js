@@ -82,6 +82,21 @@ async function setContentPane() {
 
     $title.html(revisionItem.title);
 
+    const $restoreRevisionButton = $('<button class="btn btn-sm" type="button">Restore this revision</button>');
+
+    $restoreRevisionButton.on('click', async () => {
+        const confirmDialog = await import('../dialogs/confirm.js');
+        const text = 'Do you want to restore this revision? This will overwrite current title/content of the note with this revision.';
+
+        if (await confirmDialog.confirm(text)) {
+            await server.put(`notes/${revisionItem.noteId}/restore-revision/${revisionItem.noteRevisionId}`);
+
+            $dialog.modal('hide');
+
+            toastService.showMessage('Note revision has been restored.');
+        }
+    });
+
     const $eraseRevisionButton = $('<button class="btn btn-sm" type="button">Delete this revision</button>');
 
     $eraseRevisionButton.on('click', async () => {
@@ -98,6 +113,8 @@ async function setContentPane() {
     });
 
     $titleButtons
+        .append($restoreRevisionButton)
+        .append(' &nbsp; ')
         .append($eraseRevisionButton)
         .append(' &nbsp; ');
 
