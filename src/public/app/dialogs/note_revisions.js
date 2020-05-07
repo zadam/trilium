@@ -37,6 +37,7 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
 async function loadNoteRevisions(noteId, noteRevId) {
     $list.empty();
     $content.empty();
+    $titleButtons.empty();
 
     note = appContext.tabManager.getActiveTabNote();
     revisionItems = await server.get(`notes/${noteId}/revisions`);
@@ -62,6 +63,8 @@ async function loadNoteRevisions(noteId, noteRevId) {
         $title.text("No revisions for this note yet...");
         noteRevisionId = null;
     }
+
+    $eraseAllRevisionsButton.toggle(revisionItems.length > 0);
 }
 
 $dialog.on('shown.bs.modal', () => {
