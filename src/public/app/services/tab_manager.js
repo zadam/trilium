@@ -208,6 +208,8 @@ export default class TabManager extends Component {
                 notePath: tabContext.notePath // resolved note path
             });
         }
+
+        return tabContext;
     }
 
     async activateOrOpenNote(noteId) {

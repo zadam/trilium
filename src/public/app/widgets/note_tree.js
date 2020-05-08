@@ -441,6 +441,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 return "bx bx-note";
             }
         }
+        else if (note.type === 'code' && note.mime.startsWith('text/x-sql')) {
+            return "bx bx-data";
+        }
         else {
             return NOTE_TYPE_ICONS[note.type];
         }

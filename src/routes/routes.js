@@ -181,6 +181,7 @@ function register(app) {
     apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
     apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
     apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
+    apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);

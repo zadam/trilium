@@ -16,6 +16,7 @@ async function createNewTopLevelNote() {
 async function createNote(parentNoteId, options = {}) {
     options = Object.assign({
         activate: true,
+        focus: 'title',
         target: 'into'
     }, options);
 
@@ -39,7 +40,8 @@ async function createNote(parentNoteId, options = {}) {
         title: newNoteName,
         content: options.content || "",
         isProtected: options.isProtected,
-        type: options.type
+        type: options.type,
+        mime: options.mime
     });
 
     if (options.saveSelection && utils.isCKEditorInitialized()) {
@@ -48,12 +50,15 @@ async function createNote(parentNoteId, options = {}) {
     }
 
     if (options.activate) {
-        await ws.waitForMaxKnownSyncId();
-
         const activeTabContext = appContext.tabManager.getActiveTabContext();
         await activeTabContext.setNote(note.noteId);
 
-        appContext.triggerCommand('focusAndSelectTitle');
+        if (options.focus === 'title') {
+            appContext.triggerCommand('focusAndSelectTitle');
+        }
+        else if (options.focus === 'content') {
+            appContext.triggerCommand('focusOnDetail', {tabId: this.tabId});
+        }
     }
 
     return {note, branch};

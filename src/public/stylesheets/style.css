@@ -312,12 +312,8 @@ div.ui-tooltip {
 
 .CodeMirror {
     font-family: "Liberation Mono", "Lucida Console", monospace;
-    height: auto;
+    height: 100%;
     background: inherit;
-}
-
-.CodeMirror-scroll {
-    min-height: 500px;
 }
 
 .CodeMirror-gutters {
