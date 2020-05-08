@@ -6,9 +6,8 @@ const utils = require('../services/utils');
 
 async function setupPage(req, res) {
     if (await sqlInit.isDbInitialized()) {
-        const windowService = require('../services/window');
-
         if (utils.isElectron()) {
+            const windowService = require('../services/window');
             await windowService.createMainWindow();
             windowService.closeSetupWindow();
         }
