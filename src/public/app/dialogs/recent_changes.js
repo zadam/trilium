@@ -68,7 +68,7 @@ export async function showDialog(ancestorNoteId) {
             }
             else {
                 const note = await treeCache.getNote(change.noteId);
-                const notePath = await treeService.getSomeNotePath(note);
+                const notePath = treeService.getSomeNotePath(note);
 
                 if (notePath) {
                     $noteLink = await linkService.createNoteLink(notePath, {

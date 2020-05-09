@@ -115,7 +115,7 @@ export default class NotePathsWidget extends TabAwareWidget {
         const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
 
         for (const parentNote of this.note.getParentNotes()) {
-            const parentNotePath = await treeService.getSomeNotePath(parentNote);
+            const parentNotePath = treeService.getSomeNotePath(parentNote);
             // this is to avoid having root notes leading '/'
             const notePath = parentNotePath ? (parentNotePath + '/' + this.noteId) : this.noteId;
             const isCurrent = activeNoteParentNoteId === parentNote.noteId;

@@ -61,7 +61,13 @@ async function createNote(parentNoteId, options = {}) {
         }
     }
 
-    return {note, branch};
+    const noteEntity = await treeCache.getNote(note.noteId);
+    const branchEntity = treeCache.getBranchId(branch.branchId);
+
+    return {
+        note: noteEntity,
+        branch: branchEntity
+    };
 }
 
 /* If first element is heading, parse it out and use it as a new heading. */
