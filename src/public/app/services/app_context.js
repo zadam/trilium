@@ -45,10 +45,12 @@ class AppContext extends Component {
 
         $("body").append($renderedWidget);
 
-        $renderedWidget.on('click', "[data-trigger-command]", e => {
-            const commandName = $(e.target).attr('data-trigger-command');
+        $renderedWidget.on('click', "[data-trigger-command]", function() {
+            const commandName = $(this).attr('data-trigger-command');
+            const $component = $(this).closest(".component");
+            const component = $component.prop("component");
 
-            this.triggerCommand(commandName);
+            component.triggerCommand(commandName, {$el: $(this)});
         });
 
         this.tabManager = new TabManager();
@@ -92,6 +94,8 @@ class AppContext extends Component {
             }
         }
 
+        // this might hint at error but sometimes this is used by components which are at different places
+        // in the component tree to communicate with each other
         console.debug(`Unhandled command ${name}, converting to event.`);
 
         return this.triggerEvent(name, data);

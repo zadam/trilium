@@ -145,6 +145,7 @@ function register(app) {
     apiRoute(GET, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.getNoteRevision);
     apiRoute(DELETE, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.eraseNoteRevision);
     route(GET, '/api/notes/:noteId/revisions/:noteRevisionId/download', [auth.checkApiAuthOrElectron], noteRevisionsApiRoute.downloadNoteRevision);
+    apiRoute(PUT, '/api/notes/:noteId/restore-revision/:noteRevisionId', noteRevisionsApiRoute.restoreNoteRevision);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
     apiRoute(POST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateNote);
@@ -180,6 +181,7 @@ function register(app) {
     apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
     apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
     apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
+    apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);

@@ -4,7 +4,6 @@ const TPL = `
 <table class="note-info-widget-table">
     <style>
         .note-info-widget-table {
-            table-layout: fixed; 
             width: 100%;
         } 
    
@@ -21,23 +20,25 @@ const TPL = `
     </style>
 
     <tr>
-        <th nowrap>Note ID:</th>
-        <td nowrap colspan="3" class="note-info-note-id"></td>
+        <th>Note ID:</th>
+        <td class="note-info-note-id"></td>
     </tr>
     <tr>
-        <th nowrap>Created:</th>
-        <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-created"></td>
+        <th>Created:</th>
+        <td class="note-info-date-created"></td>
     </tr>
     <tr>
-        <th nowrap>Modified:</th>
-        <td nowrap colspan="3" style="overflow: hidden; text-overflow: ellipsis;" class="note-info-date-modified"></td>
+        <th>Modified:</th>
+        <td class="note-info-date-modified"></td>
     </tr>
     <tr>
         <th>Type:</th>
-        <td class="note-info-type"></td>
-        
-        <th>MIME:</th>
-        <td class="note-info-mime"></td>
+        <td>
+            <span class="note-info-type"></span>,
+            
+            MIME: 
+            <span class="note-info-mime"></span>
+        </td>
     </tr>
 </table>
 `;
@@ -60,11 +61,11 @@ export default class NoteInfoWidget extends CollapsibleWidget {
 
         this.$noteId.text(note.noteId);
         this.$dateCreated
-            .text(noteComplement.dateCreated)
+            .text(noteComplement.dateCreated.substr(0, 16))
             .attr("title", noteComplement.dateCreated);
 
         this.$dateModified
-            .text(noteComplement.dateModified)
+            .text(noteComplement.dateModified.substr(0, 16))
             .attr("title", noteComplement.dateCreated);
 
         this.$type.text(note.type);

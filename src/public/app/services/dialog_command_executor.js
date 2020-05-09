@@ -1,5 +1,7 @@
 import Component from "../widgets/component.js";
 import appContext from "./app_context.js";
+import dateNoteService from "../services/date_notes.js";
+import noteCreateService from "../services/note_create.js";
 
 export default class DialogCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -54,18 +56,22 @@ export default class DialogCommandExecutor extends Component {
     }
 
     showOptionsCommand() {
-        import("../dialogs/options.js").then(d => d.showDialog())
+        import("../dialogs/options.js").then(d => d.showDialog());
     }
 
     showHelpCommand() {
-        import("../dialogs/help.js").then(d => d.showDialog())
+        import("../dialogs/help.js").then(d => d.showDialog());
     }
 
-    showSQLConsoleCommand() {
-        import("../dialogs/sql_console.js").then(d => d.showDialog())
+    async showSQLConsoleCommand() {
+        const sqlConsoleNote = await dateNoteService.createSqlConsole();
+
+        const tabContext = await appContext.tabManager.openTabWithNote(sqlConsoleNote.noteId, true);
+
+        appContext.triggerCommand('focusOnDetail', {tabId: tabContext.tabId});
     }
 
     showBackendLogCommand() {
-        import("../dialogs/backend_log.js").then(d => d.showDialog())
+        import("../dialogs/backend_log.js").then(d => d.showDialog());
     }
 }

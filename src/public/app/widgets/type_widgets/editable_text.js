@@ -4,6 +4,8 @@ import mimeTypesService from '../../services/mime_types.js';
 import utils from "../../services/utils.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
 import treeCache from "../../services/tree_cache.js";
+import treeService from "../../services/tree.js";
+import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 
 const ENABLE_INSPECTOR = false;
@@ -15,7 +17,7 @@ const mentionSetup = {
             feed: queryText => {
                 return new Promise((res, rej) => {
                     noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        if (rows.length === 1 && rows[0].title === 'No results') {
+                        if (rows.length === 1 && rows[0].pathTitle === 'No results') {
                             rows = [];
                         }
 
@@ -23,6 +25,17 @@ const mentionSetup = {
                             row.text = row.name = row.noteTitle;
                             row.id = '@' + row.text;
                             row.link = '#' + row.path;
+                        }
+
+                        if (queryText.trim().length > 0) {
+                            rows = [
+                                {
+                                    highlightedTitle: `Create and link note "<strong>${queryText}</strong>"`,
+                                    id: 'create',
+                                    title: queryText
+                                },
+                                ...rows
+                            ];
                         }
 
                         res(rows);
@@ -255,5 +268,21 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
             this.textEditor.model.insertContent(imageElement, this.textEditor.model.document.selection);
         } );
+    }
+
+    async createNoteForReferenceLink(title) {
+        const {parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(this.notePath);
+
+        const {note} = await noteCreateService.createNote(parentNoteId, {
+            activate: false,
+            title: title,
+            target: 'after',
+            targetBranchId: await treeCache.getBranchId(parentNoteId, this.noteId),
+            type: 'text'
+        });
+
+        const notePath = treeService.getSomeNotePath(note);
+
+        return notePath;
     }
 }

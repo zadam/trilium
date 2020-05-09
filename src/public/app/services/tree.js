@@ -71,7 +71,7 @@ async function getRunPath(notePath) {
                 if (parents.length > 0) {
                     console.debug(utils.now(), "Available parents:", parents);
 
-                    const someNotePath = await getSomeNotePath(parents[0]);
+                    const someNotePath = getSomeNotePath(parents[0]);
 
                     if (someNotePath) { // in case it's root the path may be empty
                         const pathToRoot = someNotePath.split("/").reverse();
@@ -103,7 +103,7 @@ async function getRunPath(notePath) {
     return effectivePath.reverse();
 }
 
-async function getSomeNotePath(note) {
+function getSomeNotePath(note) {
     utils.assertArguments(note);
 
     const path = [];

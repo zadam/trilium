@@ -1,9 +1,9 @@
 import libraryLoader from "../../services/library_loader.js";
-import bundleService from "../../services/bundle.js";
-import toastService from "../../services/toast.js";
-import server from "../../services/server.js";
-import keyboardActionService from "../../services/keyboard_actions.js";
 import TypeWidget from "./type_widget.js";
+import keyboardActionService from "../../services/keyboard_actions.js";
+import server from "../../services/server.js";
+import toastService from "../../services/toast.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
@@ -11,15 +11,58 @@ const TPL = `
     .note-detail-code {
         overflow: auto;
         height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .note-detail-code-editor {
-        min-height: 500px;
+        flex-basis: 200px;
+        min-height: 200px;
+        flex-grow: 1;
+        overflow: auto;
+    }
+    
+    .sql-console-table-schemas button {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.875rem;
+        line-height: 0.5;
+        border-radius: 0.2rem;
+    }
+    
+    .sql-console-result-wrapper {
+        flex-grow: 100;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    
+    .sql-console-result-container {
+        width: 100%; 
+        font-size: smaller; 
+        margin-top: 10px;
+        flex-grow: 1;
+        overflow: auto;
+        min-height: 0;
     }
     </style>
 
+    <div class="sql-console-area">
+        Tables:
+        <span class="sql-console-table-schemas"></span>
+    </div>
+
     <div class="note-detail-code-editor"></div>
+    
+    <div class="sql-console-area sql-console-result-wrapper">
+        <div style="text-align: center">
+            <button class="btn btn-danger sql-console-execute">Execute query <kbd>Ctrl+Enter</kbd></button>
+        </div>
+
+        <div class="sql-console-result-container"></div>
+    </div>
 </div>`;
+
+let TABLE_SCHEMA;
 
 export default class EditableCodeTypeWidget extends TypeWidget {
     static getType() { return "editable-code"; }
@@ -27,11 +70,16 @@ export default class EditableCodeTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-code-editor');
-        this.$executeScriptButton = this.$widget.find(".execute-script-button");
+        this.$sqlConsoleArea = this.$widget.find('.sql-console-area');
+        this.$sqlConsoleTableSchemas = this.$widget.find('.sql-console-table-schemas');
+        this.$sqlConsoleExecuteButton = this.$widget.find('.sql-console-execute');
+        this.$sqlConsoleResultContainer = this.$widget.find('.sql-console-result-container');
 
-        keyboardActionService.setElementActionHandler(this.$widget, 'runActiveNote', () => this.executeCurrentNote());
+        keyboardActionService.setupActionsForElement('code-detail', this.$widget, this);
 
-        this.$executeScriptButton.on('click', () => this.executeCurrentNote());
+        utils.bindElShortcut(this.$editor, 'ctrl+return', () => this.execute());
+
+        this.$sqlConsoleExecuteButton.on('click', () => this.execute());
 
         this.initialized = this.initEditor();
 
@@ -87,7 +135,101 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             }
         });
 
+        const isSqlConsole = note.mime === 'text/x-sqlite;schema=trilium';
+
+        this.$sqlConsoleArea.toggle(isSqlConsole);
+
+        if (isSqlConsole) {
+            await this.showTableSchemas();
+        }
+
         this.show();
+    }
+
+    async showTableSchemas() {
+        if (!TABLE_SCHEMA) {
+            TABLE_SCHEMA = await server.get('sql/schema');
+        }
+
+        this.$sqlConsoleTableSchemas.empty();
+
+        for (const table of TABLE_SCHEMA) {
+            const $tableLink = $('<button class="btn">').text(table.name);
+
+            const $columns = $("<ul>");
+
+            for (const column of table.columns) {
+                $columns.append(
+                    $("<li>")
+                        .append($("<span>").text(column.name))
+                        .append($("<span>").text(column.type))
+                );
+            }
+
+            this.$sqlConsoleTableSchemas.append($tableLink).append(" ");
+
+            $tableLink
+                .tooltip({
+                    html: true,
+                    placement: 'bottom',
+                    boundary: 'window',
+                    title: $columns[0].outerHTML
+                })
+                .on('click', () => this.codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
+        }
+    }
+
+    async execute() {
+        // execute the selected text or the whole content if there's no selection
+        let sqlQuery = this.codeEditor.getSelection();
+
+        if (!sqlQuery) {
+            sqlQuery = this.codeEditor.getValue();
+        }
+
+        const result = await server.post("sql/execute", {
+            query: sqlQuery
+        });
+
+        if (!result.success) {
+            toastService.showError(result.error);
+            return;
+        }
+        else {
+            toastService.showMessage("Query was executed successfully.");
+        }
+
+        const results = result.results;
+
+        this.$sqlConsoleResultContainer.empty();
+
+        for (const rows of results) {
+            if (rows.length === 0) {
+                continue;
+            }
+
+            const $table = $('<table class="table table-striped">');
+            this.$sqlConsoleResultContainer.append($table);
+
+            const result = rows[0];
+            const $row = $("<tr>");
+
+            for (const key in result) {
+                $row.append($("<th>").html(key));
+            }
+
+            $table.append($row);
+
+            for (const result of rows) {
+                const $row = $("<tr>");
+
+                for (const key in result) {
+                    $row.append($("<td>").html(result[key]));
+                }
+
+                $table.append($row);
+            }
+        }
     }
 
     show() {
@@ -104,26 +246,6 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     focus() {
         this.codeEditor.focus();
-    }
-
-    async executeCurrentNote() {
-        // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
-        if (this.note.type !== 'code') {
-            return;
-        }
-
-        // make sure note is saved so we load latest changes
-        await this.spacedUpdate.updateNowIfNecessary();
-
-        if (this.note.mime.endsWith("env=frontend")) {
-            await bundleService.getAndExecuteBundle(this.noteId);
-        }
-
-        if (this.note.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + this.noteId);
-        }
-
-        toastService.showMessage("Note executed");
     }
 
     cleanup() {

@@ -16,6 +16,7 @@ async function createNewTopLevelNote() {
 async function createNote(parentNoteId, options = {}) {
     options = Object.assign({
         activate: true,
+        focus: 'title',
         target: 'into'
     }, options);
 
@@ -39,7 +40,8 @@ async function createNote(parentNoteId, options = {}) {
         title: newNoteName,
         content: options.content || "",
         isProtected: options.isProtected,
-        type: options.type
+        type: options.type,
+        mime: options.mime
     });
 
     if (options.saveSelection && utils.isCKEditorInitialized()) {
@@ -49,10 +51,23 @@ async function createNote(parentNoteId, options = {}) {
 
     if (options.activate) {
         const activeTabContext = appContext.tabManager.getActiveTabContext();
-        activeTabContext.setNote(note.noteId);
+        await activeTabContext.setNote(note.noteId);
+
+        if (options.focus === 'title') {
+            appContext.triggerCommand('focusAndSelectTitle');
+        }
+        else if (options.focus === 'content') {
+            appContext.triggerCommand('focusOnDetail', {tabId: this.tabId});
+        }
     }
 
-    return {note, branch};
+    const noteEntity = await treeCache.getNote(note.noteId);
+    const branchEntity = treeCache.getBranchId(branch.branchId);
+
+    return {
+        note: noteEntity,
+        branch: branchEntity
+    };
 }
 
 /* If first element is heading, parse it out and use it as a new heading. */

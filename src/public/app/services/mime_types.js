@@ -123,6 +123,7 @@ const MIME_TYPES_DICT = [
     { title: "Spreadsheet", mime: "text/x-spreadsheet" },
     { default: true, title: "SQL", mime: "text/x-sql" },
     { title: "SQLite", mime: "text/x-sqlite" },
+    { default: true, title: "SQLite (Trilium)", mime: "text/x-sqlite;schema=trilium" },
     { title: "Squirrel", mime: "text/x-squirrel" },
     { title: "Stylus", mime: "text/x-styl" },
     { default: true, title: "Swift", mime: "text/x-swift" },

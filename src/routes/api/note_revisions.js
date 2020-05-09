@@ -3,6 +3,7 @@
 const repository = require('../../services/repository');
 const noteCacheService = require('../../services/note_cache');
 const protectedSessionService = require('../../services/protected_session');
+const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const path = require('path');
 
@@ -109,6 +110,20 @@ async function eraseNoteRevision(req) {
     }
 }
 
+async function restoreNoteRevision(req) {
+    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+
+    if (noteRevision && !noteRevision.isErased) {
+        const note = await noteRevision.getNote();
+
+        await noteRevisionService.createNoteRevision(note);
+
+        note.title = noteRevision.title;
+        await note.setContent(await noteRevision.getContent());
+        await note.save();
+    }
+}
+
 async function getEditedNotesOnDate(req) {
     const date = utils.sanitizeSql(req.params.date);
 
@@ -141,5 +156,6 @@ module.exports = {
     downloadNoteRevision,
     getEditedNotesOnDate,
     eraseAllNoteRevisions,
-    eraseNoteRevision
+    eraseNoteRevision,
+    restoreNoteRevision
 };

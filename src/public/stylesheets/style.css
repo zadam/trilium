@@ -312,12 +312,8 @@ div.ui-tooltip {
 
 .CodeMirror {
     font-family: "Liberation Mono", "Lucida Console", monospace;
-    height: auto;
+    height: 100%;
     background: inherit;
-}
-
-.CodeMirror-scroll {
-    min-height: 500px;
 }
 
 .CodeMirror-gutters {
@@ -661,12 +657,7 @@ div[data-notify="container"] {
     padding: 2px;
 }
 
-#sql-console-table-schemas button {
-    padding: 0.25rem 0.4rem;
-    font-size: 0.875rem;
-    line-height: 0.5;
-    border-radius: 0.2rem;
-}
+
 
 a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href^="https://"]:not(.no-arrow):after {
     font-size: smaller;

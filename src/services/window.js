@@ -165,6 +165,5 @@ module.exports = {
     createMainWindow,
     createSetupWindow,
     closeSetupWindow,
-    createExtraWindow,
     registerGlobalShortcuts
 };

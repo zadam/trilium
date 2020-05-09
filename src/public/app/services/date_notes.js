@@ -27,9 +27,17 @@ async function getYearNote(year) {
     return await treeCache.getNote(note.noteId);
 }
 
+/** @return {NoteShort} */
+async function createSqlConsole() {
+    const note = await server.post('sql-console');
+
+    return await treeCache.getNote(note.noteId);
+}
+
 export default {
     getTodayNote,
     getDateNote,
     getMonthNote,
-    getYearNote
+    getYearNote,
+    createSqlConsole
 }

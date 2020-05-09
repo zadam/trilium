@@ -186,7 +186,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
             const noteComplement = await this.tabContext.getNoteComplement();
 
             if (note.hasLabel('readOnly') ||
-                (noteComplement.content && noteComplement.content.length > 10000)) {
+                (noteComplement.content
+                    && noteComplement.content.length > 10000)
+                    && !note.hasLabel('autoReadOnlyDisabled')) {
                 type = 'read-only-text';
             }
         }
@@ -195,7 +197,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
             const noteComplement = await this.tabContext.getNoteComplement();
 
             if (note.hasLabel('readOnly') ||
-                (noteComplement.content && noteComplement.content.length > 30000)) {
+                (noteComplement.content
+                    && noteComplement.content.length > 30000)
+                    && !note.hasLabel('autoReadOnlyDisabled')) {
                 type = 'read-only-code';
             }
         }
