@@ -7,14 +7,14 @@ const utils = require('./utils');
 const hoistedNoteService = require('./hoisted_note');
 const stringSimilarity = require('string-similarity');
 
-/** @var {Object.<String, Note>} */
+/** @type {Object.<String, Note>} */
 let notes;
-/** @var {Object.<String, Branch>} */
+/** @type {Object.<String, Branch>} */
 let branches
-/** @var {Object.<String, Attribute>} */
+/** @type {Object.<String, Attribute>} */
 let attributes;
 
-/** @var {Object.<String, Attribute[]>} */
+/** @type {Object.<String, Attribute[]>} */
 let noteAttributeCache = {};
 
 let childParentToBranch = {};
@@ -109,6 +109,59 @@ class Attribute {
     }
 }
 
+class FulltextReference {
+    /**
+     * @param type - attributeName, attributeValue, title
+     * @param id - attributeId, noteId
+     */
+    constructor(type, id) {
+        this.type = type;
+        this.id = id;
+    }
+}
+
+/** @type {Object.<String, FulltextReference>} */
+let fulltext = {};
+
+/** @type {Object.<String, AttributeMeta>} */
+let attributeMetas = {};
+
+class AttributeMeta {
+    constructor(attribute) {
+        this.type = attribute.type;
+        this.name = attribute.name;
+        this.isInheritable = attribute.isInheritable;
+        this.attributeIds = new Set(attribute.attributeId);
+    }
+
+    addAttribute(attribute) {
+        this.attributeIds.add(attribute.attributeId);
+        this.isInheritable = this.isInheritable || attribute.isInheritable;
+    }
+
+    updateAttribute(attribute) {
+        if (attribute.isDeleted) {
+            this.attributeIds.delete(attribute.attributeId);
+        }
+        else {
+            this.attributeIds.add(attribute.attributeId);
+        }
+
+        this.isInheritable = !!this.attributeIds.find(attributeId => attributes[attributeId].isInheritable);
+    }
+}
+
+function addToAttributeMeta(attribute) {
+    const key = `${attribute.type}-${attribute.name}`;
+
+    if (!(key in attributeMetas)) {
+        attributeMetas[key] = new AttributeMeta(attribute);
+    }
+    else {
+        attributeMetas[key].addAttribute(attribute);
+    }
+}
+
 let loaded = false;
 let loadedPromiseResolve;
 /** Is resolved after the initial load */
@@ -140,11 +193,26 @@ async function load() {
     notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
         row => new Note(row));
 
+    for (const note of notes) {
+        fulltext[note.title] = fulltext[note.title] || [];
+        fulltext[note.title].push(new FulltextReference('note', note.noteId));
+    }
+
     branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
         row => new Branch(row));
 
     attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
         row => new Attribute(row));
+
+    for (const attr of attributes) {
+        addToAttributeMeta(attributes);
+
+        fulltext[attr.name] = fulltext[attr.name] || [];
+        fulltext[attr.name].push(new FulltextReference('aName', attr.attributeId));
+
+        fulltext[attr.value] = fulltext[attr.value] || [];
+        fulltext[attr.value].push(new FulltextReference('aVal', attr.attributeId));
+    }
 
     for (const branch of branches) {
         const childNote = notes[branch.noteId];
