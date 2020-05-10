@@ -35,7 +35,7 @@ class Note {
 
     /** @return {Attribute[]} */
     get attributes() {
-        if (this.noteId in noteAttributeCache) {
+        if (!(this.noteId in noteAttributeCache)) {
             const attrArrs = [
                 this.ownedAttributes
             ];
@@ -88,7 +88,13 @@ class Branch {
 
     /** @return {Note} */
     get parentNote() {
-        return notes[this.parentNoteId];
+        const note = notes[this.parentNoteId];
+
+        if (!note) {
+            console.log(`Cannot find note ${this.parentNoteId}`);
+        }
+
+        return note;
     }
 }
 
@@ -112,11 +118,11 @@ class Attribute {
 class FulltextReference {
     /**
      * @param type - attributeName, attributeValue, title
-     * @param id - attributeId, noteId
+     * @param noteId
      */
-    constructor(type, id) {
+    constructor(type, noteId) {
         this.type = type;
-        this.id = id;
+        this.noteId = noteId;
     }
 }
 
@@ -193,9 +199,11 @@ async function load() {
     notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
         row => new Note(row));
 
-    for (const note of notes) {
-        fulltext[note.title] = fulltext[note.title] || [];
-        fulltext[note.title].push(new FulltextReference('note', note.noteId));
+    for (const note of Object.values(notes)) {
+        const title = note.title.toLowerCase();
+
+        fulltext[title] = fulltext[title] || [];
+        fulltext[title].push(new FulltextReference('note', note.noteId));
     }
 
     branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
@@ -204,17 +212,25 @@ async function load() {
     attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
         row => new Attribute(row));
 
-    for (const attr of attributes) {
+    for (const attr of Object.values(attributes)) {
+        notes[attr.noteId].attributes.push(attr);
+
         addToAttributeMeta(attributes);
 
-        fulltext[attr.name] = fulltext[attr.name] || [];
-        fulltext[attr.name].push(new FulltextReference('aName', attr.attributeId));
+        const attrName = attr.name.toLowerCase();
+        fulltext[attrName] = fulltext[attrName] || [];
+        fulltext[attrName].push(new FulltextReference('aName', attr.noteId));
 
-        fulltext[attr.value] = fulltext[attr.value] || [];
-        fulltext[attr.value].push(new FulltextReference('aVal', attr.attributeId));
+        const attrValue = attr.value.toLowerCase();
+        fulltext[attrValue] = fulltext[attrValue] || [];
+        fulltext[attrValue].push(new FulltextReference('aVal', attr.noteId));
     }
 
-    for (const branch of branches) {
+    for (const branch of Object.values(branches)) {
+        if (branch.branchId === 'root') {
+            continue;
+        }
+
         const childNote = notes[branch.noteId];
 
         if (!childNote) {
@@ -252,6 +268,14 @@ function highlightResults(results, allTokens) {
     allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of results) {
+        const note = notes[result.noteId];
+
+        for (const attr of note.attributes) {
+            if (allTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
+                result.pathTitle += ` <small>@${attr.name}=${attr.value}</small>`;
+            }
+        }
+
         result.highlightedTitle = result.pathTitle;
     }
 
@@ -282,14 +306,29 @@ async function findNotes(query) {
         .filter(token => token !== '/'); // '/' is used as separator
 
     const tokens = allTokens.slice();
+
+    const matchedNoteIds = new Set();
+
+    for (const token of tokens) {
+        for (const chunk in fulltext) {
+            if (chunk.includes(token)) {
+                for (const fulltextReference of fulltext[chunk]) {
+                    matchedNoteIds.add(fulltextReference.noteId);
+                }
+            }
+        }
+    }
+
+    // now we have set of noteIds which match at least one token
+
     let results = [];
 
-    for (const noteId in notes) {
+    for (const noteId of matchedNoteIds) {
         const note = notes[noteId];
 
         // autocomplete should be able to find notes by their noteIds as well (only leafs)
         if (noteId === query) {
-            search(noteId, [], [], results);
+            search(note, [], [], results);
             continue;
         }
 
@@ -298,9 +337,19 @@ async function findNotes(query) {
             continue;
         }
 
+        const foundAttrTokens = [];
+
+        for (const attribute of note.attributes) {
+            for (const token of tokens) {
+                if (attribute.name.includes(token) || attribute.value.includes(token)) {
+                    foundAttrTokens.push(token);
+                }
+            }
+        }
+
         for (const parentNote of note.parents) {
-            const title = getNoteTitle(note, parentNote).toLowerCase();
-            const foundTokens = [];
+            const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+            const foundTokens = foundAttrTokens.slice();
 
             for (const token of tokens) {
                 if (title.includes(token)) {
@@ -370,12 +419,12 @@ function search(note, tokens, path, results) {
         return;
     }
 
-    if (!note.parents.length === 0 || noteId === 'root') {
+    if (!note.parents.length === 0 || note.noteId === 'root') {
         return;
     }
 
     for (const parentNote of note.parents) {
-        const title = getNoteTitle(note, parentNote).toLowerCase();
+        const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -387,10 +436,10 @@ function search(note, tokens, path, results) {
         if (foundTokens.length > 0) {
             const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
 
-            search(parentNote, remainingTokens, path.concat([noteId]), results);
+            search(parentNote, remainingTokens, path.concat([note.noteId]), results);
         }
         else {
-            search(parentNote, tokens, path.concat([noteId]), results);
+            search(parentNote, tokens, path.concat([note.noteId]), results);
         }
     }
 }
@@ -436,7 +485,7 @@ function isInAncestor(noteId, ancestorNoteId) {
 
     const note = notes[noteId];
 
-    for (const parentNote of notes.parents) {
+    for (const parentNote of note.parents) {
         if (isInAncestor(parentNote.noteId, ancestorNoteId)) {
             return true;
         }
@@ -456,7 +505,10 @@ function getNoteTitleFromPath(notePath) {
     }
 }
 
-function getNoteTitle(childNote, parentNote) {
+function getNoteTitle(childNoteId, parentNoteId) {
+    const childNote = notes[childNoteId];
+    const parentNote = notes[parentNoteId];
+
     let title;
 
     if (childNote.isProtected) {
@@ -466,9 +518,9 @@ function getNoteTitle(childNote, parentNote) {
         title = childNote.title;
     }
 
-    const branch = getBranch(childNote.noteId, parentNote.noteId);
+    const branch = parentNote ? getBranch(childNote.noteId, parentNote.noteId) : null;
 
-    return (branch.prefix ? (branch.prefix + ' - ') : '') + title;
+    return ((branch && branch.prefix) ? (branch.prefix + ' - ') : '') + title;
 }
 
 function getNoteTitleArrayForPath(path) {
@@ -511,9 +563,9 @@ function getNoteTitleForPath(path) {
  * - this means that archived paths is returned only if there's no non-archived path
  * - you can check whether returned path is archived using isArchived()
  */
-function getSomePath(noteId, path = []) {
-    if (noteId === 'root') {
-        path.push(noteId);
+function getSomePath(note, path = []) {
+    if (note.noteId === 'root') {
+        path.push(note.noteId);
         path.reverse();
 
         if (!path.includes(hoistedNoteService.getHoistedNoteId())) {
@@ -523,13 +575,13 @@ function getSomePath(noteId, path = []) {
         return path;
     }
 
-    const parents = childToParent[noteId];
-    if (!parents || parents.length === 0) {
+    const parents = note.parents;
+    if (parents.length === 0) {
         return false;
     }
 
-    for (const parentNoteId of parents) {
-        const retPath = getSomePath(parentNoteId, path.concat([noteId]));
+    for (const parentNote of parents) {
+        const retPath = getSomePath(parentNote, path.concat([note.noteId]));
 
         if (retPath) {
             return retPath;
