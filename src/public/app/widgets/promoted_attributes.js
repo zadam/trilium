@@ -19,6 +19,7 @@ const TPL = `
     
     .promoted-attributes td, .promoted-attributes th {
         padding: 5px;
+        min-width: 50px; /* otherwise checkboxes can collapse into 0 width (if there are only checkboxes) */
     }
     </style>
     
@@ -98,7 +99,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")
             .prop("tabindex", definitionAttr.position)
-            .prop("attribute-id", valueAttr.isOwned ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
+            .prop("attribute-id", valueAttr.noteId === this.noteId ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
             .prop("attribute-type", valueAttr.type)
             .prop("attribute-name", valueAttr.name)
             .prop("value", valueAttr.value)

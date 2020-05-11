@@ -411,10 +411,6 @@ class Note extends Entity {
             }
         });
 
-        for (const attr of filteredAttributes) {
-            attr.isOwned = attr.noteId === this.noteId;
-        }
-
         this.__attributeCache = filteredAttributes;
     }
 
