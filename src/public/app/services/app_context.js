@@ -4,7 +4,7 @@ import DialogCommandExecutor from "./dialog_command_executor.js";
 import Entrypoints from "./entrypoints.js";
 import options from "./options.js";
 import utils from "./utils.js";
-import ZoomService from "./zoom.js";
+import zoomService from "./zoom.js";
 import TabManager from "./tab_manager.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
@@ -73,7 +73,7 @@ class AppContext extends Component {
         }
 
         if (utils.isElectron()) {
-            this.child(new ZoomService());
+            this.child(zoomService);
         }
 
         this.triggerEvent('initialRenderComplete');

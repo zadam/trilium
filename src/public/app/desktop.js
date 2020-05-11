@@ -8,6 +8,7 @@ import contextMenu from "./services/context_menu.js";
 import DesktopMainWindowLayout from "./layouts/desktop_main_window_layout.js";
 import glob from "./services/glob.js";
 import DesktopExtraWindowLayout from "./layouts/desktop_extra_window_layout.js";
+import zoomService from './services/zoom.js';
 
 glob.setupGlobs();
 
@@ -133,9 +134,11 @@ if (utils.isElectron()) {
             return;
         }
 
+        const zoomLevel = zoomService.getCurrentZoom();
+
         contextMenu.show({
-            x: params.x,
-            y: params.y,
+            x: params.x / zoomLevel,
+            y: params.y / zoomLevel,
             items,
             selectMenuItemHandler: ({command, spellingSuggestion}) => {
                 if (command === 'replaceMisspelling') {

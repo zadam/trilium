@@ -81,24 +81,29 @@ function goToLink(e) {
         }
         else if (e.which === 1) {
             const activeTabContext = appContext.tabManager.getActiveTabContext();
-            activeTabContext.setNote(notePath)
+            activeTabContext.setNote(notePath);
         }
         else {
             return false;
         }
     }
     else {
-        const address = $link.attr('href');
+        if (e.which === 1) {
+            const address = $link.attr('href');
 
-        if (address && address.startsWith('http')) {
-            window.open(address, '_blank');
+            if (address && address.startsWith('http')) {
+                window.open(address, '_blank');
+            }
+        }
+        else {
+            return false;
         }
     }
 
     return true;
 }
 
-function newTabContextMenu(e) {
+function linkContextMenu(e) {
     const $link = $(e.target).closest("a");
 
     const notePath = getNotePathFromLink($link);
@@ -113,7 +118,7 @@ function newTabContextMenu(e) {
         x: e.pageX,
         y: e.pageY,
         items: [
-            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "arrow-up-right"},
+            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "empty"},
             {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
         ],
         selectMenuItemHandler: ({command}) => {
@@ -156,18 +161,19 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
 $(document).on('mousedown', '.note-detail-book a', goToLink);
 $(document).on('mousedown', '.note-detail-render a', goToLink);
 $(document).on('mousedown', '.note-detail-text a.reference-link', goToLink);
-$(document).on('mousedown', 'note-detail-readonly-text a', goToLink);
+$(document).on('mousedown', '.note-detail-readonly-text a', goToLink);
 $(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
 $(document).on('click', 'a.ck-link-actions__preview', e => {
     e.preventDefault();
     e.stopPropagation();
 });
 
-$(document).on('contextmenu', 'a.ck-link-actions__preview', newTabContextMenu);
-$(document).on('contextmenu', '.note-detail-text a', newTabContextMenu);
-$(document).on('contextmenu', "a[data-action='note']", newTabContextMenu);
-$(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
-$(document).on('contextmenu', ".note-paths-widget a", newTabContextMenu);
+$(document).on('contextmenu', 'a.ck-link-actions__preview', linkContextMenu);
+$(document).on('contextmenu', '.note-detail-text a', linkContextMenu);
+$(document).on('contextmenu', '.note-detail-readonly-text a', linkContextMenu);
+$(document).on('contextmenu', "a[data-action='note']", linkContextMenu);
+$(document).on('contextmenu', ".note-detail-render a", linkContextMenu);
+$(document).on('contextmenu', ".note-paths-widget a", linkContextMenu);
 
 export default {
     getNotePathFromUrl,
