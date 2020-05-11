@@ -170,7 +170,7 @@ function connectWebSocket() {
 
 async function sendPing() {
     if (Date.now() - lastPingTs > 30000) {
-        console.log(utils.now(), "Lost websocket connection to the backend");
+        console.log(utils.now(), "Lost websocket connection to the backend. If you keep having this issue repeatedly, you might want to check your reverse proxy (nginx, apache) configuration and allow/unblock WebSocket.");
     }
 
     if (ws.readyState === ws.OPEN) {

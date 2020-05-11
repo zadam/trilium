@@ -5,7 +5,7 @@
     <link rel="shortcut icon" href="favicon.ico">
     <title>Trilium Notes</title>
 </head>
-<body class="desktop theme-<%= theme %>" style="display: none; --main-font-size: <%= mainFontSize %>%; --tree-font-size: <%= treeFontSize %>%; --detail-font-size: <%= detailFontSize %>%;">
+<body class="desktop theme-<%= theme %>" style="--main-font-size: <%= mainFontSize %>%; --tree-font-size: <%= treeFontSize %>%; --detail-font-size: <%= detailFontSize %>%;">
 <noscript>Trilium requires JavaScript to be enabled.</noscript>
 
 <div id="toast-container" class="d-flex flex-column justify-content-center align-items-center"></div>
@@ -82,10 +82,6 @@
 <script src="app/desktop.js" crossorigin type="module"></script>
 
 <link rel="stylesheet" type="text/css" href="libraries/boxicons/css/boxicons.min.css">
-
-<script>
-    $("body").show();
-</script>
 
 </body>
 </html>
