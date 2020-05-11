@@ -22,6 +22,10 @@ class Attribute {
         this.isInheritable = row.isInheritable;
     }
 
+    clone() {
+        return new Attribute(this.treeCache, this);
+    }
+
     /** @returns {NoteShort} */
     async getNote() {
         return await this.treeCache.getNote(this.noteId);

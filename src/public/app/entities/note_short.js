@@ -158,8 +158,9 @@ class NoteShort {
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
-            .map(attributeId => this.treeCache.attributes[attributeId])
-            .filter(Boolean); // filter out nulls;
+            .map(attributeId => this.treeCache.attributes[attributeId].clone())
+            .filter(Boolean) // filter out nulls
+            .map(attr => Object.assign(attr, {isOwned: true}));
 
         return this.__filterAttrs(attrs, type, name);
     }
@@ -189,7 +190,9 @@ class NoteShort {
                 for (const parentNote of this.getParentNotes()) {
                     // these virtual parent-child relationships are also loaded into frontend tree cache
                     if (parentNote.type !== 'search') {
-                        attrArrs.push(parentNote.getInheritableAttributes());
+                        const parentAttr = parentNote.getInheritableAttributes()
+                            .map(attr => Object.assign(attr, {isOwned: false});
+                        attrArrs.push(parentAttr);
                     }
                 }
             }
