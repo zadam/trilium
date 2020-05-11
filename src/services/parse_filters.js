@@ -1,6 +1,6 @@
 const dayjs = require("dayjs");
 
-const filterRegex = /(\b(AND|OR)\s+)?@(!?)([\p{L}\p{Number}_]+|"[^"]+")\s*((=|!=|<|<=|>|>=|!?\*=|!?=\*|!?\*=\*)\s*([^\s=*]+|"[^"]+"))?/igu;
+const filterRegex = /(\b(AND|OR)\s+)?@(!?)([\p{L}\p{Number}_]+|"[^"]+")\s*((=|!=|<|<=|>|>=|!?\*=|!?=\*|!?\*=\*)\s*([^\s=*"]+|"[^"]+"))?/igu;
 const smartValueRegex = /^(NOW|TODAY|WEEK|MONTH|YEAR) *([+\-] *\d+)?$/i;
 
 function calculateSmartValue(v) {
