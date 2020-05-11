@@ -158,9 +158,9 @@ class NoteShort {
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
-            .map(attributeId => this.treeCache.attributes[attributeId].clone())
+            .map(attributeId => this.treeCache.attributes[attributeId])
             .filter(Boolean) // filter out nulls
-            .map(attr => Object.assign(attr, {isOwned: true}));
+            .map(attr => Object.assign(attr.clone(), {isOwned: true}));
 
         return this.__filterAttrs(attrs, type, name);
     }
