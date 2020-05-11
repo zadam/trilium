@@ -59,8 +59,8 @@ function AttributesModel() {
         });
     };
 
-    async function showAttributes(attributes) {
-        const ownedAttributes = attributes.filter(attr => attr.isOwned);
+    async function showAttributes(noteId, attributes) {
+        const ownedAttributes = attributes.filter(attr => attr.noteId === noteId);
 
         for (const attr of ownedAttributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
@@ -86,7 +86,7 @@ function AttributesModel() {
 
         addLastEmptyRow();
 
-        const inheritedAttributes = attributes.filter(attr => !attr.isOwned);
+        const inheritedAttributes = attributes.filter(attr => attr.noteId !== noteId);
 
         self.inheritedAttributes(inheritedAttributes);
     }
@@ -96,7 +96,7 @@ function AttributesModel() {
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
 
-        await showAttributes(attributes);
+        await showAttributes(noteId, attributes);
 
         // attribute might not be rendered immediatelly so could not focus
         setTimeout(() => $(".attribute-type-select:last").trigger('focus'), 1000);
@@ -166,7 +166,7 @@ function AttributesModel() {
 
         const attributes = await server.put('notes/' + noteId + '/attributes', attributesToSave);
 
-        await showAttributes(attributes);
+        await showAttributes(noteId, attributes);
 
         toastService.showMessage("Attributes have been saved.");
     };
