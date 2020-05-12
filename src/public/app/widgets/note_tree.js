@@ -251,8 +251,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     this.triggerCommand('setActiveScreen', {screen:'detail'});
                 }
             },
-            expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
-            collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
+            expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
+            collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),
             hotkeys: utils.isMobile() ? undefined : { keydown: await this.getHotKeys() },
             dnd5: {
                 autoExpandMS: 600,
@@ -929,12 +929,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async setExpandedToServer(branchId, isExpanded) {
+    async setExpanded(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
-        const expandedNum = isExpanded ? 1 : 0;
+        const branch = treeCache.getBranch(branchId);
+        branch.isExpanded = isExpanded;
 
-        await server.put('branches/' + branchId + '/expanded/' + expandedNum);
+        await server.put(`branches/${branchId}/expanded/${isExpanded ? 1 : 0}`);
     }
 
     async reloadTreeFromCache() {
@@ -994,7 +995,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 return false;
             }
         };
-        
+
         for (const action of actions) {
             for (const shortcut of action.effectiveShortcuts) {
                 hotKeyMap[utils.normalizeShortcut(shortcut)] = node => {
@@ -1019,83 +1020,83 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async deleteNotesCommand({node}) {
         const branchIds = this.getSelectedOrActiveBranchIds(node);
-    
+
         await branchService.deleteNotes(branchIds);
 
         this.clearSelectedNodes();
     }
-    
+
     moveNoteUpCommand({node}) {
         const beforeNode = node.getPrevSibling();
-    
+
         if (beforeNode !== null) {
             branchService.moveBeforeBranch([node.data.branchId], beforeNode.data.branchId);
         }
     }
-    
+
     moveNoteDownCommand({node}) {
         const afterNode = node.getNextSibling();
         if (afterNode !== null) {
             branchService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
         }
     }
-    
+
     moveNoteUpInHierarchyCommand({node}) {
         branchService.moveNodeUpInHierarchy(node);
     }
-    
+
     moveNoteDownInHierarchyCommand({node}) {
         const toNode = node.getPrevSibling();
-    
+
         if (toNode !== null) {
             branchService.moveToParentNote([node.data.branchId], toNode.data.noteId);
         }
     }
-    
+
     addNoteAboveToSelectionCommand() {
         const node = this.getFocusedNode();
-    
+
         if (!node) {
             return;
         }
-    
+
         if (node.isActive()) {
             node.setSelected(true);
         }
-    
+
         const prevSibling = node.getPrevSibling();
-    
+
         if (prevSibling) {
             prevSibling.setActive(true, {noEvents: true});
-    
+
             if (prevSibling.isSelected()) {
                 node.setSelected(false);
             }
-    
+
             prevSibling.setSelected(true);
         }
     }
 
     addNoteBelowToSelectionCommand() {
         const node = this.getFocusedNode();
-    
+
         if (!node) {
             return;
         }
-    
+
         if (node.isActive()) {
             node.setSelected(true);
         }
-    
+
         const nextSibling = node.getNextSibling();
-    
+
         if (nextSibling) {
             nextSibling.setActive(true, {noEvents: true});
-    
+
             if (nextSibling.isSelected()) {
                 node.setSelected(false);
             }
-    
+
             nextSibling.setSelected(true);
         }
     }
