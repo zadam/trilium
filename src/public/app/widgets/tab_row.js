@@ -614,6 +614,7 @@ export default class TabRowWidget extends BasicWidget {
 
         if (!note) {
             this.updateTitle($tab, 'New tab');
+            return;
         }
 
         this.updateTitle($tab, note.title);

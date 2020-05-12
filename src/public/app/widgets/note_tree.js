@@ -804,7 +804,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         const activeNode = this.getActiveNode();
+        const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;
         const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
+        const nextNotePath = nextNode ? treeService.getNotePath(nextNode) : null;
         const activeNoteId = activeNode ? activeNode.data.noteId : null;
 
         const noteIdsToUpdate = new Set();
@@ -925,6 +927,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             if (node) {
                 node.setActive(true, {noEvents: true});
+            }
+            else {
+                // this is used when original note has been deleted and we want to move the focus to the note above/below
+                node = await this.expandToNote(nextNotePath);
+
+                if (node) {
+                    this.tree.setFocus();
+                    node.setFocus(true);
+
+                    await appContext.tabManager.getActiveTabContext().setNote(nextNotePath);
+                }
             }
         }
     }
