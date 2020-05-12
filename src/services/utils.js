@@ -5,6 +5,7 @@ const randtoken = require('rand-token').generator({source: 'crypto'});
 const unescape = require('unescape');
 const escape = require('escape-html');
 const sanitize = require("sanitize-filename");
+const mimeTypes = require('mime-types');
 
 function newEntityId() {
     return randomString(12);
@@ -166,10 +167,46 @@ function isStringNote(type, mime) {
         || STRING_MIME_TYPES.includes(mime);
 }
 
-function replaceAll(string, replaceWhat, replaceWith) {
-    const escapedWhat = replaceWhat.replace(/([\/,!\\^${}\[\]().*+?|<>\-&])/g, "\\$&");
+function quoteRegex(url) {
+    return url.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
+}
 
-    return string.replace(new RegExp(escapedWhat, "g"), replaceWith);
+function replaceAll(string, replaceWhat, replaceWith) {
+    const quotedReplaceWhat = quoteRegex(replaceWhat);
+
+    return string.replace(new RegExp(quotedReplaceWhat, "g"), replaceWith);
+}
+
+function formatDownloadTitle(filename, type, mime) {
+    if (!filename) {
+        filename = "untitled";
+    }
+
+    if (type === 'text') {
+        return filename + '.html';
+    } else if (['relation-map', 'search'].includes(type)) {
+        return filename + '.json';
+    } else {
+        if (!mime) {
+            return filename;
+        }
+
+        mime = mime.toLowerCase();
+        const filenameLc = filename.toLowerCase();
+        const extensions = mimeTypes.extensions[mime];
+
+        if (!extensions || extensions.length === 0) {
+            return filename;
+        }
+
+        for (const ext of extensions) {
+            if (filenameLc.endsWith('.' + ext)) {
+                return filename;
+            }
+        }
+
+        return filename + '.' + extensions[0];
+    }
 }
 
 module.exports = {
@@ -198,5 +235,7 @@ module.exports = {
     sanitizeFilenameForHeader,
     getContentDisposition,
     isStringNote,
-    replaceAll
+    quoteRegex,
+    replaceAll,
+    formatDownloadTitle
 };

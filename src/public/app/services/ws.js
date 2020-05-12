@@ -37,6 +37,10 @@ function subscribeToMessages(messageHandler) {
 // used to serialize sync operations
 let consumeQueuePromise = null;
 
+// most sync events are sent twice - once immediatelly after finishing the transaction and once during the scheduled ping
+// but we want to process only once
+const receivedSyncIds = new Set();
+
 async function handleMessage(event) {
     const message = JSON.parse(event.data);
 
@@ -52,14 +56,19 @@ async function handleMessage(event) {
 
         if (syncRows.length > 0) {
             const filteredRows = syncRows.filter(row =>
-                row.entityName !== 'recent_notes'
+                !receivedSyncIds.has(row.id)
+                && row.entityName !== 'recent_notes'
                 && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
 
             if (filteredRows.length > 0) {
                 console.debug(utils.now(), "Sync data: ", filteredRows);
             }
 
-            syncDataQueue.push(...syncRows);
+            for (const row of filteredRows) {
+                receivedSyncIds.add(row.id);
+            }
+
+            syncDataQueue.push(...filteredRows);
 
             // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
             lastAcceptedSyncId = Math.max(lastAcceptedSyncId, syncRows[syncRows.length - 1].id);
@@ -170,7 +179,7 @@ function connectWebSocket() {
 
 async function sendPing() {
     if (Date.now() - lastPingTs > 30000) {
-        console.log(utils.now(), "Lost websocket connection to the backend");
+        console.log(utils.now(), "Lost websocket connection to the backend. If you keep having this issue repeatedly, you might want to check your reverse proxy (nginx, apache) configuration and allow/unblock WebSocket.");
     }
 
     if (ws.readyState === ws.OPEN) {
