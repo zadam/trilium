@@ -38,13 +38,7 @@ async function getNoteRevision(req) {
  * @return {string}
  */
 function getRevisionFilename(noteRevision) {
-    let filename = noteRevision.title || "untitled";
-
-    if (noteRevision.type === 'text') {
-        filename += '.html';
-    } else if (['relation-map', 'search'].includes(noteRevision.type)) {
-        filename += '.json';
-    }
+    let filename = utils.formatDownloadTitle(noteRevision.title, noteRevision.type, noteRevision.mime);
 
     const extension = path.extname(filename);
     const date = noteRevision.dateCreated

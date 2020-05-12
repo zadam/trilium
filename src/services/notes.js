@@ -13,6 +13,7 @@ const Attribute = require('../entities/attribute');
 const hoistedNoteService = require('../services/hoisted_note');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
+const utils = require('../services/utils');
 const noteRevisionService = require('../services/note_revisions');
 const attributeService = require('../services/attributes');
 const request = require('./request');
@@ -276,9 +277,9 @@ async function downloadImage(noteId, imageUrl) {
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
-    const quoted = url.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
+    const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quoted}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
 async function downloadImages(noteId, content) {

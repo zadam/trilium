@@ -1,6 +1,5 @@
 "use strict";
 
-const noteService = require('../../services/notes');
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
@@ -45,7 +44,9 @@ async function downloadNoteFile(noteId, res, contentDisposition = true) {
     if (contentDisposition) {
         // (one) reason we're not using the originFileName (available as label) is that it's not
         // available for older note revisions and thus would be inconsistent
-        res.setHeader('Content-Disposition', utils.getContentDisposition(note.title || "untitled"));
+        const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
+
+        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     }
 
     res.setHeader('Content-Type', note.mime);
