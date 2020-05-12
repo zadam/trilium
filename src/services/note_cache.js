@@ -29,6 +29,8 @@ class Note {
         this.isProtected = !!row.isProtected;
         /** @param {Note[]} */
         this.parents = [];
+        /** @param {Note[]} */
+        this.children = [];
         /** @param {Attribute[]} */
         this.ownedAttributes = [];
     }
@@ -58,6 +60,14 @@ class Note {
         }
 
         return noteAttributeCache[this.noteId];
+    }
+
+    addSubTreeNoteIdsTo(noteIdSet) {
+        noteIdSet.add(this.noteId);
+
+        for (const child of this.children) {
+            child.addSubTreeNoteIdsTo(noteIdSet);
+        }
     }
 
     /** @return {Attribute[]} */
@@ -111,22 +121,11 @@ class Attribute {
         /** @param {string} */
         this.value = row.value;
         /** @param {boolean} */
-        this.isInheritable = row.isInheritable;
+        this.isInheritable = !!row.isInheritable;
     }
 }
 
-class FulltextReference {
-    /**
-     * @param type - attributeName, attributeValue, title
-     * @param noteId
-     */
-    constructor(type, noteId) {
-        this.type = type;
-        this.noteId = noteId;
-    }
-}
-
-/** @type {Object.<String, FulltextReference>} */
+/** @type {Object.<String, String>} */
 let fulltext = {};
 
 /** @type {Object.<String, AttributeMeta>} */
@@ -195,16 +194,20 @@ async function getMappedRows(query, cb) {
     return map;
 }
 
+function updateFulltext(note) {
+    let ft = note.title.toLowerCase();
+
+    for (const attr of note.attributes) {
+        ft += '|' + attr.name.toLowerCase();
+        ft += '|' + attr.value.toLowerCase();
+    }
+
+    fulltext[note.noteId] = ft;
+}
+
 async function load() {
     notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
         row => new Note(row));
-
-    for (const note of Object.values(notes)) {
-        const title = note.title.toLowerCase();
-
-        fulltext[title] = fulltext[title] || [];
-        fulltext[title].push(new FulltextReference('note', note.noteId));
-    }
 
     branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
         row => new Branch(row));
@@ -213,17 +216,9 @@ async function load() {
         row => new Attribute(row));
 
     for (const attr of Object.values(attributes)) {
-        notes[attr.noteId].attributes.push(attr);
+        notes[attr.noteId].ownedAttributes.push(attr);
 
         addToAttributeMeta(attributes);
-
-        const attrName = attr.name.toLowerCase();
-        fulltext[attrName] = fulltext[attrName] || [];
-        fulltext[attrName].push(new FulltextReference('aName', attr.noteId));
-
-        const attrValue = attr.value.toLowerCase();
-        fulltext[attrValue] = fulltext[attrValue] || [];
-        fulltext[attrValue].push(new FulltextReference('aVal', attr.noteId));
     }
 
     for (const branch of Object.values(branches)) {
@@ -232,18 +227,25 @@ async function load() {
         }
 
         const childNote = notes[branch.noteId];
+        const parentNote = branch.parentNote;
 
         if (!childNote) {
             console.log(`Cannot find child note ${branch.noteId} of a branch ${branch.branchId}`);
             continue;
         }
 
-        childNote.parents.push(branch.parentNote);
+        childNote.parents.push(parentNote);
+        parentNote.children.push(childNote);
+
         childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`] = branch;
     }
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
         await decryptProtectedNotes();
+    }
+
+    for (const note of Object.values(notes)) {
+        updateFulltext(note);
     }
 
     loaded = true;
@@ -295,7 +297,7 @@ function highlightResults(results, allTokens) {
 }
 
 async function findNotes(query) {
-    if (!noteTitles || !query.length) {
+    if (!query.length) {
         return [];
     }
 
@@ -310,15 +312,31 @@ async function findNotes(query) {
     const matchedNoteIds = new Set();
 
     for (const token of tokens) {
-        for (const chunk in fulltext) {
-            if (chunk.includes(token)) {
-                for (const fulltextReference of fulltext[chunk]) {
-                    matchedNoteIds.add(fulltextReference.noteId);
-                }
+        for (const noteId in fulltext) {
+            if (!fulltext[noteId].includes(token)) {
+                continue;
             }
+
+            matchedNoteIds.add(noteId);
+            const note = notes[noteId];
+            const inheritableAttrs = note.ownedAttributes.filter(attr => attr.isInheritable);
+
+            searchingAttrs:
+                for (const attr of inheritableAttrs) {
+                    const lcName = attr.name.toLowerCase();
+                    const lcValue = attr.value.toLowerCase();
+
+                    for (const token of tokens) {
+                        if (lcName.includes(token) || lcValue.includes(token)) {
+                            note.addSubTreeNoteIdsTo(matchedNoteIds);
+
+                            break searchingAttrs;
+                        }
+                    }
+                }
         }
     }
-
+//console.log(matchedNoteIds);
     // now we have set of noteIds which match at least one token
 
     let results = [];
@@ -339,9 +357,10 @@ async function findNotes(query) {
 
         const foundAttrTokens = [];
 
-        for (const attribute of note.attributes) {
+        for (const attribute of note.ownedAttributes) {
             for (const token of tokens) {
-                if (attribute.name.includes(token) || attribute.value.includes(token)) {
+                if (attribute.name.toLowerCase().includes(token)
+                    || attribute.value.toLowerCase().includes(token)) {
                     foundAttrTokens.push(token);
                 }
             }
@@ -423,9 +442,20 @@ function search(note, tokens, path, results) {
         return;
     }
 
+    const foundAttrTokens = [];
+
+    for (const attribute of note.ownedAttributes) {
+        for (const token of tokens) {
+            if (attribute.name.toLowerCase().includes(token)
+                || attribute.value.toLowerCase().includes(token)) {
+                foundAttrTokens.push(token);
+            }
+        }
+    }
+
     for (const parentNote of note.parents) {
         const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
-        const foundTokens = [];
+        const foundTokens = foundAttrTokens.slice();
 
         for (const token of tokens) {
             if (title.includes(token)) {
@@ -592,15 +622,16 @@ function getSomePath(note, path = []) {
 }
 
 function getNotePath(noteId) {
-    const retPath = getSomePath(noteId);
+    const note = notes[noteId];
+    const retPath = getSomePath(note);
 
     if (retPath) {
         const noteTitle = getNoteTitleForPath(retPath);
-        const parentNoteId = childToParent[noteId][0];
+        const parentNote = note.parents[0];
 
         return {
             noteId: noteId,
-            branchId: childParentToBranchId[`${noteId}-${parentNoteId}`],
+            branchId: getBranch(noteId, parentNote.noteId).branchId,
             title: noteTitle,
             notePath: retPath,
             path: retPath.join('/')
