@@ -602,17 +602,21 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     updateTab($tab, note) {
-        if (!note || !$tab.length) {
+        if (!$tab.length) {
             return;
         }
-
-        this.updateTitle($tab, note.title);
 
         for (const clazz of Array.from($tab[0].classList)) { // create copy to safely iterate over while removing classes
             if (clazz !== 'note-tab') {
                 $tab.removeClass(clazz);
             }
         }
+
+        if (!note) {
+            this.updateTitle($tab, 'New tab');
+        }
+
+        this.updateTitle($tab, note.title);
 
         $tab.addClass(note.getCssClass());
         $tab.addClass(utils.getNoteTypeClass(note.type));
