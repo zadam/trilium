@@ -221,6 +221,7 @@ async function transactional(func) {
 
             await commit();
 
+            // note that sync rows sent from this action will be sent again by scheduled periodic ping
             require('./ws.js').sendPingToAllClients();
 
             transactionActive = false;

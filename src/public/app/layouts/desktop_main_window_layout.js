@@ -24,7 +24,6 @@ import NoteRevisionsWidget from "../widgets/collapsible_widgets/note_revisions.j
 import SimilarNotesWidget from "../widgets/collapsible_widgets/similar_notes.js";
 import WhatLinksHereWidget from "../widgets/collapsible_widgets/what_links_here.js";
 import SidePaneToggles from "../widgets/side_pane_toggles.js";
-import appContext from "../services/app_context.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -117,6 +116,7 @@ export default class DesktopMainWindowLayout {
                 .hideInZenMode())
             .child(new FlexContainer('row')
                 .collapsible()
+                .filling()
                 .child(new SidePaneContainer('left')
                     .hideInZenMode()
                     .child(new GlobalButtonsWidget())

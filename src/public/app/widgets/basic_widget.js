@@ -30,6 +30,11 @@ class BasicWidget extends Component {
         return this;
     }
 
+    filling() {
+        this.css('flex-grow', '1');
+        return this;
+    }
+
     hideInZenMode() {
         this.class('hide-in-zen-mode');
         return this;

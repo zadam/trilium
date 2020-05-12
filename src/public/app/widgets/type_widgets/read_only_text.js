@@ -22,6 +22,10 @@ const TPL = `
     .note-detail-readonly-text p:first-child, .note-detail-text::before {
         margin-top: 0;
     }
+    
+    .note-detail-readonly-text img {
+        max-width: 100%;
+    }
     </style>
 
     <div class="alert alert-warning no-print">
