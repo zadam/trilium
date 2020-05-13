@@ -12,7 +12,7 @@ async function getSimilarNotes(req) {
         return [404, `Note ${noteId} not found.`];
     }
 
-    const results = await noteCacheService.findSimilarNotes(note.title);
+    const results = await noteCacheService.findSimilarNotes(noteId);
 
     return results
         .filter(note => note.noteId !== noteId);

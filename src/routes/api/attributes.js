@@ -98,10 +98,11 @@ async function updateNoteAttributes(req) {
 
             if (attribute.type !== attributeEntity.type
                 || attribute.name !== attributeEntity.name
-                || (attribute.type === 'relation' && attribute.value !== attributeEntity.value)) {
+                || (attribute.type === 'relation' && attribute.value !== attributeEntity.value)
+                || attribute.isInheritable !== attributeEntity.isInheritable) {
 
                 if (attribute.type !== 'relation' || !!attribute.value.trim()) {
-                    const newAttribute = attributeEntity.createClone(attribute.type, attribute.name, attribute.value);
+                    const newAttribute = attributeEntity.createClone(attribute.type, attribute.name, attribute.value, attribute.isInheritable);
                     await newAttribute.save();
                 }
 

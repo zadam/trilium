@@ -35,46 +35,75 @@ class Note {
         this.children = [];
         /** @param {Attribute[]} */
         this.ownedAttributes = [];
+
+        /** @param {Attribute[]|null} */
+        this.attributeCache = null;
+        /** @param {Attribute[]|null} */
+        this.templateAttributeCache = null;
+        /** @param {Attribute[]|null} */
+        this.inheritableAttributeCache = null;
+
+        /** @param {string|null} */
+        this.fulltextCache = null;
     }
 
     /** @return {Attribute[]} */
     get attributes() {
-        if (!(this.noteId in noteAttributeCache)) {
-            const attrArrs = [
-                this.ownedAttributes
-            ];
-
-            for (const templateAttr of this.ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
-                const templateNote = notes[templateAttr.value];
-
-                if (templateNote) {
-                    attrArrs.push(templateNote.attributes);
-                }
-            }
+        if (!this.attributeCache) {
+            const parentAttributes = this.ownedAttributes.slice();
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.parents) {
-                    attrArrs.push(parentNote.inheritableAttributes);
+                    parentAttributes.push(...parentNote.inheritableAttributes);
                 }
             }
 
-            noteAttributeCache[this.noteId] = attrArrs.flat();
+            const templateAttributes = [];
+
+            for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
+                if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
+                    const templateNote = notes[ownedAttr.value];
+
+                    if (templateNote) {
+                        templateAttributes.push(...templateNote.attributes);
+                    }
+                }
+            }
+
+            this.attributeCache = parentAttributes.concat(templateAttributes);
+            this.inheritableAttributeCache = [];
+            this.templateAttributeCache = [];
+
+            for (const attr of this.attributeCache) {
+                if (attr.isInheritable) {
+                    this.inheritableAttributeCache.push(attr);
+                }
+
+                if (attr.type === 'relation' && attr.name === 'template') {
+                    this.templateAttributeCache.push(attr);
+                }
+            }
         }
 
-        return noteAttributeCache[this.noteId];
-    }
-
-    addSubTreeNoteIdsTo(noteIdSet) {
-        noteIdSet.add(this.noteId);
-
-        for (const child of this.children) {
-            child.addSubTreeNoteIdsTo(noteIdSet);
-        }
+        return this.attributeCache;
     }
 
     /** @return {Attribute[]} */
     get inheritableAttributes() {
-        return this.attributes.filter(attr => attr.isInheritable);
+        if (!this.inheritableAttributeCache) {
+            this.attributes; // will refresh also this.inheritableAttributeCache
+        }
+
+        return this.inheritableAttributeCache;
+    }
+
+    /** @return {Attribute[]} */
+    get templateAttributes() {
+        if (!this.templateAttributeCache) {
+            this.attributes; // will refresh also this.templateAttributeCache
+        }
+
+        return this.templateAttributeCache;
     }
 
     hasAttribute(type, name) {
@@ -93,6 +122,63 @@ class Note {
     // this is done so that non-archived paths are always explored as first when searching for note path
     resortParents() {
         this.parents.sort((a, b) => a.hasInheritableOwnedArchivedLabel ? 1 : -1);
+    }
+
+    get fulltext() {
+        if (!this.fulltextCache) {
+            this.fulltextCache = this.title.toLowerCase();
+
+            for (const attr of this.attributes) {
+                // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
+                this.fulltextCache += ' ' + attr.name.toLowerCase();
+
+                if (attr.value) {
+                    this.fulltextCache += ' ' + attr.value.toLowerCase();
+                }
+            }
+        }
+
+        return this.fulltextCache;
+    }
+
+    invalidateThisCache() {
+        this.fulltextCache = null;
+
+        this.attributeCache = null;
+        this.templateAttributeCache = null;
+        this.inheritableAttributeCache = null;
+    }
+
+    invalidateSubtreeCaches() {
+        this.invalidateThisCache();
+
+        for (const childNote of this.children) {
+            childNote.invalidateSubtreeCaches();
+        }
+
+        for (const templateAttr of this.templateAttributes) {
+            const targetNote = templateAttr.targetNote;
+
+            if (targetNote) {
+                targetNote.invalidateSubtreeCaches();
+            }
+        }
+    }
+
+    invalidateSubtreeFulltext() {
+        this.fulltextCache = null;
+
+        for (const childNote of this.children) {
+            childNote.invalidateSubtreeFulltext();
+        }
+
+        for (const templateAttr of this.templateAttributes) {
+            const targetNote = templateAttr.targetNote;
+
+            if (targetNote) {
+                targetNote.invalidateSubtreeFulltext();
+            }
+        }
     }
 }
 
@@ -137,47 +223,16 @@ class Attribute {
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
     }
-}
 
-/** @type {Object.<String, String>} */
-let fulltext = {};
-
-/** @type {Object.<String, AttributeMeta>} */
-let attributeMetas = {};
-
-class AttributeMeta {
-    constructor(attribute) {
-        this.type = attribute.type;
-        this.name = attribute.name;
-        this.isInheritable = attribute.isInheritable;
-        this.attributeIds = new Set(attribute.attributeId);
+    get isAffectingSubtree() {
+        return this.isInheritable
+            || (this.type === 'relation' && this.name === 'template');
     }
 
-    addAttribute(attribute) {
-        this.attributeIds.add(attribute.attributeId);
-        this.isInheritable = this.isInheritable || attribute.isInheritable;
-    }
-
-    updateAttribute(attribute) {
-        if (attribute.isDeleted) {
-            this.attributeIds.delete(attribute.attributeId);
+    get targetNote() {
+        if (this.type === 'relation') {
+            return notes[this.value];
         }
-        else {
-            this.attributeIds.add(attribute.attributeId);
-        }
-
-        this.isInheritable = !!this.attributeIds.find(attributeId => attributes[attributeId].isInheritable);
-    }
-}
-
-function addToAttributeMeta(attribute) {
-    const key = `${attribute.type}-${attribute.name}`;
-
-    if (!(key in attributeMetas)) {
-        attributeMetas[key] = new AttributeMeta(attribute);
-    }
-    else {
-        attributeMetas[key].addAttribute(attribute);
     }
 }
 
@@ -185,9 +240,6 @@ let loaded = false;
 let loadedPromiseResolve;
 /** Is resolved after the initial load */
 let loadedPromise = new Promise(res => loadedPromiseResolve = res);
-
-// key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
-let prefixes = {};
 
 async function getMappedRows(query, cb) {
     const map = {};
@@ -202,17 +254,6 @@ async function getMappedRows(query, cb) {
     return map;
 }
 
-function updateFulltext(note) {
-    let ft = note.title.toLowerCase();
-
-    for (const attr of note.attributes) {
-        ft += '|' + attr.name.toLowerCase();
-        ft += '|' + attr.value.toLowerCase();
-    }
-
-    fulltext[note.noteId] = ft;
-}
-
 async function load() {
     notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
         row => new Note(row));
@@ -225,8 +266,6 @@ async function load() {
 
     for (const attr of Object.values(attributes)) {
         notes[attr.noteId].ownedAttributes.push(attr);
-
-        addToAttributeMeta(attributes);
     }
 
     for (const branch of Object.values(branches)) {
@@ -248,10 +287,6 @@ async function load() {
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
         await decryptProtectedNotes();
-    }
-
-    for (const note of Object.values(notes)) {
-        updateFulltext(note);
     }
 
     loaded = true;
@@ -325,38 +360,21 @@ function highlightResults(results, allTokens) {
  * Returns noteIds which have at least one matching tokens
  *
  * @param tokens
- * @return {Set<String>}
+ * @return {String[]}
  */
 function getCandidateNotes(tokens) {
-    const candidateNoteIds = new Set();
+    const candidateNotes = [];
 
-    for (const token of tokens) {
-        for (const noteId in fulltext) {
-            if (!fulltext[noteId].includes(token)) {
-                continue;
+    for (const note of Object.values(notes)) {
+        for (const token of tokens) {
+            if (note.fulltext.includes(token)) {
+                candidateNotes.push(note);
+                break;
             }
-
-            candidateNoteIds.add(noteId);
-            const note = notes[noteId];
-            const inheritableAttrs = note.ownedAttributes.filter(attr => attr.isInheritable);
-
-            searchingAttrs:
-                // for matching inheritable attributes, include the whole note subtree to the candidates
-                for (const attr of inheritableAttrs) {
-                    const lcName = attr.name.toLowerCase();
-                    const lcValue = attr.value.toLowerCase();
-
-                    for (const token of tokens) {
-                        if (lcName.includes(token) || lcValue.includes(token)) {
-                            note.addSubTreeNoteIdsTo(candidateNoteIds);
-
-                            break searchingAttrs;
-                        }
-                    }
-                }
         }
     }
-    return candidateNoteIds;
+
+    return candidateNotes;
 }
 
 async function findNotes(query) {
@@ -370,18 +388,16 @@ async function findNotes(query) {
         .split(/[ -]/)
         .filter(token => token !== '/'); // '/' is used as separator
 
-    const candidateNoteIds = getCandidateNotes(allTokens);
+    const candidateNotes = getCandidateNotes(allTokens);
 
     // now we have set of noteIds which match at least one token
 
     let results = [];
     const tokens = allTokens.slice();
 
-    for (const noteId of candidateNoteIds) {
-        const note = notes[noteId];
-
+    for (const note of candidateNotes) {
         // autocomplete should be able to find notes by their noteIds as well (only leafs)
-        if (noteId === query) {
+        if (note.noteId === query) {
             search(note, [], [], results);
             continue;
         }
@@ -415,7 +431,7 @@ async function findNotes(query) {
             if (foundTokens.length > 0) {
                 const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
 
-                search(parentNote, remainingTokens, [noteId], results);
+                search(parentNote, remainingTokens, [note.noteId], results);
             }
         }
     }
@@ -678,11 +694,11 @@ function getNotePath(noteId) {
     }
 }
 
-function evaluateSimilarity(text, note, results) {
-    let coeff = stringSimilarity.compareTwoStrings(text, note.title);
+function evaluateSimilarity(sourceNote, candidateNote, results) {
+    let coeff = stringSimilarity.compareTwoStrings(sourceNote.fulltext, candidateNote.fulltext);
 
     if (coeff > 0.4) {
-        const notePath = getSomePath(note);
+        const notePath = getSomePath(candidateNote);
 
         // this takes care of note hoisting
         if (!notePath) {
@@ -693,7 +709,7 @@ function evaluateSimilarity(text, note, results) {
             coeff -= 0.2; // archived penalization
         }
 
-        results.push({coeff, notePath, noteId: note.noteId});
+        results.push({coeff, notePath, noteId: candidateNote.noteId});
     }
 }
 
@@ -707,16 +723,22 @@ function setImmediatePromise() {
     });
 }
 
-async function findSimilarNotes(title) {
+async function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
+
+    const origNote = notes[noteId];
+
+    if (!origNote) {
+        return [];
+    }
 
     for (const note of Object.values(notes)) {
         if (note.isProtected && !note.isDecrypted) {
             continue;
         }
 
-        evaluateSimilarity(title, note, results);
+        evaluateSimilarity(origNote, note, results);
 
         i++;
 
@@ -744,9 +766,12 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete notes[noteId];
         }
         else if (noteId in notes) {
+            const note = notes[noteId];
+
             // we can assume we have protected session since we managed to update
-            notes[noteId].title = entity.title;
-            notes[noteId].isDecrypted = true;
+            note.title = entity.title;
+            note.isDecrypted = true;
+            note.fulltextCache = null;
         }
         else {
             notes[noteId] = new Note(entity);
@@ -760,6 +785,10 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
             if (childNote) {
                 childNote.parents = childNote.parents.filter(parent => parent.noteId !== parentNoteId);
+
+                if (childNote.parents.length > 0) {
+                    childNote.invalidateSubtreeCaches();
+                }
             }
 
             const parentNote = notes[parentNoteId];
@@ -787,30 +816,46 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
     else if (entityName === 'attributes') {
         const {attributeId, noteId} = entity;
+        const note = notes[noteId];
+        const attr = attributes[attributeId];
 
         if (entity.isDeleted) {
-            const note = notes[noteId];
-
-            if (note) {
+            if (note && attr) {
                 note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
+
+                if (attr.isAffectingSubtree) {
+                    note.invalidateSubtreeCaches();
+                }
             }
 
-            delete attributes[entity.attributeId];
+            delete attributes[attributeId];
         }
         else if (attributeId in attributes) {
             const attr = attributes[attributeId];
 
-            // attr name cannot change
+            // attr name and isInheritable are immutable
             attr.value = entity.value;
-            attr.isInheritable = entity.isInheritable;
+
+            if (attr.isAffectingSubtree) {
+                note.invalidateSubtreeFulltext();
+            }
+            else {
+                note.fulltextCache = null;
+            }
         }
         else {
-            attributes[attributeId] = new Attribute(entity);
-
-            const note = notes[noteId];
+            const attr = new Attribute(entity);
+            attributes[attributeId] = attr;
 
             if (note) {
-                note.ownedAttributes.push(attributes[attributeId]);
+                note.ownedAttributes.push(attr);
+
+                if (attr.isAffectingSubtree) {
+                    note.invalidateSubtreeCaches();
+                }
+                else {
+                    this.invalidateThisCache();
+                }
             }
         }
     }

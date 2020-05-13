@@ -81,7 +81,7 @@
     "electron": "9.0.0-beta.24",
     "electron-builder": "22.6.0",
     "electron-packager": "14.2.1",
-    "electron-rebuild": "1.10.1",
+    "electron-rebuild": "1.11.0",
     "jsdoc": "3.6.4",
     "lorem-ipsum": "2.0.3",
     "webpack": "5.0.0-beta.16",
