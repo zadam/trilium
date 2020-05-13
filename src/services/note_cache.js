@@ -1,7 +1,6 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const eventService = require('./events');
-const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
 const hoistedNoteService = require('./hoisted_note');
@@ -14,9 +13,6 @@ let branches
 /** @type {Object.<String, Attribute>} */
 let attributes;
 
-/** @type {Object.<String, Attribute[]>} */
-let noteAttributeCache = {};
-
 let childParentToBranch = {};
 
 class Note {
@@ -28,7 +24,7 @@ class Note {
         /** @param {boolean} */
         this.isProtected = !!row.isProtected;
         /** @param {boolean} */
-        this.isDecrypted = false;
+        this.isDecrypted = !row.isProtected || !!row.isContentAvailable;
         /** @param {Note[]} */
         this.parents = [];
         /** @param {Note[]} */
@@ -45,6 +41,10 @@ class Note {
 
         /** @param {string|null} */
         this.fulltextCache = null;
+
+        if (protectedSessionService.isProtectedSessionAvailable()) {
+            decryptProtectedNote(this);
+        }
     }
 
     /** @return {Attribute[]} */
@@ -114,6 +114,12 @@ class Note {
         return this.hasAttribute('label', 'archived');
     }
 
+    get isHideInAutocompleteOrArchived() {
+        return this.attributes.find(attr =>
+            attr.type === 'label'
+            && ["archived", "hideInAutocomplete"].includes(attr.name));
+    }
+
     get hasInheritableOwnedArchivedLabel() {
         return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
     }
@@ -126,6 +132,11 @@ class Note {
 
     get fulltext() {
         if (!this.fulltextCache) {
+            if (this.isHideInAutocompleteOrArchived) {
+                this.fulltextCache = " "; // can't be empty
+                return this.fulltextCache;
+            }
+
             this.fulltextCache = this.title.toLowerCase();
 
             for (const attr of this.attributes) {
@@ -193,6 +204,21 @@ class Branch {
         /** @param {string} */
         this.prefix = row.prefix;
 
+        if (this.branchId === 'root') {
+            return;
+        }
+
+        const childNote = notes[this.noteId];
+        const parentNote = this.parentNote;
+
+        if (!childNote) {
+            console.log(`Cannot find child note ${this.noteId} of a branch ${this.branchId}`);
+            return;
+        }
+
+        childNote.parents.push(parentNote);
+        parentNote.children.push(childNote);
+
         childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
@@ -222,6 +248,8 @@ class Attribute {
         this.value = row.value;
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
+
+        notes[this.noteId].ownedAttributes.push(this);
     }
 
     get isAffectingSubtree() {
@@ -264,42 +292,21 @@ async function load() {
     attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
         row => new Attribute(row));
 
-    for (const attr of Object.values(attributes)) {
-        notes[attr.noteId].ownedAttributes.push(attr);
-    }
-
-    for (const branch of Object.values(branches)) {
-        if (branch.branchId === 'root') {
-            continue;
-        }
-
-        const childNote = notes[branch.noteId];
-        const parentNote = branch.parentNote;
-
-        if (!childNote) {
-            console.log(`Cannot find child note ${branch.noteId} of a branch ${branch.branchId}`);
-            continue;
-        }
-
-        childNote.parents.push(parentNote);
-        parentNote.children.push(childNote);
-    }
-
-    if (protectedSessionService.isProtectedSessionAvailable()) {
-        await decryptProtectedNotes();
-    }
-
     loaded = true;
     loadedPromiseResolve();
 }
 
-async function decryptProtectedNotes() {
-    for (const note of notes) {
-        if (note.isProtected && !note.isDecrypted) {
-            note.title = protectedSessionService.decryptString(note.title);
+function decryptProtectedNote(note) {
+    if (note.isProtected && !note.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+        note.title = protectedSessionService.decryptString(note.title);
 
-            note.isDecrypted = true;
-        }
+        note.isDecrypted = true;
+    }
+}
+
+async function decryptProtectedNotes() {
+    for (const note of Object.values(notes)) {
+        decryptProtectedNote(note);
     }
 }
 
@@ -770,11 +777,17 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
             // we can assume we have protected session since we managed to update
             note.title = entity.title;
-            note.isDecrypted = true;
+            note.isProtected = entity.isProtected;
+            note.isDecrypted = !entity.isProtected || !!entity.isContentAvailable;
             note.fulltextCache = null;
+
+            decryptProtectedNote(note);
         }
         else {
-            notes[noteId] = new Note(entity);
+            const note = new Note(entity);
+            notes[noteId] = note;
+
+            decryptProtectedNote(note);
         }
     }
     else if (entityName === 'branches') {
@@ -848,8 +861,6 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             attributes[attributeId] = attr;
 
             if (note) {
-                note.ownedAttributes.push(attr);
-
                 if (attr.isAffectingSubtree) {
                     note.invalidateSubtreeCaches();
                 }

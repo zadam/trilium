@@ -12,15 +12,19 @@ setInterval(() => {
 
         resetProtectedSession();
     }
-}, 5000);
+}, 10000);
 
 function setProtectedSessionId(id) {
     // using session cookie so that it disappears after browser/tab is closed
     utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, id);
 }
 
-function resetProtectedSession() {
+function resetSessionCookie() {
     utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, null);
+}
+
+function resetProtectedSession() {
+    resetSessionCookie();
 
     // most secure solution - guarantees nothing remained in memory
     // since this expires because user doesn't use the app, it shouldn't be disruptive
@@ -47,6 +51,7 @@ function touchProtectedSessionIfNecessary(note) {
 
 export default {
     setProtectedSessionId,
+    resetSessionCookie,
     resetProtectedSession,
     isProtectedSessionAvailable,
     touchProtectedSession,
