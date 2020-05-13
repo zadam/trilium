@@ -27,6 +27,8 @@ class Note {
         this.title = row.title;
         /** @param {boolean} */
         this.isProtected = !!row.isProtected;
+        /** @param {boolean} */
+        this.isDecrypted = false;
         /** @param {Note[]} */
         this.parents = [];
         /** @param {Note[]} */
@@ -82,6 +84,16 @@ class Note {
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
+
+    get hasInheritableOwnedArchivedLabel() {
+        return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
+    }
+
+    // will sort the parents so that non-archived are first and archived at the end
+    // this is done so that non-archived paths are always explored as first when searching for note path
+    resortParents() {
+        this.parents.sort((a, b) => a.hasInheritableOwnedArchivedLabel ? 1 : -1);
+    }
 }
 
 class Branch {
@@ -94,6 +106,8 @@ class Branch {
         this.parentNoteId = row.parentNoteId;
         /** @param {string} */
         this.prefix = row.prefix;
+
+        childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @return {Note} */
@@ -172,12 +186,6 @@ let loadedPromiseResolve;
 /** Is resolved after the initial load */
 let loadedPromise = new Promise(res => loadedPromiseResolve = res);
 
-let noteTitles = {};
-let protectedNoteTitles = {};
-let noteIds;
-const childToParent = {};
-let archived = {};
-
 // key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
 let prefixes = {};
 
@@ -236,8 +244,6 @@ async function load() {
 
         childNote.parents.push(parentNote);
         parentNote.children.push(childNote);
-
-        childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`] = branch;
     }
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
@@ -254,9 +260,28 @@ async function load() {
 
 async function decryptProtectedNotes() {
     for (const note of notes) {
-        if (note.isProtected) {
+        if (note.isProtected && !note.isDecrypted) {
             note.title = protectedSessionService.decryptString(note.title);
+
+            note.isDecrypted = true;
         }
+    }
+}
+
+function formatAttribute(attr) {
+    if (attr.type === 'relation') {
+        return '@' + utils.escapeHtml(attr.name) + "=…";
+    }
+    else if (attr.type === 'label') {
+        let label = '#' + utils.escapeHtml(attr.name);
+
+        if (attr.value) {
+            const val = /[^\w_-]/.test(attr.value) ? '"' + attr.value + '"' : attr.value;
+
+            label += '=' + utils.escapeHtml(val);
+        }
+
+        return label;
     }
 }
 
@@ -274,7 +299,7 @@ function highlightResults(results, allTokens) {
 
         for (const attr of note.attributes) {
             if (allTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
-                result.pathTitle += ` <small>@${attr.name}=${attr.value}</small>`;
+                result.pathTitle += ` <small>${formatAttribute(attr)}</small>`;
             }
         }
 
@@ -296,6 +321,44 @@ function highlightResults(results, allTokens) {
     }
 }
 
+/**
+ * Returns noteIds which have at least one matching tokens
+ *
+ * @param tokens
+ * @return {Set<String>}
+ */
+function getCandidateNotes(tokens) {
+    const candidateNoteIds = new Set();
+
+    for (const token of tokens) {
+        for (const noteId in fulltext) {
+            if (!fulltext[noteId].includes(token)) {
+                continue;
+            }
+
+            candidateNoteIds.add(noteId);
+            const note = notes[noteId];
+            const inheritableAttrs = note.ownedAttributes.filter(attr => attr.isInheritable);
+
+            searchingAttrs:
+                // for matching inheritable attributes, include the whole note subtree to the candidates
+                for (const attr of inheritableAttrs) {
+                    const lcName = attr.name.toLowerCase();
+                    const lcValue = attr.value.toLowerCase();
+
+                    for (const token of tokens) {
+                        if (lcName.includes(token) || lcValue.includes(token)) {
+                            note.addSubTreeNoteIdsTo(candidateNoteIds);
+
+                            break searchingAttrs;
+                        }
+                    }
+                }
+        }
+    }
+    return candidateNoteIds;
+}
+
 async function findNotes(query) {
     if (!query.length) {
         return [];
@@ -307,41 +370,14 @@ async function findNotes(query) {
         .split(/[ -]/)
         .filter(token => token !== '/'); // '/' is used as separator
 
-    const tokens = allTokens.slice();
+    const candidateNoteIds = getCandidateNotes(allTokens);
 
-    const matchedNoteIds = new Set();
-
-    for (const token of tokens) {
-        for (const noteId in fulltext) {
-            if (!fulltext[noteId].includes(token)) {
-                continue;
-            }
-
-            matchedNoteIds.add(noteId);
-            const note = notes[noteId];
-            const inheritableAttrs = note.ownedAttributes.filter(attr => attr.isInheritable);
-
-            searchingAttrs:
-                for (const attr of inheritableAttrs) {
-                    const lcName = attr.name.toLowerCase();
-                    const lcValue = attr.value.toLowerCase();
-
-                    for (const token of tokens) {
-                        if (lcName.includes(token) || lcValue.includes(token)) {
-                            note.addSubTreeNoteIdsTo(matchedNoteIds);
-
-                            break searchingAttrs;
-                        }
-                    }
-                }
-        }
-    }
-//console.log(matchedNoteIds);
     // now we have set of noteIds which match at least one token
 
     let results = [];
+    const tokens = allTokens.slice();
 
-    for (const noteId of matchedNoteIds) {
+    for (const noteId of candidateNoteIds) {
         const note = notes[noteId];
 
         // autocomplete should be able to find notes by their noteIds as well (only leafs)
@@ -476,14 +512,17 @@ function search(note, tokens, path, results) {
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
+    const note = notes[noteId];
 
-    if (archived[noteId] !== undefined) {
+    if (note.isArchived) {
         return true;
     }
 
     for (let i = 0; i < notePath.length - 1; i++) {
+        const note = notes[notePath[i]];
+
         // this is going through parents so archived must be inheritable
-        if (archived[notePath[i]] === 1) {
+        if (note.hasInheritableOwnedArchivedLabel) {
             return true;
         }
     }
@@ -550,7 +589,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
 
     const branch = parentNote ? getBranch(childNote.noteId, parentNote.noteId) : null;
 
-    return ((branch && branch.prefix) ? (branch.prefix + ' - ') : '') + title;
+    return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
 }
 
 function getNoteTitleArrayForPath(path) {
@@ -639,11 +678,11 @@ function getNotePath(noteId) {
     }
 }
 
-function evaluateSimilarity(text1, text2, noteId, results) {
-    let coeff = stringSimilarity.compareTwoStrings(text1, text2);
+function evaluateSimilarity(text, note, results) {
+    let coeff = stringSimilarity.compareTwoStrings(text, note.title);
 
     if (coeff > 0.4) {
-        const notePath = getSomePath(noteId);
+        const notePath = getSomePath(note);
 
         // this takes care of note hoisting
         if (!notePath) {
@@ -654,7 +693,7 @@ function evaluateSimilarity(text1, text2, noteId, results) {
             coeff -= 0.2; // archived penalization
         }
 
-        results.push({coeff, notePath, noteId});
+        results.push({coeff, notePath, noteId: note.noteId});
     }
 }
 
@@ -668,27 +707,22 @@ function setImmediatePromise() {
     });
 }
 
-async function evaluateSimilarityDict(title, dict, results) {
+async function findSimilarNotes(title) {
+    const results = [];
     let i = 0;
 
-    for (const noteId in dict) {
-        evaluateSimilarity(title, dict[noteId], noteId, results);
+    for (const note of Object.values(notes)) {
+        if (note.isProtected && !note.isDecrypted) {
+            continue;
+        }
+
+        evaluateSimilarity(title, note, results);
 
         i++;
 
         if (i % 200 === 0) {
             await setImmediatePromise();
         }
-    }
-}
-
-async function findSimilarNotes(title) {
-    const results = [];
-
-    await evaluateSimilarityDict(title, noteTitles, results);
-
-    if (protectedSessionService.isProtectedSessionAvailable()) {
-        await evaluateSimilarityDict(title, protectedNoteTitles, results);
     }
 
     results.sort((a, b) => a.coeff > b.coeff ? -1 : 1);
@@ -704,79 +738,83 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
 
     if (entityName === 'notes') {
-        const note = entity;
+        const {noteId} = entity;
 
-        if (note.isDeleted) {
-            delete noteTitles[note.noteId];
-            delete childToParent[note.noteId];
+        if (entity.isDeleted) {
+            delete notes[noteId];
+        }
+        else if (noteId in notes) {
+            // we can assume we have protected session since we managed to update
+            notes[noteId].title = entity.title;
+            notes[noteId].isDecrypted = true;
         }
         else {
-            if (note.isProtected) {
-                // we can assume we have protected session since we managed to update
-                // removing from the maps is important when switching between protected & unprotected
-                protectedNoteTitles[note.noteId] = note.title;
-                delete noteTitles[note.noteId];
-            }
-            else {
-                noteTitles[note.noteId] = note.title;
-                delete protectedNoteTitles[note.noteId];
-            }
+            notes[noteId] = new Note(entity);
         }
     }
     else if (entityName === 'branches') {
-        const branch = entity;
+        const {branchId, noteId, parentNoteId} = entity;
 
-        if (branch.isDeleted) {
-            if (branch.noteId in childToParent) {
-                childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId);
+        if (entity.isDeleted) {
+            const childNote = notes[noteId];
+
+            if (childNote) {
+                childNote.parents = childNote.parents.filter(parent => parent.noteId !== parentNoteId);
             }
 
-            delete prefixes[branch.noteId + '-' + branch.parentNoteId];
-            delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
+            const parentNote = notes[parentNoteId];
+
+            if (parentNote) {
+                childNote.children = childNote.children.filter(child => child.noteId !== noteId);
+            }
+
+            delete childParentToBranch[`${noteId}-${parentNoteId}`];
+            delete branches[branchId];
+        }
+        else if (branchId in branches) {
+            // only relevant thing which can change in a branch is prefix
+            branches[branchId].prefix = entity.prefix;
         }
         else {
-            if (branch.prefix) {
-                prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;
+            branches[branchId] = new Branch(entity);
+
+            const note = notes[entity.noteId];
+
+            if (note) {
+                note.resortParents();
             }
-
-            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
-
-            if (!childToParent[branch.noteId].includes(branch.parentNoteId)) {
-                childToParent[branch.noteId].push(branch.parentNoteId);
-            }
-
-            resortChildToParent(branch.noteId);
-
-            childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
         }
     }
     else if (entityName === 'attributes') {
-        const attribute = entity;
+        const {attributeId, noteId} = entity;
 
-        if (attribute.type === 'label' && attribute.name === 'archived') {
-            // we're not using label object directly, since there might be other non-deleted archived label
-            const archivedLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
-                                 AND name = 'archived' AND noteId = ?`, [attribute.noteId]);
+        if (entity.isDeleted) {
+            const note = notes[noteId];
 
-            if (archivedLabel) {
-                archived[attribute.noteId] = archivedLabel.isInheritable ? 1 : 0;
+            if (note) {
+                note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
             }
-            else {
-                delete archived[attribute.noteId];
+
+            delete attributes[entity.attributeId];
+        }
+        else if (attributeId in attributes) {
+            const attr = attributes[attributeId];
+
+            // attr name cannot change
+            attr.value = entity.value;
+            attr.isInheritable = entity.isInheritable;
+        }
+        else {
+            attributes[attributeId] = new Attribute(entity);
+
+            const note = notes[noteId];
+
+            if (note) {
+                note.ownedAttributes.push(attributes[attributeId]);
             }
         }
     }
 });
-
-// will sort the childs so that non-archived are first and archived at the end
-// this is done so that non-archived paths are always explored as first when searching for note path
-function resortChildToParent(noteId) {
-    if (!(noteId in childToParent)) {
-        return;
-    }
-
-    childToParent[noteId].sort((a, b) => archived[a] === 1 ? 1 : -1);
-}
 
 /**
  * @param noteId
