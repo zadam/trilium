@@ -25,6 +25,8 @@ class Note {
         this.isProtected = !!row.isProtected;
         /** @param {boolean} */
         this.isDecrypted = !row.isProtected || !!row.isContentAvailable;
+        /** @param {Branch[]} */
+        this.parentBranches = [];
         /** @param {Note[]} */
         this.parents = [];
         /** @param {Note[]} */
@@ -139,6 +141,12 @@ class Note {
 
             this.fulltextCache = this.title.toLowerCase();
 
+            for (const branch of this.parentBranches) {
+                if (branch.prefix) {
+                    this.fulltextCache += ' ' + branch.prefix;
+                }
+            }
+
             for (const attr of this.attributes) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
                 this.fulltextCache += ' ' + attr.name.toLowerCase();
@@ -217,6 +225,8 @@ class Branch {
         }
 
         childNote.parents.push(parentNote);
+        childNote.parentBranches.push(this);
+
         parentNote.children.push(childNote);
 
         childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
@@ -792,12 +802,12 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
     else if (entityName === 'branches') {
         const {branchId, noteId, parentNoteId} = entity;
+        const childNote = notes[noteId];
 
         if (entity.isDeleted) {
-            const childNote = notes[noteId];
-
             if (childNote) {
                 childNote.parents = childNote.parents.filter(parent => parent.noteId !== parentNoteId);
+                childNote.parentBranches = childNote.parentBranches.filter(branch => branch.branchId !== branchId);
 
                 if (childNote.parents.length > 0) {
                     childNote.invalidateSubtreeCaches();
@@ -807,7 +817,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             const parentNote = notes[parentNoteId];
 
             if (parentNote) {
-                childNote.children = childNote.children.filter(child => child.noteId !== noteId);
+                parentNote.children = parentNote.children.filter(child => child.noteId !== noteId);
             }
 
             delete childParentToBranch[`${noteId}-${parentNoteId}`];
@@ -816,14 +826,16 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
         else if (branchId in branches) {
             // only relevant thing which can change in a branch is prefix
             branches[branchId].prefix = entity.prefix;
+
+            if (childNote) {
+                childNote.fulltextCache = null;
+            }
         }
         else {
             branches[branchId] = new Branch(entity);
 
-            const note = notes[entity.noteId];
-
-            if (note) {
-                note.resortParents();
+            if (childNote) {
+                childNote.resortParents();
             }
         }
     }
