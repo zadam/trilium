@@ -42,7 +42,7 @@ class Note {
         this.inheritableAttributeCache = null;
 
         /** @param {string|null} */
-        this.fulltextCache = null;
+        this.flatTextCache = null;
 
         if (protectedSessionService.isProtectedSessionAvailable()) {
             decryptProtectedNote(this);
@@ -132,36 +132,39 @@ class Note {
         this.parents.sort((a, b) => a.hasInheritableOwnedArchivedLabel ? 1 : -1);
     }
 
-    get fulltext() {
-        if (!this.fulltextCache) {
+    /**
+     * @return {string} - returns flattened textual representation of note, prefixes and attributes usable for searching
+     */
+    get flatText() {
+        if (!this.flatTextCache) {
             if (this.isHideInAutocompleteOrArchived) {
-                this.fulltextCache = " "; // can't be empty
-                return this.fulltextCache;
+                this.flatTextCache = " "; // can't be empty
+                return this.flatTextCache;
             }
 
-            this.fulltextCache = this.title.toLowerCase();
+            this.flatTextCache = this.title.toLowerCase();
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
-                    this.fulltextCache += ' ' + branch.prefix;
+                    this.flatTextCache += ' ' + branch.prefix;
                 }
             }
 
             for (const attr of this.attributes) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.fulltextCache += ' ' + attr.name.toLowerCase();
+                this.flatTextCache += ' ' + attr.name.toLowerCase();
 
                 if (attr.value) {
-                    this.fulltextCache += ' ' + attr.value.toLowerCase();
+                    this.flatTextCache += ' ' + attr.value.toLowerCase();
                 }
             }
         }
 
-        return this.fulltextCache;
+        return this.flatTextCache;
     }
 
     invalidateThisCache() {
-        this.fulltextCache = null;
+        this.flatTextCache = null;
 
         this.attributeCache = null;
         this.templateAttributeCache = null;
@@ -184,18 +187,18 @@ class Note {
         }
     }
 
-    invalidateSubtreeFulltext() {
-        this.fulltextCache = null;
+    invalidateSubtreeFlatText() {
+        this.flatTextCache = null;
 
         for (const childNote of this.children) {
-            childNote.invalidateSubtreeFulltext();
+            childNote.invalidateSubtreeFlatText();
         }
 
         for (const templateAttr of this.templateAttributes) {
             const targetNote = templateAttr.targetNote;
 
             if (targetNote) {
-                targetNote.invalidateSubtreeFulltext();
+                targetNote.invalidateSubtreeFlatText();
             }
         }
     }
@@ -384,7 +387,7 @@ function getCandidateNotes(tokens) {
 
     for (const note of Object.values(notes)) {
         for (const token of tokens) {
-            if (note.fulltext.includes(token)) {
+            if (note.flatText.includes(token)) {
                 candidateNotes.push(note);
                 break;
             }
@@ -394,27 +397,14 @@ function getCandidateNotes(tokens) {
     return candidateNotes;
 }
 
-async function findNotes(query) {
-    if (!query.length) {
-        return [];
-    }
-
-    const allTokens = query
-        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
-        .toLowerCase()
-        .split(/[ -]/)
-        .filter(token => token !== '/'); // '/' is used as separator
-
-    const candidateNotes = getCandidateNotes(allTokens);
-
-    // now we have set of noteIds which match at least one token
-
+function findInNoteCache(tokens) {
     let results = [];
-    const tokens = allTokens.slice();
+
+    const candidateNotes = getCandidateNotes(tokens);
 
     for (const note of candidateNotes) {
         // autocomplete should be able to find notes by their noteIds as well (only leafs)
-        if (note.noteId === query) {
+        if (tokens.length === 1 && note.noteId === tokens[0]) {
             search(note, [], [], results);
             continue;
         }
@@ -453,6 +443,58 @@ async function findNotes(query) {
         }
     }
 
+    return results;
+}
+
+async function findInNoteContent(tokens) {
+    const wheres = tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
+
+    const noteIds = await sql.getColumn(`
+        SELECT notes.noteId 
+        FROM notes
+        JOIN note_contents ON notes.noteId = note_contents.noteId
+        WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
+
+    const results = [];
+
+    for (const noteId of noteIds) {
+        const note = notes[noteId];
+
+        if (!note) {
+            continue;
+        }
+
+        const notePath = getSomePath(note);
+        const parentNoteId = notePath.length > 1 ? notePath[notePath.length - 2] : null;
+
+        results.push({
+            noteId: noteId,
+            branchId: getBranch(noteId, parentNoteId),
+            pathArray: notePath,
+            titleArray: getNoteTitleArrayForPath(notePath)
+        });
+    }
+
+    return results;
+}
+
+async function findNotes(query, searchInContent = false) {
+    if (!query.trim().length) {
+        return [];
+    }
+
+    const tokens = query
+        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
+        .toLowerCase()
+        .split(/[ -]/)
+        .filter(token => token !== '/'); // '/' is used as separator
+
+    const cacheResults = findInNoteCache(tokens);
+
+    const contentResults = searchInContent ? await findInNoteContent(tokens) : [];
+
+    let results = cacheResults.concat(contentResults);
+
     if (hoistedNoteService.getHoistedNoteId() !== 'root') {
         results = results.filter(res => res.pathArray.includes(hoistedNoteService.getHoistedNoteId()));
     }
@@ -479,7 +521,7 @@ async function findNotes(query) {
         };
     });
 
-    highlightResults(apiResults, allTokens);
+    highlightResults(apiResults, tokens);
 
     return apiResults;
 }
@@ -494,7 +536,7 @@ function search(note, tokens, path, results) {
 
         if (retPath) {
             const thisNoteId = retPath[retPath.length - 1];
-            const thisParentNoteId = retPath[retPath.length - 2];
+            const thisParentNoteId = retPath.length > 1 ? retPath[retPath.length - 2] : null;
 
             results.push({
                 noteId: thisNoteId,
@@ -712,7 +754,7 @@ function getNotePath(noteId) {
 }
 
 function evaluateSimilarity(sourceNote, candidateNote, results) {
-    let coeff = stringSimilarity.compareTwoStrings(sourceNote.fulltext, candidateNote.fulltext);
+    let coeff = stringSimilarity.compareTwoStrings(sourceNote.flatText, candidateNote.flatText);
 
     if (coeff > 0.4) {
         const notePath = getSomePath(candidateNote);
@@ -789,7 +831,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             note.title = entity.title;
             note.isProtected = entity.isProtected;
             note.isDecrypted = !entity.isProtected || !!entity.isContentAvailable;
-            note.fulltextCache = null;
+            note.flatTextCache = null;
 
             decryptProtectedNote(note);
         }
@@ -828,7 +870,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             branches[branchId].prefix = entity.prefix;
 
             if (childNote) {
-                childNote.fulltextCache = null;
+                childNote.flatTextCache = null;
             }
         }
         else {
@@ -862,10 +904,10 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             attr.value = entity.value;
 
             if (attr.isAffectingSubtree) {
-                note.invalidateSubtreeFulltext();
+                note.invalidateSubtreeFlatText();
             }
             else {
-                note.fulltextCache = null;
+                note.flatTextCache = null;
             }
         }
         else {
