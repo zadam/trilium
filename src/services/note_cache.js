@@ -309,71 +309,52 @@ async function load() {
     loadedPromiseResolve();
 }
 
-function decryptProtectedNote(note) {
-    if (note.isProtected && !note.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
-        note.title = protectedSessionService.decryptString(note.title);
-
-        note.isDecrypted = true;
+async function findNotes(query, searchInContent) {
+    if (!query.trim().length) {
+        return [];
     }
-}
 
-async function decryptProtectedNotes() {
-    for (const note of Object.values(notes)) {
-        decryptProtectedNote(note);
+    const tokens = query
+        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
+        .toLowerCase()
+        .split(/[ -]/)
+        .filter(token => token !== '/'); // '/' is used as separator
+
+    const cacheResults = findInNoteCache(tokens);
+
+    const contentResults = searchInContent ? await findInNoteContent(tokens) : [];
+
+    let results = cacheResults.concat(contentResults);
+
+    if (hoistedNoteService.getHoistedNoteId() !== 'root') {
+        results = results.filter(res => res.pathArray.includes(hoistedNoteService.getHoistedNoteId()));
     }
-}
 
-function formatAttribute(attr) {
-    if (attr.type === 'relation') {
-        return '@' + utils.escapeHtml(attr.name) + "=…";
-    }
-    else if (attr.type === 'label') {
-        let label = '#' + utils.escapeHtml(attr.name);
-
-        if (attr.value) {
-            const val = /[^\w_-]/.test(attr.value) ? '"' + attr.value + '"' : attr.value;
-
-            label += '=' + utils.escapeHtml(val);
+    // sort results by depth of the note. This is based on the assumption that more important results
+    // are closer to the note root.
+    results.sort((a, b) => {
+        if (a.pathArray.length === b.pathArray.length) {
+            return a.title < b.title ? -1 : 1;
         }
 
-        return label;
-    }
-}
+        return a.pathArray.length < b.pathArray.length ? -1 : 1;
+    });
 
-function highlightResults(results, allTokens) {
-    // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
-    // which would make the resulting HTML string invalid.
-    // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
-    allTokens = allTokens.map(token => token.replace('/[<\{\}]/g', ''));
+    const apiResults = results.slice(0, 200).map(res => {
+        const notePath = res.pathArray.join('/');
 
-    // sort by the longest so we first highlight longest matches
-    allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
+        return {
+            noteId: res.noteId,
+            branchId: res.branchId,
+            path: notePath,
+            pathTitle: res.titleArray.join(' / '),
+            noteTitle: getNoteTitleFromPath(notePath)
+        };
+    });
 
-    for (const result of results) {
-        const note = notes[result.noteId];
+    highlightResults(apiResults, tokens);
 
-        for (const attr of note.attributes) {
-            if (allTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
-                result.pathTitle += ` <small>${formatAttribute(attr)}</small>`;
-            }
-        }
-
-        result.highlightedTitle = result.pathTitle;
-    }
-
-    for (const token of allTokens) {
-        const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
-
-        for (const result of results) {
-            result.highlightedTitle = result.highlightedTitle.replace(tokenRegex, "{$1}");
-        }
-    }
-
-    for (const result of results) {
-        result.highlightedTitle = result.highlightedTitle
-            .replace(/{/g, "<b>")
-            .replace(/}/g, "</b>");
-    }
+    return apiResults;
 }
 
 /**
@@ -478,58 +459,6 @@ async function findInNoteContent(tokens) {
     return results;
 }
 
-async function findNotes(query, searchInContent = false) {
-    if (!query.trim().length) {
-        return [];
-    }
-
-    const tokens = query
-        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
-        .toLowerCase()
-        .split(/[ -]/)
-        .filter(token => token !== '/'); // '/' is used as separator
-
-    const cacheResults = findInNoteCache(tokens);
-
-    const contentResults = searchInContent ? await findInNoteContent(tokens) : [];
-
-    let results = cacheResults.concat(contentResults);
-
-    if (hoistedNoteService.getHoistedNoteId() !== 'root') {
-        results = results.filter(res => res.pathArray.includes(hoistedNoteService.getHoistedNoteId()));
-    }
-
-    // sort results by depth of the note. This is based on the assumption that more important results
-    // are closer to the note root.
-    results.sort((a, b) => {
-        if (a.pathArray.length === b.pathArray.length) {
-            return a.title < b.title ? -1 : 1;
-        }
-
-        return a.pathArray.length < b.pathArray.length ? -1 : 1;
-    });
-
-    const apiResults = results.slice(0, 200).map(res => {
-        const notePath = res.pathArray.join('/');
-
-        return {
-            noteId: res.noteId,
-            branchId: res.branchId,
-            path: notePath,
-            pathTitle: res.titleArray.join(' / '),
-            noteTitle: getNoteTitleFromPath(notePath)
-        };
-    });
-
-    highlightResults(apiResults, tokens);
-
-    return apiResults;
-}
-
-function getBranch(childNoteId, parentNoteId) {
-    return childParentToBranch[`${childNoteId}-${parentNoteId}`];
-}
-
 function search(note, tokens, path, results) {
     if (tokens.length === 0) {
         const retPath = getSomePath(note, path);
@@ -583,6 +512,77 @@ function search(note, tokens, path, results) {
             search(parentNote, tokens, path.concat([note.noteId]), results);
         }
     }
+}
+
+function highlightResults(results, allTokens) {
+    // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
+    // which would make the resulting HTML string invalid.
+    // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
+    allTokens = allTokens.map(token => token.replace('/[<\{\}]/g', ''));
+
+    // sort by the longest so we first highlight longest matches
+    allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
+
+    for (const result of results) {
+        const note = notes[result.noteId];
+
+        for (const attr of note.attributes) {
+            if (allTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
+                result.pathTitle += ` <small>${formatAttribute(attr)}</small>`;
+            }
+        }
+
+        result.highlightedTitle = result.pathTitle;
+    }
+
+    for (const token of allTokens) {
+        const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
+
+        for (const result of results) {
+            result.highlightedTitle = result.highlightedTitle.replace(tokenRegex, "{$1}");
+        }
+    }
+
+    for (const result of results) {
+        result.highlightedTitle = result.highlightedTitle
+            .replace(/{/g, "<b>")
+            .replace(/}/g, "</b>");
+    }
+}
+
+function decryptProtectedNote(note) {
+    if (note.isProtected && !note.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+        note.title = protectedSessionService.decryptString(note.title);
+
+        note.isDecrypted = true;
+    }
+}
+
+async function decryptProtectedNotes() {
+    for (const note of Object.values(notes)) {
+        decryptProtectedNote(note);
+    }
+}
+
+function formatAttribute(attr) {
+    if (attr.type === 'relation') {
+        return '@' + utils.escapeHtml(attr.name) + "=…";
+    }
+    else if (attr.type === 'label') {
+        let label = '#' + utils.escapeHtml(attr.name);
+
+        if (attr.value) {
+            const val = /[^\w_-]/.test(attr.value) ? '"' + attr.value + '"' : attr.value;
+
+            label += '=' + utils.escapeHtml(val);
+        }
+
+        return label;
+    }
+}
+
+function getBranch(childNoteId, parentNoteId) {
+    return childParentToBranch[`${childNoteId}-${parentNoteId}`];
 }
 
 function isNotePathArchived(notePath) {
