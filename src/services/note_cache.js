@@ -136,22 +136,26 @@ class Note {
                 return this.flatTextCache;
             }
 
-            this.flatTextCache = this.title.toLowerCase();
+            this.flatTextCache = '';
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
-                    this.flatTextCache += ' ' + branch.prefix;
+                    this.flatTextCache += branch.prefix + ' - ';
                 }
             }
+
+            this.flatTextCache += this.title;
 
             for (const attr of this.attributes) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.flatTextCache += ' ' + attr.name.toLowerCase();
+                this.flatTextCache += (attr.type === 'label' ? '#' : '@') + attr.name;
 
                 if (attr.value) {
-                    this.flatTextCache += ' ' + attr.value.toLowerCase();
+                    this.flatTextCache += '=' + attr.value;
                 }
             }
+
+            this.flatTextCache = this.flatTextCache.toLowerCase();
         }
 
         return this.flatTextCache;
@@ -205,11 +209,11 @@ class Note {
     }
 
     /** @return {Note[]} */
-    get subtreeNotes() {
+    get subtreeNotesIncludingTemplated() {
         const arr = [[this]];
 
         for (const childNote of this.children) {
-            arr.push(childNote.subtreeNotes);
+            arr.push(childNote.subtreeNotesIncludingTemplated);
         }
 
         for (const targetRelation of this.targetRelations) {
@@ -217,9 +221,20 @@ class Note {
                 const note = targetRelation.note;
 
                 if (note) {
-                    arr.push(note.subtreeNotes);
+                    arr.push(note.subtreeNotesIncludingTemplated);
                 }
             }
+        }
+
+        return arr.flat();
+    }
+
+    /** @return {Note[]} */
+    get subtreeNotes() {
+        const arr = [[this]];
+
+        for (const childNote of this.children) {
+            arr.push(childNote.subtreeNotes);
         }
 
         return arr.flat();
@@ -378,9 +393,9 @@ class AndOp {
         this.subExpressions = subExpressions;
     }
 
-    execute(noteSet) {
+    execute(noteSet, searchContext) {
         for (const subExpression of this.subExpressions) {
-            noteSet = subExpression.execute(noteSet);
+            noteSet = subExpression.execute(noteSet, searchContext);
         }
 
         return noteSet;
@@ -392,11 +407,11 @@ class OrOp {
         this.subExpressions = subExpressions;
     }
 
-    execute(noteSet) {
+    execute(noteSet, searchContext) {
         const resultNoteSet = new NoteSet();
 
         for (const subExpression of this.subExpressions) {
-            resultNoteSet.mergeIn(subExpression.execute(noteSet));
+            resultNoteSet.mergeIn(subExpression.execute(noteSet, searchContext));
         }
 
         return resultNoteSet;
@@ -404,25 +419,25 @@ class OrOp {
 }
 
 class NoteSet {
-    constructor(arr = []) {
-        this.arr = arr;
+    constructor(notes = []) {
+        this.notes = notes;
     }
 
     add(note) {
-        this.arr.push(note);
+        this.notes.push(note);
     }
 
     addAll(notes) {
-        this.arr.push(...notes);
+        this.notes.push(...notes);
     }
 
     hasNoteId(noteId) {
         // TODO: optimize
-        return !!this.arr.find(note => note.noteId === noteId);
+        return !!this.notes.find(note => note.noteId === noteId);
     }
 
     mergeIn(anotherNoteSet) {
-        this.arr = this.arr.concat(anotherNoteSet.arr);
+        this.notes = this.notes.concat(anotherNoteSet.arr);
     }
 }
 
@@ -441,7 +456,7 @@ class ExistsOp {
 
             if (noteSet.hasNoteId(note.noteId)) {
                 if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.subtreeNotes);
+                    resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }
                 else if (note.isTemplate) {
                     resultNoteSet.addAll(note.templatedNotes);
@@ -470,7 +485,7 @@ class EqualsOp {
 
             if (noteSet.hasNoteId(note.noteId) && attr.value === this.attributeValue) {
                 if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.subtreeNotes);
+                    resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }
                 else if (note.isTemplate) {
                     resultNoteSet.addAll(note.templatedNotes);
@@ -483,10 +498,173 @@ class EqualsOp {
     }
 }
 
-async function findNotesWithExpression(expression) {
-    const allNoteSet = new NoteSet(Object.values(notes));
+class NoteContentFulltextOp {
+    constructor(tokens) {
+        this.tokens = tokens;
+    }
 
-    expression.execute(allNoteSet);
+    async execute(noteSet) {
+        const resultNoteSet = new NoteSet();
+        const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
+
+        const noteIds = await sql.getColumn(`
+            SELECT notes.noteId 
+            FROM notes
+            JOIN note_contents ON notes.noteId = note_contents.noteId
+            WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
+
+        const results = [];
+
+        for (const noteId of noteIds) {
+            if (noteSet.hasNoteId(noteId) && noteId in notes) {
+                resultNoteSet.add(notes[noteId]);
+            }
+        }
+
+        return results;
+    }
+}
+
+class NoteCacheFulltextOp {
+    constructor(tokens) {
+        this.tokens = tokens;
+    }
+
+    execute(noteSet, searchContext) {
+        const resultNoteSet = new NoteSet();
+
+        const candidateNotes = this.getCandidateNotes(noteSet);
+
+        for (const note of candidateNotes) {
+            // autocomplete should be able to find notes by their noteIds as well (only leafs)
+            if (this.tokens.length === 1 && note.noteId === this.tokens[0]) {
+                this.searchDownThePath(note, [], [], resultNoteSet, searchContext);
+                continue;
+            }
+
+            // for leaf note it doesn't matter if "archived" label is inheritable or not
+            if (note.isArchived) {
+                continue;
+            }
+
+            const foundAttrTokens = [];
+
+            for (const attribute of note.ownedAttributes) {
+                for (const token of this.tokens) {
+                    if (attribute.name.toLowerCase().includes(token)
+                        || attribute.value.toLowerCase().includes(token)) {
+                        foundAttrTokens.push(token);
+                    }
+                }
+            }
+
+            for (const parentNote of note.parents) {
+                const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const foundTokens = foundAttrTokens.slice();
+
+                for (const token of this.tokens) {
+                    if (title.includes(token)) {
+                        foundTokens.push(token);
+                    }
+                }
+
+                if (foundTokens.length > 0) {
+                    const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
+
+                    this.searchDownThePath(parentNote, remainingTokens, [note.noteId], resultNoteSet, searchContext);
+                }
+            }
+        }
+
+        return resultNoteSet;
+    }
+
+    /**
+     * Returns noteIds which have at least one matching tokens
+     *
+     * @param {NoteSet} noteSet
+     * @return {String[]}
+     */
+    getCandidateNotes(noteSet) {
+        const candidateNotes = [];
+
+        for (const note of noteSet.notes) {
+            for (const token of this.tokens) {
+                if (note.flatText.includes(token)) {
+                    candidateNotes.push(note);
+                    break;
+                }
+            }
+        }
+
+        return candidateNotes;
+    }
+
+    searchDownThePath(note, tokens, path, resultNoteSet, searchContext) {
+        if (tokens.length === 0) {
+            const retPath = getSomePath(note, path);
+
+            if (retPath) {
+                const noteId = retPath[retPath.length - 1];
+                searchContext.noteIdToNotePath[noteId] = retPath;
+
+                resultNoteSet.add(notes[noteId]);
+            }
+
+            return;
+        }
+
+        if (!note.parents.length === 0 || note.noteId === 'root') {
+            return;
+        }
+
+        const foundAttrTokens = [];
+
+        for (const attribute of note.ownedAttributes) {
+            for (const token of tokens) {
+                if (attribute.name.toLowerCase().includes(token)
+                    || attribute.value.toLowerCase().includes(token)) {
+                    foundAttrTokens.push(token);
+                }
+            }
+        }
+
+        for (const parentNote of note.parents) {
+            const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+            const foundTokens = foundAttrTokens.slice();
+
+            for (const token of tokens) {
+                if (title.includes(token)) {
+                    foundTokens.push(token);
+                }
+            }
+
+            if (foundTokens.length > 0) {
+                const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
+
+                this.searchDownThePath(parentNote, remainingTokens, path.concat([note.noteId]), resultNoteSet, searchContext);
+            }
+            else {
+                this.searchDownThePath(parentNote, tokens, path.concat([note.noteId]), resultNoteSet, searchContext);
+            }
+        }
+    }
+}
+
+async function findNotesWithExpression(expression) {
+
+    const hoistedNote = notes[hoistedNoteService.getHoistedNoteId()];
+    const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
+                     ? hoistedNote.subtreeNotes
+                     : Object.values(notes);
+
+    const allNoteSet = new NoteSet(allNotes);
+
+    const searchContext = {
+        noteIdToNotePath: {}
+    };
+
+    expression.execute(allNoteSet, searchContext);
 }
 
 async function findNotesWithFulltext(query, searchInContent) {
@@ -535,163 +713,6 @@ async function findNotesWithFulltext(query, searchInContent) {
     highlightResults(apiResults, tokens);
 
     return apiResults;
-}
-
-/**
- * Returns noteIds which have at least one matching tokens
- *
- * @param tokens
- * @return {String[]}
- */
-function getCandidateNotes(tokens) {
-    const candidateNotes = [];
-
-    for (const note of Object.values(notes)) {
-        for (const token of tokens) {
-            if (note.flatText.includes(token)) {
-                candidateNotes.push(note);
-                break;
-            }
-        }
-    }
-
-    return candidateNotes;
-}
-
-function findInNoteCache(tokens) {
-    let results = [];
-
-    const candidateNotes = getCandidateNotes(tokens);
-
-    for (const note of candidateNotes) {
-        // autocomplete should be able to find notes by their noteIds as well (only leafs)
-        if (tokens.length === 1 && note.noteId === tokens[0]) {
-            search(note, [], [], results);
-            continue;
-        }
-
-        // for leaf note it doesn't matter if "archived" label is inheritable or not
-        if (note.isArchived) {
-            continue;
-        }
-
-        const foundAttrTokens = [];
-
-        for (const attribute of note.ownedAttributes) {
-            for (const token of tokens) {
-                if (attribute.name.toLowerCase().includes(token)
-                    || attribute.value.toLowerCase().includes(token)) {
-                    foundAttrTokens.push(token);
-                }
-            }
-        }
-
-        for (const parentNote of note.parents) {
-            const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
-            const foundTokens = foundAttrTokens.slice();
-
-            for (const token of tokens) {
-                if (title.includes(token)) {
-                    foundTokens.push(token);
-                }
-            }
-
-            if (foundTokens.length > 0) {
-                const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
-
-                search(parentNote, remainingTokens, [note.noteId], results);
-            }
-        }
-    }
-
-    return results;
-}
-
-async function findInNoteContent(tokens) {
-    const wheres = tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
-
-    const noteIds = await sql.getColumn(`
-        SELECT notes.noteId 
-        FROM notes
-        JOIN note_contents ON notes.noteId = note_contents.noteId
-        WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
-
-    const results = [];
-
-    for (const noteId of noteIds) {
-        const note = notes[noteId];
-
-        if (!note) {
-            continue;
-        }
-
-        const notePath = getSomePath(note);
-        const parentNoteId = notePath.length > 1 ? notePath[notePath.length - 2] : null;
-
-        results.push({
-            noteId: noteId,
-            branchId: getBranch(noteId, parentNoteId),
-            pathArray: notePath,
-            titleArray: getNoteTitleArrayForPath(notePath)
-        });
-    }
-
-    return results;
-}
-
-function search(note, tokens, path, results) {
-    if (tokens.length === 0) {
-        const retPath = getSomePath(note, path);
-
-        if (retPath) {
-            const thisNoteId = retPath[retPath.length - 1];
-            const thisParentNoteId = retPath.length > 1 ? retPath[retPath.length - 2] : null;
-
-            results.push({
-                noteId: thisNoteId,
-                branchId: getBranch(thisNoteId, thisParentNoteId),
-                pathArray: retPath,
-                titleArray: getNoteTitleArrayForPath(retPath)
-            });
-        }
-
-        return;
-    }
-
-    if (!note.parents.length === 0 || note.noteId === 'root') {
-        return;
-    }
-
-    const foundAttrTokens = [];
-
-    for (const attribute of note.ownedAttributes) {
-        for (const token of tokens) {
-            if (attribute.name.toLowerCase().includes(token)
-                || attribute.value.toLowerCase().includes(token)) {
-                foundAttrTokens.push(token);
-            }
-        }
-    }
-
-    for (const parentNote of note.parents) {
-        const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
-        const foundTokens = foundAttrTokens.slice();
-
-        for (const token of tokens) {
-            if (title.includes(token)) {
-                foundTokens.push(token);
-            }
-        }
-
-        if (foundTokens.length > 0) {
-            const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
-
-            search(parentNote, remainingTokens, path.concat([note.noteId]), results);
-        }
-        else {
-            search(parentNote, tokens, path.concat([note.noteId]), results);
-        }
-    }
 }
 
 function highlightResults(results, allTokens) {
