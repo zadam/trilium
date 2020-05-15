@@ -12,6 +12,13 @@ let notes;
 let branches
 /** @type {Object.<String, Attribute>} */
 let attributes;
+/** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes them */
+let attributeIndex;
+
+/** @return {Attribute[]} */
+function findAttributes(type, name) {
+    return attributeIndex[`${type}-${name}`] || [];
+}
 
 let childParentToBranch = {};
 
@@ -37,9 +44,10 @@ class Note {
         /** @param {Attribute[]|null} */
         this.attributeCache = null;
         /** @param {Attribute[]|null} */
-        this.templateAttributeCache = null;
-        /** @param {Attribute[]|null} */
         this.inheritableAttributeCache = null;
+
+        /** @param {Attribute[]} */
+        this.targetRelations = [];
 
         /** @param {string|null} */
         this.flatTextCache = null;
@@ -74,15 +82,10 @@ class Note {
 
             this.attributeCache = parentAttributes.concat(templateAttributes);
             this.inheritableAttributeCache = [];
-            this.templateAttributeCache = [];
 
             for (const attr of this.attributeCache) {
                 if (attr.isInheritable) {
                     this.inheritableAttributeCache.push(attr);
-                }
-
-                if (attr.type === 'relation' && attr.name === 'template') {
-                    this.templateAttributeCache.push(attr);
                 }
             }
         }
@@ -97,15 +100,6 @@ class Note {
         }
 
         return this.inheritableAttributeCache;
-    }
-
-    /** @return {Attribute[]} */
-    get templateAttributes() {
-        if (!this.templateAttributeCache) {
-            this.attributes; // will refresh also this.templateAttributeCache
-        }
-
-        return this.templateAttributeCache;
     }
 
     hasAttribute(type, name) {
@@ -167,7 +161,6 @@ class Note {
         this.flatTextCache = null;
 
         this.attributeCache = null;
-        this.templateAttributeCache = null;
         this.inheritableAttributeCache = null;
     }
 
@@ -178,11 +171,13 @@ class Note {
             childNote.invalidateSubtreeCaches();
         }
 
-        for (const templateAttr of this.templateAttributes) {
-            const targetNote = templateAttr.targetNote;
+        for (const targetRelation of this.targetRelations) {
+            if (targetRelation.name === 'template') {
+                const note = targetRelation.note;
 
-            if (targetNote) {
-                targetNote.invalidateSubtreeCaches();
+                if (note) {
+                    note.invalidateSubtreeCaches();
+                }
             }
         }
     }
@@ -194,13 +189,58 @@ class Note {
             childNote.invalidateSubtreeFlatText();
         }
 
-        for (const templateAttr of this.templateAttributes) {
-            const targetNote = templateAttr.targetNote;
+        for (const targetRelation of this.targetRelations) {
+            if (targetRelation.name === 'template') {
+                const note = targetRelation.note;
 
-            if (targetNote) {
-                targetNote.invalidateSubtreeFlatText();
+                if (note) {
+                    note.invalidateSubtreeFlatText();
+                }
             }
         }
+    }
+
+    get isTemplate() {
+        return !!this.targetRelations.find(rel => rel.name === 'template');
+    }
+
+    /** @return {Note[]} */
+    get subtreeNotes() {
+        const arr = [[this]];
+
+        for (const childNote of this.children) {
+            arr.push(childNote.subtreeNotes);
+        }
+
+        for (const targetRelation of this.targetRelations) {
+            if (targetRelation.name === 'template') {
+                const note = targetRelation.note;
+
+                if (note) {
+                    arr.push(note.subtreeNotes);
+                }
+            }
+        }
+
+        return arr.flat();
+    }
+
+    /** @return {Note[]} - returns only notes which are templated, does not include their subtrees
+     *                     in effect returns notes which are influenced by note's non-inheritable attributes */
+    get templatedNotes() {
+        const arr = [this];
+
+        for (const targetRelation of this.targetRelations) {
+            if (targetRelation.name === 'template') {
+                const note = targetRelation.note;
+
+                if (note) {
+                    arr.push(note);
+                }
+            }
+        }
+
+        return arr;
     }
 }
 
@@ -263,11 +303,25 @@ class Attribute {
         this.isInheritable = !!row.isInheritable;
 
         notes[this.noteId].ownedAttributes.push(this);
+
+        const key = `${this.type-this.name}`;
+        attributeIndex[key] = attributeIndex[key] || [];
+        attributeIndex[key].push(this);
+
+        const targetNote = this.targetNote;
+
+        if (targetNote) {
+            targetNote.targetRelations.push(this);
+        }
     }
 
     get isAffectingSubtree() {
         return this.isInheritable
             || (this.type === 'relation' && this.name === 'template');
+    }
+
+    get note() {
+        return notes[this.noteId];
     }
 
     get targetNote() {
@@ -309,7 +363,133 @@ async function load() {
     loadedPromiseResolve();
 }
 
-async function findNotes(query, searchInContent) {
+const expression = {
+    operator: 'and',
+    operands: [
+        {
+            operator: 'exists',
+            fieldName: 'hokus'
+        }
+    ]
+};
+
+class AndOp {
+    constructor(subExpressions) {
+        this.subExpressions = subExpressions;
+    }
+
+    execute(noteSet) {
+        for (const subExpression of this.subExpressions) {
+            noteSet = subExpression.execute(noteSet);
+        }
+
+        return noteSet;
+    }
+}
+
+class OrOp {
+    constructor(subExpressions) {
+        this.subExpressions = subExpressions;
+    }
+
+    execute(noteSet) {
+        const resultNoteSet = new NoteSet();
+
+        for (const subExpression of this.subExpressions) {
+            resultNoteSet.mergeIn(subExpression.execute(noteSet));
+        }
+
+        return resultNoteSet;
+    }
+}
+
+class NoteSet {
+    constructor(arr = []) {
+        this.arr = arr;
+    }
+
+    add(note) {
+        this.arr.push(note);
+    }
+
+    addAll(notes) {
+        this.arr.push(...notes);
+    }
+
+    hasNoteId(noteId) {
+        // TODO: optimize
+        return !!this.arr.find(note => note.noteId === noteId);
+    }
+
+    mergeIn(anotherNoteSet) {
+        this.arr = this.arr.concat(anotherNoteSet.arr);
+    }
+}
+
+class ExistsOp {
+    constructor(attributeType, attributeName) {
+        this.attributeType = attributeType;
+        this.attributeName = attributeName;
+    }
+
+    execute(noteSet) {
+        const attrs = findAttributes(this.attributeType, this.attributeName);
+        const resultNoteSet = new NoteSet();
+
+        for (const attr of attrs) {
+            const note = attr.note;
+
+            if (noteSet.hasNoteId(note.noteId)) {
+                if (attr.isInheritable) {
+                    resultNoteSet.addAll(note.subtreeNotes);
+                }
+                else if (note.isTemplate) {
+                    resultNoteSet.addAll(note.templatedNotes);
+                }
+                else {
+                    resultNoteSet.add(note);
+                }
+            }
+        }
+    }
+}
+
+class EqualsOp {
+    constructor(attributeType, attributeName, attributeValue) {
+        this.attributeType = attributeType;
+        this.attributeName = attributeName;
+        this.attributeValue = attributeValue;
+    }
+
+    execute(noteSet) {
+        const attrs = findAttributes(this.attributeType, this.attributeName);
+        const resultNoteSet = new NoteSet();
+
+        for (const attr of attrs) {
+            const note = attr.note;
+
+            if (noteSet.hasNoteId(note.noteId) && attr.value === this.attributeValue) {
+                if (attr.isInheritable) {
+                    resultNoteSet.addAll(note.subtreeNotes);
+                }
+                else if (note.isTemplate) {
+                    resultNoteSet.addAll(note.templatedNotes);
+                }
+                else {
+                    resultNoteSet.add(note);
+                }
+            }
+        }
+    }
+}
+
+async function findNotesWithExpression(expression) {
+    const allNoteSet = new NoteSet(Object.values(notes));
+
+    expression.execute(allNoteSet);
+}
+
+async function findNotesWithFulltext(query, searchInContent) {
     if (!query.trim().length) {
         return [];
     }
@@ -888,14 +1068,22 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
         if (entity.isDeleted) {
             if (note && attr) {
+                // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
+                if (attr.isAffectingSubtree || note.isTemplate) {
+                    note.invalidateSubtreeCaches();
+                }
+
                 note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
 
-                if (attr.isAffectingSubtree) {
-                    note.invalidateSubtreeCaches();
+                const targetNote = attr.targetNote;
+
+                if (targetNote) {
+                    targetNote.targetRelations = targetNote.targetRelations.filter(rel => rel.attributeId !== attributeId);
                 }
             }
 
             delete attributes[attributeId];
+            delete attributeIndex[`${attr.type}-${attr.name}`];
         }
         else if (attributeId in attributes) {
             const attr = attributes[attributeId];
@@ -903,7 +1091,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             // attr name and isInheritable are immutable
             attr.value = entity.value;
 
-            if (attr.isAffectingSubtree) {
+            if (attr.isAffectingSubtree || note.isTemplate) {
                 note.invalidateSubtreeFlatText();
             }
             else {
@@ -915,7 +1103,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             attributes[attributeId] = attr;
 
             if (note) {
-                if (attr.isAffectingSubtree) {
+                if (attr.isAffectingSubtree || note.isTemplate) {
                     note.invalidateSubtreeCaches();
                 }
                 else {
@@ -944,7 +1132,7 @@ sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", load));
 
 module.exports = {
     loadedPromise,
-    findNotes,
+    findNotesWithFulltext,
     getNotePath,
     getNoteTitleForPath,
     getNoteTitleFromPath,

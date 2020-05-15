@@ -18,7 +18,7 @@ async function getAutocomplete(req) {
         results = await getRecentNotes(activeNoteId);
     }
     else {
-        results = await noteCacheService.findNotes(query);
+        results = await noteCacheService.findNotesWithFulltext(query);
     }
 
     const msTaken = Date.now() - timestampStarted;
