@@ -269,7 +269,7 @@ function initKoPlugins() {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             noteAutocompleteService.initNoteAutocomplete($(element));
 
-            $(element).setSelectedPath(bindingContext.$data.selectedPath);
+            $(element).setSelectedNotePath(bindingContext.$data.selectedPath);
 
             $(element).on('autocomplete:selected', function (event, suggestion, dataset) {
                 bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';

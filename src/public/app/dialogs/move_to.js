@@ -41,7 +41,7 @@ async function moveNotesTo(parentNoteId) {
 }
 
 $form.on('submit', () => {
-    const notePath = $noteAutoComplete.getSelectedPath();
+    const notePath = $noteAutoComplete.getSelectedNotePath();
 
     if (notePath) {
         $dialog.modal('hide');

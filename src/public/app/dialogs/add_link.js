@@ -75,7 +75,7 @@ function updateTitleFormGroupVisibility() {
 }
 
 $form.on('submit', () => {
-    const notePath = $autoComplete.getSelectedPath();
+    const notePath = $autoComplete.getSelectedNotePath();
 
     if (notePath) {
         $dialog.modal('hide');

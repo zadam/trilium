@@ -371,6 +371,8 @@ async function load() {
     branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
         row => new Branch(row));
 
+    attributeIndex = [];
+
     attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
         row => new Attribute(row));
 
@@ -378,17 +380,7 @@ async function load() {
     loadedPromiseResolve();
 }
 
-const expression = {
-    operator: 'and',
-    operands: [
-        {
-            operator: 'exists',
-            fieldName: 'hokus'
-        }
-    ]
-};
-
-class AndOp {
+class AndExp {
     constructor(subExpressions) {
         this.subExpressions = subExpressions;
     }
@@ -402,7 +394,7 @@ class AndOp {
     }
 }
 
-class OrOp {
+class OrExp {
     constructor(subExpressions) {
         this.subExpressions = subExpressions;
     }
@@ -441,7 +433,7 @@ class NoteSet {
     }
 }
 
-class ExistsOp {
+class ExistsExp {
     constructor(attributeType, attributeName) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
@@ -469,7 +461,7 @@ class ExistsOp {
     }
 }
 
-class EqualsOp {
+class EqualsExp {
     constructor(attributeType, attributeName, attributeValue) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
@@ -498,7 +490,7 @@ class EqualsOp {
     }
 }
 
-class NoteContentFulltextOp {
+class NoteContentFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
     }
@@ -525,7 +517,7 @@ class NoteContentFulltextOp {
     }
 }
 
-class NoteCacheFulltextOp {
+class NoteCacheFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
     }
@@ -569,7 +561,7 @@ class NoteCacheFulltextOp {
                 }
 
                 if (foundTokens.length > 0) {
-                    const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
+                    const remainingTokens = this.tokens.filter(token => !foundTokens.includes(token));
 
                     this.searchDownThePath(parentNote, remainingTokens, [note.noteId], resultNoteSet, searchContext);
                 }
@@ -651,6 +643,21 @@ class NoteCacheFulltextOp {
     }
 }
 
+class SearchResult {
+    constructor(notePathArray) {
+        this.notePathArray = notePathArray;
+        this.notePathTitle = getNoteTitleForPath(notePathArray);
+    }
+
+    get notePath() {
+        return this.notePathArray.join('/');
+    }
+
+    get noteId() {
+        return this.notePathArray[this.notePathArray.length - 1];
+    }
+}
+
 async function findNotesWithExpression(expression) {
 
     const hoistedNote = notes[hoistedNoteService.getHoistedNoteId()];
@@ -664,10 +671,27 @@ async function findNotesWithExpression(expression) {
         noteIdToNotePath: {}
     };
 
-    expression.execute(allNoteSet, searchContext);
+    const noteSet = await expression.execute(allNoteSet, searchContext);
+
+    let searchResults = noteSet.notes
+        .map(note => searchContext.noteIdToNotePath[note.noteId] || getSomePath(note))
+        .filter(notePathArray => notePathArray.includes(hoistedNoteService.getHoistedNoteId()))
+        .map(notePathArray => new SearchResult(notePathArray));
+
+    // sort results by depth of the note. This is based on the assumption that more important results
+    // are closer to the note root.
+    searchResults.sort((a, b) => {
+        if (a.notePathArray.length === b.notePathArray.length) {
+            return a.notePathTitle < b.notePathTitle ? -1 : 1;
+        }
+
+        return a.notePathArray.length < b.notePathArray.length ? -1 : 1;
+    });
+
+    return searchResults;
 }
 
-async function findNotesWithFulltext(query, searchInContent) {
+async function findNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
     }
@@ -678,74 +702,54 @@ async function findNotesWithFulltext(query, searchInContent) {
         .split(/[ -]/)
         .filter(token => token !== '/'); // '/' is used as separator
 
-    const cacheResults = findInNoteCache(tokens);
+    const expression = new NoteCacheFulltextExp(tokens);
 
-    const contentResults = searchInContent ? await findInNoteContent(tokens) : [];
+    let searchResults = await findNotesWithExpression(expression);
 
-    let results = cacheResults.concat(contentResults);
+    searchResults = searchResults.slice(0, 200);
 
-    if (hoistedNoteService.getHoistedNoteId() !== 'root') {
-        results = results.filter(res => res.pathArray.includes(hoistedNoteService.getHoistedNoteId()));
-    }
+    highlightSearchResults(searchResults, tokens);
 
-    // sort results by depth of the note. This is based on the assumption that more important results
-    // are closer to the note root.
-    results.sort((a, b) => {
-        if (a.pathArray.length === b.pathArray.length) {
-            return a.title < b.title ? -1 : 1;
-        }
-
-        return a.pathArray.length < b.pathArray.length ? -1 : 1;
-    });
-
-    const apiResults = results.slice(0, 200).map(res => {
-        const notePath = res.pathArray.join('/');
-
+    return searchResults.map(result => {
         return {
-            noteId: res.noteId,
-            branchId: res.branchId,
-            path: notePath,
-            pathTitle: res.titleArray.join(' / '),
-            noteTitle: getNoteTitleFromPath(notePath)
-        };
+            notePath: result.notePath,
+            notePathTitle: result.notePathTitle,
+            highlightedNotePathTitle: result.highlightedNotePathTitle
+        }
     });
-
-    highlightResults(apiResults, tokens);
-
-    return apiResults;
 }
 
-function highlightResults(results, allTokens) {
+function highlightSearchResults(searchResults, tokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
-    allTokens = allTokens.map(token => token.replace('/[<\{\}]/g', ''));
+    tokens = tokens.map(token => token.replace('/[<\{\}]/g', ''));
 
     // sort by the longest so we first highlight longest matches
-    allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
+    tokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
-    for (const result of results) {
+    for (const result of searchResults) {
         const note = notes[result.noteId];
 
+        result.highlightedNotePathTitle = result.notePathTitle;
+
         for (const attr of note.attributes) {
-            if (allTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
-                result.pathTitle += ` <small>${formatAttribute(attr)}</small>`;
+            if (tokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
+                result.highlightedNotePathTitle += ` <small>${formatAttribute(attr)}</small>`;
             }
         }
-
-        result.highlightedTitle = result.pathTitle;
     }
 
-    for (const token of allTokens) {
+    for (const token of tokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
-        for (const result of results) {
-            result.highlightedTitle = result.highlightedTitle.replace(tokenRegex, "{$1}");
+        for (const result of searchResults) {
+            result.highlightedNotePathTitle = result.highlightedNotePathTitle.replace(tokenRegex, "{$1}");
         }
     }
 
-    for (const result of results) {
-        result.highlightedTitle = result.highlightedTitle
+    for (const result of searchResults) {
+        result.highlightedNotePathTitle = result.highlightedNotePathTitle
             .replace(/{/g, "<b>")
             .replace(/}/g, "</b>");
     }
@@ -839,17 +843,6 @@ function isInAncestor(noteId, ancestorNoteId) {
     return false;
 }
 
-function getNoteTitleFromPath(notePath) {
-    const pathArr = notePath.split("/");
-
-    if (pathArr.length === 1) {
-        return getNoteTitle(pathArr[0], 'root');
-    }
-    else {
-        return getNoteTitle(pathArr[pathArr.length - 1], pathArr[pathArr.length - 2]);
-    }
-}
-
 function getNoteTitle(childNoteId, parentNoteId) {
     const childNote = notes[childNoteId];
     const parentNote = notes[parentNoteId];
@@ -868,17 +861,17 @@ function getNoteTitle(childNoteId, parentNoteId) {
     return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
 }
 
-function getNoteTitleArrayForPath(path) {
+function getNoteTitleArrayForPath(notePathArray) {
     const titles = [];
 
-    if (path[0] === hoistedNoteService.getHoistedNoteId() && path.length === 1) {
+    if (notePathArray[0] === hoistedNoteService.getHoistedNoteId() && notePathArray.length === 1) {
         return [ getNoteTitle(hoistedNoteService.getHoistedNoteId()) ];
     }
 
     let parentNoteId = 'root';
     let hoistedNotePassed = false;
 
-    for (const noteId of path) {
+    for (const noteId of notePathArray) {
         // start collecting path segment titles only after hoisted note
         if (hoistedNotePassed) {
             const title = getNoteTitle(noteId, parentNoteId);
@@ -896,8 +889,8 @@ function getNoteTitleArrayForPath(path) {
     return titles;
 }
 
-function getNoteTitleForPath(path) {
-    const titles = getNoteTitleArrayForPath(path);
+function getNoteTitleForPath(notePathArray) {
+    const titles = getNoteTitleArrayForPath(notePathArray);
 
     return titles.join(' / ');
 }
@@ -1153,10 +1146,9 @@ sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", load));
 
 module.exports = {
     loadedPromise,
-    findNotesWithFulltext,
+    findNotesForAutocomplete,
     getNotePath,
     getNoteTitleForPath,
-    getNoteTitleFromPath,
     isAvailable,
     isArchived,
     isInAncestor,

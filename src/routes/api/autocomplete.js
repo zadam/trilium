@@ -18,7 +18,7 @@ async function getAutocomplete(req) {
         results = await getRecentNotes(activeNoteId);
     }
     else {
-        results = await noteCacheService.findNotesWithFulltext(query);
+        results = await noteCacheService.findNotesForAutocomplete(query);
     }
 
     const msTaken = Date.now() - timestampStarted;
@@ -57,10 +57,9 @@ async function getRecentNotes(activeNoteId) {
         const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));
 
         return {
-            path: rn.notePath,
-            pathTitle: title,
-            highlightedTitle: title,
-            noteTitle: noteCacheService.getNoteTitleFromPath(rn.notePath)
+            notePath: rn.notePath,
+            notePathTitle: title,
+            highlightedNotePathTitle: utils.escapeHtml(title)
         };
     });
 }
