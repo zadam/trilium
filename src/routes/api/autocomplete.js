@@ -1,6 +1,6 @@
 "use strict";
 
-const noteCacheService = require('../../services/note_cache');
+const noteCacheService = require('../../services/note_cache/note_cache.js');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
 const utils = require('../../services/utils');

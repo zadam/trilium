@@ -3,7 +3,7 @@ const sql = require('./sql');
 const log = require('./log');
 const parseFilters = require('./parse_filters');
 const buildSearchQuery = require('./build_search_query');
-const noteCacheService = require('./note_cache');
+const noteCacheService = require('./note_cache/note_cache.js');
 
 async function searchForNotes(searchString) {
     const noteIds = await searchForNoteIds(searchString);

@@ -1,7 +1,7 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const noteCacheService = require('../../services/note_cache');
+const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search');
