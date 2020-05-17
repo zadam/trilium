@@ -5,10 +5,18 @@ function lexer(str) {
     let quotes = false;
     let fulltextEnded = false;
     let currentWord = '';
-    let symbol = false;
 
-    function isSymbol(chr) {
+    function isOperatorSymbol(chr) {
         return ['=', '*', '>', '<', '!'].includes(chr);
+    }
+
+    function previusOperatorSymbol() {
+        if (currentWord.length === 0) {
+            return false;
+        }
+        else {
+            return isOperatorSymbol(currentWord[currentWord.length - 1]);
+        }
     }
 
     function finishWord() {
@@ -42,7 +50,11 @@ function lexer(str) {
         }
         else if (['"', "'", '`'].includes(chr)) {
             if (!quotes) {
-                if (currentWord.length === 0) {
+                if (currentWord.length === 0 || fulltextEnded) {
+                    if (previusOperatorSymbol()) {
+                        finishWord();
+                    }
+
                     quotes = chr;
                 }
                 else {
@@ -63,19 +75,26 @@ function lexer(str) {
             continue;
         }
         else if (!quotes) {
-            if (chr === '#' || chr === '@') {
+            if (currentWord.length === 0 && (chr === '#' || chr === '@')) {
                 fulltextEnded = true;
+                currentWord = chr;
+
                 continue;
             }
             else if (chr === ' ') {
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && symbol !== isSymbol(chr)) {
+            else if (fulltextEnded && ['(', ')'].includes(chr)) {
+                finishWord();
+                currentWord += chr;
+                finishWord();
+                continue;
+            }
+            else if (fulltextEnded && previusOperatorSymbol() !== isOperatorSymbol(chr)) {
                 finishWord();
 
                 currentWord += chr;
-                symbol = isSymbol(chr);
                 continue;
             }
         }
