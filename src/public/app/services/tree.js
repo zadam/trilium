@@ -162,6 +162,13 @@ function getNoteIdFromNotePath(notePath) {
 }
 
 function getNoteIdAndParentIdFromNotePath(notePath) {
+    if (notePath === 'root') {
+        return {
+            noteId: 'root',
+            parentNoteId: 'none'
+        };
+    }
+
     let parentNoteId = 'root';
     let noteId = '';
 

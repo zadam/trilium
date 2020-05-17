@@ -11,6 +11,14 @@ async function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;
     const branch = await repository.getBranch(branchId);
 
+    if (!branch) {
+        const message = `Cannot export branch ${branchId} since it does not exist.`;
+        log.error(message);
+
+        res.status(500).send(message);
+        return;
+    }
+
     const taskContext = new TaskContext(taskId, 'export');
 
     try {
