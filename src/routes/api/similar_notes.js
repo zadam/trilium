@@ -1,6 +1,6 @@
 "use strict";
 
-const noteCacheService = require('../../services/note_cache/note_cache.js');
+const noteCacheService = require('../../services/note_cache/note_cache_service');
 const repository = require('../../services/repository');
 
 async function getSimilarNotes(req) {

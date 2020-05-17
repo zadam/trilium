@@ -33,15 +33,15 @@ class NoteCache {
         await sqlInit.dbReady;
 
         this.notes = await this.getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
-            row => new Note(row));
+            row => new Note(this, row));
 
         this.branches = await this.getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
-            row => new Branch(row));
+            row => new Branch(this, row));
 
         this.attributeIndex = [];
 
         this.attributes = await this.getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
-            row => new Attribute(row));
+            row => new Attribute(this, row));
 
         this.loaded = true;
     }
@@ -94,13 +94,13 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             note.isDecrypted = !entity.isProtected || !!entity.isContentAvailable;
             note.flatTextCache = null;
 
-            noteCache.decryptProtectedNote(note);
+            note.decrypt();
         }
         else {
             const note = new Note(entity);
             noteCache.notes[noteId] = note;
 
-            noteCache.decryptProtectedNote(note);
+            note.decrypt();
         }
     }
     else if (entityName === 'branches') {

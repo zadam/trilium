@@ -1,5 +1,8 @@
 "use strict";
 
+const NoteSet = require('../note_set');
+const noteCache = require('../../note_cache/note_cache');
+
 class NoteContentFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
@@ -18,8 +21,8 @@ class NoteContentFulltextExp {
         const results = [];
 
         for (const noteId of noteIds) {
-            if (noteSet.hasNoteId(noteId) && noteId in notes) {
-                resultNoteSet.add(notes[noteId]);
+            if (noteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
+                resultNoteSet.add(noteCache.notes[noteId]);
             }
         }
 

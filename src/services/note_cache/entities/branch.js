@@ -1,9 +1,9 @@
 "use strict";
 
-const noteCache = require('../note_cache');
-
 class Branch {
-    constructor(row) {
+    constructor(noteCache, row) {
+        /** @param {NoteCache} */
+        this.noteCache = noteCache;
         /** @param {string} */
         this.branchId = row.branchId;
         /** @param {string} */
@@ -17,7 +17,7 @@ class Branch {
             return;
         }
 
-        const childNote = noteCache.notes[this.noteId];
+        const childNote = this.noteCache.notes[this.noteId];
         const parentNote = this.parentNote;
 
         if (!childNote) {
@@ -30,12 +30,12 @@ class Branch {
 
         parentNote.children.push(childNote);
 
-        noteCache.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
+        this.noteCache.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @return {Note} */
     get parentNote() {
-        const note = noteCache.notes[this.parentNoteId];
+        const note = this.noteCache.notes[this.parentNoteId];
 
         if (!note) {
             console.log(`Cannot find note ${this.parentNoteId}`);

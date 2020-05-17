@@ -1,9 +1,9 @@
 "use strict";
 
-const noteCache = require('../note_cache');
-
 class Attribute {
-    constructor(row) {
+    constructor(noteCache, row) {
+        /** @param {NoteCache} */
+        this.noteCache = noteCache;
         /** @param {string} */
         this.attributeId = row.attributeId;
         /** @param {string} */
@@ -17,11 +17,11 @@ class Attribute {
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 
-        noteCache.notes[this.noteId].ownedAttributes.push(this);
+        this.noteCache.notes[this.noteId].ownedAttributes.push(this);
 
         const key = `${this.type-this.name}`;
-        noteCache.attributeIndex[key] = noteCache.attributeIndex[key] || [];
-        noteCache.attributeIndex[key].push(this);
+        this.noteCache.attributeIndex[key] = this.noteCache.attributeIndex[key] || [];
+        this.noteCache.attributeIndex[key].push(this);
 
         const targetNote = this.targetNote;
 
@@ -36,12 +36,12 @@ class Attribute {
     }
 
     get note() {
-        return noteCache.notes[this.noteId];
+        return this.noteCache.notes[this.noteId];
     }
 
     get targetNote() {
         if (this.type === 'relation') {
-            return noteCache.notes[this.value];
+            return this.noteCache.notes[this.value];
         }
     }
 }

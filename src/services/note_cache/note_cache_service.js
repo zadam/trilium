@@ -2,6 +2,7 @@
 
 const noteCache = require('./note_cache');
 const hoistedNoteService = require('../hoisted_note');
+const stringSimilarity = require('string-similarity');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
@@ -69,7 +70,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
         title = childNote.title;
     }
 
-    const branch = parentNote ? getBranch(childNote.noteId, parentNote.noteId) : null;
+    const branch = parentNote ? noteCache.getBranch(childNote.noteId, parentNote.noteId) : null;
 
     return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
 }
@@ -199,7 +200,7 @@ async function findSimilarNotes(noteId) {
         return [];
     }
 
-    for (const note of Object.values(notes)) {
+    for (const note of Object.values(noteCache.notes)) {
         if (note.isProtected && !note.isDecrypted) {
             continue;
         }
@@ -229,7 +230,9 @@ function isAvailable(noteId) {
 }
 
 module.exports = {
+    getSomePath,
     getNotePath,
+    getNoteTitle,
     getNoteTitleForPath,
     isAvailable,
     isArchived,

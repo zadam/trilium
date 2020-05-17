@@ -1,5 +1,8 @@
 "use strict";
 
+const NoteSet = require('../note_set');
+const noteCache = require('../../note_cache/note_cache');
+
 class ExistsExp {
     constructor(attributeType, attributeName) {
         this.attributeType = attributeType;
@@ -7,7 +10,7 @@ class ExistsExp {
     }
 
     execute(noteSet) {
-        const attrs = findAttributes(this.attributeType, this.attributeName);
+        const attrs = noteCache.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 
         for (const attr of attrs) {

@@ -1,9 +1,12 @@
 "use strict";
 
 const noteCache = require('../note_cache');
+const protectedSessionService = require('../../protected_session');
 
 class Note {
-    constructor(row) {
+    constructor(noteCache, row) {
+        /** @param {NoteCache} */
+        this.noteCache = noteCache;
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */
@@ -33,7 +36,7 @@ class Note {
         this.flatTextCache = null;
 
         if (protectedSessionService.isProtectedSessionAvailable()) {
-            noteCache.decryptProtectedNote(this);
+            this.decrypt();
         }
     }
 
@@ -52,7 +55,7 @@ class Note {
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
                 if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
-                    const templateNote = notes[ownedAttr.value];
+                    const templateNote = this.noteCache.notes[ownedAttr.value];
 
                     if (templateNote) {
                         templateAttributes.push(...templateNote.attributes);

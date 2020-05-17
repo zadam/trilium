@@ -1,13 +1,18 @@
 "use strict";
 
-import NoteCacheFulltextExp from "./expressions/note_cache_fulltext.js";
+const NoteCacheFulltextExp = require("./expressions/note_cache_fulltext");
+const NoteSet = require("./note_set");
+const SearchResult = require("./search_result");
+const noteCache = require('../note_cache/note_cache');
+const hoistedNoteService = require('../hoisted_note');
+const utils = require('../utils');
 
 async function findNotesWithExpression(expression) {
 
-    const hoistedNote = notes[hoistedNoteService.getHoistedNoteId()];
+    const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
     const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
-        : Object.values(notes);
+        : Object.values(noteCache.notes);
 
     const allNoteSet = new NoteSet(allNotes);
 
@@ -35,7 +40,7 @@ async function findNotesWithExpression(expression) {
     return searchResults;
 }
 
-async function findNotesForAutocomplete(query) {
+async function searchNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
     }
@@ -73,7 +78,7 @@ function highlightSearchResults(searchResults, tokens) {
     tokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of searchResults) {
-        const note = notes[result.noteId];
+        const note = noteCache.notes[result.noteId];
 
         result.highlightedNotePathTitle = result.notePathTitle;
 
@@ -115,3 +120,7 @@ function formatAttribute(attr) {
         return label;
     }
 }
+
+module.exports = {
+    searchNotesForAutocomplete
+};

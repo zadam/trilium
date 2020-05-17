@@ -1,5 +1,9 @@
 "use strict";
 
+const NoteSet = require('../note_set');
+const noteCache = require('../../note_cache/note_cache');
+const noteCacheService = require('../../note_cache/note_cache_service');
+
 class NoteCacheFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
@@ -34,7 +38,7 @@ class NoteCacheFulltextExp {
             }
 
             for (const parentNote of note.parents) {
-                const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const title = noteCacheService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
                 const foundTokens = foundAttrTokens.slice();
 
                 for (const token of this.tokens) {
@@ -77,13 +81,13 @@ class NoteCacheFulltextExp {
 
     searchDownThePath(note, tokens, path, resultNoteSet, searchContext) {
         if (tokens.length === 0) {
-            const retPath = getSomePath(note, path);
+            const retPath = noteCacheService.getSomePath(note, path);
 
             if (retPath) {
                 const noteId = retPath[retPath.length - 1];
                 searchContext.noteIdToNotePath[noteId] = retPath;
 
-                resultNoteSet.add(notes[noteId]);
+                resultNoteSet.add(noteCache.notes[noteId]);
             }
 
             return;
@@ -105,7 +109,7 @@ class NoteCacheFulltextExp {
         }
 
         for (const parentNote of note.parents) {
-            const title = getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+            const title = noteCacheService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
             const foundTokens = foundAttrTokens.slice();
 
             for (const token of tokens) {
