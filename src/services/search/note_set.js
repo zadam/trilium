@@ -21,6 +21,18 @@ class NoteSet {
     mergeIn(anotherNoteSet) {
         this.notes = this.notes.concat(anotherNoteSet.arr);
     }
+
+    minus(anotherNoteSet) {
+        const newNoteSet = new NoteSet();
+
+        for (const note of this.notes) {
+            if (!anotherNoteSet.hasNoteId(note.noteId)) {
+                newNoteSet.add(note);
+            }
+        }
+
+        return newNoteSet;
+    }
 }
 
 module.exports = NoteSet;

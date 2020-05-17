@@ -1,7 +1,7 @@
 const repository = require('./repository');
 const sql = require('./sql');
 const log = require('./log');
-const parseFilters = require('./parse_filters');
+const parseFilters = require('./search/parse_filters.js');
 const buildSearchQuery = require('./build_search_query');
 const noteCacheService = require('./note_cache/note_cache.js');
 
