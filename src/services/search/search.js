@@ -1,3 +1,7 @@
+"use strict";
+
+import NoteCacheFulltextExp from "./expressions/note_cache_fulltext.js";
+
 async function findNotesWithExpression(expression) {
 
     const hoistedNote = notes[hoistedNoteService.getHoistedNoteId()];

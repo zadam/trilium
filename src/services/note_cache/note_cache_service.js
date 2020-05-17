@@ -1,3 +1,8 @@
+"use strict";
+
+const noteCache = require('./note_cache');
+const hoistedNoteService = require('../hoisted_note');
+
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
     const note = noteCache.notes[noteId];

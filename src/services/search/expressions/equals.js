@@ -1,7 +1,10 @@
-export default class ExistsExp {
-    constructor(attributeType, attributeName) {
+"use strict";
+
+class EqualsExp {
+    constructor(attributeType, attributeName, attributeValue) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
+        this.attributeValue = attributeValue;
     }
 
     execute(noteSet) {
@@ -11,7 +14,7 @@ export default class ExistsExp {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (noteSet.hasNoteId(note.noteId)) {
+            if (noteSet.hasNoteId(note.noteId) && attr.value === this.attributeValue) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }
@@ -25,3 +28,5 @@ export default class ExistsExp {
         }
     }
 }
+
+module.exports = EqualsExp;

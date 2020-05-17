@@ -1,4 +1,8 @@
-export default class Note {
+"use strict";
+
+const noteCache = require('../note_cache');
+
+class Note {
     constructor(row) {
         /** @param {string} */
         this.noteId = row.noteId;
@@ -29,7 +33,7 @@ export default class Note {
         this.flatTextCache = null;
 
         if (protectedSessionService.isProtectedSessionAvailable()) {
-            decryptProtectedNote(this);
+            noteCache.decryptProtectedNote(this);
         }
     }
 
@@ -233,4 +237,14 @@ export default class Note {
 
         return arr;
     }
+
+    decrypt() {
+        if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+            this.title = protectedSessionService.decryptString(note.title);
+
+            this.isDecrypted = true;
+        }
+    }
 }
+
+module.exports = Note;

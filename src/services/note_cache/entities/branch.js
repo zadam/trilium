@@ -1,4 +1,8 @@
-export default class Branch {
+"use strict";
+
+const noteCache = require('../note_cache');
+
+class Branch {
     constructor(row) {
         /** @param {string} */
         this.branchId = row.branchId;
@@ -13,7 +17,7 @@ export default class Branch {
             return;
         }
 
-        const childNote = notes[this.noteId];
+        const childNote = noteCache.notes[this.noteId];
         const parentNote = this.parentNote;
 
         if (!childNote) {
@@ -26,12 +30,12 @@ export default class Branch {
 
         parentNote.children.push(childNote);
 
-        childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
+        noteCache.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @return {Note} */
     get parentNote() {
-        const note = notes[this.parentNoteId];
+        const note = noteCache.notes[this.parentNoteId];
 
         if (!note) {
             console.log(`Cannot find note ${this.parentNoteId}`);
@@ -40,3 +44,5 @@ export default class Branch {
         return note;
     }
 }
+
+module.exports = Branch;

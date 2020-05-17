@@ -1,7 +1,11 @@
-export default class SearchResult {
+"use strict";
+
+const noteCacheService = require('../note_cache/note_cache_service');
+
+class SearchResult {
     constructor(notePathArray) {
         this.notePathArray = notePathArray;
-        this.notePathTitle = getNoteTitleForPath(notePathArray);
+        this.notePathTitle = noteCacheService.getNoteTitleForPath(notePathArray);
     }
 
     get notePath() {
@@ -12,3 +16,5 @@ export default class SearchResult {
         return this.notePathArray[this.notePathArray.length - 1];
     }
 }
+
+module.exports = SearchResult;

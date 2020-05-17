@@ -1,4 +1,6 @@
-export default class OrExp {
+"use strict";
+
+class OrExp {
     constructor(subExpressions) {
         this.subExpressions = subExpressions;
     }
@@ -13,3 +15,5 @@ export default class OrExp {
         return resultNoteSet;
     }
 }
+
+module.exports = OrExp;

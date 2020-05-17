@@ -1,4 +1,6 @@
-export default class NoteSet {
+"use strict";
+
+class NoteSet {
     constructor(notes = []) {
         this.notes = notes;
     }
@@ -20,3 +22,5 @@ export default class NoteSet {
         this.notes = this.notes.concat(anotherNoteSet.arr);
     }
 }
+
+module.exports = NoteSet;

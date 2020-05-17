@@ -1,4 +1,6 @@
-export default class NoteCacheFulltextExp {
+"use strict";
+
+class NoteCacheFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
     }
@@ -123,3 +125,5 @@ export default class NoteCacheFulltextExp {
         }
     }
 }
+
+module.exports = NoteCacheFulltextExp;

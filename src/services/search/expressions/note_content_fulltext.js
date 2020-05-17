@@ -1,4 +1,6 @@
-export default class NoteContentFulltextExp {
+"use strict";
+
+class NoteContentFulltextExp {
     constructor(tokens) {
         this.tokens = tokens;
     }
@@ -24,3 +26,5 @@ export default class NoteContentFulltextExp {
         return results;
     }
 }
+
+module.exports = NoteContentFulltextExp;

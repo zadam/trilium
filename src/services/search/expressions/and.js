@@ -1,4 +1,6 @@
-export default class AndExp {
+"use strict";
+
+class AndExp {
     constructor(subExpressions) {
         this.subExpressions = subExpressions;
     }
@@ -11,3 +13,5 @@ export default class AndExp {
         return noteSet;
     }
 }
+
+module.exports = AndExp;

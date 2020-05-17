@@ -1,12 +1,11 @@
-import treeCache from "../../public/app/services/tree_cache.js";
+"use strict";
 
+const Note = require('./entities/note');
+const Branch = require('./entities/branch');
+const Attribute = require('./entities/attribute');
 const sql = require('../sql.js');
 const sqlInit = require('../sql_init.js');
 const eventService = require('../events.js');
-const protectedSessionService = require('../protected_session.js');
-const utils = require('../utils.js');
-const hoistedNoteService = require('../hoisted_note.js');
-const stringSimilarity = require('string-similarity');
 
 class NoteCache {
     constructor() {
@@ -22,9 +21,7 @@ class NoteCache {
         this.attributeIndex = null;
 
         this.loaded = false;
-        this.loadedPromiseResolve;
-        /** Is resolved after the initial load */
-        this.loadedPromise = new Promise(res => this.loadedPromiseResolve = res);
+        this.loadedPromise = this.load();
     }
 
     /** @return {Attribute[]} */
@@ -33,6 +30,8 @@ class NoteCache {
     }
 
     async load() {
+        await sqlInit.dbReady;
+
         this.notes = await this.getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
             row => new Note(row));
 
@@ -45,7 +44,6 @@ class NoteCache {
             row => new Attribute(row));
 
         this.loaded = true;
-        this.loadedPromiseResolve();
     }
 
     async getMappedRows(query, cb) {
@@ -61,18 +59,14 @@ class NoteCache {
         return map;
     }
 
-    decryptProtectedNote(note) {
-        if (note.isProtected && !note.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
-            note.title = protectedSessionService.decryptString(note.title);
-
-            note.isDecrypted = true;
+    decryptProtectedNotes() {
+        for (const note of Object.values(this.notes)) {
+            note.decrypt();
         }
     }
 
-    decryptProtectedNotes() {
-        for (const note of Object.values(this.notes)) {
-            decryptProtectedNote(note);
-        }
+    getBranch(childNoteId, parentNoteId) {
+        return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 }
 
@@ -100,13 +94,13 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             note.isDecrypted = !entity.isProtected || !!entity.isContentAvailable;
             note.flatTextCache = null;
 
-            decryptProtectedNote(note);
+            noteCache.decryptProtectedNote(note);
         }
         else {
             const note = new Note(entity);
             noteCache.notes[noteId] = note;
 
-            decryptProtectedNote(note);
+            noteCache.decryptProtectedNote(note);
         }
     }
     else if (entityName === 'branches') {
@@ -201,24 +195,8 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
 });
 
-function getBranch(childNoteId, parentNoteId) {
-    return noteCache.childParentToBranch[`${childNoteId}-${parentNoteId}`];
-}
-
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     noteCache.loadedPromise.then(() => noteCache.decryptProtectedNotes());
 });
 
-sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", () => treeCache.load()));
-
-module.exports = {
-    loadedPromise,
-    findNotesForAutocomplete,
-    getNotePath,
-    getNoteTitleForPath,
-    isAvailable,
-    isArchived,
-    isInAncestor,
-    load,
-    findSimilarNotes
-};
+module.exports = noteCache;
