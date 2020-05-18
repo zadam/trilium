@@ -1,5 +1,7 @@
 "use strict";
 
+const NoteSet = require('../note_set');
+
 class OrExp {
     constructor(subExpressions) {
         this.subExpressions = subExpressions;

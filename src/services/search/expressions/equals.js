@@ -4,9 +4,10 @@ const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
 class EqualsExp {
-    constructor(attributeType, attributeName, attributeValue) {
+    constructor(attributeType, attributeName, operator, attributeValue) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
+        this.operator = operator;
         this.attributeValue = attributeValue;
     }
 
