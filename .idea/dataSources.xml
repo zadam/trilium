@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="SQLite - document.db" uuid="d0fd879f-1e1d-4d5c-9c21-0e5cf9ab2976">
+    <data-source source="LOCAL" name="document.db" uuid="b0b03187-36c8-4ec1-bdab-fd4273cd692e">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/../trilium-data/document.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/trilium-data/document.db</jdbc-url>
     </data-source>
   </component>
 </project>

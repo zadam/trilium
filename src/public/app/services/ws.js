@@ -229,7 +229,7 @@ subscribeToMessages(message => {
 async function processSyncRows(syncRows) {
     const missingNoteIds = [];
 
-    for (const {id, entityName, entity} of syncRows) {
+    for (const {entityName, entity} of syncRows) {
         if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
             missingNoteIds.push(entity.parentNoteId);
         }
