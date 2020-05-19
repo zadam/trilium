@@ -4,7 +4,7 @@ export default class LoadResults {
 
         this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
-        
+
         this.branches = [];
 
         this.attributes = [];
@@ -103,10 +103,10 @@ export default class LoadResults {
 
     /**
      * @return {boolean} true if there are changes which could affect the attributes (including inherited ones)
+     *          notably changes in note itself should not have any effect on attributes
      */
     hasAttributeRelatedChanges() {
-        return Object.keys(this.noteIdToSourceId).length === 0
-            && this.branches.length === 0
+        return this.branches.length === 0
             && this.attributes.length === 0;
     }
 

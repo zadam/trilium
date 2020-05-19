@@ -39,7 +39,18 @@ let consumeQueuePromise = null;
 
 // most sync events are sent twice - once immediatelly after finishing the transaction and once during the scheduled ping
 // but we want to process only once
-const receivedSyncIds = new Set();
+const processedSyncIds = new Set();
+
+function logRows(syncRows) {
+    const filteredRows = syncRows.filter(row =>
+        !processedSyncIds.has(row.id)
+        && row.entityName !== 'recent_notes'
+        && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
+
+    if (filteredRows.length > 0) {
+        console.debug(utils.now(), "Sync data: ", filteredRows);
+    }
+}
 
 async function handleMessage(event) {
     const message = JSON.parse(event.data);
@@ -55,20 +66,9 @@ async function handleMessage(event) {
         $outstandingSyncsCount.html(message.outstandingSyncs);
 
         if (syncRows.length > 0) {
-            const filteredRows = syncRows.filter(row =>
-                !receivedSyncIds.has(row.id)
-                && row.entityName !== 'recent_notes'
-                && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
+            logRows(syncRows);
 
-            if (filteredRows.length > 0) {
-                console.debug(utils.now(), "Sync data: ", filteredRows);
-            }
-
-            for (const row of filteredRows) {
-                receivedSyncIds.add(row.id);
-            }
-
-            syncDataQueue.push(...filteredRows);
+            syncDataQueue.push(...syncRows);
 
             // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
             lastAcceptedSyncId = Math.max(lastAcceptedSyncId, syncRows[syncRows.length - 1].id);
@@ -142,13 +142,21 @@ async function runSafely(syncHandler, syncData) {
     }
 }
 
+/**
+ * TODO: we should rethink the fact that each sync row is sent twice (once at the end of transaction, once periodically)
+ *       and we keep both lastProcessedSyncId and processedSyncIds
+ *       it even seems incorrect that when transaction sync rows are received, we incorrectly increase lastProcessedSyncId
+ *       and then some syncs might lost (or are *all* sync rows sent from transactions?)
+ */
 async function consumeSyncData() {
     if (syncDataQueue.length > 0) {
-        const allSyncData = syncDataQueue;
+        const allSyncRows = syncDataQueue;
         syncDataQueue = [];
 
+        const nonProcessedSyncRows = allSyncRows.filter(sync => !processedSyncIds.has(sync.id));
+
         try {
-            await processSyncRows(allSyncData);
+            await processSyncRows(nonProcessedSyncRows);
         }
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
@@ -157,7 +165,7 @@ async function consumeSyncData() {
             utils.reloadApp();
         }
 
-        lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncData[allSyncData.length - 1].id);
+        lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncRows[allSyncRows.length - 1].id);
     }
 
     checkSyncIdListeners();
@@ -221,18 +229,18 @@ subscribeToMessages(message => {
 async function processSyncRows(syncRows) {
     const missingNoteIds = [];
 
-    syncRows.forEach(({entityName, entity}) => {
-       if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
+    for (const {entityName, entity} of syncRows) {
+        if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
             missingNoteIds.push(entity.parentNoteId);
-       }
-       else if (entityName === 'attributes'
-           && entity.type === 'relation'
-           && entity.name === 'template'
-           && !(entity.noteId in treeCache.notes)) {
+        }
+        else if (entityName === 'attributes'
+              && entity.type === 'relation'
+              && entity.name === 'template'
+              && !(entity.noteId in treeCache.notes)) {
 
-           missingNoteIds.push(entity.value);
-       }
-    });
+            missingNoteIds.push(entity.value);
+        }
+    }
 
     if (missingNoteIds.length > 0) {
         await treeCache.reloadNotes(missingNoteIds);
@@ -240,16 +248,16 @@ async function processSyncRows(syncRows) {
 
     const loadResults = new LoadResults(treeCache);
 
-    syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'notes')) {
         const note = treeCache.notes[sync.entityId];
 
         if (note) {
             note.update(sync.entity);
             loadResults.addNote(sync.entityId, sync.sourceId);
         }
-    });
+    }
 
-    syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'branches')) {
         let branch = treeCache.branches[sync.entityId];
         const childNote = treeCache.notes[sync.entity.noteId];
         const parentNote = treeCache.notes[sync.entity.parentNoteId];
@@ -295,9 +303,9 @@ async function processSyncRows(syncRows) {
                 }
             }
         }
-    });
+    }
 
-    syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'note_reordering')) {
         for (const branchId in sync.positions) {
             const branch = treeCache.branches[branchId];
 
@@ -307,10 +315,10 @@ async function processSyncRows(syncRows) {
         }
 
         loadResults.addNoteReordering(sync.entityId, sync.sourceId);
-    });
+    }
 
     // missing reloading the relation target note
-    syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'attributes')) {
         let attribute = treeCache.attributes[sync.entityId];
         const sourceNote = treeCache.notes[sync.entity.noteId];
         const targetNote = sync.entity.type === 'relation' && treeCache.notes[sync.entity.value];
@@ -346,27 +354,27 @@ async function processSyncRows(syncRows) {
                 }
             }
         }
-    });
+    }
 
-    syncRows.filter(sync => sync.entityName === 'note_contents').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'note_contents')) {
         delete treeCache.noteComplementPromises[sync.entityId];
 
         loadResults.addNoteContent(sync.entityId, sync.sourceId);
-    });
+    }
 
-    syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'note_revisions')) {
         loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
-    });
+    }
 
-    syncRows.filter(sync => sync.entityName === 'options').forEach(sync => {
+    for (const sync of syncRows.filter(sync => sync.entityName === 'options')) {
         if (sync.entity.name === 'openTabs') {
-            return; // only noise
+            continue; // only noise
         }
 
         options.set(sync.entity.name, sync.entity.value);
 
         loadResults.addOption(sync.entity.name);
-    });
+    }
 
     if (!loadResults.isEmpty()) {
         if (loadResults.hasAttributeRelatedChanges()) {

@@ -82,6 +82,10 @@ export default class Component {
         let release;
 
         try {
+            if (this.mutex.isLocked()) {
+                console.debug("Mutex locked for", this.constructor.name);
+            }
+
             release = await this.mutex.acquire();
 
             await fun.call(this, data);
