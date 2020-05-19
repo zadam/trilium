@@ -1,6 +1,5 @@
 "use strict";
 
-const noteCache = require('../note_cache');
 const protectedSessionService = require('../../protected_session');
 
 class Note {

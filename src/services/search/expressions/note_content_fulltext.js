@@ -12,6 +12,8 @@ class NoteContentFulltextExp {
         const resultNoteSet = new NoteSet();
         const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
 
+        const sql = require('../../sql');
+
         const noteIds = await sql.getColumn(`
             SELECT notes.noteId 
             FROM notes

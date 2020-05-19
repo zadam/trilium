@@ -1,7 +1,7 @@
 const parens = require('../src/services/search/parens');
 
 describe("Parens handler", () => {
-    it("handles parens", () => {console.log(parens(["(", "hello", ")", "and", "(", "(", "pick", "one", ")", "and", "another", ")"]))
+    it("handles parens", () => {
         expect(parens(["(", "hello", ")", "and", "(", "(", "pick", "one", ")", "and", "another", ")"]))
             .toEqual([
                 [

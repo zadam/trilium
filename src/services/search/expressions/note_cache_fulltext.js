@@ -2,7 +2,6 @@
 
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
-const noteCacheService = require('../../note_cache/note_cache_service');
 
 class NoteCacheFulltextExp {
     constructor(tokens) {
@@ -10,6 +9,9 @@ class NoteCacheFulltextExp {
     }
 
     execute(noteSet, searchContext) {
+        // has deps on SQL which breaks unit test so needs to be dynamically required
+        const noteCacheService = require('../../note_cache/note_cache_service');
+
         const resultNoteSet = new NoteSet();
 
         const candidateNotes = this.getCandidateNotes(noteSet);

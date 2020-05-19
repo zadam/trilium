@@ -1,8 +1,8 @@
 const AndExp = require('./expressions/and');
 const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
-const ExistsExp = require('./expressions/exists');
-const EqualsExp = require('./expressions/equals');
+const AttributeExistsExp = require('./expressions/attribute_exists');
+const FieldComparisonExp = require('./expressions/field_comparison');
 const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
 
@@ -44,12 +44,12 @@ function getExpressions(tokens) {
             const type = token.startsWith('#') ? 'label' : 'relation';
 
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
-                expressions.push(new EqualsExp(type, token.substr(1), tokens[i + 1], tokens[i + 2]));
+                expressions.push(new FieldComparisonExp(type, token.substr(1), tokens[i + 1], tokens[i + 2]));
 
                 i += 2;
             }
             else {
-                expressions.push(new ExistsExp(type, token.substr(1)));
+                expressions.push(new AttributeExistsExp(type, token.substr(1)));
             }
         }
         else if (['and', 'or'].includes(token.toLowerCase())) {
@@ -71,6 +71,8 @@ function getExpressions(tokens) {
             op = 'and';
         }
     }
+
+    return expressions;
 }
 
 function parse(fulltextTokens, expressionTokens, includingNoteContent) {
@@ -79,3 +81,5 @@ function parse(fulltextTokens, expressionTokens, includingNoteContent) {
         ...getExpressions(expressionTokens)
     ]);
 }
+
+module.exports = parse;

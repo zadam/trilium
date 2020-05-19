@@ -3,12 +3,10 @@
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
-class EqualsExp {
-    constructor(attributeType, attributeName, operator, attributeValue) {
+class AttributeExistsExp {
+    constructor(attributeType, attributeName) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
-        this.operator = operator;
-        this.attributeValue = attributeValue;
     }
 
     execute(noteSet) {
@@ -18,7 +16,7 @@ class EqualsExp {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (noteSet.hasNoteId(note.noteId) && attr.value === this.attributeValue) {
+            if (noteSet.hasNoteId(note.noteId)) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }
@@ -33,4 +31,4 @@ class EqualsExp {
     }
 }
 
-module.exports = EqualsExp;
+module.exports = AttributeExistsExp;
