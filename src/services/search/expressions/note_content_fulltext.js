@@ -20,15 +20,13 @@ class NoteContentFulltextExp {
             JOIN note_contents ON notes.noteId = note_contents.noteId
             WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
 
-        const results = [];
-
         for (const noteId of noteIds) {
             if (noteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
                 resultNoteSet.add(noteCache.notes[noteId]);
             }
         }
 
-        return results;
+        return resultNoteSet;
     }
 }
 

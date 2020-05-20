@@ -28,6 +28,8 @@ class AttributeExistsExp {
                 }
             }
         }
+
+        return resultNoteSet;
     }
 }
 

@@ -1,14 +1,16 @@
 "use strict";
 
-const NoteCacheFulltextExp = require("./expressions/note_cache_fulltext");
+const lexer = require('./lexer');
+const parens = require('./parens');
+const parser = require('./parser');
 const NoteSet = require("./note_set");
 const SearchResult = require("./search_result");
 const noteCache = require('../note_cache/note_cache');
+const noteCacheService = require('../note_cache/note_cache_service');
 const hoistedNoteService = require('../hoisted_note');
 const utils = require('../utils');
 
 async function findNotesWithExpression(expression) {
-
     const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
     const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
@@ -23,7 +25,7 @@ async function findNotesWithExpression(expression) {
     const noteSet = await expression.execute(allNoteSet, searchContext);
 
     let searchResults = noteSet.notes
-        .map(note => searchContext.noteIdToNotePath[note.noteId] || getSomePath(note))
+        .map(note => searchContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
         .filter(notePathArray => notePathArray.includes(hoistedNoteService.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
 
@@ -40,24 +42,30 @@ async function findNotesWithExpression(expression) {
     return searchResults;
 }
 
+function parseQueryToExpression(query) {
+    const {fulltextTokens, expressionTokens} = lexer(query);
+    const structuredExpressionTokens = parens(expressionTokens);
+    const expression = parser(fulltextTokens, structuredExpressionTokens, false);
+
+    return expression;
+}
+
 async function searchNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
     }
 
-    const tokens = query
-        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
-        .toLowerCase()
-        .split(/[ -]/)
-        .filter(token => token !== '/'); // '/' is used as separator
+    const expression = parseQueryToExpression(query);
 
-    const expression = new NoteCacheFulltextExp(tokens);
+    if (!expression) {
+        return [];
+    }
 
     let searchResults = await findNotesWithExpression(expression);
 
     searchResults = searchResults.slice(0, 200);
 
-    highlightSearchResults(searchResults, tokens);
+    highlightSearchResults(searchResults, query);
 
     return searchResults.map(result => {
         return {
@@ -68,7 +76,13 @@ async function searchNotesForAutocomplete(query) {
     });
 }
 
-function highlightSearchResults(searchResults, tokens) {
+function highlightSearchResults(searchResults, query) {
+    let tokens = query
+        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
+        .toLowerCase()
+        .split(/[ -]/)
+        .filter(token => token !== '/');
+
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)

@@ -19,7 +19,7 @@ class Attribute {
 
         this.noteCache.notes[this.noteId].ownedAttributes.push(this);
 
-        const key = `${this.type-this.name}`;
+        const key = `${this.type}-${this.name}`;
         this.noteCache.attributeIndex[key] = this.noteCache.attributeIndex[key] || [];
         this.noteCache.attributeIndex[key].push(this);
 

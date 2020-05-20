@@ -29,6 +29,8 @@ class FieldComparisonExp {
                 }
             }
         }
+
+        return resultNoteSet;
     }
 }
 

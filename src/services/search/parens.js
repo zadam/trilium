@@ -3,7 +3,7 @@
  */
 function parens(tokens) {
     if (tokens.length === 0) {
-        throw new Error("Empty expression.");
+        return [];
     }
 
     while (true) {
