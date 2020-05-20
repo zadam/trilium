@@ -11,9 +11,9 @@ class Attribute {
         /** @param {string} */
         this.type = row.type;
         /** @param {string} */
-        this.name = row.name;
+        this.name = row.name.toLowerCase();
         /** @param {string} */
-        this.value = row.value;
+        this.value = row.value.toLowerCase();
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 

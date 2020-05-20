@@ -4,11 +4,10 @@ const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
 class FieldComparisonExp {
-    constructor(attributeType, attributeName, operator, attributeValue) {
+    constructor(attributeType, attributeName, comparator) {
         this.attributeType = attributeType;
         this.attributeName = attributeName;
-        this.operator = operator;
-        this.attributeValue = attributeValue;
+        this.comparator = comparator;
     }
 
     execute(noteSet) {
@@ -18,7 +17,7 @@ class FieldComparisonExp {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (noteSet.hasNoteId(note.noteId) && attr.value === this.attributeValue) {
+            if (noteSet.hasNoteId(note.noteId) && this.comparator(attr.value)) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }

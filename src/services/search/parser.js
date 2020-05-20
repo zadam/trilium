@@ -5,28 +5,32 @@ const AttributeExistsExp = require('./expressions/attribute_exists');
 const FieldComparisonExp = require('./expressions/field_comparison');
 const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
+const comparatorBuilder = require('./comparator_builder');
 
 function getFulltext(tokens, includingNoteContent) {
-    if (includingNoteContent) {
-        return [
-            new OrExp([
-                new NoteCacheFulltextExp(tokens),
-                new NoteContentFulltextExp(tokens)
-            ])
-        ]
+    if (tokens.length === 0) {
+        return null;
+    }
+    else if (includingNoteContent) {
+        return new OrExp([
+            new NoteCacheFulltextExp(tokens),
+            new NoteContentFulltextExp(tokens)
+        ]);
     }
     else {
-        return [
-            new NoteCacheFulltextExp(tokens)
-        ]
+        return new NoteCacheFulltextExp(tokens);
     }
 }
 
 function isOperator(str) {
-    return str.matches(/^[=<>*]+$/);
+    return str.match(/^[=<>*]+$/);
 }
 
-function getExpressions(tokens) {
+function getExpression(tokens) {
+    if (tokens.length === 0) {
+        return null;
+    }
+
     const expressions = [];
     let op = null;
 
@@ -38,13 +42,22 @@ function getExpressions(tokens) {
         }
 
         if (Array.isArray(token)) {
-            expressions.push(getExpressions(token));
+            expressions.push(getExpression(token));
         }
         else if (token.startsWith('#') || token.startsWith('@')) {
             const type = token.startsWith('#') ? 'label' : 'relation';
 
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
-                expressions.push(new FieldComparisonExp(type, token.substr(1), tokens[i + 1], tokens[i + 2]));
+                const operator = tokens[i + 1];
+                const comparedValue = tokens[i + 2];
+
+                const comparator = comparatorBuilder(operator, comparedValue);
+
+                if (!comparator) {
+                    throw new Error(`Can't find operator '${operator}'`);
+                }
+
+                expressions.push(new FieldComparisonExp(type, token.substr(1), comparator));
 
                 i += 2;
             }
@@ -72,13 +85,18 @@ function getExpressions(tokens) {
         }
     }
 
-    return expressions;
+    if (op === null || op === 'and') {
+        return AndExp.of(expressions);
+    }
+    else if (op === 'or') {
+        return OrExp.of(expressions);
+    }
 }
 
 function parse(fulltextTokens, expressionTokens, includingNoteContent) {
     return AndExp.of([
-        ...getFulltext(fulltextTokens, includingNoteContent),
-        ...getExpressions(expressionTokens)
+        getFulltext(fulltextTokens, includingNoteContent),
+        getExpression(expressionTokens)
     ]);
 }
 

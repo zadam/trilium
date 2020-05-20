@@ -1,17 +1,18 @@
 "use strict";
 
 class AndExp {
-    constructor(subExpressions) {
-        this.subExpressions = subExpressions;
-    }
-
     static of(subExpressions) {
+        subExpressions = subExpressions.filter(exp => !!exp);
+
         if (subExpressions.length === 1) {
             return subExpressions[0];
-        }
-        else {
+        } else if (subExpressions.length > 0) {
             return new AndExp(subExpressions);
         }
+    }
+
+    constructor(subExpressions) {
+        this.subExpressions = subExpressions;
     }
 
     execute(noteSet, searchContext) {
