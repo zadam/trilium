@@ -6,7 +6,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello", "hi"],
             expressionTokens: [],
-            parsingContext: new ParsingContext(false)
+            parsingContext: new ParsingContext({includeNoteContent: false})
         });
 
         expect(rootExp.constructor.name).toEqual("NoteCacheFulltextExp");
@@ -17,7 +17,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello", "hi"],
             expressionTokens: [],
-            parsingContext: new ParsingContext(true)
+            parsingContext: new ParsingContext({includeNoteContent: true})
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -34,7 +34,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#mylabel", "=", "text"],
-            parsingContext: new ParsingContext(true)
+            parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("FieldComparisonExp");
@@ -64,7 +64,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "#second", "=", "text"],
-            parsingContext: new ParsingContext(true)
+            parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -81,7 +81,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "OR", "#second", "=", "text"],
-            parsingContext: new ParsingContext(true)
+            parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -98,7 +98,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello"],
             expressionTokens: ["#mylabel", "=", "text"],
-            parsingContext: new ParsingContext(false)
+            parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -115,7 +115,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "OR", ["#second", "=", "text", "AND", "#third", "=", "text"]],
-            parsingContext: new ParsingContext(false)
+            parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");

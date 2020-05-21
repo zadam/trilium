@@ -166,4 +166,4 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     noteCache.loadedPromise.then(() => noteCache.decryptProtectedNotes());
 });
 
-module.exports = load;
+load();

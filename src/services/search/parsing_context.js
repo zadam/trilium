@@ -1,10 +1,10 @@
 "use strict";
 
 class ParsingContext {
-    constructor(includeNoteContent) {
-        this.includeNoteContent = includeNoteContent;
+    constructor(params = {}) {
+        this.includeNoteContent = !!params.includeNoteContent;
+        this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
-        this.fuzzyAttributeSearch = false;
         this.error = null;
     }
 

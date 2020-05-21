@@ -12,6 +12,8 @@ const sessionSecret = require('./services/session_secret');
 const cls = require('./services/cls');
 require('./entities/entity_constructor');
 require('./services/handlers');
+require('./services/hoisted_note_loader');
+require('./services/note_cache/note_cache_loader');
 
 const app = express();
 

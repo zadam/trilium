@@ -61,8 +61,10 @@ async function searchNotesForAutocomplete(query) {
         return [];
     }
 
-    const parsingContext = new ParsingContext(false);
-    parsingContext.fuzzyAttributeSearch = true;
+    const parsingContext = new ParsingContext({
+        includeNoteContent: false,
+        fuzzyAttributeSearch: true
+    });
 
     const expression = parseQueryToExpression(query, parsingContext);
 
