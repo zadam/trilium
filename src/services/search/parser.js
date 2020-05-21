@@ -1,3 +1,6 @@
+"use strict";
+
+const ParsingContext = require('./parsing_context');
 const AndExp = require('./expressions/and');
 const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
@@ -7,13 +10,13 @@ const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
 const comparatorBuilder = require('./comparator_builder');
 
-function getFulltext(tokens, includingNoteContent, highlightedTokens) {
-    highlightedTokens.push(...tokens);
+function getFulltext(tokens, parsingContext) {
+    parsingContext.highlightedTokens.push(...tokens);
 
     if (tokens.length === 0) {
         return null;
     }
-    else if (includingNoteContent) {
+    else if (parsingContext.includeNoteContent) {
         return new OrExp([
             new NoteCacheFulltextExp(tokens),
             new NoteContentFulltextExp(tokens)
@@ -28,7 +31,7 @@ function isOperator(str) {
     return str.match(/^[=<>*]+$/);
 }
 
-function getExpression(tokens, highlightedTokens) {
+function getExpression(tokens, parsingContext) {
     if (tokens.length === 0) {
         return null;
     }
@@ -44,18 +47,18 @@ function getExpression(tokens, highlightedTokens) {
         }
 
         if (Array.isArray(token)) {
-            expressions.push(getExpression(token, highlightedTokens));
+            expressions.push(getExpression(token, parsingContext));
         }
         else if (token.startsWith('#') || token.startsWith('@')) {
             const type = token.startsWith('#') ? 'label' : 'relation';
 
-            highlightedTokens.push(token.substr(1));
+            parsingContext.highlightedTokens.push(token.substr(1));
 
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
                 const operator = tokens[i + 1];
                 const comparedValue = tokens[i + 2];
 
-                highlightedTokens.push(comparedValue);
+                parsingContext.highlightedTokens.push(comparedValue);
 
                 const comparator = comparatorBuilder(operator, comparedValue);
 
@@ -99,12 +102,10 @@ function getExpression(tokens, highlightedTokens) {
     }
 }
 
-function parse({fulltextTokens, expressionTokens, includingNoteContent, highlightedTokens}) {
-    highlightedTokens = highlightedTokens || [];
-
+function parse({fulltextTokens, expressionTokens, parsingContext}) {
     return AndExp.of([
-        getFulltext(fulltextTokens, includingNoteContent, highlightedTokens),
-        getExpression(expressionTokens, highlightedTokens)
+        getFulltext(fulltextTokens, parsingContext),
+        getExpression(expressionTokens, parsingContext)
     ]);
 }
 

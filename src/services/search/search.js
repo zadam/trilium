@@ -42,15 +42,14 @@ async function findNotesWithExpression(expression) {
     return searchResults;
 }
 
-function parseQueryToExpression(query, highlightedTokens) {
+function parseQueryToExpression(query, parsingContext) {
     const {fulltextTokens, expressionTokens} = lexer(query);
     const structuredExpressionTokens = parens(expressionTokens);
 
     const expression = parser({
         fulltextTokens,
         expressionTokens: structuredExpressionTokens,
-        includingNoteContent: false,
-        highlightedTokens
+        parsingContext
     });
 
     return expression;
@@ -61,9 +60,12 @@ async function searchNotesForAutocomplete(query) {
         return [];
     }
 
-    const highlightedTokens = [];
+    const parsingContext = {
+        includeNoteContent: false,
+        highlightedTokens: []
+    };
 
-    const expression = parseQueryToExpression(query, highlightedTokens);
+    const expression = parseQueryToExpression(query, parsingContext);
 
     if (!expression) {
         return [];
@@ -73,7 +75,7 @@ async function searchNotesForAutocomplete(query) {
 
     searchResults = searchResults.slice(0, 200);
 
-    highlightSearchResults(searchResults, highlightedTokens);
+    highlightSearchResults(searchResults, parsingContext.highlightedTokens);
 
     return searchResults.map(result => {
         return {

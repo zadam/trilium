@@ -1,3 +1,4 @@
+const ParsingContext = require("../src/services/search/parsing_context");
 const parser = require('../src/services/search/parser');
 
 describe("Parser", () => {
@@ -5,7 +6,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello", "hi"],
             expressionTokens: [],
-            includingNoteContent: false
+            parsingContext: new ParsingContext(false)
         });
 
         expect(rootExp.constructor.name).toEqual("NoteCacheFulltextExp");
@@ -16,7 +17,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello", "hi"],
             expressionTokens: [],
-            includingNoteContent: true
+            parsingContext: new ParsingContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -33,7 +34,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#mylabel", "=", "text"],
-            includingNoteContent: true
+            parsingContext: new ParsingContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("FieldComparisonExp");
@@ -46,7 +47,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "AND", "#second", "=", "text"],
-            includingNoteContent: true
+            parsingContext: new ParsingContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -63,7 +64,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "#second", "=", "text"],
-            includingNoteContent: true
+            parsingContext: new ParsingContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -80,7 +81,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "OR", "#second", "=", "text"],
-            includingNoteContent: true
+            parsingContext: new ParsingContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -97,7 +98,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: ["hello"],
             expressionTokens: ["#mylabel", "=", "text"],
-            includingNoteContent: false
+            parsingContext: new ParsingContext(false)
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -114,7 +115,7 @@ describe("Parser", () => {
         const rootExp = parser({
             fulltextTokens: [],
             expressionTokens: ["#first", "=", "text", "OR", ["#second", "=", "text", "AND", "#third", "=", "text"]],
-            includingNoteContent: false
+            parsingContext: new ParsingContext(false)
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
