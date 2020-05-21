@@ -27,6 +27,20 @@ class NoteCache {
         return this.attributeIndex[`${type}-${name}`] || [];
     }
 
+    /** @return {Attribute[]} */
+    findAttributesWithPrefix(type, name) {
+        const resArr = [];
+        const key = `${type}-${name}`;
+
+        for (const idx in this.attributeIndex) {
+            if (idx.startsWith(key)) {
+                resArr.push(this.attributeIndex[idx]);
+            }
+        }
+
+        return resArr.flat();
+    }
+
     decryptProtectedNotes() {
         for (const note of Object.values(this.notes)) {
             note.decrypt();

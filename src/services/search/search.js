@@ -5,6 +5,7 @@ const parens = require('./parens');
 const parser = require('./parser');
 const NoteSet = require("./note_set");
 const SearchResult = require("./search_result");
+const ParsingContext = require("./parsing_context");
 const noteCache = require('../note_cache/note_cache');
 const noteCacheService = require('../note_cache/note_cache_service');
 const hoistedNoteService = require('../hoisted_note');
@@ -60,10 +61,8 @@ async function searchNotesForAutocomplete(query) {
         return [];
     }
 
-    const parsingContext = {
-        includeNoteContent: false,
-        highlightedTokens: []
-    };
+    const parsingContext = new ParsingContext(false);
+    parsingContext.fuzzyAttributeSearch = true;
 
     const expression = parseQueryToExpression(query, parsingContext);
 

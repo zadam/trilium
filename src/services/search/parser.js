@@ -1,6 +1,5 @@
 "use strict";
 
-const ParsingContext = require('./parsing_context');
 const AndExp = require('./expressions/and');
 const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
@@ -63,7 +62,8 @@ function getExpression(tokens, parsingContext) {
                 const comparator = comparatorBuilder(operator, comparedValue);
 
                 if (!comparator) {
-                    throw new Error(`Can't find operator '${operator}'`);
+                    parsingContext.addError(`Can't find operator '${operator}'`);
+                    continue;
                 }
 
                 expressions.push(new FieldComparisonExp(type, token.substr(1), comparator));
@@ -71,7 +71,7 @@ function getExpression(tokens, parsingContext) {
                 i += 2;
             }
             else {
-                expressions.push(new AttributeExistsExp(type, token.substr(1)));
+                expressions.push(new AttributeExistsExp(type, token.substr(1), parsingContext.fuzzyAttributeSearch));
             }
         }
         else if (['and', 'or'].includes(token.toLowerCase())) {
@@ -79,14 +79,14 @@ function getExpression(tokens, parsingContext) {
                 op = token.toLowerCase();
             }
             else if (op !== token.toLowerCase()) {
-                throw new Error('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
+                parsingContext.addError('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
             }
         }
         else if (isOperator(token)) {
-            throw new Error(`Misplaced or incomplete expression "${token}"`);
+            parsingContext.addError(`Misplaced or incomplete expression "${token}"`);
         }
         else {
-            throw new Error(`Unrecognized expression "${token}"`);
+            parsingContext.addError(`Unrecognized expression "${token}"`);
         }
 
         if (!op && expressions.length > 1) {
