@@ -4,6 +4,7 @@ class ParsingContext {
     constructor(includeNoteContent) {
         this.includeNoteContent = includeNoteContent;
         this.highlightedTokens = [];
+        this.fuzzyAttributeSearch = false;
         this.error = null;
     }
 

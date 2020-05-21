@@ -54,10 +54,14 @@ function getExpression(tokens, parsingContext) {
             parsingContext.highlightedTokens.push(token.substr(1));
 
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
-                const operator = tokens[i + 1];
+                let operator = tokens[i + 1];
                 const comparedValue = tokens[i + 2];
 
                 parsingContext.highlightedTokens.push(comparedValue);
+
+                if (parsingContext.fuzzyAttributeSearch && operator === '=') {
+                    operator = '*=*';
+                }
 
                 const comparator = comparatorBuilder(operator, comparedValue);
 
