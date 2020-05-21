@@ -7,7 +7,9 @@ const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
 const comparatorBuilder = require('./comparator_builder');
 
-function getFulltext(tokens, includingNoteContent) {
+function getFulltext(tokens, includingNoteContent, highlightedTokens) {
+    highlightedTokens.push(...tokens);
+
     if (tokens.length === 0) {
         return null;
     }
@@ -26,7 +28,7 @@ function isOperator(str) {
     return str.match(/^[=<>*]+$/);
 }
 
-function getExpression(tokens) {
+function getExpression(tokens, highlightedTokens) {
     if (tokens.length === 0) {
         return null;
     }
@@ -42,14 +44,18 @@ function getExpression(tokens) {
         }
 
         if (Array.isArray(token)) {
-            expressions.push(getExpression(token));
+            expressions.push(getExpression(token, highlightedTokens));
         }
         else if (token.startsWith('#') || token.startsWith('@')) {
             const type = token.startsWith('#') ? 'label' : 'relation';
 
+            highlightedTokens.push(token.substr(1));
+
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
                 const operator = tokens[i + 1];
                 const comparedValue = tokens[i + 2];
+
+                highlightedTokens.push(comparedValue);
 
                 const comparator = comparatorBuilder(operator, comparedValue);
 
@@ -93,10 +99,12 @@ function getExpression(tokens) {
     }
 }
 
-function parse(fulltextTokens, expressionTokens, includingNoteContent) {
+function parse({fulltextTokens, expressionTokens, includingNoteContent, highlightedTokens}) {
+    highlightedTokens = highlightedTokens || [];
+
     return AndExp.of([
-        getFulltext(fulltextTokens, includingNoteContent),
-        getExpression(expressionTokens)
+        getFulltext(fulltextTokens, includingNoteContent, highlightedTokens),
+        getExpression(expressionTokens, highlightedTokens)
     ]);
 }
 

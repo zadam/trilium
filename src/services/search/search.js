@@ -42,10 +42,16 @@ async function findNotesWithExpression(expression) {
     return searchResults;
 }
 
-function parseQueryToExpression(query) {
+function parseQueryToExpression(query, highlightedTokens) {
     const {fulltextTokens, expressionTokens} = lexer(query);
     const structuredExpressionTokens = parens(expressionTokens);
-    const expression = parser(fulltextTokens, structuredExpressionTokens, false);
+
+    const expression = parser({
+        fulltextTokens,
+        expressionTokens: structuredExpressionTokens,
+        includingNoteContent: false,
+        highlightedTokens
+    });
 
     return expression;
 }
@@ -55,7 +61,9 @@ async function searchNotesForAutocomplete(query) {
         return [];
     }
 
-    const expression = parseQueryToExpression(query);
+    const highlightedTokens = [];
+
+    const expression = parseQueryToExpression(query, highlightedTokens);
 
     if (!expression) {
         return [];
@@ -65,7 +73,7 @@ async function searchNotesForAutocomplete(query) {
 
     searchResults = searchResults.slice(0, 200);
 
-    highlightSearchResults(searchResults, query);
+    highlightSearchResults(searchResults, highlightedTokens);
 
     return searchResults.map(result => {
         return {
@@ -76,20 +84,14 @@ async function searchNotesForAutocomplete(query) {
     });
 }
 
-function highlightSearchResults(searchResults, query) {
-    let tokens = query
-        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
-        .toLowerCase()
-        .split(/[ -]/)
-        .filter(token => token !== '/');
-
+function highlightSearchResults(searchResults, highlightedTokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
-    tokens = tokens.map(token => token.replace('/[<\{\}]/g', ''));
+    highlightedTokens = highlightedTokens.map(token => token.replace('/[<\{\}]/g', ''));
 
     // sort by the longest so we first highlight longest matches
-    tokens.sort((a, b) => a.length > b.length ? -1 : 1);
+    highlightedTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of searchResults) {
         const note = noteCache.notes[result.noteId];
@@ -97,13 +99,13 @@ function highlightSearchResults(searchResults, query) {
         result.highlightedNotePathTitle = result.notePathTitle;
 
         for (const attr of note.attributes) {
-            if (tokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
+            if (highlightedTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
                 result.highlightedNotePathTitle += ` <small>${formatAttribute(attr)}</small>`;
             }
         }
     }
 
-    for (const token of tokens) {
+    for (const token of highlightedTokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of searchResults) {

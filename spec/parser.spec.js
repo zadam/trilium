@@ -2,14 +2,22 @@ const parser = require('../src/services/search/parser');
 
 describe("Parser", () => {
     it("fulltext parser without content", () => {
-        const rootExp = parser(["hello", "hi"], [], false);
+        const rootExp = parser({
+            fulltextTokens: ["hello", "hi"],
+            expressionTokens: [],
+            includingNoteContent: false
+        });
 
         expect(rootExp.constructor.name).toEqual("NoteCacheFulltextExp");
         expect(rootExp.tokens).toEqual(["hello", "hi"]);
     });
 
     it("fulltext parser with content", () => {
-        const rootExp = parser(["hello", "hi"], [], true);
+        const rootExp = parser({
+            fulltextTokens: ["hello", "hi"],
+            expressionTokens: [],
+            includingNoteContent: true
+        });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
@@ -22,7 +30,11 @@ describe("Parser", () => {
     });
 
     it("simple label comparison", () => {
-        const rootExp = parser([], ["#mylabel", "=", "text"], true);
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#mylabel", "=", "text"],
+            includingNoteContent: true
+        });
 
         expect(rootExp.constructor.name).toEqual("FieldComparisonExp");
         expect(rootExp.attributeType).toEqual("label");
@@ -31,7 +43,11 @@ describe("Parser", () => {
     });
 
     it("simple label AND", () => {
-        const rootExp = parser([], ["#first", "=", "text", "AND", "#second", "=", "text"], true);
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#first", "=", "text", "AND", "#second", "=", "text"],
+            includingNoteContent: true
+        });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
@@ -44,7 +60,11 @@ describe("Parser", () => {
     });
 
     it("simple label AND without explicit AND", () => {
-        const rootExp = parser([], ["#first", "=", "text", "#second", "=", "text"], true);
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#first", "=", "text", "#second", "=", "text"],
+            includingNoteContent: true
+        });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
@@ -57,7 +77,11 @@ describe("Parser", () => {
     });
 
     it("simple label OR", () => {
-        const rootExp = parser([], ["#first", "=", "text", "OR", "#second", "=", "text"], true);
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#first", "=", "text", "OR", "#second", "=", "text"],
+            includingNoteContent: true
+        });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
@@ -70,7 +94,11 @@ describe("Parser", () => {
     });
 
     it("fulltext and simple label", () => {
-        const rootExp = parser(["hello"], ["#mylabel", "=", "text"], false);
+        const rootExp = parser({
+            fulltextTokens: ["hello"],
+            expressionTokens: ["#mylabel", "=", "text"],
+            includingNoteContent: false
+        });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
@@ -83,7 +111,11 @@ describe("Parser", () => {
     });
 
     it("label sub-expression", () => {
-        const rootExp = parser([], ["#first", "=", "text", "OR", ["#second", "=", "text", "AND", "#third", "=", "text"]], false);
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#first", "=", "text", "OR", ["#second", "=", "text", "AND", "#third", "=", "text"]],
+            includingNoteContent: false
+        });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
