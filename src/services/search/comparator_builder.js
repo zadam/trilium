@@ -1,6 +1,6 @@
 const dayjs = require("dayjs");
 
-const comparators = {
+const stringComparators = {
     "=": comparedValue => (val => val === comparedValue),
     "!=": comparedValue => (val => val !== comparedValue),
     ">": comparedValue => (val => val > comparedValue),
@@ -10,7 +10,14 @@ const comparators = {
     "*=": comparedValue => (val => val.endsWith(comparedValue)),
     "=*": comparedValue => (val => val.startsWith(comparedValue)),
     "*=*": comparedValue => (val => val.includes(comparedValue)),
-}
+};
+
+const numericComparators = {
+    ">": comparedValue => (val => parseFloat(val) > comparedValue),
+    ">=": comparedValue => (val => parseFloat(val) >= comparedValue),
+    "<": comparedValue => (val => parseFloat(val) < comparedValue),
+    "<=": comparedValue => (val => parseFloat(val) <= comparedValue)
+};
 
 const smartValueRegex = /^(NOW|TODAY|WEEK|MONTH|YEAR) *([+\-] *\d+)?$/i;
 
@@ -58,8 +65,12 @@ function buildComparator(operator, comparedValue) {
 
     comparedValue = calculateSmartValue(comparedValue);
 
-    if (operator in comparators) {
-        return comparators[operator](comparedValue);
+    if (operator in numericComparators && !isNaN(comparedValue)) {
+        return numericComparators[operator](parseFloat(comparedValue));
+    }
+
+    if (operator in stringComparators) {
+        return stringComparators[operator](comparedValue);
     }
 }
 

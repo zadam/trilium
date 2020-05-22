@@ -19,7 +19,7 @@ class NoteSet {
     }
 
     mergeIn(anotherNoteSet) {
-        this.notes = this.notes.concat(anotherNoteSet.arr);
+        this.notes = this.notes.concat(anotherNoteSet.notes);
     }
 
     minus(anotherNoteSet) {

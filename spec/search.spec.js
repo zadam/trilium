@@ -61,6 +61,85 @@ describe("Search", () => {
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
+
+    it("numeric label comparison", async () => {
+        rootNote.child(
+            note("Europe")
+                .label('country', '', true)
+                .child(
+                    note("Austria")
+                        .label('population', '8859000')
+                )
+                .child(
+                    note("Czech Republic")
+                        .label('population', '10650000')
+                )
+        );
+
+        const parsingContext = new ParsingContext();
+
+        const searchResults = await searchService.findNotesWithQuery('#country #population >= 10000000', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+    });
+
+    it("logical or", async () => {
+        rootNote.child(
+            note("Europe")
+                .label('country', '', true)
+                .child(
+                    note("Austria")
+                        .label('languageFamily', 'germanic')
+                )
+                .child(
+                    note("Czech Republic")
+                        .label('languageFamily', 'slavic')
+                )
+                .child(
+                    note("Hungary")
+                        .label('languageFamily', 'finnougric')
+                )
+        );
+
+        const parsingContext = new ParsingContext();
+
+        const searchResults = await searchService.findNotesWithQuery('#languageFamily = slavic OR #languageFamily = germanic', parsingContext);
+        expect(searchResults.length).toEqual(2);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
+
+    it("fuzzy attribute search", async () => {
+        rootNote.child(
+            note("Europe")
+                .label('country', '', true)
+                .child(
+                    note("Austria")
+                        .label('languageFamily', 'germanic')
+                )
+                .child(
+                    note("Czech Republic")
+                        .label('languageFamily', 'slavic')
+                )
+        );
+
+        let parsingContext = new ParsingContext({fuzzyAttributeSearch: false});
+
+        let searchResults = await searchService.findNotesWithQuery('#language', parsingContext);
+        expect(searchResults.length).toEqual(0);
+
+        searchResults = await searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
+        expect(searchResults.length).toEqual(0);
+
+        parsingContext = new ParsingContext({fuzzyAttributeSearch: true});
+
+        searchResults = await searchService.findNotesWithQuery('#language', parsingContext);
+        expect(searchResults.length).toEqual(2);
+
+        searchResults = await searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
 });
 
 /** @return {Note} */
@@ -75,11 +154,12 @@ class NoteBuilder {
         this.note = note;
     }
 
-    label(name, value) {
+    label(name, value, isInheritable = false) {
         new Attribute(noteCache, {
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'label',
+            isInheritable,
             name,
             value
         });
