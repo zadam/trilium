@@ -18,8 +18,8 @@ describe("Lexer fulltext", () => {
     });
 
     it("you can use different quotes and other special characters inside quotes", () => {
-        expect(lexer("'I can use \" or ` or #@=*' without problem").fulltextTokens)
-            .toEqual(["I can use \" or ` or #@=*", "without", "problem"]);
+        expect(lexer("'i can use \" or ` or #@=*' without problem").fulltextTokens)
+            .toEqual(["i can use \" or ` or #@=*", "without", "problem"]);
     });
 
     it("if quote is not ended then it's just one long token", () => {
@@ -56,6 +56,6 @@ describe("Lexer expression", () => {
 
     it("complex expressions with and, or and parenthesis", () => {
         expect(lexer(`# (#label=text OR #second=text) AND @relation`).expressionTokens)
-            .toEqual(["#", "(", "#label", "=", "text", "OR", "#second", "=", "text", ")", "AND", "@relation"]);
+            .toEqual(["#", "(", "#label", "=", "text", "or", "#second", "=", "text", ")", "and", "@relation"]);
     });
 });

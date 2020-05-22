@@ -1,7 +1,11 @@
 "use strict";
 
-class NotExp {
+const Expression = require('./expression');
+
+class NotExp extends Expression {
     constructor(subExpression) {
+        super();
+
         this.subExpression = subExpression;
     }
 

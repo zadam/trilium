@@ -1,8 +1,9 @@
 "use strict";
 
+const Expression = require('./expression');
 const NoteSet = require('../note_set');
 
-class OrExp {
+class OrExp extends Expression {
     static of(subExpressions) {
         subExpressions = subExpressions.filter(exp => !!exp);
 
@@ -15,6 +16,8 @@ class OrExp {
     }
 
     constructor(subExpressions) {
+        super();
+
         this.subExpressions = subExpressions;
     }
 

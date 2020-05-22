@@ -1,4 +1,6 @@
 function lexer(str) {
+    str = str.toLowerCase();
+
     const fulltextTokens = [];
     const expressionTokens = [];
 

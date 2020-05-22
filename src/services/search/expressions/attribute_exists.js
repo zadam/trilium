@@ -2,9 +2,12 @@
 
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
+const Expression = require('./expression');
 
-class AttributeExistsExp {
+class AttributeExistsExp extends Expression {
     constructor(attributeType, attributeName, prefixMatch) {
+        super();
+
         this.attributeType = attributeType;
         this.attributeName = attributeName;
         this.prefixMatch = prefixMatch;

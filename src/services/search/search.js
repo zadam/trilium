@@ -11,6 +11,10 @@ const noteCacheService = require('../note_cache/note_cache_service');
 const hoistedNoteService = require('../hoisted_note');
 const utils = require('../utils');
 
+/**
+ * @param {Expression} expression
+ * @return {Promise<SearchResult[]>}
+ */
 async function findNotesWithExpression(expression) {
     const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
     const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
@@ -56,6 +60,21 @@ function parseQueryToExpression(query, parsingContext) {
     return expression;
 }
 
+/**
+ * @param {string} query
+ * @param {ParsingContext} parsingContext
+ * @return {Promise<SearchResult[]>}
+ */
+async function findNotesWithQuery(query, parsingContext) {
+    const expression = parseQueryToExpression(query, parsingContext);
+
+    if (!expression) {
+        return [];
+    }
+
+    return await findNotesWithExpression(expression);
+}
+
 async function searchNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
@@ -66,13 +85,7 @@ async function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    const expression = parseQueryToExpression(query, parsingContext);
-
-    if (!expression) {
-        return [];
-    }
-
-    let searchResults = await findNotesWithExpression(expression);
+    let searchResults = findNotesWithQuery(query, parsingContext);
 
     searchResults = searchResults.slice(0, 200);
 
@@ -141,5 +154,6 @@ function formatAttribute(attr) {
 }
 
 module.exports = {
-    searchNotesForAutocomplete
+    searchNotesForAutocomplete,
+    findNotesWithQuery
 };

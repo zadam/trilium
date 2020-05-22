@@ -17,6 +17,7 @@ class Attribute {
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 
+        this.noteCache.attributes[this.attributeId] = this;
         this.noteCache.notes[this.noteId].ownedAttributes.push(this);
 
         const key = `${this.type}-${this.name}`;

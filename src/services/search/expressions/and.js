@@ -1,6 +1,8 @@
 "use strict";
 
-class AndExp {
+const Expression = require('./expression');
+
+class AndExp extends Expression{
     static of(subExpressions) {
         subExpressions = subExpressions.filter(exp => !!exp);
 
@@ -12,6 +14,7 @@ class AndExp {
     }
 
     constructor(subExpressions) {
+        super();
         this.subExpressions = subExpressions;
     }
 

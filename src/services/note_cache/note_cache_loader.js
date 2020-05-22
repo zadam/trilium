@@ -11,32 +11,18 @@ const Attribute = require('./entities/attribute');
 async function load() {
     await sqlInit.dbReady;
 
-    noteCache.notes = await getMappedRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`,
-        row => new Note(noteCache, row));
+    noteCache.reset();
 
-    noteCache.branches = await getMappedRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`,
-        row => new Branch(noteCache, row));
+    (await sql.getRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`, []))
+        .map(row => new Note(noteCache, row));
 
-    noteCache.attributeIndex = [];
+    (await sql.getRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`, []))
+        .map(row => new Branch(noteCache, row));
 
-    noteCache.attributes = await getMappedRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`,
-        row => new Attribute(noteCache, row));
+    (await sql.getRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`, [])).map(row => new Attribute(noteCache, row));
 
     noteCache.loaded = true;
     noteCache.loadedResolve();
-}
-
-async function getMappedRows(query, cb) {
-    const map = {};
-    const results = await sql.getRows(query, []);
-
-    for (const row of results) {
-        const keys = Object.keys(row);
-
-        map[row[keys[0]]] = cb(row);
-    }
-
-    return map;
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  async ({entityName, entity}) => {

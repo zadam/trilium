@@ -34,6 +34,8 @@ class Note {
         /** @param {string|null} */
         this.flatTextCache = null;
 
+        this.noteCache.notes[this.noteId] = this;
+
         if (protectedSessionService.isProtectedSessionAvailable()) {
             this.decrypt();
         }

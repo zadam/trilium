@@ -30,6 +30,7 @@ class Branch {
 
         parentNote.children.push(childNote);
 
+        this.noteCache.branches[this.branchId] = this;
         this.noteCache.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 

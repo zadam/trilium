@@ -1,10 +1,13 @@
 "use strict";
 
+const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
-class NoteContentFulltextExp {
+class NoteContentFulltextExp extends Expression {
     constructor(tokens) {
+        super();
+
         this.tokens = tokens;
     }
 

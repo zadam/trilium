@@ -6,16 +6,20 @@ const Attribute = require('./entities/attribute');
 
 class NoteCache {
     constructor() {
+        this.reset();
+    }
+
+    reset() {
         /** @type {Object.<String, Note>} */
-        this.notes = null;
+        this.notes = [];
         /** @type {Object.<String, Branch>} */
-        this.branches = null;
+        this.branches = [];
         /** @type {Object.<String, Branch>} */
         this.childParentToBranch = {};
         /** @type {Object.<String, Attribute>} */
-        this.attributes = null;
+        this.attributes = [];
         /** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes them */
-        this.attributeIndex = null;
+        this.attributeIndex = {};
 
         this.loaded = false;
         this.loadedResolve = null;
