@@ -41,6 +41,18 @@ class NoteSet {
 
         return newNoteSet;
     }
+
+    intersection(anotherNoteSet) {
+        const newNoteSet = new NoteSet();
+
+        for (const note of this.notes) {
+            if (anotherNoteSet.hasNote(note)) {
+                newNoteSet.add(note);
+            }
+        }
+
+        return newNoteSet;
+    }
 }
 
 module.exports = NoteSet;

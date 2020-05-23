@@ -9,10 +9,10 @@ class NotExp extends Expression {
         this.subExpression = subExpression;
     }
 
-    execute(noteSet, searchContext) {
-        const subNoteSet = this.subExpression.execute(noteSet, searchContext);
+    execute(inputNoteSet, searchContext) {
+        const subNoteSet = this.subExpression.execute(inputNoteSet, searchContext);
 
-        return noteSet.minus(subNoteSet);
+        return inputNoteSet.minus(subNoteSet);
     }
 }
 

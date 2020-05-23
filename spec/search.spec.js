@@ -191,6 +191,31 @@ describe("Search", () => {
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
     });
+
+    it("filter by relation's note properties", async () => {
+        const austria = note("Austria");
+        const portugal = note("Portugal");
+
+        rootNote
+            .child(note("Europe")
+                .child(austria)
+                .child(note("Czech Republic")
+                    .relation('neighbor', austria.note))
+                .child(portugal)
+                .child(note("Spain")
+                    .relation('neighbor', portugal.note))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# ~neighbor.title = Austria', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+
+        searchResults = await searchService.findNotesWithQuery('# ~neighbor.title = Portugal', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Spain")).toBeTruthy();
+    });
 });
 
 /** @return {Note} */
@@ -218,13 +243,13 @@ class NoteBuilder {
         return this;
     }
 
-    relation(name, note) {
+    relation(name, targetNote) {
         new Attribute(noteCache, {
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'relation',
             name,
-            value: note.noteId
+            value: targetNote.noteId
         });
 
         return this;

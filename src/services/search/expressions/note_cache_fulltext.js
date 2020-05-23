@@ -11,7 +11,7 @@ class NoteCacheFulltextExp extends Expression {
         this.tokens = tokens;
     }
 
-    execute(noteSet, searchContext) {
+    execute(inputNoteSet, searchContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
         const noteCacheService = require('../../note_cache/note_cache_service');
         const resultNoteSet = new NoteSet();
@@ -66,7 +66,7 @@ class NoteCacheFulltextExp extends Expression {
             }
         }
 
-        const candidateNotes = this.getCandidateNotes(noteSet);
+        const candidateNotes = this.getCandidateNotes(inputNoteSet);
 
         for (const note of candidateNotes) {
             // autocomplete should be able to find notes by their noteIds as well (only leafs)

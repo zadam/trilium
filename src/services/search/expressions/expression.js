@@ -2,11 +2,11 @@
 
 class Expression {
     /**
-     * @param {NoteSet} noteSet
+     * @param {NoteSet} inputNoteSet
      * @param {object} searchContext
      * @return {NoteSet}
      */
-    execute(noteSet, searchContext) {}
+    execute(inputNoteSet, searchContext) {}
 }
 
 module.exports = Expression;

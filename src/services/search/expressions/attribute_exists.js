@@ -13,7 +13,7 @@ class AttributeExistsExp extends Expression {
         this.prefixMatch = prefixMatch;
     }
 
-    execute(noteSet) {
+    execute(inputNoteSet) {
         const attrs = this.prefixMatch
             ? noteCache.findAttributesWithPrefix(this.attributeType, this.attributeName)
             : noteCache.findAttributes(this.attributeType, this.attributeName);
@@ -23,7 +23,7 @@ class AttributeExistsExp extends Expression {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (noteSet.hasNoteId(note.noteId)) {
+            if (inputNoteSet.hasNoteId(note.noteId)) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }

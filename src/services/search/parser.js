@@ -5,6 +5,7 @@ const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
 const ChildOfExp = require('./expressions/child_of');
 const ParentOfExp = require('./expressions/parent_of');
+const RelationWhereExp = require('./expressions/relation_where');
 const PropertyComparisonExp = require('./expressions/property_comparison');
 const AttributeExistsExp = require('./expressions/attribute_exists');
 const LabelComparisonExp = require('./expressions/label_comparison');
@@ -90,10 +91,9 @@ function getExpression(tokens, parsingContext) {
         if (Array.isArray(token)) {
             expressions.push(getExpression(token, parsingContext));
         }
-        else if (token.startsWith('#') || token.startsWith('~')) {
-            const type = token.startsWith('#') ? 'label' : 'relation';
-
-            parsingContext.highlightedTokens.push(token.substr(1));
+        else if (token.startsWith('#')) {
+            const labelName = token.substr(1);
+            parsingContext.highlightedTokens.push(labelName);
 
             if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
                 let operator = tokens[i + 1];
@@ -112,12 +112,25 @@ function getExpression(tokens, parsingContext) {
                     continue;
                 }
 
-                expressions.push(new LabelComparisonExp(type, token.substr(1), comparator));
+                expressions.push(new LabelComparisonExp('label', labelName, comparator));
 
                 i += 2;
             }
             else {
-                expressions.push(new AttributeExistsExp(type, token.substr(1), parsingContext.fuzzyAttributeSearch));
+                expressions.push(new AttributeExistsExp('label', labelName, parsingContext.fuzzyAttributeSearch));
+            }
+        }
+        else if (token.startsWith('~')) {
+            const relationName = token.substr(1);
+            parsingContext.highlightedTokens.push(relationName);
+
+            if (i < tokens.length - 2 && tokens[i + 1] === '.') {
+                i += 1;
+
+                expressions.push(new RelationWhereExp(relationName, parseNoteProperty()));
+            }
+            else {
+                expressions.push(new AttributeExistsExp('relation', relationName, parsingContext.fuzzyAttributeSearch));
             }
         }
         else if (token === 'note') {

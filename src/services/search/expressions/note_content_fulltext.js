@@ -11,7 +11,7 @@ class NoteContentFulltextExp extends Expression {
         this.tokens = tokens;
     }
 
-    async execute(noteSet) {
+    async execute(inputNoteSet) {
         const resultNoteSet = new NoteSet();
         const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
 
@@ -24,7 +24,7 @@ class NoteContentFulltextExp extends Expression {
             WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
 
         for (const noteId of noteIds) {
-            if (noteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
+            if (inputNoteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
                 resultNoteSet.add(noteCache.notes[noteId]);
             }
         }

@@ -13,14 +13,14 @@ class LabelComparisonExp extends Expression {
         this.comparator = comparator;
     }
 
-    execute(noteSet) {
+    execute(inputNoteSet) {
         const attrs = noteCache.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (noteSet.hasNoteId(note.noteId) && this.comparator(attr.value)) {
+            if (inputNoteSet.hasNoteId(note.noteId) && this.comparator(attr.value)) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }

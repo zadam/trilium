@@ -11,10 +11,10 @@ class PropertyComparisonExp extends Expression {
         this.comparator = comparator;
     }
 
-    execute(noteSet, searchContext) {
+    execute(inputNoteSet, searchContext) {
         const resNoteSet = new NoteSet();
 
-        for (const note of noteSet.notes) {
+        for (const note of inputNoteSet.notes) {
             const value = note[this.propertyName].toLowerCase();
 
             if (this.comparator(value)) {
