@@ -60,7 +60,7 @@ describe("Lexer expression", () => {
     });
 
     it("dot separated properties", () => {
-        expect(lexer(`# ~author.title = 'Hugh Howey' AND note.title = 'Silo'`).expressionTokens)
-            .toEqual(["#", "~author", ".", "title", "=", "hugh howey", "and", "note", ".", "title", "=", "silo"]);
+        expect(lexer(`# ~author.title = 'Hugh Howey' AND note.'book title' = 'Silo'`).expressionTokens)
+            .toEqual(["#", "~author", ".", "title", "=", "hugh howey", "and", "note", ".", "book title", "=", "silo"]);
     });
 });

@@ -106,6 +106,8 @@ describe("Search", () => {
     });
 
     it("numeric label comparison fallback to string comparison", async () => {
+        // dates should not be coerced into numbers which would then give wrong numbers
+
         rootNote
             .child(note("Europe")
                 .label('country', '', true)
@@ -114,14 +116,19 @@ describe("Search", () => {
                 .child(note("Czech Republic")
                     .label('established', '1993-01-01'))
                 .child(note("Hungary")
-                    .label('established', '..wrong..'))
+                    .label('established', '1920-06-04'))
         );
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('#established < 1990', parsingContext);
+        let searchResults = await searchService.findNotesWithQuery('#established <= 1955-01-01', parsingContext);
         expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Hungary")).toBeTruthy();
+
+        searchResults = await searchService.findNotesWithQuery('#established > 1955-01-01', parsingContext);
+        expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
     it("logical or", async () => {
@@ -389,7 +396,7 @@ describe("Search", () => {
 
         await test("relationCount", "1", 1);
         await test("relationCount", "2", 0);
-    })
+    });
 });
 
 /** @return {Note} */
