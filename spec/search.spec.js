@@ -83,6 +83,31 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
+    it("numeric label comparison fallback to string comparison", async () => {
+        rootNote.child(
+            note("Europe")
+                .label('country', '', true)
+                .child(
+                    note("Austria")
+                        .label('established', '1955-07-27')
+                )
+                .child(
+                    note("Czech Republic")
+                        .label('established', '1993-01-01')
+                )
+                .child(
+                    note("Hungary")
+                        .label('established', '..wrong..')
+                )
+        );
+
+        const parsingContext = new ParsingContext();
+
+        const searchResults = await searchService.findNotesWithQuery('#established < 1990', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
+
     it("logical or", async () => {
         rootNote.child(
             note("Europe")
@@ -139,6 +164,51 @@ describe("Search", () => {
         searchResults = await searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
+
+    it("filter by note property", async () => {
+        rootNote.child(
+            note("Europe")
+                .child(
+                    note("Austria")
+                )
+                .child(
+                    note("Czech Republic")
+                )
+        );
+
+        const parsingContext = new ParsingContext();
+
+        const searchResults = await searchService.findNotesWithQuery('# note.title =* czech', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+    });
+
+    it("filter by note's parent", async () => {
+        rootNote.child(
+            note("Europe")
+                .child(
+                    note("Austria")
+                )
+                .child(
+                    note("Czech Republic")
+                )
+        )
+            .child(
+                note("Asia")
+                    .child(note('Taiwan'))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# note.parent.title = Europe', parsingContext);
+        expect(searchResults.length).toEqual(2);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+
+        searchResults = await searchService.findNotesWithQuery('# note.parent.title = Asia', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Taiwan")).toBeTruthy();
     });
 });
 

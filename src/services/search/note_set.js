@@ -6,11 +6,19 @@ class NoteSet {
     }
 
     add(note) {
-        this.notes.push(note);
+        if (!this.hasNote(note)) {
+            this.notes.push(note);
+        }
     }
 
     addAll(notes) {
-        this.notes.push(...notes);
+        for (const note of notes) {
+            this.add(note);
+        }
+    }
+
+    hasNote(note) {
+        return this.hasNoteId(note.noteId);
     }
 
     hasNoteId(noteId) {

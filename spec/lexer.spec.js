@@ -18,8 +18,8 @@ describe("Lexer fulltext", () => {
     });
 
     it("you can use different quotes and other special characters inside quotes", () => {
-        expect(lexer("'i can use \" or ` or #@=*' without problem").fulltextTokens)
-            .toEqual(["i can use \" or ` or #@=*", "without", "problem"]);
+        expect(lexer("'i can use \" or ` or #~=*' without problem").fulltextTokens)
+            .toEqual(["i can use \" or ` or #~=*", "without", "problem"]);
     });
 
     it("if quote is not ended then it's just one long token", () => {
@@ -33,15 +33,15 @@ describe("Lexer fulltext", () => {
     });
 
     it("escaping special characters", () => {
-        expect(lexer("hello \\#\\@\\'").fulltextTokens)
-            .toEqual(["hello", "#@'"]);
+        expect(lexer("hello \\#\\~\\'").fulltextTokens)
+            .toEqual(["hello", "#~'"]);
     });
 });
 
 describe("Lexer expression", () => {
     it("simple attribute existence", () => {
-        expect(lexer("#label @relation").expressionTokens)
-            .toEqual(["#label", "@relation"]);
+        expect(lexer("#label ~relation").expressionTokens)
+            .toEqual(["#label", "~relation"]);
     });
 
     it("simple label operators", () => {
@@ -50,12 +50,17 @@ describe("Lexer expression", () => {
     });
 
     it("spaces in attribute names and values", () => {
-        expect(lexer(`#'long label'="hello o' world" @'long relation'`).expressionTokens)
-            .toEqual(["#long label", "=", "hello o' world", "@long relation"]);
+        expect(lexer(`#'long label'="hello o' world" ~'long relation'`).expressionTokens)
+            .toEqual(["#long label", "=", "hello o' world", "~long relation"]);
     });
 
     it("complex expressions with and, or and parenthesis", () => {
-        expect(lexer(`# (#label=text OR #second=text) AND @relation`).expressionTokens)
-            .toEqual(["#", "(", "#label", "=", "text", "or", "#second", "=", "text", ")", "and", "@relation"]);
+        expect(lexer(`# (#label=text OR #second=text) AND ~relation`).expressionTokens)
+            .toEqual(["#", "(", "#label", "=", "text", "or", "#second", "=", "text", ")", "and", "~relation"]);
+    });
+
+    it("dot separated properties", () => {
+        expect(lexer(`# ~author.title = 'Hugh Howey' AND note.title = 'Silo'`).expressionTokens)
+            .toEqual(["#", "~author", ".", "title", "=", "hugh howey", "and", "note", ".", "title", "=", "silo"]);
     });
 });

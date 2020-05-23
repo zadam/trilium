@@ -4,6 +4,7 @@ class Expression {
     /**
      * @param {NoteSet} noteSet
      * @param {object} searchContext
+     * @return {NoteSet}
      */
     execute(noteSet, searchContext) {}
 }

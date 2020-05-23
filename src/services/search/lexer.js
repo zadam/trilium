@@ -77,7 +77,7 @@ function lexer(str) {
             continue;
         }
         else if (!quotes) {
-            if (currentWord.length === 0 && (chr === '#' || chr === '@')) {
+            if (currentWord.length === 0 && (chr === '#' || chr === '~')) {
                 fulltextEnded = true;
                 currentWord = chr;
 
@@ -87,7 +87,7 @@ function lexer(str) {
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && ['(', ')'].includes(chr)) {
+            else if (fulltextEnded && ['(', ')', '.'].includes(chr)) {
                 finishWord();
                 currentWord += chr;
                 finishWord();

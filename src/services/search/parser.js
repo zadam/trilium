@@ -3,8 +3,10 @@
 const AndExp = require('./expressions/and');
 const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
+const ChildOfExp = require('./expressions/child_of');
+const PropertyComparisonExp = require('./expressions/property_comparison');
 const AttributeExistsExp = require('./expressions/attribute_exists');
-const FieldComparisonExp = require('./expressions/field_comparison');
+const LabelComparisonExp = require('./expressions/label_comparison');
 const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
 const comparatorBuilder = require('./comparator_builder');
@@ -38,17 +40,50 @@ function getExpression(tokens, parsingContext) {
     const expressions = [];
     let op = null;
 
-    for (let i = 0; i < tokens.length; i++) {
+    let i;
+
+    function parseNoteProperty() {
+        if (tokens[i] !== '.') {
+            parsingContext.addError('Expected "." to separate field path');
+            return;
+        }
+
+        i++;
+
+        if (tokens[i] === 'parent') {
+            i += 1;
+
+            return new ChildOfExp(parseNoteProperty());
+        }
+
+        if (tokens[i] === 'title') {
+            const propertyName = tokens[i];
+            const operator = tokens[i + 1];
+            const comparedValue = tokens[i + 2];
+            const comparator = comparatorBuilder(operator, comparedValue);
+
+            if (!comparator) {
+                parsingContext.addError(`Can't find operator '${operator}'`);
+                return;
+            }
+
+            i += 3;
+
+            return new PropertyComparisonExp(propertyName, comparator);
+        }
+    }
+
+    for (i = 0; i < tokens.length; i++) {
         const token = tokens[i];
 
-        if (token === '#' || token === '@') {
+        if (token === '#' || token === '~') {
             continue;
         }
 
         if (Array.isArray(token)) {
             expressions.push(getExpression(token, parsingContext));
         }
-        else if (token.startsWith('#') || token.startsWith('@')) {
+        else if (token.startsWith('#') || token.startsWith('~')) {
             const type = token.startsWith('#') ? 'label' : 'relation';
 
             parsingContext.highlightedTokens.push(token.substr(1));
@@ -70,7 +105,7 @@ function getExpression(tokens, parsingContext) {
                     continue;
                 }
 
-                expressions.push(new FieldComparisonExp(type, token.substr(1), comparator));
+                expressions.push(new LabelComparisonExp(type, token.substr(1), comparator));
 
                 i += 2;
             }
@@ -78,11 +113,18 @@ function getExpression(tokens, parsingContext) {
                 expressions.push(new AttributeExistsExp(type, token.substr(1), parsingContext.fuzzyAttributeSearch));
             }
         }
-        else if (['and', 'or'].includes(token.toLowerCase())) {
+        else if (token === 'note') {
+            i++;
+
+            expressions.push(parseNoteProperty(tokens));
+
+            continue;
+        }
+        else if (['and', 'or'].includes(token)) {
             if (!op) {
-                op = token.toLowerCase();
+                op = token;
             }
-            else if (op !== token.toLowerCase()) {
+            else if (op !== token) {
                 parsingContext.addError('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
             }
         }

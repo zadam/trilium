@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 
-class AndExp extends Expression{
+class AndExp extends Expression {
     static of(subExpressions) {
         subExpressions = subExpressions.filter(exp => !!exp);
 

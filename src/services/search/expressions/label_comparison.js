@@ -4,7 +4,7 @@ const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
-class FieldComparisonExp extends Expression {
+class LabelComparisonExp extends Expression {
     constructor(attributeType, attributeName, comparator) {
         super();
 
@@ -37,4 +37,4 @@ class FieldComparisonExp extends Expression {
     }
 }
 
-module.exports = FieldComparisonExp;
+module.exports = LabelComparisonExp;

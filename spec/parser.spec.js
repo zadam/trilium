@@ -37,7 +37,7 @@ describe("Parser", () => {
             parsingContext: new ParsingContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("FieldComparisonExp");
+        expect(rootExp.constructor.name).toEqual("LabelComparisonExp");
         expect(rootExp.attributeType).toEqual("label");
         expect(rootExp.attributeName).toEqual("mylabel");
         expect(rootExp.comparator).toBeTruthy();
@@ -53,10 +53,10 @@ describe("Parser", () => {
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
 
-        expect(secondSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(secondSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSub.attributeName).toEqual("second");
     });
 
@@ -70,27 +70,27 @@ describe("Parser", () => {
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
 
-        expect(secondSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(secondSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSub.attributeName).toEqual("second");
     });
 
     it("simple label OR", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "OR", "#second", "=", "text"],
+            expressionTokens: ["#first", "=", "text", "or", "#second", "=", "text"],
             parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
 
-        expect(secondSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(secondSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSub.attributeName).toEqual("second");
     });
 
@@ -107,30 +107,30 @@ describe("Parser", () => {
         expect(firstSub.constructor.name).toEqual("NoteCacheFulltextExp");
         expect(firstSub.tokens).toEqual(["hello"]);
 
-        expect(secondSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(secondSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSub.attributeName).toEqual("mylabel");
     });
 
     it("label sub-expression", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "OR", ["#second", "=", "text", "AND", "#third", "=", "text"]],
+            expressionTokens: ["#first", "=", "text", "or", ["#second", "=", "text", "and", "#third", "=", "text"]],
             parsingContext: new ParsingContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
 
         expect(secondSub.constructor.name).toEqual("AndExp");
         const [firstSubSub, secondSubSub] = secondSub.subExpressions;
 
-        expect(firstSubSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(firstSubSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSubSub.attributeName).toEqual("second");
 
-        expect(secondSubSub.constructor.name).toEqual("FieldComparisonExp");
+        expect(secondSubSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSubSub.attributeName).toEqual("third");
     });
 });
