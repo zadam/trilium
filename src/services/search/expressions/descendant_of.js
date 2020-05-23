@@ -2,6 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
+const noteCache = require('../../note_cache/note_cache');
 
 class DescendantOfExp extends Expression {
     constructor(subExpression) {
@@ -11,19 +12,16 @@ class DescendantOfExp extends Expression {
     }
 
     execute(inputNoteSet, searchContext) {
-        const resNoteSet = new NoteSet();
+        const subInputNoteSet = new NoteSet(Object.values(noteCache.notes));
+        const subResNoteSet = this.subExpression.execute(subInputNoteSet, searchContext);
 
-        for (const note of inputNoteSet.notes) {
-            const subInputNoteSet = new NoteSet(note.ancestors);
+        const subTreeNoteSet = new NoteSet();
 
-            const subResNoteSet = this.subExpression.execute(subInputNoteSet, searchContext);
-
-            if (subResNoteSet.notes.length > 0) {
-                resNoteSet.add(note);
-            }
+        for (const note of subResNoteSet.notes) {
+            subTreeNoteSet.addAll(note.subtreeNotes);
         }
 
-        return resNoteSet;
+        return inputNoteSet.intersection(subTreeNoteSet);
     }
 }
 
