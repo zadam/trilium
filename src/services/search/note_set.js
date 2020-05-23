@@ -2,6 +2,7 @@
 
 class NoteSet {
     constructor(notes = []) {
+        /** @type {Note[]} */
         this.notes = notes;
     }
 

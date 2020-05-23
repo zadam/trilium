@@ -3,6 +3,7 @@ const Note = require('../src/services/note_cache/entities/note');
 const Branch = require('../src/services/note_cache/entities/branch');
 const Attribute = require('../src/services/note_cache/entities/attribute');
 const ParsingContext = require('../src/services/search/parsing_context');
+const dateUtils = require('../src/services/date_utils');
 const noteCache = require('../src/services/note_cache/note_cache');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
@@ -131,6 +132,48 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
+    it("smart date comparisons", async () => {
+        // dates should not be coerced into numbers which would then give wrong numbers
+
+        rootNote
+            .child(note("My note")
+                .label('year', new Date().getFullYear().toString())
+                .label('month', dateUtils.localNowDate().substr(0, 7))
+                .label('date', dateUtils.localNowDate())
+                .label('dateTime', dateUtils.localNowDateTime())
+            );
+
+        const parsingContext = new ParsingContext();
+
+        async function test(query, expectedResultCount) {
+            const searchResults = await searchService.findNotesWithQuery(query, parsingContext);
+            expect(searchResults.length).toEqual(expectedResultCount);
+
+            if (expectedResultCount === 1) {
+                expect(findNoteByTitle(searchResults, "My note")).toBeTruthy();
+            }
+        }
+
+        await test("#year = YEAR", 1);
+        await test("#year >= YEAR", 1);
+        await test("#year <= YEAR", 1);
+        await test("#year < YEAR+1", 1);
+        await test("#year > YEAR+1", 0);
+
+        await test("#month = MONTH", 1);
+
+        await test("#date = TODAY", 1);
+        await test("#date > TODAY", 0);
+        await test("#date > TODAY-1", 1);
+        await test("#date < TODAY+1", 1);
+        await test("#date < 'TODAY + 1'", 1);
+
+        await test("#dateTime <= NOW+10", 1);
+        await test("#dateTime < NOW-10", 0);
+        await test("#dateTime >= NOW-10", 1);
+        await test("#dateTime < NOW-10", 0);
+    });
+
     it("logical or", async () => {
         rootNote
             .child(note("Europe")
@@ -215,6 +258,29 @@ describe("Search", () => {
         searchResults = await searchService.findNotesWithQuery('# note.parents.parents.title = Europe', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
+    });
+
+    it("filter by note's ancestor", async () => {
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
+                .child(note("Czech Republic")
+                    .child(note("Prague").label('city')))
+            )
+            .child(note("Asia")
+                .child(note('Taiwan')
+                    .child(note('Taipei').label('city')))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('#city AND note.ancestors.title = Europe', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
+
+        searchResults = await searchService.findNotesWithQuery('#city AND note.ancestors.title = Asia', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Taipei")).toBeTruthy();
     });
 
     it("filter by note's child", async () => {
@@ -411,7 +477,7 @@ class NoteBuilder {
         this.note = note;
     }
 
-    label(name, value, isInheritable = false) {
+    label(name, value = '', isInheritable = false) {
         new Attribute(noteCache, {
             attributeId: id(),
             noteId: this.note.noteId,

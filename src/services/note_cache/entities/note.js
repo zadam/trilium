@@ -53,6 +53,9 @@ class Note {
         if (protectedSessionService.isProtectedSessionAvailable()) {
             this.decrypt();
         }
+
+        /** @param {Note[]|null} */
+        this.ancestorCache = null;
     }
 
     /** @return {Attribute[]} */
@@ -164,6 +167,7 @@ class Note {
 
         this.attributeCache = null;
         this.inheritableAttributeCache = null;
+        this.ancestorCache = null;
     }
 
     invalidateSubtreeCaches() {
@@ -256,6 +260,29 @@ class Note {
 
     get attributeCount() {
         return this.attributes.length;
+    }
+
+    get ancestors() {
+        if (!this.ancestorCache) {
+            const noteIds = new Set();
+            this.ancestorCache = [];
+
+            for (const parent of this.parents) {
+                if (!noteIds.has(parent.noteId)) {
+                    this.ancestorCache.push(parent);
+                    noteIds.add(parent.noteId);
+                }
+
+                for (const ancestorNote of parent.ancestors) {
+                    if (!noteIds.has(ancestorNote.noteId)) {
+                        this.ancestorCache.push(ancestorNote);
+                        noteIds.add(ancestorNote.noteId);
+                    }
+                }
+            }
+        }
+
+        return this.ancestorCache;
     }
 
     /** @return {Note[]} - returns only notes which are templated, does not include their subtrees

@@ -4,6 +4,7 @@ const AndExp = require('./expressions/and');
 const OrExp = require('./expressions/or');
 const NotExp = require('./expressions/not');
 const ChildOfExp = require('./expressions/child_of');
+const DescendantOfExp = require('./expressions/descendant_of');
 const ParentOfExp = require('./expressions/parent_of');
 const RelationWhereExp = require('./expressions/relation_where');
 const PropertyComparisonExp = require('./expressions/property_comparison');
@@ -62,6 +63,12 @@ function getExpression(tokens, parsingContext) {
             i += 1;
 
             return new ParentOfExp(parseNoteProperty());
+        }
+
+        if (tokens[i] === 'ancestors') {
+            i += 1;
+
+            return new DescendantOfExp(parseNoteProperty());
         }
 
         if (tokens[i] === 'labels') {
