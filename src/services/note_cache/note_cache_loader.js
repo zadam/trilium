@@ -13,7 +13,7 @@ async function load() {
 
     noteCache.reset();
 
-    (await sql.getRows(`SELECT noteId, title, isProtected FROM notes WHERE isDeleted = 0`, []))
+    (await sql.getRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified, contentLength FROM notes WHERE isDeleted = 0`, []))
         .map(row => new Note(noteCache, row));
 
     (await sql.getRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`, []))

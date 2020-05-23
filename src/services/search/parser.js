@@ -86,7 +86,7 @@ function getExpression(tokens, parsingContext) {
             return parseRelation(tokens[i]);
         }
 
-        if (tokens[i] === 'title') {
+        if (PropertyComparisonExp.isProperty(tokens[i])) {
             const propertyName = tokens[i];
             const operator = tokens[i + 1];
             const comparedValue = tokens[i + 2];
@@ -101,6 +101,8 @@ function getExpression(tokens, parsingContext) {
 
             return new PropertyComparisonExp(propertyName, comparator);
         }
+
+        parsingContext.addError(`Unrecognized note property "${tokens[i]}"`);
     }
 
     function parseLabel(labelName) {

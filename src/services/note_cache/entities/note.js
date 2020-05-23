@@ -10,6 +10,20 @@ class Note {
         this.noteId = row.noteId;
         /** @param {string} */
         this.title = row.title;
+        /** @param {string} */
+        this.type = row.type;
+        /** @param {string} */
+        this.mime = row.mime;
+        /** @param {number} */
+        this.contentLength = row.contentLength;
+        /** @param {string} */
+        this.dateCreated = row.dateCreated;
+        /** @param {string} */
+        this.dateModified = row.dateModified;
+        /** @param {string} */
+        this.utcDateCreated = row.utcDateCreated;
+        /** @param {string} */
+        this.utcDateModified = row.utcDateModified;
         /** @param {boolean} */
         this.isProtected = !!row.isProtected;
         /** @param {boolean} */
@@ -222,6 +236,26 @@ class Note {
         }
 
         return arr.flat();
+    }
+
+    get parentCount() {
+        return this.parents.length;
+    }
+
+    get childrenCount() {
+        return this.children.length;
+    }
+
+    get labelCount() {
+        return this.attributes.filter(attr => attr.type === 'label').length;
+    }
+
+    get relationCount() {
+        return this.attributes.filter(attr => attr.type === 'relation').length;
+    }
+
+    get attributeCount() {
+        return this.attributes.length;
     }
 
     /** @return {Note[]} - returns only notes which are templated, does not include their subtrees

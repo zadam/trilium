@@ -312,6 +312,84 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
+
+    it("test note properties", async () => {
+        const austria = note("Austria");
+
+        austria.relation('myself', austria.note);
+        austria.label('capital', 'Vienna');
+        austria.label('population', '8859000');
+
+        rootNote
+            .child(note("Asia"))
+            .child(note("Europe")
+                .child(austria
+                    .child(note("Vienna"))
+                    .child(note("Sebastian Kurz"))
+                )
+            )
+            .child(note("Mozart")
+                .child(austria));
+
+        austria.note.type = 'text';
+        austria.note.mime = 'text/html';
+        austria.note.isProtected = false;
+        austria.note.dateCreated = '2020-05-14 12:11:42.001+0200';
+        austria.note.dateModified = '2020-05-14 13:11:42.001+0200';
+        austria.note.utcDateCreated = '2020-05-14 10:11:42.001Z';
+        austria.note.utcDateModified = '2020-05-14 11:11:42.001Z';
+        austria.note.contentLength = 1001;
+
+        const parsingContext = new ParsingContext();
+
+        async function test(propertyName, value, expectedResultCount) {
+            const searchResults = await searchService.findNotesWithQuery(`# note.${propertyName} = ${value}`, parsingContext);
+            expect(searchResults.length).toEqual(expectedResultCount);
+
+            if (expectedResultCount === 1) {
+                expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+            }
+        }
+
+        await test("type", "text", 1);
+        await test("type", "code", 0);
+
+        await test("mime", "text/html", 1);
+        await test("mime", "application/json", 0);
+
+        await test("isProtected", "false", 7);
+        await test("isProtected", "true", 0);
+
+        await test("dateCreated", "'2020-05-14 12:11:42.001+0200'", 1);
+        await test("dateCreated", "wrong", 0);
+
+        await test("dateModified", "'2020-05-14 13:11:42.001+0200'", 1);
+        await test("dateModified", "wrong", 0);
+
+        await test("utcDateCreated", "'2020-05-14 10:11:42.001Z'", 1);
+        await test("utcDateCreated", "wrong", 0);
+
+        await test("utcDateModified", "'2020-05-14 11:11:42.001Z'", 1);
+        await test("utcDateModified", "wrong", 0);
+
+        await test("contentLength", "1001", 1);
+        await test("contentLength", "10010", 0);
+
+        await test("parentCount", "2", 1);
+        await test("parentCount", "3", 0);
+
+        await test("childrenCount", "2", 1);
+        await test("childrenCount", "10", 0);
+
+        await test("attributeCount", "3", 1);
+        await test("attributeCount", "4", 0);
+
+        await test("labelCount", "2", 1);
+        await test("labelCount", "3", 0);
+
+        await test("relationCount", "1", 1);
+        await test("relationCount", "2", 0);
+    })
 });
 
 /** @return {Note} */
