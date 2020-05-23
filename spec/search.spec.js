@@ -17,11 +17,9 @@ describe("Search", () => {
     });
 
     it("simple path match", async () => {
-        rootNote.child(
-            note("Europe")
-                .child(
-                    note("Austria")
-                )
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
         );
 
         const parsingContext = new ParsingContext();
@@ -32,11 +30,9 @@ describe("Search", () => {
     });
 
     it("only end leafs are results", async () => {
-        rootNote.child(
-            note("Europe")
-                .child(
-                    note("Austria")
-                )
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
         );
 
         const parsingContext = new ParsingContext();
@@ -47,12 +43,10 @@ describe("Search", () => {
     });
 
     it("only end leafs are results", async () => {
-        rootNote.child(
-            note("Europe")
-                .child(
-                    note("Austria")
-                        .label('capital', 'Vienna')
-                )
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria")
+                    .label('capital', 'Vienna'))
         );
 
         const parsingContext = new ParsingContext();
@@ -63,17 +57,13 @@ describe("Search", () => {
     });
 
     it("numeric label comparison", async () => {
-        rootNote.child(
-            note("Europe")
+        rootNote
+            .child(note("Europe")
                 .label('country', '', true)
-                .child(
-                    note("Austria")
-                        .label('population', '8859000')
-                )
-                .child(
-                    note("Czech Republic")
-                        .label('population', '10650000')
-                )
+                .child(note("Austria")
+                    .label('population', '8859000'))
+                .child(note("Czech Republic")
+                    .label('population', '10650000'))
         );
 
         const parsingContext = new ParsingContext();
@@ -84,21 +74,15 @@ describe("Search", () => {
     });
 
     it("numeric label comparison fallback to string comparison", async () => {
-        rootNote.child(
-            note("Europe")
+        rootNote
+            .child(note("Europe")
                 .label('country', '', true)
-                .child(
-                    note("Austria")
-                        .label('established', '1955-07-27')
-                )
-                .child(
-                    note("Czech Republic")
-                        .label('established', '1993-01-01')
-                )
-                .child(
-                    note("Hungary")
-                        .label('established', '..wrong..')
-                )
+                .child(note("Austria")
+                    .label('established', '1955-07-27'))
+                .child(note("Czech Republic")
+                    .label('established', '1993-01-01'))
+                .child(note("Hungary")
+                    .label('established', '..wrong..'))
         );
 
         const parsingContext = new ParsingContext();
@@ -109,22 +93,16 @@ describe("Search", () => {
     });
 
     it("logical or", async () => {
-        rootNote.child(
-            note("Europe")
+        rootNote
+            .child(note("Europe")
                 .label('country', '', true)
-                .child(
-                    note("Austria")
-                        .label('languageFamily', 'germanic')
-                )
-                .child(
-                    note("Czech Republic")
-                        .label('languageFamily', 'slavic')
-                )
-                .child(
-                    note("Hungary")
-                        .label('languageFamily', 'finnougric')
-                )
-        );
+                .child(note("Austria")
+                    .label('languageFamily', 'germanic'))
+                .child(note("Czech Republic")
+                    .label('languageFamily', 'slavic'))
+                .child(note("Hungary")
+                    .label('languageFamily', 'finnougric'))
+            );
 
         const parsingContext = new ParsingContext();
 
@@ -135,18 +113,13 @@ describe("Search", () => {
     });
 
     it("fuzzy attribute search", async () => {
-        rootNote.child(
-            note("Europe")
+        rootNote
+            .child(note("Europe")
                 .label('country', '', true)
-                .child(
-                    note("Austria")
-                        .label('languageFamily', 'germanic')
-                )
-                .child(
-                    note("Czech Republic")
-                        .label('languageFamily', 'slavic')
-                )
-        );
+                .child(note("Austria")
+                    .label('languageFamily', 'germanic'))
+                .child(note("Czech Republic")
+                    .label('languageFamily', 'slavic')));
 
         let parsingContext = new ParsingContext({fuzzyAttributeSearch: false});
 
@@ -167,15 +140,10 @@ describe("Search", () => {
     });
 
     it("filter by note property", async () => {
-        rootNote.child(
-            note("Europe")
-                .child(
-                    note("Austria")
-                )
-                .child(
-                    note("Czech Republic")
-                )
-        );
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
+                .child(note("Czech Republic")));
 
         const parsingContext = new ParsingContext();
 
@@ -185,19 +153,12 @@ describe("Search", () => {
     });
 
     it("filter by note's parent", async () => {
-        rootNote.child(
-            note("Europe")
-                .child(
-                    note("Austria")
-                )
-                .child(
-                    note("Czech Republic")
-                )
-        )
-            .child(
-                note("Asia")
-                    .child(note('Taiwan'))
-            );
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
+                .child(note("Czech Republic")))
+            .child(note("Asia")
+                .child(note('Taiwan')));
 
         const parsingContext = new ParsingContext();
 
@@ -209,6 +170,26 @@ describe("Search", () => {
         searchResults = await searchService.findNotesWithQuery('# note.parent.title = Asia', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taiwan")).toBeTruthy();
+    });
+
+    it("filter by note's child", async () => {
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria"))
+                .child(note("Czech Republic")))
+            .child(note("Oceania")
+                .child(note('Australia')));
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# note.child.title =* Aust', parsingContext);
+        expect(searchResults.length).toEqual(2);
+        expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
+        expect(findNoteByTitle(searchResults, "Oceania")).toBeTruthy();
+
+        searchResults = await searchService.findNotesWithQuery('# note.child.title =* Aust AND note.child.title *= republic', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
     });
 });
 
