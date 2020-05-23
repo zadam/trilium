@@ -52,16 +52,38 @@ function getExpression(tokens, parsingContext) {
 
         i++;
 
-        if (tokens[i] === 'parent') {
+        if (tokens[i] === 'parents') {
             i += 1;
 
             return new ChildOfExp(parseNoteProperty());
         }
 
-        if (tokens[i] === 'child') {
+        if (tokens[i] === 'children') {
             i += 1;
 
             return new ParentOfExp(parseNoteProperty());
+        }
+
+        if (tokens[i] === 'labels') {
+            if (tokens[i + 1] !== '.') {
+                parsingContext.addError(`Expected "." to separate field path, god "${tokens[i + 1]}"`);
+                return;
+            }
+
+            i += 2;
+
+            return parseLabel(tokens[i]);
+        }
+
+        if (tokens[i] === 'relations') {
+            if (tokens[i + 1] !== '.') {
+                parsingContext.addError(`Expected "." to separate field path, god "${tokens[i + 1]}"`);
+                return;
+            }
+
+            i += 2;
+
+            return parseRelation(tokens[i]);
         }
 
         if (tokens[i] === 'title') {
@@ -81,6 +103,45 @@ function getExpression(tokens, parsingContext) {
         }
     }
 
+    function parseLabel(labelName) {
+        parsingContext.highlightedTokens.push(labelName);
+
+        if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
+            let operator = tokens[i + 1];
+            const comparedValue = tokens[i + 2];
+
+            parsingContext.highlightedTokens.push(comparedValue);
+
+            if (parsingContext.fuzzyAttributeSearch && operator === '=') {
+                operator = '*=*';
+            }
+
+            const comparator = comparatorBuilder(operator, comparedValue);
+
+            if (!comparator) {
+                parsingContext.addError(`Can't find operator '${operator}'`);
+            } else {
+                i += 2;
+
+                return new LabelComparisonExp('label', labelName, comparator);
+            }
+        } else {
+            return new AttributeExistsExp('label', labelName, parsingContext.fuzzyAttributeSearch);
+        }
+    }
+
+    function parseRelation(relationName) {
+        parsingContext.highlightedTokens.push(relationName);
+
+        if (i < tokens.length - 2 && tokens[i + 1] === '.') {
+            i += 1;
+
+            return new RelationWhereExp(relationName, parseNoteProperty());
+        } else {
+            return new AttributeExistsExp('relation', relationName, parsingContext.fuzzyAttributeSearch);
+        }
+    }
+
     for (i = 0; i < tokens.length; i++) {
         const token = tokens[i];
 
@@ -93,45 +154,13 @@ function getExpression(tokens, parsingContext) {
         }
         else if (token.startsWith('#')) {
             const labelName = token.substr(1);
-            parsingContext.highlightedTokens.push(labelName);
 
-            if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
-                let operator = tokens[i + 1];
-                const comparedValue = tokens[i + 2];
-
-                parsingContext.highlightedTokens.push(comparedValue);
-
-                if (parsingContext.fuzzyAttributeSearch && operator === '=') {
-                    operator = '*=*';
-                }
-
-                const comparator = comparatorBuilder(operator, comparedValue);
-
-                if (!comparator) {
-                    parsingContext.addError(`Can't find operator '${operator}'`);
-                    continue;
-                }
-
-                expressions.push(new LabelComparisonExp('label', labelName, comparator));
-
-                i += 2;
-            }
-            else {
-                expressions.push(new AttributeExistsExp('label', labelName, parsingContext.fuzzyAttributeSearch));
-            }
+            expressions.push(parseLabel(labelName));
         }
         else if (token.startsWith('~')) {
             const relationName = token.substr(1);
-            parsingContext.highlightedTokens.push(relationName);
 
-            if (i < tokens.length - 2 && tokens[i + 1] === '.') {
-                i += 1;
-
-                expressions.push(new RelationWhereExp(relationName, parseNoteProperty()));
-            }
-            else {
-                expressions.push(new AttributeExistsExp('relation', relationName, parsingContext.fuzzyAttributeSearch));
-            }
+            expressions.push(parseRelation(relationName));
         }
         else if (token === 'note') {
             i++;

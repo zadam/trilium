@@ -56,6 +56,38 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
+    it("label comparison with short syntax", async () => {
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria")
+                    .label('capital', 'Vienna'))
+                .child(note("Czech Republic")
+                    .label('capital', 'Prague'))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('#capital=Vienna', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
+
+    it("label comparison with full syntax", async () => {
+        rootNote
+            .child(note("Europe")
+                .child(note("Austria")
+                    .label('capital', 'Vienna'))
+                .child(note("Czech Republic")
+                    .label('capital', 'Prague'))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# note.labels.capital=Prague', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+    });
+
     it("numeric label comparison", async () => {
         rootNote
             .child(note("Europe")
@@ -162,12 +194,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.parent.title = Europe', parsingContext);
+        let searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.parent.title = Asia', parsingContext);
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Asia', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taiwan")).toBeTruthy();
     });
@@ -182,17 +214,17 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.child.title =* Aust', parsingContext);
+        let searchResults = await searchService.findNotesWithQuery('# note.children.title =* Aust', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Oceania")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.child.title =* Aust AND note.child.title *= republic', parsingContext);
+        searchResults = await searchService.findNotesWithQuery('# note.children.title =* Aust AND note.children.title *= republic', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
     });
 
-    it("filter by relation's note properties", async () => {
+    it("filter by relation's note properties using short syntax", async () => {
         const austria = note("Austria");
         const portugal = note("Portugal");
 
@@ -215,6 +247,27 @@ describe("Search", () => {
         searchResults = await searchService.findNotesWithQuery('# ~neighbor.title = Portugal', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Spain")).toBeTruthy();
+    });
+
+    it("filter by relation's note properties using long syntax", async () => {
+        const austria = note("Austria");
+        const portugal = note("Portugal");
+
+        rootNote
+            .child(note("Europe")
+                .child(austria)
+                .child(note("Czech Republic")
+                    .relation('neighbor', austria.note))
+                .child(portugal)
+                .child(note("Spain")
+                    .relation('neighbor', portugal.note))
+            );
+
+        const parsingContext = new ParsingContext();
+
+        const searchResults = await searchService.findNotesWithQuery('# note.relations.neighbor.title = Austria', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 });
 
