@@ -4,15 +4,15 @@ const repository = require('../../services/repository');
 const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
-const searchService = require('../../services/search');
+const searchService = require('../../services/search/search');
 
 async function searchNotes(req) {
-    const noteIds = await searchService.searchForNoteIds(req.params.searchString);
+    const notePaths = await searchService.searchNotes(req.params.searchString);
 
     try {
         return {
             success: true,
-            results: noteIds.map(noteCacheService.getNotePath).filter(res => !!res)
+            results: notePaths
         }
     }
     catch {

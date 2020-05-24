@@ -13,6 +13,7 @@ const PROP_MAPPING = {
     "type": "type",
     "mime": "mime",
     "isprotected": "isProtected",
+    "isarhived": "isArchived",
     "datecreated": "dateCreated",
     "datemodified": "dateModified",
     "utcdatecreated": "utcDateCreated",

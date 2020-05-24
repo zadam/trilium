@@ -48,8 +48,8 @@ export default class SearchResultsWidget extends BasicWidget {
         for (const result of results) {
             const link = $('<a>', {
                 href: 'javascript:',
-                text: result.title
-            }).attr('data-action', 'note').attr('data-note-path', result.path);
+                text: result.notePathTitle
+            }).attr('data-action', 'note').attr('data-note-path', result.notePath);
 
             const $result = $('<li>').append(link);
 

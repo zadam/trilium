@@ -75,6 +75,23 @@ async function findNotesWithQuery(query, parsingContext) {
     return await findNotesWithExpression(expression);
 }
 
+async function searchNotes(query) {
+    if (!query.trim().length) {
+        return [];
+    }
+
+    const parsingContext = new ParsingContext({
+        includeNoteContent: true,
+        fuzzyAttributeSearch: false
+    });
+
+    let searchResults = await findNotesWithQuery(query, parsingContext);
+
+    searchResults = searchResults.slice(0, 200);
+
+    return searchResults;
+}
+
 async function searchNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
@@ -85,7 +102,7 @@ async function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    let searchResults = findNotesWithQuery(query, parsingContext);
+    let searchResults = await findNotesWithQuery(query, parsingContext);
 
     searchResults = searchResults.slice(0, 200);
 
@@ -154,6 +171,7 @@ function formatAttribute(attr) {
 }
 
 module.exports = {
+    searchNotes,
     searchNotesForAutocomplete,
     findNotesWithQuery
 };
