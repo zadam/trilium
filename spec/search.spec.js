@@ -5,7 +5,7 @@ const Attribute = require('../src/services/note_cache/entities/attribute');
 const ParsingContext = require('../src/services/search/parsing_context');
 const dateUtils = require('../src/services/date_utils');
 const noteCache = require('../src/services/note_cache/note_cache');
-const randtoken = require('rand-token').generator({source: 'crypto'});
+const {NoteBuilder, findNoteByTitle, note} = require('./note_cache_mocking');
 
 describe("Search", () => {
     let rootNote;
@@ -463,63 +463,36 @@ describe("Search", () => {
         await test("relationCount", "1", 1);
         await test("relationCount", "2", 0);
     });
+
+    it("test order by", async () => {
+        const italy = note("Italy").label("capital", "Rome");
+        const slovakia = note("Slovakia").label("capital", "Bratislava");
+        const austria = note("Austria").label("capital", "Vienna");
+        const ukraine = note("Ukraine").label("capital", "Kiev");
+
+        rootNote
+            .child(note("Europe")
+                .child(ukraine)
+                .child(slovakia)
+                .child(austria)
+                .child(italy));
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.title', parsingContext);
+        expect(searchResults.length).toEqual(4);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
+        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Slovakia");
+        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Ukraine");
+
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital', parsingContext);
+        expect(searchResults.length).toEqual(4);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
+        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Ukraine");
+        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Italy");
+        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Austria");
+    });
+
+    // FIXME: test what happens when we order without any filter criteria
 });
-
-/** @return {Note} */
-function findNoteByTitle(searchResults, title) {
-    return searchResults
-        .map(sr => noteCache.notes[sr.noteId])
-        .find(note => note.title === title);
-}
-
-class NoteBuilder {
-    constructor(note) {
-        this.note = note;
-    }
-
-    label(name, value = '', isInheritable = false) {
-        new Attribute(noteCache, {
-            attributeId: id(),
-            noteId: this.note.noteId,
-            type: 'label',
-            isInheritable,
-            name,
-            value
-        });
-
-        return this;
-    }
-
-    relation(name, targetNote) {
-        new Attribute(noteCache, {
-            attributeId: id(),
-            noteId: this.note.noteId,
-            type: 'relation',
-            name,
-            value: targetNote.noteId
-        });
-
-        return this;
-    }
-
-    child(childNoteBuilder, prefix = "") {
-        new Branch(noteCache, {
-            branchId: id(),
-            noteId: childNoteBuilder.note.noteId,
-            parentNoteId: this.note.noteId,
-            prefix
-        });
-
-        return this;
-    }
-}
-
-function id() {
-    return randtoken.generate(10);
-}
-
-function note(title) {
-    const note = new Note(noteCache, {noteId: id(), title});
-
-    return new NoteBuilder(note);
-}

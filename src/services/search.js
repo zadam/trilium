@@ -1,3 +1,18 @@
+"use strict";
+
+/**
+ * Missing things from the OLD search:
+ * - orderBy
+ * - limit
+ * - in - replaced with note.ancestors
+ * - content in attribute search
+ * - not - pherhaps not necessary
+ *
+ * other potential additions:
+ * - targetRelations - either named or not
+ * - any relation without name
+ */
+
 const repository = require('./repository');
 const sql = require('./sql');
 const log = require('./log');

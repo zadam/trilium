@@ -34,15 +34,17 @@ async function findNotesWithExpression(expression) {
         .filter(notePathArray => notePathArray.includes(hoistedNoteService.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
 
-    // sort results by depth of the note. This is based on the assumption that more important results
-    // are closer to the note root.
-    searchResults.sort((a, b) => {
-        if (a.notePathArray.length === b.notePathArray.length) {
-            return a.notePathTitle < b.notePathTitle ? -1 : 1;
-        }
+    if (!noteSet.sorted) {
+        // sort results by depth of the note. This is based on the assumption that more important results
+        // are closer to the note root.
+        searchResults.sort((a, b) => {
+            if (a.notePathArray.length === b.notePathArray.length) {
+                return a.notePathTitle < b.notePathTitle ? -1 : 1;
+            }
 
-        return a.notePathArray.length < b.notePathArray.length ? -1 : 1;
-    });
+            return a.notePathArray.length < b.notePathArray.length ? -1 : 1;
+        });
+    }
 
     return searchResults;
 }

@@ -107,6 +107,18 @@ class Note {
         return this.attributes.find(attr => attr.type === type && attr.name === name);
     }
 
+    getLabelValue(name) {
+        const label = this.attributes.find(attr => attr.type === 'label' && attr.name === name);
+
+        return label ? label.value : null;
+    }
+
+    getRelationTarget(name) {
+        const relation = this.attributes.find(attr => attr.type === 'relation' && attr.name === name);
+
+        return relation ? relation.targetNote : null;
+    }
+
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }

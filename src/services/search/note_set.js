@@ -4,6 +4,8 @@ class NoteSet {
     constructor(notes = []) {
         /** @type {Note[]} */
         this.notes = notes;
+        /** @type {boolean} */
+        this.sorted = false;
     }
 
     add(note) {

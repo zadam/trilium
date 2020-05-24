@@ -12,7 +12,9 @@ const AttributeExistsExp = require('./expressions/attribute_exists');
 const LabelComparisonExp = require('./expressions/label_comparison');
 const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
 const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
+const OrderByAndLimitExp = require('./expressions/order_by_and_limit');
 const comparatorBuilder = require('./comparator_builder');
+const ValueExtractor = require('./value_extractor');
 
 function getFulltext(tokens, parsingContext) {
     parsingContext.highlightedTokens.push(...tokens);
@@ -35,7 +37,7 @@ function isOperator(str) {
     return str.match(/^[=<>*]+$/);
 }
 
-function getExpression(tokens, parsingContext) {
+function getExpression(tokens, parsingContext, level = 0) {
     if (tokens.length === 0) {
         return null;
     }
@@ -104,7 +106,7 @@ function getExpression(tokens, parsingContext) {
                 return;
             }
 
-            i += 3;
+            i += 2;
 
             return new PropertyComparisonExp(propertyName, comparator);
         }
@@ -151,6 +153,57 @@ function getExpression(tokens, parsingContext) {
         }
     }
 
+    function parseOrderByAndLimit() {
+        const orderDefinitions = [];
+        let limit;
+
+        if (tokens[i] === 'orderby') {
+            do {
+                const propertyPath = [];
+                let direction = "asc";
+
+                do {
+                    i++;
+
+                    propertyPath.push(tokens[i]);
+
+                    i++;
+                } while (tokens[i] === '.');
+
+                if (["asc", "desc"].includes(tokens[i + 1])) {
+                    direction = tokens[i + 1];
+                    i++;
+                }
+
+                const valueExtractor = new ValueExtractor(propertyPath);
+
+                if (valueExtractor.validate()) {
+                    parsingContext.addError(valueExtractor.validate());
+                }
+
+                orderDefinitions.push({
+                    valueExtractor,
+                    direction
+                });
+            } while (tokens[i] === ',');
+        }
+
+        if (tokens[i] === 'limit') {
+            limit = parseInt(tokens[i + 1]);
+        }
+
+        return new OrderByAndLimitExp(orderDefinitions, limit);
+    }
+
+    function getAggregateExpression() {
+        if (op === null || op === 'and') {
+            return AndExp.of(expressions);
+        }
+        else if (op === 'or') {
+            return OrExp.of(expressions);
+        }
+    }
+
     for (i = 0; i < tokens.length; i++) {
         const token = tokens[i];
 
@@ -159,7 +212,7 @@ function getExpression(tokens, parsingContext) {
         }
 
         if (Array.isArray(token)) {
-            expressions.push(getExpression(token, parsingContext));
+            expressions.push(getExpression(token, parsingContext, level++));
         }
         else if (token.startsWith('#')) {
             const labelName = token.substr(1);
@@ -170,6 +223,22 @@ function getExpression(tokens, parsingContext) {
             const relationName = token.substr(1);
 
             expressions.push(parseRelation(relationName));
+        }
+        else if (['orderby', 'limit'].includes(token)) {
+            if (level !== 0) {
+                parsingContext.addError('orderBy can appear only on the top expression level');
+                continue;
+            }
+
+            const exp = parseOrderByAndLimit();
+
+            if (!exp) {
+                continue;
+            }
+
+            exp.subExpression = getAggregateExpression();
+
+            return exp;
         }
         else if (token === 'note') {
             i++;
@@ -198,12 +267,7 @@ function getExpression(tokens, parsingContext) {
         }
     }
 
-    if (op === null || op === 'and') {
-        return AndExp.of(expressions);
-    }
-    else if (op === 'or') {
-        return OrExp.of(expressions);
-    }
+    return getAggregateExpression();
 }
 
 function parse({fulltextTokens, expressionTokens, parsingContext}) {
