@@ -492,6 +492,24 @@ describe("Search", () => {
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Ukraine");
         expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Italy");
         expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Austria");
+
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC', parsingContext);
+        expect(searchResults.length).toEqual(4);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
+        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Ukraine");
+        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Slovakia");
+
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC limit 2', parsingContext);
+        expect(searchResults.length).toEqual(2);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
+
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 0', parsingContext);
+        expect(searchResults.length).toEqual(0);
+
+        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1000', parsingContext);
+        expect(searchResults.length).toEqual(4);
     });
 
     // FIXME: test what happens when we order without any filter criteria

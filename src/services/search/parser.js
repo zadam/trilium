@@ -170,8 +170,8 @@ function getExpression(tokens, parsingContext, level = 0) {
                     i++;
                 } while (tokens[i] === '.');
 
-                if (["asc", "desc"].includes(tokens[i + 1])) {
-                    direction = tokens[i + 1];
+                if (["asc", "desc"].includes(tokens[i])) {
+                    direction = tokens[i];
                     i++;
                 }
 
