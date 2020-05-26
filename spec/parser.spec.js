@@ -46,7 +46,7 @@ describe("Parser", () => {
     it("simple label AND", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "AND", "#second", "=", "text"],
+            expressionTokens: ["#first", "=", "text", "and", "#second", "=", "text"],
             parsingContext: new ParsingContext(true)
         });
 

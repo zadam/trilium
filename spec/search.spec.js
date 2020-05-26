@@ -512,5 +512,21 @@ describe("Search", () => {
         expect(searchResults.length).toEqual(4);
     });
 
+    it("test not(...)", async () => {
+        const italy = note("Italy").label("capital", "Rome");
+        const slovakia = note("Slovakia").label("capital", "Bratislava");
+
+        rootNote
+            .child(note("Europe")
+                .child(slovakia)
+                .child(italy));
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = await searchService.findNotesWithQuery('# not(#capital) and note.noteId != root', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Europe");
+    });
+
     // FIXME: test what happens when we order without any filter criteria
 });

@@ -63,4 +63,9 @@ describe("Lexer expression", () => {
         expect(lexer(`# ~author.title = 'Hugh Howey' AND note.'book title' = 'Silo'`).expressionTokens)
             .toEqual(["#", "~author", ".", "title", "=", "hugh howey", "and", "note", ".", "book title", "=", "silo"]);
     });
+
+    it("negation of sub-expression", () => {
+        expect(lexer(`# not(#capital) and note.noteId != "root"`).expressionTokens)
+            .toEqual(["#", "not", "(", "#capital", ")", "and", "note", ".", "noteid", "!=", "root"]);
+    });
 });

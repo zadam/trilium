@@ -255,6 +255,16 @@ function getExpression(tokens, parsingContext, level = 0) {
 
             return exp;
         }
+        else if (token === 'not') {
+            i += 1;
+
+            if (!Array.isArray(tokens[i])) {
+                parsingContext.addError(`not keyword should be followed by sub-expression in parenthesis, got ${tokens[i]} instead`);
+                continue;
+            }
+
+            expressions.push(new NotExp(getExpression(tokens[i], parsingContext, level++)));
+        }
         else if (token === 'note') {
             i++;
 
