@@ -1,4 +1,9 @@
 const dayjs = require("dayjs");
+const AndExp = require('./expressions/and');
+const OrExp = require('./expressions/or');
+const NotExp = require('./expressions/not');
+const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
+const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
 
 const filterRegex = /(\b(AND|OR)\s+)?@(!?)([\p{L}\p{Number}_]+|"[^"]+")\s*((=|!=|<|<=|>|>=|!?\*=|!?=\*|!?\*=\*)\s*([^\s=*"]+|"[^"]+"))?/igu;
 const smartValueRegex = /^(NOW|TODAY|WEEK|MONTH|YEAR) *([+\-] *\d+)?$/i;

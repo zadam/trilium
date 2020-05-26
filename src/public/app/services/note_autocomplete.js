@@ -3,7 +3,7 @@ import appContext from "./app_context.js";
 import utils from './utils.js';
 
 // this key needs to have this value so it's hit by the tooltip
-const SELECTED_PATH_KEY = "data-note-path";
+const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
 async function autocompleteSource(term, cb) {
     const result = await server.get('autocomplete'
@@ -12,8 +12,8 @@ async function autocompleteSource(term, cb) {
 
     if (result.length === 0) {
         result.push({
-            pathTitle: "No results",
-            path: ""
+            notePathTitle: "No results",
+            notePath: ""
         });
     }
 
@@ -25,7 +25,7 @@ function clearText($el) {
         return;
     }
 
-    $el.setSelectedPath("");
+    $el.setSelectedNotePath("");
     $el.autocomplete("val", "").trigger('change');
 }
 
@@ -34,7 +34,7 @@ function showRecentNotes($el) {
         return;
     }
 
-    $el.setSelectedPath("");
+    $el.setSelectedNotePath("");
     $el.autocomplete("val", "");
     $el.trigger('focus');
 }
@@ -91,10 +91,10 @@ function initNoteAutocomplete($el, options) {
     }, [
         {
             source: autocompleteSource,
-            displayKey: 'pathTitle',
+            displayKey: 'notePathTitle',
             templates: {
                 suggestion: function(suggestion) {
-                    return suggestion.highlightedTitle;
+                    return suggestion.highlightedNotePathTitle;
                 }
             },
             // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
@@ -102,7 +102,7 @@ function initNoteAutocomplete($el, options) {
         }
     ]);
 
-    $el.on('autocomplete:selected', (event, suggestion) => $el.setSelectedPath(suggestion.path));
+    $el.on('autocomplete:selected', (event, suggestion) => $el.setSelectedNotePath(suggestion.notePath));
     $el.on('autocomplete:closed', () => {
         if (!$el.val().trim()) {
             clearText($el);
@@ -113,24 +113,24 @@ function initNoteAutocomplete($el, options) {
 }
 
 function init() {
-    $.fn.getSelectedPath = function () {
+    $.fn.getSelectedNotePath = function () {
         if (!$(this).val().trim()) {
             return "";
         } else {
-            return $(this).attr(SELECTED_PATH_KEY);
+            return $(this).attr(SELECTED_NOTE_PATH_KEY);
         }
     };
 
-    $.fn.setSelectedPath = function (path) {
-        path = path || "";
+    $.fn.setSelectedNotePath = function (notePath) {
+        notePath = notePath || "";
 
-        $(this).attr(SELECTED_PATH_KEY, path);
+        $(this).attr(SELECTED_NOTE_PATH_KEY, notePath);
 
         $(this)
             .closest(".input-group")
             .find(".go-to-selected-note-button")
-            .toggleClass("disabled", !path.trim())
-            .attr(SELECTED_PATH_KEY, path); // we also set attr here so tooltip can be displayed
+            .toggleClass("disabled", !notePath.trim())
+            .attr(SELECTED_NOTE_PATH_KEY, notePath); // we also set attr here so tooltip can be displayed
     };
 }
 

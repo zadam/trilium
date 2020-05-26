@@ -17,6 +17,10 @@ const TPL = `
         padding-left: 10px;
         padding-right: 10px;
     }
+    
+    .title-bar-buttons button:hover {
+        background-color: var(--accented-background-color) !important;
+    }
     </style>
 
     <button class="btn icon-action bx bx-minus minimize-btn"></button>

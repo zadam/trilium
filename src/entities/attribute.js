@@ -8,13 +8,13 @@ const sql = require('../services/sql');
 /**
  * Attribute is key value pair owned by a note.
  *
- * @property {string} attributeId
- * @property {string} noteId
- * @property {string} type
- * @property {string} name
+ * @property {string} attributeId - immutable
+ * @property {string} noteId - immutable
+ * @property {string} type - immutable
+ * @property {string} name - immutable
  * @property {string} value
  * @property {int} position
- * @property {boolean} isInheritable
+ * @property {boolean} isInheritable - immutable
  * @property {boolean} isDeleted
  * @property {string|null} deleteId - ID identifying delete transaction
  * @property {string} utcDateCreated
@@ -108,14 +108,14 @@ class Attribute extends Entity {
         delete pojo.__note;
     }
 
-    createClone(type, name, value) {
+    createClone(type, name, value, isInheritable) {
         return new Attribute({
             noteId: this.noteId,
             type: type,
             name: name,
             value: value,
             position: this.position,
-            isInheritable: this.isInheritable,
+            isInheritable: isInheritable,
             isDeleted: false,
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified

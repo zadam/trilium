@@ -10,8 +10,11 @@ const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
 const cls = require('./services/cls');
+const dataDir = require('./services/data_dir');
 require('./entities/entity_constructor');
 require('./services/handlers');
+require('./services/hoisted_note_loader');
+require('./services/note_cache/note_cache_loader');
 
 const app = express();
 
@@ -56,7 +59,7 @@ const sessionParser = session({
     },
     store: new FileStore({
         ttl: 30 * 24 * 3600,
-        path: os.tmpdir() + '/trilium-sessions'
+        path: dataDir.TRILIUM_DATA_DIR + '/sessions'
     })
 });
 app.use(sessionParser);

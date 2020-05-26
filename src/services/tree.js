@@ -5,7 +5,7 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const syncTableService = require('./sync_table');
 const protectedSessionService = require('./protected_session');
-const noteCacheService = require('./note_cache');
+const noteCacheService = require('./note_cache/note_cache.js');
 
 async function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for

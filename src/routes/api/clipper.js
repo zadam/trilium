@@ -110,10 +110,16 @@ async function addImagesToNote(images, note, content) {
             const {note: imageNote, url} = await imageService.saveImage(note.noteId, buffer, filename, true);
 
             await new Attribute({
+                noteId: imageNote.noteId,
+                type: 'label',
+                name: 'hideInAutocomplete'
+            }).save();
+
+            await new Attribute({
                 noteId: note.noteId,
                 type: 'relation',
-                value: imageNote.noteId,
-                name: 'imageLink'
+                name: 'imageLink',
+                value: imageNote.noteId
             }).save();
 
             console.log(`Replacing ${imageId} with ${url}`);

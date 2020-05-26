@@ -38,7 +38,7 @@ async function includeNote(notePath) {
 }
 
 $form.on('submit', () => {
-    const notePath = $autoComplete.getSelectedPath();
+    const notePath = $autoComplete.getSelectedNotePath();
 
     if (notePath) {
         $dialog.modal('hide');

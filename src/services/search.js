@@ -1,9 +1,24 @@
+"use strict";
+
+/**
+ * Missing things from the OLD search:
+ * - orderBy
+ * - limit
+ * - in - replaced with note.ancestors
+ * - content in attribute search
+ * - not - pherhaps not necessary
+ *
+ * other potential additions:
+ * - targetRelations - either named or not
+ * - any relation without name
+ */
+
 const repository = require('./repository');
 const sql = require('./sql');
 const log = require('./log');
-const parseFilters = require('./parse_filters');
+const parseFilters = require('./search/parse_filters.js');
 const buildSearchQuery = require('./build_search_query');
-const noteCacheService = require('./note_cache');
+const noteCacheService = require('./note_cache/note_cache.js');
 
 async function searchForNotes(searchString) {
     const noteIds = await searchForNoteIds(searchString);

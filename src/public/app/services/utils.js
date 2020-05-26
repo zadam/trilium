@@ -187,7 +187,7 @@ function setCookie(name, value) {
 }
 
 function setSessionCookie(name, value) {
-    document.cookie = name + "=" + (value || "") + ";";
+    document.cookie = name + "=" + (value || "") + "; SameSite=Strict";
 }
 
 function getCookie(name) {

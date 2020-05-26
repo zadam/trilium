@@ -1,6 +1,7 @@
 "use strict";
 
-const noteCacheService = require('../../services/note_cache');
+const noteCacheService = require('../../services/note_cache/note_cache_service');
+const searchService = require('../../services/search/search');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
@@ -18,7 +19,7 @@ async function getAutocomplete(req) {
         results = await getRecentNotes(activeNoteId);
     }
     else {
-        results = await noteCacheService.findNotes(query);
+        results = await searchService.searchNotesForAutocomplete(query);
     }
 
     const msTaken = Date.now() - timestampStarted;
@@ -57,10 +58,9 @@ async function getRecentNotes(activeNoteId) {
         const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));
 
         return {
-            path: rn.notePath,
-            pathTitle: title,
-            highlightedTitle: title,
-            noteTitle: noteCacheService.getNoteTitleFromPath(rn.notePath)
+            notePath: rn.notePath,
+            notePathTitle: title,
+            highlightedNotePathTitle: utils.escapeHtml(title)
         };
     });
 }

@@ -200,7 +200,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 this.promotedAttributeChanged(event);
             });
 
-            $input.setSelectedPath(valueAttr.value);
+            $input.setSelectedNotePath(valueAttr.value);
         }
         else {
             ws.logError("Unknown attribute type=" + valueAttr.type);
@@ -250,7 +250,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             value = $attr.is(':checked') ? "true" : "false";
         }
         else if ($attr.prop("attribute-type") === "relation") {
-            const selectedPath = $attr.getSelectedPath();
+            const selectedPath = $attr.getSelectedNotePath();
 
             value = selectedPath ? treeService.getNoteIdFromNotePath(selectedPath) : "";
         }

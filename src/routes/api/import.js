@@ -8,7 +8,7 @@ const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
-const noteCacheService = require('../../services/note_cache');
+const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
 
