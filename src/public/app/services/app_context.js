@@ -17,6 +17,7 @@ class AppContext extends Component {
         super();
 
         this.isMainWindow = isMainWindow;
+        this.executors = [];
     }
 
     setLayout(layout) {

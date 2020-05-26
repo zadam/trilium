@@ -240,7 +240,7 @@ export default class TabManager extends Component {
         }
 
         this.tabsUpdate.scheduleUpdate();
-        
+
         this.setCurrentNotePathToHash();
     }
 
@@ -250,6 +250,9 @@ export default class TabManager extends Component {
         if (!tabContextToRemove) {
             return;
         }
+
+        // close dangling autocompletes after closing the tab
+        $(".aa-input").autocomplete("close");
 
         await this.triggerEvent('beforeTabRemove', {tabId});
 
@@ -268,9 +271,6 @@ export default class TabManager extends Component {
         }
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
-
-        // remove dangling autocompletes after closing the tab
-        $(".algolia-autocomplete").remove();
 
         this.triggerEvent('tabRemoved', {tabId});
 

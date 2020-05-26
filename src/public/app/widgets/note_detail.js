@@ -308,7 +308,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
             return;
         }
 
-        await noteCreateService.createNote(note.noteId, {
+        // without await as this otherwise causes deadlock through component mutex
+        noteCreateService.createNote(note.noteId, {
             isProtected: note.isProtected,
             saveSelection: true
         });

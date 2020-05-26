@@ -9,9 +9,11 @@ class ZoomService extends Component {
     constructor() {
         super();
 
-        options.initializedPromise.then(() => {
-            this.setZoomFactor(options.getFloat('zoomFactor'));
-        });
+        if (utils.isElectron()) {
+            options.initializedPromise.then(() => {
+                this.setZoomFactor(options.getFloat('zoomFactor'));
+            });
+        }
     }
 
     setZoomFactor(zoomFactor) {
