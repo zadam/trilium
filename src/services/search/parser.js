@@ -25,7 +25,7 @@ function getFulltext(tokens, parsingContext) {
     else if (parsingContext.includeNoteContent) {
         return new OrExp([
             new NoteCacheFulltextExp(tokens),
-            new NoteContentFulltextExp(tokens)
+            new NoteContentFulltextExp('*=*', tokens)
         ]);
     }
     else {
@@ -54,6 +54,21 @@ function getExpression(tokens, parsingContext, level = 0) {
         }
 
         i++;
+
+        if (tokens[i] === 'content') {
+            i += 1;
+
+            const operator = tokens[i];
+
+            if (!isOperator(operator)) {
+                parsingContext.addError(`After content expected operator, but got "${tokens[i]}"`);
+                return;
+            }
+
+            i++;
+
+            return new NoteContentFulltextExp(operator, [tokens[i]]);
+        }
 
         if (tokens[i] === 'parents') {
             i += 1;

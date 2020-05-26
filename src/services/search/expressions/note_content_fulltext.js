@@ -3,17 +3,21 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
+const utils = require('../../utils');
 
 class NoteContentFulltextExp extends Expression {
-    constructor(tokens) {
+    constructor(operator, tokens) {
         super();
+
+        this.likePrefix = ["*=*", "*="].includes(operator) ? "%" : "";
+        this.likeSuffix = ["*=*", "=*"].includes(operator) ? "%" : "";
 
         this.tokens = tokens;
     }
 
     async execute(inputNoteSet) {
         const resultNoteSet = new NoteSet();
-        const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
+        const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike(this.likePrefix, token, this.likeSuffix));
 
         const sql = require('../../sql');
 
