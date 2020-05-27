@@ -10,13 +10,6 @@ async function autocompleteSource(term, cb) {
         + '?query=' + encodeURIComponent(term)
         + '&activeNoteId=' + appContext.tabManager.getActiveTabNoteId());
 
-    if (result.length === 0) {
-        result.push({
-            notePathTitle: "No results",
-            notePath: ""
-        });
-    }
-
     cb(result);
 }
 

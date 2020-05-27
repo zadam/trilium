@@ -17,28 +17,15 @@ const mentionSetup = {
             feed: queryText => {
                 return new Promise((res, rej) => {
                     noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        if (rows.length === 1 && rows[0].pathTitle === 'No results') {
-                            rows = [];
-                        }
-
-                        for (const row of rows) {
-                            row.text = row.name = row.noteTitle;
-                            row.id = '@' + row.text;
-                            row.link = '#' + row.path;
-                        }
-
-                        if (queryText.trim().length > 0) {
-                            rows = [
-                                {
-                                    highlightedTitle: `Create and link note "<strong>${queryText}</strong>"`,
-                                    id: 'create',
-                                    title: queryText
-                                },
-                                ...rows
-                            ];
-                        }
-
-                        res(rows);
+                        res(rows.map(row => {
+                            return {
+                                id: '@' + row.notePathTitle,
+                                name: row.notePathTitle,
+                                link: '#' + row.notePath,
+                                notePath: row.notePath,
+                                highlightedNotePathTitle: row.highlightedNotePathTitle
+                            }
+                        }));
                     });
                 });
             },
@@ -46,7 +33,7 @@ const mentionSetup = {
                 const itemElement = document.createElement('span');
 
                 itemElement.classList.add('mentions-item');
-                itemElement.innerHTML = `${item.highlightedTitle} `;
+                itemElement.innerHTML = `${item.highlightedNotePathTitle} `;
 
                 return itemElement;
             },
