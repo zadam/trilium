@@ -2,6 +2,11 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import libraryLoader from "../services/library_loader.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import treeCache from "../services/tree_cache.js";
+import server from "../services/server.js";
+import utils from "../services/utils.js";
+import ws from "../services/ws.js";
+import SpacedUpdate from "../services/spaced_update.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const mentionSetup = {
     feeds: [
@@ -33,6 +38,34 @@ const mentionSetup = {
                 return itemElement;
             },
             minimumCharacters: 0
+        },
+        {
+            marker: '#',
+            feed: async queryText => {
+                const names = await server.get(`attributes/names/?type=label&query=${encodeURIComponent(queryText)}`);
+
+                return names.map(name => {
+                    return {
+                        id: '#' + name,
+                        name: name
+                    }
+                });
+            },
+            minimumCharacters: 0
+        },
+        {
+            marker: '~',
+            feed: async queryText => {
+                const names = await server.get(`attributes/names/?type=relation&query=${encodeURIComponent(queryText)}`);
+
+                return names.map(name => {
+                    return {
+                        id: '~' + name,
+                        name: name
+                    }
+                });
+            },
+            minimumCharacters: 0
         }
     ]
 };
@@ -46,19 +79,17 @@ const TPL = `
 export default class NoteAttributesWidget extends TabAwareWidget {
     constructor() {
         super();
+
+        this.spacedUpdate = new SpacedUpdate(async () => {
+            const content = this.textEditor.getData();
+
+            this.parse(content);
+        });
     }
 
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-attributes-editor');
-        // this.$noteTitle = this.$widget.find(".note-attributes");
-        //
-        // this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
-        //
-        // utils.bindElShortcut(this.$noteTitle, 'return', () => {
-        //     this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
-        // });
-
         this.initialized = this.initEditor();
 
         return this.$widget;
@@ -125,7 +156,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             mention: mentionSetup
         });
 
-        //this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+        this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
@@ -144,5 +175,56 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         }
 
         $el.text(title);
+    }
+
+    async refreshWithNote(note) {
+        const ownedAttributes = note.getOwnedAttributes();
+        const $attributesContainer = $("<div>");
+
+        await this.renderAttributes(ownedAttributes, $attributesContainer);
+console.log($attributesContainer.html());
+        this.textEditor.setData($attributesContainer.html());
+    }
+
+    createNoteLink(noteId) {
+        return $("<a>", {
+            href: '#' + noteId,
+            class: 'reference-link',
+            'data-note-path': noteId
+        });
+    }
+
+    async renderAttributes(attributes, $container) {
+        for (const attribute of attributes) {
+            if (attribute.type === 'label') {
+                $container.append(utils.formatLabel(attribute) + " ");
+            } else if (attribute.type === 'relation') {
+                if (attribute.isAutoLink) {
+                    continue;
+                }
+
+                if (attribute.value) {
+                    $container.append('~' + attribute.name + "=");
+                    $container.append(this.createNoteLink(attribute.value));
+                    $container.append(" ");
+                } else {
+                    ws.logError(`Relation ${attribute.attributeId} has empty target`);
+                }
+            } else {
+                ws.logError("Unknown attr type: " + attribute.type);
+            }
+        }
+    }
+
+    parse(content) {
+        if (content.startsWith('<p>')) {
+            content = content.substr(3);
+        }
+
+        if (content.endsWith('</p>')) {
+            content = content.substr(0, content - 4);
+        }
+
+        console.log(content);
     }
 }

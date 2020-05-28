@@ -85,7 +85,7 @@ function formatValueWithWhitespace(val) {
 }
 
 function formatLabel(label) {
-    let str = "@" + formatValueWithWhitespace(label.name);
+    let str = "#" + formatValueWithWhitespace(label.name);
 
     if (label.value !== "") {
         str += "=" + formatValueWithWhitespace(label.value);

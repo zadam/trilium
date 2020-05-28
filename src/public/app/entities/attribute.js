@@ -36,6 +36,10 @@ class Attribute {
         }
     }
 
+    get isAutoLink() {
+        return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
+    }
+
     get toString() {
         return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name}, value=${this.value})`;
     }

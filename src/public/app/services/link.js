@@ -26,7 +26,7 @@ async function createNoteLink(notePath, options = {}) {
     }
 
     const $noteLink = $("<a>", {
-        href: 'javascript:',
+        href: '#' + notePath,
         text: noteTitle
     }).attr('data-action', 'note')
         .attr('data-note-path', notePath);
