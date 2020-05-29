@@ -25,7 +25,7 @@ const importRoute = require('./api/import');
 const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
 const anonymizationRoute = require('./api/anonymization');
-const cleanupRoute = require('./api/cleanup');
+const databaseRoute = require('./api/database');
 const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script');
@@ -222,10 +222,13 @@ function register(app) {
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 
-    // VACUUM requires execution outside of transaction
-    route(POST, '/api/cleanup/vacuum-database', [auth.checkApiAuthOrElectron, csrfMiddleware], cleanupRoute.vacuumDatabase, apiResultHandler, false);
+    // backup requires execution outside of transaction
+    route(POST, '/api/database/backup-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler, false);
 
-    route(POST, '/api/cleanup/find-and-fix-consistency-issues', [auth.checkApiAuthOrElectron, csrfMiddleware], cleanupRoute.findAndFixConsistencyIssues, apiResultHandler, false);
+    // VACUUM requires execution outside of transaction
+    route(POST, '/api/database/vacuum-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.vacuumDatabase, apiResultHandler, false);
+
+    route(POST, '/api/database/find-and-fix-consistency-issues', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.findAndFixConsistencyIssues, apiResultHandler, false);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);

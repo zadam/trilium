@@ -29,13 +29,38 @@ async function periodBackup(optionName, fileName, periodInSeconds) {
 }
 
 async function backupNow(name) {
+    const sql = require('./sql');
+
     // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
-    await syncMutexService.doExclusively(async () => {
+    return await syncMutexService.doExclusively(async () => {
         const backupFile = `${dataDir.BACKUP_DIR}/backup-${name}.db`;
 
-        fs.copySync(dataDir.DOCUMENT_PATH, backupFile);
+        try {
+            fs.unlinkSync(backupFile);
+        }
+        catch (e) {} // unlink throws exception if the file did not exist
 
-        log.info("Created backup at " + backupFile);
+        let success = false;
+        let attemptCount = 0
+
+        for (; attemptCount < 50 && !success; attemptCount++) {
+            try {
+                await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
+                success++;
+            }
+            catch (e) {}
+            // we re-try since VACUUM is very picky and it can't run if there's any other query currently running
+            // which is difficult to guarantee so we just re-try
+        }
+
+        if (attemptCount === 10) {
+            log.error(`Creating backup ${backupFile} failed`);
+        }
+        else {
+            log.info("Created backup at " + backupFile);
+        }
+
+        return backupFile;
     });
 }
 
