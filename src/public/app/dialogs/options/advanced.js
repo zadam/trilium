@@ -24,6 +24,13 @@ const TPL = `
 <p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
     for sharing online for debugging purposes without fear of leaking your personal data.</p>
 
+<h4>Backup database</h4>
+
+<button id="backup-database-button" class="btn">Backup database</button>
+
+<br/>
+<br/>
+
 <h4>Vacuum database</h4>
 
 <p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
@@ -37,6 +44,7 @@ export default class AdvancedOptions {
         this.$forceFullSyncButton = $("#force-full-sync-button");
         this.$fillSyncRowsButton = $("#fill-sync-rows-button");
         this.$anonymizeButton = $("#anonymize-button");
+        this.$backupDatabaseButton = $("#backup-database-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
         this.$findAndFixConsistencyIssuesButton = $("#find-and-fix-consistency-issues-button");
 
@@ -58,14 +66,20 @@ export default class AdvancedOptions {
             toastService.showMessage("Created anonymized database");
         });
 
+        this.$backupDatabaseButton.on('click', async () => {
+            const {backupFile} = await server.post('database/backup-database');
+
+            toastService.showMessage("Database has been backed up to " + backupFile, 10000);
+        });
+
         this.$vacuumDatabaseButton.on('click', async () => {
-            await server.post('cleanup/vacuum-database');
+            await server.post('database/vacuum-database');
 
             toastService.showMessage("Database has been vacuumed");
         });
 
         this.$findAndFixConsistencyIssuesButton.on('click', async () => {
-            await server.post('cleanup/find-and-fix-consistency-issues');
+            await server.post('database/find-and-fix-consistency-issues');
 
             toastService.showMessage("Consistency issues should be fixed.");
         });

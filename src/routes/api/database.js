@@ -2,7 +2,14 @@
 
 const sql = require('../../services/sql');
 const log = require('../../services/log');
+const backupService = require('../../services/backup');
 const consistencyChecksService = require('../../services/consistency_checks');
+
+async function backupDatabase() {
+    return {
+        backupFile: await backupService.backupNow("now")
+    };
+}
 
 async function vacuumDatabase() {
     await sql.execute("VACUUM");
@@ -15,6 +22,7 @@ async function findAndFixConsistencyIssues() {
 }
 
 module.exports = {
+    backupDatabase,
     vacuumDatabase,
     findAndFixConsistencyIssues
 };

@@ -5,17 +5,23 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
+    <style>
+        .file-table td {
+            overflow-wrap: anywhere;
+        }
+    </style>
+
     <table class="file-table">
         <tr>
-            <th nowrap>Note ID:</th>
+            <th>Note ID:</th>
             <td class="file-note-id"></td>
-            <th nowrap>Original file name:</th>
+            <th>Original file name:</th>
             <td class="file-filename"></td>
         </tr>
         <tr>
-            <th nowrap>File type:</th>
+            <th>File type:</th>
             <td class="file-filetype"></td>
-            <th nowrap>File size:</th>
+            <th>File size:</th>
             <td class="file-filesize"></td>
         </tr>
     </table>
@@ -94,7 +100,7 @@ export default class FileTypeWidget extends TypeWidget {
                 toastService.showError("Upload of a new file revision failed.");
             }
         });
-        
+
         return this.$widget;
     }
 

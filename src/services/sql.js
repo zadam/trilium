@@ -153,6 +153,10 @@ async function execute(query, params = []) {
     return await wrap(async db => db.run(query, ...params), query);
 }
 
+async function executeNoWrap(query, params = []) {
+    await dbConnection.run(query, ...params);
+}
+
 async function executeMany(query, params) {
     // essentially just alias
     await getManyRows(query, params);
@@ -264,6 +268,7 @@ module.exports = {
     getMap,
     getColumn,
     execute,
+    executeNoWrap,
     executeMany,
     executeScript,
     transactional,
