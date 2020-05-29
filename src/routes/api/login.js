@@ -16,7 +16,7 @@ const ApiToken = require('../../entities/api_token');
 
 async function loginSync(req) {
     if (!await sqlInit.schemaExists()) {
-        return [400, { message: "DB schema does not exist, can't sync." }];
+        return [500, { message: "DB schema does not exist, can't sync." }];
     }
 
     const timestampStr = req.body.timestamp;
@@ -27,7 +27,7 @@ async function loginSync(req) {
 
     // login token is valid for 5 minutes
     if (Math.abs(timestamp.getTime() - now.getTime()) > 5 * 60 * 1000) {
-        return [400, { message: 'Auth request time is out of sync, please check that both client and server have correct time.' }];
+        return [401, { message: 'Auth request time is out of sync, please check that both client and server have correct time.' }];
     }
 
     const syncVersion = req.body.syncVersion;
