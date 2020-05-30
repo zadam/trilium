@@ -201,7 +201,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
     function getTextFileWithoutExtension(filePath) {
         const extension = path.extname(filePath).toLowerCase();
 
-        if (extension === '.md' || extension === '.html') {
+        if (extension === '.md' || extension === '.markdown' || extension === '.html') {
             return filePath.substr(0, filePath.length - extension.length);
         }
         else {

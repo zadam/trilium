@@ -205,7 +205,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     function getTextFileWithoutExtension(filePath) {
         const extension = path.extname(filePath).toLowerCase();
 
-        if (extension === '.md' || extension === '.html') {
+        if (extension === '.md' || extension === '.markdown' || extension === '.html') {
             return filePath.substr(0, filePath.length - extension.length);
         }
         else {
@@ -318,12 +318,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 }
             });
 
-            const includeNoteLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
+            if(noteMeta) {
+                const includeNoteLinks = (noteMeta.attributes || [])
+                    .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
 
-            for (const link of includeNoteLinks) {
-                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+                for (const link of includeNoteLinks) {
+                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                    content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+                }
             }
         }
 
