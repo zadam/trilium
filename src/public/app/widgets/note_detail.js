@@ -96,7 +96,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
                 shrinkImages: true,
                 textImportedAsText: true,
                 codeImportedAsCode: true,
-                explodeArchives: true
+                explodeArchives: true,
+                replaceUnderscoresWithSpaces: true
             });
         });
 

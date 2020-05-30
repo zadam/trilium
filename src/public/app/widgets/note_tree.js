@@ -300,7 +300,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             shrinkImages: true,
                             textImportedAsText: true,
                             codeImportedAsCode: true,
-                            explodeArchives: true
+                            explodeArchives: true,
+                            replaceUnderscoresWithSpaces: true
                         });
                     }
                     else {
