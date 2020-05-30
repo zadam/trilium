@@ -6,6 +6,7 @@ const unescape = require('unescape');
 const escape = require('escape-html');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
+const path = require('path');
 
 function newEntityId() {
     return randomString(12);
@@ -209,6 +210,29 @@ function formatDownloadTitle(filename, type, mime) {
     }
 }
 
+function removeTextFileExtension(filePath) {
+    const extension = path.extname(filePath).toLowerCase();
+
+    if (extension === '.md' || extension === '.markdown' || extension === '.html') {
+        return filePath.substr(0, filePath.length - extension.length);
+    }
+    else {
+        return filePath;
+    }
+}
+
+function getNoteTitle(filePath, replaceUnderscoresWithSpaces, noteMeta) {
+    if (noteMeta) {
+        return noteMeta.title;
+    } else {
+        const basename = path.basename(removeTextFileExtension(filePath));
+        if(replaceUnderscoresWithSpaces) {
+            return basename.replace(/_/g, ' ').trim();
+        }
+        return basename;
+    }
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -237,5 +261,7 @@ module.exports = {
     isStringNote,
     quoteRegex,
     replaceAll,
-    formatDownloadTitle
+    formatDownloadTitle,
+    getNoteTitle,
+    removeTextFileExtension,
 };

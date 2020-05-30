@@ -21,7 +21,8 @@ async function importToBranch(req) {
         shrinkImages: req.body.shrinkImages !== 'false',
         textImportedAsText: req.body.textImportedAsText !== 'false',
         codeImportedAsCode: req.body.codeImportedAsCode !== 'false',
-        explodeArchives: req.body.explodeArchives !== 'false'
+        explodeArchives: req.body.explodeArchives !== 'false',
+        replaceUnderscoresWithSpaces: req.body.replaceUnderscoresWithSpaces !== 'false'
     };
 
     const file = req.file;

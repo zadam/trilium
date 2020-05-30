@@ -12,6 +12,7 @@ const $shrinkImagesCheckbox = $("#shrink-images-checkbox");
 const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
 const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
 const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
+const $replaceUnderscoresWithSpacesCheckbox = $("#replace-underscores-with-spaces-checkbox");
 
 let parentNoteId = null;
 
@@ -23,6 +24,7 @@ export async function showDialog(noteId) {
     $textImportedAsTextCheckbox.prop("checked", true);
     $codeImportedAsCodeCheckbox.prop("checked", true);
     $explodeArchivesCheckbox.prop("checked", true);
+    $replaceUnderscoresWithSpacesCheckbox.prop("checked", true);
 
     parentNoteId = noteId;
 
@@ -48,7 +50,8 @@ async function importIntoNote(parentNoteId) {
         shrinkImages: boolToString($shrinkImagesCheckbox),
         textImportedAsText: boolToString($textImportedAsTextCheckbox),
         codeImportedAsCode: boolToString($codeImportedAsCodeCheckbox),
-        explodeArchives: boolToString($explodeArchivesCheckbox)
+        explodeArchives: boolToString($explodeArchivesCheckbox),
+        replaceUnderscoresWithSpaces: boolToString($replaceUnderscoresWithSpacesCheckbox)
     };
 
     $dialog.modal('hide');
