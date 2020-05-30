@@ -165,6 +165,10 @@ async function consumeSyncData() {
             utils.reloadApp();
         }
 
+        for (const syncRow of nonProcessedSyncRows) {
+            processedSyncIds.add(syncRow.id);
+        }
+
         lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncRows[allSyncRows.length - 1].id);
     }
 
