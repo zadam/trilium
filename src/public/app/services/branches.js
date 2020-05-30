@@ -45,7 +45,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     }
 }
 
-async function moveToParentNote(branchIdsToMove, newParentNoteId) {
+async function moveToParentNote(branchIdsToMove, newParentBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
 
     for (const branchIdToMove of branchIdsToMove) {
@@ -56,7 +56,7 @@ async function moveToParentNote(branchIdsToMove, newParentNoteId) {
             continue;
         }
 
-        const resp = await server.put(`branches/${branchIdToMove}/move-to/${newParentNoteId}`);
+        const resp = await server.put(`branches/${branchIdToMove}/move-to/${newParentBranchId}`);
 
         if (!resp.success) {
             alert(resp.message);

@@ -265,6 +265,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                     const notes = this.getSelectedOrActiveNodes(node).map(node => ({
                         noteId: node.data.noteId,
+                        branchId: node.data.branchId,
                         title: node.title
                     }));
 
@@ -304,17 +305,28 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         });
                     }
                     else {
+                        const jsonStr = dataTransfer.getData("text");
+                        let notes = null;
+
+                        try {
+                            notes = JSON.parse(jsonStr);
+                        }
+                        catch (e) {
+                            console.error(`Cannot parse ${jsonStr} into notes for drop`);
+                            return;
+                        }
+
                         // This function MUST be defined to enable dropping of items on the tree.
                         // data.hitMode is 'before', 'after', or 'over'.
 
-                        const selectedBranchIds = this.getSelectedOrActiveNodes().map(node => node.data.branchId);
+                        const selectedBranchIds = notes.map(note => note.branchId);
 
                         if (data.hitMode === "before") {
                             branchService.moveBeforeBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "after") {
                             branchService.moveAfterBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "over") {
-                            branchService.moveToParentNote(selectedBranchIds, node.data.noteId);
+                            branchService.moveToParentNote(selectedBranchIds, node.data.branchId);
                         } else {
                             throw new Error("Unknown hitMode=" + data.hitMode);
                         }

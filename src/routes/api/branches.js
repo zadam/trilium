@@ -14,25 +14,33 @@ const TaskContext = require('../../services/task_context');
  */
 
 async function moveBranchToParent(req) {
-    const {branchId, parentNoteId} = req.params;
+    const {branchId, parentBranchId} = req.params;
 
+    const parentBranch = await repository.getBranch(parentBranchId);
     const branchToMove = await repository.getBranch(branchId);
 
-    if (branchToMove.parentNoteId === parentNoteId) {
+    if (!parentBranch || !branchToMove) {
+        return [400, `One or both branches ${branchId}, ${parentBranchId} have not been found`];
+    }
+
+    if (branchToMove.parentNoteId === parentBranch.noteId) {
         return { success: true }; // no-op
     }
 
-    const validationResult = await treeService.validateParentChild(parentNoteId, branchToMove.noteId, branchId);
+    const validationResult = await treeService.validateParentChild(parentBranch.noteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
     }
 
-    const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentBranch.noteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
-    const newBranch = branchToMove.createClone(parentNoteId, newNotePos);
-    newBranch.isExpanded = true;
+    // expanding so that the new placement of the branch is immediately visible
+    parentBranch.isExpanded = true;
+    await parentBranch.save();
+
+    const newBranch = branchToMove.createClone(parentBranch.noteId, newNotePos);
     await newBranch.save();
 
     branchToMove.isDeleted = true;
