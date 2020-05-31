@@ -583,13 +583,18 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     /** @return {FancytreeNode[]} */
     getSelectedOrActiveNodes(node = null) {
-        const notes = this.getSelectedNodes(true);
+        const nodes = this.getSelectedNodes(true);
 
-        if (notes.length === 0) {
-            notes.push(node ? node : this.getActiveNode());
+        // the node you start dragging should be included even if not selected
+        if (node && !nodes.find(n => n.key === node.key)) {
+            nodes.push(node);
         }
 
-        return notes;
+        if (nodes.length === 0) {
+            nodes.push(this.getActiveNode());
+        }
+
+        return nodes;
     }
 
     async setExpandedStatusForSubtree(node, isExpanded) {
