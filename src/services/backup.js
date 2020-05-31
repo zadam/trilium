@@ -28,6 +28,8 @@ async function periodBackup(optionName, fileName, periodInSeconds) {
     }
 }
 
+const BACKUP_ATTEMPT_COUNT = 50;
+
 async function backupNow(name) {
     const sql = require('./sql');
 
@@ -43,17 +45,19 @@ async function backupNow(name) {
         let success = false;
         let attemptCount = 0
 
-        for (; attemptCount < 50 && !success; attemptCount++) {
+        for (; attemptCount < BACKUP_ATTEMPT_COUNT && !success; attemptCount++) {
             try {
                 await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
                 success++;
             }
-            catch (e) {}
+            catch (e) {
+                log.info(`Backup attempt ${attemptCount + 1} failed with "${e.message}", retrying...`);
+            }
             // we re-try since VACUUM is very picky and it can't run if there's any other query currently running
             // which is difficult to guarantee so we just re-try
         }
 
-        if (attemptCount === 10) {
+        if (attemptCount === BACKUP_ATTEMPT_COUNT) {
             log.error(`Creating backup ${backupFile} failed`);
         }
         else {
@@ -69,10 +73,10 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
 }
 
 sqlInit.dbReady.then(() => {
-    setInterval(cls.wrap(regularBackup), 60 * 60 * 1000);
+    setInterval(cls.wrap(regularBackup), 4 * 60 * 60 * 1000);
 
-    // kickoff backup immediately
-    setTimeout(cls.wrap(regularBackup), 1000);
+    // kickoff first backup soon after start up
+    setTimeout(cls.wrap(regularBackup), 5 * 60 * 1000);
 });
 
 module.exports = {
