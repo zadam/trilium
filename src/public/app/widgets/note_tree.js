@@ -746,6 +746,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        node.setExpanded(branch.isExpanded, {noEvents:true});
         node.renderTitle();
     }
 
@@ -1079,7 +1080,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const toNode = node.getPrevSibling();
 
         if (toNode !== null) {
-            branchService.moveToParentNote([node.data.branchId], toNode.data.noteId);
+            branchService.moveToParentNote([node.data.branchId], toNode.data.branchId);
         }
     }
 
@@ -1164,7 +1165,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     pasteNotesFromClipboardCommand({node}) {
-        clipboard.pasteInto(node.data.noteId);
+        clipboard.pasteInto(node.data.branchId);
     }
 
     pasteNotesAfterFromClipboard({node}) {

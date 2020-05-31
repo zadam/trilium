@@ -3,10 +3,10 @@
 const cloningService = require('../../services/cloning');
 
 async function cloneNoteToParent(req) {
-    const {noteId, parentNoteId} = req.params;
+    const {noteId, parentBranchId} = req.params;
     const {prefix} = req.body;
 
-    return await cloningService.cloneNoteToParent(noteId, parentNoteId, prefix);
+    return await cloningService.cloneNoteToParent(noteId, parentBranchId, prefix);
 }
 
 async function cloneNoteAfter(req) {

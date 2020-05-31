@@ -39,13 +39,14 @@ export async function showDialog(noteIds) {
 }
 
 async function cloneNotesTo(notePath) {
-    const targetNoteId = treeService.getNoteIdFromNotePath(notePath);
+    const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+    const targetBranchId = await treeCache.getBranchId(parentNoteId, noteId);
 
     for (const cloneNoteId of clonedNoteIds) {
-        await branchService.cloneNoteTo(cloneNoteId, targetNoteId, $clonePrefix.val());
+        await branchService.cloneNoteTo(cloneNoteId, targetBranchId, $clonePrefix.val());
 
         const clonedNote = await treeCache.getNote(cloneNoteId);
-        const targetNote = await treeCache.getNote(targetNoteId);
+        const targetNote = await treeCache.getBranch(targetBranchId).getNote();
 
         toastService.showMessage(`Note "${clonedNote.title}" has been cloned into ${targetNote.title}`);
     }

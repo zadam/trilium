@@ -32,10 +32,11 @@ export async function showDialog(branchIds) {
     noteAutocompleteService.showRecentNotes($noteAutoComplete);
 }
 
-async function moveNotesTo(parentNoteId) {
-    await branchService.moveToParentNote(movedBranchIds, parentNoteId);
+async function moveNotesTo(parentBranchId) {
+    await branchService.moveToParentNote(movedBranchIds, parentBranchId);
 
-    const parentNote = await treeCache.getNote(parentNoteId);
+    const parentBranch = treeCache.getBranch(parentBranchId);
+    const parentNote = await parentBranch.getNote();
 
     toastService.showMessage(`Selected notes have been moved into ${parentNote.title}`);
 }
@@ -46,9 +47,8 @@ $form.on('submit', () => {
     if (notePath) {
         $dialog.modal('hide');
 
-        const noteId = treeService.getNoteIdFromNotePath(notePath);
-
-        moveNotesTo(noteId);
+        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+        treeCache.getBranchId(parentNoteId, noteId).then(branchId => moveNotesTo(branchId));
     }
     else {
         console.error("No path to move to.");

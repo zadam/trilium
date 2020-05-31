@@ -198,8 +198,8 @@ ws.subscribeToMessages(async message => {
     }
 });
 
-async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
-    const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
+async function cloneNoteTo(childNoteId, parentBranchId, prefix) {
+    const resp = await server.put(`notes/${childNoteId}/clone-to/${parentBranchId}`, {
         prefix: prefix
     });
 

@@ -9,12 +9,14 @@ const Branch = require('../entities/branch');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
 
-async function cloneNoteToParent(noteId, parentNoteId, prefix) {
-    if (await isNoteDeleted(noteId) || await isNoteDeleted(parentNoteId)) {
+async function cloneNoteToParent(noteId, parentBranchId, prefix) {
+    const parentBranch = await repository.getBranch(parentBranchId);
+
+    if (await isNoteDeleted(noteId) || await isNoteDeleted(parentBranch.noteId)) {
         return { success: false, message: 'Note is deleted.' };
     }
 
-    const validationResult = await treeService.validateParentChild(parentNoteId, noteId);
+    const validationResult = await treeService.validateParentChild(parentBranch.noteId, noteId);
 
     if (!validationResult.success) {
         return validationResult;
@@ -22,12 +24,13 @@ async function cloneNoteToParent(noteId, parentNoteId, prefix) {
 
     const branch = await new Branch({
         noteId: noteId,
-        parentNoteId: parentNoteId,
+        parentNoteId: parentBranch.noteId,
         prefix: prefix,
         isExpanded: 0
     }).save();
 
-    await sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
+    parentBranch.isExpanded = true; // the new target should be expanded so it immediately shows up to the user
+    await parentBranch.save();
 
     return { success: true, branchId: branch.branchId };
 }
