@@ -13,6 +13,7 @@ const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
 const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
 const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 const $replaceUnderscoresWithSpacesCheckbox = $("#replace-underscores-with-spaces-checkbox");
+const $preserveLineBreaksCheckbox = $("#preserve-line-breaks-checkbox");
 
 let parentNoteId = null;
 
@@ -25,6 +26,7 @@ export async function showDialog(noteId) {
     $codeImportedAsCodeCheckbox.prop("checked", true);
     $explodeArchivesCheckbox.prop("checked", true);
     $replaceUnderscoresWithSpacesCheckbox.prop("checked", true);
+    $preserveLineBreaksCheckbox.prop("checked", false);
 
     parentNoteId = noteId;
 
@@ -51,7 +53,8 @@ async function importIntoNote(parentNoteId) {
         textImportedAsText: boolToString($textImportedAsTextCheckbox),
         codeImportedAsCode: boolToString($codeImportedAsCodeCheckbox),
         explodeArchives: boolToString($explodeArchivesCheckbox),
-        replaceUnderscoresWithSpaces: boolToString($replaceUnderscoresWithSpacesCheckbox)
+        replaceUnderscoresWithSpaces: boolToString($replaceUnderscoresWithSpacesCheckbox),
+        preserveLineBreaks: boolToString($preserveLineBreaksCheckbox),
     };
 
     $dialog.modal('hide');

@@ -28,7 +28,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // path => noteId, used only when meta file is not available
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
     const mdReader = new commonmark.Parser();
-    const mdWriter = new commonmark.HtmlRenderer();
+    const htmlRendererOptions = {};
+    if(taskContext.data.preserveLineBreaks) {
+        htmlRendererOptions.softbreak = "<br />";
+    }
+    const mdWriter = new commonmark.HtmlRenderer(htmlRendererOptions);
     let metaFile = null;
     let firstNote = null;
     const createdNoteIds = {};

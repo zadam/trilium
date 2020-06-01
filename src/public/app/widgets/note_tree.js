@@ -301,7 +301,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             textImportedAsText: true,
                             codeImportedAsCode: true,
                             explodeArchives: true,
-                            replaceUnderscoresWithSpaces: true
+                            replaceUnderscoresWithSpaces: true,
+                            preserveLineBreaks: false,
                         });
                     }
                     else {

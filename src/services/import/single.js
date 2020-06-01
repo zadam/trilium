@@ -119,7 +119,11 @@ async function importMarkdown(taskContext, file, parentNote) {
     const markdownContent = file.buffer.toString("UTF-8");
 
     const reader = new commonmark.Parser();
-    const writer = new commonmark.HtmlRenderer();
+    const htmlRendererOptions = {};
+    if(taskContext.data.preserveLineBreaks) {
+        htmlRendererOptions.softbreak = "<br />";
+    }
+    const writer = new commonmark.HtmlRenderer(htmlRendererOptions);
 
     const parsed = reader.parse(markdownContent);
     const htmlContent = writer.render(parsed);
