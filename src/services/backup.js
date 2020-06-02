@@ -8,6 +8,8 @@ const log = require('./log');
 const sqlInit = require('./sql_init');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
+const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
 
 async function regularBackup() {
     await periodBackup('lastDailyBackupDate', 'daily', 24 * 3600);
@@ -28,36 +30,42 @@ async function periodBackup(optionName, fileName, periodInSeconds) {
     }
 }
 
-const BACKUP_ATTEMPT_COUNT = 50;
+const COPY_ATTEMPT_COUNT = 50;
 
-async function backupNow(name) {
+async function copyFile(backupFile) {
     const sql = require('./sql');
 
+    try {
+        fs.unlinkSync(backupFile);
+    } catch (e) {
+    } // unlink throws exception if the file did not exist
+
+    let success = false;
+    let attemptCount = 0
+
+    for (; attemptCount < COPY_ATTEMPT_COUNT && !success; attemptCount++) {
+        try {
+            await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
+
+            success = true;
+        } catch (e) {
+            log.info(`Copy DB attempt ${attemptCount + 1} failed with "${e.message}", retrying...`);
+        }
+        // we re-try since VACUUM is very picky and it can't run if there's any other query currently running
+        // which is difficult to guarantee so we just re-try
+    }
+
+    return attemptCount !== COPY_ATTEMPT_COUNT;
+}
+
+async function backupNow(name) {
     // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
     return await syncMutexService.doExclusively(async () => {
         const backupFile = `${dataDir.BACKUP_DIR}/backup-${name}.db`;
 
-        try {
-            fs.unlinkSync(backupFile);
-        }
-        catch (e) {} // unlink throws exception if the file did not exist
+        const success = await copyFile(backupFile, sql);
 
-        let success = false;
-        let attemptCount = 0
-
-        for (; attemptCount < BACKUP_ATTEMPT_COUNT && !success; attemptCount++) {
-            try {
-                await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
-                success++;
-            }
-            catch (e) {
-                log.info(`Backup attempt ${attemptCount + 1} failed with "${e.message}", retrying...`);
-            }
-            // we re-try since VACUUM is very picky and it can't run if there's any other query currently running
-            // which is difficult to guarantee so we just re-try
-        }
-
-        if (attemptCount === BACKUP_ATTEMPT_COUNT) {
+        if (success) {
             log.error(`Creating backup ${backupFile} failed`);
         }
         else {
@@ -66,6 +74,44 @@ async function backupNow(name) {
 
         return backupFile;
     });
+}
+
+async function anonymize() {
+    if (!fs.existsSync(dataDir.ANONYMIZED_DB_DIR)) {
+        fs.mkdirSync(dataDir.ANONYMIZED_DB_DIR, 0o700);
+    }
+
+    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "anonymized-" + dateUtils.getDateTimeForFile() + ".db";
+
+    const success = await copyFile(anonymizedFile);
+
+    if (!success) {
+        return { success: false };
+    }
+
+    const db = await sqlite.open({
+        filename: anonymizedFile,
+        driver: sqlite3.Database
+    });
+
+    await db.run("UPDATE notes SET title = 'title'");
+    await db.run("UPDATE note_contents SET content = 'text'");
+    await db.run("UPDATE note_revisions SET title = 'title'");
+    await db.run("UPDATE note_revision_contents SET content = 'title'");
+    await db.run("UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label'");
+    await db.run("UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name != 'template'");
+    await db.run("UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL");
+    await db.run(`UPDATE options SET value = 'anonymized' WHERE name IN 
+                    ('documentSecret', 'encryptedDataKey', 'passwordVerificationHash', 
+                     'passwordVerificationSalt', 'passwordDerivedKeySalt')`);
+    await db.run("VACUUM");
+
+    await db.close();
+
+    return {
+        success: true,
+        anonymizedFilePath: anonymizedFile
+    };
 }
 
 if (!fs.existsSync(dataDir.BACKUP_DIR)) {
@@ -80,5 +126,6 @@ sqlInit.dbReady.then(() => {
 });
 
 module.exports = {
-    backupNow
+    backupNow,
+    anonymize
 };

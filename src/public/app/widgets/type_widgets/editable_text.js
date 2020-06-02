@@ -23,6 +23,7 @@ const mentionSetup = {
                             row.text = row.name = row.noteTitle;
                             row.id = '@' + row.text;
                             row.link = '#' + row.path;
+                            row.notePath = row.path;
                         }
 
                         res(rows);

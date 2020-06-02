@@ -98,7 +98,7 @@ async function createNewNote(params) {
     const parentNote = await repository.getNote(params.parentNoteId);
 
     if (!parentNote) {
-        throw new Error(`Parent note ${params.parentNoteId} not found.`);
+        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
     }
 
     if (!params.title || params.title.trim().length === 0) {

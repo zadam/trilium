@@ -61,9 +61,14 @@ export default class AdvancedOptions {
         });
 
         this.$anonymizeButton.on('click', async () => {
-            await server.post('anonymization/anonymize');
+            const resp = await server.post('database/anonymize');
 
-            toastService.showMessage("Created anonymized database");
+            if (!resp.success) {
+                toastService.showError("Could not create anonymized database, check backend logs for details");
+            }
+            else {
+                toastService.showMessage(`Created anonymized database in ${resp.anonymizedFilePath}`, 10000);
+            }
         });
 
         this.$backupDatabaseButton.on('click', async () => {

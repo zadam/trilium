@@ -24,7 +24,6 @@ const exportRoute = require('./api/export');
 const importRoute = require('./api/import');
 const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
-const anonymizationRoute = require('./api/anonymization');
 const databaseRoute = require('./api/database');
 const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
@@ -220,7 +219,7 @@ function register(app) {
 
     apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
-    apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
+    route(POST, '/api/database/anonymize', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
 
     // backup requires execution outside of transaction
     route(POST, '/api/database/backup-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler, false);
