@@ -100,23 +100,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return parentNoteId;
     }
 
-    function getNoteTitle(filePath, noteMeta) {
-        if (noteMeta) {
-            return noteMeta.title;
-        }
-        else {
-            const basename = path.basename(filePath);
-
-            return getTextFileWithoutExtension(basename);
-        }
-    }
-
     function getNoteId(noteMeta, filePath) {
         if (noteMeta) {
             return getNewNoteId(noteMeta.noteId);
         }
 
-        const filePathNoExt = getTextFileWithoutExtension(filePath);
+        const filePathNoExt = utils.removeTextFileExtension(filePath);
 
         if (filePathNoExt in createdPaths) {
             return createdPaths[filePathNoExt];
@@ -170,7 +159,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
-        const noteTitle = getNoteTitle(filePath, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
 
         let note = await repository.getNote(noteId);
@@ -200,17 +189,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
 
         return noteId;
-    }
-
-    function getTextFileWithoutExtension(filePath) {
-        const extension = path.extname(filePath).toLowerCase();
-
-        if (extension === '.md' || extension === '.html') {
-            return filePath.substr(0, filePath.length - extension.length);
-        }
-        else {
-            return filePath;
-        }
     }
 
     function getNoteIdFromRelativeUrl(url, filePath) {
@@ -275,7 +253,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             content = mdWriter.render(parsed);
         }
 
-        const noteTitle = getNoteTitle(filePath, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
 
         if (type === 'text') {
             function isUrlAbsolute(url) {
@@ -318,12 +296,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 }
             });
 
-            const includeNoteLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
+            if(noteMeta) {
+                const includeNoteLinks = (noteMeta.attributes || [])
+                    .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
 
-            for (const link of includeNoteLinks) {
-                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+                for (const link of includeNoteLinks) {
+                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                    content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+                }
             }
         }
 
@@ -366,7 +346,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             if (type === 'text') {
-                filePath = getTextFileWithoutExtension(filePath);
+                filePath = utils.removeTextFileExtension(filePath);
             }
         }
 

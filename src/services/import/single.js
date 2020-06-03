@@ -4,8 +4,8 @@ const noteService = require('../../services/notes');
 const imageService = require('../../services/image');
 const protectedSessionService = require('../protected_session');
 const commonmark = require('commonmark');
-const path = require('path');
 const mimeService = require('./mime');
+const utils = require('../../services/utils');
 
 async function importSingleFile(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
@@ -59,7 +59,7 @@ async function importFile(taskContext, file, parentNote) {
 }
 
 async function importCodeNote(taskContext, file, parentNote) {
-    const title = getFileNameWithoutExtension(file.originalname);
+    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     const content = file.buffer.toString("UTF-8");
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
@@ -79,7 +79,7 @@ async function importCodeNote(taskContext, file, parentNote) {
 }
 
 async function importPlainText(taskContext, file, parentNote) {
-    const title = getFileNameWithoutExtension(file.originalname);
+    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     const plainTextContent = file.buffer.toString("UTF-8");
     const htmlContent = convertTextToHtml(plainTextContent);
 
@@ -124,7 +124,7 @@ async function importMarkdown(taskContext, file, parentNote) {
     const parsed = reader.parse(markdownContent);
     const htmlContent = writer.render(parsed);
 
-    const title = getFileNameWithoutExtension(file.originalname);
+    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
     const {note} = await noteService.createNewNote({
         parentNoteId: parentNote.noteId,
@@ -141,7 +141,7 @@ async function importMarkdown(taskContext, file, parentNote) {
 }
 
 async function importHtml(taskContext, file, parentNote) {
-    const title = getFileNameWithoutExtension(file.originalname);
+    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     const content = file.buffer.toString("UTF-8");
 
     const {note} = await noteService.createNewNote({
@@ -156,12 +156,6 @@ async function importHtml(taskContext, file, parentNote) {
     taskContext.increaseProgressCount();
 
     return note;
-}
-
-function getFileNameWithoutExtension(filePath) {
-    const extension = path.extname(filePath);
-
-    return filePath.substr(0, filePath.length - extension.length);
 }
 
 module.exports = {

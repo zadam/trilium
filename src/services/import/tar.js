@@ -102,19 +102,8 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
         return parentNoteId;
     }
 
-    function getNoteTitle(filePath, noteMeta) {
-        if (noteMeta) {
-            return noteMeta.title;
-        }
-        else {
-            const basename = path.basename(filePath);
-
-            return getTextFileWithoutExtension(basename);
-        }
-    }
-
     function getNoteId(noteMeta, filePath) {
-        const filePathNoExt = getTextFileWithoutExtension(filePath);
+        const filePathNoExt = utils.removeTextFileExtension(filePath);
 
         if (filePathNoExt in createdPaths) {
             return createdPaths[filePathNoExt];
@@ -168,7 +157,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
-        const noteTitle = getNoteTitle(filePath, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
 
         let note = await repository.getNote(noteId);
@@ -196,17 +185,6 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
         }
 
         return noteId;
-    }
-
-    function getTextFileWithoutExtension(filePath) {
-        const extension = path.extname(filePath).toLowerCase();
-
-        if (extension === '.md' || extension === '.html') {
-            return filePath.substr(0, filePath.length - extension.length);
-        }
-        else {
-            return filePath;
-        }
     }
 
     function getNoteIdFromRelativeUrl(url, filePath) {
@@ -267,7 +245,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             content = mdWriter.render(parsed);
         }
 
-        const noteTitle = getNoteTitle(filePath, noteMeta);
+        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
 
         if (type === 'text') {
             function isUrlAbsolute(url) {
@@ -348,7 +326,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             }
 
             if (type === 'text') {
-                filePath = getTextFileWithoutExtension(filePath);
+                filePath = utils.removeTextFileExtension(filePath);
             }
         }
 
