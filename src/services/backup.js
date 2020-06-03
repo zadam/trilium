@@ -63,13 +63,13 @@ async function backupNow(name) {
     return await syncMutexService.doExclusively(async () => {
         const backupFile = `${dataDir.BACKUP_DIR}/backup-${name}.db`;
 
-        const success = await copyFile(backupFile, sql);
+        const success = await copyFile(backupFile);
 
         if (success) {
-            log.error(`Creating backup ${backupFile} failed`);
+            log.info("Created backup at " + backupFile);
         }
         else {
-            log.info("Created backup at " + backupFile);
+            log.error(`Creating backup ${backupFile} failed`);
         }
 
         return backupFile;
