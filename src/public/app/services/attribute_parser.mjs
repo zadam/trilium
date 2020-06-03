@@ -1,11 +1,9 @@
 function lexer(str) {
     str = str.toLowerCase();
 
-    const fulltextTokens = [];
     const expressionTokens = [];
 
     let quotes = false;
-    let fulltextEnded = false;
     let currentWord = '';
 
     function isOperatorSymbol(chr) {
@@ -26,11 +24,7 @@ function lexer(str) {
             return;
         }
 
-        if (fulltextEnded) {
-            expressionTokens.push(currentWord);
-        } else {
-            fulltextTokens.push(currentWord);
-        }
+        expressionTokens.push(currentWord);
 
         currentWord = '';
     }
@@ -52,18 +46,11 @@ function lexer(str) {
         }
         else if (['"', "'", '`'].includes(chr)) {
             if (!quotes) {
-                if (currentWord.length === 0 || fulltextEnded) {
-                    if (previousOperatorSymbol()) {
-                        finishWord();
-                    }
+                if (previousOperatorSymbol()) {
+                    finishWord();
+                }
 
-                    quotes = chr;
-                }
-                else {
-                    // quote inside a word does not have special meening and does not break word
-                    // e.g. d'Artagnan is kept as a single token
-                    currentWord += chr;
-                }
+                quotes = chr;
             }
             else if (quotes === chr) {
                 quotes = false;
@@ -78,7 +65,6 @@ function lexer(str) {
         }
         else if (!quotes) {
             if (currentWord.length === 0 && (chr === '#' || chr === '~')) {
-                fulltextEnded = true;
                 currentWord = chr;
 
                 continue;
@@ -87,13 +73,13 @@ function lexer(str) {
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && ['(', ')', '.'].includes(chr)) {
+            else if (['(', ')', '.'].includes(chr)) {
                 finishWord();
                 currentWord += chr;
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && previousOperatorSymbol() !== isOperatorSymbol(chr)) {
+            else if (previousOperatorSymbol() !== isOperatorSymbol(chr)) {
                 finishWord();
 
                 currentWord += chr;
@@ -106,10 +92,7 @@ function lexer(str) {
 
     finishWord();
 
-    return {
-        fulltextTokens,
-        expressionTokens
-    }
+    return expressionTokens;
 }
 
 export default {
