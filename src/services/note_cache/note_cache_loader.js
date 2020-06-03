@@ -50,8 +50,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             note.decrypt();
         }
         else {
-            const note = new Note(entity);
-            noteCache.notes[noteId] = note;
+            const note = new Note(noteCache, entity);
 
             note.decrypt();
         }
@@ -88,7 +87,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             }
         }
         else {
-            noteCache.branches[branchId] = new Branch(entity);
+            noteCache.branches[branchId] = new Branch(noteCache, entity);
 
             if (childNote) {
                 childNote.resortParents();
@@ -133,8 +132,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             }
         }
         else {
-            const attr = new Attribute(entity);
-            noteCache.attributes[attributeId] = attr;
+            const attr = new Attribute(noteCache, entity);
 
             if (note) {
                 if (attr.isAffectingSubtree || note.isTemplate) {

@@ -12,7 +12,7 @@ function lexer(str) {
         return ['=', '*', '>', '<', '!'].includes(chr);
     }
 
-    function previusOperatorSymbol() {
+    function previousOperatorSymbol() {
         if (currentWord.length === 0) {
             return false;
         }
@@ -53,7 +53,7 @@ function lexer(str) {
         else if (['"', "'", '`'].includes(chr)) {
             if (!quotes) {
                 if (currentWord.length === 0 || fulltextEnded) {
-                    if (previusOperatorSymbol()) {
+                    if (previousOperatorSymbol()) {
                         finishWord();
                     }
 
@@ -93,7 +93,7 @@ function lexer(str) {
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && previusOperatorSymbol() !== isOperatorSymbol(chr)) {
+            else if (fulltextEnded && previousOperatorSymbol() !== isOperatorSymbol(chr)) {
                 finishWord();
 
                 currentWord += chr;
