@@ -24,7 +24,6 @@ const exportRoute = require('./api/export');
 const importRoute = require('./api/import');
 const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
-const anonymizationRoute = require('./api/anonymization');
 const databaseRoute = require('./api/database');
 const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
@@ -123,7 +122,7 @@ function register(app) {
     apiRoute(POST, '/api/tree/load', treeApiRoute.load);
     apiRoute(PUT, '/api/branches/:branchId/set-prefix', branchesApiRoute.setPrefix);
 
-    apiRoute(PUT, '/api/branches/:branchId/move-to/:parentNoteId', branchesApiRoute.moveBranchToParent);
+    apiRoute(PUT, '/api/branches/:branchId/move-to/:parentBranchId', branchesApiRoute.moveBranchToParent);
     apiRoute(PUT, '/api/branches/:branchId/move-before/:beforeBranchId', branchesApiRoute.moveBranchBeforeNote);
     apiRoute(PUT, '/api/branches/:branchId/move-after/:afterBranchId', branchesApiRoute.moveBranchAfterNote);
     apiRoute(PUT, '/api/branches/:branchId/expanded/:expanded', branchesApiRoute.setExpanded);
@@ -152,7 +151,7 @@ function register(app) {
 
     apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
 
-    apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
+    apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentBranchId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
     route(GET, '/api/notes/:branchId/export/:type/:format/:version/:taskId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
@@ -221,7 +220,7 @@ function register(app) {
 
     apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
-    apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
+    route(POST, '/api/database/anonymize', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
 
     // backup requires execution outside of transaction
     route(POST, '/api/database/backup-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler, false);

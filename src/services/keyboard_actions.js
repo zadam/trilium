@@ -32,7 +32,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "scrollToActiveNote",
         defaultShortcuts: ["CommandOrControl+."],
-        scope: "window" // FIXME - how do we find what note tree should be updated?
+        scope: "window"
     },
     {
         actionName: "searchNotes",
@@ -55,7 +55,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "collapseTree",
         defaultShortcuts: ["Alt+C"],
         description: "Collapses the complete note tree",
-        scope: "note-tree"
+        scope: "window"
     },
     {
         actionName: "collapseSubtree",

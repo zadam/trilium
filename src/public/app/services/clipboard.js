@@ -33,13 +33,13 @@ async function pasteAfter(afterBranchId) {
     }
 }
 
-async function pasteInto(parentNoteId) {
+async function pasteInto(parentBranchId) {
     if (isClipboardEmpty()) {
         return;
     }
 
     if (clipboardMode === 'cut') {
-        await branchService.moveToParentNote(clipboardBranchIds, parentNoteId);
+        await branchService.moveToParentNote(clipboardBranchIds, parentBranchId);
 
         clipboardBranchIds = [];
         clipboardMode = null;
@@ -50,7 +50,7 @@ async function pasteInto(parentNoteId) {
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
 
-            await branchService.cloneNoteTo(clipboardNote.noteId, parentNoteId);
+            await branchService.cloneNoteTo(clipboardNote.noteId, parentBranchId);
         }
 
         // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places

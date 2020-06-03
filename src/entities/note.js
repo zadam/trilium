@@ -541,12 +541,13 @@ class Note extends Entity {
     /**
      * @return {Promise<Attribute>}
      */
-    async addAttribute(type, name, value = "") {
+    async addAttribute(type, name, value = "", isInheritable = false) {
         const attr = new Attribute({
             noteId: this.noteId,
             type: type,
             name: name,
-            value: value
+            value: value,
+            isInheritable: isInheritable
         });
 
         await attr.save();
@@ -556,12 +557,12 @@ class Note extends Entity {
         return attr;
     }
 
-    async addLabel(name, value = "") {
-        return await this.addAttribute(LABEL, name, value);
+    async addLabel(name, value = "", isInheritable = false) {
+        return await this.addAttribute(LABEL, name, value, isInheritable);
     }
 
-    async addRelation(name, targetNoteId) {
-        return await this.addAttribute(RELATION, name, targetNoteId);
+    async addRelation(name, targetNoteId, isInheritable = false) {
+        return await this.addAttribute(RELATION, name, targetNoteId, isInheritable);
     }
 
     /**

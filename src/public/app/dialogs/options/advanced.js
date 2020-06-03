@@ -17,19 +17,18 @@ const TPL = `
 
 <button id="find-and-fix-consistency-issues-button" class="btn">Find and fix consistency issues</button><br/><br/>
 
-<h4>Debugging</h4>
+<h4>Anonymize database</h4>
+
+<p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and some non-sensitive metadata)
+    for sharing online for debugging purposes without fear of leaking your personal data.</p>
 
 <button id="anonymize-button" class="btn">Save anonymized database</button><br/><br/>
 
-<p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
-    for sharing online for debugging purposes without fear of leaking your personal data.</p>
-
 <h4>Backup database</h4>
 
-<button id="backup-database-button" class="btn">Backup database</button>
+<p>Trilium has automatic backup (daily, weekly, monthly), but you can also trigger backup manually here.</p>
 
-<br/>
-<br/>
+<button id="backup-database-button" class="btn">Backup database now</button><br/><br/>
 
 <h4>Vacuum database</h4>
 
@@ -61,9 +60,14 @@ export default class AdvancedOptions {
         });
 
         this.$anonymizeButton.on('click', async () => {
-            await server.post('anonymization/anonymize');
+            const resp = await server.post('database/anonymize');
 
-            toastService.showMessage("Created anonymized database");
+            if (!resp.success) {
+                toastService.showError("Could not create anonymized database, check backend logs for details");
+            }
+            else {
+                toastService.showMessage(`Created anonymized database in ${resp.anonymizedFilePath}`, 10000);
+            }
         });
 
         this.$backupDatabaseButton.on('click', async () => {

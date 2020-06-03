@@ -98,7 +98,7 @@ async function createNewNote(params) {
     const parentNote = await repository.getNote(params.parentNoteId);
 
     if (!parentNote) {
-        throw new Error(`Parent note ${params.parentNoteId} not found.`);
+        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
     }
 
     if (!params.title || params.title.trim().length === 0) {
@@ -662,7 +662,9 @@ async function scanForLinks(note) {
         const content = await note.getContent();
         const newContent = await saveLinks(note, content);
 
-        await note.setContent(newContent);
+        if (content !== newContent) {
+            await note.setContent(newContent);
+        }
     }
     catch (e) {
         log.error(`Could not scan for links note ${note.noteId}: ${e.message} ${e.stack}`);

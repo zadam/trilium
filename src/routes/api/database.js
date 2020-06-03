@@ -5,6 +5,10 @@ const log = require('../../services/log');
 const backupService = require('../../services/backup');
 const consistencyChecksService = require('../../services/consistency_checks');
 
+async function anonymize() {
+    return await backupService.anonymize();
+}
+
 async function backupDatabase() {
     return {
         backupFile: await backupService.backupNow("now")
@@ -24,5 +28,6 @@ async function findAndFixConsistencyIssues() {
 module.exports = {
     backupDatabase,
     vacuumDatabase,
-    findAndFixConsistencyIssues
+    findAndFixConsistencyIssues,
+    anonymize
 };

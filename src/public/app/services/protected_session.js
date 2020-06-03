@@ -10,7 +10,7 @@ let protectedSessionDeferred = null;
 
 async function leaveProtectedSession() {
     if (protectedSessionHolder.isProtectedSessionAvailable()) {
-        utils.reloadApp();
+        protectedSessionHolder.resetProtectedSession();
     }
 }
 
