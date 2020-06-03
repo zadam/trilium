@@ -64,6 +64,72 @@ const TPL = `
         width: 320px; 
         border-radius: 10px 0 10px 10px;
     }
+    
+    ul.fancytree-container {
+        outline: none !important;
+        background-color: inherit !important;
+    }
+    
+    .fancytree-custom-icon {
+        font-size: 1.3em;
+    }
+    
+    span.fancytree-title {
+        color: inherit !important;
+        background: inherit !important;
+        outline: none !important;
+    }
+    
+    span.fancytree-node.protected > span.fancytree-custom-icon {
+        filter: drop-shadow(2px 2px 2px var(--main-text-color));
+    }
+    
+    span.fancytree-node.multiple-parents .fancytree-title::after {
+        content: " *"
+    }
+    
+    span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {
+        font-weight: bold;
+    }
+    
+    /* first nesting level has lower left padding to avoid extra left padding. Other levels are not affected */
+    .ui-fancytree > li > ul {
+        padding-left: 5px;
+    }
+    
+    span.fancytree-active .fancytree-title {
+        font-weight: bold;
+        border-color: var(--main-border-color) !important;
+        border-radius: 5px;
+    }
+    
+    span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+        border-style: dashed !important;
+    }
+    
+    span.fancytree-focused .fancytree-title, span.fancytree-focused.fancytree-selected .fancytree-title {
+        color: var(--active-item-text-color) !important;
+        background-color: var(--active-item-background-color) !important;
+        border-color: var(--main-background-color) !important; /* invisible border */
+        border-radius: 5px;
+    }
+    
+    span.fancytree-selected .fancytree-title {
+        color: var(--hover-item-text-color) !important;
+        background-color: var(--hover-item-background-color) !important;
+        border-color: var(--main-background-color) !important; /* invisible border */
+        border-radius: 5px;
+        font-style: italic;
+    }
+    
+    span.fancytree-node:hover span.fancytree-title {
+        border-color: var(--main-border-color) !important;
+        border-radius: 5px;
+    }
+    
+    span.fancytree-node.archived {
+        opacity: 0.6;
+    }
     </style>
     
     <button class="btn btn-sm icon-button bx bx-cog tree-settings-button" title="Tree settings"></button>
@@ -206,6 +272,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const treeData = [await this.prepareRootNode()];
 
         this.$tree.fancytree({
+            titlesTabbable: true,
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
             extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
@@ -651,17 +718,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
-            this.tree.setFocus();
+            this.tree.setFocus(true);
 
             const node = await this.expandToNote(activeContext.notePath);
 
             await node.makeVisible({scrollIntoView: true});
-            node.setFocus();
+            node.setFocus(true);
         }
     }
 
     /** @return {FancytreeNode} */
-    async getNodeFromPath(notePath, expand = false, expandOpts = {}) {
+    async getNodeFromPath(notePath, expand = false) {
         utils.assertArguments(notePath);
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
@@ -690,7 +757,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
 
                 if (expand) {
-                    await parentNode.setExpanded(true, expandOpts);
+                    await parentNode.setExpanded(true);
+
+                    // although previous line should set the expanded status, it seems to happen asynchronously
+                    // so we need to make sure it is set properly before calling updateNode which uses this flag
+                    const branch = treeCache.getBranch(parentNode.data.branchId);
+                    branch.isExpanded = true;
                 }
 
                 this.updateNode(parentNode);
@@ -730,8 +802,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     /** @return {FancytreeNode} */
-    async expandToNote(notePath, expandOpts) {
-        return this.getNodeFromPath(notePath, true, expandOpts);
+    async expandToNote(notePath) {
+        return this.getNodeFromPath(notePath, true);
     }
 
     updateNode(node) {
@@ -746,7 +818,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-        node.setExpanded(branch.isExpanded, {noEvents:true});
+
+        if (node.isExpanded() !== branch.isExpanded) {
+            node.setExpanded(branch.isExpanded, {noEvents: true});
+        }
+
         node.renderTitle();
     }
 
@@ -822,6 +898,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         const activeNode = this.getActiveNode();
+        const activeNodeFocused = activeNode ? activeNode.hasFocus() : false;
         const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;
         const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
         const nextNotePath = nextNode ? treeService.getNotePath(nextNode) : null;
@@ -951,11 +1028,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 node = await this.expandToNote(nextNotePath);
 
                 if (node) {
-                    this.tree.setFocus();
-                    node.setFocus(true);
-
                     await appContext.tabManager.getActiveTabContext().setNote(nextNotePath);
                 }
+            }
+
+            const newActiveNode = this.getActiveNode();
+
+            // return focus if the previously active node was also focused
+            if (newActiveNode && activeNodeFocused) {
+                newActiveNode.setFocus(true);
             }
         }
     }

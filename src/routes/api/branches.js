@@ -125,6 +125,7 @@ async function setExpanded(req) {
     if (branchId !== 'root') {
         await sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
         // we don't sync expanded label
+        // also this does not trigger updates to the frontend, this would trigger too many reloads
     }
 }
 
