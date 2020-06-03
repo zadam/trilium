@@ -1,12 +1,10 @@
-import attributeParser from '../src/public/app/services/attribute_parser.mjs';
-
-function describe(name, cb) {
+export function describe(name, cb) {
     console.log(`Running ${name}`);
 
     cb();
 }
 
-function it(name, cb) {
+export async function it(name, cb) {
     console.log(`      Running ${name}`);
 
     cb();
@@ -14,7 +12,7 @@ function it(name, cb) {
 
 let errorCount = 0;
 
-function expect(val) {
+export function expect(val) {
     return {
         toEqual: comparedVal => {
             const jsonVal = JSON.stringify(val);
@@ -31,17 +29,13 @@ function expect(val) {
     }
 }
 
-describe("Lexer fulltext", () => {
-    it("simple label", () => {
-        expect(attributeParser.lexer("#label")).toEqual(["#labe"]);
-    });
-});
+export function execute() {
+    console.log("");
 
-console.log("");
-
-if (errorCount) {
-    console.log(`!!!${errorCount} tests failed!!!`);
-}
-else {
-    console.log("All tests passed!");
+    if (errorCount) {
+        console.log(`!!!${errorCount} tests failed!!!`);
+    }
+    else {
+        console.log("All tests passed!");
+    }
 }
