@@ -1,5 +1,9 @@
+function preprocessRelations(str) {
+    return str.replace(/<a[^>]+href="(#root[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
+}
+
 function lexer(str) {
-    str = str.toLowerCase();
+    str = preprocessRelations(str);
 
     const expressionTokens = [];
 
@@ -95,6 +99,55 @@ function lexer(str) {
     return expressionTokens;
 }
 
+function parser(tokens) {
+    const attrs = [];
+
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+
+        if (token.startsWith('#')) {
+            const attr = {
+                type: 'label',
+                name: token.substr(1)
+            };
+
+            if (tokens[i + 1] === "=") {
+                if (i + 2 >= tokens.length) {
+                    throw new Error(`Missing value for label "${token}"`);
+                }
+
+                i += 2;
+
+                attr.value = tokens[i];
+            }
+
+            attrs.push(attr);
+        }
+        else if (token.startsWith('~')) {
+            const attr = {
+                type: 'relation',
+                name: token.substr(1)
+            };
+
+            if (i + 2 >= tokens.length || tokens[i + 1] !== '=') {
+                throw new Error(`Relation "${token}" should point to a note.`);
+            }
+
+            i += 2;
+
+            attr.value = tokens[i];
+
+            attrs.push(attr);
+        }
+        else {
+            throw new Error(`Unrecognized attribute "${token}"`);
+        }
+    }
+
+    return attrs;
+}
+
 export default {
-    lexer
+    lexer,
+    parser
 }

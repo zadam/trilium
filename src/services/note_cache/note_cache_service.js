@@ -2,6 +2,7 @@
 
 const noteCache = require('./note_cache');
 const hoistedNoteService = require('../hoisted_note');
+const protectedSessionService = require('../protected_session');
 const stringSimilarity = require('string-similarity');
 
 function isNotePathArchived(notePath) {

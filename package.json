@@ -19,7 +19,8 @@
     "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
-    "test": "jasmine"
+    "test": "jasmine",
+    "test-es6": "node -r esm spec-es6/attribute_parser.spec.js "
   },
   "dependencies": {
     "async-mutex": "0.2.2",
