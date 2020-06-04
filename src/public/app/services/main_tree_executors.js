@@ -34,7 +34,7 @@ export default class MainTreeExecutors extends Component {
             return;
         }
 
-        const {note} = await noteCreateService.createNote(activeNote.noteId, {
+        await noteCreateService.createNote(activeNote.noteId, {
             isProtected: activeNote.isProtected,
             saveSelection: false
         });

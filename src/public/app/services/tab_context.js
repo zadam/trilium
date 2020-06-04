@@ -73,7 +73,7 @@ class TabContext extends Component {
         protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
         if (triggerSwitchEvent) {
-            this.triggerEvent('tabNoteSwitched', {
+            await this.triggerEvent('tabNoteSwitched', {
                 tabContext: this,
                 notePath: this.notePath
             });

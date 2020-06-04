@@ -203,7 +203,7 @@ export default class TabManager extends Component {
         if (activate) {
             this.activateTab(tabContext.tabId, false);
 
-            this.triggerEvent('tabNoteSwitchedAndActivated', {
+            await this.triggerEvent('tabNoteSwitchedAndActivated', {
                 tabContext,
                 notePath: tabContext.notePath // resolved note path
             });
