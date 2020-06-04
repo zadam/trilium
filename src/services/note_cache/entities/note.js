@@ -60,12 +60,21 @@ class Note {
 
     /** @return {Attribute[]} */
     get attributes() {
+        return this.__getAttributes([]);
+    }
+
+    __getAttributes(path) {
+        if (path.includes(this.noteId)) {
+            return [];
+        }
+
         if (!this.attributeCache) {
             const parentAttributes = this.ownedAttributes.slice();
+            const newPath = [...path, this.noteId];
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.parents) {
-                    parentAttributes.push(...parentNote.inheritableAttributes);
+                    parentAttributes.push(...parentNote.__getInheritableAttributes(newPath));
                 }
             }
 
@@ -76,7 +85,7 @@ class Note {
                     const templateNote = this.noteCache.notes[ownedAttr.value];
 
                     if (templateNote) {
-                        templateAttributes.push(...templateNote.attributes);
+                        templateAttributes.push(...templateNote.__getAttributes(newPath));
                     }
                 }
             }
@@ -95,9 +104,13 @@ class Note {
     }
 
     /** @return {Attribute[]} */
-    get inheritableAttributes() {
+    __getInheritableAttributes(path) {
+        if (path.includes(this.noteId)) {
+            return [];
+        }
+
         if (!this.inheritableAttributeCache) {
-            this.attributes; // will refresh also this.inheritableAttributeCache
+            this.__getAttributes(path); // will refresh also this.inheritableAttributeCache
         }
 
         return this.inheritableAttributeCache;
