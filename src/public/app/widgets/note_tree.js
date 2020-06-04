@@ -970,7 +970,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branch.noteId);
 
                     if (!found) {
-                        noteIdsToReload.add(branch.parentNoteId);
+                        parentNode.addChildren([await this.prepareNode(branch)]);
+
+                        this.sortChildren(parentNode);
                     }
                 }
             }
@@ -992,16 +994,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             for (const parentNoteId of loadResults.getNoteReorderings()) {
                 for (const node of this.getNodesByNoteId(parentNoteId)) {
                     if (node.isLoaded()) {
-                        node.sortChildren((nodeA, nodeB) => {
-                            const branchA = treeCache.branches[nodeA.data.branchId];
-                            const branchB = treeCache.branches[nodeB.data.branchId];
-
-                            if (!branchA || !branchB) {
-                                return 0;
-                            }
-
-                            return branchA.notePosition - branchB.notePosition;
-                        });
+                        this.sortChildren(node);
                     }
                 }
             }
@@ -1045,6 +1038,19 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 await newActiveNode.setFocus(true);
             }
         }
+    }
+
+    sortChildren(node) {
+        node.sortChildren((nodeA, nodeB) => {
+            const branchA = treeCache.branches[nodeA.data.branchId];
+            const branchB = treeCache.branches[nodeB.data.branchId];
+
+            if (!branchA || !branchB) {
+                return 0;
+            }
+
+            return branchA.notePosition - branchB.notePosition;
+        });
     }
 
     async setExpanded(branchId, isExpanded) {
