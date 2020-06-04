@@ -170,6 +170,16 @@ class NoteShort {
      * @returns {Attribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
+        return this.__filterAttrs(this.__getCachedAttributes([]), type, name);
+    }
+
+    __getCachedAttributes(path) {
+        // notes/clones cannot form tree cycles, it is possible to create attribute inheritance cycle via templates
+        // when template instance is a parent of template itself
+        if (path.includes(this.noteId)) {
+            return [];
+        }
+
         if (!(this.noteId in noteAttributeCache)) {
             const ownedAttributes = this.getOwnedAttributes();
 
@@ -177,11 +187,13 @@ class NoteShort {
                 ownedAttributes
             ];
 
+            const newPath = [...path, this.noteId];
+
             for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
                 const templateNote = this.treeCache.notes[templateAttr.value];
 
-                if (templateNote) {
-                    attrArrs.push(templateNote.getAttributes());
+                if (templateNote && templateNote.noteId !== this.noteId) {
+                    attrArrs.push(templateNote.__getCachedAttributes(newPath));
                 }
             }
 
@@ -189,7 +201,7 @@ class NoteShort {
                 for (const parentNote of this.getParentNotes()) {
                     // these virtual parent-child relationships are also loaded into frontend tree cache
                     if (parentNote.type !== 'search') {
-                        attrArrs.push(parentNote.getInheritableAttributes());
+                        attrArrs.push(parentNote.__getInheritableAttributes(newPath));
                     }
                 }
             }
@@ -197,7 +209,7 @@ class NoteShort {
             noteAttributeCache.attributes[this.noteId] = attrArrs.flat();
         }
 
-        return this.__filterAttrs(noteAttributeCache.attributes[this.noteId], type, name);
+        return noteAttributeCache.attributes[this.noteId];
     }
 
     __filterAttrs(attributes, type, name) {
@@ -212,8 +224,8 @@ class NoteShort {
         }
     }
 
-    getInheritableAttributes() {
-        const attrs = this.getAttributes();
+    __getInheritableAttributes(path) {
+        const attrs = this.__getCachedAttributes(path);
 
         return attrs.filter(attr => attr.isInheritable);
     }

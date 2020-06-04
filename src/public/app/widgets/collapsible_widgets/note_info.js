@@ -34,9 +34,8 @@ const TPL = `
     <tr>
         <th>Type:</th>
         <td>
-            <span class="note-info-type"></span>,
+            <span class="note-info-type"></span>
             
-            MIME: 
             <span class="note-info-mime"></span>
         </td>
     </tr>
@@ -70,9 +69,12 @@ export default class NoteInfoWidget extends CollapsibleWidget {
 
         this.$type.text(note.type);
 
-        this.$mime
-            .text(note.mime)
-            .attr("title", note.mime);
+        if (note.mime) {
+            this.$mime.text('(' + note.mime + ')');
+        }
+        else {
+            this.$mime.empty();
+        }
     }
 
     entitiesReloadedEvent({loadResults}) {

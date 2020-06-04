@@ -858,8 +858,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.toggleInt(this.isEnabled());
 
         const oldActiveNode = this.getActiveNode();
+        let oldActiveNodeFocused = false;
 
         if (oldActiveNode) {
+            oldActiveNodeFocused = oldActiveNode.hasFocus();
+
             oldActiveNode.setActive(false);
             oldActiveNode.setFocus(false);
         }
@@ -872,8 +875,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     await this.expandToNote(this.tabContext.notePath);
                 }
 
-                newActiveNode.setActive(true, {noEvents: true});
-
+                newActiveNode.setActive(true, {noEvents: true, noFocus: !oldActiveNodeFocused});
                 newActiveNode.makeVisible({scrollIntoView: true});
             }
         }
@@ -902,7 +904,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         const activeNode = this.getActiveNode();
-        const activeNodeFocused = activeNode ? activeNode.hasFocus() : false;
+        const activeNodeFocused = activeNode && activeNode.hasFocus();
         const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;
         const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
         const nextNotePath = nextNode ? treeService.getNotePath(nextNode) : null;
@@ -1025,7 +1027,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
 
             if (node) {
-                node.setActive(true, {noEvents: true});
+                node.setActive(true, {noEvents: true, noFocus: true});
             }
             else {
                 // this is used when original note has been deleted and we want to move the focus to the note above/below
@@ -1040,7 +1042,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             // return focus if the previously active node was also focused
             if (newActiveNode && activeNodeFocused) {
-                newActiveNode.setFocus(true);
+                await newActiveNode.setFocus(true);
             }
         }
     }
@@ -1068,7 +1070,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);
 
-            await node.setActive(true, {noEvents: true});
+            await node.setActive(true, {noEvents: true, noFocus: true});
         }
     }
 
