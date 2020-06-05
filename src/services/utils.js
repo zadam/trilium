@@ -205,6 +205,14 @@ function formatDownloadTitle(filename, type, mime) {
             }
         }
 
+        if (mime === 'application/octet-stream') {
+            // we didn't find any good guess for this one, it will be better to just return
+            // the current name without fake extension. It's possible that the title still preserves to correct
+            // extension too
+
+            return filename;
+        }
+
         return filename + '.' + extensions[0];
     }
 }
