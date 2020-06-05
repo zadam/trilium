@@ -1,9 +1,19 @@
-function preprocessRelations(str) {
-    return str.replace(/<a[^>]+href="(#root[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
+function preprocess(str) {
+    if (str.startsWith('<p>')) {
+        str = str.substr(3);
+    }
+
+    if (str.endsWith('</p>')) {
+        str = str.substr(0, str.length - 4);
+    }
+
+    str = str.replace("&nbsp;", " ");
+
+    return str.replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
 }
 
 function lexer(str) {
-    str = preprocessRelations(str);
+    str = preprocess(str);
 
     const expressionTokens = [];
 
@@ -108,7 +118,8 @@ function parser(tokens) {
         if (token.startsWith('#')) {
             const attr = {
                 type: 'label',
-                name: token.substr(1)
+                name: token.substr(1),
+                isInheritable: false // FIXME
             };
 
             if (tokens[i + 1] === "=") {
@@ -124,18 +135,25 @@ function parser(tokens) {
             attrs.push(attr);
         }
         else if (token.startsWith('~')) {
-            const attr = {
-                type: 'relation',
-                name: token.substr(1)
-            };
-
             if (i + 2 >= tokens.length || tokens[i + 1] !== '=') {
                 throw new Error(`Relation "${token}" should point to a note.`);
             }
 
             i += 2;
 
-            attr.value = tokens[i];
+            let notePath = tokens[i];
+            if (notePath.startsWith("#")) {
+                notePath = notePath.substr(1);
+            }
+
+            const noteId = notePath.split('/').pop();
+
+            const attr = {
+                type: 'relation',
+                name: token.substr(1),
+                isInheritable: false, // FIXME
+                value: noteId
+            };
 
             attrs.push(attr);
         }
@@ -147,7 +165,14 @@ function parser(tokens) {
     return attrs;
 }
 
+function lexAndParse(str) {
+    const tokens = lexer(str);
+
+    return parser(tokens);
+}
+
 export default {
     lexer,
-    parser
+    parser,
+    lexAndParse
 }

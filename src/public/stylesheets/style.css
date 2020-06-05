@@ -800,3 +800,7 @@ body {
 .hidden-int, .hidden-ext {
     display: none !important;
 }
+
+.ck.ck-mentions > .ck-list__item {
+    max-width: 600px;
+}

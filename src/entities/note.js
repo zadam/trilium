@@ -541,13 +541,14 @@ class Note extends Entity {
     /**
      * @return {Promise<Attribute>}
      */
-    async addAttribute(type, name, value = "", isInheritable = false) {
+    async addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
         const attr = new Attribute({
             noteId: this.noteId,
             type: type,
             name: name,
             value: value,
-            isInheritable: isInheritable
+            isInheritable: isInheritable,
+            position: position
         });
 
         await attr.save();

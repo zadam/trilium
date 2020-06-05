@@ -6,7 +6,7 @@ import server from "../services/server.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import SpacedUpdate from "../services/spaced_update.js";
-import protectedSessionHolder from "../services/protected_session_holder.js";
+import attributesParser from "../services/attribute_parser.js";
 
 const mentionSetup = {
     feeds: [
@@ -15,8 +15,6 @@ const mentionSetup = {
             feed: queryText => {
                 return new Promise((res, rej) => {
                     noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        console.log("rows", rows);
-
                         res(rows.map(row => {
                             return {
                                 id: '@' + row.notePathTitle,
@@ -51,7 +49,8 @@ const mentionSetup = {
                     }
                 });
             },
-            minimumCharacters: 0
+            minimumCharacters: 0,
+            attributeMention: true
         },
         {
             marker: '~',
@@ -65,7 +64,8 @@ const mentionSetup = {
                     }
                 });
             },
-            minimumCharacters: 0
+            minimumCharacters: 0,
+            attributeMention: true
         }
     ]
 };
@@ -91,6 +91,17 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-attributes-editor');
         this.initialized = this.initEditor();
+
+        this.$editor.keypress(async e => {
+            const keycode = (e.keyCode ? e.keyCode : e.which);
+            if (keycode === 13) {
+                const attributes = attributesParser.lexAndParse(this.textEditor.getData());
+
+                await server.put(`notes/${this.noteId}/attributes2`, attributes, this.componentId);
+
+                console.log("Saved!");
+            }
+        })
 
         return this.$widget;
     }

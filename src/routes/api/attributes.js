@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
+const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
@@ -79,6 +80,72 @@ async function deleteNoteAttribute(req) {
 
         attribute.isDeleted = true;
         await attribute.save();
+    }
+}
+
+async function updateNoteAttributes2(req) {
+    const noteId = req.params.noteId;
+    const incomingAttributes = req.body;
+
+    const note = await repository.getNote(noteId);
+
+    let existingAttrs = await note.getAttributes();
+
+    let position = 0;
+
+    for (const incAttr of incomingAttributes) {
+        position += 10;
+
+        const perfectMatchAttr = existingAttrs.find(attr =>
+            attr.type === incAttr.type &&
+            attr.name === incAttr.name &&
+            attr.isInheritable === incAttr.isInheritable &&
+            attr.value === incAttr.value);
+
+        if (perfectMatchAttr) {
+            existingAttrs = existingAttrs.filter(attr => attr.attributeId !== perfectMatchAttr.attributeId);
+
+            if (perfectMatchAttr.position !== position) {
+                perfectMatchAttr.position = position;
+                await perfectMatchAttr.save();
+            }
+
+            continue; // nothing to update
+        }
+
+        if (incAttr.type === 'relation') {
+            const targetNote = await repository.getNote(incAttr.value);
+
+            if (!targetNote || targetNote.isDeleted) {
+                log.error(`Target note of relation ${JSON.stringify(incAttr)} does not exist or is deleted`);
+                continue;
+            }
+        }
+
+        const matchedAttr = existingAttrs.find(attr =>
+                attr.type === incAttr.type &&
+                attr.name === incAttr.name &&
+                attr.isInheritable === incAttr.isInheritable);
+
+        if (matchedAttr) {
+            matchedAttr.value = incAttr.value;
+            matchedAttr.position = position;
+            await matchedAttr.save();
+
+            existingAttrs = existingAttrs.filter(attr => attr.attributeId !== matchedAttr.attributeId);
+            continue;
+        }
+
+        // no existing attribute has been matched so we need to create a new one
+        // type, name and isInheritable are immutable so even if there is an attribute with matching type & name, we need to create a new one and delete the former one
+
+        await note.addAttribute(incAttr.type, incAttr.name, incAttr.value, incAttr.isInheritable, position);
+    }
+
+    // all the remaining existing attributes are not defined anymore and should be deleted
+    for (const toDeleteAttr of existingAttrs) {
+        toDeleteAttr.isDeleted = true;
+        await toDeleteAttr.save();
     }
 }
 
@@ -193,6 +260,7 @@ async function deleteRelation(req) {
 
 module.exports = {
     updateNoteAttributes,
+    updateNoteAttributes2,
     updateNoteAttribute,
     deleteNoteAttribute,
     getAttributeNames,
