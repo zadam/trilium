@@ -15,7 +15,7 @@ function preprocess(str) {
 function lexer(str) {
     str = preprocess(str);
 
-    const expressionTokens = [];
+    const tokens = [];
 
     let quotes = false;
     let currentWord = '';
@@ -33,12 +33,19 @@ function lexer(str) {
         }
     }
 
-    function finishWord() {
+    /**
+     * @param endIndex - index of the last character of the token
+     */
+    function finishWord(endIndex) {
         if (currentWord === '') {
             return;
         }
 
-        expressionTokens.push(currentWord);
+        tokens.push({
+            text: currentWord,
+            startIndex: endIndex - currentWord.length,
+            endIndex: endIndex
+        });
 
         currentWord = '';
     }
@@ -61,7 +68,7 @@ function lexer(str) {
         else if (['"', "'", '`'].includes(chr)) {
             if (!quotes) {
                 if (previousOperatorSymbol()) {
-                    finishWord();
+                    finishWord(i - 1);
                 }
 
                 quotes = chr;
@@ -69,7 +76,7 @@ function lexer(str) {
             else if (quotes === chr) {
                 quotes = false;
 
-                finishWord();
+                finishWord(i - 1);
             }
             else {
                 // it's a quote but within other kind of quotes so it's valid as a literal character
@@ -84,17 +91,11 @@ function lexer(str) {
                 continue;
             }
             else if (chr === ' ') {
-                finishWord();
-                continue;
-            }
-            else if (['(', ')', '.'].includes(chr)) {
-                finishWord();
-                currentWord += chr;
-                finishWord();
+                finishWord(i - 1);
                 continue;
             }
             else if (previousOperatorSymbol() !== isOperatorSymbol(chr)) {
-                finishWord();
+                finishWord(i - 1);
 
                 currentWord += chr;
                 continue;
@@ -104,44 +105,46 @@ function lexer(str) {
         currentWord += chr;
     }
 
-    finishWord();
+    finishWord(str.length - 1);
 
-    return expressionTokens;
+    return tokens;
 }
 
 function parser(tokens) {
     const attrs = [];
 
     for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
+        const {text, startIndex, endIndex} = tokens[i];
 
-        if (token.startsWith('#')) {
+        if (text.startsWith('#')) {
             const attr = {
                 type: 'label',
-                name: token.substr(1),
-                isInheritable: false // FIXME
+                name: text.substr(1),
+                isInheritable: false, // FIXME
+                startIndex,
+                endIndex
             };
 
-            if (tokens[i + 1] === "=") {
+            if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
                 if (i + 2 >= tokens.length) {
-                    throw new Error(`Missing value for label "${token}"`);
+                    throw new Error(`Missing value for label "${text}"`);
                 }
 
                 i += 2;
 
-                attr.value = tokens[i];
+                attr.value = tokens[i].text;
             }
 
             attrs.push(attr);
         }
-        else if (token.startsWith('~')) {
-            if (i + 2 >= tokens.length || tokens[i + 1] !== '=') {
-                throw new Error(`Relation "${token}" should point to a note.`);
+        else if (text.startsWith('~')) {
+            if (i + 2 >= tokens.length || tokens[i + 1].text !== '=') {
+                throw new Error(`Relation "${text}" should point to a note.`);
             }
 
             i += 2;
 
-            let notePath = tokens[i];
+            let notePath = tokens[i].text;
             if (notePath.startsWith("#")) {
                 notePath = notePath.substr(1);
             }
@@ -150,15 +153,17 @@ function parser(tokens) {
 
             const attr = {
                 type: 'relation',
-                name: token.substr(1),
+                name: text.substr(1),
                 isInheritable: false, // FIXME
-                value: noteId
+                value: noteId,
+                startIndex,
+                endIndex
             };
 
             attrs.push(attr);
         }
         else {
-            throw new Error(`Unrecognized attribute "${token}"`);
+            throw new Error(`Unrecognized attribute "${text}"`);
         }
     }
 

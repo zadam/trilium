@@ -114,6 +114,11 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         // display of $widget in both branches.
         this.$widget.show();
 
+        this.$editor.on("click", () => {
+            const pos = this.textEditor.model.document.selection.getFirstPosition();
+            console.log(pos.textNode && pos.textNode.data, pos.parent.textNode && pos.parent.textNode.data, pos.offset);
+        });
+
         this.textEditor = await BalloonEditor.create(this.$editor[0], {
             removePlugins: [
                 'Enter',
@@ -168,6 +173,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         });
 
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+
+        await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
+        CKEditorInspector.attach(this.textEditor);
     }
 
     async loadReferenceLinkTitle(noteId, $el) {

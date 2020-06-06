@@ -3,32 +3,38 @@ import {describe, it, expect, execute} from './mini_test.js';
 
 describe("Lexer", () => {
     it("simple label", () => {
-        expect(attributeParser.lexer("#label")).toEqual(["#label"]);
+        expect(attributeParser.lexer("#label").map(t => t.text))
+            .toEqual(["#label"]);
     });
 
     it("label with value", () => {
-        expect(attributeParser.lexer("#label=Hallo")).toEqual(["#label", "=", "Hallo"]);
+        expect(attributeParser.lexer("#label=Hallo").map(t => t.text))
+            .toEqual(["#label", "=", "Hallo"]);
     });
 
     it("relation with value", () => {
-        expect(attributeParser.lexer('~relation=<a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>')).toEqual(["~relation", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"]);
+        expect(attributeParser.lexer('~relation=<a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>').map(t => t.text))
+            .toEqual(["~relation", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"]);
+
+        expect(attributeParser.lexer('~relation=<a class="reference-link" id="abc" href="#NFi2gL4xtPxM">note</a>').map(t => t.text))
+            .toEqual(["~relation", "=", "#NFi2gL4xtPxM"]);
     });
 
     it("use quotes to define value", () => {
-        expect(attributeParser.lexer("#'label a'='hello\"` world'"))
+        expect(attributeParser.lexer("#'label a'='hello\"` world'").map(t => t.text))
             .toEqual(["#label a", "=", 'hello"` world']);
 
-        expect(attributeParser.lexer('#"label a" = "hello\'` world"'))
+        expect(attributeParser.lexer('#"label a" = "hello\'` world"').map(t => t.text))
             .toEqual(["#label a", "=", "hello'` world"]);
 
-        expect(attributeParser.lexer('#`label a` = `hello\'" world`'))
+        expect(attributeParser.lexer('#`label a` = `hello\'" world`').map(t => t.text))
             .toEqual(["#label a", "=", "hello'\" world"]);
     });
 });
 
 describe("Parser", () => {
     it("simple label", () => {
-        const attrs = attributeParser.parser(["#token"]);
+        const attrs = attributeParser.parser(["#token"].map(t => ({text: t})));
 
         expect(attrs.length).toEqual(1);
         expect(attrs[0].type).toEqual('label');
@@ -37,7 +43,7 @@ describe("Parser", () => {
     });
 
     it("label with value", () => {
-        const attrs = attributeParser.parser(["#token", "=", "val"]);
+        const attrs = attributeParser.parser(["#token", "=", "val"].map(t => ({text: t})));
 
         expect(attrs.length).toEqual(1);
         expect(attrs[0].type).toEqual('label');
@@ -46,16 +52,24 @@ describe("Parser", () => {
     });
 
     it("relation", () => {
-        const attrs = attributeParser.parser(["~token", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"]);
+        let attrs = attributeParser.parser(["~token", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"].map(t => ({text: t})));
 
         expect(attrs.length).toEqual(1);
         expect(attrs[0].type).toEqual('relation');
         expect(attrs[0].name).toEqual("token");
-        expect(attrs[0].value).toEqual('#root/RclIpMauTOKS/NFi2gL4xtPxM');
+        expect(attrs[0].value).toEqual('NFi2gL4xtPxM');
+
+        attrs = attributeParser.parser(["~token", "=", "#NFi2gL4xtPxM"].map(t => ({text: t})));
+
+        expect(attrs.length).toEqual(1);
+        expect(attrs[0].type).toEqual('relation');
+        expect(attrs[0].name).toEqual("token");
+        expect(attrs[0].value).toEqual('NFi2gL4xtPxM');
     });
 
     it("error cases", () => {
-        expect(() => attributeParser.parser(["~token"])).toThrow('Relation "~token" should point to a note.');
+        expect(() => attributeParser.parser(["~token"].map(t => ({text: t}))))
+            .toThrow('Relation "~token" should point to a note.');
     });
 });
 
