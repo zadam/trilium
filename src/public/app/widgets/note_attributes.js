@@ -116,7 +116,17 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
         this.$editor.on("click", () => {
             const pos = this.textEditor.model.document.selection.getFirstPosition();
-            console.log(pos.textNode && pos.textNode.data, pos.parent.textNode && pos.parent.textNode.data, pos.offset);
+
+            if (pos && pos.textNode && pos.textNode.data) {
+                const attr = pos.textNode.data;
+                const index = pos.offset - pos.textNode.startOffset;
+
+                const attrs = attributesParser.lexAndParse(attr, true);
+
+                console.log(attrs);
+
+                console.log(attr.substr(0, index) + '|' + attr.substr(index));
+            }
         });
 
         this.textEditor = await BalloonEditor.create(this.$editor[0], {

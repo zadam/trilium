@@ -43,7 +43,7 @@ function lexer(str) {
 
         tokens.push({
             text: currentWord,
-            startIndex: endIndex - currentWord.length,
+            startIndex: endIndex - currentWord.length + 1,
             endIndex: endIndex
         });
 
@@ -110,7 +110,7 @@ function lexer(str) {
     return tokens;
 }
 
-function parser(tokens) {
+function parser(tokens, allowEmptyRelations = false) {
     const attrs = [];
 
     for (let i = 0; i < tokens.length; i++) {
@@ -121,8 +121,8 @@ function parser(tokens) {
                 type: 'label',
                 name: text.substr(1),
                 isInheritable: false, // FIXME
-                startIndex,
-                endIndex
+                nameStartIndex: startIndex,
+                nameEndIndex: endIndex
             };
 
             if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
@@ -133,13 +133,30 @@ function parser(tokens) {
                 i += 2;
 
                 attr.value = tokens[i].text;
+                attr.valueStartIndex = tokens[i].startIndex;
+                attr.valueEndIndex = tokens[i].endIndex;
             }
 
             attrs.push(attr);
         }
         else if (text.startsWith('~')) {
+            const attr = {
+                type: 'relation',
+                name: text.substr(1),
+                isInheritable: false, // FIXME
+                nameStartIndex: startIndex,
+                nameEndIndex: endIndex
+            };
+
+            attrs.push(attr);
+
             if (i + 2 >= tokens.length || tokens[i + 1].text !== '=') {
-                throw new Error(`Relation "${text}" should point to a note.`);
+                if (allowEmptyRelations) {
+                    break;
+                }
+                else {
+                    throw new Error(`Relation "${text}" should point to a note.`);
+                }
             }
 
             i += 2;
@@ -151,16 +168,9 @@ function parser(tokens) {
 
             const noteId = notePath.split('/').pop();
 
-            const attr = {
-                type: 'relation',
-                name: text.substr(1),
-                isInheritable: false, // FIXME
-                value: noteId,
-                startIndex,
-                endIndex
-            };
-
-            attrs.push(attr);
+            attr.value = noteId;
+            attr.valueStartIndex = tokens[i].startIndex;
+            attr.valueEndIndex = tokens[i].endIndex;
         }
         else {
             throw new Error(`Unrecognized attribute "${text}"`);
@@ -170,10 +180,10 @@ function parser(tokens) {
     return attrs;
 }
 
-function lexAndParse(str) {
+function lexAndParse(str, allowEmptyRelations = false) {
     const tokens = lexer(str);
 
-    return parser(tokens);
+    return parser(tokens, allowEmptyRelations);
 }
 
 export default {

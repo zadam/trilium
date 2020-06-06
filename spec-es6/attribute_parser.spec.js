@@ -12,6 +12,12 @@ describe("Lexer", () => {
             .toEqual(["#label", "=", "Hallo"]);
     });
 
+    it("label with value", () => {
+        const tokens = attributeParser.lexer("#label=Hallo");
+        expect(tokens[0].startIndex).toEqual(0);
+        expect(tokens[0].endIndex).toEqual(5);
+    });
+
     it("relation with value", () => {
         expect(attributeParser.lexer('~relation=<a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>').map(t => t.text))
             .toEqual(["~relation", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"]);
