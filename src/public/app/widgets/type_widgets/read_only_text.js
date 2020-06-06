@@ -29,7 +29,7 @@ const TPL = `
     </style>
 
     <div class="alert alert-warning no-print">
-        Read only text view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
+        <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">Read only</a> text view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
     </div>
 
     <div class="note-detail-readonly-text-content ck-content"></div>

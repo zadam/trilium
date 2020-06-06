@@ -78,10 +78,8 @@ function setupGlobs() {
 
     const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";
 
-    $(document).on("click", "button[data-help-page]", e => {
-        const $button = $(e.target);
-
-        window.open(wikiBaseUrl + $button.attr("data-help-page"), '_blank');
+    $(document).on("click", "*[data-help-page]", e => {
+        window.open(wikiBaseUrl + $(e.target).attr("data-help-page"), '_blank');
     });
 
     $("body").on("click", "a.external", function () {

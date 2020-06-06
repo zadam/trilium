@@ -14,7 +14,7 @@ const TPL = `
     </style>
 
     <div class="alert alert-warning no-print" style="margin-bottom: 0;">
-        Read only code view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
+        <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">Read only</a> code view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
     </div>
 
     <pre class="note-detail-read-only-code-content"></pre>
