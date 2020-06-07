@@ -267,4 +267,10 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
 
         $attr.prop("attribute-id", result.attributeId);
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId)) {
+            this.refresh();
+        }
+    }
 }
