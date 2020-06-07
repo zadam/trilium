@@ -115,11 +115,22 @@ function isAttributeType(type) {
 }
 
 function isAttributeDangerous(type, name) {
-    return BUILTIN_ATTRIBUTES.some(attr => 
-        attr.type === attr.type && 
+    return BUILTIN_ATTRIBUTES.some(attr =>
+        attr.type === attr.type &&
         attr.name.toLowerCase() === name.trim().toLowerCase() &&
         attr.isDangerous
     );
+}
+
+function getBuiltinAttributeNames() {
+    return BUILTIN_ATTRIBUTES
+        .map(attr => attr.name)
+        .concat([
+            'internalLink',
+            'imageLink',
+            'includeNoteLink',
+            'relationMapLink'
+        ]);
 }
 
 module.exports = {
@@ -131,5 +142,6 @@ module.exports = {
     createAttribute,
     getAttributeNames,
     isAttributeType,
-    isAttributeDangerous
+    isAttributeDangerous,
+    getBuiltinAttributeNames
 };
