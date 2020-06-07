@@ -229,7 +229,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 .prop("title", "Remove this attribute")
                 .on('click', async () => {
                     if (valueAttr.attributeId) {
-                        await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId);
+                        await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId, this.componentId);
                     }
 
                     $tr.remove();
@@ -263,13 +263,18 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             type: $attr.prop("attribute-type"),
             name: $attr.prop("attribute-name"),
             value: value
-        });
+        }, this.componentId);
 
         $attr.prop("attribute-id", result.attributeId);
     }
 
-    entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId)) {
+    entitiesReloadedEvent({loadResults}) {console.log("loadResults", loadResults);
+        // relation/label definitions are very often inherited by tree or template,
+        // it's difficult to detect inheritance so we will
+        if (loadResults.getAttributes(this.componentId).find(attr =>
+            attr.noteId === this.noteId
+            || ['label-definition', 'relation-definition'].includes(attr.type))) {
+
             this.refresh();
         }
     }
