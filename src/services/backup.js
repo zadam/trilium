@@ -110,8 +110,10 @@ async function anonymize() {
     await db.run(`UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrs})`);
     await db.run("UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL");
     await db.run(`UPDATE options SET value = 'anonymized' WHERE name IN 
-                    ('documentId', 'documentSecret', 'encryptedDataKey', 'passwordVerificationHash', 
-                     'passwordVerificationSalt', 'passwordDerivedKeySalt', 'username', 'syncServerHost', 'syncProxy')`);
+                    ('documentId', 'documentSecret', 'encryptedDataKey', 
+                     'passwordVerificationHash', 'passwordVerificationSalt', 
+                     'passwordDerivedKeySalt', 'username', 'syncServerHost', 'syncProxy') 
+                      AND value != ''`);
     await db.run("VACUUM");
 
     await db.close();
