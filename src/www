@@ -68,6 +68,9 @@ async function startTrilium() {
 
     log.info(JSON.stringify(appInfo, null, 2));
 
+    const cpuInfos = require('os').cpus();
+    log.info(`CPU model: ${cpuInfos[0].model}, logical cores: ${cpuInfos.length} freq: ${cpuInfos[0].speed} Mhz`); // for perf. issues it's good to know the rough configuration
+
     /**
      * Listen on provided port, on all network interfaces.
      */
