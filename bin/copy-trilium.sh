@@ -33,6 +33,9 @@ find $DIR/libraries -name "*.map" -type f -delete
 
 rm -r $DIR/src/public/app
 
+rm -r $DIR/node_modules/sqlite3/build
+rm -r $DIR/node_modules/sqlite3/deps
+
 sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' $DIR/src/views/desktop.ejs
 sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' $DIR/src/views/mobile.ejs
 sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' $DIR/src/views/setup.ejs
