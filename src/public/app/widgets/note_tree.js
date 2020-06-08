@@ -576,7 +576,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const noteList = [];
 
+        const hideArchivedNotes = this.hideArchivedNotes;
+
         for (const branch of this.getChildBranches(parentNote)) {
+            if (hideArchivedNotes) {
+                const note = await branch.getNote();
+
+                if (note.hasLabel('archived')) {
+                    continue;
+                }
+            }
+
             const node = await this.prepareNode(branch);
 
             noteList.push(node);
@@ -599,6 +609,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
             // image is already visible in the parent note so no need to display it separately in the book
             childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
         }
+
+        // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
+        // which would seriously slow down everything.
+        // we check this flag only once user chooses to expand the parent. This has the negative consequence that
+        // note may appear as folder but not contain any children when all of them are archived
 
         return childBranches;
     }
