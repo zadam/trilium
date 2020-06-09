@@ -36,7 +36,7 @@ function init(httpServer, sessionParser) {
             const message = JSON.parse(messageJson);
 
             if (message.type === 'log-error') {
-                log.error('JS Error: ' + message.error);
+                log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
             }
             else if (message.type === 'ping') {
                 lastAcceptedSyncIds[ws.id] = message.lastSyncId;

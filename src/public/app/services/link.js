@@ -137,7 +137,7 @@ function linkContextMenu(e) {
 $(document).on('mousedown', "a[data-action='note']", goToLink);
 $(document).on('mousedown', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
 $(document).on('dblclick', '.note-detail-text a', goToLink);
-$(document).on('mousedown', '.note-detail-text a', function (e) {
+$(document).on('mousedown', '.note-detail-text a:not(.reference-link)', function (e) {
     const $link = $(e.target).closest("a");
     const notePath = getNotePathFromLink($link);
 
@@ -161,6 +161,7 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
 $(document).on('mousedown', '.note-detail-book a', goToLink);
 $(document).on('mousedown', '.note-detail-render a', goToLink);
 $(document).on('mousedown', '.note-detail-text a.reference-link', goToLink);
+$(document).on('mousedown', '.note-detail-readonly-text a.reference-link', goToLink);
 $(document).on('mousedown', '.note-detail-readonly-text a', goToLink);
 $(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
 $(document).on('click', 'a.ck-link-actions__preview', e => {

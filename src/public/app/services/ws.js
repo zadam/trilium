@@ -25,7 +25,8 @@ function logError(message) {
     if (ws && ws.readyState === 1) {
         ws.send(JSON.stringify({
             type: 'log-error',
-            error: message
+            error: message,
+            stack: new Error().stack
         }));
     }
 }
