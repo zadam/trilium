@@ -268,13 +268,8 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         $attr.prop("attribute-id", result.attributeId);
     }
 
-    entitiesReloadedEvent({loadResults}) {console.log("loadResults", loadResults);
-        // relation/label definitions are very often inherited by tree or template,
-        // it's difficult to detect inheritance so we will
-        if (loadResults.getAttributes(this.componentId).find(attr =>
-            attr.noteId === this.noteId
-            || ['label-definition', 'relation-definition'].includes(attr.type))) {
-
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
             this.refresh();
         }
     }

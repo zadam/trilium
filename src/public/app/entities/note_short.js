@@ -438,6 +438,35 @@ class NoteShort {
     }
 
     /**
+     * @returns {NoteShort[]}
+     */
+    getTemplateNotes() {
+        const relations = this.getRelations('template');
+
+        return relations.map(rel => this.treeCache.notes[rel.value]);
+    }
+
+    hasAncestor(ancestorNote) {
+        if (this.noteId === ancestorNote.noteId) {
+            return true;
+        }
+
+        for (const templateNote of this.getTemplateNotes()) {
+            if (templateNote.hasAncestor(ancestorNote)) {
+                return true;
+            }
+        }
+
+        for (const parentNote of this.getParentNotes()) {
+            if (parentNote.hasAncestor(ancestorNote)) {console.log(parentNote);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Clear note's attributes cache to force fresh reload for next attribute request.
      * Cache is note instance scoped.
      */

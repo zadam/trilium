@@ -270,12 +270,29 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        // FIXME: we should test what happens when the loaded note is deleted
-
         if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)
             || (loadResults.isNoteReloaded(this.noteId, this.componentId) && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime))) {
 
             this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
+        }
+        else {
+            const attrs = loadResults.getAttributes();
+
+            const label = attrs.find(attr =>
+                attr.type === 'label'
+                && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'bookZoomLevel'].includes(attr.name)
+                && attr.isAffecting(this.note));
+
+            const relation = attrs.find(attr =>
+                attr.type === 'relation'
+                && ['template', 'runOnNoteView', 'renderNote'].includes(attr.name)
+                && attr.isAffecting(this.note));
+
+            if (label || relation) {
+                // probably incorrect event
+                // calling this.refresh() is not enough since the event needs to be propagated to children as well
+                this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
+            }
         }
     }
 

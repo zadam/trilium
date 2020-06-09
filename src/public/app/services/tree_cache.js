@@ -54,6 +54,10 @@ class TreeCache {
             if (attr.type === 'relation' && attr.name === 'template' && !(attr.value in existingNotes) && !noteIds.has(attr.value)) {
                 missingNoteIds.push(attr.value);
             }
+
+            if (!(attr.noteId in existingNotes) && !noteIds.has(attr.noteId)) {
+                missingNoteIds.push(attr.noteId);
+            }
         }
 
         if (missingNoteIds.length > 0) {
