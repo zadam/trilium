@@ -316,6 +316,24 @@ function dynamicRequire(moduleName) {
     }
 }
 
+function timeLimit(cb, limitMs) {
+    return new Promise((res, rej) => {
+        let resolved = false;
+
+        cb().then(() => {
+            resolved = true;
+
+            res();
+        });
+
+        setTimeout(() => {
+            if (!resolved) {
+                rej('Process exceeded time limit ' + limitMs);
+            }
+        }, limitMs);
+    });
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -355,5 +373,6 @@ export default {
     normalizeShortcut,
     copySelectionToClipboard,
     isCKEditorInitialized,
-    dynamicRequire
+    dynamicRequire,
+    timeLimit
 };
