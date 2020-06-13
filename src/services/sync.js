@@ -372,7 +372,7 @@ sqlInit.dbReady.then(async () => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately
-    setTimeout(cls.wrap(sync), 1000);
+    setTimeout(cls.wrap(sync), 3000);
 
     setInterval(cls.wrap(updatePushStats), 1000);
 });

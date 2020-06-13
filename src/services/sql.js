@@ -155,7 +155,7 @@ async function execute(query, params = []) {
     return await wrap(async db => db.run(query, ...params), query);
 }
 
-async function executeNoWrap(query, params = []) {
+async function executeWithoutTransaction(query, params = []) {
     await dbConnection.run(query, ...params);
 }
 
@@ -222,10 +222,12 @@ async function startTransactionIfNecessary() {
         await transactionPromise;
     }
 
-    await beginTransaction();
-    cls.namespace.set('isInTransaction', true);
+    // first set semaphore (atomic operation and only then start transaction
     transactionActive = true;
     transactionPromise = new Promise(res => transactionPromiseResolve = res);
+    cls.namespace.set('isInTransaction', true);
+
+    await beginTransaction();
 }
 
 async function transactional(func) {
@@ -234,7 +236,7 @@ async function transactional(func) {
         return await func();
     }
 
-    cls.namespace.set('isTransactional', true); // we will need a transaction if there's a write operation
+    cls.namespace.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
 
     try {
         const ret = await func();
@@ -244,25 +246,26 @@ async function transactional(func) {
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
             require('./ws.js').sendPingToAllClients();
-
-            transactionActive = false;
-            cls.namespace.set('isInTransaction', false);
-            transactionPromiseResolve();
         }
 
         return ret;
     }
     catch (e) {
-        if (transactionActive) {
+        if (cls.namespace.get('isInTransaction')) {
             await rollback();
-
-            transactionActive = false;
-            cls.namespace.set('isInTransaction', false);
-            // resolving since this is just semaphore for allowing another write transaction to proceed
-            transactionPromiseResolve();
         }
 
         throw e;
+    }
+    finally {
+        cls.namespace.set('isTransactional', false);
+
+        if (cls.namespace.get('isInTransaction')) {
+            transactionActive = false;
+            cls.namespace.set('isInTransaction', false);
+            // resolving even for rollback since this is just semaphore for allowing another write transaction to proceed
+            transactionPromiseResolve();
+        }
     }
 }
 
@@ -278,7 +281,7 @@ module.exports = {
     getMap,
     getColumn,
     execute,
-    executeNoWrap,
+    executeWithoutTransaction,
     executeMany,
     executeScript,
     transactional,

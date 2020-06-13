@@ -47,7 +47,7 @@ async function copyFile(backupFile) {
 
     for (; attemptCount < COPY_ATTEMPT_COUNT && !success; attemptCount++) {
         try {
-            await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
+            await sql.executeWithoutTransaction(`VACUUM INTO '${backupFile}'`);
 
             success = true;
         } catch (e) {
