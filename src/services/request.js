@@ -40,7 +40,7 @@ function exec(opts) {
                 host: parsedTargetUrl.hostname,
                 port: parsedTargetUrl.port,
                 path: parsedTargetUrl.path,
-                timeout: opts.timeout,
+                timeout: opts.timeout, // works only for node.js client
                 headers,
                 agent: proxyAgent
             });
@@ -104,7 +104,7 @@ async function getImage(imageUrl) {
                 host: parsedTargetUrl.hostname,
                 port: parsedTargetUrl.port,
                 path: parsedTargetUrl.path,
-                timeout: opts.timeout,
+                timeout: opts.timeout, // works only for node client
                 headers: {},
                 agent: proxyAgent
             });

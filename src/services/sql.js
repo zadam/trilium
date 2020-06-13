@@ -64,15 +64,15 @@ async function upsert(tableName, primaryKey, rec) {
 }
 
 async function beginTransaction() {
-    return await execute("BEGIN");
+    return await dbConnection.run("BEGIN");
 }
 
 async function commit() {
-    return await execute("COMMIT");
+    return await dbConnection.run("COMMIT");
 }
 
 async function rollback() {
-    return await execute("ROLLBACK");
+    return await dbConnection.run("ROLLBACK");
 }
 
 async function getRow(query, params = []) {
@@ -150,6 +150,8 @@ async function getColumn(query, params = []) {
 }
 
 async function execute(query, params = []) {
+    await startTransactionIfNecessary();
+
     return await wrap(async db => db.run(query, ...params), query);
 }
 
@@ -158,11 +160,15 @@ async function executeNoWrap(query, params = []) {
 }
 
 async function executeMany(query, params) {
+    await startTransactionIfNecessary();
+
     // essentially just alias
     await getManyRows(query, params);
 }
 
 async function executeScript(query) {
+    await startTransactionIfNecessary();
+
     return await wrap(async db => db.exec(query), query);
 }
 
@@ -199,61 +205,65 @@ async function wrap(func, query) {
     }
 }
 
+// true if transaction is active globally.
+// cls.namespace.get('isTransactional') OTOH indicates active transaction in active CLS
 let transactionActive = false;
+// resolves when current transaction ends with either COMMIT or ROLLBACK
 let transactionPromise = null;
+let transactionPromiseResolve = null;
 
-async function transactional(func) {
-    if (cls.namespace.get('isInTransaction')) {
-        return await func();
+async function startTransactionIfNecessary() {
+    if (!cls.namespace.get('isTransactional')
+        || cls.namespace.get('isInTransaction')) {
+        return;
     }
 
     while (transactionActive) {
         await transactionPromise;
     }
 
-    let ret = null;
-    const thisError = new Error(); // to capture correct stack trace in case of exception
-
+    await beginTransaction();
+    cls.namespace.set('isInTransaction', true);
     transactionActive = true;
-    transactionPromise = new Promise(async (resolve, reject) => {
-        try {
-            await beginTransaction();
+    transactionPromise = new Promise(res => transactionPromiseResolve = res);
+}
 
-            cls.namespace.set('isInTransaction', true);
+async function transactional(func) {
+    // if the CLS is already transactional then the whole transaction is handled by higher level transactional() call
+    if (cls.namespace.get('isTransactional')) {
+        return await func();
+    }
 
-            ret = await func();
+    cls.namespace.set('isTransactional', true); // we will need a transaction if there's a write operation
 
+    try {
+        const ret = await func();
+
+        if (cls.namespace.get('isInTransaction')) {
             await commit();
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
             require('./ws.js').sendPingToAllClients();
 
             transactionActive = false;
-            resolve();
-
-            setTimeout(() => require('./ws').sendPingToAllClients(), 50);
-        }
-        catch (e) {
-            if (transactionActive) {
-                log.error("Error executing transaction, executing rollback. Inner stack: " + e.stack + "\nOutside stack: " + thisError.stack);
-
-                await rollback();
-
-                transactionActive = false;
-            }
-
-            reject(e);
-        }
-        finally {
             cls.namespace.set('isInTransaction', false);
+            transactionPromiseResolve();
         }
-    });
 
-    if (transactionActive) {
-        await transactionPromise;
+        return ret;
     }
+    catch (e) {
+        if (transactionActive) {
+            await rollback();
 
-    return ret;
+            transactionActive = false;
+            cls.namespace.set('isInTransaction', false);
+            // resolving since this is just semaphore for allowing another write transaction to proceed
+            transactionPromiseResolve();
+        }
+
+        throw e;
+    }
 }
 
 module.exports = {

@@ -217,6 +217,24 @@ function formatDownloadTitle(filename, type, mime) {
     }
 }
 
+function timeLimit(promise, limitMs) {
+    return new Promise((res, rej) => {
+        let resolved = false;
+
+        promise.then(() => {
+            resolved = true;
+
+            res();
+        });
+
+        setTimeout(() => {
+            if (!resolved) {
+                rej(new Error('Process exceeded time limit ' + limitMs));
+            }
+        }, limitMs);
+    });
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -245,5 +263,6 @@ module.exports = {
     isStringNote,
     quoteRegex,
     replaceAll,
-    formatDownloadTitle
+    formatDownloadTitle,
+    timeLimit
 };

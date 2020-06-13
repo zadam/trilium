@@ -6,6 +6,7 @@ const optionService = require('./options');
 const syncOptions = require('./sync_options');
 const request = require('./request');
 const appInfo = require('./app_info');
+const utils = require('./utils');
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
@@ -43,13 +44,15 @@ async function sendSeedToSyncServer() {
 }
 
 async function requestToSyncServer(method, path, body = null) {
-    return await request.exec({
+    const timeout = await syncOptions.getSyncTimeout();
+
+    return utils.timeLimit(request.exec({
         method,
         url: await syncOptions.getSyncServerHost() + path,
         body,
         proxy: await syncOptions.getSyncProxy(),
-        timeout: await syncOptions.getSyncTimeout()
-    });
+        timeout: timeout
+    }), timeout);
 }
 
 async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {

@@ -316,11 +316,11 @@ function dynamicRequire(moduleName) {
     }
 }
 
-function timeLimit(cb, limitMs) {
+function timeLimit(promise, limitMs) {
     return new Promise((res, rej) => {
         let resolved = false;
 
-        cb().then(() => {
+        promise.then(() => {
             resolved = true;
 
             res();
@@ -328,7 +328,7 @@ function timeLimit(cb, limitMs) {
 
         setTimeout(() => {
             if (!resolved) {
-                rej('Process exceeded time limit ' + limitMs);
+                rej(new Error('Process exceeded time limit ' + limitMs));
             }
         }, limitMs);
     });

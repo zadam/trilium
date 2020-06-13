@@ -157,7 +157,7 @@ async function consumeSyncData() {
         const nonProcessedSyncRows = allSyncRows.filter(sync => !processedSyncIds.has(sync.id));
 
         try {
-            await utils.timeLimit(async () => await processSyncRows(nonProcessedSyncRows), 5000);
+            await utils.timeLimit(processSyncRows(nonProcessedSyncRows), 5000);
         }
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);

@@ -55,6 +55,8 @@ async function checkSync() {
 }
 
 async function syncNow() {
+    log.info("Received request to trigger sync now.");
+
     return await syncService.sync();
 }
 
