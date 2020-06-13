@@ -221,10 +221,10 @@ function timeLimit(promise, limitMs) {
     return new Promise((res, rej) => {
         let resolved = false;
 
-        promise.then(() => {
+        promise.then(result => {
             resolved = true;
 
-            res();
+            res(result);
         });
 
         setTimeout(() => {
