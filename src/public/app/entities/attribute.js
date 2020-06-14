@@ -27,6 +27,10 @@ class Attribute {
         return this.treeCache.notes[this.noteId];
     }
 
+    get targetNoteId() { // alias
+        return this.type === 'relation' ? this.value : undefined;
+    }
+
     get jsonValue() {
         try {
             return JSON.parse(this.value);

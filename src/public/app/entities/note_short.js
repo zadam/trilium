@@ -484,6 +484,15 @@ class NoteShort {
             .map(attributeId => this.treeCache.attributes[attributeId]);
     }
 
+    /**
+     * Return note complement which is most importantly note's content
+     *
+     * @return {Promise<NoteComplement>}
+     */
+    async getNoteComplement() {
+        return await this.treeCache.getNoteComplement(this.noteId);
+    }
+
     get toString() {
         return `Note(noteId=${this.noteId}, title=${this.title})`;
     }

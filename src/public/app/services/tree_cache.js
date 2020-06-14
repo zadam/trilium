@@ -276,6 +276,9 @@ class TreeCache {
         return child.parentToBranch[parentNoteId];
     }
 
+    /**
+     * @return {Promise<NoteComplement>}
+     */
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
             this.noteComplementPromises[noteId] = server.get('notes/' + noteId).then(row => new NoteComplement(row));

@@ -1,7 +1,6 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
 import toastService from "./toast.js";
-import treeCache from "./tree_cache.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);

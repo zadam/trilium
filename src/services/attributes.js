@@ -29,7 +29,6 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'bookZoomLevel', isDangerous: false },
 
     // relation names
-    { type: 'relation', name: 'runOnNoteView', isDangerous: true },
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
     { type: 'relation', name: 'runOnNoteTitleChange', isDangerous: true },
     { type: 'relation', name: 'runOnNoteChange', isDangerous: true },

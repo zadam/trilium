@@ -285,7 +285,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             const relation = attrs.find(attr =>
                 attr.type === 'relation'
-                && ['template', 'runOnNoteView', 'renderNote'].includes(attr.name)
+                && ['template', 'renderNote'].includes(attr.name)
                 && attr.isAffecting(this.note));
 
             if (label || relation) {
