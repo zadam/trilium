@@ -279,6 +279,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             source: treeData,
             scrollParent: this.$tree,
             minExpandLevel: 2, // root can't be collapsed
+            tooltip: (options.get('treeNoteTitleTooltipEnabled') === 'true'),
             click: (event, data) => {
                 const targetType = data.targetType;
                 const node = data.node;

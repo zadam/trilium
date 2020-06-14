@@ -74,6 +74,19 @@ const TPL = `
         <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
         <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
     </div>
+</div>
+
+<div>
+    <h4>Show tooltip for note titles under the note tree</h4>
+
+    <p>Displays a tooltip on hover for note titles under the note tree. Useful when note titles are too long or when you are forced to scroll horizontally
+     within the note tree to view the full note title. Restart (or reload frontend) of Trilium client required for changes to take effect.</p>
+
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="tree-note-title-tooltip-enabled">
+        <label class="custom-control-label" for="tree-note-title-tooltip-enabled">Enable tooltip for note title</label>
+    </div>
+    <br/>
 </div>`;
 
 export default class ProtectedSessionOptions {
@@ -154,6 +167,15 @@ export default class ProtectedSessionOptions {
 
             return false;
         });
+
+        this.$treeNoteTitleTooltipEnabled = $("#tree-note-title-tooltip-enabled");
+
+        this.$treeNoteTitleTooltipEnabled.on('change', () => {
+            const opts = { 'treeNoteTitleTooltipEnabled': this.$treeNoteTitleTooltipEnabled.is(":checked") ? "true" : "false" };
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+
+            return false;
+        });
     }
 
     optionsLoaded(options) {
@@ -166,5 +188,7 @@ export default class ProtectedSessionOptions {
 
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
+
+        this.$treeNoteTitleTooltipEnabled.prop("checked", options['treeNoteTitleTooltipEnabled'] === 'true');
     }
 }
