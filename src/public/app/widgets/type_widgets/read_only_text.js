@@ -81,4 +81,8 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
             this.loadIncludedNote(noteId, $(el));
         });
     }
+
+    async refreshIncludedNoteEvent({noteId}) {
+        this.refreshIncludedNote(this.$content, noteId);
+    }
 }

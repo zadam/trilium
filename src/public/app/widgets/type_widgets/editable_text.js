@@ -257,4 +257,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             this.textEditor.model.insertContent(imageElement, this.textEditor.model.document.selection);
         } );
     }
+
+    async refreshIncludedNoteEvent({noteId}) {
+        this.refreshIncludedNote(this.$editor, noteId);
+    }
 }

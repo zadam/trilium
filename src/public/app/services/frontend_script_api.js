@@ -403,6 +403,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      */
     this.waitUntilSynced = ws.waitForMaxKnownSyncId;
+
+    /**
+     * This will refresh all currently opened notes which have included note specified in the parameter
+     *
+     * @param includedNoteId - noteId of the included note
+     */
+    this.refreshIncludedNote = includedNoteId => appContext.triggerEvent('refreshIncludedNote', {noteId: includedNoteId});
 }
 
 export default FrontendScriptApi;
