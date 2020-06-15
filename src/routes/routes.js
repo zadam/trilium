@@ -81,9 +81,12 @@ function apiRoute(method, path, routeHandler) {
 function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
     router[method](path, ...middleware, async (req, res, next) => {
         try {
+            cls.namespace.bindEmitter(req);
+            cls.namespace.bindEmitter(res);
+
             const result = await cls.init(async () => {
-                cls.namespace.set('sourceId', req.headers['trilium-source-id']);
-                cls.namespace.set('localNowDateTime', req.headers['`trilium-local-now-datetime`']);
+                cls.set('sourceId', req.headers['trilium-source-id']);
+                cls.set('localNowDateTime', req.headers['`trilium-local-now-datetime`']);
                 protectedSessionService.setProtectedSessionId(req);
 
                 if (transactional) {

@@ -31,7 +31,7 @@ async function executeBundle(bundle, apiParams = {}) {
         apiParams.startNote = bundle.note;
     }
 
-    cls.namespace.set('sourceId', 'script');
+    cls.set('sourceId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";

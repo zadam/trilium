@@ -68,7 +68,7 @@ async function loginToProtectedSession(req) {
     const protectedSessionId = protectedSessionService.setDataKey(decryptedDataKey);
 
     // this is set here so that event handlers have access to the protected session
-    cls.namespace.set('protectedSessionId', protectedSessionId);
+    cls.set('protectedSessionId', protectedSessionId);
 
     await eventService.emit(eventService.ENTER_PROTECTED_SESSION);
 

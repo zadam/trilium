@@ -9,7 +9,7 @@ function setDbConnection(connection) {
     dbConnection = connection;
 }
 
-[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, () => {
         if (dbConnection) {
             // closing connection is especially important to fold -wal file into the main DB file
@@ -213,8 +213,8 @@ let transactionPromise = null;
 let transactionPromiseResolve = null;
 
 async function startTransactionIfNecessary() {
-    if (!cls.namespace.get('isTransactional')
-        || cls.namespace.get('isInTransaction')) {
+    if (!cls.get('isTransactional')
+        || cls.get('isInTransaction')) {
         return;
     }
 
@@ -225,23 +225,23 @@ async function startTransactionIfNecessary() {
     // first set semaphore (atomic operation and only then start transaction
     transactionActive = true;
     transactionPromise = new Promise(res => transactionPromiseResolve = res);
-    cls.namespace.set('isInTransaction', true);
+    cls.set('isInTransaction', true);
 
     await beginTransaction();
 }
 
 async function transactional(func) {
     // if the CLS is already transactional then the whole transaction is handled by higher level transactional() call
-    if (cls.namespace.get('isTransactional')) {
+    if (cls.get('isTransactional')) {
         return await func();
     }
 
-    cls.namespace.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
+    cls.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
 
     try {
         const ret = await func();
 
-        if (cls.namespace.get('isInTransaction')) {
+        if (cls.get('isInTransaction')) {
             await commit();
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
@@ -251,7 +251,7 @@ async function transactional(func) {
         return ret;
     }
     catch (e) {
-        if (cls.namespace.get('isInTransaction')) {
+        if (cls.get('isInTransaction')) {
             await rollback();
         }
 
