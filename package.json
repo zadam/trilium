@@ -13,8 +13,8 @@
     "url": "https://github.com/zadam/trilium.git"
   },
   "scripts": {
-    "start-server": "TRILIUM_ENV=dev node ./src/www",
-    "start-electron": "TRILIUM_ENV=dev electron .",
+    "start-server": "TRILIUM_ENV=production node ./src/www",
+    "start-electron": "TRILIUM_ENV=production electron .",
     "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
