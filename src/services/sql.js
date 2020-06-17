@@ -33,7 +33,7 @@ async function insert(tableName, rec, replace = false) {
 
     const res = await execute(query, Object.values(rec));
 
-    return res.lastID;
+    return res.lastInsertRowid;
 }
 
 async function replace(tableName, rec) {
@@ -49,34 +49,46 @@ async function upsert(tableName, primaryKey, rec) {
 
     const columns = keys.join(", ");
 
-    let i = 0;
+    const questionMarks = keys.map(colName => "@" + colName).join(", ");
 
-    const questionMarks = keys.map(p => ":" + i++).join(", ");
-
-    i = 0;
-
-    const updateMarks = keys.map(key => `${key} = :${i++}`).join(", ");
+    const updateMarks = keys.map(colName => `${colName} = @${colName}`).join(", ");
 
     const query = `INSERT INTO ${tableName} (${columns}) VALUES (${questionMarks}) 
                    ON CONFLICT (${primaryKey}) DO UPDATE SET ${updateMarks}`;
 
-    await execute(query, Object.values(rec));
+    for (const idx in rec) {
+        if (rec[idx] === true || rec[idx] === false) {
+            rec[idx] = rec[idx] ? 1 : 0;
+        }
+    }
+
+    await execute(query, rec);
 }
 
-async function beginTransaction() {
-    return await dbConnection.run("BEGIN");
+const statementCache = {};
+
+function stmt(sql) {
+    if (!(sql in statementCache)) {
+        statementCache[sql] = dbConnection.prepare(sql);
+    }
+
+    return statementCache[sql];
 }
 
-async function commit() {
-    return await dbConnection.run("COMMIT");
+function beginTransaction() {
+    return stmt("BEGIN").run();
 }
 
-async function rollback() {
-    return await dbConnection.run("ROLLBACK");
+function commit() {
+    return stmt("COMMIT").run();
+}
+
+function rollback() {
+    return stmt("ROLLBACK").run();
 }
 
 async function getRow(query, params = []) {
-    return await wrap(async db => db.get(query, ...params), query);
+    return wrap(() => stmt(query).get(params), query);
 }
 
 async function getRowOrNull(query, params = []) {
@@ -105,18 +117,25 @@ async function getManyRows(query, params) {
         const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
 
+        const curParamsObj = {};
+
+        let j = 1;
+        for (const param of curParams) {
+            curParamsObj['param' + j++] = param;
+        }
+
         let i = 1;
-        const questionMarks = curParams.map(() => "?" + i++).join(",");
+        const questionMarks = curParams.map(() => ":param" + i++).join(",");
         const curQuery = query.replace(/\?\?\?/g, questionMarks);
 
-        results = results.concat(await getRows(curQuery, curParams));
+        results = results.concat(await getRows(curQuery, curParamsObj));
     }
 
     return results;
 }
 
 async function getRows(query, params = []) {
-    return await wrap(async db => db.all(query, ...params), query);
+    return wrap(() => stmt(query).all(params), query);
 }
 
 async function getMap(query, params = []) {
@@ -152,11 +171,11 @@ async function getColumn(query, params = []) {
 async function execute(query, params = []) {
     await startTransactionIfNecessary();
 
-    return await wrap(async db => db.run(query, ...params), query);
+    return wrap(() => stmt(query).run(params), query);
 }
 
 async function executeWithoutTransaction(query, params = []) {
-    await dbConnection.run(query, ...params);
+    await dbConnection.run(query, params);
 }
 
 async function executeMany(query, params) {
@@ -169,10 +188,10 @@ async function executeMany(query, params) {
 async function executeScript(query) {
     await startTransactionIfNecessary();
 
-    return await wrap(async db => db.exec(query), query);
+    return wrap(() => stmt.run(query), query);
 }
 
-async function wrap(func, query) {
+function wrap(func, query) {
     if (!dbConnection) {
         throw new Error("DB connection not initialized yet");
     }
@@ -182,7 +201,7 @@ async function wrap(func, query) {
     try {
         const startTimestamp = Date.now();
 
-        const result = await func(dbConnection);
+        const result = func(dbConnection);
 
         const milliseconds = Date.now() - startTimestamp;
         if (milliseconds >= 300) {

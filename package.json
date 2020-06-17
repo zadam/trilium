@@ -23,6 +23,7 @@
   "dependencies": {
     "async-mutex": "0.2.2",
     "axios": "0.19.2",
+    "better-sqlite3": "^7.1.0",
     "body-parser": "1.19.0",
     "cls-hooked": "4.2.2",
     "commonmark": "0.29.1",
@@ -54,7 +55,7 @@
     "jimp": "0.10.3",
     "mime-types": "2.1.27",
     "multer": "1.4.2",
-    "node-abi": "2.16.0",
+    "node-abi": "2.18.0",
     "open": "7.0.3",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",

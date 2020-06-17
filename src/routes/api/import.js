@@ -50,7 +50,11 @@ async function importToBranch(req) {
         if (extension === '.tar' && options.explodeArchives) {
             note = await tarImportService.importTar(taskContext, file.buffer, parentNote);
         } else if (extension === '.zip' && options.explodeArchives) {
+            const start = Date.now();
+
             note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
+
+            console.log("Import took", Date.now() - start, "ms");
         } else if (extension === '.opml' && options.explodeArchives) {
             note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
         } else if (extension === '.enex' && options.explodeArchives) {
