@@ -31,17 +31,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use((req, res, next) => {
-    cls.namespace.bindEmitter(req);
-    cls.namespace.bindEmitter(res);
-
-    cls.init(() => {
-        cls.namespace.set("Hi");
-
-        next();
-    });
-});
-
 app.use(bodyParser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());

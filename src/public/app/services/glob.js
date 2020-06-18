@@ -49,11 +49,7 @@ function setupGlobs() {
 
         let message = "Uncaught error: ";
 
-        if (string.includes("Cannot read property 'defaultView' of undefined")) {
-            // ignore this specific error which is very common but we don't know where it comes from
-            // and it seems to be harmless
-            return true;
-        } else if (string.includes("script error")) {
+        if (string.includes("script error")) {
             message += 'No details available';
         } else {
             message += [
@@ -61,8 +57,9 @@ function setupGlobs() {
                 'URL: ' + url,
                 'Line: ' + lineNo,
                 'Column: ' + columnNo,
-                'Error object: ' + JSON.stringify(error)
-            ].join(' - ');
+                'Error object: ' + JSON.stringify(error),
+                'Stack: ' + error && error.stack
+            ].join(', ');
         }
 
         ws.logError(message);

@@ -15,11 +15,11 @@ function setDataKey(decryptedDataKey) {
 }
 
 function setProtectedSessionId(req) {
-    cls.namespace.set('protectedSessionId', req.cookies.protectedSessionId);
+    cls.set('protectedSessionId', req.cookies.protectedSessionId);
 }
 
 function getProtectedSessionId() {
-    return cls.namespace.get('protectedSessionId');
+    return cls.get('protectedSessionId');
 }
 
 function getDataKey() {

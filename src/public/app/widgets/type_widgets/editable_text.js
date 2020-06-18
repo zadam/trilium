@@ -274,4 +274,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
         return notePath;
     }
+
+    async refreshIncludedNoteEvent({noteId}) {
+        this.refreshIncludedNote(this.$editor, noteId);
+    }
 }

@@ -7,7 +7,9 @@ const dataDir = require('./data_dir');
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const syncMutexService = require('./sync_mutex');
+const attributeService = require('./attributes');
 const cls = require('./cls');
+const utils = require('./utils');
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 
@@ -45,7 +47,7 @@ async function copyFile(backupFile) {
 
     for (; attemptCount < COPY_ATTEMPT_COUNT && !success; attemptCount++) {
         try {
-            await sql.executeNoWrap(`VACUUM INTO '${backupFile}'`);
+            await sql.executeWithoutTransaction(`VACUUM INTO '${backupFile}'`);
 
             success = true;
         } catch (e) {
@@ -98,13 +100,20 @@ async function anonymize() {
     await db.run("UPDATE notes SET title = 'title'");
     await db.run("UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL");
     await db.run("UPDATE note_revisions SET title = 'title'");
-    await db.run("UPDATE note_revision_contents SET content = 'title' WHERE content IS NOT NULL");
-    await db.run("UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label'");
-    await db.run("UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name != 'template'");
+    await db.run("UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL");
+
+    // we want to delete all non-builtin attributes because they can contain sensitive names and values
+    // on the other hand builtin/system attrs should not contain any sensitive info
+    const builtinAttrs = attributeService.getBuiltinAttributeNames().map(name => "'" + utils.sanitizeSql(name) + "'").join(', ');
+
+    await db.run(`UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label' AND name NOT IN(${builtinAttrs})`);
+    await db.run(`UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrs})`);
     await db.run("UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL");
     await db.run(`UPDATE options SET value = 'anonymized' WHERE name IN 
-                    ('documentId', 'documentSecret', 'encryptedDataKey', 'passwordVerificationHash', 
-                     'passwordVerificationSalt', 'passwordDerivedKeySalt', 'username', 'syncServerHost', 'syncProxy')`);
+                    ('documentId', 'documentSecret', 'encryptedDataKey', 
+                     'passwordVerificationHash', 'passwordVerificationSalt', 
+                     'passwordDerivedKeySalt', 'username', 'syncServerHost', 'syncProxy') 
+                      AND value != ''`);
     await db.run("VACUUM");
 
     await db.close();

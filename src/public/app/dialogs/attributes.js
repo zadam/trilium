@@ -152,10 +152,10 @@ function AttributesModel() {
                 attr.value = treeService.getNoteIdFromNotePath(attr.selectedPath);
             }
             else if (attr.type === 'label-definition') {
-                attr.value = attr.labelDefinition;
+                attr.value = JSON.stringify(attr.labelDefinition);
             }
             else if (attr.type === 'relation-definition') {
-                attr.value = attr.relationDefinition;
+                attr.value = JSON.stringify(attr.relationDefinition);
             }
 
             delete attr.labelValue;

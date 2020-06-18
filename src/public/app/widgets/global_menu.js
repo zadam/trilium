@@ -35,7 +35,7 @@ const TPL = `
 
             <a class="dropdown-item sync-now-button" title="Trigger sync">
                 <span class="bx bx-refresh"></span>
-                Sync (<span id="outstanding-syncs-count">0</span>)
+                Sync now (<span id="outstanding-syncs-count">0</span>)
             </a>
 
             <a class="dropdown-item" data-trigger-command="openNewWindow">

@@ -70,7 +70,7 @@ async function sync() {
             };
         }
         else {
-            log.info("sync failed: " + e.message + e.stack);
+            log.info("sync failed: " + e.message + "\nstack: " + e.stack);
 
             return {
                 success: false,
@@ -97,7 +97,6 @@ async function doLogin() {
     const hash = utils.hmac(documentSecret, timestamp);
 
     const syncContext = { cookieJar: {} };
-
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
         syncVersion: appInfo.syncVersion,
@@ -259,14 +258,18 @@ async function checkContentHash(syncContext) {
 }
 
 async function syncRequest(syncContext, method, requestPath, body) {
-    return await request.exec({
+    const timeout = await syncOptions.getSyncTimeout();
+
+    const opts = {
         method,
         url: await syncOptions.getSyncServerHost() + requestPath,
         cookieJar: syncContext.cookieJar,
-        timeout: await syncOptions.getSyncTimeout(),
+        timeout: timeout,
         body,
         proxy: proxyToggle ? await syncOptions.getSyncProxy() : null
-    });
+    };
+
+    return await utils.timeLimit(request.exec(opts), timeout);
 }
 
 const primaryKeys = {
@@ -369,7 +372,7 @@ sqlInit.dbReady.then(async () => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately
-    setTimeout(cls.wrap(sync), 1000);
+    setTimeout(cls.wrap(sync), 3000);
 
     setInterval(cls.wrap(updatePushStats), 1000);
 });

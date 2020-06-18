@@ -9,12 +9,13 @@ const syncOptions = require('./sync_options');
 // this allows to support system proxy
 
 function exec(opts) {
+    const client = getClient(opts);
+
     // hack for cases where electron.net does not work but we don't want to set proxy
     if (opts.proxy === 'noproxy') {
         opts.proxy = null;
     }
 
-    const client = getClient(opts);
     const proxyAgent = getProxyAgent(opts);
     const parsedTargetUrl = url.parse(opts.url);
 
@@ -40,7 +41,7 @@ function exec(opts) {
                 host: parsedTargetUrl.hostname,
                 port: parsedTargetUrl.port,
                 path: parsedTargetUrl.path,
-                timeout: opts.timeout,
+                timeout: opts.timeout, // works only for node.js client
                 headers,
                 agent: proxyAgent
             });
@@ -104,12 +105,14 @@ async function getImage(imageUrl) {
                 host: parsedTargetUrl.hostname,
                 port: parsedTargetUrl.port,
                 path: parsedTargetUrl.path,
-                timeout: opts.timeout,
+                timeout: opts.timeout, // works only for node client
                 headers: {},
                 agent: proxyAgent
             });
 
             request.on('error', err => reject(generateError(opts, err)));
+
+            request.on('abort', err => reject(generateError(opts, err)));
 
             request.on('response', response => {
                 if (![200, 201, 204].includes(response.statusCode)) {

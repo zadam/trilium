@@ -9,6 +9,14 @@ function wrap(callback) {
     return async () => await init(callback);
 }
 
+function get(key) {
+    return namespace.get(key);
+}
+
+function set(key, value) {
+    namespace.set(key, value);
+}
+
 function getSourceId() {
     return namespace.get('sourceId');
 }
@@ -52,6 +60,8 @@ function setEntityToCache(entityName, entityId, entity) {
 module.exports = {
     init,
     wrap,
+    get,
+    set,
     namespace,
     getSourceId,
     getLocalNowDateTime,

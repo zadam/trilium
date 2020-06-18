@@ -24,8 +24,6 @@ app.on('window-all-closed', () => {
 app.on('ready', async () => {
     app.setAppUserModelId('com.github.zadam.trilium');
 
-    await sqlInit.dbConnection;
-
     // if db is not initialized -> setup process
     // if db is initialized, then we need to wait until the migration process is finished
     if (await sqlInit.isDbInitialized()) {

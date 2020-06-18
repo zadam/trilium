@@ -25,7 +25,8 @@ function logError(message) {
     if (ws && ws.readyState === 1) {
         ws.send(JSON.stringify({
             type: 'log-error',
-            error: message
+            error: message,
+            stack: new Error().stack
         }));
     }
 }
@@ -156,7 +157,7 @@ async function consumeSyncData() {
         const nonProcessedSyncRows = allSyncRows.filter(sync => !processedSyncIds.has(sync.id));
 
         try {
-            await processSyncRows(nonProcessedSyncRows);
+            await utils.timeLimit(processSyncRows(nonProcessedSyncRows), 5000);
         }
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);

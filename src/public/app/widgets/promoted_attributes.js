@@ -149,6 +149,8 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                             cb(filtered);
                         }
                     }]);
+
+                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e))
                 });
             }
             else if (definition.labelType === 'number') {
@@ -229,7 +231,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 .prop("title", "Remove this attribute")
                 .on('click', async () => {
                     if (valueAttr.attributeId) {
-                        await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId);
+                        await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId, this.componentId);
                     }
 
                     $tr.remove();
@@ -263,8 +265,14 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             type: $attr.prop("attribute-type"),
             name: $attr.prop("attribute-name"),
             value: value
-        });
+        }, this.componentId);
 
         $attr.prop("attribute-id", result.attributeId);
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+            this.refresh();
+        }
     }
 }

@@ -140,10 +140,6 @@ async function updateEntity(entity) {
                 await eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
             }
         }
-
-        if (entity.afterSaving) {
-            await entity.afterSaving();
-        }
     });
 }
 

@@ -9,7 +9,7 @@ function setDbConnection(connection) {
     dbConnection = connection;
 }
 
-[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach(eventType => {
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, () => {
         if (dbConnection) {
             // closing connection is especially important to fold -wal file into the main DB file
@@ -33,7 +33,7 @@ async function insert(tableName, rec, replace = false) {
 
     const res = await execute(query, Object.values(rec));
 
-    return res.lastID;
+    return res.lastInsertRowid;
 }
 
 async function replace(tableName, rec) {
@@ -49,34 +49,46 @@ async function upsert(tableName, primaryKey, rec) {
 
     const columns = keys.join(", ");
 
-    let i = 0;
+    const questionMarks = keys.map(colName => "@" + colName).join(", ");
 
-    const questionMarks = keys.map(p => ":" + i++).join(", ");
-
-    i = 0;
-
-    const updateMarks = keys.map(key => `${key} = :${i++}`).join(", ");
+    const updateMarks = keys.map(colName => `${colName} = @${colName}`).join(", ");
 
     const query = `INSERT INTO ${tableName} (${columns}) VALUES (${questionMarks}) 
                    ON CONFLICT (${primaryKey}) DO UPDATE SET ${updateMarks}`;
 
-    await execute(query, Object.values(rec));
+    for (const idx in rec) {
+        if (rec[idx] === true || rec[idx] === false) {
+            rec[idx] = rec[idx] ? 1 : 0;
+        }
+    }
+
+    await execute(query, rec);
 }
 
-async function beginTransaction() {
-    return await execute("BEGIN");
+const statementCache = {};
+
+function stmt(sql) {
+    if (!(sql in statementCache)) {
+        statementCache[sql] = dbConnection.prepare(sql);
+    }
+
+    return statementCache[sql];
 }
 
-async function commit() {
-    return await execute("COMMIT");
+function beginTransaction() {
+    return stmt("BEGIN").run();
 }
 
-async function rollback() {
-    return await execute("ROLLBACK");
+function commit() {
+    return stmt("COMMIT").run();
+}
+
+function rollback() {
+    return stmt("ROLLBACK").run();
 }
 
 async function getRow(query, params = []) {
-    return await wrap(async db => db.get(query, ...params), query);
+    return wrap(() => stmt(query).get(params), query);
 }
 
 async function getRowOrNull(query, params = []) {
@@ -105,18 +117,25 @@ async function getManyRows(query, params) {
         const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
 
+        const curParamsObj = {};
+
+        let j = 1;
+        for (const param of curParams) {
+            curParamsObj['param' + j++] = param;
+        }
+
         let i = 1;
-        const questionMarks = curParams.map(() => "?" + i++).join(",");
+        const questionMarks = curParams.map(() => ":param" + i++).join(",");
         const curQuery = query.replace(/\?\?\?/g, questionMarks);
 
-        results = results.concat(await getRows(curQuery, curParams));
+        results = results.concat(await getRows(curQuery, curParamsObj));
     }
 
     return results;
 }
 
 async function getRows(query, params = []) {
-    return await wrap(async db => db.all(query, ...params), query);
+    return wrap(() => stmt(query).all(params), query);
 }
 
 async function getMap(query, params = []) {
@@ -150,23 +169,29 @@ async function getColumn(query, params = []) {
 }
 
 async function execute(query, params = []) {
-    return await wrap(async db => db.run(query, ...params), query);
+    await startTransactionIfNecessary();
+
+    return wrap(() => stmt(query).run(params), query);
 }
 
-async function executeNoWrap(query, params = []) {
-    await dbConnection.run(query, ...params);
+async function executeWithoutTransaction(query, params = []) {
+    await dbConnection.run(query, params);
 }
 
 async function executeMany(query, params) {
+    await startTransactionIfNecessary();
+
     // essentially just alias
     await getManyRows(query, params);
 }
 
 async function executeScript(query) {
-    return await wrap(async db => db.exec(query), query);
+    await startTransactionIfNecessary();
+
+    return wrap(() => stmt.run(query), query);
 }
 
-async function wrap(func, query) {
+function wrap(func, query) {
     if (!dbConnection) {
         throw new Error("DB connection not initialized yet");
     }
@@ -176,7 +201,7 @@ async function wrap(func, query) {
     try {
         const startTimestamp = Date.now();
 
-        const result = await func(dbConnection);
+        const result = func(dbConnection);
 
         const milliseconds = Date.now() - startTimestamp;
         if (milliseconds >= 300) {
@@ -199,61 +224,68 @@ async function wrap(func, query) {
     }
 }
 
+// true if transaction is active globally.
+// cls.namespace.get('isTransactional') OTOH indicates active transaction in active CLS
 let transactionActive = false;
+// resolves when current transaction ends with either COMMIT or ROLLBACK
 let transactionPromise = null;
+let transactionPromiseResolve = null;
 
-async function transactional(func) {
-    if (cls.namespace.get('isInTransaction')) {
-        return await func();
+async function startTransactionIfNecessary() {
+    if (!cls.get('isTransactional')
+        || cls.get('isInTransaction')) {
+        return;
     }
 
     while (transactionActive) {
         await transactionPromise;
     }
 
-    let ret = null;
-    const thisError = new Error(); // to capture correct stack trace in case of exception
-
+    // first set semaphore (atomic operation and only then start transaction
     transactionActive = true;
-    transactionPromise = new Promise(async (resolve, reject) => {
-        try {
-            await beginTransaction();
+    transactionPromise = new Promise(res => transactionPromiseResolve = res);
+    cls.set('isInTransaction', true);
 
-            cls.namespace.set('isInTransaction', true);
+    await beginTransaction();
+}
 
-            ret = await func();
+async function transactional(func) {
+    // if the CLS is already transactional then the whole transaction is handled by higher level transactional() call
+    if (cls.get('isTransactional')) {
+        return await func();
+    }
 
+    cls.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
+
+    try {
+        const ret = await func();
+
+        if (cls.get('isInTransaction')) {
             await commit();
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
             require('./ws.js').sendPingToAllClients();
-
-            transactionActive = false;
-            resolve();
-
-            setTimeout(() => require('./ws').sendPingToAllClients(), 50);
         }
-        catch (e) {
-            if (transactionActive) {
-                log.error("Error executing transaction, executing rollback. Inner stack: " + e.stack + "\nOutside stack: " + thisError.stack);
 
-                await rollback();
-
-                transactionActive = false;
-            }
-
-            reject(e);
-        }
-        finally {
-            cls.namespace.set('isInTransaction', false);
-        }
-    });
-
-    if (transactionActive) {
-        await transactionPromise;
+        return ret;
     }
+    catch (e) {
+        if (cls.get('isInTransaction')) {
+            await rollback();
+        }
 
-    return ret;
+        throw e;
+    }
+    finally {
+        cls.namespace.set('isTransactional', false);
+
+        if (cls.namespace.get('isInTransaction')) {
+            transactionActive = false;
+            cls.namespace.set('isInTransaction', false);
+            // resolving even for rollback since this is just semaphore for allowing another write transaction to proceed
+            transactionPromiseResolve();
+        }
+    }
 }
 
 module.exports = {
@@ -268,7 +300,7 @@ module.exports = {
     getMap,
     getColumn,
     execute,
-    executeNoWrap,
+    executeWithoutTransaction,
     executeMany,
     executeScript,
     transactional,

@@ -68,6 +68,8 @@
 
 .note-detail-image {
     text-align: center;
+    height: 100%;
+    overflow: auto;
 }
 
 .note-detail-image-view {

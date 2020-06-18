@@ -16,18 +16,18 @@ export async function showDialog(ancestorNoteId) {
         ancestorNoteId = hoistedNoteService.getHoistedNoteId();
     }
 
-    const result = await server.get('recent-changes/' + ancestorNoteId);
+    const recentChangesRows = await server.get('recent-changes/' + ancestorNoteId);
 
     // preload all notes into cache
-    await treeCache.getNotes(result.map(r => r.noteId), true);
+    await treeCache.getNotes(recentChangesRows.map(r => r.noteId), true);
 
     $content.empty();
 
-    if (result.length === 0) {
+    if (recentChangesRows.length === 0) {
         $content.append("No changes yet ...");
     }
 
-    const groupedByDate = groupByDate(result);
+    const groupedByDate = groupByDate(recentChangesRows);
 
     for (const [dateDay, dayChanges] of groupedByDate) {
         const $changesList = $('<ul>');
@@ -95,10 +95,10 @@ export async function showDialog(ancestorNoteId) {
     }
 }
 
-function groupByDate(result) {
+function groupByDate(rows) {
     const groupedByDate = new Map();
 
-    for (const row of result) {
+    for (const row of rows) {
         const dateDay = row.date.substr(0, 10);
 
         if (!groupedByDate.has(dateDay)) {

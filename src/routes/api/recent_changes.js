@@ -8,68 +8,54 @@ const noteCacheService = require('../../services/note_cache/note_cache.js');
 async function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
 
-    const noteRows = await sql.getRows(
-        `
-        SELECT * FROM (
-            SELECT note_revisions.noteId,
-                   note_revisions.noteRevisionId,
-                   note_revisions.dateLastEdited AS date
-            FROM note_revisions
-            ORDER BY note_revisions.dateLastEdited DESC
-        )
-        UNION ALL SELECT * FROM (
-            SELECT 
-                   notes.noteId,
-                   NULL AS noteRevisionId,
-                   dateModified AS date 
-            FROM notes 
-            ORDER BY dateModified DESC
-        )
-        ORDER BY date DESC`);
+    let recentChanges = [];
 
-    const recentChanges = [];
+    const noteRevisions = await sql.getRows(`
+        SELECT 
+            notes.noteId,
+            notes.isDeleted AS current_isDeleted,
+            notes.deleteId AS current_deleteId,
+            notes.isErased AS current_isErased,
+            notes.title AS current_title,
+            notes.isProtected AS current_isProtected,
+            note_revisions.title,
+            note_revisions.utcDateCreated AS utcDate,
+            note_revisions.dateCreated AS date
+        FROM 
+            note_revisions
+            JOIN notes USING(noteId)`);
 
-    for (const noteRow of noteRows) {
-        if (!noteCacheService.isInAncestor(noteRow.noteId, ancestorNoteId)) {
-            continue;
-        }
-
-        if (noteRow.noteRevisionId) {
-            recentChanges.push(await sql.getRow(`
-                SELECT 
-                    notes.noteId,
-                    notes.isDeleted AS current_isDeleted,
-                    notes.deleteId AS current_deleteId,
-                    notes.isErased AS current_isErased,
-                    notes.title AS current_title,
-                    notes.isProtected AS current_isProtected,
-                    note_revisions.title,
-                    note_revisions.dateCreated AS date
-                FROM 
-                    note_revisions
-                    JOIN notes USING(noteId)
-                WHERE noteRevisionId = ?`, [noteRow.noteRevisionId]));
-        }
-        else {
-            recentChanges.push(await sql.getRow(`
-                SELECT
-                    notes.noteId,
-                    notes.isDeleted AS current_isDeleted,
-                    notes.deleteId AS current_deleteId,
-                    notes.isErased AS current_isErased,
-                    notes.title AS current_title,
-                    notes.isProtected AS current_isProtected,
-                    notes.title,
-                    notes.dateModified AS date
-                FROM
-                    notes
-                WHERE noteId = ?`, [noteRow.noteId]));
-        }
-
-        if (recentChanges.length >= 200) {
-            break;
+    for (const noteRevision of noteRevisions) {
+        if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
+            recentChanges.push(noteRevision);
         }
     }
+
+    const notes = await sql.getRows(`
+        SELECT
+            notes.noteId,
+            notes.isDeleted AS current_isDeleted,
+            notes.deleteId AS current_deleteId,
+            notes.isErased AS current_isErased,
+            notes.title AS current_title,
+            notes.isProtected AS current_isProtected,
+            notes.title,
+            notes.utcDateCreated AS utcDate,
+            notes.dateCreated AS date
+        FROM
+            notes`);
+
+    for (const note of notes) {
+        if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
+            recentChanges.push(note);
+        }
+    }
+
+    recentChanges.sort((a, b) => a.utcDate > b.utcDate ? -1 : 1);
+
+    recentChanges = recentChanges.slice(0, Math.min(500, recentChanges.length));
+
+    console.log(recentChanges);
 
     for (const change of recentChanges) {
         if (change.current_isProtected) {

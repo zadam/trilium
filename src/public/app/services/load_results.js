@@ -54,8 +54,9 @@ export default class LoadResults {
         this.attributes.push({attributeId, sourceId});
     }
 
-    getAttributes() {
+    getAttributes(sourceId = 'none') {
         return this.attributes
+            .filter(row => row.sourceId !== sourceId)
             .map(row => this.treeCache.attributes[row.attributeId])
             .filter(attr => !!attr);
     }

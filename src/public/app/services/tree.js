@@ -22,7 +22,7 @@ async function resolveNotePath(notePath) {
  *
  * @return {string[]}
  */
-async function getRunPath(notePath) {
+async function getRunPath(notePath, logErrors = true) {
     utils.assertArguments(notePath);
 
     notePath = notePath.split("-")[0].trim();
@@ -66,10 +66,14 @@ async function getRunPath(notePath) {
             }
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
-                console.debug(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
+                if (logErrors) {
+                    console.log(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
+                }
 
                 if (parents.length > 0) {
-                    console.debug(utils.now(), "Available parents:", parents);
+                    if (logErrors) {
+                        console.log(utils.now(), "Available parents:", parents);
+                    }
 
                     const someNotePath = getSomeNotePath(parents[0]);
 
@@ -86,7 +90,10 @@ async function getRunPath(notePath) {
                     break;
                 }
                 else {
-                    console.log("No parents so no run path.");
+                    if (logErrors) {
+                        console.log("No parents so no run path.");
+                    }
+
                     return;
                 }
             }

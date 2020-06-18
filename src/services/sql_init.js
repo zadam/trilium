@@ -1,8 +1,6 @@
 const log = require('./log');
 const dataDir = require('./data_dir');
 const fs = require('fs');
-const sqlite = require('sqlite');
-const sqlite3 = require('sqlite3');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
@@ -12,28 +10,14 @@ const optionService = require('./options');
 const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
+const Database = require('better-sqlite3');
 
-const dbConnection = new Promise(async (resolve, reject) => {
-    const db = await sqlite.open({
-        filename: dataDir.DOCUMENT_PATH,
-        driver: sqlite3.Database
-    });
+const dbConnection = new Database(dataDir.DOCUMENT_PATH);
+dbConnection.pragma('journal_mode = WAL');
 
-    db.run('PRAGMA journal_mode = WAL;');
+sql.setDbConnection(dbConnection);
 
-    sql.setDbConnection(db);
-
-    resolve();
-});
-
-let dbReadyResolve = null;
-const dbReady = new Promise(async (resolve, reject) => {
-    dbReadyResolve = resolve;
-
-    await dbConnection;
-
-    initDbConnection();
-});
+const dbReady = initDbConnection();
 
 async function schemaExists() {
     const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
@@ -78,7 +62,6 @@ async function initDbConnection() {
         await require('./options_init').initStartupOptions();
 
         log.info("DB ready.");
-        dbReadyResolve();
     });
 }
 
@@ -189,7 +172,6 @@ dbReady.then(async () => {
 
 module.exports = {
     dbReady,
-    dbConnection,
     schemaExists,
     isDbInitialized,
     initDbConnection,

@@ -580,7 +580,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const noteList = [];
 
+        const hideArchivedNotes = this.hideArchivedNotes;
+
         for (const branch of this.getChildBranches(parentNote)) {
+            if (hideArchivedNotes) {
+                const note = await branch.getNote();
+
+                if (note.hasLabel('archived')) {
+                    continue;
+                }
+            }
+
             const node = await this.prepareNode(branch);
 
             noteList.push(node);
@@ -603,6 +613,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
             // image is already visible in the parent note so no need to display it separately in the book
             childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
         }
+
+        // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
+        // which would seriously slow down everything.
+        // we check this flag only once user chooses to expand the parent. This has the negative consequence that
+        // note may appear as folder but not contain any children when all of them are archived
 
         return childBranches;
     }
@@ -732,17 +747,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     /** @return {FancytreeNode} */
-    async getNodeFromPath(notePath, expand = false) {
+    async getNodeFromPath(notePath, expand = false, logErrors = true) {
         utils.assertArguments(notePath);
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
         /** @var {FancytreeNode} */
         let parentNode = null;
 
-        const runPath = await treeService.getRunPath(notePath);
+        const runPath = await treeService.getRunPath(notePath, logErrors);
 
         if (!runPath) {
-            console.error("Could not find run path for notePath:", notePath);
+            if (logErrors) {
+                console.error("Could not find run path for notePath:", notePath);
+            }
+
             return;
         }
 
@@ -779,7 +797,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     foundChildNode = this.findChildNode(parentNode, childNoteId);
 
                     if (!foundChildNode) {
-                        ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                        if (logErrors) {
+                            ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                        }
+
                         return;
                     }
                 }
@@ -806,8 +827,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     /** @return {FancytreeNode} */
-    async expandToNote(notePath) {
-        return this.getNodeFromPath(notePath, true);
+    async expandToNote(notePath, logErrors = true) {
+        return this.getNodeFromPath(notePath, true, logErrors);
     }
 
     updateNode(node) {
@@ -1008,7 +1029,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         if (activeNotePath) {
-            let node = await this.expandToNote(activeNotePath);
+            let node = await this.expandToNote(activeNotePath, false);
 
             if (node && node.data.noteId !== activeNoteId) {
                 // if the active note has been moved elsewhere then it won't be found by the path
@@ -1024,7 +1045,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
             else {
                 // this is used when original note has been deleted and we want to move the focus to the note above/below
-                node = await this.expandToNote(nextNotePath);
+                node = await this.expandToNote(nextNotePath, false);
 
                 if (node) {
                     await appContext.tabManager.getActiveTabContext().setNote(nextNotePath);

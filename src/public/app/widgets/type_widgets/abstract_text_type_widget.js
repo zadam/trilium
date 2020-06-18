@@ -62,4 +62,12 @@ export default class AbstractTextTypeWidget extends TypeWidget {
 
         $el.text(title);
     }
+
+    refreshIncludedNote($container, noteId) {
+        if ($container) {
+            $container.find(`section[data-note-id="${noteId}"]`).each((_, el) => {
+                this.loadIncludedNote(noteId, $(el));
+            });
+        }
+    }
 }

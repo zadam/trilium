@@ -434,7 +434,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        await noteService.scanForLinks(await repository.getNotes(noteId));
+        await noteService.scanForLinks(await repository.getNote(noteId));
 
         if (!metaFile) {
             // if there's no meta file then the notes are created based on the order in that tar file but that

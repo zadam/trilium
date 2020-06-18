@@ -206,6 +206,14 @@ function formatDownloadTitle(filename, type, mime) {
             }
         }
 
+        if (mime === 'application/octet-stream') {
+            // we didn't find any good guess for this one, it will be better to just return
+            // the current name without fake extension. It's possible that the title still preserves to correct
+            // extension too
+
+            return filename;
+        }
+
         return filename + '.' + extensions[0];
     }
 }
@@ -231,6 +239,24 @@ function getNoteTitle(filePath, replaceUnderscoresWithSpaces, noteMeta) {
         }
         return basename;
     }
+}
+
+function timeLimit(promise, limitMs) {
+    return new Promise((res, rej) => {
+        let resolved = false;
+
+        promise.then(result => {
+            resolved = true;
+
+            res(result);
+        });
+
+        setTimeout(() => {
+            if (!resolved) {
+                rej(new Error('Process exceeded time limit ' + limitMs));
+            }
+        }, limitMs);
+    });
 }
 
 module.exports = {
@@ -261,7 +287,8 @@ module.exports = {
     isStringNote,
     quoteRegex,
     replaceAll,
-    formatDownloadTitle,
     getNoteTitle,
     removeTextFileExtension,
+    formatDownloadTitle,
+    timeLimit
 };
