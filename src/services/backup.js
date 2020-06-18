@@ -10,8 +10,6 @@ const syncMutexService = require('./sync_mutex');
 const attributeService = require('./attributes');
 const cls = require('./cls');
 const utils = require('./utils');
-const sqlite = require('sqlite');
-const sqlite3 = require('sqlite3');
 
 async function regularBackup() {
     await periodBackup('lastDailyBackupDate', 'daily', 24 * 3600);
