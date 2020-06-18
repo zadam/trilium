@@ -41,6 +41,27 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'renderNote', isDangerous: true }
 ];
 
+async function getNotesWithAttribute(type, name, value) {
+    let valueCondition = "";
+    let params = [type, name];
+
+    if (value !== undefined) {
+        valueCondition = " AND attributes.value = ?";
+        params.push(value);
+    }
+
+    return await repository.getEntities(`
+        SELECT notes.* 
+        FROM notes 
+        JOIN attributes USING (noteId) 
+        WHERE notes.isDeleted = 0 
+          AND attributes.isDeleted = 0 
+          AND attributes.type = ? 
+          AND attributes.name = ? 
+          ${valueCondition} 
+        ORDER BY position`, params);
+}
+
 async function getNotesWithLabel(name, value) {
     let valueCondition = "";
     let params = [name];
@@ -134,6 +155,7 @@ function getBuiltinAttributeNames() {
 }
 
 module.exports = {
+    getNotesWithAttribute,
     getNotesWithLabel,
     getNotesWithLabels,
     getNoteWithLabel,

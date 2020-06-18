@@ -258,6 +258,14 @@ async function deleteRelation(req) {
     }
 }
 
+async function getNotesWithAttribute(req) {
+    const {type, name, value} = req.body;
+
+    const notes = await attributeService.getNotesWithAttribute(type, name, value);
+
+    return notes.map(note => note.noteId);
+}
+
 module.exports = {
     updateNoteAttributes,
     updateNoteAttributes2,
@@ -267,5 +275,6 @@ module.exports = {
     getValuesForAttribute,
     getEffectiveNoteAttributes,
     createRelation,
-    deleteRelation
+    deleteRelation,
+    getNotesWithAttribute
 };
