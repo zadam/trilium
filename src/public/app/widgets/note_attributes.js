@@ -3,7 +3,6 @@ import libraryLoader from "../services/library_loader.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import treeCache from "../services/tree_cache.js";
 import server from "../services/server.js";
-import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import attributesParser from "../services/attribute_parser.js";
@@ -81,6 +80,10 @@ const TPL = `
     margin-bottom: 5px !important;
 }
 
+.note-attributes.error .note-attributes-editor {
+    border-color: red !important;
+}
+
 .attr-extras {
     display: block;
     background-color: var(--accented-background-color);
@@ -109,7 +112,7 @@ const TPL = `
     <div class="attr-extras-more-notes"></div>
 </div>
 
-<div class="note-attributes-editor"></div>
+<div class="note-attributes-editor" tabindex="200"></div>
 </div>
 `;
 
@@ -119,10 +122,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
     constructor() {
         super();
 
-        this.spacedUpdate = new SpacedUpdate(async () => {
-            const content = this.textEditor.getData();
-
-            this.parse(content);
+        this.spacedUpdate = new SpacedUpdate(() => {
+            this.parseAttributes();
 
             this.$attrExtras.hide();
         });
@@ -141,17 +142,44 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             const keycode = (e.keyCode ? e.keyCode : e.which);
 
             if (keycode === 13) {
-                const attributes = attributesParser.lexAndParse(this.textEditor.getData());
+                this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
 
-                await server.put(`notes/${this.noteId}/attributes2`, attributes, this.componentId);
+                await this.save();
             }
 
             this.$attrExtras.hide();
         });
 
-        this.$editor.on('blur', () => this.$attrExtras.hide());
+        this.$editor.on('blur', () => {
+            this.save();
+
+            this.$attrExtras.hide();
+        });
 
         return this.$widget;
+    }
+
+    async save() {
+        const attributes = this.parseAttributes();
+
+        if (attributes) {
+            await server.put(`notes/${this.noteId}/attributes2`, attributes, this.componentId);
+        }
+    }
+
+    parseAttributes() {
+        try {
+            const attrs = attributesParser.lexAndParse(this.textEditor.getData());
+
+            this.$widget.removeClass("error");
+            this.$widget.removeAttr("title");
+
+            return attrs;
+        }
+        catch (e) {
+            this.$widget.attr("title", e.message);
+            this.$widget.addClass("error");
+        }
     }
 
     async initEditor() {
@@ -413,15 +441,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         return searchStr;
     }
 
-    parse(content) {
-        if (content.startsWith('<p>')) {
-            content = content.substr(3);
+    async focusOnAttributesEvent({tabId}) {
+        if (this.tabContext.tabId === tabId) {
+            this.$editor.trigger('focus');
         }
-
-        if (content.endsWith('</p>')) {
-            content = content.substr(0, content - 4);
-        }
-
-        console.log(content);
     }
 }

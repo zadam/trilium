@@ -98,7 +98,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         const $tr = $("<tr>");
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")
-            .prop("tabindex", definitionAttr.position)
+            .prop("tabindex", 200 + definitionAttr.position)
             .prop("attribute-id", valueAttr.noteId === this.noteId ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
             .prop("attribute-type", valueAttr.type)
             .prop("attribute-name", valueAttr.name)

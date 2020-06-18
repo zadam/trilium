@@ -88,7 +88,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     async initEditor() {
         await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
-        
+
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";
 
@@ -108,7 +108,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             lint: true,
             gutters: ["CodeMirror-lint-markers"],
             lineNumbers: true,
-            tabindex: 100,
+            tabindex: 300,
             // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
             // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
             lineWrapping: true,
@@ -117,7 +117,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
         this.codeEditor.on('change', () => this.spacedUpdate.scheduleUpdate());
     }
-    
+
     async doRefresh(note) {
         const noteComplement = await this.tabContext.getNoteComplement();
 

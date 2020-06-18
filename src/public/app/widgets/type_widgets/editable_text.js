@@ -72,7 +72,7 @@ const TPL = `
     }
     </style>
 
-    <div class="note-detail-text-editor" tabindex="10000"></div>
+    <div class="note-detail-text-editor" tabindex="300"></div>
 </div>
 `;
 

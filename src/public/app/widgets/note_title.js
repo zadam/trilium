@@ -23,7 +23,7 @@ const TPL = `
     }
     </style>
 
-    <input autocomplete="off" value="" class="note-title" tabindex="1">
+    <input autocomplete="off" value="" class="note-title" tabindex="100">
 </div>`;
 
 export default class NoteTitleWidget extends TabAwareWidget {
