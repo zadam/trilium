@@ -87,11 +87,13 @@ async function searchNotes(query) {
         fuzzyAttributeSearch: false
     });
 
-    let searchResults = await findNotesWithQuery(query, parsingContext);
+    const allSearchResults = await findNotesWithQuery(query, parsingContext);
+    const trimmedSearchResults = allSearchResults.slice(0, 200);
 
-    searchResults = searchResults.slice(0, 200);
-
-    return searchResults;
+    return {
+        count: allSearchResults.length,
+        results: trimmedSearchResults
+    };
 }
 
 async function searchNotesForAutocomplete(query) {

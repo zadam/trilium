@@ -177,7 +177,6 @@ function register(app) {
     apiRoute(DELETE, '/api/notes/:noteId/attributes/:attributeId', attributesRoute.deleteNoteAttribute);
     apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
-    apiRoute(POST, '/api/attributes/notes-with-attribute', attributesRoute.getNotesWithAttribute);
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
 

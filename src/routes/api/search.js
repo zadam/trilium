@@ -7,12 +7,13 @@ const scriptService = require('../../services/script');
 const searchService = require('../../services/search/search');
 
 async function searchNotes(req) {
-    const notePaths = await searchService.searchNotes(req.params.searchString);
+    const {count, results} = await searchService.searchNotes(req.params.searchString);
 
     try {
         return {
             success: true,
-            results: notePaths
+            count,
+            results
         }
     }
     catch {

@@ -46,7 +46,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
 
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
-            this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
+            this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
         });
 
         return this.$widget;

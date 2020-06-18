@@ -93,12 +93,18 @@ const TPL = `
     max-height: 500px;
     overflow: auto;
 }
+
+.attr-extras-list {
+    padding-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 </style>
 
 <div class="attr-extras" style="display: none;">
     <div class="attr-extras-title"></div>
     
-    <div class="attr-extras-list"></div>
+    <ul class="attr-extras-list"></ul>
     
     <div class="attr-extras-more-notes"></div>
 </div>
@@ -117,6 +123,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             const content = this.textEditor.getData();
 
             this.parse(content);
+
+            this.$attrExtras.hide();
         });
     }
 
@@ -129,16 +137,19 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         this.$attrExtrasMoreNotes = this.$widget.find('.attr-extras-more-notes');
         this.initialized = this.initEditor();
 
-        this.$editor.keypress(async e => {
+        this.$editor.on('keydown', async e => {
             const keycode = (e.keyCode ? e.keyCode : e.which);
+
             if (keycode === 13) {
                 const attributes = attributesParser.lexAndParse(this.textEditor.getData());
 
                 await server.put(`notes/${this.noteId}/attributes2`, attributes, this.componentId);
-
-                console.log("Saved!");
             }
-        })
+
+            this.$attrExtras.hide();
+        });
+
+        this.$editor.on('blur', () => this.$attrExtras.hide());
 
         return this.$widget;
     }
@@ -178,20 +189,26 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 }
 
                 if (!matchedAttr) {
-                    console.log(`Not found attribute for index ${clickIndex}, attr: ${JSON.stringify(parsedAttrs)}, text: ${attrText}`);
+                    this.$attrExtras.hide();
 
                     return;
                 }
 
-                let noteIds = await server.post('attributes/notes-with-attribute', {
+                const searchString = this.formatAttrForSearch(matchedAttr);
+
+                let {count, results} = await server.get('search/' + encodeURIComponent(searchString), {
                     type: matchedAttr.type,
                     name: matchedAttr.name,
                     value: matchedPart === 'value' ? matchedAttr.value : undefined
                 });
 
-                noteIds = noteIds.filter(noteId => noteId !== this.noteId);
+                for (const res of results) {
+                    res.noteId = res.notePathArray[res.notePathArray.length - 1];
+                }
 
-                if (noteIds.length === 0) {
+                results = results.filter(({noteId}) => noteId !== this.noteId);
+
+                if (results.length === 0) {
                     this.$attrExtrasTitle.text(
                         `There are no other notes with ${matchedAttr.type} name "${matchedAttr.name}"`
                         // not displaying value since it can be long
@@ -208,9 +225,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
                 this.$attrExtrasList.empty();
 
-                const displayedNoteIds = noteIds.length <= DISPLAYED_NOTES ? noteIds : noteIds.slice(0, DISPLAYED_NOTES);
-                const displayedNotes = await treeCache.getNotes(displayedNoteIds);
-console.log(displayedNoteIds, displayedNotes);
+                const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
+                const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
+
                 for (const note of displayedNotes) {
                     const notePath = treeService.getSomeNotePath(note);
                     const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
@@ -220,15 +237,15 @@ console.log(displayedNoteIds, displayedNotes);
                     );
                 }
 
-                if (noteIds.length > DISPLAYED_NOTES) {
-                    this.$attrExtrasMoreNotes.show().text(`... and ${noteIds.length - DISPLAYED_NOTES} more.`);
+                if (results.length > DISPLAYED_NOTES) {
+                    this.$attrExtrasMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
                 }
                 else {
                     this.$attrExtrasMoreNotes.hide();
                 }
 
                 this.$attrExtras.css("left", e.pageX - this.$attrExtras.width() / 2);
-                this.$attrExtras.css("top", e.pageY + 20);
+                this.$attrExtras.css("top", e.pageY + 30);
                 this.$attrExtras.show();
             }
         });
@@ -315,7 +332,7 @@ console.log(displayedNoteIds, displayedNotes);
         const $attributesContainer = $("<div>");
 
         await this.renderAttributes(ownedAttributes, $attributesContainer);
-console.log($attributesContainer.html());
+
         this.textEditor.setData($attributesContainer.html());
     }
 
@@ -330,14 +347,20 @@ console.log($attributesContainer.html());
     async renderAttributes(attributes, $container) {
         for (const attribute of attributes) {
             if (attribute.type === 'label') {
-                $container.append(utils.formatLabel(attribute) + " ");
+                $container.append(document.createTextNode('#' + attribute.name));
+
+                if (attribute.value) {
+                    $container.append('=');
+                    $container.append(document.createTextNode(this.formatValue(attribute.value)));
+                    $container.append(' ');
+                }
             } else if (attribute.type === 'relation') {
                 if (attribute.isAutoLink) {
                     continue;
                 }
 
                 if (attribute.value) {
-                    $container.append('~' + attribute.name + "=");
+                    $container.append(document.createTextNode('~' + attribute.name + "="));
                     $container.append(this.createNoteLink(attribute.value));
                     $container.append(" ");
                 } else {
@@ -347,6 +370,47 @@ console.log($attributesContainer.html());
                 ws.logError("Unknown attr type: " + attribute.type);
             }
         }
+    }
+
+    formatValue(val) {
+        if (!/[^\w_-]/.test(val)) {
+            return val;
+        }
+        else if (!val.includes('"')) {
+            return '"' + val + '"';
+        }
+        else if (!val.includes("'")) {
+            return "'" + val + "'";
+        }
+        else if (!val.includes("`")) {
+            return "`" + val + "`";
+        }
+        else {
+            return '"' + val.replace(/"/g, '\\"') + '"';
+        }
+    }
+
+    formatAttrForSearch(attr) {
+        let searchStr = '';
+
+        if (attr.type === 'label') {
+            searchStr += '#';
+        }
+        else if (attr.type === 'relation') {
+            searchStr += '~';
+        }
+        else {
+            throw new Error(`Unrecognized attribute type ${JSON.stringify(attr)}`);
+        }
+
+        searchStr += attr.name;
+
+        if (attr.value) {
+            searchStr += '=';
+            searchStr += this.formatValue(attr.value);
+        }
+
+        return searchStr;
     }
 
     parse(content) {
