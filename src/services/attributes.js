@@ -97,7 +97,7 @@ function getAttributeNames(type, nameLike) {
              FROM attributes 
              WHERE isDeleted = 0
                AND type = ?
-               AND name LIKE '%${utils.sanitizeSql(nameLike)}%'`, [type]);
+               AND name LIKE ?`, [type, '%' + nameLike + '%']);
 
     for (const attr of BUILTIN_ATTRIBUTES) {
         if (attr.type === type && attr.name.toLowerCase().includes(nameLike) && !names.includes(attr.name)) {

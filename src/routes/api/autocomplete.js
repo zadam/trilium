@@ -33,10 +33,12 @@ function getAutocomplete(req) {
 
 function getRecentNotes(activeNoteId) {
     let extraCondition = '';
+    const params = [activeNoteId];
 
     const hoistedNoteId = optionService.getOption('hoistedNoteId');
     if (hoistedNoteId !== 'root') {
-        extraCondition = `AND recent_notes.notePath LIKE '%${utils.sanitizeSql(hoistedNoteId)}%'`;
+        extraCondition = `AND recent_notes.notePath LIKE ?`;
+        params.push(hoistedNoteId + '%');
     }
 
     const recentNotes = repository.getEntities(`
@@ -52,7 +54,7 @@ function getRecentNotes(activeNoteId) {
         ${extraCondition}
       ORDER BY 
         utcDateCreated DESC
-      LIMIT 200`, [activeNoteId]);
+      LIMIT 200`, params);
 
     return recentNotes.map(rn => {
         const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));

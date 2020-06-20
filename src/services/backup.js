@@ -31,8 +31,6 @@ function periodBackup(optionName, fileName, periodInSeconds) {
     }
 }
 
-const COPY_ATTEMPT_COUNT = 50;
-
 async function copyFile(backupFile) {
     const sql = require('./sql');
 
@@ -78,7 +76,7 @@ async function anonymize() {
     // on the other hand builtin/system attrs should not contain any sensitive info
     const builtinAttrs = attributeService
         .getBuiltinAttributeNames()
-        .map(name => "'" + utils.sanitizeSql(name) + "'").join(', ');
+        .map(name => "'" + name + "'").join(', ');
 
     db.prepare(`UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label' AND name NOT IN(${builtinAttrs})`).run();
     db.prepare(`UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrs})`).run();

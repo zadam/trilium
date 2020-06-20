@@ -119,21 +119,19 @@ function restoreNoteRevision(req) {
 }
 
 function getEditedNotesOnDate(req) {
-    const date = utils.sanitizeSql(req.params.date);
-
     const notes = repository.getEntities(`
         SELECT notes.*
         FROM notes
         WHERE noteId IN (
                 SELECT noteId FROM notes 
-                WHERE notes.dateCreated LIKE '${date}%' 
-                   OR notes.dateModified LIKE '${date}%'
+                WHERE notes.dateCreated LIKE :date
+                   OR notes.dateModified LIKE :date
             UNION ALL
                 SELECT noteId FROM note_revisions
-                WHERE note_revisions.dateLastEdited LIKE '${date}%'
+                WHERE note_revisions.dateLastEdited LIKE :date
         )
         ORDER BY isDeleted
-        LIMIT 50`);
+        LIMIT 50`, {date: req.params.date + '%'});
 
     for (const note of notes) {
         const notePath = noteCacheService.getNotePath(note.noteId);

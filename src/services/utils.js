@@ -50,11 +50,6 @@ function isEmptyOrWhitespace(str) {
     return str === null || str.match(/^ *$/) !== null;
 }
 
-function sanitizeSql(str) {
-    // should be improved or usage eliminated
-    return str.replace(/'/g, "''");
-}
-
 function sanitizeSqlIdentifier(str) {
     return str.replace(/[^A-Za-z0-9_]/g, "");
 }
@@ -286,7 +281,6 @@ module.exports = {
     isElectron,
     hash,
     isEmptyOrWhitespace,
-    sanitizeSql,
     sanitizeSqlIdentifier,
     prepareSqlForLike,
     stopWatch,

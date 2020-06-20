@@ -127,7 +127,8 @@ function getManyRows(query, params) {
         const questionMarks = curParams.map(() => ":param" + i++).join(",");
         const curQuery = query.replace(/\?\?\?/g, questionMarks);
 
-        results = results.concat(getRows(curQuery, curParamsObj));
+        const subResults = dbConnection.prepare(curQuery).all(curParamsObj);
+        results = results.concat(subResults);
     }
 
     return results;
@@ -200,7 +201,7 @@ function wrap(query, func) {
 
     const milliseconds = Date.now() - startTimestamp;
 
-    if (milliseconds >= 100) {
+    if (milliseconds >= 20) {
         if (query.includes("WITH RECURSIVE")) {
             log.info(`Slow recursive query took ${milliseconds}ms.`);
         }
