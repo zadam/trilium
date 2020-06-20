@@ -78,6 +78,8 @@ const TPL = `
     color: var(--muted-text-color);
     margin-top: 5px !important;
     margin-bottom: 5px !important;
+    max-height: 100px;
+    overflow: auto;
 }
 
 .note-attributes.error .note-attributes-editor {
@@ -333,8 +335,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
-        await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
-        CKEditorInspector.attach(this.textEditor);
+        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
+        //CKEditorInspector.attach(this.textEditor);
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
@@ -380,8 +382,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 if (attribute.value) {
                     $container.append('=');
                     $container.append(document.createTextNode(this.formatValue(attribute.value)));
-                    $container.append(' ');
                 }
+
+                $container.append(' ');
             } else if (attribute.type === 'relation') {
                 if (attribute.isAutoLink) {
                     continue;

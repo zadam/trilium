@@ -7,14 +7,12 @@ function preprocess(str) {
         str = str.substr(0, str.length - 4);
     }
 
-    str = str.replace("&nbsp;", " ");
+    str = str.replace(/&nbsp;/g, " ");
 
     return str.replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
 }
 
 function lexer(str) {
-    str = preprocess(str);
-
     const tokens = [];
 
     let quotes = false;
@@ -110,8 +108,18 @@ function lexer(str) {
     return tokens;
 }
 
-function parser(tokens, allowEmptyRelations = false) {
+function parser(tokens, str, allowEmptyRelations = false) {
     const attrs = [];
+
+    function context(i) {
+        let {startIndex, endIndex} = tokens[i];
+        startIndex = Math.max(0, startIndex - 20);
+        endIndex = Math.min(str.length, endIndex + 20);
+
+        return '"' + (startIndex !== 0 ? "..." : "")
+            + str.substr(startIndex, endIndex - startIndex)
+            + (endIndex !== str.length ? "..." : "") + '"';
+    }
 
     for (let i = 0; i < tokens.length; i++) {
         const {text, startIndex, endIndex} = tokens[i];
@@ -127,7 +135,7 @@ function parser(tokens, allowEmptyRelations = false) {
 
             if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
                 if (i + 2 >= tokens.length) {
-                    throw new Error(`Missing value for label "${text}"`);
+                    throw new Error(`Missing value for label "${text}" in ${context(i)}`);
                 }
 
                 i += 2;
@@ -155,7 +163,7 @@ function parser(tokens, allowEmptyRelations = false) {
                     break;
                 }
                 else {
-                    throw new Error(`Relation "${text}" should point to a note.`);
+                    throw new Error(`Relation "${text}" in ${context(i)} should point to a note.`);
                 }
             }
 
@@ -173,7 +181,7 @@ function parser(tokens, allowEmptyRelations = false) {
             attr.valueEndIndex = tokens[i].endIndex;
         }
         else {
-            throw new Error(`Unrecognized attribute "${text}"`);
+            throw new Error(`Unrecognized attribute "${text}" in ${context(i)}`);
         }
     }
 
@@ -181,9 +189,11 @@ function parser(tokens, allowEmptyRelations = false) {
 }
 
 function lexAndParse(str, allowEmptyRelations = false) {
+    str = preprocess(str);
+
     const tokens = lexer(str);
 
-    return parser(tokens, allowEmptyRelations);
+    return parser(tokens, str, allowEmptyRelations);
 }
 
 export default {

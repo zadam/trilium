@@ -83,7 +83,8 @@ async function importToBranch(req) {
 
     // import has deactivated note events so note cache is not updated
     // instead we force it to reload (can be async)
-    noteCacheService.load();
+    // FIXME
+    //noteCacheService.load();
 
     return note;
 }

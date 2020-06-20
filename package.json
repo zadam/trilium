@@ -23,7 +23,7 @@
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js "
   },
   "dependencies": {
-    "async-mutex": "0.2.2",
+    "async-mutex": "0.2.3",
     "axios": "0.19.2",
     "better-sqlite3": "^7.1.0",
     "body-parser": "1.19.0",
@@ -42,7 +42,7 @@
     "express-session": "1.17.1",
     "file-type": "14.6.2",
     "fs-extra": "9.0.1",
-    "helmet": "3.22.1",
+    "helmet": "3.23.1",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.1",
@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "electron": "10.0.0-beta.3",
+    "electron": "10.0.0-beta.4",
     "electron-builder": "22.7.0",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.11.0",
