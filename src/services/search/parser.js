@@ -11,7 +11,8 @@ const PropertyComparisonExp = require('./expressions/property_comparison');
 const AttributeExistsExp = require('./expressions/attribute_exists');
 const LabelComparisonExp = require('./expressions/label_comparison');
 const NoteCacheFulltextExp = require('./expressions/note_cache_fulltext');
-const NoteContentFulltextExp = require('./expressions/note_content_fulltext');
+const NoteContentProtectedFulltextExp = require('./expressions/note_content_protected_fulltext');
+const NoteContentUnprotectedFulltextExp = require('./expressions/note_content_unprotected_fulltext');
 const OrderByAndLimitExp = require('./expressions/order_by_and_limit');
 const comparatorBuilder = require('./comparator_builder');
 const ValueExtractor = require('./value_extractor');
@@ -25,7 +26,8 @@ function getFulltext(tokens, parsingContext) {
     else if (parsingContext.includeNoteContent) {
         return new OrExp([
             new NoteCacheFulltextExp(tokens),
-            new NoteContentFulltextExp('*=*', tokens)
+            new NoteContentProtectedFulltextExp('*=*', tokens),
+            new NoteContentUnprotectedFulltextExp('*=*', tokens)
         ]);
     }
     else {
@@ -67,7 +69,10 @@ function getExpression(tokens, parsingContext, level = 0) {
 
             i++;
 
-            return new NoteContentFulltextExp(operator, [tokens[i]]);
+            return new OrExp([
+                NoteContentUnprotectedFulltextExp(operator, [tokens[i]]),
+                NoteContentProtectedFulltextExp(operator, [tokens[i]])
+            ]);
         }
 
         if (tokens[i] === 'parents') {
