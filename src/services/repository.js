@@ -131,7 +131,6 @@ function updateEntity(entity) {
                     eventService.emit(eventService.ENTITY_CREATED, eventPayload);
                 }
 
-                // it seems to be better to handle deletion and update separately
                 eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
             }
         }

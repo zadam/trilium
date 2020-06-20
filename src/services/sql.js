@@ -253,6 +253,7 @@ function transactional(func) {
 }
 
 module.exports = {
+    dbConnection,
     insert,
     replace,
     getValue,

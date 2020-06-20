@@ -97,7 +97,12 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             });
 
             if (resultHandler) {
-                resultHandler(req, res, result);
+                if (result && result.then) {
+                    result.then(actualResult => resultHandler(req, res, actualResult))
+                }
+                else {
+                    resultHandler(req, res, result);
+                }
             }
         }
         catch (e) {

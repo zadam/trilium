@@ -67,9 +67,7 @@ function getOptions() {
 }
 
 function getOptionsMap() {
-    const options = getOptions();
-
-    return utils.toObject(options, opt => [opt.name, opt.value]);
+    return require('./sql').getMap("SELECT name, value FROM options ORDER BY name");
 }
 
 module.exports = {

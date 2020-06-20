@@ -5,13 +5,13 @@ const log = require('../../services/log');
 const backupService = require('../../services/backup');
 const consistencyChecksService = require('../../services/consistency_checks');
 
-function anonymize() {
-    return backupService.anonymize();
+async function anonymize() {
+    return await backupService.anonymize();
 }
 
-function backupDatabase() {
+async function backupDatabase() {
     return {
-        backupFile: backupService.backupNow("now")
+        backupFile: await backupService.backupNow("now")
     };
 }
 

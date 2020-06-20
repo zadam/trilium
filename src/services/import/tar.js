@@ -14,6 +14,7 @@ const commonmark = require('commonmark');
 const TaskContext = require('../task_context.js');
 const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
+const sql = require("../sql");
 const treeService = require("../tree");
 
 /**
@@ -166,19 +167,21 @@ function importTar(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        ({note} = noteService.createNewNote({
-            parentNoteId: parentNoteId,
-            title: noteTitle,
-            content: '',
-            noteId: noteId,
-            type: noteMeta ? noteMeta.type : 'text',
-            mime: noteMeta ? noteMeta.mime : 'text/html',
-            prefix: noteMeta ? noteMeta.prefix : '',
-            isExpanded: noteMeta ? noteMeta.isExpanded : false,
-            isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
-        }));
+        sql.transactional(() => {
+            ({note} = noteService.createNewNote({
+                parentNoteId: parentNoteId,
+                title: noteTitle,
+                content: '',
+                noteId: noteId,
+                type: noteMeta ? noteMeta.type : 'text',
+                mime: noteMeta ? noteMeta.mime : 'text/html',
+                prefix: noteMeta ? noteMeta.prefix : '',
+                isExpanded: noteMeta ? noteMeta.isExpanded : false,
+                isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+            }));
 
-        saveAttributes(note, noteMeta);
+            saveAttributes(note, noteMeta);
+        });
 
         if (!firstNote) {
             firstNote = note;
