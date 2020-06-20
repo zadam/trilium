@@ -127,10 +127,10 @@ function closeSetupWindow() {
     }
 }
 
-function registerGlobalShortcuts() {
+async function registerGlobalShortcuts() {
     const {globalShortcut} = require('electron');
 
-    sqlInit.dbReady;
+    await sqlInit.dbReady;
 
     const allActions = keyboardActionsService.getKeyboardActions();
 

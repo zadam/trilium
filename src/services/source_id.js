@@ -47,8 +47,10 @@ function isLocalSourceId(srcId) {
 
 const currentSourceId = createSourceId();
 
-// this will also refresh source IDs
-cls.wrap(() => saveSourceId(currentSourceId));
+// very ugly
+setTimeout(() => {
+    sqlInit.dbReady.then(cls.wrap(() => saveSourceId(currentSourceId)));
+}, 1000);
 
 function getCurrentSourceId() {
     return currentSourceId;

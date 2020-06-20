@@ -1,28 +1,21 @@
 const log = require('./log');
-const dataDir = require('./data_dir');
 const fs = require('fs');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
-const cls = require('./cls');
 const utils = require('./utils');
 const optionService = require('./options');
 const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
-const Database = require('better-sqlite3');
 
-const dbConnection = new Database(dataDir.DOCUMENT_PATH);
-dbConnection.pragma('journal_mode = WAL');
+const dbReady = utils.deferred();
 
-sql.setDbConnection(dbConnection);
-
-const dbReady = initDbConnection();
+initDbConnection();
 
 function schemaExists() {
-    const tableResults = sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
-
-    return tableResults.length === 1;
+    return !!sql.getValue(`SELECT name FROM sqlite_master
+                                 WHERE type = 'table' AND name = 'options'`);
 }
 
 function isDbInitialized() {
@@ -32,35 +25,34 @@ function isDbInitialized() {
 
     const initialized = sql.getValue("SELECT value FROM options WHERE name = 'initialized'");
 
-    // !initialized may be removed in the future, required only for migration
-    return !initialized || initialized === 'true';
+    return initialized === 'true';
 }
 
 function initDbConnection() {
-    cls.init(() => {
-        if (!isDbInitialized()) {
-            log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${port} to see instructions on how to initialize Trilium.`));
+    if (!isDbInitialized()) {
+        log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${port} to see instructions on how to initialize Trilium.`));
 
-            return;
-        }
+        return;
+    }
 
-        const currentDbVersion = getDbVersion();
+    const currentDbVersion = getDbVersion();
 
-        if (currentDbVersion > appInfo.dbVersion) {
-            log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
+    if (currentDbVersion > appInfo.dbVersion) {
+        log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
 
-            utils.crash();
-        }
+        utils.crash();
+    }
 
-        if (!isDbUpToDate()) {
-            // avoiding circular dependency
-            const migrationService = require('./migration');
+    if (!isDbUpToDate()) {
+        // avoiding circular dependency
+        const migrationService = require('./migration');
 
-            migrationService.migrate();
-        }
+        migrationService.migrate();
+    }
 
-        require('./options_init').initStartupOptions();
-    });
+    require('./options_init').initStartupOptions();
+
+    dbReady.resolve();
 }
 
 function createInitialDatabase(username, password, theme) {
@@ -156,7 +148,7 @@ function isDbUpToDate() {
     return upToDate;
 }
 
-function dbInitialized() {
+function setDbAsInitialized() {
     if (!isDbInitialized()) {
         optionService.setOption('initialized', 'true');
 
@@ -174,5 +166,5 @@ module.exports = {
     isDbUpToDate,
     createInitialDatabase,
     createDatabaseForSync,
-    dbInitialized
+    setDbAsInitialized
 };

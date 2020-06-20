@@ -368,12 +368,14 @@ function getMaxSyncId() {
     return sql.getValue('SELECT MAX(id) FROM sync');
 }
 
-setInterval(cls.wrap(sync), 60000);
+sqlInit.dbReady.then(() => {
+    setInterval(cls.wrap(sync), 60000);
 
-// kickoff initial sync immediately
-setTimeout(cls.wrap(sync), 3000);
+    // kickoff initial sync immediately
+    setTimeout(cls.wrap(sync), 3000);
 
-setInterval(cls.wrap(updatePushStats), 1000);
+    setInterval(cls.wrap(updatePushStats), 1000);
+});
 
 module.exports = {
     sync,

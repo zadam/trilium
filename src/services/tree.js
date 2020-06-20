@@ -5,7 +5,6 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const syncTableService = require('./sync_table');
 const protectedSessionService = require('./protected_session');
-const noteCacheService = require('./note_cache/note_cache.js');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
@@ -22,8 +21,6 @@ function getNotes(noteIds) {
         WHERE noteId IN (???)`, noteIds);
 
     protectedSessionService.decryptNotes(notes);
-
-    noteCacheService.loadedPromise;
 
     notes.forEach(note => {
         note.isProtected = !!note.isProtected

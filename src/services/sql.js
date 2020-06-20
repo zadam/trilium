@@ -2,12 +2,11 @@
 
 const log = require('./log');
 const cls = require('./cls');
+const Database = require('better-sqlite3');
+const dataDir = require('./data_dir');
 
-let dbConnection;
-
-function setDbConnection(connection) {
-    dbConnection = connection;
-}
+const dbConnection = new Database(dataDir.DOCUMENT_PATH);
+dbConnection.pragma('journal_mode = WAL');
 
 [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, () => {
@@ -88,7 +87,7 @@ function rollback() {
 }
 
 function getRow(query, params = []) {
-    return wrap(() => stmt(query).get(params), query);
+    return wrap(query, s => s.get(params));
 }
 
 function getRowOrNull(query, params = []) {
@@ -135,7 +134,11 @@ function getManyRows(query, params) {
 }
 
 function getRows(query, params = []) {
-    return wrap(() => stmt(query).all(params), query);
+    return wrap(query, s => s.all(params));
+}
+
+function iterateRows(query, params = []) {
+    return stmt(query).iterate(params);
 }
 
 function getMap(query, params = []) {
@@ -171,7 +174,7 @@ function getColumn(query, params = []) {
 function execute(query, params = []) {
     startTransactionIfNecessary();
 
-    return wrap(() => stmt(query).run(params), query);
+    return wrap(query, s => s.run(params));
 }
 
 function executeWithoutTransaction(query, params = []) {
@@ -181,56 +184,38 @@ function executeWithoutTransaction(query, params = []) {
 function executeMany(query, params) {
     startTransactionIfNecessary();
 
-    // essentially just alias
     getManyRows(query, params);
 }
 
 function executeScript(query) {
     startTransactionIfNecessary();
 
-    return wrap(() => stmt.run(query), query);
+    return dbConnection.exec(query);
 }
 
-function wrap(func, query) {
-    if (!dbConnection) {
-        throw new Error("DB connection not initialized yet");
-    }
+function wrap(query, func) {
+    const startTimestamp = Date.now();
 
-    const thisError = new Error();
+    const result = func(stmt(query));
 
-    try {
-        const startTimestamp = Date.now();
+    const milliseconds = Date.now() - startTimestamp;
 
-        const result = func(dbConnection);
-
-        const milliseconds = Date.now() - startTimestamp;
-        if (milliseconds >= 300) {
-            if (query.includes("WITH RECURSIVE")) {
-                log.info(`Slow recursive query took ${milliseconds}ms.`);
-            }
-            else {
-                log.info(`Slow query took ${milliseconds}ms: ${query}`);
-            }
+    if (milliseconds >= 100) {
+        if (query.includes("WITH RECURSIVE")) {
+            log.info(`Slow recursive query took ${milliseconds}ms.`);
         }
-
-        return result;
+        else {
+            log.info(`Slow query took ${milliseconds}ms: ${query}`);
+        }
     }
-    catch (e) {
-        log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
 
-        thisError.message = e.stack;
-
-        throw thisError;
-    }
+    return result;
 }
 
 function startTransactionIfNecessary() {
-    if (!cls.get('isTransactional')
-        || cls.get('isInTransaction')) {
+    if (!cls.get('isTransactional') || dbConnection.inTransaction) {
         return;
     }
-
-    cls.set('isInTransaction', true);
 
     beginTransaction();
 }
@@ -246,7 +231,7 @@ function transactional(func) {
     try {
         const ret = func();
 
-        if (cls.get('isInTransaction')) {
+        if (dbConnection.inTransaction) {
             commit();
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
@@ -256,7 +241,7 @@ function transactional(func) {
         return ret;
     }
     catch (e) {
-        if (cls.get('isInTransaction')) {
+        if (dbConnection.inTransaction) {
             rollback();
         }
 
@@ -264,22 +249,17 @@ function transactional(func) {
     }
     finally {
         cls.namespace.set('isTransactional', false);
-
-        if (cls.namespace.get('isInTransaction')) {
-            cls.namespace.set('isInTransaction', false);
-            // resolving even for rollback since this is just semaphore for allowing another write transaction to proceed
-        }
     }
 }
 
 module.exports = {
-    setDbConnection,
     insert,
     replace,
     getValue,
     getRow,
     getRowOrNull,
     getRows,
+    iterateRows,
     getManyRows,
     getMap,
     getColumn,

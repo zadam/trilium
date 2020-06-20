@@ -146,7 +146,7 @@ function update(req) {
 function syncFinished() {
     // after first sync finishes, the application is ready to be used
     // this is meaningless but at the same time harmless (idempotent) for further syncs
-    sqlInit.dbInitialized();
+    sqlInit.setDbAsInitialized();
 }
 
 function queueSector(req) {

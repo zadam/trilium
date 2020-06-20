@@ -762,10 +762,12 @@ function duplicateNote(noteId, parentNoteId) {
     };
 }
 
-// first cleanup kickoff 5 minutes after startup
-setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
+sqlInit.dbReady.then(() => {
+    // first cleanup kickoff 5 minutes after startup
+    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
 
-setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
+    setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
+});
 
 module.exports = {
     createNewNote,

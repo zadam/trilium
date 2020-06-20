@@ -9,4 +9,6 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
     }
 });
 
-hoistedNote.setHoistedNoteId(optionService.getOption('hoistedNoteId'));
+sqlInit.dbReady.then(() => {
+    hoistedNote.setHoistedNoteId(optionService.getOption('hoistedNoteId'));
+});

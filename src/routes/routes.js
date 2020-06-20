@@ -80,6 +80,8 @@ function apiRoute(method, path, routeHandler) {
 
 function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
     router[method](path, ...middleware, (req, res, next) => {
+        const start = Date.now();
+
         try {
             cls.namespace.bindEmitter(req);
             cls.namespace.bindEmitter(res);
@@ -102,6 +104,12 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             log.error(`${method} ${path} threw exception: ` + e.stack);
 
             res.sendStatus(500);
+        }
+
+        const time = Date.now() - start;
+
+        if (time >= 10) {
+            console.log(`Slow request: ${time}ms - ${method} ${path}`);
         }
     });
 }

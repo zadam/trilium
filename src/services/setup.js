@@ -24,7 +24,7 @@ function triggerSync() {
     // it's ok to not wait for it here
     syncService.sync().then(res => {
         if (res.success) {
-            sqlInit.dbInitialized();
+            sqlInit.setDbAsInitialized();
         }
     });
 }

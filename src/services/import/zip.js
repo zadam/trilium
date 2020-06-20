@@ -296,7 +296,7 @@ function importZip(taskContext, fileBuffer, importRootNote) {
                 }
             });
 
-            if(noteMeta) {
+            if (noteMeta) {
                 const includeNoteLinks = (noteMeta.attributes || [])
                     .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
 

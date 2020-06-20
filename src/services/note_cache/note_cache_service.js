@@ -154,7 +154,7 @@ function getNotePath(noteId) {
 
         return {
             noteId: noteId,
-            branchId: getBranch(noteId, parentNote.noteId).branchId,
+            branchId: noteCache.getBranch(noteId, parentNote.noteId).branchId,
             title: noteTitle,
             notePath: retPath,
             path: retPath.join('/')
