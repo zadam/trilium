@@ -164,6 +164,7 @@ $(document).on('mousedown', '.note-detail-text a.reference-link', goToLink);
 $(document).on('mousedown', '.note-detail-readonly-text a.reference-link', goToLink);
 $(document).on('mousedown', '.note-detail-readonly-text a', goToLink);
 $(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
+$(document).on('click', 'section.include-note a', goToLink);
 $(document).on('click', 'a.ck-link-actions__preview', e => {
     e.preventDefault();
     e.stopPropagation();
@@ -175,6 +176,7 @@ $(document).on('contextmenu', '.note-detail-readonly-text a', linkContextMenu);
 $(document).on('contextmenu', "a[data-action='note']", linkContextMenu);
 $(document).on('contextmenu', ".note-detail-render a", linkContextMenu);
 $(document).on('contextmenu', ".note-paths-widget a", linkContextMenu);
+$(document).on('contextmenu', "section.include-note a", linkContextMenu);
 
 export default {
     getNotePathFromUrl,

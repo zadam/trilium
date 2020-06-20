@@ -327,7 +327,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "printActiveNote",
         defaultShortcuts: [],
-        scope: "note-detail"
+        scope: "window"
     },
     {
         actionName: "runActiveNote",
