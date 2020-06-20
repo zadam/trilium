@@ -12,7 +12,7 @@ const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const ws = require('./ws.js');
 const appInfo = require('./app_info');
-const searchService = require('./search');
+const searchService = require('./search/search');
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -99,9 +99,9 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} searchString
-     * @returns {Promise<Note[]>}
+     * @returns {Note[]}
      */
-    this.searchForNotes = searchService.searchForNotes;
+    this.searchForNotes = searchService.searchNoteEntities;
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
@@ -112,7 +112,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise<Note|null>}
      */
     this.searchForNote = searchString => {
-        const notes = searchService.searchForNotes(searchString);
+        const notes = searchService.searchNoteEntities(searchString);
 
         return notes.length > 0 ? notes[0] : null;
     };

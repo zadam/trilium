@@ -224,22 +224,12 @@ function wrap(func, query) {
     }
 }
 
-// true if transaction is active globally.
-// cls.namespace.get('isTransactional') OTOH indicates active transaction in active CLS
-let transactionActive = false;
-// resolves when current transaction ends with either COMMIT or ROLLBACK
-let transactionPromise = null;
-let transactionPromiseResolve = null;
-
 function startTransactionIfNecessary() {
     if (!cls.get('isTransactional')
         || cls.get('isInTransaction')) {
         return;
     }
 
-    // first set semaphore (atomic operation and only then start transaction
-    transactionActive = true;
-    transactionPromise = new Promise(res => transactionPromiseResolve = res);
     cls.set('isInTransaction', true);
 
     beginTransaction();
@@ -276,10 +266,8 @@ function transactional(func) {
         cls.namespace.set('isTransactional', false);
 
         if (cls.namespace.get('isInTransaction')) {
-            transactionActive = false;
             cls.namespace.set('isInTransaction', false);
             // resolving even for rollback since this is just semaphore for allowing another write transaction to proceed
-            transactionPromiseResolve();
         }
     }
 }

@@ -89,14 +89,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                 cls.set('localNowDateTime', req.headers['`trilium-local-now-datetime`']);
                 protectedSessionService.setProtectedSessionId(req);
 
-                if (transactional) {
-                    return sql.transactional(() => {
-                        return routeHandler(req, res, next);
-                    });
-                }
-                else {
-                    return routeHandler(req, res, next);
-                }
+                const cb = () => routeHandler(req, res, next);
+
+                return transactional ? sql.transactional(cb) : cb();
             });
 
             if (resultHandler) {

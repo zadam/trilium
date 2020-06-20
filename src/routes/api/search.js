@@ -7,7 +7,7 @@ const scriptService = require('../../services/script');
 const searchService = require('../../services/search/search');
 
 function searchNotes(req) {
-    const {count, results} = searchService.searchNotes(req.params.searchString);
+    const {count, results} = searchService.searchTrimmedNotes(req.params.searchString);
 
     try {
         return {

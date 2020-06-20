@@ -9,6 +9,7 @@ const ParsingContext = require("./parsing_context");
 const noteCache = require('../note_cache/note_cache');
 const noteCacheService = require('../note_cache/note_cache_service');
 const hoistedNoteService = require('../hoisted_note');
+const repository = require('../repository');
 const utils = require('../utils');
 
 /**
@@ -87,7 +88,11 @@ function searchNotes(query) {
         fuzzyAttributeSearch: false
     });
 
-    const allSearchResults = findNotesWithQuery(query, parsingContext);
+    return findNotesWithQuery(query, parsingContext);
+}
+
+function searchTrimmedNotes(query) {
+    const allSearchResults = searchNotes(query);
     const trimmedSearchResults = allSearchResults.slice(0, 200);
 
     return {
@@ -174,8 +179,15 @@ function formatAttribute(attr) {
     }
 }
 
+function searchNoteEntities(query) {
+    return searchNotes(query)
+        .map(res => repository.getNote(res.noteId));
+}
+
 module.exports = {
     searchNotes,
+    searchTrimmedNotes,
     searchNotesForAutocomplete,
-    findNotesWithQuery
+    findNotesWithQuery,
+    searchNoteEntities
 };

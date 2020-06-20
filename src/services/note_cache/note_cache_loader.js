@@ -147,5 +147,4 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     noteCache.loadedPromise.then(() => noteCache.decryptProtectedNotes());
 });
 
-// FIXME
-// load();
+load();

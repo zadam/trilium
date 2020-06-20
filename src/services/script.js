@@ -4,7 +4,7 @@ const repository = require('./repository');
 const cls = require('./cls');
 const log = require('./log');
 
-function executeNote(note, apiParams) {
+async function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
         log.info(`Cannot execute note ${note.noteId}`);
 
@@ -16,16 +16,16 @@ function executeNote(note, apiParams) {
     return executeBundle(bundle, apiParams);
 }
 
-function executeNoteNoException(note, apiParams) {
+async function executeNoteNoException(note, apiParams) {
     try {
-        executeNote(note, apiParams);
+        await executeNote(note, apiParams);
     }
     catch (e) {
         // just swallow, exception is logged already in executeNote
     }
 }
 
-function executeBundle(bundle, apiParams = {}) {
+async function executeBundle(bundle, apiParams = {}) {
     if (!apiParams.startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         apiParams.startNote = bundle.note;

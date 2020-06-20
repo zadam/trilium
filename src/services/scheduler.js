@@ -1,7 +1,6 @@
 const scriptService = require('./script');
 const repository = require('./repository');
 const cls = require('./cls');
-const sqlInit = require('./sql_init');
 
 function runNotesWithLabel(runAttrValue) {
     const notes = repository.getEntities(`
