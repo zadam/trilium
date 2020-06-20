@@ -20,7 +20,7 @@ const yazl = require("yazl");
  * @param {Branch} branch
  * @param {string} format - 'html' or 'markdown'
  */
-async function exportToZip(taskContext, branch, format, res) {
+function exportToZip(taskContext, branch, format, res) {
     const zipFile = new yazl.ZipFile();
 
     const noteIdToMeta = {};
@@ -80,10 +80,10 @@ async function exportToZip(taskContext, branch, format, res) {
         return getUniqueFilename(existingFileNames, fileName);
     }
 
-    async function getNoteMeta(branch, parentMeta, existingFileNames) {
-        const note = await branch.getNote();
+    function getNoteMeta(branch, parentMeta, existingFileNames) {
+        const note = branch.getNote();
 
-        if (await note.hasOwnedLabel('excludeFromExport')) {
+        if (note.hasOwnedLabel('excludeFromExport')) {
             return;
         }
 
@@ -122,7 +122,7 @@ async function exportToZip(taskContext, branch, format, res) {
             type: note.type,
             mime: note.mime,
             // we don't export utcDateCreated and utcDateModified of any entity since that would be a bit misleading
-            attributes: (await note.getOwnedAttributes()).map(attribute => ({
+            attributes: (note.getOwnedAttributes()).map(attribute => ({
                     type: attribute.type,
                     name: attribute.name,
                     value: attribute.value,
@@ -139,12 +139,12 @@ async function exportToZip(taskContext, branch, format, res) {
 
         noteIdToMeta[note.noteId] = meta;
 
-        const childBranches = await note.getChildBranches();
+        const childBranches = note.getChildBranches();
 
         const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
 
         // if it's a leaf then we'll export it even if it's empty
-        if (available && ((await note.getContent()).length > 0 || childBranches.length === 0)) {
+        if (available && ((note.getContent()).length > 0 || childBranches.length === 0)) {
             meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
         }
 
@@ -156,7 +156,7 @@ async function exportToZip(taskContext, branch, format, res) {
             const childExistingNames = {};
 
             for (const childBranch of childBranches) {
-                const note = await getNoteMeta(childBranch, meta, childExistingNames);
+                const note = getNoteMeta(childBranch, meta, childExistingNames);
 
                 // can be undefined if export is disabled for this note
                 if (note) {
@@ -258,7 +258,7 @@ ${content}
     // noteId => file path
     const notePaths = {};
 
-    async function saveNote(noteMeta, filePathPrefix) {
+    function saveNote(noteMeta, filePathPrefix) {
         if (noteMeta.isClone) {
             const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
 
@@ -271,12 +271,12 @@ ${content}
             return;
         }
 
-        const note = await repository.getNote(noteMeta.noteId);
+        const note = repository.getNote(noteMeta.noteId);
 
         notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
 
         if (noteMeta.dataFileName) {
-            const content = prepareContent(noteMeta.title, await note.getContent(), noteMeta);
+            const content = prepareContent(noteMeta.title, note.getContent(), noteMeta);
 
             zipFile.addBuffer(content, filePathPrefix + noteMeta.dataFileName, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
         }
@@ -289,12 +289,12 @@ ${content}
             zipFile.addEmptyDirectory(directoryPath, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
 
             for (const childMeta of noteMeta.children) {
-                await saveNote(childMeta, directoryPath + '/');
+                saveNote(childMeta, directoryPath + '/');
             }
         }
     }
 
-    async function saveNavigation(rootMeta, navigationMeta) {
+    function saveNavigation(rootMeta, navigationMeta) {
         function saveNavigationInner(meta) {
             let html = '<li>';
 
@@ -336,7 +336,7 @@ ${content}
         zipFile.addBuffer(prettyHtml, navigationMeta.dataFileName);
     }
 
-    async function saveIndex(rootMeta, indexMeta) {
+    function saveIndex(rootMeta, indexMeta) {
         let firstNonEmptyNote;
         let curMeta = rootMeta;
 
@@ -367,14 +367,14 @@ ${content}
         zipFile.addBuffer(fullHtml, indexMeta.dataFileName);
     }
 
-    async function saveCss(rootMeta, cssMeta) {
+    function saveCss(rootMeta, cssMeta) {
         const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
 
         zipFile.addBuffer(cssContent, cssMeta.dataFileName);
     }
 
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
-    const rootMeta = await getNoteMeta(branch, { notePath: [] }, existingFileNames);
+    const rootMeta = getNoteMeta(branch, { notePath: [] }, existingFileNames);
 
     const metaFile = {
         formatVersion: 1,
@@ -421,15 +421,15 @@ ${content}
 
     zipFile.addBuffer(metaFileJson, "!!!meta.json");
 
-    await saveNote(rootMeta, '');
+    saveNote(rootMeta, '');
 
     if (format === 'html') {
-        await saveNavigation(rootMeta, navigationMeta);
-        await saveIndex(rootMeta, indexMeta);
-        await saveCss(rootMeta, cssMeta);
+        saveNavigation(rootMeta, navigationMeta);
+        saveIndex(rootMeta, indexMeta);
+        saveCss(rootMeta, cssMeta);
     }
 
-    const note = await branch.getNote();
+    const note = branch.getNote();
     const zipFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".zip";
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));

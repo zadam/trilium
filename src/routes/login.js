@@ -8,12 +8,12 @@ function loginPage(req, res) {
     res.render('login', { failedAuth: false });
 }
 
-async function login(req, res) {
-    const userName = await optionService.getOption('username');
+function login(req, res) {
+    const userName = optionService.getOption('username');
 
     const guessedPassword = req.body.password;
 
-    if (req.body.username === userName && await verifyPassword(guessedPassword)) {
+    if (req.body.username === userName && verifyPassword(guessedPassword)) {
         const rememberMe = req.body.remember_me;
 
         req.session.regenerate(() => {
@@ -32,10 +32,10 @@ async function login(req, res) {
     }
 }
 
-async function verifyPassword(guessedPassword) {
-    const hashed_password = utils.fromBase64(await optionService.getOption('passwordVerificationHash'));
+function verifyPassword(guessedPassword) {
+    const hashed_password = utils.fromBase64(optionService.getOption('passwordVerificationHash'));
 
-    const guess_hashed = await myScryptService.getVerificationHash(guessedPassword);
+    const guess_hashed = myScryptService.getVerificationHash(guessedPassword);
 
     return guess_hashed.equals(hashed_password);
 }

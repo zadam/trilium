@@ -12,11 +12,11 @@ const utils = require('../../services/utils');
 const path = require('path');
 const Attribute = require('../../entities/attribute');
 
-async function findClippingNote(todayNote, pageUrl) {
-    const notes = await todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
+function findClippingNote(todayNote, pageUrl) {
+    const notes = todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
 
     for (const note of notes) {
-        if (await note.getOwnedLabelValue('clipType') === 'clippings') {
+        if (note.getOwnedLabelValue('clipType') === 'clippings') {
             return note;
         }
     }
@@ -24,76 +24,76 @@ async function findClippingNote(todayNote, pageUrl) {
     return null;
 }
 
-async function getClipperInboxNote() {
-    let clipperInbox = await attributeService.getNoteWithLabel('clipperInbox');
+function getClipperInboxNote() {
+    let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
 
     if (!clipperInbox) {
-        clipperInbox = await dateNoteService.getDateNote(dateUtils.localNowDate());
+        clipperInbox = dateNoteService.getDateNote(dateUtils.localNowDate());
     }
 
     return clipperInbox;
 }
 
-async function addClipping(req) {
+function addClipping(req) {
     const {title, content, pageUrl, images} = req.body;
 
-    const clipperInbox = await getClipperInboxNote();
+    const clipperInbox = getClipperInboxNote();
 
-    let clippingNote = await findClippingNote(clipperInbox, pageUrl);
+    let clippingNote = findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
-        clippingNote = (await noteService.createNewNote({
+        clippingNote = (noteService.createNewNote({
             parentNoteId: clipperInbox.noteId,
             title: title,
             content: '',
             type: 'text'
         })).note;
 
-        await clippingNote.setLabel('clipType', 'clippings');
-        await clippingNote.setLabel('pageUrl', pageUrl);
+        clippingNote.setLabel('clipType', 'clippings');
+        clippingNote.setLabel('pageUrl', pageUrl);
     }
 
-    const rewrittenContent = await addImagesToNote(images, clippingNote, content);
+    const rewrittenContent = addImagesToNote(images, clippingNote, content);
 
-    const existingContent = await clippingNote.getContent();
+    const existingContent = clippingNote.getContent();
 
-    await clippingNote.setContent(existingContent + (existingContent.trim() ? "<br/>" : "") + rewrittenContent);
+    clippingNote.setContent(existingContent + (existingContent.trim() ? "<br/>" : "") + rewrittenContent);
 
     return {
         noteId: clippingNote.noteId
     };
 }
 
-async function createNote(req) {
+function createNote(req) {
     const {title, content, pageUrl, images, clipType} = req.body;
 
     log.info(`Creating clipped note from ${pageUrl}`);
 
-    const clipperInbox = await getClipperInboxNote();
+    const clipperInbox = getClipperInboxNote();
 
-    const {note} = await noteService.createNewNote({
+    const {note} = noteService.createNewNote({
         parentNoteId: clipperInbox.noteId,
         title,
         content,
         type: 'text'
     });
 
-    await note.setLabel('clipType', clipType);
+    note.setLabel('clipType', clipType);
 
     if (pageUrl) {
-        await note.setLabel('pageUrl', pageUrl);
+        note.setLabel('pageUrl', pageUrl);
     }
 
-    const rewrittenContent = await addImagesToNote(images, note, content);
+    const rewrittenContent = addImagesToNote(images, note, content);
 
-    await note.setContent(rewrittenContent);
+    note.setContent(rewrittenContent);
 
     return {
         noteId: note.noteId
     };
 }
 
-async function addImagesToNote(images, note, content) {
+function addImagesToNote(images, note, content) {
     let rewrittenContent = content;
 
     if (images) {
@@ -107,15 +107,15 @@ async function addImagesToNote(images, note, content) {
 
             const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
 
-            const {note: imageNote, url} = await imageService.saveImage(note.noteId, buffer, filename, true);
+            const {note: imageNote, url} = imageService.saveImage(note.noteId, buffer, filename, true);
 
-            await new Attribute({
+            new Attribute({
                 noteId: imageNote.noteId,
                 type: 'label',
                 name: 'hideInAutocomplete'
             }).save();
 
-            await new Attribute({
+            new Attribute({
                 noteId: note.noteId,
                 type: 'relation',
                 name: 'imageLink',
@@ -131,7 +131,7 @@ async function addImagesToNote(images, note, content) {
     return rewrittenContent;
 }
 
-async function openNote(req) {
+function openNote(req) {
     if (utils.isElectron()) {
         ws.sendMessageToAllClients({
             type: 'open-note',
@@ -149,7 +149,7 @@ async function openNote(req) {
     }
 }
 
-async function handshake() {
+function handshake() {
     return {
         appName: "trilium",
         protocolVersion: appInfo.clipperProtocolVersion

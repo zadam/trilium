@@ -13,13 +13,13 @@ const dateUtils = require('../../services/date_utils');
 const entityConstructor = require('../../entities/entity_constructor');
 const utils = require('../../services/utils');
 
-async function testSync() {
+function testSync() {
     try {
-        if (!await syncOptions.isSyncSetup()) {
+        if (!syncOptions.isSyncSetup()) {
             return { success: false, message: "Sync server host is not configured. Please configure sync first." };
         }
 
-        await syncService.login();
+        syncService.login();
 
         // login was successful so we'll kick off sync now
         // this is important in case when sync server has been just initialized
@@ -35,40 +35,40 @@ async function testSync() {
     }
 }
 
-async function getStats() {
-    if (!await sqlInit.schemaExists()) {
+function getStats() {
+    if (!sqlInit.schemaExists()) {
         // fail silently but prevent errors from not existing options table
         return {};
     }
 
     return {
-        initialized: await optionService.getOption('initialized') === 'true',
+        initialized: optionService.getOption('initialized') === 'true',
         stats: syncService.stats
     };
 }
 
-async function checkSync() {
+function checkSync() {
     return {
-        entityHashes: await contentHashService.getEntityHashes(),
-        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        entityHashes: contentHashService.getEntityHashes(),
+        maxSyncId: sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
     };
 }
 
-async function syncNow() {
+function syncNow() {
     log.info("Received request to trigger sync now.");
 
-    return await syncService.sync();
+    return syncService.sync();
 }
 
-async function fillSyncRows() {
-    await syncTableService.fillAllSyncRows();
+function fillSyncRows() {
+    syncTableService.fillAllSyncRows();
 
     log.info("Sync rows have been filled.");
 }
 
-async function forceFullSync() {
-    await optionService.setOption('lastSyncedPull', 0);
-    await optionService.setOption('lastSyncedPush', 0);
+function forceFullSync() {
+    optionService.setOption('lastSyncedPull', 0);
+    optionService.setOption('lastSyncedPush', 0);
 
     log.info("Forcing full sync.");
 
@@ -76,38 +76,38 @@ async function forceFullSync() {
     syncService.sync();
 }
 
-async function forceNoteSync(req) {
+function forceNoteSync(req) {
     const noteId = req.params.noteId;
 
     const now = dateUtils.utcNowDateTime();
 
-    await sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    await syncTableService.addNoteSync(noteId);
+    sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
+    syncTableService.addNoteSync(noteId);
 
-    await sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    await syncTableService.addNoteContentSync(noteId);
+    sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
+    syncTableService.addNoteContentSync(noteId);
 
-    for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
-        await sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
+    for (const branchId of sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
 
-        await syncTableService.addBranchSync(branchId);
+        syncTableService.addBranchSync(branchId);
     }
 
-    for (const attributeId of await sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
-        await sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
+    for (const attributeId of sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
 
-        await syncTableService.addAttributeSync(attributeId);
+        syncTableService.addAttributeSync(attributeId);
     }
 
-    for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
-        await sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        await syncTableService.addNoteRevisionSync(noteRevisionId);
+    for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
+        syncTableService.addNoteRevisionSync(noteRevisionId);
 
-        await sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        await syncTableService.addNoteRevisionContentSync(noteRevisionId);
+        sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
+        syncTableService.addNoteRevisionContentSync(noteRevisionId);
     }
 
-    await syncTableService.addRecentNoteSync(noteId);
+    syncTableService.addRecentNoteSync(noteId);
 
     log.info("Forcing note sync for " + noteId);
 
@@ -115,16 +115,16 @@ async function forceNoteSync(req) {
     syncService.sync();
 }
 
-async function getChanged(req) {
+function getChanged(req) {
     const startTime = Date.now();
 
     const lastSyncId = parseInt(req.query.lastSyncId);
 
-    const syncs = await sql.getRows("SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastSyncId]);
+    const syncs = sql.getRows("SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastSyncId]);
 
     const ret = {
-        syncs: await syncService.getSyncRecords(syncs),
-        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        syncs: syncService.getSyncRecords(syncs),
+        maxSyncId: sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
     };
 
     if (ret.syncs.length > 0) {
@@ -134,28 +134,28 @@ async function getChanged(req) {
     return ret;
 }
 
-async function update(req) {
+function update(req) {
     const sourceId = req.body.sourceId;
     const entities = req.body.entities;
 
     for (const {sync, entity} of entities) {
-        await syncUpdateService.updateEntity(sync, entity, sourceId);
+        syncUpdateService.updateEntity(sync, entity, sourceId);
     }
 }
 
-async function syncFinished() {
+function syncFinished() {
     // after first sync finishes, the application is ready to be used
     // this is meaningless but at the same time harmless (idempotent) for further syncs
-    await sqlInit.dbInitialized();
+    sqlInit.dbInitialized();
 }
 
-async function queueSector(req) {
+function queueSector(req) {
     const entityName = utils.sanitizeSqlIdentifier(req.params.entityName);
     const sector = utils.sanitizeSqlIdentifier(req.params.sector);
 
     const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
-    await syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
+    syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
 }
 
 module.exports = {

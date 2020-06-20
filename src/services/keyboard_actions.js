@@ -391,14 +391,14 @@ for (const action of DEFAULT_KEYBOARD_ACTIONS) {
     }
 }
 
-async function getKeyboardActions() {
+function getKeyboardActions() {
     const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
     for (const action of actions) {
         action.effectiveShortcuts = action.effectiveShortcuts ? action.defaultShortcuts.slice() : [];
     }
 
-    for (const option of await optionService.getOptions()) {
+    for (const option of optionService.getOptions()) {
         if (option.name.startsWith('keyboardShortcuts')) {
             let actionName = option.name.substr(17);
             actionName = actionName.charAt(0).toLowerCase() + actionName.slice(1);

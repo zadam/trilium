@@ -4,15 +4,15 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const treeService = require('../../services/tree');
 
-async function getNotesAndBranchesAndAttributes(noteIds) {
+function getNotesAndBranchesAndAttributes(noteIds) {
     noteIds = Array.from(new Set(noteIds));
-    const notes = await treeService.getNotes(noteIds);
+    const notes = treeService.getNotes(noteIds);
 
     noteIds = notes.map(note => note.noteId);
 
     // joining child note to filter out not completely synchronised notes which would then cause errors later
     // cannot do that with parent because of root note's 'none' parent
-    const branches = await sql.getManyRows(` 
+    const branches = sql.getManyRows(` 
         SELECT 
             branches.branchId,
             branches.noteId,
@@ -28,7 +28,7 @@ async function getNotesAndBranchesAndAttributes(noteIds) {
     // sorting in memory is faster
     branches.sort((a, b) => a.notePosition - b.notePosition < 0 ? -1 : 1);
 
-    const attributes = await sql.getManyRows(`
+    const attributes = sql.getManyRows(`
         SELECT
             attributeId,
             noteId,
@@ -50,12 +50,12 @@ async function getNotesAndBranchesAndAttributes(noteIds) {
     };
 }
 
-async function getTree() {
-    const hoistedNoteId = await optionService.getOption('hoistedNoteId');
+function getTree() {
+    const hoistedNoteId = optionService.getOption('hoistedNoteId');
 
     // we fetch all branches of notes, even if that particular branch isn't visible
     // this allows us to e.g. detect and properly display clones
-    const noteIds = await sql.getColumn(`
+    const noteIds = sql.getColumn(`
         WITH RECURSIVE
             tree(branchId, noteId, isExpanded) AS (
             SELECT branchId, noteId, isExpanded FROM branches WHERE noteId = ? 
@@ -68,11 +68,11 @@ async function getTree() {
 
     noteIds.push('root');
 
-    return await getNotesAndBranchesAndAttributes(noteIds);
+    return getNotesAndBranchesAndAttributes(noteIds);
 }
 
-async function load(req) {
-    return await getNotesAndBranchesAndAttributes(req.body.noteIds);
+function load(req) {
+    return getNotesAndBranchesAndAttributes(req.body.noteIds);
 }
 
 module.exports = {

@@ -14,8 +14,8 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const ApiToken = require('../../entities/api_token');
 
-async function loginSync(req) {
-    if (!await sqlInit.schemaExists()) {
+function loginSync(req) {
+    if (!sqlInit.schemaExists()) {
         return [500, { message: "DB schema does not exist, can't sync." }];
     }
 
@@ -36,7 +36,7 @@ async function loginSync(req) {
         return [400, { message: `Non-matching sync versions, local is version ${appInfo.syncVersion}, remote is ${syncVersion}. It is recommended to run same version of Trilium on both sides of sync.` }];
     }
 
-    const documentSecret = await options.getOption('documentSecret');
+    const documentSecret = options.getOption('documentSecret');
     const expectedHash = utils.hmac(documentSecret, timestampStr);
 
     const givenHash = req.body.hash;
@@ -49,28 +49,28 @@ async function loginSync(req) {
 
     return {
         sourceId: sourceIdService.getCurrentSourceId(),
-        maxSyncId: await sql.getValue("SELECT MAX(id) FROM sync WHERE isSynced = 1")
+        maxSyncId: sql.getValue("SELECT MAX(id) FROM sync WHERE isSynced = 1")
     };
 }
 
-async function loginToProtectedSession(req) {
+function loginToProtectedSession(req) {
     const password = req.body.password;
 
-    if (!await passwordEncryptionService.verifyPassword(password)) {
+    if (!passwordEncryptionService.verifyPassword(password)) {
         return {
             success: false,
             message: "Given current password doesn't match hash"
         };
     }
 
-    const decryptedDataKey = await passwordEncryptionService.getDataKey(password);
+    const decryptedDataKey = passwordEncryptionService.getDataKey(password);
 
     const protectedSessionId = protectedSessionService.setDataKey(decryptedDataKey);
 
     // this is set here so that event handlers have access to the protected session
     cls.set('protectedSessionId', protectedSessionId);
 
-    await eventService.emit(eventService.ENTER_PROTECTED_SESSION);
+    eventService.emit(eventService.ENTER_PROTECTED_SESSION);
 
     return {
         success: true,
@@ -78,18 +78,18 @@ async function loginToProtectedSession(req) {
     };
 }
 
-async function token(req) {
+function token(req) {
     const username = req.body.username;
     const password = req.body.password;
 
-    const isUsernameValid = username === await optionService.getOption('username');
-    const isPasswordValid = await passwordEncryptionService.verifyPassword(password);
+    const isUsernameValid = username === optionService.getOption('username');
+    const isPasswordValid = passwordEncryptionService.verifyPassword(password);
 
     if (!isUsernameValid || !isPasswordValid) {
         return [401, "Incorrect username/password"];
     }
 
-    const apiToken = await new ApiToken({
+    const apiToken = new ApiToken({
         token: utils.randomSecureToken()
     }).save();
 

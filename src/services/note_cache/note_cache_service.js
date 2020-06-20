@@ -191,7 +191,7 @@ function setImmediatePromise() {
     });
 }
 
-async function findSimilarNotes(noteId) {
+function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
 
@@ -211,7 +211,7 @@ async function findSimilarNotes(noteId) {
         i++;
 
         if (i % 200 === 0) {
-            await setImmediatePromise();
+            setImmediatePromise();
         }
     }
 

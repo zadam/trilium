@@ -7,7 +7,7 @@ const log = require('../../services/log');
 const utils = require('../../services/utils');
 const optionService = require('../../services/options');
 
-async function getAutocomplete(req) {
+function getAutocomplete(req) {
     const query = req.query.query.trim();
     const activeNoteId = req.query.activeNoteId || 'none';
 
@@ -16,10 +16,10 @@ async function getAutocomplete(req) {
     const timestampStarted = Date.now();
 
     if (query.length === 0) {
-        results = await getRecentNotes(activeNoteId);
+        results = getRecentNotes(activeNoteId);
     }
     else {
-        results = await searchService.searchNotesForAutocomplete(query);
+        results = searchService.searchNotesForAutocomplete(query);
     }
 
     const msTaken = Date.now() - timestampStarted;
@@ -31,15 +31,15 @@ async function getAutocomplete(req) {
     return results;
 }
 
-async function getRecentNotes(activeNoteId) {
+function getRecentNotes(activeNoteId) {
     let extraCondition = '';
 
-    const hoistedNoteId = await optionService.getOption('hoistedNoteId');
+    const hoistedNoteId = optionService.getOption('hoistedNoteId');
     if (hoistedNoteId !== 'root') {
         extraCondition = `AND recent_notes.notePath LIKE '%${utils.sanitizeSql(hoistedNoteId)}%'`;
     }
 
-    const recentNotes = await repository.getEntities(`
+    const recentNotes = repository.getEntities(`
       SELECT 
         recent_notes.* 
       FROM 

@@ -15,7 +15,7 @@ const utils = require('../utils');
  * @param {Expression} expression
  * @return {Promise<SearchResult[]>}
  */
-async function findNotesWithExpression(expression) {
+function findNotesWithExpression(expression) {
     const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
     const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
@@ -27,7 +27,7 @@ async function findNotesWithExpression(expression) {
         noteIdToNotePath: {}
     };
 
-    const noteSet = await expression.execute(allNoteSet, searchContext);
+    const noteSet = expression.execute(allNoteSet, searchContext);
 
     let searchResults = noteSet.notes
         .map(note => searchContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
@@ -67,17 +67,17 @@ function parseQueryToExpression(query, parsingContext) {
  * @param {ParsingContext} parsingContext
  * @return {Promise<SearchResult[]>}
  */
-async function findNotesWithQuery(query, parsingContext) {
+function findNotesWithQuery(query, parsingContext) {
     const expression = parseQueryToExpression(query, parsingContext);
 
     if (!expression) {
         return [];
     }
 
-    return await findNotesWithExpression(expression);
+    return findNotesWithExpression(expression);
 }
 
-async function searchNotes(query) {
+function searchNotes(query) {
     if (!query.trim().length) {
         return [];
     }
@@ -87,7 +87,7 @@ async function searchNotes(query) {
         fuzzyAttributeSearch: false
     });
 
-    const allSearchResults = await findNotesWithQuery(query, parsingContext);
+    const allSearchResults = findNotesWithQuery(query, parsingContext);
     const trimmedSearchResults = allSearchResults.slice(0, 200);
 
     return {
@@ -96,7 +96,7 @@ async function searchNotes(query) {
     };
 }
 
-async function searchNotesForAutocomplete(query) {
+function searchNotesForAutocomplete(query) {
     if (!query.trim().length) {
         return [];
     }
@@ -106,7 +106,7 @@ async function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    let searchResults = await findNotesWithQuery(query, parsingContext);
+    let searchResults = findNotesWithQuery(query, parsingContext);
 
     searchResults = searchResults.slice(0, 200);
 

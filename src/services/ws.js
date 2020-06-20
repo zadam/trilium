@@ -32,7 +32,7 @@ function init(httpServer, sessionParser) {
 
         console.log(`websocket client connected`);
 
-        ws.on('message', messageJson => {
+        ws.on('message', async messageJson => {
             const message = JSON.parse(messageJson);
 
             if (message.type === 'log-error') {
@@ -41,7 +41,7 @@ function init(httpServer, sessionParser) {
             else if (message.type === 'ping') {
                 lastAcceptedSyncIds[ws.id] = message.lastSyncId;
 
-                syncMutexService.doExclusively(async () => await sendPing(ws));
+                await syncMutexService.doExclusively(() => sendPing(ws));
             }
             else {
                 log.error('Unrecognized message: ');
@@ -73,36 +73,36 @@ function sendMessageToAllClients(message) {
     }
 }
 
-async function fillInAdditionalProperties(sync) {
+function fillInAdditionalProperties(sync) {
     // fill in some extra data needed by the frontend
     if (sync.entityName === 'attributes') {
-        sync.entity = await sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [sync.entityId]);
+        sync.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [sync.entityId]);
     } else if (sync.entityName === 'branches') {
-        sync.entity = await sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [sync.entityId]);
+        sync.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [sync.entityId]);
     } else if (sync.entityName === 'notes') {
-        sync.entity = await sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [sync.entityId]);
+        sync.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [sync.entityId]);
 
         if (sync.entity.isProtected) {
             sync.entity.title = protectedSessionService.decryptString(sync.entity.title);
         }
     } else if (sync.entityName === 'note_revisions') {
-        sync.noteId = await sql.getValue(`SELECT noteId
+        sync.noteId = sql.getValue(`SELECT noteId
                                           FROM note_revisions
                                           WHERE noteRevisionId = ?`, [sync.entityId]);
     } else if (sync.entityName === 'note_reordering') {
-        sync.positions = await sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [sync.entityId]);
+        sync.positions = sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [sync.entityId]);
     }
     else if (sync.entityName === 'options') {
-        sync.entity = await sql.getRow(`SELECT * FROM options WHERE name = ?`, [sync.entityId]);
+        sync.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [sync.entityId]);
     }
 }
 
-async function sendPing(client) {
+function sendPing(client) {
     const syncRows = cls.getSyncRows();
 
     for (const sync of syncRows) {
         try {
-            await fillInAdditionalProperties(sync);
+            fillInAdditionalProperties(sync);
         }
         catch (e) {
             log.error("Could not fill additional properties for sync " + JSON.stringify(sync)

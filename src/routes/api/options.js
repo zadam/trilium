@@ -40,8 +40,8 @@ const ALLOWED_OPTIONS = new Set([
     'nativeTitleBarVisible'
 ]);
 
-async function getOptions() {
-    const optionMap = await optionService.getOptionsMap();
+function getOptions() {
+    const optionMap = optionService.getOptionsMap();
     const resultMap = {};
 
     for (const optionName in optionMap) {
@@ -53,17 +53,17 @@ async function getOptions() {
     return resultMap;
 }
 
-async function updateOption(req) {
+function updateOption(req) {
     const {name, value} = req.params;
 
-    if (!await update(name, value)) {
+    if (!update(name, value)) {
         return [400, "not allowed option to change"];
     }
 }
 
-async function updateOptions(req) {
+function updateOptions(req) {
     for (const optionName in req.body) {
-        if (!await update(optionName, req.body[optionName])) {
+        if (!update(optionName, req.body[optionName])) {
             // this should be improved
             // it should return 400 instead of current 500, but at least it now rollbacks transaction
             throw new Error(`${optionName} is not allowed to change`);
@@ -71,7 +71,7 @@ async function updateOptions(req) {
     }
 }
 
-async function update(name, value) {
+function update(name, value) {
     if (!isAllowed(name)) {
         return false;
     }
@@ -80,18 +80,18 @@ async function update(name, value) {
         log.info(`Updating option ${name} to ${value}`);
     }
 
-    await optionService.setOption(name, value);
+    optionService.setOption(name, value);
 
     return true;
 }
 
-async function getUserThemes() {
-    const notes = await attributes.getNotesWithLabel('appTheme');
+function getUserThemes() {
+    const notes = attributes.getNotesWithLabel('appTheme');
 
     const ret = [];
 
     for (const note of notes) {
-        let value = await note.getOwnedLabelValue('appTheme');
+        let value = note.getOwnedLabelValue('appTheme');
 
         if (!value) {
             value = note.title.toLowerCase().replace(/[^a-z0-9]/gi, '-');

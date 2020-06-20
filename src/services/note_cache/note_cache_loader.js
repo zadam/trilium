@@ -1,31 +1,28 @@
 "use strict";
 
 const sql = require('../sql.js');
-const sqlInit = require('../sql_init.js');
 const eventService = require('../events.js');
 const noteCache = require('./note_cache');
 const Note = require('./entities/note');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 
-async function load() {
-    await sqlInit.dbReady;
-
+function load() {
     noteCache.reset();
 
-    (await sql.getRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified, contentLength FROM notes WHERE isDeleted = 0`, []))
+    sql.getRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified, contentLength FROM notes WHERE isDeleted = 0`, [])
         .map(row => new Note(noteCache, row));
 
-    (await sql.getRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`, []))
+    sql.getRows(`SELECT branchId, noteId, parentNoteId, prefix FROM branches WHERE isDeleted = 0`, [])
         .map(row => new Branch(noteCache, row));
 
-    (await sql.getRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`, [])).map(row => new Attribute(noteCache, row));
+    sql.getRows(`SELECT attributeId, noteId, type, name, value, isInheritable FROM attributes WHERE isDeleted = 0`, []).map(row => new Attribute(noteCache, row));
 
     noteCache.loaded = true;
     noteCache.loadedResolve();
 }
 
-eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  async ({entityName, entity}) => {
+eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
     // note that entity can also be just POJO without methods if coming from sync
 
     if (!noteCache.loaded) {
@@ -150,4 +147,5 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     noteCache.loadedPromise.then(() => noteCache.decryptProtectedNotes());
 });
 
-load();
+// FIXME
+// load();

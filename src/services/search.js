@@ -20,19 +20,19 @@ const parseFilters = require('./search/parse_filters.js');
 const buildSearchQuery = require('./build_search_query');
 const noteCacheService = require('./note_cache/note_cache.js');
 
-async function searchForNotes(searchString) {
-    const noteIds = await searchForNoteIds(searchString);
+function searchForNotes(searchString) {
+    const noteIds = searchForNoteIds(searchString);
 
-    return await repository.getNotes(noteIds);
+    return repository.getNotes(noteIds);
 }
 
-async function searchForNoteIds(searchString) {
+function searchForNoteIds(searchString) {
     const filters = parseFilters(searchString);
 
     const {query, params} = buildSearchQuery(filters, 'notes.noteId');
 
     try {
-        let noteIds = await sql.getColumn(query, params);
+        let noteIds = sql.getColumn(query, params);
 
         noteIds = noteIds.filter(noteCacheService.isAvailable);
 

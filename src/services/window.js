@@ -24,9 +24,9 @@ async function createExtraWindow(notePath) {
         webPreferences: {
             enableRemoteModule: true,
             nodeIntegration: true,
-            spellcheck: await optionService.getOptionBool('spellCheckEnabled')
+            spellcheck: optionService.getOptionBool('spellCheckEnabled')
         },
-        frame: await optionService.getOptionBool('nativeTitleBarVisible'),
+        frame: optionService.getOptionBool('nativeTitleBarVisible'),
         icon: getIcon()
     });
 
@@ -47,7 +47,7 @@ async function createMainWindow() {
         defaultHeight: 800
     });
 
-    const spellcheckEnabled = await optionService.getOptionBool('spellCheckEnabled');
+    const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
     const {BrowserWindow} = require('electron'); // should not be statically imported
     mainWindow = new BrowserWindow({
@@ -61,7 +61,7 @@ async function createMainWindow() {
             nodeIntegration: true,
             spellcheck: spellcheckEnabled
         },
-        frame: await optionService.getOptionBool('nativeTitleBarVisible'),
+        frame: optionService.getOptionBool('nativeTitleBarVisible'),
         icon: getIcon()
     });
 
@@ -91,7 +91,7 @@ async function createMainWindow() {
     });
 
     if (spellcheckEnabled) {
-        const languageCodes = (await optionService.getOption('spellCheckLanguageCode'))
+        const languageCodes = (optionService.getOption('spellCheckLanguageCode'))
             .split(',')
             .map(code => code.trim());
 
@@ -127,12 +127,12 @@ function closeSetupWindow() {
     }
 }
 
-async function registerGlobalShortcuts() {
+function registerGlobalShortcuts() {
     const {globalShortcut} = require('electron');
 
-    await sqlInit.dbReady;
+    sqlInit.dbReady;
 
-    const allActions = await keyboardActionsService.getKeyboardActions();
+    const allActions = keyboardActionsService.getKeyboardActions();
 
     for (const action of allActions) {
         if (!action.effectiveShortcuts) {
@@ -143,7 +143,7 @@ async function registerGlobalShortcuts() {
             if (shortcut.startsWith('global:')) {
                 const translatedShortcut = shortcut.substr(7);
 
-                const result = globalShortcut.register(translatedShortcut, cls.wrap(async () => {
+                const result = globalShortcut.register(translatedShortcut, cls.wrap(() => {
                     // window may be hidden / not in focus
                     mainWindow.focus();
 

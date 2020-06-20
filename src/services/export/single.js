@@ -5,8 +5,8 @@ const html = require('html');
 const utils = require('../utils');
 const mdService = require('./md');
 
-async function exportSingleNote(taskContext, branch, format, res) {
-    const note = await branch.getNote();
+function exportSingleNote(taskContext, branch, format, res) {
+    const note = branch.getNote();
 
     if (note.type === 'image' || note.type === 'file') {
         return [400, `Note type ${note.type} cannot be exported as single file.`];
@@ -18,7 +18,7 @@ async function exportSingleNote(taskContext, branch, format, res) {
 
     let payload, extension, mime;
 
-    let content = await note.getContent();
+    let content = note.getContent();
 
     if (note.type === 'text') {
         if (format === 'html') {

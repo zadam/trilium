@@ -21,7 +21,7 @@ const yauzl = require("yauzl");
  * @param {Note} importRootNote
  * @return {Promise<*>}
  */
-async function importZip(taskContext, fileBuffer, importRootNote) {
+function importZip(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
@@ -75,7 +75,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
     }
 
-    async function getParentNoteId(filePath, parentNoteMeta) {
+    function getParentNoteId(filePath, parentNoteMeta) {
         let parentNoteId;
 
         if (parentNoteMeta) {
@@ -93,7 +93,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             else {
                 // tar allows creating out of order records - i.e. file in a directory can appear in the tar stream before actual directory
                 // (out-of-order-directory-records.tar in test set)
-                parentNoteId = await saveDirectory(parentPath);
+                parentNoteId = saveDirectory(parentPath);
             }
         }
 
@@ -125,7 +125,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return { mime, type };
     }
 
-    async function saveAttributes(note, noteMeta) {
+    function saveAttributes(note, noteMeta) {
         if (!noteMeta) {
             return;
         }
@@ -155,20 +155,20 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    async function saveDirectory(filePath) {
+    function saveDirectory(filePath) {
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
-        const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
-        let note = await repository.getNote(noteId);
+        let note = repository.getNote(noteId);
 
         if (note) {
             return;
         }
 
-        ({note} = await noteService.createNewNote({
+        ({note} = noteService.createNewNote({
             parentNoteId: parentNoteId,
             title: noteTitle,
             content: '',
@@ -182,7 +182,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         createdNoteIds[note.noteId] = true;
 
-        await saveAttributes(note, noteMeta);
+        saveAttributes(note, noteMeta);
 
         if (!firstNote) {
             firstNote = note;
@@ -215,7 +215,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return targetNoteId;
     }
 
-    async function saveNote(filePath, content) {
+    function saveNote(filePath, content) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
         if (noteMeta && noteMeta.noImport) {
@@ -223,14 +223,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
 
         const noteId = getNoteId(noteMeta, filePath);
-        const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (!parentNoteId) {
             throw new Error(`Cannot find parentNoteId for ${filePath}`);
         }
 
         if (noteMeta && noteMeta.isClone) {
-            await new Branch({
+            new Branch({
                 noteId,
                 parentNoteId,
                 isExpanded: noteMeta.isExpanded,
@@ -318,13 +318,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
-        let note = await repository.getNote(noteId);
+        let note = repository.getNote(noteId);
 
         if (note) {
-            await note.setContent(content);
+            note.setContent(content);
         }
         else {
-            ({note} = await noteService.createNewNote({
+            ({note} = noteService.createNewNote({
                 parentNoteId: parentNoteId,
                 title: noteTitle,
                 content: content,
@@ -339,7 +339,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             createdNoteIds[note.noteId] = true;
 
-            await saveAttributes(note, noteMeta);
+            saveAttributes(note, noteMeta);
 
             if (!firstNote) {
                 firstNote = note;
@@ -405,11 +405,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
     // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
 
-    await readZipFile(fileBuffer, async (zipfile, entry) => {
+    readZipFile(fileBuffer, (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (filePath === '!!!meta.json') {
-            const content = await readContent(zipfile, entry);
+            const content = readContent(zipfile, entry);
 
             metaFile = JSON.parse(content.toString("UTF-8"));
         }
@@ -417,16 +417,16 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         zipfile.readEntry();
     });
 
-    await readZipFile(fileBuffer, async (zipfile, entry) => {
+    readZipFile(fileBuffer, (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (/\/$/.test(entry.fileName)) {
-            await saveDirectory(filePath);
+            saveDirectory(filePath);
         }
         else if (filePath !== '!!!meta.json') {
-            const content = await readContent(zipfile, entry);
+            const content = readContent(zipfile, entry);
 
-            await saveNote(filePath, content);
+            saveNote(filePath, content);
         }
 
         taskContext.increaseProgressCount();
@@ -434,12 +434,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        await noteService.scanForLinks(await repository.getNote(noteId));
+        noteService.scanForLinks(repository.getNote(noteId));
 
         if (!metaFile) {
             // if there's no meta file then the notes are created based on the order in that tar file but that
             // is usually quite random so we sort the notes in the way they would appear in the file manager
-            await treeService.sortNotesAlphabetically(noteId, true);
+            treeService.sortNotesAlphabetically(noteId, true);
         }
 
         taskContext.increaseProgressCount();
@@ -449,7 +449,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
     for (const attr of attributes) {
         if (attr.type !== 'relation' || attr.value in createdNoteIds) {
-            await new Attribute(attr).save();
+            new Attribute(attr).save();
         }
         else {
             log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));

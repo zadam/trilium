@@ -7,9 +7,9 @@ const repository = require("../../services/repository");
 const TaskContext = require("../../services/task_context");
 const log = require("../../services/log");
 
-async function exportBranch(req, res) {
+function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;
-    const branch = await repository.getBranch(branchId);
+    const branch = repository.getBranch(branchId);
 
     if (!branch) {
         const message = `Cannot export branch ${branchId} since it does not exist.`;
@@ -25,15 +25,15 @@ async function exportBranch(req, res) {
         if (type === 'subtree' && (format === 'html' || format === 'markdown')) {
             const start = Date.now();
 
-            await zipExportService.exportToZip(taskContext, branch, format, res);
+            zipExportService.exportToZip(taskContext, branch, format, res);
 
             console.log("Export took", Date.now() - start, "ms");
         }
         else if (type === 'single') {
-            await singleExportService.exportSingleNote(taskContext, branch, format, res);
+            singleExportService.exportSingleNote(taskContext, branch, format, res);
         }
         else if (format === 'opml') {
-            await opmlExportService.exportToOpml(taskContext, branch, version, res);
+            opmlExportService.exportToOpml(taskContext, branch, version, res);
         }
         else {
             return [404, "Unrecognized export format " + format];

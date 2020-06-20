@@ -2,8 +2,8 @@
 
 const sql = require('../../services/sql');
 
-async function getRelations(noteIds) {
-    return (await sql.getManyRows(`
+function getRelations(noteIds) {
+    return (sql.getManyRows(`
         SELECT noteId, name, value AS targetNoteId
         FROM attributes
         WHERE (noteId IN (???) OR value IN (???))
@@ -14,7 +14,7 @@ async function getRelations(noteIds) {
     `, Array.from(noteIds)));
 }
 
-async function getLinkMap(req) {
+function getLinkMap(req) {
     const {noteId} = req.params;
     const {maxNotes, maxDepth} = req.body;
 
@@ -24,7 +24,7 @@ async function getLinkMap(req) {
     let depth = 0;
 
     while (noteIds.size < maxNotes) {
-        relations = await getRelations(noteIds);
+        relations = getRelations(noteIds);
 
         if (depth === maxDepth) {
             break;

@@ -5,14 +5,14 @@ const log = require('./log');
 const repository = require('./repository');
 const Attribute = require('../entities/attribute');
 
-async function runAttachedRelations(note, relationName, originEntity) {
-    const runRelations = await note.getRelations(relationName);
+function runAttachedRelations(note, relationName, originEntity) {
+    const runRelations = note.getRelations(relationName);
 
     for (const relation of runRelations) {
-        const scriptNote = await relation.getTargetNote();
+        const scriptNote = relation.getTargetNote();
 
         if (scriptNote) {
-            await scriptService.executeNoteNoException(scriptNote, { originEntity });
+            scriptService.executeNoteNoException(scriptNote, { originEntity });
         }
         else {
             log.error(`Target note ${relation.value} of atttribute ${relation.attributeId} has not been found.`);
@@ -20,90 +20,90 @@ async function runAttachedRelations(note, relationName, originEntity) {
     }
 }
 
-eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
-    await runAttachedRelations(note, 'runOnNoteTitleChange', note);
+eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
+    runAttachedRelations(note, 'runOnNoteTitleChange', note);
 
     if (!note.isRoot()) {
-        const parents = await note.getParentNotes();
+        const parents = note.getParentNotes();
 
         for (const parent of parents) {
-            if (await parent.hasOwnedLabel("sorted")) {
-                await treeService.sortNotesAlphabetically(parent.noteId);
+            if (parent.hasOwnedLabel("sorted")) {
+                treeService.sortNotesAlphabetically(parent.noteId);
             }
         }
     }
 });
 
-eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED ], async ({ entityName, entity }) => {
+eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED ], ({ entityName, entity }) => {
     if (entityName === 'attributes') {
-        await runAttachedRelations(await entity.getNote(), 'runOnAttributeChange', entity);
+        runAttachedRelations(entity.getNote(), 'runOnAttributeChange', entity);
     }
     else if (entityName === 'notes') {
-        await runAttachedRelations(entity, 'runOnNoteChange', entity);
+        runAttachedRelations(entity, 'runOnNoteChange', entity);
     }
 });
 
-eventService.subscribe(eventService.ENTITY_CREATED, async ({ entityName, entity }) => {
+eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => {
     if (entityName === 'attributes') {
-        await runAttachedRelations(await entity.getNote(), 'runOnAttributeCreation', entity);
+        runAttachedRelations(entity.getNote(), 'runOnAttributeCreation', entity);
 
         if (entity.type === 'relation' && entity.name === 'template') {
-            const note = await repository.getNote(entity.noteId);
+            const note = repository.getNote(entity.noteId);
 
             if (!note.isStringNote()) {
                 return;
             }
 
-            const content = await note.getContent();
+            const content = note.getContent();
 
             if (content && content.trim().length > 0) {
                 return;
             }
 
-            const targetNote = await repository.getNote(entity.value);
+            const targetNote = repository.getNote(entity.value);
 
             if (!targetNote || !targetNote.isStringNote()) {
                 return;
             }
 
-            await note.setContent(await targetNote.getContent());
+            note.setContent(targetNote.getContent());
         }
     }
     else if (entityName === 'notes') {
-        await runAttachedRelations(entity, 'runOnNoteCreation', entity);
+        runAttachedRelations(entity, 'runOnNoteCreation', entity);
     }
 });
 
-eventService.subscribe(eventService.CHILD_NOTE_CREATED, async ({ parentNote, childNote }) => {
-    await runAttachedRelations(parentNote, 'runOnChildNoteCreation', childNote);
+eventService.subscribe(eventService.CHILD_NOTE_CREATED, ({ parentNote, childNote }) => {
+    runAttachedRelations(parentNote, 'runOnChildNoteCreation', childNote);
 });
 
-async function processInverseRelations(entityName, entity, handler) {
+function processInverseRelations(entityName, entity, handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
-        const note = await entity.getNote();
-        const attributes = (await note.getOwnedAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
+        const note = entity.getNote();
+        const attributes = (note.getOwnedAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
 
         for (const attribute of attributes) {
             const definition = attribute.value;
 
             if (definition.inverseRelation && definition.inverseRelation.trim()) {
-                const targetNote = await entity.getTargetNote();
+                const targetNote = entity.getTargetNote();
 
-                await handler(definition, note, targetNote);
+                handler(definition, note, targetNote);
             }
         }
     }
 }
 
-eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity }) => {
-    await processInverseRelations(entityName, entity, async (definition, note, targetNote) => {
+eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
+    processInverseRelations(entityName, entity, (definition, note, targetNote) => {
         // we need to make sure that also target's inverse attribute exists and if note, then create it
         // inverse attribute has to target our note as well
-        const hasInverseAttribute = (await targetNote.getRelations(definition.inverseRelation))
+        const hasInverseAttribute = (targetNote.getRelations(definition.inverseRelation))
             .some(attr => attr.value === note.noteId);
 
         if (!hasInverseAttribute) {
-            await new Attribute({
+            new Attribute({
                 noteId: targetNote.noteId,
                 type: 'relation',
                 name: definition.inverseRelation,
@@ -116,16 +116,16 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity 
     });
 });
 
-eventService.subscribe(eventService.ENTITY_DELETED, async ({ entityName, entity }) => {
-    await processInverseRelations(entityName, entity, async (definition, note, targetNote) => {
+eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => {
+    processInverseRelations(entityName, entity, (definition, note, targetNote) => {
         // if one inverse attribute is deleted then the other should be deleted as well
-        const relations = await targetNote.getOwnedRelations(definition.inverseRelation);
+        const relations = targetNote.getOwnedRelations(definition.inverseRelation);
         let deletedSomething = false;
 
         for (const relation of relations) {
             if (relation.value === note.noteId) {
                 relation.isDeleted = true;
-                await relation.save();
+                relation.save();
 
                 deletedSomething = true;
             }

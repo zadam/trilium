@@ -6,16 +6,16 @@ const repository = require('../../services/repository');
 const utils = require('../../services/utils');
 const TaskContext = require('../../services/task_context');
 
-async function getNote(req) {
+function getNote(req) {
     const noteId = req.params.noteId;
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
     if (note.isStringNote()) {
-        note.content = await note.getContent();
+        note.content = note.getContent();
 
         if (note.type === 'file') {
             note.content = note.content.substr(0, 10000);
@@ -25,13 +25,13 @@ async function getNote(req) {
     return note;
 }
 
-async function createNote(req) {
+function createNote(req) {
     const params = Object.assign({}, req.body); // clone
     params.parentNoteId = req.params.parentNoteId;
 
     const { target, targetBranchId } = req.query;
 
-    const { note, branch } = await noteService.createNewNoteWithTarget(target, targetBranchId, params);
+    const { note, branch } = noteService.createNewNoteWithTarget(target, targetBranchId, params);
 
     return {
         note,
@@ -39,14 +39,14 @@ async function createNote(req) {
     };
 }
 
-async function updateNote(req) {
+function updateNote(req) {
     const note = req.body;
     const noteId = req.params.noteId;
 
-    return await noteService.updateNote(noteId, note);
+    return noteService.updateNote(noteId, note);
 }
 
-async function deleteNote(req) {
+function deleteNote(req) {
     const noteId = req.params.noteId;
     const taskId = req.query.taskId;
     const last = req.query.last === 'true';
@@ -54,61 +54,61 @@ async function deleteNote(req) {
     // note how deleteId is separate from taskId - single taskId produces separate deleteId for each "top level" deleted note
     const deleteId = utils.randomString(10);
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
-    for (const branch of await note.getBranches()) {
-        await noteService.deleteBranch(branch, deleteId, taskContext);
+    for (const branch of note.getBranches()) {
+        noteService.deleteBranch(branch, deleteId, taskContext);
     }
 
     if (last) {
-        await taskContext.taskSucceeded();
+        taskContext.taskSucceeded();
     }
 }
 
-async function undeleteNote(req) {
-    const note = await repository.getNote(req.params.noteId);
+function undeleteNote(req) {
+    const note = repository.getNote(req.params.noteId);
 
     const taskContext = TaskContext.getInstance(utils.randomString(10), 'undelete-notes');
 
-    await noteService.undeleteNote(note, note.deleteId, taskContext);
+    noteService.undeleteNote(note, note.deleteId, taskContext);
 
-    await taskContext.taskSucceeded();
+    taskContext.taskSucceeded();
 }
 
-async function sortNotes(req) {
+function sortNotes(req) {
     const noteId = req.params.noteId;
 
-    await treeService.sortNotesAlphabetically(noteId);
+    treeService.sortNotesAlphabetically(noteId);
 }
 
-async function protectNote(req) {
+function protectNote(req) {
     const noteId = req.params.noteId;
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
     const includingSubTree = !!parseInt(req.query.subtree);
 
     const taskContext = new TaskContext(utils.randomString(10), 'protect-notes', {protect});
 
-    await noteService.protectNoteRecursively(note, protect, includingSubTree, taskContext);
+    noteService.protectNoteRecursively(note, protect, includingSubTree, taskContext);
 
     taskContext.taskSucceeded();
 }
 
-async function setNoteTypeMime(req) {
+function setNoteTypeMime(req) {
     // can't use [] destructuring because req.params is not iterable
     const noteId = req.params[0];
     const type = req.params[1];
     const mime = req.params[2];
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
     note.type = type;
     note.mime = mime;
-    await note.save();
+    note.save();
 }
 
-async function getRelationMap(req) {
+function getRelationMap(req) {
     const noteIds = req.body.noteIds;
     const resp = {
         // noteId => title
@@ -126,12 +126,12 @@ async function getRelationMap(req) {
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
-    const notes = await repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+    const notes = repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
 
     for (const note of notes) {
         resp.noteTitles[note.noteId] = note.title;
 
-        resp.relations = resp.relations.concat((await note.getRelations())
+        resp.relations = resp.relations.concat((note.getRelations())
             .filter(relation => noteIds.includes(relation.value))
             .map(relation => ({
                 attributeId: relation.attributeId,
@@ -140,7 +140,7 @@ async function getRelationMap(req) {
                 name: relation.name
             })));
 
-        for (const relationDefinition of await note.getRelationDefinitions()) {
+        for (const relationDefinition of note.getRelationDefinitions()) {
             if (relationDefinition.value.inverseRelation) {
                 resp.inverseRelations[relationDefinition.name] = relationDefinition.value.inverseRelation;
             }
@@ -150,11 +150,11 @@ async function getRelationMap(req) {
     return resp;
 }
 
-async function changeTitle(req) {
+function changeTitle(req) {
     const noteId = req.params.noteId;
     const title = req.body.title;
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} has not been found`];
@@ -166,15 +166,15 @@ async function changeTitle(req) {
 
     note.title = title;
 
-    await note.save();
+    note.save();
 
     return note;
 }
 
-async function duplicateNote(req) {
+function duplicateNote(req) {
     const {noteId, parentNoteId} = req.params;
 
-    return await noteService.duplicateNote(noteId, parentNoteId);
+    return noteService.duplicateNote(noteId, parentNoteId);
 }
 
 module.exports = {

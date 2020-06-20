@@ -2,7 +2,6 @@
 
 const Entity = require('./entity');
 const dateUtils = require('../services/date_utils');
-const repository = require('../services/repository');
 const sql = require('../services/sql');
 
 /**
@@ -29,18 +28,18 @@ class Branch extends Entity {
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "deleteId", "prefix"]; }
 
     /** @returns {Promise<Note|null>} */
-    async getNote() {
-        return await repository.getNote(this.noteId);
+    getNote() {
+        return this.repository.getNote(this.noteId);
     }
 
     /** @returns {Promise<Note|null>} */
-    async getParentNote() {
-        return await repository.getNote(this.parentNoteId);
+    getParentNote() {
+        return this.repository.getNote(this.parentNoteId);
     }
 
-    async beforeSaving() {
+    beforeSaving() {
         if (this.notePosition === undefined) {
-            const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
+            const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
             this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
         }
 

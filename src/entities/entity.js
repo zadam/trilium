@@ -1,6 +1,7 @@
 "use strict";
 
 const utils = require('../services/utils');
+let repo = null;
 
 class Entity {
     /**
@@ -51,8 +52,16 @@ class Entity {
         return utils.hash(contentToHash).substr(0, 10);
     }
 
-    async save() {
-        await require('../services/repository').updateEntity(this);
+    get repository() {
+        if (!repo) {
+            repo = require('../services/repository');
+        }
+
+        return repo;
+    }
+
+    save() {
+        this.repository.updateEntity(this);
 
         return this;
     }

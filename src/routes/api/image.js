@@ -5,8 +5,8 @@ const repository = require('../../services/repository');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
-async function returnImage(req, res) {
-    const image = await repository.getNote(req.params.noteId);
+function returnImage(req, res) {
+    const image = repository.getNote(req.params.noteId);
 
     if (!image) {
         return res.sendStatus(404);
@@ -21,14 +21,14 @@ async function returnImage(req, res) {
 
     res.set('Content-Type', image.mime);
 
-    res.send(await image.getContent());
+    res.send(image.getContent());
 }
 
-async function uploadImage(req) {
+function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
@@ -38,7 +38,7 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {url} = await imageService.saveImage(noteId, file.buffer, file.originalname, true);
+    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true);
 
     return {
         uploaded: true,
@@ -46,11 +46,11 @@ async function uploadImage(req) {
     };
 }
 
-async function updateImage(req) {
+function updateImage(req) {
     const {noteId} = req.params;
     const {file} = req;
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
@@ -63,7 +63,7 @@ async function updateImage(req) {
         };
     }
 
-    await imageService.updateImage(noteId, file.buffer, file.originalname);
+    imageService.updateImage(noteId, file.buffer, file.originalname);
 
     return { uploaded: true };
 }

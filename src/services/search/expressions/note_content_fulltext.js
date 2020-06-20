@@ -15,13 +15,13 @@ class NoteContentFulltextExp extends Expression {
         this.tokens = tokens;
     }
 
-    async execute(inputNoteSet) {
+    execute(inputNoteSet) {
         const resultNoteSet = new NoteSet();
         const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike(this.likePrefix, token, this.likeSuffix));
 
         const sql = require('../../sql');
 
-        const noteIds = await sql.getColumn(`
+        const noteIds = sql.getColumn(`
             SELECT notes.noteId 
             FROM notes
             JOIN note_contents ON notes.noteId = note_contents.noteId

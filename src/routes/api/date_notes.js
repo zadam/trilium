@@ -5,19 +5,19 @@ const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const noteService = require('../../services/notes');
 
-async function getDateNote(req) {
-    return await dateNoteService.getDateNote(req.params.date);
+function getDateNote(req) {
+    return dateNoteService.getDateNote(req.params.date);
 }
 
-async function getMonthNote(req) {
-    return await dateNoteService.getMonthNote(req.params.month);
+function getMonthNote(req) {
+    return dateNoteService.getMonthNote(req.params.month);
 }
 
-async function getYearNote(req) {
-    return await dateNoteService.getYearNote(req.params.year);
+function getYearNote(req) {
+    return dateNoteService.getYearNote(req.params.year);
 }
 
-async function getDateNotesForMonth(req) {
+function getDateNotesForMonth(req) {
     const month = req.params.month;
 
     return sql.getMap(`
@@ -33,12 +33,12 @@ async function getDateNotesForMonth(req) {
             AND attr.value LIKE '${month}%'`);
 }
 
-async function createSqlConsole() {
+function createSqlConsole() {
     const today = dateUtils.localNowDate();
 
-    const todayNote = await dateNoteService.getDateNote(today);
+    const todayNote = dateNoteService.getDateNote(today);
 
-    const {note} = await noteService.createNewNote({
+    const {note} = noteService.createNewNote({
         parentNoteId: todayNote.noteId,
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
@@ -46,7 +46,7 @@ async function createSqlConsole() {
         mime: 'text/x-sqlite;schema=trilium'
     });
 
-    await note.setLabel("sqlConsole", today);
+    note.setLabel("sqlConsole", today);
 
     return note;
 }

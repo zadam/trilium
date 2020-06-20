@@ -10,7 +10,7 @@ const cls = require('./cls');
 
 let maxSyncId = 0;
 
-async function insertEntitySync(entityName, entityId, sourceId = null, isSynced = true) {
+function insertEntitySync(entityName, entityId, sourceId = null, isSynced = true) {
     const sync = {
         entityName: entityName,
         entityId: entityId,
@@ -19,66 +19,66 @@ async function insertEntitySync(entityName, entityId, sourceId = null, isSynced 
         isSynced: isSynced ? 1 : 0
     };
 
-    sync.id = await sql.replace("sync", sync);
+    sync.id = sql.replace("sync", sync);
 
     maxSyncId = Math.max(maxSyncId, sync.id);
 
     return sync;
 }
 
-async function addEntitySync(entityName, entityId, sourceId, isSynced) {
-    const sync = await insertEntitySync(entityName, entityId, sourceId, isSynced);
+function addEntitySync(entityName, entityId, sourceId, isSynced) {
+    const sync = insertEntitySync(entityName, entityId, sourceId, isSynced);
 
     cls.addSyncRow(sync);
 }
 
-async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
+function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
     const startTime = Date.now();
 
-    await sql.transactional(async () => {
-        const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
+    sql.transactional(() => {
+        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
 
         for (const entityId of entityIds) {
             if (entityName === 'options') {
-                const isSynced = await sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
+                const isSynced = sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
 
                 if (!isSynced) {
                     continue;
                 }
             }
 
-            await insertEntitySync(entityName, entityId, 'content-check', true);
+            insertEntitySync(entityName, entityId, 'content-check', true);
         }
     });
 
     log.info(`Added sector ${sector} of ${entityName} to sync queue in ${Date.now() - startTime}ms.`);
 }
 
-async function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
-    await sql.execute(`
+function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
+    sql.execute(`
       DELETE 
       FROM sync 
       WHERE sync.entityName = '${entityName}' 
         AND sync.entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
 }
 
-async function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
+function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
     try {
-        await cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey);
+        cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey);
 
-        const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
+        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
             + (condition ? ` WHERE ${condition}` : ''));
 
         let createdCount = 0;
 
         for (const entityId of entityIds) {
-            const existingRows = await sql.getValue("SELECT COUNT(1) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            const existingRows = sql.getValue("SELECT COUNT(1) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
             // we don't want to replace existing entities (which would effectively cause full resync)
             if (existingRows === 0) {
                 createdCount++;
 
-                await sql.insert("sync", {
+                sql.insert("sync", {
                     entityName: entityName,
                     entityId: entityId,
                     sourceId: "SYNC_FILL",
@@ -98,31 +98,31 @@ async function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
     }
 }
 
-async function fillAllSyncRows() {
-    await sql.execute("DELETE FROM sync");
+function fillAllSyncRows() {
+    sql.execute("DELETE FROM sync");
 
-    await fillSyncRows("notes", "noteId");
-    await fillSyncRows("note_contents", "noteId");
-    await fillSyncRows("branches", "branchId");
-    await fillSyncRows("note_revisions", "noteRevisionId");
-    await fillSyncRows("note_revision_contents", "noteRevisionId");
-    await fillSyncRows("recent_notes", "noteId");
-    await fillSyncRows("attributes", "attributeId");
-    await fillSyncRows("api_tokens", "apiTokenId");
-    await fillSyncRows("options", "name", 'isSynced = 1');
+    fillSyncRows("notes", "noteId");
+    fillSyncRows("note_contents", "noteId");
+    fillSyncRows("branches", "branchId");
+    fillSyncRows("note_revisions", "noteRevisionId");
+    fillSyncRows("note_revision_contents", "noteRevisionId");
+    fillSyncRows("recent_notes", "noteId");
+    fillSyncRows("attributes", "attributeId");
+    fillSyncRows("api_tokens", "apiTokenId");
+    fillSyncRows("options", "name", 'isSynced = 1');
 }
 
 module.exports = {
-    addNoteSync: async (noteId, sourceId) => await addEntitySync("notes", noteId, sourceId),
-    addNoteContentSync: async (noteId, sourceId) => await addEntitySync("note_contents", noteId, sourceId),
-    addBranchSync: async (branchId, sourceId) => await addEntitySync("branches", branchId, sourceId),
-    addNoteReorderingSync: async (parentNoteId, sourceId) => await addEntitySync("note_reordering", parentNoteId, sourceId),
-    addNoteRevisionSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revisions", noteRevisionId, sourceId),
-    addNoteRevisionContentSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revision_contents", noteRevisionId, sourceId),
-    addOptionsSync: async (name, sourceId, isSynced) => await addEntitySync("options", name, sourceId, isSynced),
-    addRecentNoteSync: async (noteId, sourceId) => await addEntitySync("recent_notes", noteId, sourceId),
-    addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),
-    addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
+    addNoteSync: (noteId, sourceId) => addEntitySync("notes", noteId, sourceId),
+    addNoteContentSync: (noteId, sourceId) => addEntitySync("note_contents", noteId, sourceId),
+    addBranchSync: (branchId, sourceId) => addEntitySync("branches", branchId, sourceId),
+    addNoteReorderingSync: (parentNoteId, sourceId) => addEntitySync("note_reordering", parentNoteId, sourceId),
+    addNoteRevisionSync: (noteRevisionId, sourceId) => addEntitySync("note_revisions", noteRevisionId, sourceId),
+    addNoteRevisionContentSync: (noteRevisionId, sourceId) => addEntitySync("note_revision_contents", noteRevisionId, sourceId),
+    addOptionsSync: (name, sourceId, isSynced) => addEntitySync("options", name, sourceId, isSynced),
+    addRecentNoteSync: (noteId, sourceId) => addEntitySync("recent_notes", noteId, sourceId),
+    addAttributeSync: (attributeId, sourceId) => addEntitySync("attributes", attributeId, sourceId),
+    addApiTokenSync: (apiTokenId, sourceId) => addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
     fillAllSyncRows,
     addEntitySyncsForSector,

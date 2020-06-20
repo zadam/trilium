@@ -2,21 +2,21 @@
 
 const sql = require('../../services/sql');
 
-async function getSchema() {
-    const tableNames = await sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
+function getSchema() {
+    const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
     const tables = [];
 
     for (const tableName of tableNames) {
         tables.push({
             name: tableName,
-            columns: await sql.getRows(`PRAGMA table_info(${tableName})`)
+            columns: sql.getRows(`PRAGMA table_info(${tableName})`)
         });
     }
 
     return tables;
 }
 
-async function execute(req) {
+function execute(req) {
     const queries = req.body.query.split("\n---");
 
     try {
@@ -27,7 +27,7 @@ async function execute(req) {
                 continue;
             }
 
-            results.push(await sql.getRows(query));
+            results.push(sql.getRows(query));
         }
 
         return {

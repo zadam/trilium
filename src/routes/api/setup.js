@@ -5,27 +5,27 @@ const setupService = require('../../services/setup');
 const log = require('../../services/log');
 const appInfo = require('../../services/app_info');
 
-async function getStatus() {
+function getStatus() {
     return {
-        isInitialized: await sqlInit.isDbInitialized(),
-        schemaExists: await sqlInit.schemaExists(),
+        isInitialized: sqlInit.isDbInitialized(),
+        schemaExists: sqlInit.schemaExists(),
         syncVersion: appInfo.syncVersion
     };
 }
 
-async function setupNewDocument(req) {
+function setupNewDocument(req) {
     const { username, password, theme } = req.body;
 
-    await sqlInit.createInitialDatabase(username, password, theme);
+    sqlInit.createInitialDatabase(username, password, theme);
 }
 
-async function setupSyncFromServer(req) {
+function setupSyncFromServer(req) {
     const { syncServerHost, syncProxy, username, password } = req.body;
 
-    return await setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, username, password);
+    return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, username, password);
 }
 
-async function saveSyncSeed(req) {
+function saveSyncSeed(req) {
     const {options, syncVersion} = req.body;
 
     if (appInfo.syncVersion !== syncVersion) {
@@ -38,14 +38,14 @@ async function saveSyncSeed(req) {
         }]
     }
 
-    await sqlInit.createDatabaseForSync(options);
+    sqlInit.createDatabaseForSync(options);
 }
 
-async function getSyncSeed() {
+function getSyncSeed() {
     log.info("Serving sync seed.");
 
     return {
-        options: await setupService.getSyncSeedOptions(),
+        options: setupService.getSyncSeedOptions(),
         syncVersion: appInfo.syncVersion
     };
 }

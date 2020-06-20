@@ -5,24 +5,24 @@ const log = require('../../services/log');
 const backupService = require('../../services/backup');
 const consistencyChecksService = require('../../services/consistency_checks');
 
-async function anonymize() {
-    return await backupService.anonymize();
+function anonymize() {
+    return backupService.anonymize();
 }
 
-async function backupDatabase() {
+function backupDatabase() {
     return {
-        backupFile: await backupService.backupNow("now")
+        backupFile: backupService.backupNow("now")
     };
 }
 
-async function vacuumDatabase() {
-    await sql.execute("VACUUM");
+function vacuumDatabase() {
+    sql.execute("VACUUM");
 
     log.info("Database has been vacuumed.");
 }
 
-async function findAndFixConsistencyIssues() {
-    await consistencyChecksService.runOnDemandChecks(true);
+function findAndFixConsistencyIssues() {
+    consistencyChecksService.runOnDemandChecks(true);
 }
 
 module.exports = {

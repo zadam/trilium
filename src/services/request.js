@@ -19,7 +19,7 @@ function exec(opts) {
     const proxyAgent = getProxyAgent(opts);
     const parsedTargetUrl = url.parse(opts.url);
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             const headers = {
                 Cookie: (opts.cookieJar && opts.cookieJar.header) || "",
@@ -83,18 +83,18 @@ function exec(opts) {
     });
 }
 
-async function getImage(imageUrl) {
+function getImage(imageUrl) {
     const opts = {
         method: 'GET',
         url: imageUrl,
-        proxy: await syncOptions.getSyncProxy()
+        proxy: syncOptions.getSyncProxy()
     };
 
     const client = getClient(opts);
     const proxyAgent = getProxyAgent(opts);
     const parsedTargetUrl = url.parse(opts.url);
 
-    return await new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             const request = client.request({
                 method: opts.method,

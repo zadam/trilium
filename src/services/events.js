@@ -25,13 +25,13 @@ function subscribe(eventTypes, listener) {
     }
 }
 
-async function emit(eventType, data) {
+function emit(eventType, data) {
     const listeners = eventListeners[eventType];
 
     if (listeners) {
         for (const listener of listeners) {
             try {
-                await listener(data);
+                listener(data);
             }
             catch (e) {
                 log.error("Listener threw error: " + e.stack);

@@ -79,23 +79,23 @@ function apiRoute(method, path, routeHandler) {
 }
 
 function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
-    router[method](path, ...middleware, async (req, res, next) => {
+    router[method](path, ...middleware, (req, res, next) => {
         try {
             cls.namespace.bindEmitter(req);
             cls.namespace.bindEmitter(res);
 
-            const result = await cls.init(async () => {
+            const result = cls.init(() => {
                 cls.set('sourceId', req.headers['trilium-source-id']);
                 cls.set('localNowDateTime', req.headers['`trilium-local-now-datetime`']);
                 protectedSessionService.setProtectedSessionId(req);
 
                 if (transactional) {
-                    return await sql.transactional(async () => {
-                        return await routeHandler(req, res, next);
+                    return sql.transactional(() => {
+                        return routeHandler(req, res, next);
                     });
                 }
                 else {
-                    return await routeHandler(req, res, next);
+                    return routeHandler(req, res, next);
                 }
             });
 

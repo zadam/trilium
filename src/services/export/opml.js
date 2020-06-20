@@ -3,20 +3,20 @@
 const repository = require("../repository");
 const utils = require('../utils');
 
-async function exportToOpml(taskContext, branch, version, res) {
+function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {
         throw new Error("Unrecognized OPML version " + version);
     }
 
     const opmlVersion = parseInt(version);
 
-    const note = await branch.getNote();
+    const note = branch.getNote();
 
-    async function exportNoteInner(branchId) {
-        const branch = await repository.getBranch(branchId);
-        const note = await branch.getNote();
+    function exportNoteInner(branchId) {
+        const branch = repository.getBranch(branchId);
+        const note = branch.getNote();
 
-        if (await note.hasOwnedLabel('excludeFromExport')) {
+        if (note.hasOwnedLabel('excludeFromExport')) {
             return;
         }
 
@@ -24,13 +24,13 @@ async function exportToOpml(taskContext, branch, version, res) {
 
         if (opmlVersion === 1) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.isStringNote() ? prepareText(await note.getContent()) : '';
+            const preparedContent = note.isStringNote() ? prepareText(note.getContent()) : '';
 
             res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
         }
         else if (opmlVersion === 2) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.isStringNote() ? escapeXmlAttribute(await note.getContent()) : '';
+            const preparedContent = note.isStringNote() ? escapeXmlAttribute(note.getContent()) : '';
 
             res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
         }
@@ -40,8 +40,8 @@ async function exportToOpml(taskContext, branch, version, res) {
 
         taskContext.increaseProgressCount();
 
-        for (const child of await note.getChildBranches()) {
-            await exportNoteInner(child.branchId);
+        for (const child of note.getChildBranches()) {
+            exportNoteInner(child.branchId);
         }
 
         res.write('</outline>');
@@ -60,7 +60,7 @@ async function exportToOpml(taskContext, branch, version, res) {
 </head>
 <body>`);
 
-    await exportNoteInner(branch.branchId);
+    exportNoteInner(branch.branchId);
 
     res.write(`</body>
 </opml>`);

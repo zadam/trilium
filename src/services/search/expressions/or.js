@@ -21,11 +21,11 @@ class OrExp extends Expression {
         this.subExpressions = subExpressions;
     }
 
-    async execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, searchContext) {
         const resultNoteSet = new NoteSet();
 
         for (const subExpression of this.subExpressions) {
-            resultNoteSet.mergeIn(await subExpression.execute(inputNoteSet, searchContext));
+            resultNoteSet.mergeIn(subExpression.execute(inputNoteSet, searchContext));
         }
 
         return resultNoteSet;

@@ -2,7 +2,7 @@
 
 const appInfo = require('../../services/app_info');
 
-async function getAppInfo() {
+function getAppInfo() {
     return appInfo;
 }
 

@@ -111,8 +111,8 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} searchString
      * @returns {Promise<Note|null>}
      */
-    this.searchForNote = async searchString => {
-        const notes = await searchService.searchForNotes(searchString);
+    this.searchForNote = searchString => {
+        const notes = searchService.searchForNotes(searchString);
 
         return notes.length > 0 ? notes[0] : null;
     };
@@ -185,7 +185,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} content
      * @return {Promise<{note: Note, branch: Branch}>}
      */
-    this.createTextNote = async (parentNoteId, title, content = '') => await noteService.createNewNote({
+    this.createTextNote = (parentNoteId, title, content = '') => noteService.createNewNote({
         parentNoteId,
         title,
         content,
@@ -201,7 +201,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {object} content
      * @return {Promise<{note: Note, branch: Branch}>}
      */
-    this.createDataNote = async (parentNoteId, title, content = {}) => await noteService.createNewNote({
+    this.createDataNote = (parentNoteId, title, content = {}) => noteService.createNewNote({
         parentNoteId,
         title,
         content: JSON.stringify(content, null, '\t'),
@@ -256,11 +256,11 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {CreateNoteExtraOptions} [extraOptions={}]
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
-    this.createNote = async (parentNoteId, title, content = "", extraOptions= {}) => {
+    this.createNote = (parentNoteId, title, content = "", extraOptions= {}) => {
         extraOptions.parentNoteId = parentNoteId;
         extraOptions.title = title;
 
-        const parentNote = await repository.getNote(parentNoteId);
+        const parentNote = repository.getNote(parentNoteId);
 
         // code note type can be inherited, otherwise text is default
         extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
@@ -275,10 +275,10 @@ function BackendScriptApi(currentNote, apiParams) {
             extraOptions.content = content;
         }
 
-        const {note, branch} = await noteService.createNewNote(extraOptions);
+        const {note, branch} = noteService.createNewNote(extraOptions);
 
         for (const attr of extraOptions.attributes || []) {
-            await attributeService.createAttribute({
+            attributeService.createAttribute({
                 noteId: note.noteId,
                 type: attr.type,
                 name: attr.name,

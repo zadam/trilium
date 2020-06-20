@@ -4,28 +4,28 @@ const repository = require('./repository');
 const cls = require('./cls');
 const log = require('./log');
 
-async function executeNote(note, apiParams) {
+function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
         log.info(`Cannot execute note ${note.noteId}`);
 
         return;
     }
 
-    const bundle = await getScriptBundle(note);
+    const bundle = getScriptBundle(note);
 
-    return await executeBundle(bundle, apiParams);
+    return executeBundle(bundle, apiParams);
 }
 
-async function executeNoteNoException(note, apiParams) {
+function executeNoteNoException(note, apiParams) {
     try {
-        await executeNote(note, apiParams);
+        executeNote(note, apiParams);
     }
     catch (e) {
         // just swallow, exception is logged already in executeNote
     }
 }
 
-async function executeBundle(bundle, apiParams = {}) {
+function executeBundle(bundle, apiParams = {}) {
     if (!apiParams.startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         apiParams.startNote = bundle.note;
@@ -34,16 +34,16 @@ async function executeBundle(bundle, apiParams = {}) {
     cls.set('sourceId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
-    const script = "async function() {\r\n" + bundle.script + "\r\n}";
+    const script = "function() {\r\n" + bundle.script + "\r\n}";
 
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
-        if (await bundle.note.hasOwnedLabel('manualTransactionHandling')) {
-            return await execute(ctx, script);
+        if (bundle.note.hasOwnedLabel('manualTransactionHandling')) {
+            return execute(ctx, script);
         }
         else {
-            return await sql.transactional(async () => await execute(ctx, script));
+            return sql.transactional(() => execute(ctx, script));
         }
     }
     catch (e) {
@@ -57,22 +57,22 @@ async function executeBundle(bundle, apiParams = {}) {
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
-    const startNote = await repository.getNote(startNoteId);
-    const currentNote = await repository.getNote(currentNoteId);
-    const originEntity = await repository.getEntityFromName(originEntityName, originEntityId);
+function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
+    const startNote = repository.getNote(startNoteId);
+    const currentNote = repository.getNote(currentNoteId);
+    const originEntity = repository.getEntityFromName(originEntityName, originEntityId);
 
-    currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
+    currentNote.content = `return (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';
     currentNote.mime = 'application/javascript;env=backend';
 
-    const bundle = await getScriptBundle(currentNote);
+    const bundle = getScriptBundle(currentNote);
 
-    return await executeBundle(bundle, { startNote, originEntity });
+    return executeBundle(bundle, { startNote, originEntity });
 }
 
-async function execute(ctx, script) {
-    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
+function execute(ctx, script) {
+    return (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
 }
 
 function getParams(params) {
@@ -90,8 +90,8 @@ function getParams(params) {
     }).join(",");
 }
 
-async function getScriptBundleForFrontend(note) {
-    const bundle = await getScriptBundle(note);
+function getScriptBundleForFrontend(note) {
+    const bundle = getScriptBundle(note);
 
     if (!bundle) {
         return;
@@ -107,7 +107,7 @@ async function getScriptBundleForFrontend(note) {
     return bundle;
 }
 
-async function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
+function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
     if (!note.isContentAvailable) {
         return;
     }
@@ -116,7 +116,7 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
         return;
     }
 
-    if (!root && await note.hasOwnedLabel('disableInclusion')) {
+    if (!root && note.hasOwnedLabel('disableInclusion')) {
         return;
     }
 
@@ -143,8 +143,8 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
 
     const modules = [];
 
-    for (const child of await note.getChildNotes()) {
-        const childBundle = await getScriptBundle(child, false, scriptEnv, includedNoteIds);
+    for (const child of note.getChildNotes()) {
+        const childBundle = getScriptBundle(child, false, scriptEnv, includedNoteIds);
 
         if (childBundle) {
             modules.push(childBundle.note);
@@ -159,10 +159,10 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
     if (note.isJavaScript()) {
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
-${root ? 'return ' : ''}await ((async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
+${root ? 'return ' : ''}((function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
-${await note.getContent()};
+${note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
@@ -172,7 +172,7 @@ return module.exports;
 `;
     }
     else if (note.isHtml()) {
-        bundle.html += await note.getContent();
+        bundle.html += note.getContent();
     }
 
     return bundle;

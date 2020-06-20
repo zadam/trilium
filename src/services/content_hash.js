@@ -11,8 +11,8 @@ const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 
-async function getSectorHashes(tableName, primaryKeyName, whereBranch) {
-    const hashes = await sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName} `
+function getSectorHashes(tableName, primaryKeyName, whereBranch) {
+    const hashes = sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName} `
         + (whereBranch ? `WHERE ${whereBranch} ` : '')
         + ` ORDER BY ${primaryKeyName}`);
 
@@ -29,19 +29,19 @@ async function getSectorHashes(tableName, primaryKeyName, whereBranch) {
     return map;
 }
 
-async function getEntityHashes() {
+function getEntityHashes() {
     const startTime = new Date();
 
     const hashes = {
-        notes: await getSectorHashes(Note.entityName, Note.primaryKeyName),
-        note_contents: await getSectorHashes("note_contents", "noteId"),
-        branches: await getSectorHashes(Branch.entityName, Branch.primaryKeyName),
-        note_revisions: await getSectorHashes(NoteRevision.entityName, NoteRevision.primaryKeyName),
-        note_revision_contents: await getSectorHashes("note_revision_contents", "noteRevisionId"),
-        recent_notes: await getSectorHashes(RecentNote.entityName, RecentNote.primaryKeyName),
-        options: await getSectorHashes(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
-        attributes: await getSectorHashes(Attribute.entityName, Attribute.primaryKeyName),
-        api_tokens: await getSectorHashes(ApiToken.entityName, ApiToken.primaryKeyName),
+        notes: getSectorHashes(Note.entityName, Note.primaryKeyName),
+        note_contents: getSectorHashes("note_contents", "noteId"),
+        branches: getSectorHashes(Branch.entityName, Branch.primaryKeyName),
+        note_revisions: getSectorHashes(NoteRevision.entityName, NoteRevision.primaryKeyName),
+        note_revision_contents: getSectorHashes("note_revision_contents", "noteRevisionId"),
+        recent_notes: getSectorHashes(RecentNote.entityName, RecentNote.primaryKeyName),
+        options: getSectorHashes(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
+        attributes: getSectorHashes(Attribute.entityName, Attribute.primaryKeyName),
+        api_tokens: getSectorHashes(ApiToken.entityName, ApiToken.primaryKeyName),
     };
 
     const elapsedTimeMs = Date.now() - startTime.getTime();
@@ -51,8 +51,8 @@ async function getEntityHashes() {
     return hashes;
 }
 
-async function checkContentHashes(otherHashes) {
-    const entityHashes = await getEntityHashes();
+function checkContentHashes(otherHashes) {
+    const entityHashes = getEntityHashes();
     const failedChecks = [];
 
     for (const entityName in entityHashes) {

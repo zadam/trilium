@@ -6,19 +6,19 @@ const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
 
-async function getEffectiveNoteAttributes(req) {
-    const note = await repository.getNote(req.params.noteId);
+function getEffectiveNoteAttributes(req) {
+    const note = repository.getNote(req.params.noteId);
 
-    return await note.getAttributes();
+    return note.getAttributes();
 }
 
-async function updateNoteAttribute(req) {
+function updateNoteAttribute(req) {
     const noteId = req.params.noteId;
     const body = req.body;
 
     let attribute;
     if (body.attributeId) {
-        attribute = await repository.getAttribute(body.attributeId);
+        attribute = repository.getAttribute(body.attributeId);
 
         if (attribute.noteId !== noteId) {
             return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
@@ -30,11 +30,11 @@ async function updateNoteAttribute(req) {
 
             if (body.type !== 'relation' || !!body.value.trim()) {
                 const newAttribute = attribute.createClone(body.type, body.name, body.value);
-                await newAttribute.save();
+                newAttribute.save();
             }
 
             attribute.isDeleted = true;
-            await attribute.save();
+            attribute.save();
 
             return {
                 attributeId: attribute.attributeId
@@ -60,18 +60,18 @@ async function updateNoteAttribute(req) {
         attribute.isDeleted = true;
     }
 
-    await attribute.save();
+    attribute.save();
 
     return {
         attributeId: attribute.attributeId
     };
 }
 
-async function deleteNoteAttribute(req) {
+function deleteNoteAttribute(req) {
     const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
 
-    const attribute = await repository.getAttribute(attributeId);
+    const attribute = repository.getAttribute(attributeId);
 
     if (attribute) {
         if (attribute.noteId !== noteId) {
@@ -79,17 +79,17 @@ async function deleteNoteAttribute(req) {
         }
 
         attribute.isDeleted = true;
-        await attribute.save();
+        attribute.save();
     }
 }
 
-async function updateNoteAttributes2(req) {
+function updateNoteAttributes2(req) {
     const noteId = req.params.noteId;
     const incomingAttributes = req.body;
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
-    let existingAttrs = await note.getAttributes();
+    let existingAttrs = note.getAttributes();
 
     let position = 0;
 
@@ -107,14 +107,14 @@ async function updateNoteAttributes2(req) {
 
             if (perfectMatchAttr.position !== position) {
                 perfectMatchAttr.position = position;
-                await perfectMatchAttr.save();
+                perfectMatchAttr.save();
             }
 
             continue; // nothing to update
         }
 
         if (incAttr.type === 'relation') {
-            const targetNote = await repository.getNote(incAttr.value);
+            const targetNote = repository.getNote(incAttr.value);
 
             if (!targetNote || targetNote.isDeleted) {
                 log.error(`Target note of relation ${JSON.stringify(incAttr)} does not exist or is deleted`);
@@ -130,7 +130,7 @@ async function updateNoteAttributes2(req) {
         if (matchedAttr) {
             matchedAttr.value = incAttr.value;
             matchedAttr.position = position;
-            await matchedAttr.save();
+            matchedAttr.save();
 
             existingAttrs = existingAttrs.filter(attr => attr.attributeId !== matchedAttr.attributeId);
             continue;
@@ -139,17 +139,17 @@ async function updateNoteAttributes2(req) {
         // no existing attribute has been matched so we need to create a new one
         // type, name and isInheritable are immutable so even if there is an attribute with matching type & name, we need to create a new one and delete the former one
 
-        await note.addAttribute(incAttr.type, incAttr.name, incAttr.value, incAttr.isInheritable, position);
+        note.addAttribute(incAttr.type, incAttr.name, incAttr.value, incAttr.isInheritable, position);
     }
 
     // all the remaining existing attributes are not defined anymore and should be deleted
     for (const toDeleteAttr of existingAttrs) {
         toDeleteAttr.isDeleted = true;
-        await toDeleteAttr.save();
+        toDeleteAttr.save();
     }
 }
 
-async function updateNoteAttributes(req) {
+function updateNoteAttributes(req) {
     const noteId = req.params.noteId;
     const attributes = req.body;
 
@@ -157,7 +157,7 @@ async function updateNoteAttributes(req) {
         let attributeEntity;
 
         if (attribute.attributeId) {
-            attributeEntity = await repository.getAttribute(attribute.attributeId);
+            attributeEntity = repository.getAttribute(attribute.attributeId);
 
             if (attributeEntity.noteId !== noteId) {
                 return [400, `Attribute ${attributeEntity.noteId} is not owned by ${noteId}`];
@@ -170,11 +170,11 @@ async function updateNoteAttributes(req) {
 
                 if (attribute.type !== 'relation' || !!attribute.value.trim()) {
                     const newAttribute = attributeEntity.createClone(attribute.type, attribute.name, attribute.value, attribute.isInheritable);
-                    await newAttribute.save();
+                    newAttribute.save();
                 }
 
                 attributeEntity.isDeleted = true;
-                await attributeEntity.save();
+                attributeEntity.save();
 
                 continue;
             }
@@ -203,34 +203,34 @@ async function updateNoteAttributes(req) {
             attributeEntity.value = attribute.value;
         }
 
-        await attributeEntity.save();
+        attributeEntity.save();
     }
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
     note.invalidateAttributeCache();
 
-    return await note.getAttributes();
+    return note.getAttributes();
 }
 
-async function getAttributeNames(req) {
+function getAttributeNames(req) {
     const type = req.query.type;
     const query = req.query.query;
 
     return attributeService.getAttributeNames(type, query);
 }
 
-async function getValuesForAttribute(req) {
+function getValuesForAttribute(req) {
     const attributeName = req.params.attributeName;
 
-    return await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND type = 'label' AND value != '' ORDER BY value", [attributeName]);
+    return sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND type = 'label' AND value != '' ORDER BY value", [attributeName]);
 }
 
-async function createRelation(req) {
+function createRelation(req) {
     const sourceNoteId = req.params.noteId;
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    let attribute = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
     if (!attribute) {
         attribute = new Attribute();
@@ -239,22 +239,22 @@ async function createRelation(req) {
         attribute.type = 'relation';
         attribute.value = targetNoteId;
 
-        await attribute.save();
+        attribute.save();
     }
 
     return attribute;
 }
 
-async function deleteRelation(req) {
+function deleteRelation(req) {
     const sourceNoteId = req.params.noteId;
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    let attribute = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
     if (attribute) {
         attribute.isDeleted = true;
-        await attribute.save();
+        attribute.save();
     }
 }
 

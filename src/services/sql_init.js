@@ -19,32 +19,32 @@ sql.setDbConnection(dbConnection);
 
 const dbReady = initDbConnection();
 
-async function schemaExists() {
-    const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
+function schemaExists() {
+    const tableResults = sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
 
     return tableResults.length === 1;
 }
 
-async function isDbInitialized() {
-    if (!await schemaExists()) {
+function isDbInitialized() {
+    if (!schemaExists()) {
         return false;
     }
 
-    const initialized = await sql.getValue("SELECT value FROM options WHERE name = 'initialized'");
+    const initialized = sql.getValue("SELECT value FROM options WHERE name = 'initialized'");
 
     // !initialized may be removed in the future, required only for migration
     return !initialized || initialized === 'true';
 }
 
-async function initDbConnection() {
-    await cls.init(async () => {
-        if (!await isDbInitialized()) {
-            log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
+function initDbConnection() {
+    cls.init(() => {
+        if (!isDbInitialized()) {
+            log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${port} to see instructions on how to initialize Trilium.`));
 
             return;
         }
 
-        const currentDbVersion = await getDbVersion();
+        const currentDbVersion = getDbVersion();
 
         if (currentDbVersion > appInfo.dbVersion) {
             log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
@@ -52,45 +52,43 @@ async function initDbConnection() {
             utils.crash();
         }
 
-        if (!await isDbUpToDate()) {
+        if (!isDbUpToDate()) {
             // avoiding circular dependency
             const migrationService = require('./migration');
 
-            await migrationService.migrate();
+            migrationService.migrate();
         }
 
-        await require('./options_init').initStartupOptions();
-
-        log.info("DB ready.");
+        require('./options_init').initStartupOptions();
     });
 }
 
-async function createInitialDatabase(username, password, theme) {
+function createInitialDatabase(username, password, theme) {
     log.info("Creating initial database ...");
 
-    if (await isDbInitialized()) {
+    if (isDbInitialized()) {
         throw new Error("DB is already initialized");
     }
 
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
     const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.zip');
 
-    await sql.transactional(async () => {
-        await sql.executeScript(schema);
+    sql.transactional(() => {
+        sql.executeScript(schema);
 
         const Note = require("../entities/note");
         const Branch = require("../entities/branch");
 
-        const rootNote = await new Note({
+        const rootNote = new Note({
             noteId: 'root',
             title: 'root',
             type: 'text',
             mime: 'text/html'
         }).save();
 
-        await rootNote.setContent('');
+        rootNote.setContent('');
 
-        await new Branch({
+        new Branch({
             branchId: 'root',
             noteId: 'root',
             parentNoteId: 'none',
@@ -101,53 +99,53 @@ async function createInitialDatabase(username, password, theme) {
         const dummyTaskContext = new TaskContext("1", 'import', false);
 
         const zipImportService = require("./import/zip");
-        await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
+        zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
-        const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
+        const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
         const optionsInitService = require('./options_init');
 
-        await optionsInitService.initDocumentOptions();
-        await optionsInitService.initSyncedOptions(username, password);
-        await optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
+        optionsInitService.initDocumentOptions();
+        optionsInitService.initSyncedOptions(username, password);
+        optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
 
-        await require('./sync_table').fillAllSyncRows();
+        require('./sync_table').fillAllSyncRows();
     });
 
     log.info("Schema and initial content generated.");
 
-    await initDbConnection();
+    initDbConnection();
 }
 
-async function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
+function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     log.info("Creating database for sync");
 
-    if (await isDbInitialized()) {
+    if (isDbInitialized()) {
         throw new Error("DB is already initialized");
     }
 
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
 
-    await sql.transactional(async () => {
-        await sql.executeScript(schema);
+    sql.transactional(() => {
+        sql.executeScript(schema);
 
-        await require('./options_init').initNotSyncedOptions(false, 'root', { syncServerHost, syncProxy });
+        require('./options_init').initNotSyncedOptions(false, 'root', { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {
-            await new Option(opt).save();
+            new Option(opt).save();
         }
     });
 
     log.info("Schema and not synced options generated.");
 }
 
-async function getDbVersion() {
-    return parseInt(await sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
+function getDbVersion() {
+    return parseInt(sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
 }
 
-async function isDbUpToDate() {
-    const dbVersion = await getDbVersion();
+function isDbUpToDate() {
+    const dbVersion = getDbVersion();
 
     const upToDate = dbVersion >= appInfo.dbVersion;
 
@@ -158,17 +156,15 @@ async function isDbUpToDate() {
     return upToDate;
 }
 
-async function dbInitialized() {
-    if (!await isDbInitialized()) {
-        await optionService.setOption('initialized', 'true');
+function dbInitialized() {
+    if (!isDbInitialized()) {
+        optionService.setOption('initialized', 'true');
 
-        await initDbConnection();
+        initDbConnection();
     }
 }
 
-dbReady.then(async () => {
-    log.info("DB size: " + await sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
-});
+log.info("DB size: " + sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
 
 module.exports = {
     dbReady,

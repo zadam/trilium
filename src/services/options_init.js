@@ -7,28 +7,28 @@ const log = require('./log');
 const dateUtils = require('./date_utils');
 const keyboardActions = require('./keyboard_actions');
 
-async function initDocumentOptions() {
-    await optionService.createOption('documentId', utils.randomSecureToken(16), false);
-    await optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
+function initDocumentOptions() {
+    optionService.createOption('documentId', utils.randomSecureToken(16), false);
+    optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
 }
 
-async function initSyncedOptions(username, password) {
-    await optionService.createOption('username', username, true);
+function initSyncedOptions(username, password) {
+    optionService.createOption('username', username, true);
 
-    await optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
-    await optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
+    optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
+    optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
 
-    const passwordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(password), true);
-    await optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
+    const passwordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(password), true);
+    optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
 
     // passwordEncryptionService expects these options to already exist
-    await optionService.createOption('encryptedDataKey', '', true);
+    optionService.createOption('encryptedDataKey', '', true);
 
-    await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
+    passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
-async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
-    await optionService.createOption('openTabs', JSON.stringify([
+function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
+    optionService.createOption('openTabs', JSON.stringify([
         {
             notePath: startNotePath,
             active: true,
@@ -38,21 +38,21 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
         }
     ]), false);
 
-    await optionService.createOption('lastDailyBackupDate', dateUtils.utcNowDateTime(), false);
-    await optionService.createOption('lastWeeklyBackupDate', dateUtils.utcNowDateTime(), false);
-    await optionService.createOption('lastMonthlyBackupDate', dateUtils.utcNowDateTime(), false);
-    await optionService.createOption('dbVersion', appInfo.dbVersion, false);
+    optionService.createOption('lastDailyBackupDate', dateUtils.utcNowDateTime(), false);
+    optionService.createOption('lastWeeklyBackupDate', dateUtils.utcNowDateTime(), false);
+    optionService.createOption('lastMonthlyBackupDate', dateUtils.utcNowDateTime(), false);
+    optionService.createOption('dbVersion', appInfo.dbVersion, false);
 
-    await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
+    optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 
-    await optionService.createOption('lastSyncedPull', '0', false);
-    await optionService.createOption('lastSyncedPush', '0', false);
+    optionService.createOption('lastSyncedPull', '0', false);
+    optionService.createOption('lastSyncedPush', '0', false);
 
-    await optionService.createOption('theme', opts.theme || 'white', false);
+    optionService.createOption('theme', opts.theme || 'white', false);
 
-    await optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
-    await optionService.createOption('syncServerTimeout', '5000', false);
-    await optionService.createOption('syncProxy', opts.syncProxy || '', false);
+    optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
+    optionService.createOption('syncServerTimeout', '5000', false);
+    optionService.createOption('syncProxy', opts.syncProxy || '', false);
 }
 
 const defaultOptions = [
@@ -87,14 +87,14 @@ const defaultOptions = [
     { name: 'hideIncludedImages_main', value: 'true', isSynced: false }
 ];
 
-async function initStartupOptions() {
-    const optionsMap = await optionService.getOptionsMap();
+function initStartupOptions() {
+    const optionsMap = optionService.getOptionsMap();
 
     const allDefaultOptions = defaultOptions.concat(getKeyboardDefaultOptions());
 
     for (const {name, value, isSynced} of allDefaultOptions) {
         if (!(name in optionsMap)) {
-            await optionService.createOption(name, value, isSynced);
+            optionService.createOption(name, value, isSynced);
 
             log.info(`Created missing option "${name}" with default value "${value}"`);
         }

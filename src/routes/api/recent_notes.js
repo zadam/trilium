@@ -2,8 +2,8 @@
 
 const RecentNote = require('../../entities/recent_note');
 
-async function addRecentNote(req) {
-    await new RecentNote({
+function addRecentNote(req) {
+    new RecentNote({
         noteId: req.body.noteId,
         notePath: req.body.notePath
     }).save();

@@ -7,13 +7,13 @@ const log = require('./log');
 const utils = require('./utils');
 const resourceDir = require('./resource_dir');
 
-async function migrate() {
+function migrate() {
     const migrations = [];
 
     // backup before attempting migration
-    await backupService.backupNow("before-migration");
+    backupService.backupNow("before-migration");
 
-    const currentDbVersion = parseInt(await optionService.getOption('dbVersion'));
+    const currentDbVersion = parseInt(optionService.getOption('dbVersion'));
 
     fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
@@ -43,26 +43,26 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion);
 
-            await sql.transactional(async () => {
+            sql.transactional(() => {
                 if (mig.type === 'sql') {
                     const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 
                     console.log("Migration with SQL script: " + migrationSql);
 
-                    await sql.executeScript(migrationSql);
+                    sql.executeScript(migrationSql);
                 }
                 else if (mig.type === 'js') {
                     console.log("Migration with JS module");
 
                     const migrationModule = require(resourceDir.MIGRATIONS_DIR + "/" + mig.file);
-                    await migrationModule();
+                    migrationModule();
                 }
                 else {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
                 // not using repository because of changed utcDateModified column in migration 129
-                await sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion, "dbVersion"]);
+                sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion, "dbVersion"]);
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
@@ -75,8 +75,8 @@ async function migrate() {
         }
     }
 
-    if (await sqlInit.isDbUpToDate()) {
-        await sqlInit.initDbConnection();
+    if (sqlInit.isDbUpToDate()) {
+        sqlInit.initDbConnection();
     }
 }
 

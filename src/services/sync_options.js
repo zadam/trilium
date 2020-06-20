@@ -10,19 +10,19 @@ const config = require('./config');
  * to live sync server.
  */
 
-async function get(name) {
-    return (config['Sync'] && config['Sync'][name]) || await optionService.getOption(name);
+function get(name) {
+    return (config['Sync'] && config['Sync'][name]) || optionService.getOption(name);
 }
 
 module.exports = {
-    getSyncServerHost: async () => await get('syncServerHost'),
-    isSyncSetup: async () => {
-        const syncServerHost = await get('syncServerHost');
+    getSyncServerHost: () => get('syncServerHost'),
+    isSyncSetup: () => {
+        const syncServerHost = get('syncServerHost');
 
         // special value "disabled" is here to support use case where document is configured with sync server
         // and we need to override it with config from config.ini
         return !!syncServerHost && syncServerHost !== 'disabled';
     },
-    getSyncTimeout: async () => parseInt(await get('syncServerTimeout')) || 60000,
-    getSyncProxy: async () => await get('syncProxy')
+    getSyncTimeout: () => parseInt(get('syncServerTimeout')) || 60000,
+    getSyncProxy: () => get('syncProxy')
 };

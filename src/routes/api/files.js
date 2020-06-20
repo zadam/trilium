@@ -5,33 +5,33 @@ const repository = require('../../services/repository');
 const utils = require('../../services/utils');
 const noteRevisionService = require('../../services/note_revisions');
 
-async function updateFile(req) {
+function updateFile(req) {
     const {noteId} = req.params;
     const file = req.file;
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
     }
 
-    await noteRevisionService.createNoteRevision(note);
+    noteRevisionService.createNoteRevision(note);
 
     note.mime = file.mimetype.toLowerCase();
 
-    await note.setContent(file.buffer);
+    note.setContent(file.buffer);
 
-    await note.setLabel('originalFileName', file.originalname);
+    note.setLabel('originalFileName', file.originalname);
 
-    await noteRevisionService.protectNoteRevisions(note);
+    noteRevisionService.protectNoteRevisions(note);
 
     return {
         uploaded: true
     };
 }
 
-async function downloadNoteFile(noteId, res, contentDisposition = true) {
-    const note = await repository.getNote(noteId);
+function downloadNoteFile(noteId, res, contentDisposition = true) {
+    const note = repository.getNote(noteId);
 
     if (!note) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);
@@ -51,19 +51,19 @@ async function downloadNoteFile(noteId, res, contentDisposition = true) {
 
     res.setHeader('Content-Type', note.mime);
 
-    res.send(await note.getContent());
+    res.send(note.getContent());
 }
 
-async function downloadFile(req, res) {
+function downloadFile(req, res) {
     const noteId = req.params.noteId;
 
-    return await downloadNoteFile(noteId, res);
+    return downloadNoteFile(noteId, res);
 }
 
-async function openFile(req, res) {
+function openFile(req, res) {
     const noteId = req.params.noteId;
 
-    return await downloadNoteFile(noteId, res, false);
+    return downloadNoteFile(noteId, res, false);
 }
 
 module.exports = {

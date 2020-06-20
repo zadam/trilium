@@ -20,8 +20,8 @@ const request = require('./request');
 const path = require('path');
 const url = require('url');
 
-async function getNewNotePosition(parentNoteId) {
-    const maxNotePos = await sql.getValue(`
+function getNewNotePosition(parentNoteId) {
+    const maxNotePos = sql.getValue(`
             SELECT MAX(notePosition) 
             FROM branches 
             WHERE parentNoteId = ? 
@@ -30,12 +30,12 @@ async function getNewNotePosition(parentNoteId) {
     return maxNotePos === null ? 0 : maxNotePos + 10;
 }
 
-async function triggerChildNoteCreated(childNote, parentNote) {
-    await eventService.emit(eventService.CHILD_NOTE_CREATED, { childNote, parentNote });
+function triggerChildNoteCreated(childNote, parentNote) {
+    eventService.emit(eventService.CHILD_NOTE_CREATED, { childNote, parentNote });
 }
 
-async function triggerNoteTitleChanged(note) {
-    await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
+function triggerNoteTitleChanged(note) {
+    eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
 
 function deriveMime(type, mime) {
@@ -60,10 +60,10 @@ function deriveMime(type, mime) {
     return mime;
 }
 
-async function copyChildAttributes(parentNote, childNote) {
-    for (const attr of await parentNote.getOwnedAttributes()) {
+function copyChildAttributes(parentNote, childNote) {
+    for (const attr of parentNote.getOwnedAttributes()) {
         if (attr.name.startsWith("child:")) {
-            await new Attribute({
+            new Attribute({
                 noteId: childNote.noteId,
                 type: attr.type,
                 name: attr.name.substr(6),
@@ -94,8 +94,8 @@ async function copyChildAttributes(parentNote, childNote) {
  * @param params
  * @return {Promise<{note: Note, branch: Branch}>}
  */
-async function createNewNote(params) {
-    const parentNote = await repository.getNote(params.parentNoteId);
+function createNewNote(params) {
+    const parentNote = repository.getNote(params.parentNoteId);
 
     if (!parentNote) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
@@ -105,7 +105,7 @@ async function createNewNote(params) {
         throw new Error(`Note title must not be empty`);
     }
 
-    const note = await new Note({
+    const note = new Note({
         noteId: params.noteId, // optionally can force specific noteId
         title: params.title,
         isProtected: !!params.isProtected,
@@ -113,22 +113,22 @@ async function createNewNote(params) {
         mime: deriveMime(params.type, params.mime)
     }).save();
 
-    await note.setContent(params.content);
+    note.setContent(params.content);
 
-    const branch = await new Branch({
+    const branch = new Branch({
         noteId: note.noteId,
         parentNoteId: params.parentNoteId,
-        notePosition: params.notePosition !== undefined ? params.notePosition : await getNewNotePosition(params.parentNoteId),
+        notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
         prefix: params.prefix,
         isExpanded: !!params.isExpanded
     }).save();
 
-    await scanForLinks(note);
+    scanForLinks(note);
 
-    await copyChildAttributes(parentNote, note);
+    copyChildAttributes(parentNote, note);
 
-    await triggerNoteTitleChanged(note);
-    await triggerChildNoteCreated(note, parentNote);
+    triggerNoteTitleChanged(note);
+    triggerChildNoteCreated(note, parentNote);
 
     return {
         note,
@@ -136,9 +136,9 @@ async function createNewNote(params) {
     };
 }
 
-async function createNewNoteWithTarget(target, targetBranchId, params) {
+function createNewNoteWithTarget(target, targetBranchId, params) {
     if (!params.type) {
-        const parentNote = await repository.getNote(params.parentNoteId);
+        const parentNote = repository.getNote(params.parentNoteId);
 
         // code note type can be inherited, otherwise text is default
         params.type = parentNote.type === 'code' ? 'code' : 'text';
@@ -146,20 +146,20 @@ async function createNewNoteWithTarget(target, targetBranchId, params) {
     }
 
     if (target === 'into') {
-        return await createNewNote(params);
+        return createNewNote(params);
     }
     else if (target === 'after') {
-        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [targetBranchId]);
+        const afterNote = sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [targetBranchId]);
 
         // not updating utcDateModified to avoig having to sync whole rows
-        await sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
+        sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [params.parentNoteId, afterNote.notePosition]);
 
         params.notePosition = afterNote.notePosition + 10;
 
-        const retObject = await createNewNote(params);
+        const retObject = createNewNote(params);
 
-        await syncTableService.addNoteReorderingSync(params.parentNoteId);
+        syncTableService.addNoteReorderingSync(params.parentNoteId);
 
         return retObject;
     }
@@ -168,31 +168,31 @@ async function createNewNoteWithTarget(target, targetBranchId, params) {
     }
 }
 
-async function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
-    await protectNote(note, protect);
+function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
+    protectNote(note, protect);
 
     taskContext.increaseProgressCount();
 
     if (includingSubTree) {
-        for (const child of await note.getChildNotes()) {
-            await protectNoteRecursively(child, protect, includingSubTree, taskContext);
+        for (const child of note.getChildNotes()) {
+            protectNoteRecursively(child, protect, includingSubTree, taskContext);
         }
     }
 }
 
-async function protectNote(note, protect) {
+function protectNote(note, protect) {
     if (protect !== note.isProtected) {
-        const content = await note.getContent();
+        const content = note.getContent();
 
         note.isProtected = protect;
 
         // this will force de/encryption
-        await note.setContent(content);
+        note.setContent(content);
 
-        await note.save();
+        note.save();
     }
 
-    await noteRevisionService.protectNoteRevisions(note);
+    noteRevisionService.protectNoteRevisions(note);
 }
 
 function findImageLinks(content, foundLinks) {
@@ -260,9 +260,9 @@ async function downloadImage(noteId, imageUrl) {
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image');
-        const {note} = await imageService.saveImage(noteId, imageBuffer, title, true);
+        const {note} = imageService.saveImage(noteId, imageBuffer, title, true);
 
-        await note.addLabel('imageUrl', imageUrl);
+        note.addLabel('imageUrl', imageUrl);
 
         imageUrlToNoteIdMapping[imageUrl] = note.noteId;
 
@@ -282,7 +282,7 @@ function replaceUrl(content, url, imageNote) {
     return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
-async function downloadImages(noteId, content) {
+function downloadImages(noteId, content) {
     const re = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
     let match;
 
@@ -296,7 +296,7 @@ async function downloadImages(noteId, content) {
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
             if (url in imageUrlToNoteIdMapping) {
-                const imageNote = await repository.getNote(imageUrlToNoteIdMapping[url]);
+                const imageNote = repository.getNote(imageUrlToNoteIdMapping[url]);
 
                 if (!imageNote || imageNote.isDeleted) {
                     delete imageUrlToNoteIdMapping[url];
@@ -308,7 +308,7 @@ async function downloadImages(noteId, content) {
                 }
             }
 
-            const existingImage = (await attributeService.getNotesWithLabel('imageUrl', url))
+            const existingImage = (attributeService.getNotesWithLabel('imageUrl', url))
                 .find(note => note.type === 'image');
 
             if (existingImage) {
@@ -331,7 +331,7 @@ async function downloadImages(noteId, content) {
     }
 
     Promise.all(Object.values(downloadImagePromises)).then(() => {
-        setTimeout(async () => {
+        setTimeout(() => {
             // the normal expected flow of the offline image saving is that users will paste the image(s)
             // which will get asynchronously downloaded, during that time they keep editing the note
             // once the download is finished, the image note representing downloaded image will be used
@@ -340,11 +340,11 @@ async function downloadImages(noteId, content) {
             // are downloaded and the IMG references are not updated. For this occassion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
-            await sql.transactional(async () => {
-                const imageNotes = await repository.getNotes(Object.values(imageUrlToNoteIdMapping));
+            sql.transactional(() => {
+                const imageNotes = repository.getNotes(Object.values(imageUrlToNoteIdMapping));
 
-                const origNote = await repository.getNote(noteId);
-                const origContent = await origNote.getContent();
+                const origNote = repository.getNote(noteId);
+                const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
                 for (const url in imageUrlToNoteIdMapping) {
@@ -357,9 +357,9 @@ async function downloadImages(noteId, content) {
 
                 // update only if the links have not been already fixed.
                 if (updatedContent !== origContent) {
-                    await origNote.setContent(updatedContent);
+                    origNote.setContent(updatedContent);
 
-                    await scanForLinks(origNote);
+                    scanForLinks(origNote);
 
                     console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
                 }
@@ -370,7 +370,7 @@ async function downloadImages(noteId, content) {
     return content;
 }
 
-async function saveLinks(note, content) {
+function saveLinks(note, content) {
     if (note.type !== 'text' && note.type !== 'relation-map') {
         return content;
     }
@@ -382,7 +382,7 @@ async function saveLinks(note, content) {
     const foundLinks = [];
 
     if (note.type === 'text') {
-        content = await downloadImages(note.noteId, content);
+        content = downloadImages(note.noteId, content);
 
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
@@ -395,10 +395,10 @@ async function saveLinks(note, content) {
         throw new Error("Unrecognized type " + note.type);
     }
 
-    const existingLinks = await note.getLinks();
+    const existingLinks = note.getLinks();
 
     for (const foundLink of foundLinks) {
-        const targetNote = await repository.getNote(foundLink.value);
+        const targetNote = repository.getNote(foundLink.value);
         if (!targetNote || targetNote.isDeleted) {
             continue;
         }
@@ -408,7 +408,7 @@ async function saveLinks(note, content) {
             && existingLink.name === foundLink.name);
 
         if (!existingLink) {
-            const newLink = await new Attribute({
+            const newLink = new Attribute({
                 noteId: note.noteId,
                 type: 'relation',
                 name: foundLink.name,
@@ -419,7 +419,7 @@ async function saveLinks(note, content) {
         }
         else if (existingLink.isDeleted) {
             existingLink.isDeleted = false;
-            await existingLink.save();
+            existingLink.save();
         }
         // else the link exists so we don't need to do anything
     }
@@ -431,30 +431,30 @@ async function saveLinks(note, content) {
 
     for (const unusedLink of unusedLinks) {
         unusedLink.isDeleted = true;
-        await unusedLink.save();
+        unusedLink.save();
     }
 
     return content;
 }
 
-async function saveNoteRevision(note) {
+function saveNoteRevision(note) {
     // files and images are versioned separately
-    if (note.type === 'file' || note.type === 'image' || await note.hasLabel('disableVersioning')) {
+    if (note.type === 'file' || note.type === 'image' || note.hasLabel('disableVersioning')) {
         return;
     }
 
     const now = new Date();
-    const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('noteRevisionSnapshotTimeInterval'));
+    const noteRevisionSnapshotTimeInterval = parseInt(optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
     const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
-    const existingNoteRevisionId = await sql.getValue(
+    const existingNoteRevisionId = sql.getValue(
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-        const noteRevision = await new NoteRevision({
+        const noteRevision = new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
@@ -469,41 +469,41 @@ async function saveNoteRevision(note) {
             dateCreated: dateUtils.localNowDateTime()
         }).save();
 
-        await noteRevision.setContent(await note.getContent());
+        noteRevision.setContent(note.getContent());
     }
 }
 
-async function updateNote(noteId, noteUpdates) {
-    const note = await repository.getNote(noteId);
+function updateNote(noteId, noteUpdates) {
+    const note = repository.getNote(noteId);
 
     if (!note.isContentAvailable) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 
-    await saveNoteRevision(note);
+    saveNoteRevision(note);
 
     // if protected status changed, then we need to encrypt/decrypt the content anyway
     if (['file', 'image'].includes(note.type) && note.isProtected !== noteUpdates.isProtected) {
-        noteUpdates.content = await note.getContent();
+        noteUpdates.content = note.getContent();
     }
 
     const noteTitleChanged = note.title !== noteUpdates.title;
 
     note.title = noteUpdates.title;
     note.isProtected = noteUpdates.isProtected;
-    await note.save();
+    note.save();
 
     if (noteUpdates.content !== undefined && noteUpdates.content !== null) {
-        noteUpdates.content = await saveLinks(note, noteUpdates.content);
+        noteUpdates.content = saveLinks(note, noteUpdates.content);
 
-        await note.setContent(noteUpdates.content);
+        note.setContent(noteUpdates.content);
     }
 
     if (noteTitleChanged) {
-        await triggerNoteTitleChanged(note);
+        triggerNoteTitleChanged(note);
     }
 
-    await noteRevisionService.protectNoteRevisions(note);
+    noteRevisionService.protectNoteRevisions(note);
 
     return {
         dateModified: note.dateModified,
@@ -518,7 +518,7 @@ async function updateNote(noteId, noteUpdates) {
  *
  * @return {boolean} - true if note has been deleted, false otherwise
  */
-async function deleteBranch(branch, deleteId, taskContext) {
+function deleteBranch(branch, deleteId, taskContext) {
     taskContext.increaseProgressCount();
 
     if (!branch || branch.isDeleted) {
@@ -527,41 +527,41 @@ async function deleteBranch(branch, deleteId, taskContext) {
 
     if (branch.branchId === 'root'
         || branch.noteId === 'root'
-        || branch.noteId === await hoistedNoteService.getHoistedNoteId()) {
+        || branch.noteId === hoistedNoteService.getHoistedNoteId()) {
 
         throw new Error("Can't delete root branch/note");
     }
 
     branch.isDeleted = true;
     branch.deleteId = deleteId;
-    await branch.save();
+    branch.save();
 
-    const note = await branch.getNote();
-    const notDeletedBranches = await note.getBranches();
+    const note = branch.getNote();
+    const notDeletedBranches = note.getBranches();
 
     if (notDeletedBranches.length === 0) {
-        for (const childBranch of await note.getChildBranches()) {
-            await deleteBranch(childBranch, deleteId, taskContext);
+        for (const childBranch of note.getChildBranches()) {
+            deleteBranch(childBranch, deleteId, taskContext);
         }
 
         // first delete children and then parent - this will show up better in recent changes
 
         note.isDeleted = true;
         note.deleteId = deleteId;
-        await note.save();
+        note.save();
 
         log.info("Deleting note " + note.noteId);
 
-        for (const attribute of await note.getOwnedAttributes()) {
+        for (const attribute of note.getOwnedAttributes()) {
             attribute.isDeleted = true;
             attribute.deleteId = deleteId;
-            await attribute.save();
+            attribute.save();
         }
 
-        for (const relation of await note.getTargetRelations()) {
+        for (const relation of note.getTargetRelations()) {
             relation.isDeleted = true;
             relation.deleteId = deleteId;
-            await relation.save();
+            relation.save();
         }
 
         return true;
@@ -576,8 +576,8 @@ async function deleteBranch(branch, deleteId, taskContext) {
  * @param {string} deleteId
  * @param {TaskContext} taskContext
  */
-async function undeleteNote(note, deleteId, taskContext) {
-    const undeletedParentBranches = await getUndeletedParentBranches(note.noteId, deleteId);
+function undeleteNote(note, deleteId, taskContext) {
+    const undeletedParentBranches = getUndeletedParentBranches(note.noteId, deleteId);
 
     if (undeletedParentBranches.length === 0) {
         // cannot undelete if there's no undeleted parent
@@ -585,7 +585,7 @@ async function undeleteNote(note, deleteId, taskContext) {
     }
 
     for (const parentBranch of undeletedParentBranches) {
-        await undeleteBranch(parentBranch, deleteId, taskContext);
+        undeleteBranch(parentBranch, deleteId, taskContext);
     }
 }
 
@@ -594,27 +594,27 @@ async function undeleteNote(note, deleteId, taskContext) {
  * @param {string} deleteId
  * @param {TaskContext} taskContext
  */
-async function undeleteBranch(branch, deleteId, taskContext) {
+function undeleteBranch(branch, deleteId, taskContext) {
     if (!branch.isDeleted) {
         return;
     }
 
-    const note = await branch.getNote();
+    const note = branch.getNote();
 
     if (note.isDeleted && note.deleteId !== deleteId) {
         return;
     }
 
     branch.isDeleted = false;
-    await branch.save();
+    branch.save();
 
     taskContext.increaseProgressCount();
 
     if (note.isDeleted && note.deleteId === deleteId) {
         note.isDeleted = false;
-        await note.save();
+        note.save();
 
-        const attrs = await repository.getEntities(`
+        const attrs = repository.getEntities(`
                 SELECT * FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
@@ -623,10 +623,10 @@ async function undeleteBranch(branch, deleteId, taskContext) {
 
         for (const attr of attrs) {
             attr.isDeleted = false;
-            await attr.save();
+            attr.save();
         }
 
-        const childBranches = await repository.getEntities(`
+        const childBranches = repository.getEntities(`
             SELECT branches.*
             FROM branches
             WHERE branches.isDeleted = 1
@@ -634,7 +634,7 @@ async function undeleteBranch(branch, deleteId, taskContext) {
               AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
 
         for (const childBranch of childBranches) {
-            await undeleteBranch(childBranch, deleteId, taskContext);
+            undeleteBranch(childBranch, deleteId, taskContext);
         }
     }
 }
@@ -642,8 +642,8 @@ async function undeleteBranch(branch, deleteId, taskContext) {
 /**
  * @return return deleted branches of an undeleted parent note
  */
-async function getUndeletedParentBranches(noteId, deleteId) {
-    return await repository.getEntities(`
+function getUndeletedParentBranches(noteId, deleteId) {
+    return repository.getEntities(`
                     SELECT branches.*
                     FROM branches
                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
@@ -653,17 +653,17 @@ async function getUndeletedParentBranches(noteId, deleteId) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-async function scanForLinks(note) {
+function scanForLinks(note) {
     if (!note || !['text', 'relation-map'].includes(note.type)) {
         return;
     }
 
     try {
-        const content = await note.getContent();
-        const newContent = await saveLinks(note, content);
+        const content = note.getContent();
+        const newContent = saveLinks(note, content);
 
         if (content !== newContent) {
-            await note.setContent(newContent);
+            note.setContent(newContent);
         }
     }
     catch (e) {
@@ -671,12 +671,12 @@ async function scanForLinks(note) {
     }
 }
 
-async function eraseDeletedNotes() {
-    const eraseNotesAfterTimeInSeconds = await optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+function eraseDeletedNotes() {
+    const eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
 
     const cutoffDate = new Date(Date.now() - eraseNotesAfterTimeInSeconds * 1000);
 
-    const noteIdsToErase = await sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
 
     if (noteIdsToErase.length === 0) {
         return;
@@ -688,7 +688,7 @@ async function eraseDeletedNotes() {
     // - we don't want change the hash since this erasing happens on each instance separately
     //   and changing the hash would fire up the sync errors temporarily
 
-    await sql.executeMany(`
+    sql.executeMany(`
         UPDATE notes 
         SET title = '[deleted]',
             contentLength = 0,
@@ -696,26 +696,26 @@ async function eraseDeletedNotes() {
             isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);
 
-    await sql.executeMany(`
+    sql.executeMany(`
         UPDATE note_contents 
         SET content = NULL 
         WHERE noteId IN (???)`, noteIdsToErase);
 
     // deleting first contents since the WHERE relies on isErased = 0
-    await sql.executeMany(`
+    sql.executeMany(`
         UPDATE note_revision_contents
         SET content = NULL
         WHERE noteRevisionId IN 
             (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN (???))`, noteIdsToErase);
 
-    await sql.executeMany(`
+    sql.executeMany(`
         UPDATE note_revisions 
         SET isErased = 1,
             title = NULL,
             contentLength = 0
         WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
 
-    await sql.executeMany(`
+    sql.executeMany(`
         UPDATE attributes 
         SET name = 'deleted',
             value = ''
@@ -724,36 +724,36 @@ async function eraseDeletedNotes() {
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
-async function duplicateNote(noteId, parentNoteId) {
-    const origNote = await repository.getNote(noteId);
+function duplicateNote(noteId, parentNoteId) {
+    const origNote = repository.getNote(noteId);
 
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available`);
     }
 
     // might be null if orig note is not in the target parentNoteId
-    const origBranch = (await origNote.getBranches()).find(branch => branch.parentNoteId === parentNoteId);
+    const origBranch = (origNote.getBranches()).find(branch => branch.parentNoteId === parentNoteId);
 
     const newNote = new Note(origNote);
     newNote.noteId = undefined; // force creation of new note
     newNote.title += " (dup)";
 
-    await newNote.save();
-    await newNote.setContent(await origNote.getContent());
+    newNote.save();
+    newNote.setContent(origNote.getContent());
 
-    const newBranch = await new Branch({
+    const newBranch = new Branch({
         noteId: newNote.noteId,
         parentNoteId: parentNoteId,
         // here increasing just by 1 to make sure it's directly after original
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
 
-    for (const attribute of await origNote.getOwnedAttributes()) {
+    for (const attribute of origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
         attr.noteId = newNote.noteId;
 
-        await attr.save();
+        attr.save();
     }
 
     return {
@@ -762,12 +762,10 @@ async function duplicateNote(noteId, parentNoteId) {
     };
 }
 
-sqlInit.dbReady.then(() => {
-    // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
+// first cleanup kickoff 5 minutes after startup
+setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
 
-    setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
-});
+setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
 
 module.exports = {
     createNewNote,

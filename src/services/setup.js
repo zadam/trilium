@@ -22,9 +22,9 @@ function triggerSync() {
     log.info("Triggering sync.");
 
     // it's ok to not wait for it here
-    syncService.sync().then(async res => {
+    syncService.sync().then(res => {
         if (res.success) {
-            await sqlInit.dbInitialized();
+            sqlInit.dbInitialized();
         }
     });
 }
@@ -33,30 +33,30 @@ async function sendSeedToSyncServer() {
     log.info("Initiating sync to server");
 
     await requestToSyncServer('POST', '/api/setup/sync-seed', {
-        options: await getSyncSeedOptions(),
+        options: getSyncSeedOptions(),
         syncVersion: appInfo.syncVersion
     });
 
     // this is completely new sync, need to reset counters. If this would not be new sync,
     // the previous request would have failed.
-    await optionService.setOption('lastSyncedPush', 0);
-    await optionService.setOption('lastSyncedPull', 0);
+    optionService.setOption('lastSyncedPush', 0);
+    optionService.setOption('lastSyncedPull', 0);
 }
 
 async function requestToSyncServer(method, path, body = null) {
-    const timeout = await syncOptions.getSyncTimeout();
+    const timeout = syncOptions.getSyncTimeout();
 
-    return utils.timeLimit(request.exec({
+    return await utils.timeLimit(request.exec({
         method,
-        url: await syncOptions.getSyncServerHost() + path,
+        url: syncOptions.getSyncServerHost() + path,
         body,
-        proxy: await syncOptions.getSyncProxy(),
+        proxy: syncOptions.getSyncProxy(),
         timeout: timeout
     }), timeout);
 }
 
 async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {
-    if (await sqlInit.isDbInitialized()) {
+    if (sqlInit.isDbInitialized()) {
         return {
             result: 'failure',
             error: 'DB is already initialized.'
@@ -89,7 +89,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
             }
         }
 
-        await sqlInit.createDatabaseForSync(resp.options, syncServerHost, syncProxy);
+        sqlInit.createDatabaseForSync(resp.options, syncServerHost, syncProxy);
 
         triggerSync();
 
@@ -105,10 +105,10 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
     }
 }
 
-async function getSyncSeedOptions() {
+function getSyncSeedOptions() {
     return [
-        await repository.getOption('documentId'),
-        await repository.getOption('documentSecret')
+        repository.getOption('documentId'),
+        repository.getOption('documentSecret')
     ];
 }
 

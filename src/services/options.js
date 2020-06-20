@@ -1,7 +1,7 @@
 const utils = require('./utils');
 
-async function getOption(name) {
-    const option = await require('./repository').getOption(name);
+function getOption(name) {
+    const option = require('./repository').getOption(name);
 
     if (!option) {
         throw new Error(`Option ${name} doesn't exist`);
@@ -13,8 +13,8 @@ async function getOption(name) {
 /**
  * @return {Promise<number>}
  */
-async function getOptionInt(name) {
-    const val = await getOption(name);
+function getOptionInt(name) {
+    const val = getOption(name);
 
     const intVal = parseInt(val);
 
@@ -28,8 +28,8 @@ async function getOptionInt(name) {
 /**
  * @return {Promise<boolean>}
  */
-async function getOptionBool(name) {
-    const val = await getOption(name);
+function getOptionBool(name) {
+    const val = getOption(name);
 
     if (!['true', 'false'].includes(val)) {
         throw new Error(`Could not parse "${val}" into boolean for option "${name}"`);
@@ -38,36 +38,36 @@ async function getOptionBool(name) {
     return val === 'true';
 }
 
-async function setOption(name, value) {
-    const option = await require('./repository').getOption(name);
+function setOption(name, value) {
+    const option = require('./repository').getOption(name);
 
     if (option) {
         option.value = value;
 
-        await option.save();
+        option.save();
     }
     else {
-        await createOption(name, value, false);
+        createOption(name, value, false);
     }
 }
 
-async function createOption(name, value, isSynced) {
+function createOption(name, value, isSynced) {
     // to avoid circular dependency, need to find better solution
     const Option = require('../entities/option');
 
-    await new Option({
+    new Option({
         name: name,
         value: value,
         isSynced: isSynced
     }).save();
 }
 
-async function getOptions() {
-    return await require('./repository').getEntities("SELECT * FROM options ORDER BY name");
+function getOptions() {
+    return require('./repository').getEntities("SELECT * FROM options ORDER BY name");
 }
 
-async function getOptionsMap() {
-    const options = await getOptions();
+function getOptionsMap() {
+    const options = getOptions();
 
     return utils.toObject(options, opt => [opt.name, opt.value]);
 }

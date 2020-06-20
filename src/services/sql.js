@@ -19,7 +19,7 @@ function setDbConnection(connection) {
     });
 });
 
-async function insert(tableName, rec, replace = false) {
+function insert(tableName, rec, replace = false) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
         log.error("Can't insert empty object into table " + tableName);
@@ -31,16 +31,16 @@ async function insert(tableName, rec, replace = false) {
 
     const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + tableName + "(" + columns + ") VALUES (" + questionMarks + ")";
 
-    const res = await execute(query, Object.values(rec));
+    const res = execute(query, Object.values(rec));
 
     return res.lastInsertRowid;
 }
 
-async function replace(tableName, rec) {
-    return await insert(tableName, rec, true);
+function replace(tableName, rec) {
+    return insert(tableName, rec, true);
 }
 
-async function upsert(tableName, primaryKey, rec) {
+function upsert(tableName, primaryKey, rec) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
         log.error("Can't upsert empty object into table " + tableName);
@@ -62,7 +62,7 @@ async function upsert(tableName, primaryKey, rec) {
         }
     }
 
-    await execute(query, rec);
+    execute(query, rec);
 }
 
 const statementCache = {};
@@ -87,18 +87,18 @@ function rollback() {
     return stmt("ROLLBACK").run();
 }
 
-async function getRow(query, params = []) {
+function getRow(query, params = []) {
     return wrap(() => stmt(query).get(params), query);
 }
 
-async function getRowOrNull(query, params = []) {
-    const all = await getRows(query, params);
+function getRowOrNull(query, params = []) {
+    const all = getRows(query, params);
 
     return all.length > 0 ? all[0] : null;
 }
 
-async function getValue(query, params = []) {
-    const row = await getRowOrNull(query, params);
+function getValue(query, params = []) {
+    const row = getRowOrNull(query, params);
 
     if (!row) {
         return null;
@@ -110,7 +110,7 @@ async function getValue(query, params = []) {
 const PARAM_LIMIT = 900; // actual limit is 999
 
 // this is to overcome 999 limit of number of query parameters
-async function getManyRows(query, params) {
+function getManyRows(query, params) {
     let results = [];
 
     while (params.length > 0) {
@@ -128,19 +128,19 @@ async function getManyRows(query, params) {
         const questionMarks = curParams.map(() => ":param" + i++).join(",");
         const curQuery = query.replace(/\?\?\?/g, questionMarks);
 
-        results = results.concat(await getRows(curQuery, curParamsObj));
+        results = results.concat(getRows(curQuery, curParamsObj));
     }
 
     return results;
 }
 
-async function getRows(query, params = []) {
+function getRows(query, params = []) {
     return wrap(() => stmt(query).all(params), query);
 }
 
-async function getMap(query, params = []) {
+function getMap(query, params = []) {
     const map = {};
-    const results = await getRows(query, params);
+    const results = getRows(query, params);
 
     for (const row of results) {
         const keys = Object.keys(row);
@@ -151,9 +151,9 @@ async function getMap(query, params = []) {
     return map;
 }
 
-async function getColumn(query, params = []) {
+function getColumn(query, params = []) {
     const list = [];
-    const result = await getRows(query, params);
+    const result = getRows(query, params);
 
     if (result.length === 0) {
         return list;
@@ -168,25 +168,25 @@ async function getColumn(query, params = []) {
     return list;
 }
 
-async function execute(query, params = []) {
-    await startTransactionIfNecessary();
+function execute(query, params = []) {
+    startTransactionIfNecessary();
 
     return wrap(() => stmt(query).run(params), query);
 }
 
-async function executeWithoutTransaction(query, params = []) {
-    await dbConnection.run(query, params);
+function executeWithoutTransaction(query, params = []) {
+    dbConnection.run(query, params);
 }
 
-async function executeMany(query, params) {
-    await startTransactionIfNecessary();
+function executeMany(query, params) {
+    startTransactionIfNecessary();
 
     // essentially just alias
-    await getManyRows(query, params);
+    getManyRows(query, params);
 }
 
-async function executeScript(query) {
-    await startTransactionIfNecessary();
+function executeScript(query) {
+    startTransactionIfNecessary();
 
     return wrap(() => stmt.run(query), query);
 }
@@ -231,14 +231,10 @@ let transactionActive = false;
 let transactionPromise = null;
 let transactionPromiseResolve = null;
 
-async function startTransactionIfNecessary() {
+function startTransactionIfNecessary() {
     if (!cls.get('isTransactional')
         || cls.get('isInTransaction')) {
         return;
-    }
-
-    while (transactionActive) {
-        await transactionPromise;
     }
 
     // first set semaphore (atomic operation and only then start transaction
@@ -246,22 +242,22 @@ async function startTransactionIfNecessary() {
     transactionPromise = new Promise(res => transactionPromiseResolve = res);
     cls.set('isInTransaction', true);
 
-    await beginTransaction();
+    beginTransaction();
 }
 
-async function transactional(func) {
+function transactional(func) {
     // if the CLS is already transactional then the whole transaction is handled by higher level transactional() call
     if (cls.get('isTransactional')) {
-        return await func();
+        return func();
     }
 
     cls.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
 
     try {
-        const ret = await func();
+        const ret = func();
 
         if (cls.get('isInTransaction')) {
-            await commit();
+            commit();
 
             // note that sync rows sent from this action will be sent again by scheduled periodic ping
             require('./ws.js').sendPingToAllClients();
@@ -271,7 +267,7 @@ async function transactional(func) {
     }
     catch (e) {
         if (cls.get('isInTransaction')) {
-            await rollback();
+            rollback();
         }
 
         throw e;

@@ -3,8 +3,8 @@ const repository = require('./repository');
 const cls = require('./cls');
 const sqlInit = require('./sql_init');
 
-async function runNotesWithLabel(runAttrValue) {
-    const notes = await repository.getEntities(`
+function runNotesWithLabel(runAttrValue) {
+    const notes = repository.getEntities(`
         SELECT notes.* 
         FROM notes 
           JOIN attributes ON attributes.noteId = notes.noteId
@@ -21,10 +21,8 @@ async function runNotesWithLabel(runAttrValue) {
     }
 }
 
-sqlInit.dbReady.then(() => {
-    setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
+setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
 
-    setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
+setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
-    setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);
-});
+setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);

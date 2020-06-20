@@ -6,21 +6,21 @@ const myScryptService = require('./my_scrypt');
 const utils = require('./utils');
 const passwordEncryptionService = require('./password_encryption');
 
-async function changePassword(currentPassword, newPassword) {
-    if (!await passwordEncryptionService.verifyPassword(currentPassword)) {
+function changePassword(currentPassword, newPassword) {
+    if (!passwordEncryptionService.verifyPassword(currentPassword)) {
         return {
             success: false,
             message: "Given current password doesn't match hash"
         };
     }
 
-    const newPasswordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(newPassword));
-    const decryptedDataKey = await passwordEncryptionService.getDataKey(currentPassword);
+    const newPasswordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(newPassword));
+    const decryptedDataKey = passwordEncryptionService.getDataKey(currentPassword);
 
-    await sql.transactional(async () => {
-        await passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
+    sql.transactional(() => {
+        passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
 
-        await optionService.setOption('passwordVerificationHash', newPasswordVerificationKey);
+        optionService.setOption('passwordVerificationHash', newPasswordVerificationKey);
     });
 
     return {

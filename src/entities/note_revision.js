@@ -2,7 +2,6 @@
 
 const Entity = require('./entity');
 const protectedSessionService = require('../services/protected_session');
-const repository = require('../services/repository');
 const utils = require('../services/utils');
 const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
@@ -47,8 +46,8 @@ class NoteRevision extends Entity {
         }
     }
 
-    async getNote() {
-        return await repository.getNote(this.noteId);
+    getNote() {
+        return this.repository.getNote(this.noteId);
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
@@ -66,9 +65,9 @@ class NoteRevision extends Entity {
      */
 
     /** @returns {Promise<*>} */
-    async getContent(silentNotFoundError = false) {
+    getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            const res = await sql.getRow(`SELECT content, hash FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
+            const res = sql.getRow(`SELECT content, hash FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
 
             if (!res) {
                 if (silentNotFoundError) {
@@ -102,11 +101,11 @@ class NoteRevision extends Entity {
     }
 
     /** @returns {Promise} */
-    async setContent(content) {
+    setContent(content) {
         // force updating note itself so that utcDateModified is represented correctly even for the content
         this.forcedChange = true;
         this.contentLength = content === null ? 0 : content.length;
-        await this.save();
+        this.save();
 
         this.content = content;
 
@@ -126,9 +125,9 @@ class NoteRevision extends Entity {
             }
         }
 
-        await sql.upsert("note_revision_contents", "noteRevisionId", pojo);
+        sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        await syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
+        syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
     }
 
     beforeSaving() {

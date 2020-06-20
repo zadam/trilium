@@ -41,7 +41,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'renderNote', isDangerous: true }
 ];
 
-async function getNotesWithLabel(name, value) {
+function getNotesWithLabel(name, value) {
     let valueCondition = "";
     let params = [name];
 
@@ -50,25 +50,25 @@ async function getNotesWithLabel(name, value) {
         params.push(value);
     }
 
-    return await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 
-async function getNotesWithLabels(names) {
+function getNotesWithLabels(names) {
     const questionMarks = names.map(() => "?").join(", ");
 
-    return await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name IN (${questionMarks}) ORDER BY position`, names);
 }
 
-async function getNoteWithLabel(name, value) {
-    const notes = await getNotesWithLabel(name, value);
+function getNoteWithLabel(name, value) {
+    const notes = getNotesWithLabel(name, value);
 
     return notes.length > 0 ? notes[0] : null;
 }
 
-async function createLabel(noteId, name, value = "") {
-    return await createAttribute({
+function createLabel(noteId, name, value = "") {
+    return createAttribute({
         noteId: noteId,
         type: 'label',
         name: name,
@@ -76,8 +76,8 @@ async function createLabel(noteId, name, value = "") {
     });
 }
 
-async function createRelation(noteId, name, targetNoteId) {
-    return await createAttribute({
+function createRelation(noteId, name, targetNoteId) {
+    return createAttribute({
         noteId: noteId,
         type: 'relation',
         name: name,
@@ -85,14 +85,14 @@ async function createRelation(noteId, name, targetNoteId) {
     });
 }
 
-async function createAttribute(attribute) {
-    return await new Attribute(attribute).save();
+function createAttribute(attribute) {
+    return new Attribute(attribute).save();
 }
 
-async function getAttributeNames(type, nameLike) {
+function getAttributeNames(type, nameLike) {
     nameLike = nameLike.toLowerCase();
 
-    const names = await sql.getColumn(
+    const names = sql.getColumn(
         `SELECT DISTINCT name 
              FROM attributes 
              WHERE isDeleted = 0

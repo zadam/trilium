@@ -6,8 +6,8 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/search');
 
-async function searchNotes(req) {
-    const {count, results} = await searchService.searchNotes(req.params.searchString);
+function searchNotes(req) {
+    const {count, results} = searchService.searchNotes(req.params.searchString);
 
     try {
         return {
@@ -23,8 +23,8 @@ async function searchNotes(req) {
     }
 }
 
-async function searchFromNote(req) {
-    const note = await repository.getNote(req.params.noteId);
+function searchFromNote(req) {
+    const note = repository.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} has not been found.`];
@@ -38,7 +38,7 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not search note.`]
     }
 
-    const json = await note.getJsonContent();
+    const json = note.getJsonContent();
 
     if (!json || !json.searchString) {
         return [];
@@ -50,9 +50,9 @@ async function searchFromNote(req) {
         if (json.searchString.startsWith('=')) {
             const relationName = json.searchString.substr(1).trim();
 
-            noteIds = await searchFromRelation(note, relationName);
+            noteIds = searchFromRelation(note, relationName);
         } else {
-            noteIds = await searchService.searchForNoteIds(json.searchString);
+            noteIds = searchService.searchForNoteIds(json.searchString);
         }
     }
     catch (e) {
@@ -71,8 +71,8 @@ async function searchFromNote(req) {
     return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
 }
 
-async function searchFromRelation(note, relationName) {
-    const scriptNote = await note.getRelationTarget(relationName);
+function searchFromRelation(note, relationName) {
+    const scriptNote = note.getRelationTarget(relationName);
 
     if (!scriptNote) {
         log.info(`Search note's relation ${relationName} has not been found.`);
@@ -92,7 +92,7 @@ async function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const result = await scriptService.executeNote(scriptNote, { originEntity: note });
+    const result = scriptService.executeNote(scriptNote, { originEntity: note });
 
     if (!Array.isArray(result)) {
         log.info(`Result from ${scriptNote.noteId} is not an array.`);

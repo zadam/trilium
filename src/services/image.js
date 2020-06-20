@@ -15,7 +15,7 @@ const sanitizeFilename = require('sanitize-filename');
 const noteRevisionService = require('./note_revisions.js');
 const isSvg = require('is-svg');
 
-async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
+function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const origImageFormat = getImageType(uploadBuffer);
 
     if (origImageFormat && ["webp", "svg"].includes(origImageFormat.ext)) {
@@ -23,7 +23,7 @@ async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
         shrinkImageSwitch = false;
     }
 
-    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer, originalName) : uploadBuffer;
+    const finalImageBuffer = shrinkImageSwitch ? shrinkImage(uploadBuffer, originalName) : uploadBuffer;
 
     const imageFormat = getImageType(finalImageBuffer);
 
@@ -50,34 +50,34 @@ function getImageMimeFromExtension(ext) {
     return 'image/' + (ext === 'svg' ? 'svg+xml' : ext);
 }
 
-async function updateImage(noteId, uploadBuffer, originalName) {
+function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
-    const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, true);
+    const {buffer, imageFormat} = processImage(uploadBuffer, originalName, true);
 
-    const note = await repository.getNote(noteId);
+    const note = repository.getNote(noteId);
 
-    await noteRevisionService.createNoteRevision(note);
+    noteRevisionService.createNoteRevision(note);
 
     note.mime = getImageMimeFromExtension(imageFormat.ext);
 
-    await note.setContent(buffer);
+    note.setContent(buffer);
 
-    await note.setLabel('originalFileName', originalName);
+    note.setLabel('originalFileName', originalName);
 
-    await noteRevisionService.protectNoteRevisions(note);
+    noteRevisionService.protectNoteRevisions(note);
 }
 
-async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
+function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
     log.info(`Saving image ${originalName}`);
 
-    const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, shrinkImageSwitch);
+    const {buffer, imageFormat} = processImage(uploadBuffer, originalName, shrinkImageSwitch);
 
     const fileName = sanitizeFilename(originalName);
 
-    const parentNote = await repository.getNote(parentNoteId);
+    const parentNote = repository.getNote(parentNoteId);
 
-    const {note} = await noteService.createNewNote({
+    const {note} = noteService.createNewNote({
         parentNoteId,
         title: fileName,
         content: buffer,
@@ -86,7 +86,7 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
 
-    await note.addLabel('originalFileName', originalName);
+    note.addLabel('originalFileName', originalName);
 
     return {
         fileName,
@@ -96,18 +96,18 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
     };
 }
 
-async function shrinkImage(buffer, originalName) {
+function shrinkImage(buffer, originalName) {
     // we do resizing with max (100) quality which will be trimmed during optimization step next
-    const resizedImage = await resize(buffer, 100);
+    const resizedImage = resize(buffer, 100);
     let finalImageBuffer;
 
-    const jpegQuality = await optionService.getOptionInt('imageJpegQuality');
+    const jpegQuality = optionService.getOptionInt('imageJpegQuality');
 
     try {
-        finalImageBuffer = await optimize(resizedImage, jpegQuality);
+        finalImageBuffer = optimize(resizedImage, jpegQuality);
     } catch (e) {
         log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
-        finalImageBuffer = await resize(buffer, jpegQuality);
+        finalImageBuffer = resize(buffer, jpegQuality);
     }
 
     // if resizing & shrinking did not help with size then save the original
@@ -119,10 +119,10 @@ async function shrinkImage(buffer, originalName) {
     return finalImageBuffer;
 }
 
-async function resize(buffer, quality) {
-    const imageMaxWidthHeight = await optionService.getOptionInt('imageMaxWidthHeight');
+function resize(buffer, quality) {
+    const imageMaxWidthHeight = optionService.getOptionInt('imageMaxWidthHeight');
 
-    const image = await jimp.read(buffer);
+    const image = jimp.read(buffer);
 
     if (image.bitmap.width > image.bitmap.height && image.bitmap.width > imageMaxWidthHeight) {
         image.resize(imageMaxWidthHeight, jimp.AUTO);
@@ -139,8 +139,8 @@ async function resize(buffer, quality) {
     return image.getBufferAsync(jimp.MIME_JPEG);
 }
 
-async function optimize(buffer, jpegQuality) {
-    return await imagemin.buffer(buffer, {
+function optimize(buffer, jpegQuality) {
+    return imagemin.buffer(buffer, {
         plugins: [
             imageminMozJpeg({
                 quality: jpegQuality

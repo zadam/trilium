@@ -37,7 +37,7 @@ let httpServer;
 
 async function startTrilium() {
     const usedPort = await port;
-    const usedHost = await host;
+    const usedHost = host;
 
     app.set('port', usedPort);
     app.set('host', usedHost);
@@ -98,10 +98,11 @@ async function startTrilium() {
                     throw error;
             }
         }
-    );
+    )
+
     httpServer.on('listening', () => debug('Listening on port' + httpServer.address().port));
 
-    sqlInit.dbReady.then(() => ws.init(httpServer, sessionParser));
+    ws.init(httpServer, sessionParser);
 
     if (utils.isElectron()) {
         const electronRouting = require('./routes/electron');

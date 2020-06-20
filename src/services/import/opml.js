@@ -10,8 +10,8 @@ const protectedSessionService = require('../protected_session');
  * @param {Note} parentNote
  * @return {Promise<*[]|*>}
  */
-async function importOpml(taskContext, fileBuffer, parentNote) {
-    const xml = await new Promise(function(resolve, reject)
+function importOpml(taskContext, fileBuffer, parentNote) {
+    const xml = new Promise(function(resolve, reject)
     {
         parseString(fileBuffer, function (err, result) {
             if (err) {
@@ -29,7 +29,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
 
     const opmlVersion = parseInt(xml.opml.$.version);
 
-    async function importOutline(outline, parentNoteId) {
+    function importOutline(outline, parentNoteId) {
         let title, content;
 
         if (opmlVersion === 1) {
@@ -44,7 +44,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
 
-        const {note} = await noteService.createNewNote({
+        const {note} = noteService.createNewNote({
             parentNoteId,
             title,
             content,
@@ -55,7 +55,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
         taskContext.increaseProgressCount();
 
         for (const childOutline of (outline.outline || [])) {
-            await importOutline(childOutline, note.noteId);
+            importOutline(childOutline, note.noteId);
         }
 
         return note;
@@ -65,7 +65,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
     let returnNote = null;
 
     for (const outline of outlines) {
-        const note = await importOutline(outline, parentNote.noteId);
+        const note = importOutline(outline, parentNote.noteId);
 
         // first created note will be activated after import
         returnNote = returnNote || note;

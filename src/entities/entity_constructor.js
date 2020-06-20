@@ -1,3 +1,4 @@
+const repository = require('../services/repository');
 const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
@@ -5,7 +6,6 @@ const Attribute = require('../entities/attribute');
 const RecentNote = require('../entities/recent_note');
 const ApiToken = require('../entities/api_token');
 const Option = require('../entities/option');
-const repository = require('../services/repository');
 const cls = require('../services/cls');
 
 const ENTITY_NAME_TO_ENTITY = {
@@ -71,5 +71,3 @@ module.exports = {
     createEntityFromRow,
     getEntityFromEntityName
 };
-
-repository.setEntityConstructor(module.exports);

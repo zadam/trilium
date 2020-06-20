@@ -7,9 +7,9 @@ const syncTableService = require('./sync_table');
 const protectedSessionService = require('./protected_session');
 const noteCacheService = require('./note_cache/note_cache.js');
 
-async function getNotes(noteIds) {
+function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
-    const notes = await sql.getManyRows(`
+    const notes = sql.getManyRows(`
         SELECT 
           noteId,
           title,
@@ -23,7 +23,7 @@ async function getNotes(noteIds) {
 
     protectedSessionService.decryptNotes(notes);
 
-    await noteCacheService.loadedPromise;
+    noteCacheService.loadedPromise;
 
     notes.forEach(note => {
         note.isProtected = !!note.isProtected
@@ -32,7 +32,7 @@ async function getNotes(noteIds) {
     return notes;
 }
 
-async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
+function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (childNoteId === 'root') {
         return { success: false, message: 'Cannot move root note.'};
     }
@@ -42,7 +42,7 @@ async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         return { success: false, message: 'Cannot move anything into root parent.' };
     }
 
-    const existing = await getExistingBranch(parentNoteId, childNoteId);
+    const existing = getExistingBranch(parentNoteId, childNoteId);
 
     if (existing && (branchId === null || existing.branchId !== branchId)) {
         return {
@@ -51,7 +51,7 @@ async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         };
     }
 
-    if (!await checkTreeCycle(parentNoteId, childNoteId)) {
+    if (!checkTreeCycle(parentNoteId, childNoteId)) {
         return {
             success: false,
             message: 'Moving/cloning note here would create cycle.'
@@ -61,20 +61,20 @@ async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     return { success: true };
 }
 
-async function getExistingBranch(parentNoteId, childNoteId) {
-    return await repository.getEntity('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+function getExistingBranch(parentNoteId, childNoteId) {
+    return repository.getEntity('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**
  * Tree cycle can be created when cloning or when moving existing clone. This method should detect both cases.
  */
-async function checkTreeCycle(parentNoteId, childNoteId) {
+function checkTreeCycle(parentNoteId, childNoteId) {
     const subtreeNoteIds = [];
 
     // we'll load the whole sub tree - because the cycle can start in one of the notes in the sub tree
-    await loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
+    loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
 
-    async function checkTreeCycleInner(parentNoteId) {
+    function checkTreeCycleInner(parentNoteId) {
         if (parentNoteId === 'root') {
             return true;
         }
@@ -85,10 +85,10 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
             return false;
         }
 
-        const parentNoteIds = await sql.getColumn("SELECT DISTINCT parentNoteId FROM branches WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
+        const parentNoteIds = sql.getColumn("SELECT DISTINCT parentNoteId FROM branches WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
 
         for (const pid of parentNoteIds) {
-            if (!await checkTreeCycleInner(pid)) {
+            if (!checkTreeCycleInner(pid)) {
                 return false;
             }
         }
@@ -96,22 +96,22 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
         return true;
     }
 
-    return await checkTreeCycleInner(parentNoteId);
+    return checkTreeCycleInner(parentNoteId);
 }
 
-async function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
+function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     subtreeNoteIds.push(parentNoteId);
 
-    const children = await sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
+    const children = sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
 
     for (const childNoteId of children) {
-        await loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
+        loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
     }
 }
 
-async function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
-    await sql.transactional(async () => {
-        const notes = await sql.getRows(
+function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
+    sql.transactional(() => {
+        const notes = sql.getRows(
             `SELECT branches.branchId, notes.noteId, title, isProtected, 
                           CASE WHEN COUNT(childBranches.noteId) > 0 THEN 1 ELSE 0 END AS hasChildren 
                    FROM notes 
@@ -135,28 +135,28 @@ async function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
         let position = 10;
 
         for (const note of notes) {
-            await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
+            sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, note.branchId]);
 
             position += 10;
         }
 
-        await syncTableService.addNoteReorderingSync(parentNoteId);
+        syncTableService.addNoteReorderingSync(parentNoteId);
     });
 }
 
 /**
  * @deprecated - this will be removed in the future
  */
-async function setNoteToParent(noteId, prefix, parentNoteId) {
-    const parentNote = await repository.getNote(parentNoteId);
+function setNoteToParent(noteId, prefix, parentNoteId) {
+    const parentNote = repository.getNote(parentNoteId);
 
     if (parentNote && parentNote.isDeleted) {
         throw new Error(`Cannot move note to deleted parent note ${parentNoteId}`);
     }
 
     // case where there might be more such branches is ignored. It's expected there should be just one
-    const branch = await repository.getEntity("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
+    const branch = repository.getEntity("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
 
     if (branch) {
         if (!parentNoteId) {
@@ -167,23 +167,23 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
             branch.prefix = prefix;
         }
 
-        await branch.save();
+        branch.save();
     }
     else if (parentNoteId) {
-        const note = await repository.getNote(noteId);
+        const note = repository.getNote(noteId);
 
         if (note.isDeleted) {
             throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
         }
 
-        const branch = await repository.getEntity('SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
+        const branch = repository.getEntity('SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
 
         if (branch) {
             branch.prefix = prefix;
-            await branch.save();
+            branch.save();
         }
         else {
-            await new Branch({
+            new Branch({
                 noteId: noteId,
                 parentNoteId: parentNoteId,
                 prefix: prefix

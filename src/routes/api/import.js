@@ -12,7 +12,7 @@ const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
 
-async function importToBranch(req) {
+function importToBranch(req) {
     const {parentNoteId} = req.params;
     const {taskId, last} = req.body;
 
@@ -31,7 +31,7 @@ async function importToBranch(req) {
         return [400, "No file has been uploaded"];
     }
 
-    const parentNote = await repository.getNote(parentNoteId);
+    const parentNote = repository.getNote(parentNoteId);
 
     if (!parentNote) {
         return [404, `Note ${parentNoteId} doesn't exist.`];
@@ -49,19 +49,19 @@ async function importToBranch(req) {
 
     try {
         if (extension === '.tar' && options.explodeArchives) {
-            note = await tarImportService.importTar(taskContext, file.buffer, parentNote);
+            note = tarImportService.importTar(taskContext, file.buffer, parentNote);
         } else if (extension === '.zip' && options.explodeArchives) {
             const start = Date.now();
 
-            note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
+            note = zipImportService.importZip(taskContext, file.buffer, parentNote);
 
             console.log("Import took", Date.now() - start, "ms");
         } else if (extension === '.opml' && options.explodeArchives) {
-            note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
+            note = opmlImportService.importOpml(taskContext, file.buffer, parentNote);
         } else if (extension === '.enex' && options.explodeArchives) {
-            note = await enexImportService.importEnex(taskContext, file, parentNote);
+            note = enexImportService.importEnex(taskContext, file, parentNote);
         } else {
-            note = await singleImportService.importSingleFile(taskContext, file, parentNote);
+            note = singleImportService.importSingleFile(taskContext, file, parentNote);
         }
     }
     catch (e) {

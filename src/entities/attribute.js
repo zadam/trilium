@@ -1,7 +1,6 @@
 "use strict";
 
 const Entity = require('./entity');
-const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 const sql = require('../services/sql');
 
@@ -44,14 +43,14 @@ class Attribute extends Entity {
     /**
      * @returns {Promise<Note|null>}
      */
-    async getNote() {
-        return await repository.getNote(this.noteId);
+    getNote() {
+        return this.repository.getNote(this.noteId);
     }
 
     /**
      * @returns {Promise<Note|null>}
      */
-    async getTargetNote() {
+    getTargetNote() {
         if (this.type !== 'relation') {
             throw new Error(`Attribute ${this.attributeId} is not relation`);
         }
@@ -60,7 +59,7 @@ class Attribute extends Entity {
             return null;
         }
 
-        return await repository.getNote(this.value);
+        return this.repository.getNote(this.value);
     }
 
     /**
@@ -70,7 +69,7 @@ class Attribute extends Entity {
         return this.type === 'label-definition' || this.type === 'relation-definition';
     }
 
-    async beforeSaving() {
+    beforeSaving() {
         if (!this.value) {
             if (this.type === 'relation') {
                 throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
@@ -81,7 +80,7 @@ class Attribute extends Entity {
         }
 
         if (this.position === undefined) {
-            this.position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
+            this.position = 1 + sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
         }
 
         if (!this.isInheritable) {

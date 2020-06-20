@@ -6,11 +6,11 @@ const scriptService = require('../services/script');
 function register(router) {
     // explicitly no CSRF middleware since it's meant to allow integration from external services
 
-    router.all('/custom/:path*', async (req, res, next) => {
+    router.all('/custom/:path*', (req, res, next) => {
         // express puts content after first slash into 0 index element
         const path = req.params.path + req.params[0];
 
-        const attrs = await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+        const attrs = repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
 
         for (const attr of attrs) {
             const regex = new RegExp(attr.value);
@@ -29,12 +29,12 @@ function register(router) {
             }
 
             if (attr.name === 'customRequestHandler') {
-                const note = await attr.getNote();
+                const note = attr.getNote();
 
                 log.info(`Handling custom request "${path}" with note ${note.noteId}`);
 
                 try {
-                    await scriptService.executeNote(note, {
+                    scriptService.executeNote(note, {
                         pathParams: match.slice(1),
                         req,
                         res
@@ -47,7 +47,7 @@ function register(router) {
                 }
             }
             else if (attr.name === 'customResourceProvider') {
-                await fileUploadService.downloadNoteFile(attr.noteId, res);
+                fileUploadService.downloadNoteFile(attr.noteId, res);
             }
             else {
                 throw new Error("Unrecognized attribute name " + attr.name);

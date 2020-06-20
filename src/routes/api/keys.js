@@ -3,12 +3,12 @@
 const keyboardActions = require('../../services/keyboard_actions');
 const sql = require('../../services/sql');
 
-async function getKeyboardActions() {
-    return await keyboardActions.getKeyboardActions();
+function getKeyboardActions() {
+    return keyboardActions.getKeyboardActions();
 }
 
-async function getShortcutsForNotes() {
-    return await sql.getMap(`
+function getShortcutsForNotes() {
+    return sql.getMap(`
         SELECT value, noteId
         FROM attributes
         WHERE isDeleted = 0

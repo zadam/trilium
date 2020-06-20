@@ -7,23 +7,23 @@ const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const path = require('path');
 
-async function getNoteRevisions(req) {
-    return await repository.getEntities(`
+function getNoteRevisions(req) {
+    return repository.getEntities(`
         SELECT * FROM note_revisions 
         WHERE noteId = ? AND isErased = 0
         ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }
 
-async function getNoteRevision(req) {
-    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+function getNoteRevision(req) {
+    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.type === 'file') {
         if (noteRevision.isStringNote()) {
-            noteRevision.content = (await noteRevision.getContent()).substr(0, 10000);
+            noteRevision.content = (noteRevision.getContent()).substr(0, 10000);
         }
     }
     else {
-        noteRevision.content = await noteRevision.getContent();
+        noteRevision.content = noteRevision.getContent();
 
         if (noteRevision.content && noteRevision.type === 'image') {
             noteRevision.content = noteRevision.content.toString('base64');
@@ -57,8 +57,8 @@ function getRevisionFilename(noteRevision) {
     return filename;
 }
 
-async function downloadNoteRevision(req, res) {
-    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+function downloadNoteRevision(req, res) {
+    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.noteId !== req.params.noteId) {
         return res.status(400).send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
@@ -73,55 +73,55 @@ async function downloadNoteRevision(req, res) {
     res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     res.setHeader('Content-Type', noteRevision.mime);
 
-    res.send(await noteRevision.getContent());
+    res.send(noteRevision.getContent());
 }
 
 /**
  * @param {NoteRevision} noteRevision
  */
-async function eraseOneNoteRevision(noteRevision) {
+function eraseOneNoteRevision(noteRevision) {
     noteRevision.isErased = true;
     noteRevision.title = null;
-    await noteRevision.setContent(null);
-    await noteRevision.save();
+    noteRevision.setContent(null);
+    noteRevision.save();
 }
 
-async function eraseAllNoteRevisions(req) {
-    const noteRevisionsToErase = await repository.getEntities(
+function eraseAllNoteRevisions(req) {
+    const noteRevisionsToErase = repository.getEntities(
         'SELECT * FROM note_revisions WHERE isErased = 0 AND noteId = ?',
         [req.params.noteId]);
 
     for (const noteRevision of noteRevisionsToErase) {
-        await eraseOneNoteRevision(noteRevision);
+        eraseOneNoteRevision(noteRevision);
     }
 }
 
-async function eraseNoteRevision(req) {
-    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+function eraseNoteRevision(req) {
+    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision && !noteRevision.isErased) {
-        await eraseOneNoteRevision(noteRevision);
+        eraseOneNoteRevision(noteRevision);
     }
 }
 
-async function restoreNoteRevision(req) {
-    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+function restoreNoteRevision(req) {
+    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision && !noteRevision.isErased) {
-        const note = await noteRevision.getNote();
+        const note = noteRevision.getNote();
 
-        await noteRevisionService.createNoteRevision(note);
+        noteRevisionService.createNoteRevision(note);
 
         note.title = noteRevision.title;
-        await note.setContent(await noteRevision.getContent());
-        await note.save();
+        note.setContent(noteRevision.getContent());
+        note.save();
     }
 }
 
-async function getEditedNotesOnDate(req) {
+function getEditedNotesOnDate(req) {
     const date = utils.sanitizeSql(req.params.date);
 
-    const notes = await repository.getEntities(`
+    const notes = repository.getEntities(`
         SELECT notes.*
         FROM notes
         WHERE noteId IN (

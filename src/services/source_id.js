@@ -5,13 +5,13 @@ const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const cls = require('./cls');
 
-async function saveSourceId(sourceId) {
-    await sql.insert("source_ids", {
+function saveSourceId(sourceId) {
+    sql.insert("source_ids", {
         sourceId: sourceId,
         utcDateCreated: dateUtils.utcNowDateTime()
     });
 
-    await refreshSourceIds();
+    refreshSourceIds();
 }
 
 function createSourceId() {
@@ -21,16 +21,16 @@ function createSourceId() {
     return sourceId;
 }
 
-async function generateSourceId() {
+function generateSourceId() {
     const sourceId = createSourceId();
 
-    await saveSourceId(sourceId);
+    saveSourceId(sourceId);
 
     return sourceId;
 }
 
-async function refreshSourceIds() {
-    const sourceIdsArr = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY utcDateCreated DESC");
+function refreshSourceIds() {
+    const sourceIdsArr = sql.getColumn("SELECT sourceId FROM source_ids ORDER BY utcDateCreated DESC");
 
     allSourceIds = {};
 
@@ -48,7 +48,7 @@ function isLocalSourceId(srcId) {
 const currentSourceId = createSourceId();
 
 // this will also refresh source IDs
-sqlInit.dbReady.then(cls.wrap(() => saveSourceId(currentSourceId)));
+cls.wrap(() => saveSourceId(currentSourceId));
 
 function getCurrentSourceId() {
     return currentSourceId;

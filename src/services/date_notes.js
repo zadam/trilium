@@ -13,8 +13,8 @@ const DATE_LABEL = 'dateNote';
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-async function createNote(parentNoteId, noteTitle) {
-    return (await noteService.createNewNote({
+function createNote(parentNoteId, noteTitle) {
+    return (noteService.createNewNote({
         parentNoteId: parentNoteId,
         title: noteTitle,
         content: '',
@@ -23,20 +23,20 @@ async function createNote(parentNoteId, noteTitle) {
     })).note;
 }
 
-async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await repository.getEntity(`SELECT notes.* FROM notes JOIN branches USING(noteId) 
+function getNoteStartingWith(parentNoteId, startsWith) {
+    return repository.getEntity(`SELECT notes.* FROM notes JOIN branches USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
                                     AND branches.isDeleted = 0`, [parentNoteId]);
 }
 
 /** @return {Promise<Note>} */
-async function getRootCalendarNote() {
+function getRootCalendarNote() {
     // some caching here could be useful (e.g. in CLS)
-    let rootNote = await attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
+    let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {
-        rootNote = (await noteService.createNewNote({
+        rootNote = (noteService.createNewNote({
             parentNoteId: 'root',
             title: 'Calendar',
             target: 'into',
@@ -45,36 +45,36 @@ async function getRootCalendarNote() {
             content: ''
         })).note;
 
-        await attributeService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
-        await attributeService.createLabel(rootNote.noteId, 'sorted');
+        attributeService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
+        attributeService.createLabel(rootNote.noteId, 'sorted');
     }
 
     return rootNote;
 }
 
 /** @return {Promise<Note>} */
-async function getYearNote(dateStr, rootNote) {
+function getYearNote(dateStr, rootNote) {
     if (!rootNote) {
-        rootNote = await getRootCalendarNote();
+        rootNote = getRootCalendarNote();
     }
 
     const yearStr = dateStr.substr(0, 4);
 
-    let yearNote = await attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
+    let yearNote = attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
     if (!yearNote) {
-        yearNote = await getNoteStartingWith(rootNote.noteId, yearStr);
+        yearNote = getNoteStartingWith(rootNote.noteId, yearStr);
 
         if (!yearNote) {
-            yearNote = await createNote(rootNote.noteId, yearStr);
+            yearNote = createNote(rootNote.noteId, yearStr);
 
-            await attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
-            await attributeService.createLabel(yearNote.noteId, 'sorted');
+            attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
+            attributeService.createLabel(yearNote.noteId, 'sorted');
 
-            const yearTemplateAttr = await rootNote.getOwnedAttribute('relation', 'yearTemplate');
+            const yearTemplateAttr = rootNote.getOwnedAttribute('relation', 'yearTemplate');
 
             if (yearTemplateAttr) {
-                await attributeService.createRelation(yearNote.noteId, 'template', yearTemplateAttr.value);
+                attributeService.createRelation(yearNote.noteId, 'template', yearTemplateAttr.value);
             }
         }
     }
@@ -82,8 +82,8 @@ async function getYearNote(dateStr, rootNote) {
     return yearNote;
 }
 
-async function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
-    const pattern = await rootNote.getOwnedLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
+function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
+    const pattern = rootNote.getOwnedLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
     const monthName = MONTHS[dateObj.getMonth()];
 
     return pattern
@@ -92,35 +92,35 @@ async function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
 }
 
 /** @return {Promise<Note>} */
-async function getMonthNote(dateStr, rootNote) {
+function getMonthNote(dateStr, rootNote) {
     if (!rootNote) {
-        rootNote = await getRootCalendarNote();
+        rootNote = getRootCalendarNote();
     }
 
     const monthStr = dateStr.substr(0, 7);
     const monthNumber = dateStr.substr(5, 2);
 
-    let monthNote = await attributeService.getNoteWithLabel(MONTH_LABEL, monthStr);
+    let monthNote = attributeService.getNoteWithLabel(MONTH_LABEL, monthStr);
 
     if (!monthNote) {
-        const yearNote = await getYearNote(dateStr, rootNote);
+        const yearNote = getYearNote(dateStr, rootNote);
 
-        monthNote = await getNoteStartingWith(yearNote.noteId, monthNumber);
+        monthNote = getNoteStartingWith(yearNote.noteId, monthNumber);
 
         if (!monthNote) {
             const dateObj = dateUtils.parseLocalDate(dateStr);
 
-            const noteTitle = await getMonthNoteTitle(rootNote, monthNumber, dateObj);
+            const noteTitle = getMonthNoteTitle(rootNote, monthNumber, dateObj);
 
-            monthNote = await createNote(yearNote.noteId, noteTitle);
+            monthNote = createNote(yearNote.noteId, noteTitle);
 
-            await attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
-            await attributeService.createLabel(monthNote.noteId, 'sorted');
+            attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
+            attributeService.createLabel(monthNote.noteId, 'sorted');
 
-            const monthTemplateAttr = await rootNote.getOwnedAttribute('relation', 'monthTemplate');
+            const monthTemplateAttr = rootNote.getOwnedAttribute('relation', 'monthTemplate');
 
             if (monthTemplateAttr) {
-                await attributeService.createRelation(monthNote.noteId, 'template', monthTemplateAttr.value);
+                attributeService.createRelation(monthNote.noteId, 'template', monthTemplateAttr.value);
             }
         }
     }
@@ -128,8 +128,8 @@ async function getMonthNote(dateStr, rootNote) {
     return monthNote;
 }
 
-async function getDateNoteTitle(rootNote, dayNumber, dateObj) {
-    const pattern = await rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
+function getDateNoteTitle(rootNote, dayNumber, dateObj) {
+    const pattern = rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
     const weekDay = DAYS[dateObj.getDay()];
 
     return pattern
@@ -140,31 +140,31 @@ async function getDateNoteTitle(rootNote, dayNumber, dateObj) {
 }
 
 /** @return {Promise<Note>} */
-async function getDateNote(dateStr) {
-    const rootNote = await getRootCalendarNote();
+function getDateNote(dateStr) {
+    const rootNote = getRootCalendarNote();
 
     const dayNumber = dateStr.substr(8, 2);
 
-    let dateNote = await attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
+    let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
     if (!dateNote) {
-        const monthNote = await getMonthNote(dateStr, rootNote);
+        const monthNote = getMonthNote(dateStr, rootNote);
 
-        dateNote = await getNoteStartingWith(monthNote.noteId, dayNumber);
+        dateNote = getNoteStartingWith(monthNote.noteId, dayNumber);
 
         if (!dateNote) {
             const dateObj = dateUtils.parseLocalDate(dateStr);
 
-            const noteTitle = await getDateNoteTitle(rootNote, dayNumber, dateObj);
+            const noteTitle = getDateNoteTitle(rootNote, dayNumber, dateObj);
 
-            dateNote = await createNote(monthNote.noteId, noteTitle);
+            dateNote = createNote(monthNote.noteId, noteTitle);
 
-            await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
+            attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
 
-            const dateTemplateAttr = await rootNote.getOwnedAttribute('relation', 'dateTemplate');
+            const dateTemplateAttr = rootNote.getOwnedAttribute('relation', 'dateTemplate');
 
             if (dateTemplateAttr) {
-                await attributeService.createRelation(dateNote.noteId, 'template', dateTemplateAttr.value);
+                attributeService.createRelation(dateNote.noteId, 'template', dateTemplateAttr.value);
             }
         }
     }
@@ -172,8 +172,8 @@ async function getDateNote(dateStr) {
     return dateNote;
 }
 
-async function getTodayNote() {
-    return await getDateNote(dateUtils.localNowDate());
+function getTodayNote() {
+    return getDateNote(dateUtils.localNowDate());
 }
 
 function getStartOfTheWeek(date, startOfTheWeek) {
@@ -193,7 +193,7 @@ function getStartOfTheWeek(date, startOfTheWeek) {
     return new Date(date.setDate(diff));
 }
 
-async function getWeekNote(dateStr, options = {}) {
+function getWeekNote(dateStr, options = {}) {
     const startOfTheWeek = options.startOfTheWeek || "monday";
 
     const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);

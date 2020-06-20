@@ -5,12 +5,12 @@ const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
 const noteCacheService = require('../../services/note_cache/note_cache.js');
 
-async function getRecentChanges(req) {
+function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
 
     let recentChanges = [];
 
-    const noteRevisions = await sql.getRows(`
+    const noteRevisions = sql.getRows(`
         SELECT 
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
@@ -31,7 +31,7 @@ async function getRecentChanges(req) {
         }
     }
 
-    const notes = await sql.getRows(`
+    const notes = sql.getRows(`
         SELECT
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
@@ -75,7 +75,7 @@ async function getRecentChanges(req) {
             else {
                 const deleteId = change.current_deleteId;
 
-                const undeletedParentBranches = await noteService.getUndeletedParentBranches(change.noteId, deleteId);
+                const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
 
                 // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
                 change.canBeUndeleted = undeletedParentBranches.length > 0;

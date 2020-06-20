@@ -8,8 +8,8 @@ const optionService = require('../services/options');
 const log = require('../services/log');
 const env = require('../services/env');
 
-async function index(req, res) {
-    const options = await optionService.getOptionsMap();
+function index(req, res) {
+    const options = optionService.getOptionsMap();
 
     let view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
 
@@ -22,17 +22,17 @@ async function index(req, res) {
         mainFontSize: parseInt(options.mainFontSize),
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),
-        sourceId: await sourceIdService.generateSourceId(),
-        maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
+        sourceId: sourceIdService.generateSourceId(),
+        maxSyncIdAtLoad: sql.getValue("SELECT MAX(id) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,
-        appCssNoteIds: await getAppCssNoteIds(),
+        appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),
         isMainWindow: !req.query.extra
     });
 }
 
-async function getAppCssNoteIds() {
-    return (await attributeService.getNotesWithLabels(['appCss', 'appTheme']))
+function getAppCssNoteIds() {
+    return (attributeService.getNotesWithLabels(['appCss', 'appTheme']))
         .map(note => note.noteId);
 }
 
