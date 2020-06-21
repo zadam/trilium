@@ -1,7 +1,6 @@
 "use strict";
 
 const log = require('./log');
-const cls = require('./cls');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir');
 
@@ -72,21 +71,6 @@ function stmt(sql) {
     }
 
     return statementCache[sql];
-}
-
-function beginTransaction() {
-    // DEFERRED means that the transaction does not actually start until the database is first accessed.
-    // Internally, the BEGIN DEFERRED statement merely sets a flag on the database connection that turns off
-    // the automatic commit that would normally occur when the last statement finishes.
-    return stmt("BEGIN DEFERRED").run();
-}
-
-function commit() {
-    return stmt("COMMIT").run();
-}
-
-function rollback() {
-    return stmt("ROLLBACK").run();
 }
 
 function getRow(query, params = []) {
@@ -213,7 +197,9 @@ function wrap(query, func) {
 function transactional(func) {
     const ret = dbConnection.transaction(func).deferred();
 
-    require('./ws.js').sendPingToAllClients();
+    if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
+        require('./ws.js').sendTransactionSyncsToAllClients();
+    }
 
     return ret;
 }

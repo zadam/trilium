@@ -7,7 +7,6 @@ const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
 
 let webSocketServer;
-let lastAcceptedSyncIds = {};
 
 function init(httpServer, sessionParser) {
     webSocketServer = new WebSocket.Server({
@@ -28,8 +27,6 @@ function init(httpServer, sessionParser) {
     webSocketServer.on('connection', (ws, req) => {
         ws.id = utils.randomString(10);
 
-        lastAcceptedSyncIds[ws.id] = 0;
-
         console.log(`websocket client connected`);
 
         ws.on('message', async messageJson => {
@@ -39,8 +36,6 @@ function init(httpServer, sessionParser) {
                 log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
             }
             else if (message.type === 'ping') {
-                lastAcceptedSyncIds[ws.id] = message.lastSyncId;
-
                 await syncMutexService.doExclusively(() => sendPing(ws));
             }
             else {
@@ -97,9 +92,7 @@ function fillInAdditionalProperties(sync) {
     }
 }
 
-function sendPing(client) {
-    const syncRows = cls.getSyncRows();
-
+function sendPing(client, syncRows = []) {
     for (const sync of syncRows) {
         try {
             fillInAdditionalProperties(sync);
@@ -119,10 +112,12 @@ function sendPing(client) {
     });
 }
 
-function sendPingToAllClients() {
+function sendTransactionSyncsToAllClients() {
     if (webSocketServer) {
+        const syncRows = cls.getAndClearSyncRows();
+
         webSocketServer.clients.forEach(function each(client) {
-           sendPing(client);
+           sendPing(client, syncRows);
         });
     }
 }
@@ -140,5 +135,5 @@ module.exports = {
     sendMessageToAllClients,
     syncPullInProgress,
     syncPullFinished,
-    sendPingToAllClients
+    sendTransactionSyncsToAllClients
 };

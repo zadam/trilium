@@ -33,8 +33,12 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function getSyncRows() {
-    return namespace.get('syncRows') || [];
+function getAndClearSyncRows() {
+    const syncRows = namespace.get('syncRows') || [];
+
+    namespace.set('syncRows', []);
+
+    return syncRows;
 }
 
 function addSyncRow(syncRow) {
@@ -68,7 +72,7 @@ module.exports = {
     disableEntityEvents,
     isEntityEventsDisabled,
     reset,
-    getSyncRows,
+    getAndClearSyncRows,
     addSyncRow,
     getEntityFromCache,
     setEntityToCache
