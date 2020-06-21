@@ -37,8 +37,7 @@ const ALLOWED_OPTIONS = new Set([
     'rightPaneWidth',
     'leftPaneVisible',
     'rightPaneVisible',
-    'nativeTitleBarVisible',
-    'treeNoteTitleTooltipEnabled'
+    'nativeTitleBarVisible'
 ]);
 
 async function getOptions() {

@@ -84,8 +84,7 @@ const defaultOptions = [
     { name: 'nativeTitleBarVisible', value: 'false', isSynced: false },
     { name: 'eraseNotesAfterTimeInSeconds', value: '604800', isSynced: true }, // default is 7 days
     { name: 'hideArchivedNotes_main', value: 'false', isSynced: false },
-    { name: 'hideIncludedImages_main', value: 'true', isSynced: false },
-    { name: 'treeNoteTitleTooltipEnabled', value: 'false', isSynced: false }
+    { name: 'hideIncludedImages_main', value: 'true', isSynced: false }
 ];
 
 async function initStartupOptions() {

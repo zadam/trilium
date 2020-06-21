@@ -52,6 +52,8 @@ function logRows(syncRows) {
         console.debug(utils.now(), "Sync data: ", filteredRows);
     }
 
+    // Source - https://gist.github.com/jtsternberg/c272d7de5b967cec2d3d
+
     var is_colliding = function( $div1, $div2 ) {
         // Div 1 data
         var d1_offset             = $div1.offset();
@@ -80,8 +82,9 @@ function logRows(syncRows) {
                 console.log(e);
                 if(is_colliding($(centerPane), $(e.currentTarget))) {
                     e.currentTarget.title = e.currentTarget.innerText;
+                } else {
+                    e.currentTarget.title = "";
                 }
-                // observer.observe(e.currentTarget);
             }
         }
     );
