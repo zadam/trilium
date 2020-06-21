@@ -79,7 +79,6 @@ function logRows(syncRows) {
     $("span").on("mouseenter", 
         function(e) {
             if (e.currentTarget.className === 'fancytree-title') {
-                console.log(e);
                 if(is_colliding($(centerPane), $(e.currentTarget))) {
                     e.currentTarget.title = e.currentTarget.innerText;
                 } else {

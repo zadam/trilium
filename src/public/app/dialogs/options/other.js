@@ -166,6 +166,5 @@ export default class ProtectedSessionOptions {
 
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
-
     }
 }
