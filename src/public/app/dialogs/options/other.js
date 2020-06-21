@@ -74,7 +74,6 @@ const TPL = `
         <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
         <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
     </div>
-</div>
 </div>`;
 
 export default class ProtectedSessionOptions {
@@ -155,15 +154,6 @@ export default class ProtectedSessionOptions {
 
             return false;
         });
-
-        this.$treeNoteTitleTooltipEnabled = $("#tree-note-title-tooltip-enabled");
-
-        this.$treeNoteTitleTooltipEnabled.on('change', () => {
-            const opts = { 'treeNoteTitleTooltipEnabled': this.$treeNoteTitleTooltipEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
     }
 
     optionsLoaded(options) {
@@ -177,6 +167,5 @@ export default class ProtectedSessionOptions {
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
 
-        this.$treeNoteTitleTooltipEnabled.prop("checked", options['treeNoteTitleTooltipEnabled'] === 'true');
     }
 }
