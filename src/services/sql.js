@@ -211,29 +211,11 @@ function wrap(query, func) {
 }
 
 function transactional(func) {
-    if (dbConnection.inTransaction) {
-        return func();
-    }
+    const ret = dbConnection.transaction(func).deferred();
 
-    try {
-        beginTransaction();
+    require('./ws.js').sendPingToAllClients();
 
-        const ret = func();
-
-        commit();
-
-        // note that sync rows sent from this action will be sent again by scheduled periodic ping
-        require('./ws.js').sendPingToAllClients();
-
-        return ret;
-    }
-    catch (e) {
-        if (dbConnection.inTransaction) {
-            rollback();
-        }
-
-        throw e;
-    }
+    return ret;
 }
 
 module.exports = {
