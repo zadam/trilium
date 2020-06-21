@@ -75,7 +75,10 @@ function stmt(sql) {
 }
 
 function beginTransaction() {
-    return stmt("BEGIN").run();
+    // DEFERRED means that the transaction does not actually start until the database is first accessed.
+    // Internally, the BEGIN DEFERRED statement merely sets a flag on the database connection that turns off
+    // the automatic commit that would normally occur when the last statement finishes.
+    return stmt("BEGIN DEFERRED").run();
 }
 
 function commit() {
@@ -173,8 +176,6 @@ function getColumn(query, params = []) {
 }
 
 function execute(query, params = []) {
-    startTransactionIfNecessary();
-
     return wrap(query, s => s.run(params));
 }
 
@@ -183,14 +184,10 @@ function executeWithoutTransaction(query, params = []) {
 }
 
 function executeMany(query, params) {
-    startTransactionIfNecessary();
-
     getManyRows(query, params);
 }
 
 function executeScript(query) {
-    startTransactionIfNecessary();
-
     return dbConnection.exec(query);
 }
 
@@ -213,31 +210,20 @@ function wrap(query, func) {
     return result;
 }
 
-function startTransactionIfNecessary() {
-    if (!cls.get('isTransactional') || dbConnection.inTransaction) {
-        return;
-    }
-
-    beginTransaction();
-}
-
 function transactional(func) {
-    // if the CLS is already transactional then the whole transaction is handled by higher level transactional() call
-    if (cls.get('isTransactional')) {
+    if (dbConnection.inTransaction) {
         return func();
     }
 
-    cls.set('isTransactional', true); // this signals that transaction will be needed if there's a write operation
-
     try {
+        beginTransaction();
+
         const ret = func();
 
-        if (dbConnection.inTransaction) {
-            commit();
+        commit();
 
-            // note that sync rows sent from this action will be sent again by scheduled periodic ping
-            require('./ws.js').sendPingToAllClients();
-        }
+        // note that sync rows sent from this action will be sent again by scheduled periodic ping
+        require('./ws.js').sendPingToAllClients();
 
         return ret;
     }
@@ -247,9 +233,6 @@ function transactional(func) {
         }
 
         throw e;
-    }
-    finally {
-        cls.namespace.set('isTransactional', false);
     }
 }
 
