@@ -42,7 +42,7 @@ function getAndClearSyncRows() {
 }
 
 function addSyncRow(syncRow) {
-    const syncRows = getSyncRows();
+    const syncRows = namespace.get('syncRows') || [];
 
     syncRows.push(syncRow);
 

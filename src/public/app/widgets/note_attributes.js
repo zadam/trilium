@@ -94,8 +94,8 @@ const TPL = `
     z-index: 1000;
     padding: 10px;
     position: absolute;
-    max-width: 400px;
-    max-height: 500px;
+    max-width: 600px;
+    max-height: 600px;
     overflow: auto;
 }
 
@@ -104,9 +104,61 @@ const TPL = `
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+.attr-edit {
+    width: 100%;
+}
+
+.attr-edit th {
+    text-align: left;
+}
+
+.attr-edit td input {
+    width: 100%;
+}
 </style>
 
 <div class="attr-extras" style="display: none;">
+    <h5>Label detail</h5>
+
+    <table class="attr-edit">
+        <tr>
+            <th>Name:</th>
+            <td><input type="text" class="form-control form-control-sm" /></td>
+        </tr>
+        <tr>
+            <th>Value:</th>
+            <td><input type="text" class="form-control form-control-sm" /></td>
+        </tr>
+        <tr>
+            <th>Inheritable:</th>
+            <td><input type="checkbox" class="form-control form-control-sm" /></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="display: flex; justify-content: space-between">
+                    <div>
+                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                        <button type="submit" class="btn btn-sm btn-secondary">Cancel</button>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br/>
+
+    <h5>Other notes with this label</h5>
+
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="match-value-too">
+        <label class="form-check-label" for="match-value-too">match value too</label>
+    </div>
+
     <div class="attr-extras-title"></div>
     
     <ul class="attr-extras-list"></ul>
@@ -152,11 +204,11 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$attrExtras.hide();
         });
 
-        this.$editor.on('blur', () => {
-            this.save();
-
-            this.$attrExtras.hide();
-        });
+        // this.$editor.on('blur', () => {
+        //     this.save();
+        //
+        //     this.$attrExtras.hide();
+        // });
 
         return this.$widget;
     }
@@ -252,6 +304,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                         + ":"
                     );
                 }
+
+                this.$attrExtrasTitle.hide();
 
                 this.$attrExtrasList.empty();
 
