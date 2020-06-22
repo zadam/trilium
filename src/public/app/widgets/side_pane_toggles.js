@@ -1,7 +1,6 @@
 import options from "../services/options.js";
 import splitService from "../services/split.js";
 import BasicWidget from "./basic_widget.js";
-import { setupNoteTitleTooltip } from './note_tree.js'
 
 const TPL = `
 <div class="hide-in-zen-mode">
@@ -71,7 +70,5 @@ export default class SidePaneToggles extends BasicWidget {
         this.toggleSidebar('right', options.is('rightPaneVisible'));
 
         splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
-
-        setupNoteTitleTooltip();
     }
 }

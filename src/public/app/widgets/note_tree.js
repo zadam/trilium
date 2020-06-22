@@ -249,7 +249,37 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         this.initialized = this.initFancyTree();
 
+        this.setupNoteTitleTooltip();
+
         return this.$widget;
+    }
+
+    setupNoteTitleTooltip() {
+        // the following will dynamically set tree item's tooltip if the whole item's text is not currently visible
+        // if the whole text is visible then no tooltip is show since that's unnecessarily distracting
+        // see https://github.com/zadam/trilium/pull/1120 for discussion
+
+        // code inspired by https://gist.github.com/jtsternberg/c272d7de5b967cec2d3d
+        const isEnclosing = ($container, $sub) => {
+            const conOffset           = $container.offset();
+            const conDistanceFromTop  = conOffset.top + $container.outerHeight(true);
+            const conDistanceFromLeft = conOffset.left + $container.outerWidth(true);
+
+            const subOffset           = $sub.offset();
+            const subDistanceFromTop  = subOffset.top + $sub.outerHeight(true);
+            const subDistanceFromLeft = subOffset.left + $sub.outerWidth(true);
+
+            return conDistanceFromTop > subDistanceFromTop
+                && conOffset.top < subOffset.top
+                && conDistanceFromLeft > subDistanceFromLeft
+                && conOffset.left < subOffset.left;
+        };
+
+        this.$tree.on("mouseenter", "span.fancytree-title", e => {
+            e.currentTarget.title = isEnclosing(this.$tree, $(e.currentTarget))
+                ? ""
+                : e.currentTarget.innerText;
+        });
     }
 
     get hideArchivedNotes() {
@@ -747,7 +777,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         utils.assertArguments(notePath);
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-        /** @var {FancytreeNode} */
+        /** @const {FancytreeNode} */
         let parentNode = null;
 
         const runPath = await treeService.getRunPath(notePath, logErrors);
@@ -1315,46 +1345,4 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         noteCreateService.duplicateNote(node.data.noteId, branch.parentNoteId);
     }
-}
-
-export function setupNoteTitleTooltip() {
-    // Source - https://gist.github.com/jtsternberg/c272d7de5b967cec2d3d
-    var is_colliding = function( $div1, $div2 ) {
-        // Div 1 data
-        var d1_offset             = $div1.offset();
-        var d1_height             = $div1.outerHeight( true );
-        var d1_width              = $div1.outerWidth( true );
-        var d1_distance_from_top  = d1_offset.top + d1_height;
-        var d1_distance_from_left = d1_offset.left + d1_width;
-    
-        // Div 2 data
-        var d2_offset             = $div2.offset();
-        var d2_height             = $div2.outerHeight( true );
-        var d2_width              = $div2.outerWidth( true );
-        var d2_distance_from_top  = d2_offset.top + d2_height;
-        var d2_distance_from_left = d2_offset.left + d2_width;
-    
-        var not_colliding = ( d1_distance_from_top < d2_offset.top 
-            || d1_offset.top > d2_distance_from_top 
-            || d1_distance_from_left < d2_offset.left 
-            || d1_offset.left > d2_distance_from_left );
-    
-        // Return whether it IS colliding
-        return ! not_colliding;
-    };
-
-    // Detects if there is a collision between the note-title and the 
-    // center-pane element
-    let centerPane = document.getElementById("center-pane");
-    $(document).on("mouseenter", "span",
-        function(e) {
-            if (e.currentTarget.className === 'fancytree-title') {
-                if(is_colliding($(centerPane), $(e.currentTarget))) {
-                    e.currentTarget.title = e.currentTarget.innerText;
-                } else {
-                    e.currentTarget.title = "";
-                }
-            }
-        }
-    );
 }
