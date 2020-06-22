@@ -553,8 +553,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
 
-        node.iconTooltip = node.title;
-
         if (node.folder && node.expanded) {
             node.children = await this.prepareChildren(note);
         }
@@ -841,7 +839,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-        node.iconTooltip = node.title;
 
         if (node.isExpanded() !== branch.isExpanded) {
             node.setExpanded(branch.isExpanded, {noEvents: true});
