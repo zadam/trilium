@@ -778,5 +778,6 @@ module.exports = {
     protectNoteRecursively,
     scanForLinks,
     duplicateNote,
-    getUndeletedParentBranches
+    getUndeletedParentBranches,
+    triggerNoteTitleChanged
 };

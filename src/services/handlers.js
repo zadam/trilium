@@ -68,6 +68,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, async ({ entityName, entity 
 
             await note.setContent(await targetNote.getContent());
         }
+        else if (entity.type === 'label' && entity.name === 'sorted') {
+            await treeService.sortNotesAlphabetically(entity.noteId);
+        }
     }
     else if (entityName === 'notes') {
         await runAttachedRelations(entity, 'runOnNoteCreation', entity);

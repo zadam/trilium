@@ -164,9 +164,15 @@ async function changeTitle(req) {
         return [400, `Note ${noteId} is not available for change`];
     }
 
+    const noteTitleChanged = note.title !== title;
+
     note.title = title;
 
     await note.save();
+
+    if (noteTitleChanged) {
+        await noteService.triggerNoteTitleChanged(note);
+    }
 
     return note;
 }
