@@ -1,6 +1,5 @@
 const backupService = require('./backup');
 const sql = require('./sql');
-const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
@@ -74,6 +73,8 @@ function migrate() {
             utils.crash();
         }
     }
+
+    const sqlInit = require('./sql_init');
 
     if (sqlInit.isDbUpToDate()) {
         sqlInit.initDbConnection();

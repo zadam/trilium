@@ -7,30 +7,59 @@ if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);
 }
 
-const logger = require('simple-node-logger').createRollingFileLogger({
-    errorEventName: 'error',
-    logDirectory: dataDir.LOG_DIR,
-    fileNamePattern: 'trilium-<DATE>.log',
-    dateFormat:'YYYY-MM-DD'
-});
+let logFile = null;
+
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+const NEW_LINE = process.platform === "win32" ? '\r\n' : '\n';
+
+let todaysMidnight = null;
+
+initLogFile();
+
+function getTodaysMidnight() {
+    const now = new Date();
+
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function initLogFile() {
+    todaysMidnight = getTodaysMidnight();
+
+    const path = dataDir.LOG_DIR + '/trilium-' + formatDate() + '.log';
+
+    if (logFile) {
+        logFile.end();
+    }
+
+    logFile = fs.createWriteStream(path, {flags: 'a'});
+}
+
+function checkDate(millisSinceMidnight) {
+    if (millisSinceMidnight >= DAY) {
+        initLogFile();
+    }
+}
+
+function log(str) {
+    const millisSinceMidnight = Date.now() - todaysMidnight.getTime();
+
+    checkDate(millisSinceMidnight);
+
+    logFile.write(formatTime(millisSinceMidnight) + ' ' + str + NEW_LINE);
+
+    console.log(str);
+}
 
 function info(message) {
-    // info messages are logged asynchronously
-    setTimeout(() => {
-        console.log(message);
-
-        logger.info(message);
-    }, 0);
+    log(message);
 }
 
 function error(message) {
-    message = "ERROR: " + message;
-
-    // we're using .info() instead of .error() because simple-node-logger emits weird error for showError()
-    // errors are logged synchronously to make sure it doesn't get lost in case of crash
-    logger.info(message);
-
-    console.trace(message);
+    log("ERROR: " + message);
 }
 
 const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets" ];
@@ -46,7 +75,38 @@ function request(req) {
         return;
     }
 
-    logger.info(req.method + " " + req.url);
+    info(req.method + " " + req.url);
+}
+
+function pad(num) {
+    num = Math.floor(num);
+
+    return num < 10 ? ("0" + num) : num.toString();
+}
+
+function padMilli(num) {
+    if (num < 10) {
+        return "00" + num;
+    }
+    else if (num < 100) {
+        return "0" + num;
+    }
+    else {
+        return num.toString();
+    }
+}
+
+function formatTime(millisSinceMidnight) {
+    return pad(millisSinceMidnight / HOUR)
+        + ":" + pad((millisSinceMidnight % HOUR) / MINUTE)
+        + ":" + pad((millisSinceMidnight % MINUTE) / SECOND)
+        + "." + padMilli(millisSinceMidnight % SECOND);
+}
+
+function formatDate() {
+    return pad(todaysMidnight.getFullYear())
+        + "-" + pad(todaysMidnight.getMonth() + 1)
+        + "-" + pad(todaysMidnight.getDate());
 }
 
 module.exports = {

@@ -123,7 +123,12 @@ class Note extends Entity {
             throw new Error(`Cannot set null content to note ${this.noteId}`);
         }
 
-        content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        if (this.isStringNote()) {
+            content = content.toString();
+        }
+        else {
+            content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        }
 
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
