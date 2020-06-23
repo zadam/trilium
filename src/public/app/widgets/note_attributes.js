@@ -74,6 +74,17 @@ const mentionSetup = {
 const TPL = `
 <div class="note-attributes">
 <style>
+.note-attributes-editor {
+    border-top: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--main-border-color) !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    position: relative;
+    top: -8px;
+}
+
 .note-attributes-editor p {
     color: var(--muted-text-color);
     margin-top: 5px !important;
@@ -166,6 +177,58 @@ const TPL = `
     <div class="attr-extras-more-notes"></div>
 </div>
 
+<style>
+    .attr-expander {
+        display: flex; 
+        flex-direction: row; 
+        color: var(--muted-text-color); 
+        font-size: small;
+    }
+    
+    .attr-expander hr {
+        height: 1px;
+        border-color: var(--main-border-color);
+        position: relative;
+        top: 4px;
+        margin-top: 5px;
+        margin-bottom: 0px;
+    }
+    
+    .attr-expander-text {
+        padding-left: 20px;
+        padding-right: 20px;
+        white-space: nowrap;
+    }
+    
+    .attr-expander:hover {
+        cursor: pointer;
+    }
+    
+    .attr-expander:not(.error):hover hr {
+        border-color: black;
+    }
+    
+    .attr-expander:not(.error):hover .attr-expander-text {
+        color: black;
+    }
+    
+    .attr-expander.error .attr-expander-text {
+        color: red;
+    }
+    
+    .attr-expander.error hr {
+        border-color: red;
+    }
+</style>
+
+<div class="attr-expander">
+    <hr class="w-100">
+    
+    <div class="attr-expander-text">5 attributes</div>
+    
+    <hr class="w-100">
+</div>
+
 <div class="note-attributes-editor" tabindex="200"></div>
 </div>
 `;
@@ -191,6 +254,18 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         this.$attrExtrasList = this.$widget.find('.attr-extras-list');
         this.$attrExtrasMoreNotes = this.$widget.find('.attr-extras-more-notes');
         this.initialized = this.initEditor();
+
+        this.$expander = this.$widget.find('.attr-expander');
+        this.$expander.on('click', () => {
+            if (this.$editor.is(":visible")) {
+                this.$editor.slideUp();
+            }
+            else {
+                this.$editor.slideDown();
+            }
+        });
+
+        this.$expanderText = this.$expander.find('.attr-expander-text');
 
         this.$editor.on('keydown', async e => {
             const keycode = (e.keyCode ? e.keyCode : e.which);
@@ -228,11 +303,17 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$widget.removeClass("error");
             this.$widget.removeAttr("title");
 
+            this.$expander.removeClass("error");
+            this.$expanderText.text(attrs.length + ' attributes');
+
             return attrs;
         }
         catch (e) {
             this.$widget.attr("title", e.message);
             this.$widget.addClass("error");
+
+            this.$expander.addClass("error");
+            this.$expanderText.text(e.message);
         }
     }
 
