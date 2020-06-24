@@ -24,7 +24,7 @@ async function importSingleFile(taskContext, file, parentNote) {
         return await importCodeNote(taskContext, file, parentNote);
     }
 
-    if (["image/jpeg", "image/gif", "image/png", "image/webp"].includes(mime)) {
+    if (mime.startsWith("image/")) {
         return await importImage(file, parentNote, taskContext);
     }
 
