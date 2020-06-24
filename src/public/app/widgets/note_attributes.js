@@ -74,23 +74,30 @@ const mentionSetup = {
 const TPL = `
 <div class="note-attributes">
 <style>
+.note-attributes {
+    margin-left: 7px;
+    margin-right: 7px;
+}
+
 .note-attributes-editor {
-    border-top: 0 !important;
-    border-left: 0 !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--main-border-color) !important;
+    border: 0 !important;
     outline: 0 !important;
     box-shadow: none !important;
-    position: relative;
-    top: -8px;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: var(--muted-text-color);
+    max-height: 200px;
+    overflow: auto;
+}
+
+.inherited-attributes {
+    color: var(--muted-text-color);
+    max-height: 200px;
+    overflow: auto;
 }
 
 .note-attributes-editor p {
-    color: var(--muted-text-color);
-    margin-top: 5px !important;
-    margin-bottom: 5px !important;
-    max-height: 100px;
-    overflow: auto;
+    margin: 0 !important;
 }
 
 .note-attributes.error .note-attributes-editor {
@@ -185,13 +192,13 @@ const TPL = `
         font-size: small;
     }
     
-    .attr-expander hr {
+    .note-attributes hr {
         height: 1px;
         border-color: var(--main-border-color);
         position: relative;
         top: 4px;
         margin-top: 5px;
-        margin-bottom: 0px;
+        margin-bottom: 0;
     }
     
     .attr-expander-text {
@@ -221,15 +228,30 @@ const TPL = `
     }
 </style>
 
-<div class="attr-expander">
+<div class="attr-expander attr-owned-expander">
     <hr class="w-100">
     
-    <div class="attr-expander-text">5 attributes</div>
+    <div class="attr-expander-text"></div>
     
     <hr class="w-100">
 </div>
 
-<div class="note-attributes-editor" tabindex="200"></div>
+<div class="attr-display">
+    <div class="note-attributes-editor" tabindex="200"></div>
+    
+    <hr class="w-100 attr-inherited-empty-expander">
+    
+    <div class="attr-expander attr-inherited-expander">
+        <hr class="w-100">
+        
+        <div class="attr-expander-text">5 inherited attributes</div>
+        
+        <hr class="w-100">
+    </div>
+    
+    <div class="inherited-attributes"></div>
+</div>
+
 </div>
 `;
 
@@ -255,17 +277,35 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         this.$attrExtrasMoreNotes = this.$widget.find('.attr-extras-more-notes');
         this.initialized = this.initEditor();
 
-        this.$expander = this.$widget.find('.attr-expander');
-        this.$expander.on('click', () => {
-            if (this.$editor.is(":visible")) {
-                this.$editor.slideUp();
+        this.$attrDisplay = this.$widget.find('.attr-display');
+
+        this.$ownedExpander = this.$widget.find('.attr-owned-expander');
+        this.$ownedExpander.on('click', () => {
+            if (this.$attrDisplay.is(":visible")) {
+                this.$attrDisplay.slideUp(200);
             }
             else {
-                this.$editor.slideDown();
+                this.$attrDisplay.slideDown(200);
             }
         });
 
-        this.$expanderText = this.$expander.find('.attr-expander-text');
+        this.$ownedExpanderText = this.$ownedExpander.find('.attr-expander-text');
+
+        this.$inheritedAttributes = this.$widget.find('.inherited-attributes');
+
+        this.$inheritedExpander = this.$widget.find('.attr-inherited-expander');
+        this.$inheritedExpander.on('click', () => {
+            if (this.$inheritedAttributes.is(":visible")) {
+                this.$inheritedAttributes.slideUp(200);
+            }
+            else {
+                this.$inheritedAttributes.slideDown(200);
+            }
+        });
+
+        this.$inheritedExpanderText = this.$inheritedExpander.find('.attr-expander-text');
+
+        this.$inheritedEmptyExpander = this.$widget.find('.attr-inherited-empty-expander');
 
         this.$editor.on('keydown', async e => {
             const keycode = (e.keyCode ? e.keyCode : e.which);
@@ -303,8 +343,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$widget.removeClass("error");
             this.$widget.removeAttr("title");
 
-            this.$expander.removeClass("error");
-            this.$expanderText.text(attrs.length + ' attributes');
+            this.$ownedExpander.removeClass("error");
+            this.$ownedExpanderText.text(attrs.length + ' owned ' + this.attrPlural(attrs.length));
 
             return attrs;
         }
@@ -312,8 +352,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$widget.attr("title", e.message);
             this.$widget.addClass("error");
 
-            this.$expander.addClass("error");
-            this.$expanderText.text(e.message);
+            this.$ownedExpander.addClass("error");
+            this.$ownedExpanderText.text(e.message);
         }
     }
 
@@ -499,6 +539,26 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         await this.renderAttributes(ownedAttributes, $attributesContainer);
 
         this.textEditor.setData($attributesContainer.html());
+
+        const inheritedAttributes = note.getAttributes().filter(attr => attr.isInheritable && attr.noteId !== this.noteId);
+        const inheritedAttributeCount = inheritedAttributes.length;
+
+        if (inheritedAttributeCount === 0) {
+            this.$inheritedExpander.hide();
+            this.$inheritedEmptyExpander.show();
+        }
+        else {
+            this.$inheritedExpander.show();
+            this.$inheritedEmptyExpander.hide();
+        }
+
+        this.$inheritedExpanderText.text(inheritedAttributeCount + ' inherited ' + this.attrPlural(inheritedAttributeCount));
+
+        await this.renderAttributes(inheritedAttributes, this.$inheritedAttributes);
+    }
+
+    attrPlural(number) {
+        return 'attribute' + (number === 1 ? '' : 's');
     }
 
     createNoteLink(noteId) {
