@@ -171,7 +171,7 @@ function changeTitle(req) {
     note.save();
 
     if (noteTitleChanged) {
-        await noteService.triggerNoteTitleChanged(note);
+        noteService.triggerNoteTitleChanged(note);
     }
 
     return note;
