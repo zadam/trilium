@@ -3,7 +3,6 @@
 const html = require('html');
 const repository = require('../repository');
 const dateUtils = require('../date_utils');
-const zip = require('tar-stream');
 const path = require('path');
 const mimeTypes = require('mime-types');
 const mdService = require('./md');

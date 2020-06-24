@@ -64,8 +64,19 @@ function assertArguments() {
     }
 }
 
+const entityMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+};
+
 function escapeHtml(str) {
-    return $('<div/>').text(str).html();
+    return str.replace(/[&<>"'`=\/]/g, s => entityMap[s]);
 }
 
 async function stopWatch(what, func) {

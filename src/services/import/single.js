@@ -24,7 +24,7 @@ function importSingleFile(taskContext, file, parentNote) {
         return importCodeNote(taskContext, file, parentNote);
     }
 
-    if (["image/jpeg", "image/gif", "image/png", "image/webp"].includes(mime)) {
+    if (mime.startsWith("image/")) {
         return importImage(file, parentNote, taskContext);
     }
 

@@ -249,7 +249,37 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         this.initialized = this.initFancyTree();
 
+        this.setupNoteTitleTooltip();
+
         return this.$widget;
+    }
+
+    setupNoteTitleTooltip() {
+        // the following will dynamically set tree item's tooltip if the whole item's text is not currently visible
+        // if the whole text is visible then no tooltip is show since that's unnecessarily distracting
+        // see https://github.com/zadam/trilium/pull/1120 for discussion
+
+        // code inspired by https://gist.github.com/jtsternberg/c272d7de5b967cec2d3d
+        const isEnclosing = ($container, $sub) => {
+            const conOffset           = $container.offset();
+            const conDistanceFromTop  = conOffset.top + $container.outerHeight(true);
+            const conDistanceFromLeft = conOffset.left + $container.outerWidth(true);
+
+            const subOffset           = $sub.offset();
+            const subDistanceFromTop  = subOffset.top + $sub.outerHeight(true);
+            const subDistanceFromLeft = subOffset.left + $sub.outerWidth(true);
+
+            return conDistanceFromTop > subDistanceFromTop
+                && conOffset.top < subOffset.top
+                && conDistanceFromLeft > subDistanceFromLeft
+                && conOffset.left < subOffset.left;
+        };
+
+        this.$tree.on("mouseenter", "span.fancytree-title", e => {
+            e.currentTarget.title = isEnclosing(this.$tree, $(e.currentTarget))
+                ? ""
+                : e.currentTarget.innerText;
+        });
     }
 
     get hideArchivedNotes() {
@@ -751,7 +781,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         utils.assertArguments(notePath);
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-        /** @var {FancytreeNode} */
+        /** @const {FancytreeNode} */
         let parentNode = null;
 
         const runPath = await treeService.getRunPath(notePath, logErrors);
@@ -836,13 +866,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const branch = treeCache.getBranch(node.data.branchId);
 
         const isFolder = this.isFolder(note);
+        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
         node.folder = isFolder;
         node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
-        node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        node.title = utils.escapeHtml(title);
 
         if (node.isExpanded() !== branch.isExpanded) {
             node.setExpanded(branch.isExpanded, {noEvents: true});
