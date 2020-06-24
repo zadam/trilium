@@ -862,13 +862,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const branch = treeCache.getBranch(node.data.branchId);
 
         const isFolder = this.isFolder(note);
+        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
         node.folder = isFolder;
         node.icon = this.getIcon(note, isFolder);
         node.extraClasses = this.getExtraClasses(note);
-        node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        node.title = utils.escapeHtml(title);
 
         if (node.isExpanded() !== branch.isExpanded) {
             node.setExpanded(branch.isExpanded, {noEvents: true});
