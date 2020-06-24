@@ -324,3 +324,9 @@
         display: none;
     }
 }
+
+/* !!!!!! TRILIUM CUSTOM CHANGES !!!!!! */
+
+.ck-widget__type-around { /* gets rid of triangles: https://github.com/zadam/trilium/issues/1129 */
+    display: none;
+}
