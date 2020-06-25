@@ -108,7 +108,75 @@ function searchFromRelation(note, relationName) {
     return typeof result[0] === 'string' ? result : result.map(item => item.noteId);
 }
 
+function getRelatedNotes(req) {
+    const attr = req.body;
+
+    const matchingNameAndValue = searchService.searchNotes(formatAttrForSearch(attr, true));
+    const matchingName = searchService.searchNotes(formatAttrForSearch(attr, false));
+
+    const results = [];
+
+    for (const record of matchingNameAndValue.concat(matchingName)) {
+        if (results.length >= 20) {
+            break;
+        }
+
+        if (results.find(res => res.noteId === record.noteId)) {
+            continue;
+        }
+
+        results.push(record);
+    }
+
+    return {
+        count: matchingName.length,
+        results
+    };
+}
+
+function formatAttrForSearch(attr, searchWithValue) {
+    let searchStr = '';
+
+    if (attr.type === 'label') {
+        searchStr += '#';
+    }
+    else if (attr.type === 'relation') {
+        searchStr += '~';
+    }
+    else {
+        throw new Error(`Unrecognized attribute type ${JSON.stringify(attr)}`);
+    }
+
+    searchStr += attr.name;
+
+    if (searchWithValue && attr.value) {
+        searchStr += '=';
+        searchStr += formatValue(attr.value);
+    }
+
+    return searchStr;
+}
+
+function formatValue(val) {
+    if (!/[^\w_-]/.test(val)) {
+        return val;
+    }
+    else if (!val.includes('"')) {
+        return '"' + val + '"';
+    }
+    else if (!val.includes("'")) {
+        return "'" + val + "'";
+    }
+    else if (!val.includes("`")) {
+        return "`" + val + "`";
+    }
+    else {
+        return '"' + val.replace(/"/g, '\\"') + '"';
+    }
+}
+
 module.exports = {
     searchNotes,
-    searchFromNote
+    searchFromNote,
+    getRelatedNotes
 };

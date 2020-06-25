@@ -83,7 +83,7 @@ const TPL = `
     border: 0 !important;
     outline: 0 !important;
     box-shadow: none !important;
-    padding: 0 !important;
+    padding: 0 0 0 5px !important;
     margin: 0 !important;
     color: var(--muted-text-color);
     max-height: 200px;
@@ -142,15 +142,15 @@ const TPL = `
     <table class="attr-edit">
         <tr>
             <th>Name:</th>
-            <td><input type="text" class="form-control form-control-sm" /></td>
+            <td><input type="text" class="attr-edit-name form-control form-control-sm" /></td>
         </tr>
         <tr>
             <th>Value:</th>
-            <td><input type="text" class="form-control form-control-sm" /></td>
+            <td><input type="text" class="attr-edit-value form-control form-control-sm" /></td>
         </tr>
         <tr>
             <th>Inheritable:</th>
-            <td><input type="checkbox" class="form-control form-control-sm" /></td>
+            <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
         </tr>
         <tr>
             <td colspan="2">
@@ -170,14 +170,7 @@ const TPL = `
 
     <br/>
 
-    <h5>Other notes with this label</h5>
-
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="match-value-too">
-        <label class="form-check-label" for="match-value-too">match value too</label>
-    </div>
-
-    <div class="attr-extras-title"></div>
+    <h5 class="attr-extras-title">Other notes with this label</h5>
     
     <ul class="attr-extras-list"></ul>
     
@@ -275,6 +268,10 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         this.$attrExtrasTitle = this.$widget.find('.attr-extras-title');
         this.$attrExtrasList = this.$widget.find('.attr-extras-list');
         this.$attrExtrasMoreNotes = this.$widget.find('.attr-extras-more-notes');
+        this.$attrEditName = this.$attrExtras.find('.attr-edit-name');
+        this.$attrEditValue = this.$attrExtras.find('.attr-edit-value');
+        this.$attrEditInheritable = this.$attrExtras.find('.attr-edit-inheritable');
+
         this.initialized = this.initEditor();
 
         this.$attrDisplay = this.$widget.find('.attr-display');
@@ -319,11 +316,11 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$attrExtras.hide();
         });
 
-        // this.$editor.on('blur', () => {
-        //     this.save();
-        //
-        //     this.$attrExtras.hide();
-        // });
+        this.$editor.on('blur', () => {
+            this.save();
+
+            this.$attrExtras.hide();
+        });
 
         return this.$widget;
     }
@@ -375,18 +372,10 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 const parsedAttrs = attributesParser.lexAndParse(attrText, true);
 
                 let matchedAttr = null;
-                let matchedPart = null;
 
                 for (const attr of parsedAttrs) {
-                    if (clickIndex >= attr.nameStartIndex && clickIndex <= attr.nameEndIndex) {
+                    if (clickIndex >= attr.startIndex && clickIndex <= attr.endIndex) {
                         matchedAttr = attr;
-                        matchedPart = 'name';
-                        break;
-                    }
-
-                    if (clickIndex >= attr.valueStartIndex && clickIndex <= attr.valueEndIndex) {
-                        matchedAttr = attr;
-                        matchedPart = 'value';
                         break;
                     }
                 }
@@ -397,13 +386,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                     return;
                 }
 
-                const searchString = this.formatAttrForSearch(matchedAttr);
-
-                let {count, results} = await server.get('search/' + encodeURIComponent(searchString), {
-                    type: matchedAttr.type,
-                    name: matchedAttr.name,
-                    value: matchedPart === 'value' ? matchedAttr.value : undefined
-                });
+                let {results, count} = await server.post('search-related', matchedAttr);
 
                 for (const res of results) {
                     res.noteId = res.notePathArray[res.notePathArray.length - 1];
@@ -412,21 +395,11 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 results = results.filter(({noteId}) => noteId !== this.noteId);
 
                 if (results.length === 0) {
-                    this.$attrExtrasTitle.text(
-                        `There are no other notes with ${matchedAttr.type} name "${matchedAttr.name}"`
-                        // not displaying value since it can be long
-                        + (matchedPart === 'value' ? " and matching value" : ""));
+                    this.$attrExtrasTitle.hide();
                 }
                 else {
-                    this.$attrExtrasTitle.text(
-                        `Notes with ${matchedAttr.type} name "${matchedAttr.name}"`
-                        // not displaying value since it can be long
-                        + (matchedPart === 'value' ? " and matching value" : "")
-                        + ":"
-                    );
+                    this.$attrExtrasTitle.text(`Other notes with ${matchedAttr.type} name "${matchedAttr.name}"`);
                 }
-
-                this.$attrExtrasTitle.hide();
 
                 this.$attrExtrasList.empty();
 
@@ -448,6 +421,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 else {
                     this.$attrExtrasMoreNotes.hide();
                 }
+
+                this.$attrEditName.val(matchedAttr.name);
+                this.$attrEditValue.val(matchedAttr.value);
 
                 this.$attrExtras.css("left", e.pageX - this.$attrExtras.width() / 2);
                 this.$attrExtras.css("top", e.pageY + 30);
@@ -509,6 +485,11 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         });
 
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+
+        // disable spellcheck for attribute editor
+        this.textEditor.editing.view.change( writer => {
+            writer.setAttribute( 'spellcheck', 'false', this.textEditor.editing.view.document.getRoot() );
+        } );
 
         //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
         //CKEditorInspector.attach(this.textEditor);
@@ -614,29 +595,6 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         else {
             return '"' + val.replace(/"/g, '\\"') + '"';
         }
-    }
-
-    formatAttrForSearch(attr) {
-        let searchStr = '';
-
-        if (attr.type === 'label') {
-            searchStr += '#';
-        }
-        else if (attr.type === 'relation') {
-            searchStr += '~';
-        }
-        else {
-            throw new Error(`Unrecognized attribute type ${JSON.stringify(attr)}`);
-        }
-
-        searchStr += attr.name;
-
-        if (attr.value) {
-            searchStr += '=';
-            searchStr += this.formatValue(attr.value);
-        }
-
-        return searchStr;
     }
 
     async focusOnAttributesEvent({tabId}) {

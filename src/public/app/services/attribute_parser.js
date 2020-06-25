@@ -129,8 +129,8 @@ function parser(tokens, str, allowEmptyRelations = false) {
                 type: 'label',
                 name: text.substr(1),
                 isInheritable: false, // FIXME
-                nameStartIndex: startIndex,
-                nameEndIndex: endIndex
+                startIndex: startIndex,
+                endIndex: endIndex
             };
 
             if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
@@ -141,8 +141,7 @@ function parser(tokens, str, allowEmptyRelations = false) {
                 i += 2;
 
                 attr.value = tokens[i].text;
-                attr.valueStartIndex = tokens[i].startIndex;
-                attr.valueEndIndex = tokens[i].endIndex;
+                attr.endIndex = tokens[i].endIndex;
             }
 
             attrs.push(attr);
@@ -152,8 +151,8 @@ function parser(tokens, str, allowEmptyRelations = false) {
                 type: 'relation',
                 name: text.substr(1),
                 isInheritable: false, // FIXME
-                nameStartIndex: startIndex,
-                nameEndIndex: endIndex
+                startIndex: startIndex,
+                endIndex: endIndex
             };
 
             attrs.push(attr);
@@ -177,8 +176,7 @@ function parser(tokens, str, allowEmptyRelations = false) {
             const noteId = notePath.split('/').pop();
 
             attr.value = noteId;
-            attr.valueStartIndex = tokens[i].startIndex;
-            attr.valueEndIndex = tokens[i].endIndex;
+            attr.endIndex = tokens[i].endIndex;
         }
         else {
             throw new Error(`Unrecognized attribute "${text}" in ${context(i)}`);
