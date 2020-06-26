@@ -13,7 +13,7 @@ class Attribute {
         /** @param {string} */
         this.name = row.name.toLowerCase();
         /** @param {string} */
-        this.value = row.type === 'label'? row.value.toLowerCase() : row.value;
+        this.value = row.type === 'label' ? row.value.toLowerCase() : row.value;
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 

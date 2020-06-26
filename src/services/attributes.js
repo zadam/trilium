@@ -5,7 +5,7 @@ const sql = require('./sql');
 const utils = require('./utils');
 const Attribute = require('../entities/attribute');
 
-const ATTRIBUTE_TYPES = [ 'label', 'label-definition', 'relation', 'relation-definition' ];
+const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
 const BUILTIN_ATTRIBUTES = [
     // label names

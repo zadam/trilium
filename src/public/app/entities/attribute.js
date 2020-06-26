@@ -56,6 +56,10 @@ class Attribute {
      *         3. attribute is owned by some note's ancestor and is inheritable
      */
     isAffecting(affectedNote) {
+        if (!affectedNote) {
+            return false;
+        }
+
         const attrNote = this.getNote();
         const owningNotes = [affectedNote, ...affectedNote.getTemplateNotes()];
 

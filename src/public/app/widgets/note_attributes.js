@@ -157,7 +157,7 @@ const TPL = `
 <div class="attr-display">
     <div class="note-attributes-editor" tabindex="200"></div>
     
-    <hr class="w-100 attr-inherited-empty-expander">
+    <hr class="w-100 attr-inherited-empty-expander" style="margin-bottom: 10px;">
     
     <div class="attr-expander attr-inherited-expander">
         <hr class="w-100">
@@ -394,10 +394,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.textEditor.setData($attributesContainer.html());
         });
 
-        const inheritedAttributes = note.getAttributes().filter(attr => attr.isInheritable && attr.noteId !== this.noteId);
-        const inheritedAttributeCount = inheritedAttributes.length;
-
-        if (inheritedAttributeCount === 0) {
+        const inheritedAttributes = note.getAttributes().filter(attr => attr.noteId !== this.noteId);
+console.log("inheritedAttributes", inheritedAttributes);
+        if (inheritedAttributes.length === 0) {
             this.$inheritedExpander.hide();
             this.$inheritedEmptyExpander.show();
         }
@@ -406,7 +405,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.$inheritedEmptyExpander.hide();
         }
 
-        this.$inheritedExpanderText.text(inheritedAttributeCount + ' inherited ' + this.attrPlural(inheritedAttributeCount));
+        this.$inheritedExpanderText.text(inheritedAttributes.length + ' inherited ' + this.attrPlural(inheritedAttributes.length));
 
         await this.renderAttributes(inheritedAttributes, this.$inheritedAttributes);
     }

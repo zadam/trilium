@@ -23,7 +23,7 @@ const treeService = require("../tree");
  * @param {Note} importRootNote
  * @return {Promise<*>}
  */
-function importTar(taskContext, fileBuffer, importRootNote) {
+async function importTar(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];

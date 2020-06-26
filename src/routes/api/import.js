@@ -12,7 +12,7 @@ const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
 
-function importToBranch(req) {
+async function importToBranch(req) {
     const {parentNoteId} = req.params;
     const {taskId, last} = req.body;
 
@@ -49,19 +49,15 @@ function importToBranch(req) {
 
     try {
         if (extension === '.tar' && options.explodeArchives) {
-            note = tarImportService.importTar(taskContext, file.buffer, parentNote);
+            note = await tarImportService.importTar(taskContext, file.buffer, parentNote);
         } else if (extension === '.zip' && options.explodeArchives) {
-            const start = Date.now();
-
-            note = zipImportService.importZip(taskContext, file.buffer, parentNote);
-
-            console.log("Import took", Date.now() - start, "ms");
+            note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
         } else if (extension === '.opml' && options.explodeArchives) {
-            note = opmlImportService.importOpml(taskContext, file.buffer, parentNote);
+            note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
         } else if (extension === '.enex' && options.explodeArchives) {
-            note = enexImportService.importEnex(taskContext, file, parentNote);
+            note = await enexImportService.importEnex(taskContext, file, parentNote);
         } else {
-            note = singleImportService.importSingleFile(taskContext, file, parentNote);
+            note = await singleImportService.importSingleFile(taskContext, file, parentNote);
         }
     }
     catch (e) {
@@ -83,8 +79,8 @@ function importToBranch(req) {
 
     // import has deactivated note events so note cache is not updated
     // instead we force it to reload (can be async)
-    // FIXME
-    //noteCacheService.load();
+
+    noteCacheService.load();
 
     return note;
 }

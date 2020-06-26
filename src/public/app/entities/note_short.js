@@ -180,22 +180,9 @@ class NoteShort {
             return [];
         }
 
-        if (!(this.noteId in noteAttributeCache)) {
-            const ownedAttributes = this.getOwnedAttributes();
-
-            const attrArrs = [
-                ownedAttributes
-            ];
-
+        if (!(this.noteId in noteAttributeCache.attributes)) {
             const newPath = [...path, this.noteId];
-
-            for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
-                const templateNote = this.treeCache.notes[templateAttr.value];
-
-                if (templateNote && templateNote.noteId !== this.noteId) {
-                    attrArrs.push(templateNote.__getCachedAttributes(newPath));
-                }
-            }
+            const attrArrs = [ this.getOwnedAttributes() ];
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.getParentNotes()) {
@@ -203,6 +190,14 @@ class NoteShort {
                     if (parentNote.type !== 'search') {
                         attrArrs.push(parentNote.__getInheritableAttributes(newPath));
                     }
+                }
+            }
+
+            for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' && attr.name === 'template')) {
+                const templateNote = this.treeCache.notes[templateAttr.value];
+
+                if (templateNote && templateNote.noteId !== this.noteId) {
+                    attrArrs.push(templateNote.__getCachedAttributes(newPath));
                 }
             }
 

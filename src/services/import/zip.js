@@ -21,7 +21,7 @@ const yauzl = require("yauzl");
  * @param {Note} importRootNote
  * @return {Promise<*>}
  */
-function importZip(taskContext, fileBuffer, importRootNote) {
+async function importZip(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
@@ -132,6 +132,15 @@ function importZip(taskContext, fileBuffer, importRootNote) {
 
         for (const attr of noteMeta.attributes) {
             attr.noteId = note.noteId;
+
+            if (attr.type === 'label-definition') {
+                attr.type = 'label';
+                attr.name = 'label:' + attr.name;
+            }
+            else if (attr.type === 'relation-definition') {
+                attr.type = 'label';
+                attr.name = 'relation:' + attr.name;
+            }
 
             if (!attributeService.isAttributeType(attr.type)) {
                 log.error("Unrecognized attribute type " + attr.type);
@@ -405,11 +414,11 @@ function importZip(taskContext, fileBuffer, importRootNote) {
 
     // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
 
-    readZipFile(fileBuffer, (zipfile, entry) => {
+    await readZipFile(fileBuffer, async (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (filePath === '!!!meta.json') {
-            const content = readContent(zipfile, entry);
+            const content = await readContent(zipfile, entry);
 
             metaFile = JSON.parse(content.toString("UTF-8"));
         }
@@ -417,14 +426,14 @@ function importZip(taskContext, fileBuffer, importRootNote) {
         zipfile.readEntry();
     });
 
-    readZipFile(fileBuffer, (zipfile, entry) => {
+    await readZipFile(fileBuffer, async (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (/\/$/.test(entry.fileName)) {
             saveDirectory(filePath);
         }
         else if (filePath !== '!!!meta.json') {
-            const content = readContent(zipfile, entry);
+            const content = await readContent(zipfile, entry);
 
             saveNote(filePath, content);
         }
