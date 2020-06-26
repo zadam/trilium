@@ -42,7 +42,7 @@
     "express-session": "1.17.1",
     "file-type": "14.6.2",
     "fs-extra": "9.0.1",
-    "helmet": "3.23.2",
+    "helmet": "3.23.3",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.1",

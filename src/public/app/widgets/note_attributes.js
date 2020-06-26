@@ -6,8 +6,7 @@ import server from "../services/server.js";
 import ws from "../services/ws.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import attributesParser from "../services/attribute_parser.js";
-import linkService from "../services/link.js";
-import treeService from "../services/tree.js";
+import AttributeDetailWidget from "./attribute_detail.js";
 
 const mentionSetup = {
     feeds: [
@@ -74,110 +73,36 @@ const mentionSetup = {
 const TPL = `
 <div class="note-attributes">
 <style>
-.note-attributes {
-    margin-left: 7px;
-    margin-right: 7px;
-}
-
-.note-attributes-editor {
-    border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-    padding: 0 0 0 5px !important;
-    margin: 0 !important;
-    color: var(--muted-text-color);
-    max-height: 200px;
-    overflow: auto;
-}
-
-.inherited-attributes {
-    color: var(--muted-text-color);
-    max-height: 200px;
-    overflow: auto;
-}
-
-.note-attributes-editor p {
-    margin: 0 !important;
-}
-
-.note-attributes.error .note-attributes-editor {
-    border-color: red !important;
-}
-
-.attr-extras {
-    display: block;
-    background-color: var(--accented-background-color);
-    border: 1px solid var(--main-border-color);
-    border-radius: 4px;
-    z-index: 1000;
-    padding: 10px;
-    position: absolute;
-    max-width: 600px;
-    max-height: 600px;
-    overflow: auto;
-}
-
-.attr-extras-list {
-    padding-left: 20px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.attr-edit {
-    width: 100%;
-}
-
-.attr-edit th {
-    text-align: left;
-}
-
-.attr-edit td input {
-    width: 100%;
-}
-</style>
-
-<div class="attr-extras" style="display: none;">
-    <h5>Label detail</h5>
-
-    <table class="attr-edit">
-        <tr>
-            <th>Name:</th>
-            <td><input type="text" class="attr-edit-name form-control form-control-sm" /></td>
-        </tr>
-        <tr>
-            <th>Value:</th>
-            <td><input type="text" class="attr-edit-value form-control form-control-sm" /></td>
-        </tr>
-        <tr>
-            <th>Inheritable:</th>
-            <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div style="display: flex; justify-content: space-between">
-                    <div>
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                        <button type="submit" class="btn btn-sm btn-secondary">Cancel</button>
-                    </div>
-                    
-                    <div>
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <br/>
-
-    <h5 class="attr-extras-title">Other notes with this label</h5>
+    .note-attributes {
+        margin-left: 7px;
+        margin-right: 7px;
+    }
     
-    <ul class="attr-extras-list"></ul>
+    .note-attributes-editor {
+        border: 0 !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+        padding: 0 0 0 5px !important;
+        margin: 0 !important;
+        color: var(--muted-text-color);
+        max-height: 200px;
+        overflow: auto;
+    }
     
-    <div class="attr-extras-more-notes"></div>
-</div>
-
-<style>
+    .inherited-attributes {
+        color: var(--muted-text-color);
+        max-height: 200px;
+        overflow: auto;
+    }
+    
+    .note-attributes-editor p {
+        margin: 0 !important;
+    }
+    
+    .note-attributes.error .note-attributes-editor {
+        border-color: red !important;
+    }
+    
     .attr-expander {
         display: flex; 
         flex-direction: row; 
@@ -248,29 +173,22 @@ const TPL = `
 </div>
 `;
 
-const DISPLAYED_NOTES = 10;
-
 export default class NoteAttributesWidget extends TabAwareWidget {
     constructor() {
         super();
 
+        this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
+
         this.spacedUpdate = new SpacedUpdate(() => {
             this.parseAttributes();
 
-            this.$attrExtras.hide();
+            this.attributeDetailWidget.hide();
         });
     }
 
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-attributes-editor');
-        this.$attrExtras = this.$widget.find('.attr-extras');
-        this.$attrExtrasTitle = this.$widget.find('.attr-extras-title');
-        this.$attrExtrasList = this.$widget.find('.attr-extras-list');
-        this.$attrExtrasMoreNotes = this.$widget.find('.attr-extras-more-notes');
-        this.$attrEditName = this.$attrExtras.find('.attr-edit-name');
-        this.$attrEditValue = this.$attrExtras.find('.attr-edit-value');
-        this.$attrEditInheritable = this.$attrExtras.find('.attr-edit-inheritable');
 
         this.initialized = this.initEditor();
 
@@ -313,16 +231,16 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 await this.save();
             }
 
-            this.$attrExtras.hide();
+            this.attributeDetailWidget.hide();
         });
 
         this.$editor.on('blur', () => {
             this.save();
 
-            this.$attrExtras.hide();
+            this.attributeDetailWidget.hide();
         });
 
-        return this.$widget;
+        this.$widget.append(this.attributeDetailWidget.render());
     }
 
     async save() {
@@ -380,54 +298,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                     }
                 }
 
-                if (!matchedAttr) {
-                    this.$attrExtras.hide();
-
-                    return;
-                }
-
-                let {results, count} = await server.post('search-related', matchedAttr);
-
-                for (const res of results) {
-                    res.noteId = res.notePathArray[res.notePathArray.length - 1];
-                }
-
-                results = results.filter(({noteId}) => noteId !== this.noteId);
-
-                if (results.length === 0) {
-                    this.$attrExtrasTitle.hide();
-                }
-                else {
-                    this.$attrExtrasTitle.text(`Other notes with ${matchedAttr.type} name "${matchedAttr.name}"`);
-                }
-
-                this.$attrExtrasList.empty();
-
-                const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-                const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
-
-                for (const note of displayedNotes) {
-                    const notePath = treeService.getSomeNotePath(note);
-                    const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
-
-                    this.$attrExtrasList.append(
-                        $("<li>").append($noteLink)
-                    );
-                }
-
-                if (results.length > DISPLAYED_NOTES) {
-                    this.$attrExtrasMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
-                }
-                else {
-                    this.$attrExtrasMoreNotes.hide();
-                }
-
-                this.$attrEditName.val(matchedAttr.name);
-                this.$attrEditValue.val(matchedAttr.value);
-
-                this.$attrExtras.css("left", e.pageX - this.$attrExtras.width() / 2);
-                this.$attrExtras.css("top", e.pageY + 30);
-                this.$attrExtras.show();
+                this.attributeDetailWidget.showAttributeDetail(matchedAttr, e.pageX, e.pageY);
             }
         });
 
@@ -519,7 +390,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
         await this.renderAttributes(ownedAttributes, $attributesContainer);
 
-        this.textEditor.setData($attributesContainer.html());
+        await this.spacedUpdate.allowUpdateWithoutChange(() => {
+            this.textEditor.setData($attributesContainer.html());
+        });
 
         const inheritedAttributes = note.getAttributes().filter(attr => attr.isInheritable && attr.noteId !== this.noteId);
         const inheritedAttributeCount = inheritedAttributes.length;

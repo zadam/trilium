@@ -46,9 +46,9 @@ class BasicWidget extends Component {
     }
 
     render() {
-        const $widget = this.doRender();
+        this.doRender();
 
-        $widget.addClass('component')
+        this.$widget.addClass('component')
             .prop('component', this);
 
         this.toggleInt(this.isEnabled());
@@ -56,28 +56,28 @@ class BasicWidget extends Component {
         if (this.cssEl) {
             const css = this.cssEl.trim().startsWith('<style>') ? this.cssEl : `<style>${this.cssEl}</style>`;
 
-            $widget.append(css);
+            this.$widget.append(css);
         }
 
         for (const key in this.attrs) {
             if (key === 'style') {
                 if (this.attrs[key]) {
-                    let style = $widget.attr('style');
+                    let style = this.$widget.attr('style');
                     style = style ? `${style}; ${this.attrs[key]}` : this.attrs[key];
 
-                    $widget.attr(key, style);
+                    this.$widget.attr(key, style);
                 }
             }
             else {
-                $widget.attr(key, this.attrs[key]);
+                this.$widget.attr(key, this.attrs[key]);
             }
         }
 
         for (const className of this.classes) {
-            $widget.addClass(className);
+            this.$widget.addClass(className);
         }
 
-        return $widget;
+        return this.$widget;
     }
 
     isEnabled() {
