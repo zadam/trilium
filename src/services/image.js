@@ -5,10 +5,6 @@ const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
 const optionService = require('./options');
-const imagemin = require('imagemin');
-const imageminMozJpeg = require('imagemin-mozjpeg');
-const imageminPngQuant = require('imagemin-pngquant');
-const imageminGifLossy = require('imagemin-giflossy');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
@@ -23,7 +19,7 @@ function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
         shrinkImageSwitch = false;
     }
 
-    const finalImageBuffer = shrinkImageSwitch ? shrinkImage(uploadBuffer, originalName) : uploadBuffer;
+    const finalImageBuffer = shrinkImageSwitch ? shrinkImage(uploadBuffer) : uploadBuffer;
 
     const imageFormat = getImageType(finalImageBuffer);
 
@@ -96,19 +92,9 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     };
 }
 
-function shrinkImage(buffer, originalName) {
-    // we do resizing with max (100) quality which will be trimmed during optimization step next
-    const resizedImage = resize(buffer, 100);
-    let finalImageBuffer;
-
+function shrinkImage(buffer) {
     const jpegQuality = optionService.getOptionInt('imageJpegQuality');
-
-    try {
-        finalImageBuffer = optimize(resizedImage, jpegQuality);
-    } catch (e) {
-        log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
-        finalImageBuffer = resize(buffer, jpegQuality);
-    }
+    let finalImageBuffer = resize(buffer, jpegQuality);
 
     // if resizing & shrinking did not help with size then save the original
     // (can happen when e.g. resizing PNG into JPEG)
@@ -137,23 +123,6 @@ function resize(buffer, quality) {
     image.background(0xFFFFFFFF);
 
     return image.getBufferAsync(jimp.MIME_JPEG);
-}
-
-function optimize(buffer, jpegQuality) {
-    return imagemin.buffer(buffer, {
-        plugins: [
-            imageminMozJpeg({
-                quality: jpegQuality
-            }),
-            imageminPngQuant({
-                quality: [0, 0.7]
-            }),
-            imageminGifLossy({
-                lossy: 80,
-                optimize: '3' // needs to be string
-            })
-        ]
-    });
 }
 
 module.exports = {
