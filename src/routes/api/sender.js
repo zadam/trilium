@@ -8,7 +8,7 @@ const noteService = require('../../services/notes');
 function uploadImage(req) {
     const file = req.file;
 
-    if (!["image/png", "image/jpeg", "image/gif"].includes(file.mimetype)) {
+    if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 

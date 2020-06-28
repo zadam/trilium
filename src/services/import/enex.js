@@ -215,7 +215,7 @@ function importEnex(taskContext, file, parentNote) {
 
         content = extractContent(content);
 
-        const noteEntity = (noteService.createNewNote({
+        const noteEntity = noteService.createNewNote({
             parentNoteId: rootNote.noteId,
             title,
             content,
@@ -223,7 +223,7 @@ function importEnex(taskContext, file, parentNote) {
             type: 'text',
             mime: 'text/html',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
-        })).note;
+        }).note;
 
         for (const attr of attributes) {
             noteEntity.addAttribute(attr.type, attr.name, attr.value);
@@ -269,7 +269,7 @@ function importEnex(taskContext, file, parentNote) {
                 content = content.replace(mediaRegex, resourceLink);
             };
 
-            if (["image/jpeg", "image/png", "image/gif", "image/webp"].includes(resource.mime)) {
+            if (resource.mime && resource.mime.startsWith('image/')) {
                 try {
                     const originalName = "image." + resource.mime.substr(6);
 
