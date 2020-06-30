@@ -31,15 +31,6 @@ class Attribute {
         return this.type === 'relation' ? this.value : undefined;
     }
 
-    get jsonValue() {
-        try {
-            return JSON.parse(this.value);
-        }
-        catch (e) {
-            return null;
-        }
-    }
-
     get isAutoLink() {
         return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
     }
@@ -78,6 +69,42 @@ class Attribute {
         }
 
         return false;
+    }
+
+    isDefinition() {
+        return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));
+    }
+
+    getDefinition() {
+        const tokens = this.value.split(',').map(t => t.trim());
+        const defObj = {};
+
+        for (const token of tokens) {
+            if (token === 'promoted') {
+                defObj.isPromoted = true;
+            }
+            else if (['text', 'number', 'boolean', 'date', 'url'].includes(token)) {
+                defObj.labelType = token;
+            }
+            else if (['single', 'multi'].includes(token)) {
+                defObj.multiplicity = token;
+            }
+            else if (token.startsWith('precision')) {
+                const chunks = token.split('=');
+
+                defObj.numberPrecision = parseInt(chunks[1]);
+            }
+            else if (token.startsWith('inverse')) {
+                const chunks = token.split('=');
+
+                defObj.inverseRelation = chunks[1];
+            }
+            else {
+                console.log("Unrecognized attribute definition token:", token);
+            }
+        }
+
+        return defObj;
     }
 }
 

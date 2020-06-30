@@ -42,40 +42,37 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         const attributes = note.getAttributes();
 
         const promoted = attributes
-            .filter(attr => attr.type === 'label-definition' || attr.type === 'relation-definition')
-            .filter(attr => !attr.name.startsWith("child:"))
+            .filter(attr => attr.isDefinition())
             .filter(attr => {
-                const json = attr.jsonValue;
+                const def = attr.getDefinition();
 
-                return json && json.isPromoted;
+                return def && def.isPromoted;
             });
 
-        const hidePromotedAttributes = attributes.some(attr => attr.type === 'label' && attr.name === 'hidePromotedAttributes');
-
-        if (promoted.length > 0 && !hidePromotedAttributes) {
+        if (promoted.length > 0 && !note.hasLabel('hidePromotedAttributes')) {
             const $tbody = $("<tbody>");
 
             for (const definitionAttr of promoted) {
-                const definitionType = definitionAttr.type;
-                const valueType = definitionType.substr(0, definitionType.length - 11);
+                const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
+                const valueName = definitionAttr.name.substr(definitionType.length + 1);
 
-                let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
+                let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === definitionType);
 
                 if (valueAttrs.length === 0) {
                     valueAttrs.push({
                         attributeId: "",
-                        type: valueType,
-                        name: definitionAttr.name,
+                        type: definitionType,
+                        name: valueName,
                         value: ""
                     });
                 }
 
-                if (definitionAttr.value.multiplicityType === 'singlevalue') {
+                if (definitionAttr.value.multiplicity === 'single') {
                     valueAttrs = valueAttrs.slice(0, 1);
                 }
 
                 for (const valueAttr of valueAttrs) {
-                    const $tr = await this.createPromotedAttributeRow(definitionAttr, valueAttr);
+                    const $tr = await this.createPromotedAttributeRow(definitionAttr, valueAttr, valueName);
 
                     $tbody.append($tr);
                 }
@@ -93,10 +90,10 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         return attributes;
     }
 
-    async createPromotedAttributeRow(definitionAttr, valueAttr) {
-        const definition = definitionAttr.jsonValue;
+    async createPromotedAttributeRow(definitionAttr, valueAttr, valueName) {
+        const definition = definitionAttr.getDefinition();
         const $tr = $("<tr>");
-        const $labelCell = $("<th>").append(valueAttr.name);
+        const $labelCell = $("<th>").append(valueName);
         const $input = $("<input>")
             .prop("tabindex", 200 + definitionAttr.position)
             .prop("attribute-id", valueAttr.noteId === this.noteId ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
@@ -209,7 +206,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             return;
         }
 
-        if (definition.multiplicityType === "multivalue") {
+        if (definition.multiplicity === "multivalue") {
             const addButton = $("<span>")
                 .addClass("bx bx-plus pointer")
                 .prop("title", "Add new attribute")
