@@ -12,6 +12,11 @@ class Attribute {
         this.type = row.type;
         /** @param {string} */
         this.name = row.name.toLowerCase();
+
+        if (typeof row.value !== 'string') {
+            row.value = JSON.stringify(row.value);
+        }
+
         /** @param {string} */
         this.value = row.type === 'label' ? row.value.toLowerCase() : row.value;
         /** @param {boolean} */

@@ -6,6 +6,7 @@ const protectedSessionService = require('../protected_session');
 const commonmark = require('commonmark');
 const mimeService = require('./mime');
 const utils = require('../../services/utils');
+const htmlSanitizer = require('../html_sanitizer');
 
 function importSingleFile(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
@@ -122,7 +123,9 @@ function importMarkdown(taskContext, file, parentNote) {
     const writer = new commonmark.HtmlRenderer();
 
     const parsed = reader.parse(markdownContent);
-    const htmlContent = writer.render(parsed);
+    let htmlContent = writer.render(parsed);
+
+    htmlContent = htmlSanitizer.sanitize(htmlContent);
 
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
@@ -142,7 +145,9 @@ function importMarkdown(taskContext, file, parentNote) {
 
 function importHtml(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
-    const content = file.buffer.toString("UTF-8");
+    let content = file.buffer.toString("UTF-8");
+
+    content = htmlSanitizer.sanitize(content);
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,

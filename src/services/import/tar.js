@@ -16,6 +16,7 @@ const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
 const sql = require("../sql");
 const treeService = require("../tree");
+const htmlSanitizer = require("../html_sanitizer");
 
 /**
  * @param {TaskContext} taskContext
@@ -254,6 +255,8 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             function isUrlAbsolute(url) {
                 return /^(?:[a-z]+:)?\/\//i.test(url);
             }
+
+            content = htmlSanitizer.sanitize(content);
 
             content = content.replace(/<html.*<body[^>]*>/gis, "");
             content = content.replace(/<\/body>.*<\/html>/gis, "");

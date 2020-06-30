@@ -14,6 +14,7 @@ const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
 const treeService = require("../tree");
 const yauzl = require("yauzl");
+const htmlSanitizer = require('../html_sanitizer');
 
 /**
  * @param {TaskContext} taskContext
@@ -269,6 +270,17 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 return /^(?:[a-z]+:)?\/\//i.test(url);
             }
 
+            content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
+                if (noteTitle.trim() === text.trim()) {
+                    return ""; // remove whole H1 tag
+                }
+                else {
+                    return match;
+                }
+            });
+
+            content = htmlSanitizer.sanitize(content);
+
             content = content.replace(/<html.*<body[^>]*>/gis, "");
             content = content.replace(/<\/body>.*<\/html>/gis, "");
 
@@ -294,15 +306,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
 
                 return `href="#root/${targetNoteId}"`;
-            });
-
-            content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
-                if (noteTitle.trim() === text.trim()) {
-                    return ""; // remove whole H1 tag
-                }
-                else {
-                    return match;
-                }
             });
 
             if (noteMeta) {

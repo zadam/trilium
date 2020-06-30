@@ -7,6 +7,7 @@ const sql = require("../sql");
 const noteService = require("../notes");
 const imageService = require("../image");
 const protectedSessionService = require('../protected_session');
+const htmlSanitizer = require("../html_sanitizer");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
@@ -70,6 +71,8 @@ function importEnex(taskContext, file, parentNote) {
         content = content.replace(/<\/li>\s+<ol>/g, "<ol>");
         content = content.replace(/<\/ol>\s+<\/ol>/g, "</ol></li></ol>");
         content = content.replace(/<\/ol>\s+<li>/g, "</ol></li><li>");
+
+        content = htmlSanitizer.sanitize(content);
 
         return content;
     }
@@ -294,6 +297,8 @@ function importEnex(taskContext, file, parentNote) {
                 createFileNote();
             }
         }
+
+        content = htmlSanitizer.sanitize(content);
 
         // save updated content with links to files/images
         noteEntity.setContent(content);

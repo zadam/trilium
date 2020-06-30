@@ -5,6 +5,7 @@ import treeService from "../../services/tree.js";
 const TPL = `
 <div class="note-detail-readonly-text note-detail-printable">
     <style>
+    /* h1 should not be used at all since semantically that's a note title */
     .note-detail-readonly-text h1 { font-size: 2.0em; }
     .note-detail-readonly-text h2 { font-size: 1.8em; }
     .note-detail-readonly-text h3 { font-size: 1.6em; }

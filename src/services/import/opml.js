@@ -3,6 +3,7 @@
 const noteService = require('../../services/notes');
 const parseString = require('xml2js').parseString;
 const protectedSessionService = require('../protected_session');
+const htmlSanitizer = require('../html_sanitizer');
 
 /**
  * @param {TaskContext} taskContext
@@ -43,6 +44,8 @@ function importOpml(taskContext, fileBuffer, parentNote) {
         else {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
+
+        content = htmlSanitizer.sanitize(content);
 
         const {note} = noteService.createNewNote({
             parentNoteId,
