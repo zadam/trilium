@@ -5,6 +5,18 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `
 <div class="note-detail-image note-detail-printable">
+    <style>
+        .note-detail-image {
+            text-align: center;
+            height: 100%;
+            overflow: auto;
+        }
+        
+        .note-detail-image-view {
+            max-width: 100%;
+        }
+    </style>
+
     <div class="no-print" style="display: flex; justify-content: space-evenly; margin: 10px;">
         <button class="image-download btn btn-sm btn-primary" type="button">Download</button>
 

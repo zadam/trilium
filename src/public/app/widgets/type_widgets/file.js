@@ -6,8 +6,24 @@ import TypeWidget from "./type_widget.js";
 const TPL = `
 <div class="note-detail-file note-detail-printable">
     <style>
-        .file-table td {
+        .note-detail-file {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .file-table th, .file-table td {
+            padding: 5px;
             overflow-wrap: anywhere;
+        }
+        
+        .file-preview-content {
+            background-color: var(--accented-background-color);
+            padding: 15px;
+            max-height: 300px;
+            overflow: auto;
+            margin: 10px;
         }
     </style>
 

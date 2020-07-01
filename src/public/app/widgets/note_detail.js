@@ -259,8 +259,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
                 "libraries/bootstrap/css/bootstrap.min.css",
                 "stylesheets/print.css",
                 "stylesheets/relation_map.css",
-                "stylesheets/themes.css",
-                "stylesheets/detail.css"
+                "stylesheets/themes.css"
             ],
             debug: true
         });
