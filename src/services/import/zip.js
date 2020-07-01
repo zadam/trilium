@@ -330,6 +330,17 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
+        if (type === 'text' && noteMeta) {
+            const includeNoteLinks = (noteMeta.attributes || [])
+                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
+
+            // this will replace relation map links
+            for (const link of includeNoteLinks) {
+                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+            }
+        }
+
         let note = repository.getNote(noteId);
 
         if (note) {

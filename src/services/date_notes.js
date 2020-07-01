@@ -30,20 +30,20 @@ function getNoteStartingWith(parentNoteId, startsWith) {
                                     AND branches.isDeleted = 0`, [parentNoteId]);
 }
 
-/** @return {Promise<Note>} */
+/** @return {Note} */
 function getRootCalendarNote() {
     // some caching here could be useful (e.g. in CLS)
     let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {
-        rootNote = (noteService.createNewNote({
+        rootNote = noteService.createNewNote({
             parentNoteId: 'root',
             title: 'Calendar',
             target: 'into',
             isProtected: false,
             type: 'text',
             content: ''
-        })).note;
+        }).note;
 
         attributeService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
         attributeService.createLabel(rootNote.noteId, 'sorted');
@@ -52,7 +52,7 @@ function getRootCalendarNote() {
     return rootNote;
 }
 
-/** @return {Promise<Note>} */
+/** @return {Note} */
 function getYearNote(dateStr, rootNote) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -91,7 +91,7 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
         .replace(/{month}/g, monthName);
 }
 
-/** @return {Promise<Note>} */
+/** @return {Note} */
 function getMonthNote(dateStr, rootNote) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -139,7 +139,7 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
-/** @return {Promise<Note>} */
+/** @return {Note} */
 function getDateNote(dateStr) {
     const rootNote = getRootCalendarNote();
 

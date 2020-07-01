@@ -44,12 +44,12 @@ function getCachedEntity(entityName, entityId, query) {
     return entity;
 }
 
-/** @returns {Promise<Note|null>} */
+/** @returns {Note|null} */
 function getNote(noteId) {
     return getCachedEntity('notes', noteId, "SELECT * FROM notes WHERE noteId = ?");
 }
 
-/** @returns {Promise<Note[]>} */
+/** @returns {Note[]} */
 function getNotes(noteIds) {
     // this note might be optimised, but remember that it must keep the existing order of noteIds
     // (important e.g. for @orderBy in search)
@@ -64,22 +64,22 @@ function getNotes(noteIds) {
     return notes;
 }
 
-/** @returns {Promise<NoteRevision|null>} */
+/** @returns {NoteRevision|null} */
 function getNoteRevision(noteRevisionId) {
     return getCachedEntity('note_revisions', noteRevisionId, "SELECT * FROM note_revisions WHERE noteRevisionId = ?");
 }
 
-/** @returns {Promise<Branch|null>} */
+/** @returns {Branch|null} */
 function getBranch(branchId) {
     return getCachedEntity('branches', branchId, "SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
-/** @returns {Promise<Attribute|null>} */
+/** @returns {Attribute|null} */
 function getAttribute(attributeId) {
     return getCachedEntity('attributes', attributeId, "SELECT * FROM attributes WHERE attributeId = ?");
 }
 
-/** @returns {Promise<Option|null>} */
+/** @returns {Option|null} */
 function getOption(name) {
     return getEntity("SELECT * FROM options WHERE name = ?", [name]);
 }
