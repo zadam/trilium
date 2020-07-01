@@ -87,7 +87,7 @@ async function login() {
         await setupService.sendSeedToSyncServer();
     }
 
-    return doLogin();
+    return await doLogin();
 }
 
 async function doLogin() {
@@ -257,7 +257,7 @@ async function checkContentHash(syncContext) {
     return failedChecks.length > 0;
 }
 
-function syncRequest(syncContext, method, requestPath, body) {
+async function syncRequest(syncContext, method, requestPath, body) {
     const timeout = syncOptions.getSyncTimeout();
 
     const opts = {
@@ -269,7 +269,7 @@ function syncRequest(syncContext, method, requestPath, body) {
         proxy: proxyToggle ? syncOptions.getSyncProxy() : null
     };
 
-    return utils.timeLimit(request.exec(opts), timeout);
+    return await utils.timeLimit(request.exec(opts), timeout);
 }
 
 const primaryKeys = {

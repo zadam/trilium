@@ -2,6 +2,7 @@ const utils = require('./utils');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const cls = require('./cls');
 
 function saveSourceId(sourceId) {
@@ -46,12 +47,7 @@ function isLocalSourceId(srcId) {
 
 const currentSourceId = createSourceId();
 
-// very ugly
-setTimeout(() => {
-    const sqlInit = require('./sql_init');
-
-    sqlInit.dbReady.then(cls.wrap(() => saveSourceId(currentSourceId)));
-}, 5000);
+sqlInit.dbReady.then(cls.wrap(() => saveSourceId(currentSourceId)));
 
 function getCurrentSourceId() {
     return currentSourceId;

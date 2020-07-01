@@ -99,15 +99,12 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
     fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
 }
 
-// hack
-setTimeout(() => {
-    sqlInit.dbReady.then(() => {
-        setInterval(cls.wrap(regularBackup), 4 * 60 * 60 * 1000);
+sqlInit.dbReady.then(() => {
+    setInterval(cls.wrap(regularBackup), 4 * 60 * 60 * 1000);
 
-        // kickoff first backup soon after start up
-        setTimeout(cls.wrap(regularBackup), 5 * 60 * 1000);
-    });
-}, 5000);
+    // kickoff first backup soon after start up
+    setTimeout(cls.wrap(regularBackup), 5 * 60 * 1000);
+});
 
 module.exports = {
     backupNow,

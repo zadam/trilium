@@ -244,7 +244,8 @@ function timeLimit(promise, limitMs) {
             resolved = true;
 
             res(result);
-        });
+        })
+        .catch(error => rej(error));
 
         setTimeout(() => {
             if (!resolved) {

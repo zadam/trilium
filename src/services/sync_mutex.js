@@ -10,7 +10,7 @@ async function doExclusively(func) {
     const releaseMutex = await instance.acquire();
 
     try {
-        return func();
+        return await func();
     }
     finally {
         releaseMutex();
