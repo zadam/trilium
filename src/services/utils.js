@@ -158,7 +158,8 @@ function getContentDisposition(filename) {
 const STRING_MIME_TYPES = ["application/x-javascript", "image/svg+xml"];
 
 function isStringNote(type, mime) {
-    return ["text", "code", "relation-map", "search"].includes(type)
+    // render and book are string note in the sense that they are expected to contain empty string
+    return ["text", "code", "relation-map", "search", "render", "book"].includes(type)
         || mime.startsWith('text/')
         || STRING_MIME_TYPES.includes(mime);
 }

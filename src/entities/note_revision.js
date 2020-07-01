@@ -100,7 +100,6 @@ class NoteRevision extends Entity {
         }
     }
 
-    /** @returns {Promise} */
     setContent(content) {
         // force updating note itself so that utcDateModified is represented correctly even for the content
         this.forcedChange = true;

@@ -117,7 +117,6 @@ class Note extends Entity {
         return JSON.parse(content);
     }
 
-    /** @returns {Promise} */
     setContent(content) {
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to note ${this.noteId}`);

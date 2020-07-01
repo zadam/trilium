@@ -24,7 +24,7 @@ class ConsistencyChecks {
 
         for (const res of results) {
             try {
-                fixerCb(res);
+                sql.transactional(() => fixerCb(res));
 
                 if (this.autoFix) {
                     this.fixedIssues = true;
@@ -94,7 +94,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT branchId, branches.noteId
                     FROM branches
-                             LEFT JOIN notes USING (noteId)
+                      LEFT JOIN notes USING (noteId)
                     WHERE branches.isDeleted = 0
                       AND notes.noteId IS NULL`,
             ({branchId, noteId}) => {
@@ -112,7 +112,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT branchId, branches.noteId AS parentNoteId
                     FROM branches
-                             LEFT JOIN notes ON notes.noteId = branches.parentNoteId
+                      LEFT JOIN notes ON notes.noteId = branches.parentNoteId
                     WHERE branches.isDeleted = 0
                       AND branches.branchId != 'root'
                       AND notes.noteId IS NULL`,
@@ -131,7 +131,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT attributeId, attributes.noteId
                     FROM attributes
-                             LEFT JOIN notes USING (noteId)
+                      LEFT JOIN notes USING (noteId)
                     WHERE attributes.isDeleted = 0
                       AND notes.noteId IS NULL`,
             ({attributeId, noteId}) => {
@@ -149,7 +149,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT attributeId, attributes.value AS noteId
                     FROM attributes
-                             LEFT JOIN notes ON notes.noteId = attributes.value
+                      LEFT JOIN notes ON notes.noteId = attributes.value
                     WHERE attributes.isDeleted = 0
                       AND attributes.type = 'relation'
                       AND notes.noteId IS NULL`,
@@ -176,7 +176,7 @@ class ConsistencyChecks {
                     SELECT branchId,
                            noteId
                     FROM branches
-                             JOIN notes USING (noteId)
+                      JOIN notes USING (noteId)
                     WHERE notes.isDeleted = 1
                       AND branches.isDeleted = 0`,
             ({branchId, noteId}) => {
@@ -195,7 +195,7 @@ class ConsistencyChecks {
             SELECT branchId,
                    parentNoteId
             FROM branches
-                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
+              JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
             WHERE parentNote.isDeleted = 1
               AND branches.isDeleted = 0
         `, ({branchId, parentNoteId}) => {
@@ -213,7 +213,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
             SELECT DISTINCT notes.noteId
             FROM notes
-                     LEFT JOIN branches ON notes.noteId = branches.noteId AND branches.isDeleted = 0
+              LEFT JOIN branches ON notes.noteId = branches.noteId AND branches.isDeleted = 0
             WHERE notes.isDeleted = 0
               AND branches.branchId IS NULL
         `, ({noteId}) => {
@@ -285,7 +285,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT notes.noteId
                     FROM notes
-                             LEFT JOIN note_contents USING (noteId)
+                      LEFT JOIN note_contents USING (noteId)
                     WHERE note_contents.noteId IS NULL`,
             ({noteId}) => {
                 if (this.autoFix) {
@@ -316,7 +316,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT noteId
                     FROM notes
-                             JOIN note_contents USING (noteId)
+                      JOIN note_contents USING (noteId)
                     WHERE isDeleted = 0
                       AND isProtected = 0
                       AND content IS NULL`,
@@ -335,7 +335,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT noteId
                     FROM notes
-                             JOIN note_contents USING (noteId)
+                      JOIN note_contents USING (noteId)
                     WHERE isErased = 1
                       AND content IS NOT NULL`,
             ({noteId}) => {
@@ -363,7 +363,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT noteId, noteRevisionId
                     FROM notes
-                             JOIN note_revisions USING (noteId)
+                      JOIN note_revisions USING (noteId)
                     WHERE notes.isErased = 1
                       AND note_revisions.isErased = 0`,
             ({noteId, noteRevisionId}) => {
@@ -382,7 +382,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT note_revisions.noteRevisionId
                     FROM note_revisions
-                             LEFT JOIN note_revision_contents USING (noteRevisionId)
+                      LEFT JOIN note_revision_contents USING (noteRevisionId)
                     WHERE note_revision_contents.noteRevisionId IS NULL
                       AND note_revisions.isProtected = 0`,
             ({noteRevisionId}) => {
@@ -401,7 +401,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT noteRevisionId
                     FROM note_revisions
-                             JOIN note_revision_contents USING (noteRevisionId)
+                      JOIN note_revision_contents USING (noteRevisionId)
                     WHERE isErased = 0
                       AND content IS NULL`,
             ({noteRevisionId}) => {
@@ -454,7 +454,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT parentNoteId
                     FROM branches
-                             JOIN notes ON notes.noteId = branches.parentNoteId
+                      JOIN notes ON notes.noteId = branches.parentNoteId
                     WHERE notes.isDeleted = 0
                       AND notes.type == 'search'
                       AND branches.isDeleted = 0`,
@@ -519,7 +519,7 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.noteId
                     FROM attributes
-                             JOIN notes ON attributes.noteId = notes.noteId
+                      JOIN notes ON attributes.noteId = notes.noteId
                     WHERE attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
             ({attributeId, noteId}) => {
@@ -538,7 +538,7 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.value AS targetNoteId
                     FROM attributes
-                             JOIN notes ON attributes.value = notes.noteId
+                      JOIN notes ON attributes.value = notes.noteId
                     WHERE attributes.type = 'relation'
                       AND attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
@@ -605,7 +605,7 @@ class ConsistencyChecks {
         this.runSyncRowChecks("options", "name");
     }
 
-    runAllChecks() {
+    runAllChecksAndFixers() {
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
 
@@ -639,34 +639,39 @@ class ConsistencyChecks {
     }
 
     runDbDiagnostics() {
-        this.showEntityStat("Notes", `SELECT isDeleted, count(1)
-                                       FROM notes
-                                       GROUP BY isDeleted`);
-        this.showEntityStat("Note revisions", `SELECT isErased, count(1)
-                                                FROM note_revisions
-                                                GROUP BY isErased`);
-        this.showEntityStat("Branches", `SELECT isDeleted, count(1)
-                                          FROM branches
-                                          GROUP BY isDeleted`);
-        this.showEntityStat("Attributes", `SELECT isDeleted, count(1)
-                                            FROM attributes
-                                            GROUP BY isDeleted`);
-        this.showEntityStat("API tokens", `SELECT isDeleted, count(1)
-                                            FROM api_tokens
-                                            GROUP BY isDeleted`);
+        this.showEntityStat("Notes",
+                `SELECT isDeleted, count(1)
+                       FROM notes
+                       GROUP BY isDeleted`);
+        this.showEntityStat("Note revisions",
+                `SELECT isErased, count(1)
+                       FROM note_revisions
+                       GROUP BY isErased`);
+        this.showEntityStat("Branches",
+                `SELECT isDeleted, count(1)
+                       FROM branches
+                       GROUP BY isDeleted`);
+        this.showEntityStat("Attributes",
+                `SELECT isDeleted, count(1)
+                       FROM attributes
+                       GROUP BY isDeleted`);
+        this.showEntityStat("API tokens",
+                `SELECT isDeleted, count(1)
+                       FROM api_tokens
+                       GROUP BY isDeleted`);
     }
 
     async runChecks() {
         let elapsedTimeMs;
 
         await syncMutexService.doExclusively(() => {
-            const startTime = new Date();
+            const startTimeMs = Date.now();
 
             this.runDbDiagnostics();
 
-            this.runAllChecks();
+            this.runAllChecksAndFixers();
 
-            elapsedTimeMs = Date.now() - startTime.getTime();
+            elapsedTimeMs = Date.now() - startTimeMs;
         });
 
         if (this.unrecoveredConsistencyErrors) {
