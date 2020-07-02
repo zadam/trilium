@@ -1,6 +1,6 @@
 /*
  * CKEditor 5 (v19.1.1) content styles.
- * Generated on Tue, 09 Jun 2020 10:37:49 GMT.
+ * Generated on Fri, 19 Jun 2020 01:26:44 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/content-styles.html
  */
 
@@ -15,160 +15,6 @@
     --ck-todo-list-checkmark-size: 16px;
 }
 
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized {
-    max-width: 100%;
-    display: block;
-    box-sizing: border-box;
-}
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized img {
-    width: 100%;
-}
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized > figcaption {
-    display: block;
-}
-/* ckeditor5-image/theme/imagecaption.css */
-.ck-content .image > figcaption {
-    display: table-caption;
-    caption-side: bottom;
-    word-break: break-word;
-    color: hsl(0, 0%, 20%);
-    background-color: hsl(0, 0%, 97%);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
-}
-/* ckeditor5-basic-styles/theme/code.css */
-.ck-content code {
-    background-color: hsla(0, 0%, 78%, 0.3);
-    padding: .15em;
-    border-radius: 2px;
-}
-/* ckeditor5-image/theme/imagestyle.css */
-.ck-content .image-style-side,
-.ck-content .image-style-align-left,
-.ck-content .image-style-align-center,
-.ck-content .image-style-align-right {
-    max-width: 50%;
-}
-/* ckeditor5-image/theme/imagestyle.css */
-.ck-content .image-style-side {
-    float: right;
-    margin-left: var(--ck-image-style-spacing);
-}
-/* ckeditor5-image/theme/imagestyle.css */
-.ck-content .image-style-align-left {
-    float: left;
-    margin-right: var(--ck-image-style-spacing);
-}
-/* ckeditor5-image/theme/imagestyle.css */
-.ck-content .image-style-align-center {
-    margin-left: auto;
-    margin-right: auto;
-}
-/* ckeditor5-image/theme/imagestyle.css */
-.ck-content .image-style-align-right {
-    float: right;
-    margin-left: var(--ck-image-style-spacing);
-}
-/* ckeditor5-block-quote/theme/blockquote.css */
-.ck-content blockquote {
-    overflow: hidden;
-    padding-right: 1.5em;
-    padding-left: 1.5em;
-    margin-left: 0;
-    margin-right: 0;
-    font-style: italic;
-    border-left: solid 5px hsl(0, 0%, 80%);
-}
-/* ckeditor5-block-quote/theme/blockquote.css */
-.ck-content[dir="rtl"] blockquote {
-    border-left: 0;
-    border-right: solid 5px hsl(0, 0%, 80%);
-}
-/* ckeditor5-code-block/theme/codeblock.css */
-.ck-content pre {
-    padding: 1em;
-    color: hsl(0, 0%, 20.8%);
-    background: hsla(0, 0%, 78%, 0.3);
-    border: 1px solid hsl(0, 0%, 77%);
-    border-radius: 2px;
-    text-align: left;
-    direction: ltr;
-    tab-size: 4;
-    white-space: pre-wrap;
-    font-style: normal;
-    min-width: 200px;
-}
-/* ckeditor5-code-block/theme/codeblock.css */
-.ck-content pre code {
-    background: unset;
-    padding: 0;
-    border-radius: 0;
-}
-/* ckeditor5-horizontal-line/theme/horizontalline.css */
-.ck-content hr {
-    border-width: 1px 0 0;
-    border-style: solid;
-    border-color: hsl(0, 0%, 37%);
-    margin: 0;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image {
-    display: table;
-    clear: both;
-    text-align: center;
-    margin: 1em auto;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image > img {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    min-width: 50px;
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content .table {
-    margin: 1em auto;
-    display: table;
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content .table table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    width: 100%;
-    height: 100%;
-    border: 1px double hsl(0, 0%, 70%);
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content .table table td,
-.ck-content .table table th {
-    min-width: 2em;
-    padding: .4em;
-    border: 1px solid hsl(0, 0%, 75%);
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content .table table th {
-    font-weight: bold;
-    background: hsla(0, 0%, 0%, 5%);
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content[dir="rtl"] .table th {
-    text-align: right;
-}
-/* ckeditor5-table/theme/table.css */
-.ck-content[dir="ltr"] .table th {
-    text-align: left;
-}
-/* ckeditor5-media-embed/theme/mediaembed.css */
-.ck-content .media {
-    clear: both;
-    margin: 1em 0;
-    display: block;
-    min-width: 15em;
-}
 /* ckeditor5-list/theme/todolist.css */
 .ck-content .todo-list {
     list-style: none;
@@ -236,6 +82,106 @@
 .ck-content .todo-list .todo-list__label .todo-list__label__description {
     vertical-align: middle;
 }
+/* ckeditor5-media-embed/theme/mediaembed.css */
+.ck-content .media {
+    clear: both;
+    margin: 1em 0;
+    display: block;
+    min-width: 15em;
+}
+/* ckeditor5-basic-styles/theme/code.css */
+.ck-content code {
+    background-color: hsla(0, 0%, 78%, 0.3);
+    padding: .15em;
+    border-radius: 2px;
+}
+/* ckeditor5-block-quote/theme/blockquote.css */
+.ck-content blockquote {
+    overflow: hidden;
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    margin-left: 0;
+    margin-right: 0;
+    font-style: italic;
+    border-left: solid 5px hsl(0, 0%, 80%);
+}
+/* ckeditor5-block-quote/theme/blockquote.css */
+.ck-content[dir="rtl"] blockquote {
+    border-left: 0;
+    border-right: solid 5px hsl(0, 0%, 80%);
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content .table {
+    margin: 1em auto;
+    display: table;
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content .table table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px double hsl(0, 0%, 70%);
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content .table table td,
+.ck-content .table table th {
+    min-width: 2em;
+    padding: .4em;
+    border: 1px solid hsl(0, 0%, 75%);
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content .table table th {
+    font-weight: bold;
+    background: hsla(0, 0%, 0%, 5%);
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content[dir="rtl"] .table th {
+    text-align: right;
+}
+/* ckeditor5-table/theme/table.css */
+.ck-content[dir="ltr"] .table th {
+    text-align: left;
+}
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized {
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized img {
+    width: 100%;
+}
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized > figcaption {
+    display: block;
+}
+/* ckeditor5-image/theme/image.css */
+.ck-content .image {
+    display: table;
+    clear: both;
+    text-align: center;
+    margin: 1em auto;
+}
+/* ckeditor5-image/theme/image.css */
+.ck-content .image img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    min-width: 50px;
+}
+/* ckeditor5-image/theme/imagecaption.css */
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: hsl(0, 0%, 20%);
+    background-color: hsl(0, 0%, 97%);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
 /* ckeditor5-highlight/theme/highlight.css */
 .ck-content .marker-yellow {
     background-color: var(--ck-highlight-marker-yellow);
@@ -261,6 +207,33 @@
 .ck-content .pen-green {
     color: var(--ck-highlight-pen-green);
     background-color: transparent;
+}
+/* ckeditor5-image/theme/imagestyle.css */
+.ck-content .image-style-side,
+.ck-content .image-style-align-left,
+.ck-content .image-style-align-center,
+.ck-content .image-style-align-right {
+    max-width: 50%;
+}
+/* ckeditor5-image/theme/imagestyle.css */
+.ck-content .image-style-side {
+    float: right;
+    margin-left: var(--ck-image-style-spacing);
+}
+/* ckeditor5-image/theme/imagestyle.css */
+.ck-content .image-style-align-left {
+    float: left;
+    margin-right: var(--ck-image-style-spacing);
+}
+/* ckeditor5-image/theme/imagestyle.css */
+.ck-content .image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+/* ckeditor5-image/theme/imagestyle.css */
+.ck-content .image-style-align-right {
+    float: right;
+    margin-left: var(--ck-image-style-spacing);
 }
 /* ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
@@ -313,6 +286,33 @@
 /* ckeditor5-font/theme/fontsize.css */
 .ck-content .text-huge {
     font-size: 1.8em;
+}
+/* ckeditor5-code-block/theme/codeblock.css */
+.ck-content pre {
+    padding: 1em;
+    color: hsl(0, 0%, 20.8%);
+    background: hsla(0, 0%, 78%, 0.3);
+    border: 1px solid hsl(0, 0%, 77%);
+    border-radius: 2px;
+    text-align: left;
+    direction: ltr;
+    tab-size: 4;
+    white-space: pre-wrap;
+    font-style: normal;
+    min-width: 200px;
+}
+/* ckeditor5-code-block/theme/codeblock.css */
+.ck-content pre code {
+    background: unset;
+    padding: 0;
+    border-radius: 0;
+}
+/* ckeditor5-horizontal-line/theme/horizontalline.css */
+.ck-content hr {
+    margin: 15px 0;
+    height: 4px;
+    background: hsl(0, 0%, 87%);
+    border: 0;
 }
 @media print {
     /* ckeditor5-page-break/theme/pagebreak.css */
