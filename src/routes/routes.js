@@ -111,11 +111,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             res.sendStatus(500);
         }
 
-        const time = Date.now() - start;
-
-        if (time >= 10) {
-            console.log(`Slow request: ${time}ms - ${method} ${path}`);
-        }
+        log.request(req, Date.now() - start);
     });
 }
 

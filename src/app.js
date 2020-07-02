@@ -23,11 +23,6 @@ app.use(helmet({
     hidePoweredBy: false // deactivated because electron 4.0 crashes on this right after startup
 }));
 
-app.use((req, res, next) => {
-    log.request(req);
-    next();
-});
-
 app.use(bodyParser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
@@ -78,12 +73,10 @@ app.use((req, res, next) => {
 // error handler
 app.use((err, req, res, next) => {
     if (err && err.message && (
-        err.message.includes("Invalid package")
-        || (err.message.includes("Router not found for request") && err.message.includes("node_modules"))
-        || (err.message.includes("Router not found for request") && err.message.includes(".js.map"))
+        (err.message.includes("Router not found for request") && err.message.includes(".js.map"))
         || (err.message.includes("Router not found for request") && err.message.includes(".css.map"))
     )) {
-        // electron 6 outputs a lot of such errors which do not seem important
+        // ignore
     }
     else {
         log.info(err);
