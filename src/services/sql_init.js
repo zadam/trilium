@@ -8,6 +8,7 @@ const optionService = require('./options');
 const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
+const migrationService = require('./migration');
 
 const dbReady = utils.deferred();
 
@@ -28,27 +29,14 @@ function isDbInitialized() {
     return initialized === 'true';
 }
 
-function initDbConnection() {
+async function initDbConnection() {
     if (!isDbInitialized()) {
         log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${port} to see instructions on how to initialize Trilium.`));
 
         return;
     }
 
-    const currentDbVersion = getDbVersion();
-
-    if (currentDbVersion > appInfo.dbVersion) {
-        log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
-
-        utils.crash();
-    }
-
-    if (!isDbUpToDate()) {
-        // avoiding circular dependency
-        const migrationService = require('./migration');
-
-        migrationService.migrate();
-    }
+    await migrationService.migrateIfNecessary();
 
     require('./options_init').initStartupOptions();
 
@@ -136,22 +124,6 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     log.info("Schema and not synced options generated.");
 }
 
-function getDbVersion() {
-    return parseInt(sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
-}
-
-function isDbUpToDate() {
-    const dbVersion = getDbVersion();
-
-    const upToDate = dbVersion >= appInfo.dbVersion;
-
-    if (!upToDate) {
-        log.info("App db version is " + appInfo.dbVersion + ", while db version is " + dbVersion + ". Migration needed.");
-    }
-
-    return upToDate;
-}
-
 function setDbAsInitialized() {
     if (!isDbInitialized()) {
         optionService.setOption('initialized', 'true');
@@ -160,6 +132,13 @@ function setDbAsInitialized() {
     }
 }
 
+dbReady.then(() => {
+    setInterval(() => require('./backup').regularBackup(), 4 * 60 * 60 * 1000);
+
+    // kickoff first backup soon after start up
+    setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
+});
+
 log.info("DB size: " + sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
 
 module.exports = {
@@ -167,7 +146,6 @@ module.exports = {
     schemaExists,
     isDbInitialized,
     initDbConnection,
-    isDbUpToDate,
     createInitialDatabase,
     createDatabaseForSync,
     setDbAsInitialized

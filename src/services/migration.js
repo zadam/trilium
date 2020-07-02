@@ -5,12 +5,13 @@ const fs = require('fs-extra');
 const log = require('./log');
 const utils = require('./utils');
 const resourceDir = require('./resource_dir');
+const appInfo = require('./app_info');
 
-function migrate() {
+async function migrate() {
     const migrations = [];
 
     // backup before attempting migration
-    backupService.backupNow("before-migration");
+    await backupService.backupNow("before-migration");
 
     const currentDbVersion = parseInt(optionService.getOption('dbVersion'));
 
@@ -73,14 +74,38 @@ function migrate() {
             utils.crash();
         }
     }
+}
 
-    const sqlInit = require('./sql_init');
+function getDbVersion() {
+    return parseInt(sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
+}
 
-    if (sqlInit.isDbUpToDate()) {
-        sqlInit.initDbConnection();
+function isDbUpToDate() {
+    const dbVersion = getDbVersion();
+
+    const upToDate = dbVersion >= appInfo.dbVersion;
+
+    if (!upToDate) {
+        log.info("App db version is " + appInfo.dbVersion + ", while db version is " + dbVersion + ". Migration needed.");
+    }
+
+    return upToDate;
+}
+
+async function migrateIfNecessary() {
+    const currentDbVersion = getDbVersion();
+
+    if (currentDbVersion > appInfo.dbVersion) {
+        log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
+
+        utils.crash();
+    }
+
+    if (!isDbUpToDate()) {
+        await migrate();
     }
 }
 
 module.exports = {
-    migrate
+    migrateIfNecessary
 };
