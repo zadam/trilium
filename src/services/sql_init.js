@@ -55,7 +55,7 @@ function initDbConnection() {
     dbReady.resolve();
 }
 
-function createInitialDatabase(username, password, theme) {
+async function createInitialDatabase(username, password, theme) {
     log.info("Creating initial database ...");
 
     if (isDbInitialized()) {
@@ -65,13 +65,15 @@ function createInitialDatabase(username, password, theme) {
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
     const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.zip');
 
+    let rootNote;
+
     sql.transactional(() => {
         sql.executeScript(schema);
 
         const Note = require("../entities/note");
         const Branch = require("../entities/branch");
 
-        const rootNote = new Note({
+        rootNote = new Note({
             noteId: 'root',
             title: 'root',
             type: 'text',
@@ -87,12 +89,16 @@ function createInitialDatabase(username, password, theme) {
             isExpanded: true,
             notePosition: 10
         }).save();
+    });
 
-        const dummyTaskContext = new TaskContext("1", 'import', false);
+    const dummyTaskContext = new TaskContext("initial-demo-import", 'import', false);
 
-        const zipImportService = require("./import/zip");
-        zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
+    const zipImportService = require("./import/zip");
+    await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
+    require('./sync_table').fillAllSyncRows();
+
+    sql.transactional(() => {
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
         const optionsInitService = require('./options_init');
@@ -100,8 +106,6 @@ function createInitialDatabase(username, password, theme) {
         optionsInitService.initDocumentOptions();
         optionsInitService.initSyncedOptions(username, password);
         optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
-
-        require('./sync_table').fillAllSyncRows();
     });
 
     log.info("Schema and initial content generated.");

@@ -1,5 +1,3 @@
-const utils = require('./utils');
-
 function getOption(name) {
     const option = require('./repository').getOption(name);
 

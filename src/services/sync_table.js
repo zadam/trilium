@@ -99,17 +99,19 @@ function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
 }
 
 function fillAllSyncRows() {
-    sql.execute("DELETE FROM sync");
+    sql.transactional(() => {
+        sql.execute("DELETE FROM sync");
 
-    fillSyncRows("notes", "noteId");
-    fillSyncRows("note_contents", "noteId");
-    fillSyncRows("branches", "branchId");
-    fillSyncRows("note_revisions", "noteRevisionId");
-    fillSyncRows("note_revision_contents", "noteRevisionId");
-    fillSyncRows("recent_notes", "noteId");
-    fillSyncRows("attributes", "attributeId");
-    fillSyncRows("api_tokens", "apiTokenId");
-    fillSyncRows("options", "name", 'isSynced = 1');
+        fillSyncRows("notes", "noteId");
+        fillSyncRows("note_contents", "noteId");
+        fillSyncRows("branches", "branchId");
+        fillSyncRows("note_revisions", "noteRevisionId");
+        fillSyncRows("note_revision_contents", "noteRevisionId");
+        fillSyncRows("recent_notes", "noteId");
+        fillSyncRows("attributes", "attributeId");
+        fillSyncRows("api_tokens", "apiTokenId");
+        fillSyncRows("options", "name", 'isSynced = 1');
+    });
 }
 
 module.exports = {
