@@ -31,8 +31,6 @@ export default class EmptyTypeWidget extends TypeWidget {
             });
 
         noteAutocompleteService.showRecentNotes(this.$autoComplete);
-
-        return this.$widget;
     }
 
     doRefresh(note) {

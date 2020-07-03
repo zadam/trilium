@@ -170,8 +170,6 @@ export default class BookTypeWidget extends TypeWidget {
 
             $card.find('.note-book-children-content').empty();
         });
-
-        return this.$widget;
     }
 
     async expandCard($card) {

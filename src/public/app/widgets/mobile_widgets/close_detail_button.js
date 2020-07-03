@@ -10,8 +10,6 @@ class CloseDetailButtonWidget extends BasicWidget {
         this.$widget = $(TPL);
 
         this.$widget.on('click', () => this.triggerCommand('setActiveScreen', {screen:'tree'}));
-
-        return this.$widget;
     }
 }
 

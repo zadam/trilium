@@ -17,8 +17,6 @@ export default class RunScriptButtonsWidget extends TabAwareWidget {
 
         this.$renderButton = this.$widget.find('.render-button');
         this.$executeScriptButton = this.$widget.find('.execute-script-button');
-
-        return this.$widget;
     }
 
     refreshWithNote(note) {

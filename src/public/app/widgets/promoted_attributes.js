@@ -32,8 +32,6 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         this.$container = this.$widget.find(".promoted-attributes");
-
-        return this.$widget;
     }
 
     async refreshWithNote(note) {

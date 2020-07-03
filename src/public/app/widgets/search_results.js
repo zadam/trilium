@@ -35,8 +35,6 @@ export default class SearchResultsWidget extends BasicWidget {
         this.$searchResultsInner = this.$widget.find(".search-results-list");
 
         this.toggleInt(false);
-
-        return this.$widget;
     }
 
     searchResultsEvent({results}) {

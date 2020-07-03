@@ -40,7 +40,5 @@ export default class FlexContainer extends BasicWidget {
         for (const widget of this.children) {
             this.$widget.append(widget.render());
         }
-
-        return this.$widget;
     }
 }

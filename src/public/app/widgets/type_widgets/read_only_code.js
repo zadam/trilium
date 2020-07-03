@@ -32,8 +32,6 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
 
             this.triggerEvent('codePreviewDisabled', {tabContext: this.tabContext});
         });
-
-        return this.$widget;
     }
 
     async doRefresh(note) {

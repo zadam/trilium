@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "electron": "10.0.0-beta.4",
+    "electron": "10.0.0-beta.8",
     "electron-builder": "22.7.0",
     "electron-packager": "15.0.0",
     "electron-rebuild": "1.11.0",
@@ -84,7 +84,7 @@
     "jasmine": "^3.5.0",
     "jsdoc": "3.6.4",
     "lorem-ipsum": "2.0.3",
-    "webpack": "5.0.0-beta.18",
+    "webpack": "5.0.0-beta.20",
     "webpack-cli": "4.0.0-beta.8"
   },
   "optionalDependencies": {

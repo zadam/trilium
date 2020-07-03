@@ -51,8 +51,6 @@ export default class HistoryNavigationWidget extends BasicWidget {
         else {
             this.$widget = $("<div>");
         }
-
-        return this.$widget;
     }
 
     async showContextMenu(e) {

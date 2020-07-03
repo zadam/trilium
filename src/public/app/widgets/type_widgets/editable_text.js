@@ -88,8 +88,6 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         keyboardActionService.setupActionsForElement('text-detail', this.$widget, this);
 
         super.doRender();
-
-        return this.$widget;
     }
 
     async initEditor() {

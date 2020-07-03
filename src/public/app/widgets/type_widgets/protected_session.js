@@ -36,7 +36,5 @@ export default class ProtectedSessionTypeWidget extends TypeWidget {
 
             return false;
         });
-        
-        return this.$widget;
     }
 }

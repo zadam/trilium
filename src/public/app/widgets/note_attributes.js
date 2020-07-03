@@ -234,12 +234,6 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             this.attributeDetailWidget.hide();
         });
 
-        this.$editor.on('blur', () => {
-            this.save();
-
-            this.attributeDetailWidget.hide();
-        });
-
         this.$widget.append(this.attributeDetailWidget.render());
     }
 

@@ -267,8 +267,6 @@ export default class TabRowWidget extends BasicWidget {
                 }
             });
         });
-
-        return this.$widget;
     }
 
     setupStyle() {

@@ -71,8 +71,6 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
         this.$closeSearchButton.on('click', () => this.hideSearch());
-
-        return this.$widget;
     }
 
     doSearch(searchText) {

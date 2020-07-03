@@ -113,8 +113,6 @@ export default class NoteActionsWidget extends TabAwareWidget {
 
         this.$unprotectButton = this.$widget.find(".unprotect-button");
         this.$unprotectButton.on('click', () => protectedSessionService.protectNote(this.noteId, false, false));
-
-        return this.$widget;
     }
 
     refreshWithNote(note) {

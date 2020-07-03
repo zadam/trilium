@@ -63,7 +63,5 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             const {remote} = utils.dynamicRequire('electron');
             remote.BrowserWindow.getFocusedWindow().close();
         });
-
-        return this.$widget;
     }
 }

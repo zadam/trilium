@@ -116,8 +116,6 @@ export default class FileTypeWidget extends TypeWidget {
                 toastService.showError("Upload of a new file revision failed.");
             }
         });
-
-        return this.$widget;
     }
 
     async doRefresh(note) {

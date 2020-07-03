@@ -52,8 +52,6 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         });
 
         super.doRender();
-
-        return this.$widget;
     }
 
     cleanup() {

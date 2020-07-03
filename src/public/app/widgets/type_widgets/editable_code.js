@@ -82,8 +82,6 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         this.$sqlConsoleExecuteButton.on('click', () => this.execute());
 
         this.initialized = this.initEditor();
-
-        return this.$widget;
     }
 
     async initEditor() {

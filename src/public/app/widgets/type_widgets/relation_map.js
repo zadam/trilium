@@ -182,8 +182,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             jsPlumb.ready(res);
         });
-
-        return this.$widget;
     }
 
     async contextMenuHandler(command, originalTarget) {

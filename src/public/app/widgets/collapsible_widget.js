@@ -70,8 +70,6 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.initialized = this.doRenderBody();
 
         this.decorateWidget();
-
-        return this.$widget;
     }
 
     saveCollapsed(collapse) {

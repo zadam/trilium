@@ -119,8 +119,6 @@ class ImageTypeWidget extends TypeWidget {
                 toastService.showError("Upload of a new image revision failed: " + result.message);
             }
         });
-
-        return this.$widget;
     }
 
     async doRefresh(note) {

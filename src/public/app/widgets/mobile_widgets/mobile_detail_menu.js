@@ -38,8 +38,6 @@ class MobileDetailMenuWidget extends BasicWidget {
                 }
             });
         });
-
-        return this.$widget;
     }
 }
 

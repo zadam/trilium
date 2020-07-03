@@ -100,8 +100,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
                 replaceUnderscoresWithSpaces: true
             });
         });
-
-        return this.$widget;
     }
 
     async refresh() {

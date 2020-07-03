@@ -48,8 +48,6 @@ export default class NoteTitleWidget extends TabAwareWidget {
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
             this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
         });
-
-        return this.$widget;
     }
 
     async refreshWithNote(note) {

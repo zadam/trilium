@@ -20,8 +20,6 @@ export default class SearchTypeWidget extends TypeWidget {
         this.$searchString = this.$widget.find(".search-string");
         this.$component = this.$widget.find('.note-detail-search');
         this.$help = this.$widget.find(".note-detail-search-help");
-
-        return this.$widget;
     }
 
     async doRefresh(note) {

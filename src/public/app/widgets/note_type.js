@@ -40,8 +40,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
         this.$noteTypeDropdown = this.$widget.find(".note-type-dropdown");
         this.$noteTypeButton = this.$widget.find(".note-type-button");
         this.$noteTypeDesc = this.$widget.find(".note-type-desc");
-
-        return this.$widget;
     }
 
     async refreshWithNote(note) {

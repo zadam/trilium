@@ -250,8 +250,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.initialized = this.initFancyTree();
 
         this.setupNoteTitleTooltip();
-
-        return this.$widget;
     }
 
     setupNoteTitleTooltip() {

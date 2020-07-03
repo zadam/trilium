@@ -37,9 +37,18 @@ const TPL = `
         .attr-edit td input {
             width: 100%;
         }
+        
+        .close-attr-detail-button {
+            font-size: x-large;
+            cursor: pointer;
+        }
     </style>
 
-    <h5>Label detail</h5>
+    <div style="display: flex; justify-content: space-between;">
+        <h5>Label detail</h5>
+        
+        <span class="bx bx-x close-attr-detail-button"></span>
+    </div>
 
     <table class="attr-edit">
         <tr>
@@ -91,8 +100,17 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$attrEditName = this.$widget.find('.attr-edit-name');
         this.$attrEditValue = this.$widget.find('.attr-edit-value');
         this.$attrEditInheritable = this.$widget.find('.attr-edit-inheritable');
+        this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
 
-        return this.$widget;
+        this.$closeAttrDetailButton.on('click', () => this.hide());
+
+        $(window).on('mouseup', e => {
+            console.log("click", e.target);
+
+            if (!$(e.target).closest(this.$widget[0]).length) {
+                this.hide();
+            }
+        });
     }
 
     async showAttributeDetail(attr, x, y) {
@@ -140,7 +158,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             this.$relatedNotesMoreNotes.hide();
         }
 
-        this.$attrEditName.val(attr.name);
+        this.$attrEditName.val(attr.name).focus();
         this.$attrEditValue.val(attr.value);
 
         this.$widget.css("left", x - this.$widget.width() / 2);
