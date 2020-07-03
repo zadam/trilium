@@ -156,7 +156,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             this.$relatedNotesMoreNotes.hide();
         }
 
-        this.$attrEditName.val(attr.name).focus();
+        this.$attrEditName.val(attr.name);
         this.$attrEditValue.val(attr.value);
 
         this.$widget.css("left", x - this.$widget.width() / 2);

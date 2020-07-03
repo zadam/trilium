@@ -147,8 +147,9 @@ const TPL = `
     }
     
     .add-new-attribute-button {
+        color: var(--muted-text-color);
         position: absolute; 
-        bottom: 5px; 
+        bottom: 5px;
         right: 5px; 
         cursor: pointer;
         border: 1px solid transparent;
@@ -436,6 +437,8 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         }
 
         this.$inheritedExpanderText.text(inheritedAttributes.length + ' inherited ' + this.attrPlural(inheritedAttributes.length));
+
+        this.$inheritedAttributes.empty();
 
         await this.renderAttributes(inheritedAttributes, this.$inheritedAttributes);
 
