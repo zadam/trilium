@@ -19,7 +19,6 @@ import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
 import NoteInfoWidget from "../widgets/collapsible_widgets/note_info.js";
 import CalendarWidget from "../widgets/collapsible_widgets/calendar.js";
-import AttributesWidget from "../widgets/collapsible_widgets/attributes.js";
 import LinkMapWidget from "../widgets/collapsible_widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/collapsible_widgets/note_revisions.js";
 import SimilarNotesWidget from "../widgets/collapsible_widgets/similar_notes.js";
@@ -147,7 +146,6 @@ export default class DesktopMainWindowLayout {
                     .child(new NoteInfoWidget())
                     .child(new TabCachingWidget(() => new CalendarWidget()))
                     .child(new TabCachingWidget(() => new EditedNotesWidget()))
-                    .child(new TabCachingWidget(() => new AttributesWidget()))
                     .child(new TabCachingWidget(() => new LinkMapWidget()))
                     .child(new TabCachingWidget(() => new NoteRevisionsWidget()))
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))

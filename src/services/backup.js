@@ -5,18 +5,19 @@ const optionService = require('./options');
 const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
-const sqlInit = require('./sql_init');
 const syncMutexService = require('./sync_mutex');
 const attributeService = require('./attributes');
 const cls = require('./cls');
 const Database = require('better-sqlite3');
 
 function regularBackup() {
-    periodBackup('lastDailyBackupDate', 'daily', 24 * 3600);
+    cls.init(() => {
+        periodBackup('lastDailyBackupDate', 'daily', 24 * 3600);
 
-    periodBackup('lastWeeklyBackupDate', 'weekly', 7 * 24 * 3600);
+        periodBackup('lastWeeklyBackupDate', 'weekly', 7 * 24 * 3600);
 
-    periodBackup('lastMonthlyBackupDate', 'monthly', 30 * 24 * 3600);
+        periodBackup('lastMonthlyBackupDate', 'monthly', 30 * 24 * 3600);
+    });
 }
 
 function periodBackup(optionName, fileName, periodInSeconds) {

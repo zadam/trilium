@@ -105,8 +105,6 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$closeAttrDetailButton.on('click', () => this.hide());
 
         $(window).on('mouseup', e => {
-            console.log("click", e.target);
-
             if (!$(e.target).closest(this.$widget[0]).length) {
                 this.hide();
             }

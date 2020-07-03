@@ -7,6 +7,7 @@ import ws from "../services/ws.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import attributesParser from "../services/attribute_parser.js";
 import AttributeDetailWidget from "./attribute_detail.js";
+import contextMenuService from "../services/context_menu.js";
 
 const mentionSetup = {
     feeds: [
@@ -144,6 +145,19 @@ const TPL = `
     .attr-expander.error hr {
         border-color: red;
     }
+    
+    .add-new-attribute-button {
+        position: absolute; 
+        bottom: 5px; 
+        right: 5px; 
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+    
+    .add-new-attribute-button:hover {
+        border: 1px solid var(--main-border-color);
+        border-radius: 2px;
+    }
 </style>
 
 <div class="attr-expander attr-owned-expander">
@@ -155,7 +169,11 @@ const TPL = `
 </div>
 
 <div class="attr-display">
-    <div class="note-attributes-editor" tabindex="200"></div>
+    <div style="position: relative">
+        <div class="note-attributes-editor" tabindex="200"></div>
+    
+        <div class="bx bx-plus add-new-attribute-button"></div>
+    </div>
     
     <hr class="w-100 attr-inherited-empty-expander" style="margin-bottom: 10px;">
     
@@ -232,6 +250,24 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             }
 
             this.attributeDetailWidget.hide();
+        });
+
+        this.$addNewAttributeButton = this.$widget.find('.add-new-attribute-button');
+        this.$addNewAttributeButton.on('click', e => {
+            contextMenuService.show({
+                x: e.pageX,
+                y: e.pageY,
+                items: [
+                    {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
+                    {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
+                    {title: "----"},
+                    {title: "Add new label definition", command: "addNewRelation", uiIcon: "empty"},
+                    {title: "Add new relation definition", command: "addNewRelation", uiIcon: "empty"},
+                ],
+                selectMenuItemHandler: ({command}) => {
+                    console.log(command);
+                }
+            });
         });
 
         this.$widget.append(this.attributeDetailWidget.render());
@@ -389,7 +425,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         });
 
         const inheritedAttributes = note.getAttributes().filter(attr => attr.noteId !== this.noteId);
-console.log("inheritedAttributes", inheritedAttributes);
+
         if (inheritedAttributes.length === 0) {
             this.$inheritedExpander.hide();
             this.$inheritedEmptyExpander.show();
@@ -402,6 +438,8 @@ console.log("inheritedAttributes", inheritedAttributes);
         this.$inheritedExpanderText.text(inheritedAttributes.length + ' inherited ' + this.attrPlural(inheritedAttributes.length));
 
         await this.renderAttributes(inheritedAttributes, this.$inheritedAttributes);
+
+        this.parseAttributes();
     }
 
     attrPlural(number) {
