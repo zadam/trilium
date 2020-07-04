@@ -80,7 +80,6 @@ const TPL = `
             </span>
         </div>
         <a data-trigger-command="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
-        <a data-trigger-command="showAttributes" class="dropdown-item show-attributes-button"><kbd data-command="showAttributes"></kbd> Attributes</a>
         <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
         <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
         <a class="dropdown-item import-files-button">Import files</a>

@@ -45,8 +45,6 @@ const LINK_MAP = {
 
 const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
-const KNOCKOUT = {js: ["libraries/knockout.min.js"]};
-
 const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
 
 async function requireLibrary(library) {
@@ -96,6 +94,5 @@ export default {
     RELATION_MAP,
     LINK_MAP,
     PRINT_THIS,
-    KNOCKOUT,
     CALENDAR_WIDGET
 }

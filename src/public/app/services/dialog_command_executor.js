@@ -12,10 +12,6 @@ export default class DialogCommandExecutor extends Component {
         import("../dialogs/recent_changes.js").then(d => d.showDialog());
     }
 
-    showAttributesCommand() {
-        import("../dialogs/attributes.js").then(d => d.showDialog());
-    }
-
     showNoteInfoCommand() {
         import("../dialogs/note_info.js").then(d => d.showDialog());
     }

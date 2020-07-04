@@ -230,10 +230,10 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         separator: "Dialogs"
     },
-    {
+    { // FIXME
         actionName: "showAttributes",
         defaultShortcuts: ["Alt+A"],
-        description: "Shows Attributes dialog",
+        description: "Shows Attributes",
         scope: "window"
     },
     {
