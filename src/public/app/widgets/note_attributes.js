@@ -278,7 +278,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         const attributes = this.parseAttributes();
 
         if (attributes) {
-            await server.put(`notes/${this.noteId}/attributes2`, attributes, this.componentId);
+            await server.put(`notes/${this.noteId}/attributes`, attributes, this.componentId);
         }
     }
 

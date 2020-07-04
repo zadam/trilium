@@ -83,7 +83,7 @@ function deleteNoteAttribute(req) {
     }
 }
 
-function updateNoteAttributes2(req) {
+function updateNoteAttributes(req) {
     const noteId = req.params.noteId;
     const incomingAttributes = req.body;
 
@@ -149,69 +149,6 @@ function updateNoteAttributes2(req) {
     }
 }
 
-function updateNoteAttributes(req) {
-    const noteId = req.params.noteId;
-    const attributes = req.body;
-
-    for (const attribute of attributes) {
-        let attributeEntity;
-
-        if (attribute.attributeId) {
-            attributeEntity = repository.getAttribute(attribute.attributeId);
-
-            if (attributeEntity.noteId !== noteId) {
-                return [400, `Attribute ${attributeEntity.noteId} is not owned by ${noteId}`];
-            }
-
-            if (attribute.type !== attributeEntity.type
-                || attribute.name !== attributeEntity.name
-                || (attribute.type === 'relation' && attribute.value !== attributeEntity.value)
-                || attribute.isInheritable !== attributeEntity.isInheritable) {
-
-                if (attribute.type !== 'relation' || !!attribute.value.trim()) {
-                    const newAttribute = attributeEntity.createClone(attribute.type, attribute.name, attribute.value, attribute.isInheritable);
-                    newAttribute.save();
-                }
-
-                attributeEntity.isDeleted = true;
-                attributeEntity.save();
-
-                continue;
-            }
-        }
-        else {
-            // if it was "created" and then immediatelly deleted, we just don't create it at all
-            if (attribute.isDeleted) {
-                continue;
-            }
-
-            attributeEntity = new Attribute();
-            attributeEntity.noteId = noteId;
-        }
-
-        attributeEntity.type = attribute.type;
-        attributeEntity.name = attribute.name;
-        attributeEntity.position = attribute.position;
-        attributeEntity.isInheritable = attribute.isInheritable;
-        attributeEntity.isDeleted = attribute.isDeleted;
-
-        if (attributeEntity.type === 'relation' && !attribute.value.trim()) {
-            // relation should never have empty target
-            attributeEntity.isDeleted = true;
-        }
-        else {
-            attributeEntity.value = attribute.value;
-        }
-
-        attributeEntity.save();
-    }
-
-    const note = repository.getNote(noteId);
-    note.invalidateAttributeCache();
-
-    return note.getAttributes();
-}
-
 function getAttributeNames(req) {
     const type = req.query.type;
     const query = req.query.query;
@@ -260,7 +197,6 @@ function deleteRelation(req) {
 
 module.exports = {
     updateNoteAttributes,
-    updateNoteAttributes2,
     updateNoteAttribute,
     deleteNoteAttribute,
     getAttributeNames,
