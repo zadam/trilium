@@ -487,7 +487,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
     }
 
     formatValue(val) {
-        if (!/[^\w_-]/.test(val)) {
+        if (/^[\p{L}\p{N}\-_,.]+$/u.test(val)) {
             return val;
         }
         else if (!val.includes('"')) {
