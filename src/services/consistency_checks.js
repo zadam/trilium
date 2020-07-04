@@ -605,6 +605,44 @@ class ConsistencyChecks {
         this.runSyncRowChecks("options", "name");
     }
 
+    findWronglyNamedAttributes() {
+        const attrNames = sql.getColumn(`SELECT DISTINCT name FROM attributes`);
+
+        const attrNameMatcher = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
+
+        for (const origName of attrNames) {
+            if (!attrNameMatcher.test(origName)) {
+                let fixedName;
+
+                if (origName === '') {
+                    fixedName = "unnamed";
+                }
+                else {
+                    // any not allowed character should be replaced with underscore
+                    fixedName = origName.replace(/[^\p{L}\p{N}_:]/ug, "_");
+                }
+
+                if (this.autoFix) {
+                    // there isn't a good way to update this:
+                    // - just SQL query will fix it in DB but not notify frontend (or other caches) that it has been fixed
+                    // - renaming the attribute would break the invariant that single attribute never changes the name
+                    // - deleting the old attribute and creating new will create duplicates across synchronized cluster (specifically in the initial migration)
+                    // But in general we assume there won't be many such problems
+                    sql.execute('UPDATE attributes SET name = ? WHERE name = ?', [fixedName, origName]);
+
+                    this.fixedIssues = true;
+
+                    logFix(`Renamed incorrectly named attributes "${origName}" to ${fixedName}`);
+                }
+                else {
+                    this.unrecoveredConsistencyErrors = true;
+
+                    logFix(`There are incorrectly named attributes "${origName}"`);
+                }
+            }
+        }
+    }
+
     runAllChecksAndFixers() {
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
@@ -616,6 +654,8 @@ class ConsistencyChecks {
         this.findLogicIssues();
 
         this.findSyncRowsIssues();
+
+        this.findWronglyNamedAttributes();
 
         // root branch should always be expanded
         sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
