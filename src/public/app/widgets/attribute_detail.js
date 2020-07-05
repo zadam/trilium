@@ -50,6 +50,8 @@ const TPL = `
         <span class="bx bx-x close-attr-detail-button"></span>
     </div>
 
+    <div class="attr-is-owned-by"></div>
+
     <table class="attr-edit">
         <tr>
             <th>Name:</th>
@@ -64,7 +66,7 @@ const TPL = `
             <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
         </tr>
         <tr>
-            <td colspan="2">
+            <td colspan="2" class="attr-edit-button-row">
                 <div style="display: flex; justify-content: space-between">
                     <div>
                         <button type="submit" class="btn btn-sm btn-primary">Save</button>
@@ -100,7 +102,9 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$attrEditName = this.$widget.find('.attr-edit-name');
         this.$attrEditValue = this.$widget.find('.attr-edit-value');
         this.$attrEditInheritable = this.$widget.find('.attr-edit-inheritable');
+        this.$attrEditButtonRow = this.$widget.find('.attr-edit-button-row');
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
+        this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
 
         this.$closeAttrDetailButton.on('click', () => this.hide());
 
@@ -111,8 +115,8 @@ export default class AttributeDetailWidget extends BasicWidget {
         });
     }
 
-    async showAttributeDetail(attr, x, y) {
-        if (!attr) {
+    async showAttributeDetail({attribute, isOwned, x, y}) {
+        if (!attribute) {
             this.hide();
 
             return;
@@ -120,7 +124,7 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.toggleInt(true);
 
-        let {results, count} = await server.post('search-related', attr);
+        let {results, count} = await server.post('search-related', attribute);
 
         for (const res of results) {
             res.noteId = res.notePathArray[res.notePathArray.length - 1];
@@ -132,7 +136,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             this.$relatedNotesTitle.hide();
         }
         else {
-            this.$relatedNotesTitle.text(`Other notes with ${attr.type} name "${attr.name}"`);
+            this.$relatedNotesTitle.text(`Other notes with ${attribute.type} name "${attribute.name}"`);
         }
 
         this.$relatedNotesList.empty();
@@ -156,8 +160,26 @@ export default class AttributeDetailWidget extends BasicWidget {
             this.$relatedNotesMoreNotes.hide();
         }
 
-        this.$attrEditName.val(attr.name);
-        this.$attrEditValue.val(attr.value);
+        if (isOwned) {
+            this.$attrIsOwnedBy.hide();
+        }
+        else {
+            this.$attrIsOwnedBy
+                .show()
+                .append(attribute.type === 'label' ? 'Label' : 'Relation')
+                .append(' is owned by note ')
+                .append(await linkService.createNoteLink(attribute.noteId))
+        }
+
+        this.$attrEditName
+            .val(attribute.name)
+            .attr('readonly', () => !isOwned);
+
+        this.$attrEditValue
+            .val(attribute.value)
+            .attr('readonly', () => !isOwned);
+
+        this.$attrEditButtonRow.toggle(!!isOwned);
 
         this.$widget.css("left", x - this.$widget.width() / 2);
         this.$widget.css("top", y + 30);

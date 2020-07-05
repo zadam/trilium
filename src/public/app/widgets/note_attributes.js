@@ -329,7 +329,12 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                     }
                 }
 
-                this.attributeDetailWidget.showAttributeDetail(matchedAttr, e.pageX, e.pageY);
+                this.attributeDetailWidget.showAttributeDetail({
+                    attribute: matchedAttr,
+                    isOwned: true,
+                    x: e.pageX,
+                    y: e.pageY
+                });
             }
         });
 
@@ -419,7 +424,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         const ownedAttributes = note.getOwnedAttributes();
         const $attributesContainer = $("<div>");
 
-        await this.renderAttributes(ownedAttributes, $attributesContainer);
+        await this.renderAttributesIntoCKEditor(ownedAttributes, $attributesContainer);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             this.textEditor.setData($attributesContainer.html());
@@ -440,7 +445,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
         this.$inheritedAttributes.empty();
 
-        await this.renderAttributes(inheritedAttributes, this.$inheritedAttributes);
+        await this.renderAttributesIntoDiv(inheritedAttributes, this.$inheritedAttributes);
 
         this.parseAttributes();
     }
@@ -457,32 +462,57 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         });
     }
 
-    async renderAttributes(attributes, $container) {
+    async renderAttributesIntoCKEditor(attributes, $container) {
         for (const attribute of attributes) {
-            if (attribute.type === 'label') {
-                $container.append(document.createTextNode('#' + attribute.name));
+            this.renderAttribute(attribute, $container);
+        }
+    }
 
-                if (attribute.value) {
-                    $container.append('=');
-                    $container.append(document.createTextNode(this.formatValue(attribute.value)));
-                }
+    renderAttributesIntoDiv(attributes, $container) {
+        for (const attribute of attributes) {
+            const $span = $("<span>")
+                .on('click', e => this.attributeDetailWidget.showAttributeDetail({
+                    attribute: {
+                        noteId: attribute.noteId,
+                        type: attribute.type,
+                        name: attribute.name,
+                        value: attribute.value
+                    },
+                    isOwned: false,
+                    x: e.pageX,
+                    y: e.pageY
+                }));
 
-                $container.append(' ');
-            } else if (attribute.type === 'relation') {
-                if (attribute.isAutoLink) {
-                    continue;
-                }
+            $container.append($span);
 
-                if (attribute.value) {
-                    $container.append(document.createTextNode('~' + attribute.name + "="));
-                    $container.append(this.createNoteLink(attribute.value));
-                    $container.append(" ");
-                } else {
-                    ws.logError(`Relation ${attribute.attributeId} has empty target`);
-                }
-            } else {
-                ws.logError("Unknown attr type: " + attribute.type);
+            this.renderAttribute(attribute, $span);
+        }
+    }
+
+    renderAttribute(attribute, $container) {
+        if (attribute.type === 'label') {
+            $container.append(document.createTextNode('#' + attribute.name));
+
+            if (attribute.value) {
+                $container.append('=');
+                $container.append(document.createTextNode(this.formatValue(attribute.value)));
             }
+
+            $container.append(' ');
+        } else if (attribute.type === 'relation') {
+            if (attribute.isAutoLink) {
+                return;
+            }
+
+            if (attribute.value) {
+                $container.append(document.createTextNode('~' + attribute.name + "="));
+                $container.append(this.createNoteLink(attribute.value));
+                $container.append(" ");
+            } else {
+                ws.logError(`Relation ${attribute.attributeId} has empty target`);
+            }
+        } else {
+            ws.logError("Unknown attr type: " + attribute.type);
         }
     }
 
