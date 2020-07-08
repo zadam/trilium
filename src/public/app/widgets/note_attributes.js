@@ -95,6 +95,7 @@ const TPL = `
         max-height: 200px;
         overflow: auto;
         padding-bottom: 5px;
+        padding-left: 7px;
     }
     
     .note-attributes-editor p {
@@ -147,6 +148,16 @@ const TPL = `
         border-color: red;
     }
     
+    .save-attributes-button {
+        color: var(--muted-text-color);
+        position: absolute; 
+        bottom: 3px;
+        right: 25px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        font-size: 130%;
+    }
+    
     .add-new-attribute-button {
         color: var(--muted-text-color);
         position: absolute; 
@@ -154,9 +165,10 @@ const TPL = `
         right: 0; 
         cursor: pointer;
         border: 1px solid transparent;
+        font-size: 130%;
     }
     
-    .add-new-attribute-button:hover {
+    .add-new-attribute-button:hover, .save-attributes-button:hover {
         border: 1px solid var(--main-border-color);
         border-radius: 2px;
     }
@@ -174,7 +186,9 @@ const TPL = `
     <div style="position: relative">
         <div class="note-attributes-editor" tabindex="200"></div>
     
-        <div class="bx bx-plus add-new-attribute-button"></div>
+        <div class="bx bx-save save-attributes-button" title="Save attributes <enter>, <tab>)"></div>
+    
+        <div class="bx bx-plus add-new-attribute-button" title="Add a new attribute"></div>
     </div>
     
     <hr class="w-100 attr-inherited-empty-expander" style="margin-bottom: 10px;">
