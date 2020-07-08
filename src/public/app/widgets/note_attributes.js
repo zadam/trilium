@@ -94,6 +94,7 @@ const TPL = `
         color: var(--muted-text-color);
         max-height: 200px;
         overflow: auto;
+        padding-bottom: 5px;
     }
     
     .note-attributes-editor p {
@@ -149,8 +150,8 @@ const TPL = `
     .add-new-attribute-button {
         color: var(--muted-text-color);
         position: absolute; 
-        bottom: 5px;
-        right: 5px; 
+        bottom: 3px;
+        right: 0; 
         cursor: pointer;
         border: 1px solid transparent;
     }
