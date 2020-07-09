@@ -1,6 +1,13 @@
 import attributeParser from '../src/public/app/services/attribute_parser.js';
 import {describe, it, expect, execute} from './mini_test.js';
 
+describe("Preprocessor", () => {
+    it("relation with value", () => {
+        expect(attributeParser.preprocess('<p>~relation&nbsp;= <a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" some-attr="abc" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>&nbsp;</p>'))
+            .toEqual("~relation = #root/RclIpMauTOKS/NFi2gL4xtPxM ");
+    });
+});
+
 describe("Lexer", () => {
     it("simple label", () => {
         expect(attributeParser.lexer("#label").map(t => t.text))
@@ -19,11 +26,8 @@ describe("Lexer", () => {
     });
 
     it("relation with value", () => {
-        expect(attributeParser.lexer('~relation=<a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>').map(t => t.text))
+        expect(attributeParser.lexer('~relation=#root/RclIpMauTOKS/NFi2gL4xtPxM').map(t => t.text))
             .toEqual(["~relation", "=", "#root/RclIpMauTOKS/NFi2gL4xtPxM"]);
-
-        expect(attributeParser.lexer('~relation=<a class="reference-link" id="abc" href="#NFi2gL4xtPxM">note</a>').map(t => t.text))
-            .toEqual(["~relation", "=", "#NFi2gL4xtPxM"]);
     });
 
     it("use quotes to define value", () => {
@@ -74,7 +78,7 @@ describe("Parser", () => {
     });
 
     it("error cases", () => {
-        expect(() => attributeParser.parser(["~token"].map(t => ({text: t}))))
+        expect(() => attributeParser.parser(["~token"].map(t => ({text: t})), "~token"))
             .toThrow('Relation "~token" should point to a note.');
     });
 });

@@ -168,7 +168,23 @@ function executeWithoutTransaction(query, params = []) {
 }
 
 function executeMany(query, params) {
-    getManyRows(query, params);
+    while (params.length > 0) {
+        const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
+        params = params.slice(curParams.length);
+
+        const curParamsObj = {};
+
+        let j = 1;
+        for (const param of curParams) {
+            curParamsObj['param' + j++] = param;
+        }
+
+        let i = 1;
+        const questionMarks = curParams.map(() => ":param" + i++).join(",");
+        const curQuery = query.replace(/\?\?\?/g, questionMarks);
+
+        dbConnection.prepare(curQuery).run(curParamsObj);
+    }
 }
 
 function executeScript(query) {

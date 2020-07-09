@@ -44,6 +44,7 @@ export function expect(val) {
                     console.trace("toThrow caught exception, but messages differ");
                     console.error(`expected: ${errorMessage}`);
                     console.error(`got:      ${e.message}`);
+                    console.error(`${e.stack}`);
 
                     errorCount++;
                 }

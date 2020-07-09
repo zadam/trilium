@@ -115,12 +115,15 @@ export default class AttributeDetailWidget extends BasicWidget {
         });
     }
 
-    async showAttributeDetail({attribute, isOwned, x, y}) {
+    async showAttributeDetail({allAttributes, attribute, isOwned, x, y}) {
         if (!attribute) {
             this.hide();
 
             return;
         }
+
+        this.allAttributes = allAttributes;
+        this.attribute = attribute;
 
         this.toggleInt(true);
 
@@ -173,17 +176,26 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.$attrEditName
             .val(attribute.name)
-            .attr('readonly', () => !isOwned);
+            .attr('readonly', () => !isOwned)
+            .on('keyup', () => this.updateParent());
 
         this.$attrEditValue
             .val(attribute.value)
-            .attr('readonly', () => !isOwned);
+            .attr('readonly', () => !isOwned)
+            .on('keyup', () => this.updateParent());
 
         this.$attrEditButtonRow.toggle(!!isOwned);
 
         this.$widget.css("left", x - this.$widget.width() / 2);
         this.$widget.css("top", y + 30);
         this.$widget.show();
+    }
+
+    updateParent() {
+        this.attribute.name = this.$attrEditName.val();
+        this.attribute.value = this.$attrEditValue.val();
+
+        this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
     }
 
     hide() {

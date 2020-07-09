@@ -71,6 +71,59 @@ const mentionSetup = {
     ]
 };
 
+const editorConfig = {
+    removePlugins: [
+        'Enter',
+        'ShiftEnter',
+        'Heading',
+        'Link',
+        'Autoformat',
+        'Bold',
+        'Italic',
+        'Underline',
+        'Strikethrough',
+        'Code',
+        'Superscript',
+        'Subscript',
+        'BlockQuote',
+        'Image',
+        'ImageCaption',
+        'ImageStyle',
+        'ImageToolbar',
+        'ImageUpload',
+        'ImageResize',
+        'List',
+        'TodoList',
+        'PasteFromOffice',
+        'Table',
+        'TableToolbar',
+        'TableProperties',
+        'TableCellProperties',
+        'Indent',
+        'IndentBlock',
+        'BlockToolbar',
+        'ParagraphButtonUI',
+        'HeadingButtonsUI',
+        'UploadimagePlugin',
+        'InternalLinkPlugin',
+        'MarkdownImportPlugin',
+        'CuttonotePlugin',
+        'TextTransformation',
+        'Font',
+        'FontColor',
+        'FontBackgroundColor',
+        'CodeBlock',
+        'SelectAll',
+        'IncludeNote',
+        'CutToNote'
+    ],
+    toolbar: {
+        items: []
+    },
+    placeholder: "Type the labels and relations here ...",
+    mention: mentionSetup
+};
+
 const TPL = `
 <div class="note-attributes">
 <style>
@@ -321,100 +374,46 @@ export default class NoteAttributesWidget extends TabAwareWidget {
     async initEditor() {
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
-        // CKEditor since version 12 needs the element to be visible before initialization. At the same time
-        // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
-        // display of $widget in both branches.
         this.$widget.show();
 
-        this.$editor.on("click", async e => {
-            const pos = this.textEditor.model.document.selection.getFirstPosition();
+        this.$editor.on("click", e => this.handleEditorClick(e));
 
-            if (pos && pos.textNode && pos.textNode.data) {
-                const attrText = pos.textNode.data;
-                const clickIndex = pos.offset - pos.textNode.startOffset;
-
-                const parsedAttrs = attributesParser.lexAndParse(attrText, true);
-
-                let matchedAttr = null;
-
-                for (const attr of parsedAttrs) {
-                    if (clickIndex >= attr.startIndex && clickIndex <= attr.endIndex) {
-                        matchedAttr = attr;
-                        break;
-                    }
-                }
-
-                this.attributeDetailWidget.showAttributeDetail({
-                    attribute: matchedAttr,
-                    isOwned: true,
-                    x: e.pageX,
-                    y: e.pageY
-                });
-            }
-        });
-
-        this.textEditor = await BalloonEditor.create(this.$editor[0], {
-            removePlugins: [
-                'Enter',
-                'ShiftEnter',
-                'Heading',
-                'Link',
-                'Autoformat',
-                'Bold',
-                'Italic',
-                'Underline',
-                'Strikethrough',
-                'Code',
-                'Superscript',
-                'Subscript',
-                'BlockQuote',
-                'Image',
-                'ImageCaption',
-                'ImageStyle',
-                'ImageToolbar',
-                'ImageUpload',
-                'ImageResize',
-                'List',
-                'TodoList',
-                'PasteFromOffice',
-                'Table',
-                'TableToolbar',
-                'TableProperties',
-                'TableCellProperties',
-                'Indent',
-                'IndentBlock',
-                'BlockToolbar',
-                'ParagraphButtonUI',
-                'HeadingButtonsUI',
-                'UploadimagePlugin',
-                'InternalLinkPlugin',
-                'MarkdownImportPlugin',
-                'CuttonotePlugin',
-                'TextTransformation',
-                'Font',
-                'FontColor',
-                'FontBackgroundColor',
-                'CodeBlock',
-                'SelectAll',
-                'IncludeNote',
-                'CutToNote'
-            ],
-            toolbar: {
-                items: []
-            },
-            placeholder: "Type the labels and relations here ...",
-            mention: mentionSetup
-        });
-
+        this.textEditor = await BalloonEditor.create(this.$editor[0], editorConfig);
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         // disable spellcheck for attribute editor
-        this.textEditor.editing.view.change( writer => {
-            writer.setAttribute( 'spellcheck', 'false', this.textEditor.editing.view.document.getRoot() );
-        } );
+        this.textEditor.editing.view.change(writer => writer.setAttribute('spellcheck', 'false', this.textEditor.editing.view.document.getRoot()));
 
         //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
         //CKEditorInspector.attach(this.textEditor);
+    }
+
+    async handleEditorClick(e) {
+        const pos = this.textEditor.model.document.selection.getFirstPosition();
+
+        if (pos && pos.textNode && pos.textNode.data) {
+            const attrText = pos.textNode.data;
+            const clickIndex = pos.offset - pos.textNode.startOffset;
+
+            const parsedAttrs = attributesParser.lexAndParse(attrText, true);
+
+            let matchedAttr = null;
+
+            for (const attr of parsedAttrs) {
+                if (clickIndex >= attr.startIndex && clickIndex <= attr.endIndex) {
+                    matchedAttr = attr;
+                    break;
+                }
+            }
+
+            this.attributeDetailWidget.showAttributeDetail({
+                allAttributes: parsedAttrs,
+                attribute: matchedAttr,
+                isOwned: true,
+                x: e.pageX,
+                y: e.pageY
+            });
+        }
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
@@ -436,14 +435,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        const ownedAttributes = note.getOwnedAttributes();
-        const $attributesContainer = $("<div>");
-
-        await this.renderAttributesIntoCKEditor(ownedAttributes, $attributesContainer);
-
-        await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData($attributesContainer.html());
-        });
+        await this.renderOwnedAttributes(note.getOwnedAttributes());
 
         const inheritedAttributes = note.getAttributes().filter(attr => attr.noteId !== this.noteId);
 
@@ -463,6 +455,16 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         await this.renderAttributesIntoDiv(inheritedAttributes, this.$inheritedAttributes);
 
         this.parseAttributes();
+    }
+
+    async renderOwnedAttributes(ownedAttributes) {
+        const $attributesContainer = $("<div>");
+
+        await this.renderAttributesIntoCKEditor(ownedAttributes, $attributesContainer);
+
+        await this.spacedUpdate.allowUpdateWithoutChange(() => {
+            this.textEditor.setData($attributesContainer.html());
+        });
     }
 
     attrPlural(number) {
@@ -553,5 +555,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         if (this.tabContext.tabId === tabId) {
             this.$editor.trigger('focus');
         }
+    }
+
+    updateAttributeListCommand({attributes}) {
+        this.renderOwnedAttributes(attributes);
     }
 }

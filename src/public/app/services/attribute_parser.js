@@ -195,6 +195,7 @@ function lexAndParse(str, allowEmptyRelations = false) {
 }
 
 export default {
+    preprocess,
     lexer,
     parser,
     lexAndParse
