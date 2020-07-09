@@ -3,7 +3,6 @@
 const repository = require('../../services/repository');
 const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
-const tarImportService = require('../../services/import/tar');
 const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
@@ -48,9 +47,7 @@ async function importToBranch(req) {
     const taskContext = TaskContext.getInstance(taskId, 'import', options);
 
     try {
-        if (extension === '.tar' && options.explodeArchives) {
-            note = await tarImportService.importTar(taskContext, file.buffer, parentNote);
-        } else if (extension === '.zip' && options.explodeArchives) {
+        if (extension === '.zip' && options.explodeArchives) {
             note = await zipImportService.importZip(taskContext, file.buffer, parentNote);
         } else if (extension === '.opml' && options.explodeArchives) {
             note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
