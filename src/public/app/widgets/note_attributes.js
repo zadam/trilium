@@ -392,10 +392,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         const pos = this.textEditor.model.document.selection.getFirstPosition();
 
         if (pos && pos.textNode && pos.textNode.data) {
-            const attrText = pos.textNode.data;
-            const clickIndex = pos.offset - pos.textNode.startOffset;
+            const clickIndex = this.getClickIndex(pos);
 
-            const parsedAttrs = attributesParser.lexAndParse(attrText, true);
+            const parsedAttrs = attributesParser.lexAndParse(this.textEditor.getData(), true);
 
             let matchedAttr = null;
 
@@ -414,6 +413,24 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                 y: e.pageY
             });
         }
+    }
+
+    getClickIndex(pos) {
+        let clickIndex = pos.offset - pos.textNode.startOffset;
+
+        let curNode = pos.textNode;
+
+        while (curNode.previousSibling) {
+            curNode = curNode.previousSibling;
+
+            if (curNode.name === 'reference') {
+                clickIndex += curNode._attrs.get('notePath').length + 1;
+            } else {
+                clickIndex += curNode.data.length;
+            }
+        }
+
+        return clickIndex;
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
