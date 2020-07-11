@@ -65,7 +65,11 @@ async function addClipping(req) {
 }
 
 async function createNote(req) {
-    const {title, content, pageUrl, images, clipType} = req.body;
+    let {title, content, pageUrl, images, clipType} = req.body;
+
+    if (!title || !title.trim()) {
+        title = "Clipped note from " + pageUrl;
+    }
 
     log.info(`Creating clipped note from ${pageUrl}`);
 
