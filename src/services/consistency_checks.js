@@ -269,7 +269,7 @@ class ConsistencyChecks {
                     SELECT noteId, type
                     FROM notes
                     WHERE isDeleted = 0
-                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book')`,
+                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'canvas-note', 'book')`,
             async ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = await repository.getNote(noteId);
@@ -689,7 +689,7 @@ function logError(message) {
 
 async function runPeriodicChecks() {
     const autoFix = await optionsService.getOptionBool('autoFixConsistencyIssues');
-    
+
     const consistencyChecks = new ConsistencyChecks(autoFix);
     await consistencyChecks.runChecks();
 }

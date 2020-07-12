@@ -162,7 +162,7 @@ function getContentDisposition(filename) {
 const STRING_MIME_TYPES = ["application/x-javascript", "image/svg+xml"];
 
 function isStringNote(type, mime) {
-    return ["text", "code", "relation-map", "search"].includes(type)
+    return ["text", "code", "relation-map", "canvas-note", "search"].includes(type)
         || mime.startsWith('text/')
         || STRING_MIME_TYPES.includes(mime);
 }
@@ -184,7 +184,7 @@ function formatDownloadTitle(filename, type, mime) {
 
     if (type === 'text') {
         return filename + '.html';
-    } else if (['relation-map', 'search'].includes(type)) {
+    } else if (['relation-map', 'canvas-note', 'search'].includes(type)) {
         return filename + '.json';
     } else {
         if (!mime) {

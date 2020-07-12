@@ -22,6 +22,8 @@ async function getNote(req) {
         }
     }
 
+    console.log(note, await note.getContent());
+
     return note;
 }
 

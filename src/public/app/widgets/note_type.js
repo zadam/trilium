@@ -11,7 +11,8 @@ const NOTE_TYPES = [
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
     { type: "render", mime: '', title: "Render Note", selectable: true },
     { type: "book", mime: '', title: "Book", selectable: true },
-    { type: "code", mime: 'text/plain', title: "Code", selectable: true }
+    { type: "code", mime: 'text/plain', title: "Code", selectable: true },
+    { type: "canvas-note", mime: 'application/json', title: 'Canvas Note', selectable: true}
 ];
 
 const TPL = `

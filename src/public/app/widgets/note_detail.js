@@ -12,6 +12,7 @@ import ImageTypeWidget from "./type_widgets/image.js";
 import SearchTypeWidget from "./type_widgets/search.js";
 import RenderTypeWidget from "./type_widgets/render.js";
 import RelationMapTypeWidget from "./type_widgets/relation_map.js";
+import CanvasNoteTypeWidget from "./type_widgets/canvas_note.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
 import appContext from "../services/app_context.js";
@@ -46,6 +47,7 @@ const typeWidgetClasses = {
     'search': SearchTypeWidget,
     'render': RenderTypeWidget,
     'relation-map': RelationMapTypeWidget,
+    'canvas-note': CanvasNoteTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget
 };

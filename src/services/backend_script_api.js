@@ -214,7 +214,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @property {string} parentNoteId - MANDATORY
      * @property {string} title - MANDATORY
      * @property {string|buffer} content - MANDATORY
-     * @property {string} type - text, code, file, image, search, book, relation-map - MANDATORY
+     * @property {string} type - text, code, file, image, search, book, relation-map, canvas-note - MANDATORY
      * @property {string} mime - value is derived from default mimes for type
      * @property {boolean} isProtected - default is false
      * @property {boolean} isExpanded - default is false

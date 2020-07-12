@@ -118,7 +118,7 @@ export default class NoteActionsWidget extends TabAwareWidget {
     }
 
     refreshWithNote(note) {
-        if (['text', 'relation-map', 'search', 'code'].includes(note.type)) {
+        if (['text', 'relation-map', 'canvas-note', 'search', 'code'].includes(note.type)) {
             this.$showSourceButton.removeAttr('disabled');
         } else {
             this.$showSourceButton.attr('disabled', 'disabled');
