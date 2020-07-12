@@ -13,11 +13,11 @@ export async function showDialog() {
 
     noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
         .on('autocomplete:selected', function(event, suggestion, dataset) {
-            if (!suggestion.path) {
+            if (!suggestion.notePath) {
                 return false;
             }
 
-            appContext.tabManager.getActiveTabContext().setNote(suggestion.path);
+            appContext.tabManager.getActiveTabContext().setNote(suggestion.notePath);
         });
 
     noteAutocompleteService.showRecentNotes($autoComplete);

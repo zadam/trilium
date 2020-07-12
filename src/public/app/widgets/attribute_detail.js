@@ -3,6 +3,7 @@ import treeCache from "../services/tree_cache.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 import BasicWidget from "./basic_widget.js";
+import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const TPL = `
 <div class="attr-detail" style="display: none;">
@@ -57,27 +58,21 @@ const TPL = `
             <th>Name:</th>
             <td><input type="text" class="attr-edit-name form-control form-control-sm" /></td>
         </tr>
-        <tr>
+        <tr class="attr-value-row">
             <th>Value:</th>
             <td><input type="text" class="attr-edit-value form-control form-control-sm" /></td>
+        </tr>
+        <tr class="attr-target-note-row">
+            <th>Target note:</th>
+            <td>
+                <div class="input-group">
+                    <input type="text" class="attr-edit-target-note form-control" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th>Inheritable:</th>
             <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
-        </tr>
-        <tr>
-            <td colspan="2" class="attr-edit-button-row">
-                <div style="display: flex; justify-content: space-between">
-                    <div>
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                        <button type="submit" class="btn btn-sm btn-secondary">Cancel</button>
-                    </div>
-                    
-                    <div>
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </div>
-                </div>
-            </td>
         </tr>
     </table>
 
@@ -99,17 +94,37 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$relatedNotesTitle = this.$widget.find('.related-notes-tile');
         this.$relatedNotesList = this.$widget.find('.related-notes-list');
         this.$relatedNotesMoreNotes = this.$widget.find('.related-notes-more-notes');
+
         this.$attrEditName = this.$widget.find('.attr-edit-name');
+        this.$attrEditName.on('keyup', () => this.updateParent());
+
+        this.$attrValueRow = this.$widget.find('.attr-value-row');
         this.$attrEditValue = this.$widget.find('.attr-edit-value');
+        this.$attrEditValue.on('keyup', () => this.updateParent());
+
+        this.$attrTargetNoteRow = this.$widget.find('.attr-target-note-row');
+        this.$attrEditTargetNote = this.$widget.find('.attr-edit-target-note');
+
+        noteAutocompleteService.initNoteAutocomplete(this.$attrEditTargetNote)
+            .on('autocomplete:selected', (event, suggestion, dataset) => {
+                if (!suggestion.notePath) {
+                    return false;
+                }
+
+                this.attribute.value = suggestion.notePath;
+
+                this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+            });
+
         this.$attrEditInheritable = this.$widget.find('.attr-edit-inheritable');
-        this.$attrEditButtonRow = this.$widget.find('.attr-edit-button-row');
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
 
         this.$closeAttrDetailButton.on('click', () => this.hide());
 
         $(window).on('mouseup', e => {
-            if (!$(e.target).closest(this.$widget[0]).length) {
+            if (!$(e.target).closest(this.$widget[0]).length
+                && !$(e.target).closest(".algolia-autocomplete").length) {
                 this.hide();
             }
         });
@@ -176,15 +191,24 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.$attrEditName
             .val(attribute.name)
-            .attr('readonly', () => !isOwned)
-            .on('keyup', () => this.updateParent());
+            .attr('readonly', () => !isOwned);
 
-        this.$attrEditValue
-            .val(attribute.value)
-            .attr('readonly', () => !isOwned)
-            .on('keyup', () => this.updateParent());
+        this.$attrValueRow.toggle(attribute.type === 'label');
+        this.$attrTargetNoteRow.toggle(attribute.type === 'relation');
 
-        this.$attrEditButtonRow.toggle(!!isOwned);
+        if (attribute.type === 'label') {
+            this.$attrEditValue
+                .val(attribute.value)
+                .attr('readonly', () => !isOwned);
+        }
+        else if (attribute.type === 'relation') {
+            const targetNote = await treeCache.getNote(attribute.value);
+
+            this.$attrEditTargetNote
+                .attr('readonly', () => !isOwned)
+                .val(targetNote ? targetNote.title : "")
+                .setSelectedNotePath(attribute.value);
+        }
 
         this.$widget.css("left", x - this.$widget.width() / 2);
         this.$widget.css("top", y + 30);

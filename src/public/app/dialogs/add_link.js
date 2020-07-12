@@ -42,11 +42,11 @@ export async function showDialog(widget) {
     noteAutocompleteService.initNoteAutocomplete($autoComplete);
 
     $autoComplete.on('autocomplete:selected', function(event, suggestion, dataset) {
-        if (!suggestion.path) {
+        if (!suggestion.notePath) {
             return false;
         }
 
-        const noteId = treeService.getNoteIdFromNotePath(suggestion.path);
+        const noteId = treeService.getNoteIdFromNotePath(suggestion.notePath);
 
         if (noteId) {
             setDefaultLinkTitle(noteId);
@@ -54,7 +54,7 @@ export async function showDialog(widget) {
     });
 
     $autoComplete.on('autocomplete:cursorchanged', function(event, suggestion, dataset) {
-        const noteId = treeService.getNoteIdFromNotePath(suggestion.path);
+        const noteId = treeService.getNoteIdFromNotePath(suggestion.notePath);
 
         if (noteId) {
             setDefaultLinkTitle(noteId);
