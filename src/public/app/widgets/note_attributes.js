@@ -333,8 +333,35 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                     {title: "Add new label definition", command: "addNewRelation", uiIcon: "empty"},
                     {title: "Add new relation definition", command: "addNewRelation", uiIcon: "empty"},
                 ],
-                selectMenuItemHandler: ({command}) => {
-                    console.log(command);
+                selectMenuItemHandler: async ({command}) => {
+                    const attrs = this.parseAttributes();
+
+                    if (!attrs) {
+                        return;
+                    }
+
+                    if (command === 'addNewLabel') {
+                        attrs.push({
+                           type: 'label',
+                           name: 'fillName',
+                           value: '',
+                           isInheritable: false
+                        });
+
+                        await this.renderOwnedAttributes(attrs);
+
+                        this.$editor.scrollTop(this.$editor[0].scrollHeight);
+
+                        const rect = this.$editor[0].getBoundingClientRect();
+
+                        this.attributeDetailWidget.showAttributeDetail({
+                            allAttributes: attrs,
+                            attribute: attrs[attrs.length - 1],
+                            isOwned: true,
+                            x: (rect.left + rect.right) / 2,
+                            y: rect.bottom
+                        });
+                    }
                 }
             });
         });
