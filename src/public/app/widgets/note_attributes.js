@@ -496,7 +496,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
         this.$inheritedAttributes.empty();
 
-        await this.renderAttributesIntoDiv(inheritedAttributes, this.$inheritedAttributes);
+        await this.renderInheritedAttributes(inheritedAttributes, this.$inheritedAttributes);
 
         this.parseAttributes();
     }
@@ -504,7 +504,9 @@ export default class NoteAttributesWidget extends TabAwareWidget {
     async renderOwnedAttributes(ownedAttributes) {
         const $attributesContainer = $("<div>");
 
-        await this.renderAttributesIntoCKEditor(ownedAttributes, $attributesContainer);
+        for (const attribute of ownedAttributes) {
+            this.renderAttribute(attribute, $attributesContainer, true);
+        }
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             this.textEditor.setData($attributesContainer.html());
@@ -523,13 +525,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
         });
     }
 
-    async renderAttributesIntoCKEditor(attributes, $container) {
-        for (const attribute of attributes) {
-            this.renderAttribute(attribute, $container);
-        }
-    }
-
-    renderAttributesIntoDiv(attributes, $container) {
+    renderInheritedAttributes(attributes, $container) {
         for (const attribute of attributes) {
             const $span = $("<span>")
                 .on('click', e => this.attributeDetailWidget.showAttributeDetail({
@@ -546,13 +542,15 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
             $container.append($span);
 
-            this.renderAttribute(attribute, $span);
+            this.renderAttribute(attribute, $span, false);
         }
     }
 
-    renderAttribute(attribute, $container) {
+    renderAttribute(attribute, $container, renderIsInheritable) {
+        const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';
+
         if (attribute.type === 'label') {
-            $container.append(document.createTextNode('#' + attribute.name));
+            $container.append(document.createTextNode('#' + attribute.name + isInheritable));
 
             if (attribute.value) {
                 $container.append('=');
@@ -566,7 +564,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             }
 
             if (attribute.value) {
-                $container.append(document.createTextNode('~' + attribute.name + "="));
+                $container.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
                 $container.append(this.createNoteLink(attribute.value));
                 $container.append(" ");
             } else {

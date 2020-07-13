@@ -117,6 +117,8 @@ export default class AttributeDetailWidget extends BasicWidget {
             });
 
         this.$attrEditInheritable = this.$widget.find('.attr-edit-inheritable');
+        this.$attrEditInheritable.on('change', () => this.updateParent());
+
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
 
@@ -210,6 +212,8 @@ export default class AttributeDetailWidget extends BasicWidget {
                 .setSelectedNotePath(attribute.value);
         }
 
+        this.$attrEditInheritable.prop("checked", !!attribute.isInheritable);
+
         this.$widget.css("left", x - this.$widget.width() / 2);
         this.$widget.css("top", y + 30);
         this.$widget.show();
@@ -218,6 +222,7 @@ export default class AttributeDetailWidget extends BasicWidget {
     updateParent() {
         this.attribute.name = this.$attrEditName.val();
         this.attribute.value = this.$attrEditValue.val();
+        this.attribute.isInheritable = this.$attrEditInheritable.is(":checked");
 
         this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
     }

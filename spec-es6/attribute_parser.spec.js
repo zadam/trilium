@@ -14,6 +14,14 @@ describe("Lexer", () => {
             .toEqual(["#label"]);
     });
 
+    it("inherited label", () => {
+        expect(attributeParser.lexer("#label(inheritable)").map(t => t.text))
+            .toEqual(["#label", "(", "inheritable", ")"]);
+
+        expect(attributeParser.lexer("#label ( inheritable ) ").map(t => t.text))
+            .toEqual(["#label", "(", "inheritable", ")"]);
+    });
+
     it("label with value", () => {
         expect(attributeParser.lexer("#label=Hallo").map(t => t.text))
             .toEqual(["#label", "=", "Hallo"]);
@@ -49,6 +57,17 @@ describe("Parser", () => {
         expect(attrs.length).toEqual(1);
         expect(attrs[0].type).toEqual('label');
         expect(attrs[0].name).toEqual('token');
+        expect(attrs[0].isInheritable).toBeFalsy();
+        expect(attrs[0].value).toBeFalsy();
+    });
+
+    it("inherited label", () => {
+        const attrs = attributeParser.parser(["#token", "(", "inheritable", ")"].map(t => ({text: t})));
+
+        expect(attrs.length).toEqual(1);
+        expect(attrs[0].type).toEqual('label');
+        expect(attrs[0].name).toEqual('token');
+        expect(attrs[0].isInheritable).toBeTruthy();
         expect(attrs[0].value).toBeFalsy();
     });
 
@@ -77,10 +96,10 @@ describe("Parser", () => {
         expect(attrs[0].value).toEqual('NFi2gL4xtPxM');
     });
 
-    it("error cases", () => {
-        expect(() => attributeParser.parser(["~token"].map(t => ({text: t})), "~token"))
-            .toThrow('Relation "~token" should point to a note.');
-    });
+    // it("error cases", () => {
+    //     expect(() => attributeParser.parser(["~token"].map(t => ({text: t})), "~token"))
+    //         .toThrow('Relation "~token" should point to a note.');
+    // });
 });
 
 execute();

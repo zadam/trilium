@@ -92,6 +92,15 @@ function lexer(str) {
                 finishWord(i - 1);
                 continue;
             }
+            else if (['(', ')'].includes(chr)) {
+                finishWord(i - 1);
+
+                currentWord = chr;
+
+                finishWord(i);
+
+                continue;
+            }
             else if (previousOperatorSymbol() !== isOperatorSymbol(chr)) {
                 finishWord(i - 1);
 
@@ -122,15 +131,30 @@ function parser(tokens, str, allowEmptyRelations = false) {
     }
 
     for (let i = 0; i < tokens.length; i++) {
-        const {text, startIndex, endIndex} = tokens[i];
+        const {text, startIndex} = tokens[i];
+
+        function isInheritable() {
+            if (tokens.length > i + 3
+                && tokens[i + 1].text === '('
+                && tokens[i + 2].text === 'inheritable'
+                && tokens[i + 3].text === ')') {
+
+                i += 3;
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
 
         if (text.startsWith('#')) {
             const attr = {
                 type: 'label',
                 name: text.substr(1),
-                isInheritable: false, // FIXME
+                isInheritable: isInheritable(),
                 startIndex: startIndex,
-                endIndex: endIndex
+                endIndex: tokens[i].endIndex // i could be moved by isInheritable
             };
 
             if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
@@ -150,9 +174,9 @@ function parser(tokens, str, allowEmptyRelations = false) {
             const attr = {
                 type: 'relation',
                 name: text.substr(1),
-                isInheritable: false, // FIXME
+                isInheritable: isInheritable(),
                 startIndex: startIndex,
-                endIndex: endIndex
+                endIndex: tokens[i].endIndex // i could be moved by isInheritable
             };
 
             attrs.push(attr);

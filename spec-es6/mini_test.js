@@ -26,6 +26,15 @@ export function expect(val) {
                 errorCount++;
             }
         },
+        toBeTruthy: () => {
+            if (!val) {
+                console.trace("toBeTruthy failed.");
+                console.error(`expected: truthy value`);
+                console.error(`got:      ${val}`);
+
+                errorCount++;
+            }
+        },
         toBeFalsy: () => {
             if (!!val) {
                 console.trace("toBeFalsy failed.");

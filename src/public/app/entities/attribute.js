@@ -19,7 +19,7 @@ class Attribute {
         /** @param {int} position */
         this.position = row.position;
         /** @param {boolean} isInheritable */
-        this.isInheritable = row.isInheritable;
+        this.isInheritable = !!row.isInheritable;
     }
 
     /** @returns {NoteShort} */
