@@ -65,10 +65,11 @@ function addClipping(req) {
 }
 
 function createNote(req) {
-    const {title, content, pageUrl, images, clipType} = req.body;
+    let {title, content, pageUrl, images, clipType} = req.body;
 
-    log.info(`Creating clipped note from ${pageUrl}`);
-
+    if (!title || !title.trim()) {
+        title = "Clipped note from " + pageUrl;
+    }
     const clipperInbox = getClipperInboxNote();
 
     const {note} = noteService.createNewNote({
