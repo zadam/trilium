@@ -51,7 +51,9 @@ class BasicWidget extends Component {
         this.$widget.addClass('component')
             .prop('component', this);
 
-        this.toggleInt(this.isEnabled());
+        if (!this.isEnabled()) {
+            this.toggleInt(false);
+        }
 
         if (this.cssEl) {
             const css = this.cssEl.trim().startsWith('<style>') ? this.cssEl : `<style>${this.cssEl}</style>`;

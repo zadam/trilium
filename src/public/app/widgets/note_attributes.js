@@ -326,12 +326,13 @@ export default class NoteAttributesWidget extends TabAwareWidget {
             contextMenuService.show({
                 x: e.pageX,
                 y: e.pageY,
+                orientation: 'left',
                 items: [
                     {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
                     {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
                     {title: "----"},
-                    {title: "Add new label definition", command: "addNewRelation", uiIcon: "empty"},
-                    {title: "Add new relation definition", command: "addNewRelation", uiIcon: "empty"},
+                    {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
+                    {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
                 ],
                 selectMenuItemHandler: async ({command}) => {
                     const attrs = this.parseAttributes();
@@ -340,20 +341,43 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                         return;
                     }
 
+                    let type, name;
+
                     if (command === 'addNewLabel') {
-                        attrs.push({
-                           type: 'label',
-                           name: 'fillName',
-                           value: '',
-                           isInheritable: false
-                        });
+                        type = 'label';
+                        name = 'fillName';
+                    }
+                    else if (command === 'addNewRelation') {
+                        type = 'relation';
+                        name = 'fillName';
+                    }
+                    else if (command === 'addNewLabelDefinition') {
+                        type = 'label';
+                        name = 'label:fillName';
+                    }
+                    else if (command === 'addNewRelationDefinition') {
+                        type = 'label';
+                        name = 'relation:fillName';
+                    }
+                    else {
+                        return;
+                    }
 
-                        await this.renderOwnedAttributes(attrs);
+                    attrs.push({
+                        type,
+                        name,
+                        value: '',
+                        isInheritable: false
+                    });
 
-                        this.$editor.scrollTop(this.$editor[0].scrollHeight);
+                    await this.renderOwnedAttributes(attrs);
 
-                        const rect = this.$editor[0].getBoundingClientRect();
+                    this.$editor.scrollTop(this.$editor[0].scrollHeight);
 
+                    const rect = this.$editor[0].getBoundingClientRect();
+
+                    setTimeout(() => {
+                        // showing a little bit later because there's a conflict with outside click closing the attr detail
                         this.attributeDetailWidget.showAttributeDetail({
                             allAttributes: attrs,
                             attribute: attrs[attrs.length - 1],
@@ -361,7 +385,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
                             x: (rect.left + rect.right) / 2,
                             y: rect.bottom
                         });
-                    }
+                    }, 100);
                 }
             });
         });

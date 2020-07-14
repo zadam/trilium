@@ -7,10 +7,10 @@ class ContextMenu {
 
         $(document).on('click', () => this.hide());
     }
-    
+
     async show(options) {
         this.options = options;
-        
+
         this.$widget.empty();
 
         this.addItems(this.$widget, options.items);
@@ -27,7 +27,7 @@ class ContextMenu {
         // in such case we'll position it above click coordinates so it will fit into client
         const clientHeight = document.documentElement.clientHeight;
         const contextMenuHeight = this.$widget.outerHeight() + 30;
-        let top;
+        let top, left;
 
         if (this.options.y + contextMenuHeight > clientHeight) {
             top = clientHeight - contextMenuHeight - 10;
@@ -35,10 +35,17 @@ class ContextMenu {
             top = this.options.y - 10;
         }
 
+        if (this.options.orientation === 'left') {
+            left = this.options.x - this.$widget.outerWidth() + 20;
+        }
+        else {
+            left = this.options.x - 20;
+        }
+
         this.$widget.css({
             display: "block",
             top: top,
-            left: this.options.x - 20
+            left: left
         }).addClass("show");
     }
 

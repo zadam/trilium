@@ -6,7 +6,7 @@ import BasicWidget from "./basic_widget.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const TPL = `
-<div class="attr-detail" style="display: none;">
+<div class="attr-detail">
     <style>
         .attr-detail {
             display: block;
@@ -14,7 +14,7 @@ const TPL = `
             border: 1px solid var(--main-border-color);
             border-radius: 4px;
             z-index: 1000;
-            padding: 10px;
+            padding: 15px;
             position: absolute;
             max-width: 600px;
             max-height: 600px;
@@ -76,13 +76,15 @@ const TPL = `
         </tr>
     </table>
 
-    <br/>
+    <div class="related-notes-container">
+        <br/>
 
-    <h5 class="related-notes-tile">Other notes with this label</h5>
-    
-    <ul class="related-notes-list"></ul>
-    
-    <div class="related-notes-more-notes"></div>
+        <h5 class="related-notes-tile">Other notes with this label</h5>
+        
+        <ul class="related-notes-list"></ul>
+        
+        <div class="related-notes-more-notes"></div>
+    </div>
 </div>`;
 
 
@@ -91,9 +93,11 @@ const DISPLAYED_NOTES = 10;
 export default class AttributeDetailWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.$relatedNotesTitle = this.$widget.find('.related-notes-tile');
-        this.$relatedNotesList = this.$widget.find('.related-notes-list');
-        this.$relatedNotesMoreNotes = this.$widget.find('.related-notes-more-notes');
+
+        this.$relatedNotesContainer = this.$widget.find('.related-notes-container');
+        this.$relatedNotesTitle = this.$relatedNotesContainer.find('.related-notes-tile');
+        this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
+        this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
         this.$attrEditName = this.$widget.find('.attr-edit-name');
         this.$attrEditName.on('keyup', () => this.updateParent());
@@ -130,6 +134,8 @@ export default class AttributeDetailWidget extends BasicWidget {
                 this.hide();
             }
         });
+
+        this.toggleInt(false); // initial state is hidden
     }
 
     async showAttributeDetail({allAttributes, attribute, isOwned, x, y}) {
@@ -142,8 +148,6 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.allAttributes = allAttributes;
         this.attribute = attribute;
 
-        this.toggleInt(true);
-
         let {results, count} = await server.post('search-related', attribute);
 
         for (const res of results) {
@@ -153,31 +157,32 @@ export default class AttributeDetailWidget extends BasicWidget {
         results = results.filter(({noteId}) => noteId !== this.noteId);
 
         if (results.length === 0) {
-            this.$relatedNotesTitle.hide();
+            this.$relatedNotesContainer.hide();
         }
         else {
+            this.$relatedNotesContainer.show();
             this.$relatedNotesTitle.text(`Other notes with ${attribute.type} name "${attribute.name}"`);
-        }
 
-        this.$relatedNotesList.empty();
+            this.$relatedNotesList.empty();
 
-        const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-        const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
+            const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
+            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
 
-        for (const note of displayedNotes) {
-            const notePath = treeService.getSomeNotePath(note);
-            const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
+            for (const note of displayedNotes) {
+                const notePath = treeService.getSomeNotePath(note);
+                const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
 
-            this.$relatedNotesList.append(
-                $("<li>").append($noteLink)
-            );
-        }
+                this.$relatedNotesList.append(
+                    $("<li>").append($noteLink)
+                );
+            }
 
-        if (results.length > DISPLAYED_NOTES) {
-            this.$relatedNotesMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
-        }
-        else {
-            this.$relatedNotesMoreNotes.hide();
+            if (results.length > DISPLAYED_NOTES) {
+                this.$relatedNotesMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
+            }
+            else {
+                this.$relatedNotesMoreNotes.hide();
+            }
         }
 
         if (isOwned) {
@@ -212,11 +217,14 @@ export default class AttributeDetailWidget extends BasicWidget {
                 .setSelectedNotePath(attribute.value);
         }
 
-        this.$attrEditInheritable.prop("checked", !!attribute.isInheritable);
+        this.$attrEditInheritable
+            .prop("checked", !!attribute.isInheritable)
+            .attr('disabled', () => !isOwned);
 
-        this.$widget.css("left", x - this.$widget.width() / 2);
-        this.$widget.css("top", y + 30);
-        this.$widget.show();
+        this.toggleInt(true);
+
+        this.$widget.css("left", x - this.$widget.outerWidth() / 2);
+        this.$widget.css("top", y + 25);
     }
 
     updateParent() {
