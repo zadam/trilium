@@ -46,7 +46,7 @@ const TPL = `
     </style>
 
     <div style="display: flex; justify-content: space-between;">
-        <h5>Label detail</h5>
+        <h5 class="attr-detail-title"></h5>
         
         <span class="bx bx-x close-attr-detail-button"></span>
     </div>
@@ -70,6 +70,39 @@ const TPL = `
                 </div>
             </td>
         </tr>
+        <tr class="attr-definition-promoted">
+            <th>Promoted:</th>
+            <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
+        </tr>
+        <tr class="attr-definition-multiplicity">
+            <th>Multiplicity:</th>
+            <td>
+                <select class="form-control">
+                  <option>Single value</option>
+                  <option>Multi value</option>
+                </select>
+            </td>
+        </tr>
+        <tr class="attr-definition-label-type">
+            <th>Type:</th>
+            <td>
+                <select class="form-control">
+                  <option>Text</option>
+                  <option>Number</option>
+                  <option>Boolean</option>
+                  <option>Date</option>
+                  <option>URL</option>
+                </select>
+            </td>
+        </tr>
+        <tr class="attr-definition-inverse-relation">
+            <th>Inverse relation:</th>
+            <td>
+                <div class="input-group">
+                    <input type="text" class="form-control" />
+                </div>
+            </td>
+        </tr>
         <tr>
             <th>Inheritable:</th>
             <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
@@ -87,12 +120,20 @@ const TPL = `
     </div>
 </div>`;
 
-
 const DISPLAYED_NOTES = 10;
+
+const ATTR_TITLES = {
+    "label": "Label detail",
+    "label-definition": "Label definition detail",
+    "relation": "Relation detail",
+    "relation-definition": "Relation definition detail"
+};
 
 export default class AttributeDetailWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+
+        this.$title = this.$widget.find('.attr-detail-title');
 
         this.$relatedNotesContainer = this.$widget.find('.related-notes-container');
         this.$relatedNotesTitle = this.$relatedNotesContainer.find('.related-notes-tile');
@@ -105,6 +146,11 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$attrValueRow = this.$widget.find('.attr-value-row');
         this.$attrEditValue = this.$widget.find('.attr-edit-value');
         this.$attrEditValue.on('keyup', () => this.updateParent());
+
+        this.$attrDefinitionPromoted = this.$widget.find('.attr-definition-promoted');
+        this.$attrDefinitionMultiplicity = this.$widget.find('.attr-definition-multiplicity');
+        this.$attrDefinitionLabelType = this.$widget.find('.attr-definition-label-type');
+        this.$attrDefinitionInverseRelation = this.$widget.find('.attr-definition-inverse-relation');
 
         this.$attrTargetNoteRow = this.$widget.find('.attr-target-note-row');
         this.$attrEditTargetNote = this.$widget.find('.attr-edit-target-note');
@@ -144,6 +190,10 @@ export default class AttributeDetailWidget extends BasicWidget {
 
             return;
         }
+
+        const attrType = this.getAttrType(attribute);
+
+        this.$title.text(ATTR_TITLES[attrType]);
 
         this.allAttributes = allAttributes;
         this.attribute = attribute;
@@ -200,8 +250,13 @@ export default class AttributeDetailWidget extends BasicWidget {
             .val(attribute.name)
             .attr('readonly', () => !isOwned);
 
-        this.$attrValueRow.toggle(attribute.type === 'label');
-        this.$attrTargetNoteRow.toggle(attribute.type === 'relation');
+        this.$attrValueRow.toggle(attrType === 'label');
+        this.$attrTargetNoteRow.toggle(attrType === 'relation');
+
+        this.$attrDefinitionPromoted.toggle(['label-definition', 'relation-definition'].includes(attrType));
+        this.$attrDefinitionMultiplicity.toggle(['label-definition', 'relation-definition'].includes(attrType));
+        this.$attrDefinitionLabelType.toggle(attrType === 'label-definition');
+        this.$attrDefinitionInverseRelation.toggle(attrType === 'relation-definition');
 
         if (attribute.type === 'label') {
             this.$attrEditValue
@@ -225,6 +280,24 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.$widget.css("left", x - this.$widget.outerWidth() / 2);
         this.$widget.css("top", y + 25);
+    }
+
+    getAttrType(attribute) {
+        if (attribute.type === 'label') {
+            if (attribute.name.startsWith('label:')) {
+                return "label-definition";
+            } else if (attribute.name.startsWith('relation:')) {
+                return "relation-definition";
+            } else {
+                return "label";
+            }
+        }
+        else if (attribute.type === 'relation') {
+            return "relation";
+        }
+        else {
+            this.$title.text('');
+        }
     }
 
     updateParent() {
