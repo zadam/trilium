@@ -52,7 +52,17 @@ class Attribute {
      *         3. attribute is owned by some note's ancestor and is inheritable
      */
     isAffecting(affectedNote) {
+        if (!affectedNote) {
+            return false;
+        }
+
         const attrNote = this.getNote();
+
+        if (!attrNote) {
+            // the note (owner of the attribute) is not even loaded into the cache so it should not affect anything else
+            return false;
+        }
+
         const owningNotes = [affectedNote, ...affectedNote.getTemplateNotes()];
 
         for (const owningNote of owningNotes) {
