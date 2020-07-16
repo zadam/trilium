@@ -125,14 +125,14 @@ const editorConfig = {
 };
 
 const TPL = `
-<div class="note-attributes">
+<div class="attribute-list">
 <style>
-    .note-attributes {
+    .attribute-list {
         margin-left: 7px;
         margin-right: 7px;
     }
     
-    .note-attributes-editor {
+    .attribute-list-editor {
         border: 0 !important;
         outline: 0 !important;
         box-shadow: none !important;
@@ -151,11 +151,11 @@ const TPL = `
         padding-left: 7px;
     }
     
-    .note-attributes-editor p {
+    .attribute-list-editor p {
         margin: 0 !important;
     }
     
-    .note-attributes.error .note-attributes-editor {
+    .attribute-list.error .attribute-list-editor {
         border-color: red !important;
     }
     
@@ -166,7 +166,7 @@ const TPL = `
         font-size: small;
     }
     
-    .note-attributes hr {
+    .attribute-list hr {
         height: 1px;
         border-color: var(--main-border-color);
         position: relative;
@@ -237,7 +237,7 @@ const TPL = `
 
 <div class="attr-display">
     <div style="position: relative">
-        <div class="note-attributes-editor" tabindex="200"></div>
+        <div class="attribute-list-editor" tabindex="200"></div>
     
         <div class="bx bx-save save-attributes-button" title="Save attributes <enter>, <tab>)"></div>
     
@@ -249,7 +249,7 @@ const TPL = `
     <div class="attr-expander attr-inherited-expander">
         <hr class="w-100">
         
-        <div class="attr-expander-text">5 inherited attributes</div>
+        <div class="attr-expander-text"></div>
         
         <hr class="w-100">
     </div>
@@ -260,7 +260,7 @@ const TPL = `
 </div>
 `;
 
-export default class NoteAttributesWidget extends TabAwareWidget {
+export default class AttributeListWidget extends TabAwareWidget {
     constructor() {
         super();
 
@@ -275,7 +275,7 @@ export default class NoteAttributesWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$editor = this.$widget.find('.note-attributes-editor');
+        this.$editor = this.$widget.find('.attribute-list-editor');
 
         this.initialized = this.initEditor();
 

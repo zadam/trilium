@@ -11,7 +11,7 @@ import NoteTreeWidget from "../widgets/note_tree.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import NotePathsWidget from "../widgets/note_paths.js";
 import NoteTitleWidget from "../widgets/note_title.js";
-import NoteAttributesWidget from "../widgets/note_attributes.js";
+import AttributeListWidget from "../widgets/attribute_list.js";
 import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
@@ -135,7 +135,7 @@ export default class DesktopMainWindowLayout {
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
-                    .child(new TabCachingWidget(() => new NoteAttributesWidget()))
+                    .child(new TabCachingWidget(() => new AttributeListWidget()))
                     .child(new TabCachingWidget(() => new PromotedAttributesWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                     .child(...this.customWidgets.get('center-pane'))

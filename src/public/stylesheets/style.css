@@ -246,7 +246,6 @@ div.ui-tooltip {
 }
 
 .CodeMirror {
-    font-family: "Liberation Mono", "Lucida Console", monospace;
     height: 100%;
     background: inherit;
 }
