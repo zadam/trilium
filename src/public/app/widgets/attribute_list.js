@@ -1,128 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
-import libraryLoader from "../services/library_loader.js";
-import noteAutocompleteService from "../services/note_autocomplete.js";
-import treeCache from "../services/tree_cache.js";
-import server from "../services/server.js";
-import ws from "../services/ws.js";
-import SpacedUpdate from "../services/spaced_update.js";
-import attributesParser from "../services/attribute_parser.js";
 import AttributeDetailWidget from "./attribute_detail.js";
-import contextMenuService from "../services/context_menu.js";
-
-const mentionSetup = {
-    feeds: [
-        {
-            marker: '@',
-            feed: queryText => {
-                return new Promise((res, rej) => {
-                    noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        res(rows.map(row => {
-                            return {
-                                id: '@' + row.notePathTitle,
-                                name: row.notePathTitle,
-                                link: '#' + row.notePath,
-                                notePath: row.notePath,
-                                highlightedNotePathTitle: row.highlightedNotePathTitle
-                            }
-                        }));
-                    });
-                });
-            },
-            itemRenderer: item => {
-                const itemElement = document.createElement('span');
-
-                itemElement.classList.add('mentions-item');
-                itemElement.innerHTML = `${item.highlightedNotePathTitle} `;
-
-                return itemElement;
-            },
-            minimumCharacters: 0
-        },
-        {
-            marker: '#',
-            feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=label&query=${encodeURIComponent(queryText)}`);
-
-                return names.map(name => {
-                    return {
-                        id: '#' + name,
-                        name: name
-                    }
-                });
-            },
-            minimumCharacters: 0,
-            attributeMention: true
-        },
-        {
-            marker: '~',
-            feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=relation&query=${encodeURIComponent(queryText)}`);
-
-                return names.map(name => {
-                    return {
-                        id: '~' + name,
-                        name: name
-                    }
-                });
-            },
-            minimumCharacters: 0,
-            attributeMention: true
-        }
-    ]
-};
-
-const editorConfig = {
-    removePlugins: [
-        'Enter',
-        'ShiftEnter',
-        'Heading',
-        'Link',
-        'Autoformat',
-        'Bold',
-        'Italic',
-        'Underline',
-        'Strikethrough',
-        'Code',
-        'Superscript',
-        'Subscript',
-        'BlockQuote',
-        'Image',
-        'ImageCaption',
-        'ImageStyle',
-        'ImageToolbar',
-        'ImageUpload',
-        'ImageResize',
-        'List',
-        'TodoList',
-        'PasteFromOffice',
-        'Table',
-        'TableToolbar',
-        'TableProperties',
-        'TableCellProperties',
-        'Indent',
-        'IndentBlock',
-        'BlockToolbar',
-        'ParagraphButtonUI',
-        'HeadingButtonsUI',
-        'UploadimagePlugin',
-        'InternalLinkPlugin',
-        'MarkdownImportPlugin',
-        'CuttonotePlugin',
-        'TextTransformation',
-        'Font',
-        'FontColor',
-        'FontBackgroundColor',
-        'CodeBlock',
-        'SelectAll',
-        'IncludeNote',
-        'CutToNote'
-    ],
-    toolbar: {
-        items: []
-    },
-    placeholder: "Type the labels and relations here ...",
-    mention: mentionSetup
-};
+import attributeRenderer from "../services/attribute_renderer.js";
+import AttributeEditorWidget from "./attribute_editor.js";
 
 const TPL = `
 <div class="attribute-list">
@@ -130,17 +9,6 @@ const TPL = `
     .attribute-list {
         margin-left: 7px;
         margin-right: 7px;
-    }
-    
-    .attribute-list-editor {
-        border: 0 !important;
-        outline: 0 !important;
-        box-shadow: none !important;
-        padding: 0 0 0 5px !important;
-        margin: 0 !important;
-        color: var(--muted-text-color);
-        max-height: 200px;
-        overflow: auto;
     }
     
     .inherited-attributes {
@@ -192,39 +60,6 @@ const TPL = `
     .attr-expander:not(.error):hover .attr-expander-text {
         color: black;
     }
-    
-    .attr-expander.error .attr-expander-text {
-        color: red;
-    }
-    
-    .attr-expander.error hr {
-        border-color: red;
-    }
-    
-    .save-attributes-button {
-        color: var(--muted-text-color);
-        position: absolute; 
-        bottom: 3px;
-        right: 25px;
-        cursor: pointer;
-        border: 1px solid transparent;
-        font-size: 130%;
-    }
-    
-    .add-new-attribute-button {
-        color: var(--muted-text-color);
-        position: absolute; 
-        bottom: 3px;
-        right: 0; 
-        cursor: pointer;
-        border: 1px solid transparent;
-        font-size: 130%;
-    }
-    
-    .add-new-attribute-button:hover, .save-attributes-button:hover {
-        border: 1px solid var(--main-border-color);
-        border-radius: 2px;
-    }
 </style>
 
 <div class="attr-expander attr-owned-expander">
@@ -236,13 +71,7 @@ const TPL = `
 </div>
 
 <div class="attr-display">
-    <div style="position: relative">
-        <div class="attribute-list-editor" tabindex="200"></div>
-    
-        <div class="bx bx-save save-attributes-button" title="Save attributes <enter>, <tab>)"></div>
-    
-        <div class="bx bx-plus add-new-attribute-button" title="Add a new attribute"></div>
-    </div>
+    <div class="attr-editor-placeholder"></div>
     
     <hr class="w-100 attr-inherited-empty-expander" style="margin-bottom: 10px;">
     
@@ -264,20 +93,14 @@ export default class AttributeListWidget extends TabAwareWidget {
     constructor() {
         super();
 
+        this.attributeEditorWidget = new AttributeEditorWidget().setParent(this);
         this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
 
-        this.spacedUpdate = new SpacedUpdate(() => {
-            this.parseAttributes();
-
-            this.attributeDetailWidget.hide();
-        });
+        this.child(this.attributeEditorWidget, this.attributeDetailWidget);
     }
 
     doRender() {
         this.$widget = $(TPL);
-        this.$editor = this.$widget.find('.attribute-list-editor');
-
-        this.initialized = this.initEditor();
 
         this.$attrDisplay = this.$widget.find('.attr-display');
 
@@ -309,201 +132,14 @@ export default class AttributeListWidget extends TabAwareWidget {
 
         this.$inheritedEmptyExpander = this.$widget.find('.attr-inherited-empty-expander');
 
-        this.$editor.on('keydown', async e => {
-            const keycode = (e.keyCode ? e.keyCode : e.which);
-
-            if (keycode === 13) {
-                this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
-
-                await this.save();
-            }
-
-            this.attributeDetailWidget.hide();
-        });
-
-        this.$addNewAttributeButton = this.$widget.find('.add-new-attribute-button');
-        this.$addNewAttributeButton.on('click', e => {
-            contextMenuService.show({
-                x: e.pageX,
-                y: e.pageY,
-                orientation: 'left',
-                items: [
-                    {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
-                    {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
-                    {title: "----"},
-                    {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
-                    {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
-                ],
-                selectMenuItemHandler: async ({command}) => {
-                    const attrs = this.parseAttributes();
-
-                    if (!attrs) {
-                        return;
-                    }
-
-                    let type, name;
-
-                    if (command === 'addNewLabel') {
-                        type = 'label';
-                        name = 'fillName';
-                    }
-                    else if (command === 'addNewRelation') {
-                        type = 'relation';
-                        name = 'fillName';
-                    }
-                    else if (command === 'addNewLabelDefinition') {
-                        type = 'label';
-                        name = 'label:fillName';
-                    }
-                    else if (command === 'addNewRelationDefinition') {
-                        type = 'label';
-                        name = 'relation:fillName';
-                    }
-                    else {
-                        return;
-                    }
-
-                    attrs.push({
-                        type,
-                        name,
-                        value: '',
-                        isInheritable: false
-                    });
-
-                    await this.renderOwnedAttributes(attrs);
-
-                    this.$editor.scrollTop(this.$editor[0].scrollHeight);
-
-                    const rect = this.$editor[0].getBoundingClientRect();
-
-                    setTimeout(() => {
-                        // showing a little bit later because there's a conflict with outside click closing the attr detail
-                        this.attributeDetailWidget.showAttributeDetail({
-                            allAttributes: attrs,
-                            attribute: attrs[attrs.length - 1],
-                            isOwned: true,
-                            x: (rect.left + rect.right) / 2,
-                            y: rect.bottom
-                        });
-                    }, 100);
-                }
-            });
-        });
-
+        this.$widget.find('.attr-editor-placeholder').replaceWith(this.attributeEditorWidget.render());
         this.$widget.append(this.attributeDetailWidget.render());
     }
 
-    async save() {
-        const attributes = this.parseAttributes();
-
-        if (attributes) {
-            await server.put(`notes/${this.noteId}/attributes`, attributes, this.componentId);
-        }
-    }
-
-    parseAttributes() {
-        try {
-            const attrs = attributesParser.lexAndParse(this.textEditor.getData());
-
-            this.$widget.removeClass("error");
-            this.$widget.removeAttr("title");
-
-            this.$ownedExpander.removeClass("error");
-            this.$ownedExpanderText.text(attrs.length + ' owned ' + this.attrPlural(attrs.length));
-
-            return attrs;
-        }
-        catch (e) {
-            this.$widget.attr("title", e.message);
-            this.$widget.addClass("error");
-
-            this.$ownedExpander.addClass("error");
-            this.$ownedExpanderText.text(e.message);
-        }
-    }
-
-    async initEditor() {
-        await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
-
-        this.$widget.show();
-
-        this.$editor.on("click", e => this.handleEditorClick(e));
-
-        this.textEditor = await BalloonEditor.create(this.$editor[0], editorConfig);
-        this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
-
-        // disable spellcheck for attribute editor
-        this.textEditor.editing.view.change(writer => writer.setAttribute('spellcheck', 'false', this.textEditor.editing.view.document.getRoot()));
-
-        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
-        //CKEditorInspector.attach(this.textEditor);
-    }
-
-    async handleEditorClick(e) {
-        const pos = this.textEditor.model.document.selection.getFirstPosition();
-
-        if (pos && pos.textNode && pos.textNode.data) {
-            const clickIndex = this.getClickIndex(pos);
-
-            const parsedAttrs = attributesParser.lexAndParse(this.textEditor.getData(), true);
-
-            let matchedAttr = null;
-
-            for (const attr of parsedAttrs) {
-                if (clickIndex >= attr.startIndex && clickIndex <= attr.endIndex) {
-                    matchedAttr = attr;
-                    break;
-                }
-            }
-
-            this.attributeDetailWidget.showAttributeDetail({
-                allAttributes: parsedAttrs,
-                attribute: matchedAttr,
-                isOwned: true,
-                x: e.pageX,
-                y: e.pageY
-            });
-        }
-    }
-
-    getClickIndex(pos) {
-        let clickIndex = pos.offset - pos.textNode.startOffset;
-
-        let curNode = pos.textNode;
-
-        while (curNode.previousSibling) {
-            curNode = curNode.previousSibling;
-
-            if (curNode.name === 'reference') {
-                clickIndex += curNode._attrs.get('notePath').length + 1;
-            } else {
-                clickIndex += curNode.data.length;
-            }
-        }
-
-        return clickIndex;
-    }
-
-    async loadReferenceLinkTitle(noteId, $el) {
-        const note = await treeCache.getNote(noteId, true);
-
-        let title;
-
-        if (!note) {
-            title = '[missing]';
-        }
-        else if (!note.isDeleted) {
-            title = note.title;
-        }
-        else {
-            title = note.isErased ? '[erased]' : `${note.title} (deleted)`;
-        }
-
-        $el.text(title);
-    }
-
     async refreshWithNote(note) {
-        await this.renderOwnedAttributes(note.getOwnedAttributes());
+        const ownedAttributes = note.getOwnedAttributes();
+
+        this.$ownedExpanderText.text(ownedAttributes.length + ' owned ' + this.attrPlural(ownedAttributes.length));
 
         const inheritedAttributes = note.getAttributes().filter(attr => attr.noteId !== this.noteId);
 
@@ -521,32 +157,10 @@ export default class AttributeListWidget extends TabAwareWidget {
         this.$inheritedAttributes.empty();
 
         await this.renderInheritedAttributes(inheritedAttributes, this.$inheritedAttributes);
-
-        this.parseAttributes();
-    }
-
-    async renderOwnedAttributes(ownedAttributes) {
-        const $attributesContainer = $("<div>");
-
-        for (const attribute of ownedAttributes) {
-            this.renderAttribute(attribute, $attributesContainer, true);
-        }
-
-        await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData($attributesContainer.html());
-        });
     }
 
     attrPlural(number) {
         return 'attribute' + (number === 1 ? '' : 's');
-    }
-
-    createNoteLink(noteId) {
-        return $("<a>", {
-            href: '#' + noteId,
-            class: 'reference-link',
-            'data-note-path': noteId
-        });
     }
 
     renderInheritedAttributes(attributes, $container) {
@@ -566,64 +180,7 @@ export default class AttributeListWidget extends TabAwareWidget {
 
             $container.append($span);
 
-            this.renderAttribute(attribute, $span, false);
+            attributeRenderer.renderAttribute(attribute, $span, false);
         }
-    }
-
-    renderAttribute(attribute, $container, renderIsInheritable) {
-        const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';
-
-        if (attribute.type === 'label') {
-            $container.append(document.createTextNode('#' + attribute.name + isInheritable));
-
-            if (attribute.value) {
-                $container.append('=');
-                $container.append(document.createTextNode(this.formatValue(attribute.value)));
-            }
-
-            $container.append(' ');
-        } else if (attribute.type === 'relation') {
-            if (attribute.isAutoLink) {
-                return;
-            }
-
-            if (attribute.value) {
-                $container.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
-                $container.append(this.createNoteLink(attribute.value));
-                $container.append(" ");
-            } else {
-                ws.logError(`Relation ${attribute.attributeId} has empty target`);
-            }
-        } else {
-            ws.logError("Unknown attr type: " + attribute.type);
-        }
-    }
-
-    formatValue(val) {
-        if (/^[\p{L}\p{N}\-_,.]+$/u.test(val)) {
-            return val;
-        }
-        else if (!val.includes('"')) {
-            return '"' + val + '"';
-        }
-        else if (!val.includes("'")) {
-            return "'" + val + "'";
-        }
-        else if (!val.includes("`")) {
-            return "`" + val + "`";
-        }
-        else {
-            return '"' + val.replace(/"/g, '\\"') + '"';
-        }
-    }
-
-    async focusOnAttributesEvent({tabId}) {
-        if (this.tabContext.tabId === tabId) {
-            this.$editor.trigger('focus');
-        }
-    }
-
-    updateAttributeListCommand({attributes}) {
-        this.renderOwnedAttributes(attributes);
     }
 }
