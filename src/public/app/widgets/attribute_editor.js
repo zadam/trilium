@@ -45,13 +45,18 @@ const TPL = `
         border: 1px solid var(--main-border-color);
         border-radius: 2px;
     }
+    
+    .attribute-errors {
+        color: red;
+    }
     </style>
     
     <div class="attribute-list-editor" tabindex="200"></div>
 
     <div class="bx bx-save save-attributes-button" title="Save attributes <enter>, <tab>)"></div>
-
     <div class="bx bx-plus add-new-attribute-button" title="Add a new attribute"></div>
+    
+    <div class="attribute-errors" style="display: none;"></div>
 </div>
 `;
 
@@ -171,6 +176,12 @@ const editorConfig = {
 };
 
 export default class AttributeEditorWidget extends TabAwareWidget {
+    constructor(attributeDetailWidget) {
+        super();
+
+        this.attributeDetailWidget = attributeDetailWidget;
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.attribute-list-editor');
@@ -190,76 +201,83 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         });
 
         this.$addNewAttributeButton = this.$widget.find('.add-new-attribute-button');
-        this.$addNewAttributeButton.on('click', e => {
-            contextMenuService.show({
-                x: e.pageX,
-                y: e.pageY,
-                orientation: 'left',
-                items: [
-                    {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
-                    {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
-                    {title: "----"},
-                    {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
-                    {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
-                ],
-                selectMenuItemHandler: async ({command}) => {
-                    const attrs = this.parseAttributes();
+        this.$addNewAttributeButton.on('click', e => this.addNewAttribute(e));
 
-                    if (!attrs) {
-                        return;
-                    }
+        this.$saveAttributesButton = this.$widget.find('.save-attributes-button');
+        this.$saveAttributesButton.on('click', () => this.save());
 
-                    let type, name;
+        this.$errors = this.$widget.find('.attribute-errors');
+    }
 
-                    if (command === 'addNewLabel') {
-                        type = 'label';
-                        name = 'fillName';
-                    }
-                    else if (command === 'addNewRelation') {
-                        type = 'relation';
-                        name = 'fillName';
-                    }
-                    else if (command === 'addNewLabelDefinition') {
-                        type = 'label';
-                        name = 'label:fillName';
-                    }
-                    else if (command === 'addNewRelationDefinition') {
-                        type = 'label';
-                        name = 'relation:fillName';
-                    }
-                    else {
-                        return;
-                    }
-
-                    attrs.push({
-                        type,
-                        name,
-                        value: '',
-                        isInheritable: false
-                    });
-
-                    await this.renderOwnedAttributes(attrs);
-
-                    this.$editor.scrollTop(this.$editor[0].scrollHeight);
-
-                    const rect = this.$editor[0].getBoundingClientRect();
-
-                    setTimeout(() => {
-                        // showing a little bit later because there's a conflict with outside click closing the attr detail
-                        this.attributeDetailWidget.showAttributeDetail({
-                            allAttributes: attrs,
-                            attribute: attrs[attrs.length - 1],
-                            isOwned: true,
-                            x: (rect.left + rect.right) / 2,
-                            y: rect.bottom
-                        });
-                    }, 100);
-                }
-            });
+    addNewAttribute(e) {
+        contextMenuService.show({
+            x: e.pageX,
+            y: e.pageY,
+            orientation: 'left',
+            items: [
+                {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
+                {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
+                {title: "----"},
+                {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
+                {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
+            ],
+            selectMenuItemHandler: ({command}) => this.handleAddNewAttributeCommand(command)
         });
     }
 
+    async handleAddNewAttributeCommand(command) {
+        const attrs = this.parseAttributes();
+
+        if (!attrs) {
+            return;
+        }
+
+        let type, name;
+
+        if (command === 'addNewLabel') {
+            type = 'label';
+            name = 'fillName';
+        } else if (command === 'addNewRelation') {
+            type = 'relation';
+            name = 'fillName';
+        } else if (command === 'addNewLabelDefinition') {
+            type = 'label';
+            name = 'label:fillName';
+        } else if (command === 'addNewRelationDefinition') {
+            type = 'label';
+            name = 'relation:fillName';
+        } else {
+            return;
+        }
+
+        attrs.push({
+            type,
+            name,
+            value: '',
+            isInheritable: false
+        });
+
+        await this.renderOwnedAttributes(attrs);
+
+        this.$editor.scrollTop(this.$editor[0].scrollHeight);
+
+        const rect = this.$editor[0].getBoundingClientRect();
+
+        setTimeout(() => {
+            // showing a little bit later because there's a conflict with outside click closing the attr detail
+            this.attributeDetailWidget.showAttributeDetail({
+                allAttributes: attrs,
+                attribute: attrs[attrs.length - 1],
+                isOwned: true,
+                x: (rect.left + rect.right) / 2,
+                y: rect.bottom
+            });
+        }, 100);
+    }
+
     async save() {
+        this.$saveAttributesButton.fadeOut();
+
         const attributes = this.parseAttributes();
 
         if (attributes) {
@@ -274,11 +292,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             return attrs;
         }
         catch (e) {
-            this.$widget.attr("title", e.message);
-            this.$widget.addClass("error");
-
-            this.$ownedExpander.addClass("error");
-            this.$ownedExpanderText.text(e.message);
+            this.$errors.show().text(e.message);
         }
     }
 
@@ -300,7 +314,16 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     dataChanged() {
-        console.log("Data changed");
+        if (this.lastSavedContent === this.textEditor.getData()) {
+            this.$saveAttributesButton.fadeOut();
+        }
+        else {
+            this.$saveAttributesButton.fadeIn();
+        }
+
+        if (this.$errors.is(":visible")) {
+            this.$errors.slideUp();
+        }
     }
 
     async handleEditorClick(e) {
@@ -309,7 +332,15 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         if (pos && pos.textNode && pos.textNode.data) {
             const clickIndex = this.getClickIndex(pos);
 
-            const parsedAttrs = attributesParser.lexAndParse(this.textEditor.getData(), true);
+            let parsedAttrs;
+
+            try {
+                parsedAttrs = attributesParser.lexAndParse(this.textEditor.getData(), true);
+            }
+            catch (e) {
+                // the input is incorrect because user messed up with it and now needs to fix it manually
+                return null;
+            }
 
             let matchedAttr = null;
 
@@ -370,7 +401,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         await this.renderOwnedAttributes(note.getOwnedAttributes());
     }
 
-    async renderOwnedAttributes(ownedAttributes) {
+    async renderOwnedAttributes(ownedAttributes, ) {
         const $attributesContainer = $("<div>");
 
         for (const attribute of ownedAttributes) {
@@ -378,6 +409,10 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
 
         this.textEditor.setData($attributesContainer.html());
+
+        this.lastSavedContent = this.textEditor.getData();
+
+        this.$saveAttributesButton.fadeOut(0);
     }
 
     async focusOnAttributesEvent({tabId}) {
@@ -386,7 +421,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    updateAttributeListCommand({attributes}) {
+    updateAttributeList(attributes) {
         this.renderOwnedAttributes(attributes);
     }
 }

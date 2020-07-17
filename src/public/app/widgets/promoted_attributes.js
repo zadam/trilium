@@ -54,7 +54,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
                 const valueName = definitionAttr.name.substr(definitionType.length + 1);
 
-                let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === definitionType);
+                let valueAttrs = attributes.filter(el => el.name === valueName && el.type === 'label');
 
                 if (valueAttrs.length === 0) {
                     valueAttrs.push({

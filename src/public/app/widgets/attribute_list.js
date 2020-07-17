@@ -93,8 +93,8 @@ export default class AttributeListWidget extends TabAwareWidget {
     constructor() {
         super();
 
-        this.attributeEditorWidget = new AttributeEditorWidget().setParent(this);
         this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
+        this.attributeEditorWidget = new AttributeEditorWidget(this.attributeDetailWidget).setParent(this);
 
         this.child(this.attributeEditorWidget, this.attributeDetailWidget);
     }
@@ -182,5 +182,9 @@ export default class AttributeListWidget extends TabAwareWidget {
 
             attributeRenderer.renderAttribute(attribute, $span, false);
         }
+    }
+
+    updateAttributeListCommand({attributes}) {
+        this.attributeEditorWidget.updateAttributeList(attributes);
     }
 }
