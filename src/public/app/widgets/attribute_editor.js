@@ -53,7 +53,7 @@ const TPL = `
     
     <div class="attribute-list-editor" tabindex="200"></div>
 
-    <div class="bx bx-save save-attributes-button" title="Save attributes <enter>, <tab>)"></div>
+    <div class="bx bx-save save-attributes-button" title="Save attributes <enter>"></div>
     <div class="bx bx-plus add-new-attribute-button" title="Add a new attribute"></div>
     
     <div class="attribute-errors" style="display: none;"></div>
@@ -200,6 +200,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             this.attributeDetailWidget.hide();
         });
 
+        this.$editor.on('blur', () => this.save());
+
         this.$addNewAttributeButton = this.$widget.find('.add-new-attribute-button');
         this.$addNewAttributeButton.on('click', e => this.addNewAttribute(e));
 
@@ -257,7 +259,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             isInheritable: false
         });
 
-        await this.renderOwnedAttributes(attrs);
+        await this.renderOwnedAttributes(attrs, false);
 
         this.$editor.scrollTop(this.$editor[0].scrollHeight);
 
@@ -398,10 +400,10 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        await this.renderOwnedAttributes(note.getOwnedAttributes());
+        await this.renderOwnedAttributes(note.getOwnedAttributes(), true);
     }
 
-    async renderOwnedAttributes(ownedAttributes, ) {
+    async renderOwnedAttributes(ownedAttributes, saved) {
         const $attributesContainer = $("<div>");
 
         for (const attribute of ownedAttributes) {
@@ -410,9 +412,11 @@ export default class AttributeEditorWidget extends TabAwareWidget {
 
         this.textEditor.setData($attributesContainer.html());
 
-        this.lastSavedContent = this.textEditor.getData();
+        if (saved) {
+            this.lastSavedContent = this.textEditor.getData();
 
-        this.$saveAttributesButton.fadeOut(0);
+            this.$saveAttributesButton.fadeOut(0);
+        }
     }
 
     async focusOnAttributesEvent({tabId}) {
@@ -422,6 +426,6 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     updateAttributeList(attributes) {
-        this.renderOwnedAttributes(attributes);
+        this.renderOwnedAttributes(attributes, false);
     }
 }
