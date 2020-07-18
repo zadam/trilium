@@ -10,14 +10,14 @@ module.exports = () => {
             tokens.push('promoted');
         }
 
-        if (obj.labelType) {
-            tokens.push(obj.labelType);
-        }
-
         if (obj.multiplicityType === 'singlevalue') {
             tokens.push('single');
         } else if (obj.multiplicityType === 'multivalue') {
             tokens.push('multi');
+        }
+
+        if (obj.labelType) {
+            tokens.push(obj.labelType);
         }
 
         if (obj.numberPrecision) {
@@ -38,14 +38,14 @@ module.exports = () => {
             tokens.push('promoted');
         }
 
-        if (obj.inverseRelation) {
-            tokens.push('inverse=' + obj.inverseRelation);
-        }
-
         if (obj.multiplicityType === 'singlevalue') {
             tokens.push('single');
         } else if (obj.multiplicityType === 'multivalue') {
             tokens.push('multi');
+        }
+
+        if (obj.inverseRelation) {
+            tokens.push('inverse=' + obj.inverseRelation);
         }
 
         const newValue = tokens.join(',');

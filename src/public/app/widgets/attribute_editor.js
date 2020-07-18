@@ -234,20 +234,24 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             return;
         }
 
-        let type, name;
+        let type, name, value;
 
         if (command === 'addNewLabel') {
             type = 'label';
-            name = 'fillName';
+            name = 'myLabel';
+            value = '';
         } else if (command === 'addNewRelation') {
             type = 'relation';
-            name = 'fillName';
+            name = 'myRelation';
+            value = '';
         } else if (command === 'addNewLabelDefinition') {
             type = 'label';
-            name = 'label:fillName';
+            name = 'label:myLabel';
+            value = 'promoted,single,text';
         } else if (command === 'addNewRelationDefinition') {
             type = 'label';
-            name = 'relation:fillName';
+            name = 'relation:myRelation';
+            value = 'promoted,single';
         } else {
             return;
         }
@@ -255,7 +259,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         attrs.push({
             type,
             name,
-            value: '',
+            value,
             isInheritable: false
         });
 
@@ -347,7 +351,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             let matchedAttr = null;
 
             for (const attr of parsedAttrs) {
-                if (clickIndex >= attr.startIndex && clickIndex <= attr.endIndex) {
+                if (clickIndex > attr.startIndex && clickIndex <= attr.endIndex) {
                     matchedAttr = attr;
                     break;
                 }

@@ -4,6 +4,7 @@ import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 import BasicWidget from "./basic_widget.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
+import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
 const TPL = `
 <div class="attr-detail">
@@ -27,15 +28,15 @@ const TPL = `
             margin-bottom: 10px;
         }
         
-        .attr-edit {
+        .attr-edit-table {
             width: 100%;
         }
         
-        .attr-edit th {
+        .attr-edit-table th {
             text-align: left;
         }
         
-        .attr-edit td input {
+        .attr-edit-table td input {
             width: 100%;
         }
         
@@ -53,59 +54,70 @@ const TPL = `
 
     <div class="attr-is-owned-by"></div>
 
-    <table class="attr-edit">
+    <table class="attr-edit-table">
         <tr>
             <th>Name:</th>
-            <td><input type="text" class="attr-edit-name form-control form-control-sm" /></td>
+            <td><input type="text" class="attr-input-name form-control" /></td>
         </tr>
-        <tr class="attr-value-row">
+        <tr class="attr-row-value">
             <th>Value:</th>
-            <td><input type="text" class="attr-edit-value form-control form-control-sm" /></td>
+            <td><input type="text" class="attr-input-value form-control" /></td>
         </tr>
-        <tr class="attr-target-note-row">
+        <tr class="attr-row-target-note">
             <th>Target note:</th>
             <td>
                 <div class="input-group">
-                    <input type="text" class="attr-edit-target-note form-control" />
+                    <input type="text" class="attr-input-target-note form-control" />
                 </div>
             </td>
         </tr>
-        <tr class="attr-definition-promoted">
+        <tr class="attr-row-promoted">
             <th>Promoted:</th>
-            <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
+            <td><input type="checkbox" class="attr-input-promoted form-control form-control-sm" /></td>
         </tr>
-        <tr class="attr-definition-multiplicity">
+        <tr class="attr-row-multiplicity">
             <th>Multiplicity:</th>
             <td>
-                <select class="form-control">
-                  <option>Single value</option>
-                  <option>Multi value</option>
+                <select class="attr-input-multiplicity form-control">
+                  <option value="single">Single value</option>
+                  <option value="multi">Multi value</option>
                 </select>
             </td>
         </tr>
-        <tr class="attr-definition-label-type">
+        <tr class="attr-row-label-type">
             <th>Type:</th>
             <td>
-                <select class="form-control">
-                  <option>Text</option>
-                  <option>Number</option>
-                  <option>Boolean</option>
-                  <option>Date</option>
-                  <option>URL</option>
+                <select class="attr-input-label-type form-control">
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="date">Date</option>
+                  <option value="url">URL</option>
                 </select>
             </td>
         </tr>
-        <tr class="attr-definition-inverse-relation">
+        <tr class="attr-row-number-precision">
+            <th>Precision:</th>
+            <td>
+                <div class="input-group">
+                    <input type="number" class="form-control attr-input-number-precision" style="text-align: right">
+                    <div class="input-group-append">
+                        <span class="input-group-text">digits</span>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr class="attr-row-inverse-relation">
             <th>Inverse relation:</th>
             <td>
                 <div class="input-group">
-                    <input type="text" class="form-control" />
+                    <input type="text" class="attr-input-inverse-relation form-control" />
                 </div>
             </td>
         </tr>
         <tr>
             <th>Inheritable:</th>
-            <td><input type="checkbox" class="attr-edit-inheritable form-control form-control-sm" /></td>
+            <td><input type="checkbox" class="attr-input-inheritable form-control form-control-sm" /></td>
         </tr>
     </table>
 
@@ -140,22 +152,37 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
-        this.$attrEditName = this.$widget.find('.attr-edit-name');
-        this.$attrEditName.on('keyup', () => this.updateParent());
+        this.$attrInputName = this.$widget.find('.attr-input-name');
+        this.$attrInputName.on('keyup', () => this.updateParent());
 
-        this.$attrValueRow = this.$widget.find('.attr-value-row');
-        this.$attrEditValue = this.$widget.find('.attr-edit-value');
-        this.$attrEditValue.on('keyup', () => this.updateParent());
+        this.$attrRowValue = this.$widget.find('.attr-row-value');
+        this.$attrInputValue = this.$widget.find('.attr-input-value');
+        this.$attrInputValue.on('keyup', () => this.updateParent());
 
-        this.$attrDefinitionPromoted = this.$widget.find('.attr-definition-promoted');
-        this.$attrDefinitionMultiplicity = this.$widget.find('.attr-definition-multiplicity');
-        this.$attrDefinitionLabelType = this.$widget.find('.attr-definition-label-type');
-        this.$attrDefinitionInverseRelation = this.$widget.find('.attr-definition-inverse-relation');
+        this.$attrRowPromoted = this.$widget.find('.attr-row-promoted');
+        this.$attrInputPromoted = this.$widget.find('.attr-input-promoted');
+        this.$attrInputPromoted.on('change', () => this.updateDefinition());
 
-        this.$attrTargetNoteRow = this.$widget.find('.attr-target-note-row');
-        this.$attrEditTargetNote = this.$widget.find('.attr-edit-target-note');
+        this.$attrRowMultiplicity = this.$widget.find('.attr-row-multiplicity');
+        this.$attrInputMultiplicity = this.$widget.find('.attr-input-multiplicity');
+        this.$attrInputMultiplicity.on('change', () => this.updateDefinition());
 
-        noteAutocompleteService.initNoteAutocomplete(this.$attrEditTargetNote)
+        this.$attrRowLabelType = this.$widget.find('.attr-row-label-type');
+        this.$attrInputLabelType = this.$widget.find('.attr-input-label-type');
+        this.$attrInputLabelType.on('change', () => this.updateDefinition());
+
+        this.$attrRowNumberPrecision = this.$widget.find('.attr-row-number-precision');
+        this.$attrInputNumberPrecision = this.$widget.find('.attr-input-number-precision');
+        this.$attrInputNumberPrecision.on('change', () => this.updateDefinition());
+
+        this.$attrRowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
+        this.$attrInputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
+        this.$attrInputInverseRelation.on('keyup', () => this.updateDefinition());
+
+        this.$attrRowTargetNote = this.$widget.find('.attr-row-target-note');
+        this.$attrInputTargetNote = this.$widget.find('.attr-input-target-note');
+
+        noteAutocompleteService.initNoteAutocomplete(this.$attrInputTargetNote)
             .on('autocomplete:selected', (event, suggestion, dataset) => {
                 if (!suggestion.notePath) {
                     return false;
@@ -166,8 +193,8 @@ export default class AttributeDetailWidget extends BasicWidget {
                 this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
             });
 
-        this.$attrEditInheritable = this.$widget.find('.attr-edit-inheritable');
-        this.$attrEditInheritable.on('change', () => this.updateParent());
+        this.$attrInputInheritable = this.$widget.find('.attr-input-inheritable');
+        this.$attrInputInheritable.on('change', () => this.updateParent());
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
@@ -191,9 +218,13 @@ export default class AttributeDetailWidget extends BasicWidget {
             return;
         }
 
-        const attrType = this.getAttrType(attribute);
+        this.attrType = this.getAttrType(attribute);
 
-        this.$title.text(ATTR_TITLES[attrType]);
+        const definition = this.attrType.endsWith('-definition')
+            ? promotedAttributeDefinitionParser.parse(attribute.value)
+            : {};
+
+        this.$title.text(ATTR_TITLES[this.attrType]);
 
         this.allAttributes = allAttributes;
         this.attribute = attribute;
@@ -246,33 +277,53 @@ export default class AttributeDetailWidget extends BasicWidget {
                 .append(await linkService.createNoteLink(attribute.noteId))
         }
 
-        this.$attrEditName
+        this.$attrInputName
             .val(attribute.name)
             .attr('readonly', () => !isOwned);
 
-        this.$attrValueRow.toggle(attrType === 'label');
-        this.$attrTargetNoteRow.toggle(attrType === 'relation');
+        this.$attrRowValue.toggle(this.attrType === 'label');
+        this.$attrRowTargetNote.toggle(this.attrType === 'relation');
 
-        this.$attrDefinitionPromoted.toggle(['label-definition', 'relation-definition'].includes(attrType));
-        this.$attrDefinitionMultiplicity.toggle(['label-definition', 'relation-definition'].includes(attrType));
-        this.$attrDefinitionLabelType.toggle(attrType === 'label-definition');
-        this.$attrDefinitionInverseRelation.toggle(attrType === 'relation-definition');
+        this.$attrRowPromoted.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
+        this.$attrInputPromoted
+            .prop("checked", !!definition.isPromoted)
+            .attr('disabled', () => !isOwned);
+
+        this.$attrRowMultiplicity.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
+        this.$attrInputMultiplicity
+            .val(definition.multiplicity)
+            .attr('disabled', () => !isOwned);
+
+        this.$attrRowLabelType.toggle(this.attrType === 'label-definition');
+        this.$attrInputLabelType
+            .val(definition.labelType)
+            .attr('disabled', () => !isOwned);
+
+        this.$attrRowNumberPrecision.toggle(this.attrType === 'label-definition' && definition.labelType === 'number');
+        this.$attrInputNumberPrecision
+            .val(definition.numberPrecision)
+            .attr('disabled', () => !isOwned);
+
+        this.$attrRowInverseRelation.toggle(this.attrType === 'relation-definition');
+        this.$attrInputInverseRelation
+            .val(definition.inverseRelation)
+            .attr('disabled', () => !isOwned);
 
         if (attribute.type === 'label') {
-            this.$attrEditValue
+            this.$attrInputValue
                 .val(attribute.value)
                 .attr('readonly', () => !isOwned);
         }
         else if (attribute.type === 'relation') {
             const targetNote = await treeCache.getNote(attribute.value);
 
-            this.$attrEditTargetNote
+            this.$attrInputTargetNote
                 .attr('readonly', () => !isOwned)
                 .val(targetNote ? targetNote.title : "")
                 .setSelectedNotePath(attribute.value);
         }
 
-        this.$attrEditInheritable
+        this.$attrInputInheritable
             .prop("checked", !!attribute.isInheritable)
             .attr('disabled', () => !isOwned);
 
@@ -301,9 +352,37 @@ export default class AttributeDetailWidget extends BasicWidget {
     }
 
     updateParent() {
-        this.attribute.name = this.$attrEditName.val();
-        this.attribute.value = this.$attrEditValue.val();
-        this.attribute.isInheritable = this.$attrEditInheritable.is(":checked");
+        this.attribute.name = this.$attrInputName.val();
+        this.attribute.value = this.$attrInputValue.val();
+        this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
+
+        this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+    }
+
+    updateDefinition() {
+        this.attribute.name = this.$attrInputName.val();
+        this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
+
+        const props = [];
+
+        if (this.$attrInputPromoted.is(":checked")) {
+            props.push("promoted");
+        }
+
+        props.push(this.$attrInputMultiplicity.val());
+
+        if (this.attrType === 'label-definition') {
+            props.push(this.$attrInputLabelType.val());
+        }
+        else if (this.attrType === 'relation-definition' && this.$attrInputInverseRelation.val().trim().length > 0) {
+            props.push("inverse=" + this.$attrInputInverseRelation.val());
+        }
+
+        this.$attrRowNumberPrecision.toggle(
+            this.attrType === 'label-definition'
+            && this.$attrInputLabelType.val() === 'number');
+
+        this.attribute.value = props.join(",");
 
         this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
     }
