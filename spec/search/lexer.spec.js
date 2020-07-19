@@ -49,6 +49,22 @@ describe("Lexer expression", () => {
             .toEqual(["#label", "*=*", "text"]);
     });
 
+    it("simple label operator with in quotes and without", () => {
+        expect(lexer("#label*=*'text'").expressionTokens)
+            .toEqual([
+                {token: "#label", inQuotes: false},
+                {token: "*=*", inQuotes: false},
+                {token: "text", inQuotes: true}
+            ]);
+
+        expect(lexer("#label*=*text").expressionTokens)
+            .toEqual([
+                {token: "#label", inQuotes: false},
+                {token: "*=*", inQuotes: false},
+                {token: "text", inQuotes: false}
+            ]);
+    });
+
     it("complex expressions with and, or and parenthesis", () => {
         expect(lexer(`# (#label=text OR #second=text) AND ~relation`).expressionTokens.map(t => t.token))
             .toEqual(["#", "(", "#label", "=", "text", "or", "#second", "=", "text", ")", "and", "~relation"]);

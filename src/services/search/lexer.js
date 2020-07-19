@@ -28,7 +28,7 @@ function lexer(str) {
 
         const rec = {
             token: currentWord,
-            inQuotes: quotes
+            inQuotes: !!quotes
         };
 
         if (fulltextEnded) {
@@ -71,9 +71,9 @@ function lexer(str) {
                 }
             }
             else if (quotes === chr) {
-                quotes = false;
-
                 finishWord();
+
+                quotes = false;
             }
             else {
                 // it's a quote but within other kind of quotes so it's valid as a literal character
