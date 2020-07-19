@@ -529,4 +529,26 @@ describe("Search", () => {
     });
 
     // FIXME: test what happens when we order without any filter criteria
+
+    // it("comparison between labels", async () => {
+    //     rootNote
+    //         .child(note("Europe")
+    //             .child(note("Austria")
+    //                 .label('capital', 'Vienna')
+    //                 .label('largestCity', 'Vienna'))
+    //             .child(note("Canada")
+    //                 .label('capital', 'Ottawa')
+    //                 .label('largestCity', 'Toronto'))
+    //             .child(note("Czech Republic")
+    //                 .label('capital', 'Prague')
+    //                 .label('largestCity', 'Prague'))
+    //         );
+    //
+    //     const parsingContext = new ParsingContext();
+    //
+    //     const searchResults = await searchService.findNotesWithQuery('#capital = #largestCity', parsingContext);
+    //     expect(searchResults.length).toEqual(2);
+    //     expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
+    //     expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    // })
 });

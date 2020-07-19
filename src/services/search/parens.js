@@ -7,7 +7,7 @@ function parens(tokens) {
     }
 
     while (true) {
-        const leftIdx = tokens.findIndex(token => token === '(');
+        const leftIdx = tokens.findIndex(token => token.token === '(');
 
         if (leftIdx === -1) {
             return tokens;
@@ -17,13 +17,13 @@ function parens(tokens) {
         let parensLevel = 0
 
         for (rightIdx = leftIdx; rightIdx < tokens.length; rightIdx++) {
-            if (tokens[rightIdx] === ')') {
+            if (tokens[rightIdx].token === ')') {
                 parensLevel--;
 
                 if (parensLevel === 0) {
                     break;
                 }
-            } else if (tokens[rightIdx] === '(') {
+            } else if (tokens[rightIdx].token === '(') {
                 parensLevel++;
             }
         }

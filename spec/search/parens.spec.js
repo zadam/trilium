@@ -2,19 +2,22 @@ const parens = require('../../src/services/search/parens.js');
 
 describe("Parens handler", () => {
     it("handles parens", () => {
-        expect(parens(["(", "hello", ")", "and", "(", "(", "pick", "one", ")", "and", "another", ")"]))
+        const input = ["(", "hello", ")", "and", "(", "(", "pick", "one", ")", "and", "another", ")"]
+            .map(token => ({token}));
+
+        expect(parens(input))
             .toEqual([
                 [
-                    "hello"
+                    {token: "hello"}
                 ],
-                "and",
+                {token: "and"},
                 [
                     [
-                        "pick",
-                        "one"
+                        {token: "pick"},
+                        {token: "one"}
                     ],
-                    "and",
-                    "another"
+                    {token: "and"},
+                    {token: "another"}
                 ]
             ]);
     });

@@ -18,6 +18,8 @@ const comparatorBuilder = require('./comparator_builder');
 const ValueExtractor = require('./value_extractor');
 
 function getFulltext(tokens, parsingContext) {
+    tokens = tokens.map(t => t.token);
+
     parsingContext.highlightedTokens.push(...tokens);
 
     if (tokens.length === 0) {
@@ -50,75 +52,75 @@ function getExpression(tokens, parsingContext, level = 0) {
     let i;
 
     function parseNoteProperty() {
-        if (tokens[i] !== '.') {
+        if (tokens[i].token !== '.') {
             parsingContext.addError('Expected "." to separate field path');
             return;
         }
 
         i++;
 
-        if (tokens[i] === 'content') {
+        if (tokens[i].token === 'content') {
             i += 1;
 
-            const operator = tokens[i];
+            const operator = tokens[i].token;
 
             if (!isOperator(operator)) {
-                parsingContext.addError(`After content expected operator, but got "${tokens[i]}"`);
+                parsingContext.addError(`After content expected operator, but got "${tokens[i].token}"`);
                 return;
             }
 
             i++;
 
             return new OrExp([
-                new NoteContentUnprotectedFulltextExp(operator, [tokens[i]]),
-                new NoteContentProtectedFulltextExp(operator, [tokens[i]])
+                new NoteContentUnprotectedFulltextExp(operator, [tokens[i].token]),
+                new NoteContentProtectedFulltextExp(operator, [tokens[i].token])
             ]);
         }
 
-        if (tokens[i] === 'parents') {
+        if (tokens[i].token === 'parents') {
             i += 1;
 
             return new ChildOfExp(parseNoteProperty());
         }
 
-        if (tokens[i] === 'children') {
+        if (tokens[i].token === 'children') {
             i += 1;
 
             return new ParentOfExp(parseNoteProperty());
         }
 
-        if (tokens[i] === 'ancestors') {
+        if (tokens[i].token === 'ancestors') {
             i += 1;
 
             return new DescendantOfExp(parseNoteProperty());
         }
 
-        if (tokens[i] === 'labels') {
-            if (tokens[i + 1] !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, god "${tokens[i + 1]}"`);
+        if (tokens[i].token === 'labels') {
+            if (tokens[i + 1].token !== '.') {
+                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}"`);
                 return;
             }
 
             i += 2;
 
-            return parseLabel(tokens[i]);
+            return parseLabel(tokens[i].token);
         }
 
-        if (tokens[i] === 'relations') {
-            if (tokens[i + 1] !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, god "${tokens[i + 1]}"`);
+        if (tokens[i].token === 'relations') {
+            if (tokens[i + 1].token !== '.') {
+                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}"`);
                 return;
             }
 
             i += 2;
 
-            return parseRelation(tokens[i]);
+            return parseRelation(tokens[i].token);
         }
 
-        if (PropertyComparisonExp.isProperty(tokens[i])) {
-            const propertyName = tokens[i];
-            const operator = tokens[i + 1];
-            const comparedValue = tokens[i + 2];
+        if (PropertyComparisonExp.isProperty(tokens[i].token)) {
+            const propertyName = tokens[i].token;
+            const operator = tokens[i + 1].token;
+            const comparedValue = tokens[i + 2].token;
             const comparator = comparatorBuilder(operator, comparedValue);
 
             if (!comparator) {
@@ -131,7 +133,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             return new PropertyComparisonExp(propertyName, comparator);
         }
 
-        parsingContext.addError(`Unrecognized note property "${tokens[i]}"`);
+        parsingContext.addError(`Unrecognized note property "${tokens[i].token}"`);
     }
 
     function parseAttribute(name) {
@@ -153,9 +155,9 @@ function getExpression(tokens, parsingContext, level = 0) {
     function parseLabel(labelName) {
         parsingContext.highlightedTokens.push(labelName);
 
-        if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
-            let operator = tokens[i + 1];
-            const comparedValue = tokens[i + 2];
+        if (i < tokens.length - 2 && isOperator(tokens[i + 1].token)) {
+            let operator = tokens[i + 1].token;
+            const comparedValue = tokens[i + 2].token;
 
             parsingContext.highlightedTokens.push(comparedValue);
 
@@ -180,7 +182,7 @@ function getExpression(tokens, parsingContext, level = 0) {
     function parseRelation(relationName) {
         parsingContext.highlightedTokens.push(relationName);
 
-        if (i < tokens.length - 2 && tokens[i + 1] === '.') {
+        if (i < tokens.length - 2 && tokens[i + 1].token === '.') {
             i += 1;
 
             return new RelationWhereExp(relationName, parseNoteProperty());
@@ -193,7 +195,7 @@ function getExpression(tokens, parsingContext, level = 0) {
         const orderDefinitions = [];
         let limit;
 
-        if (tokens[i] === 'orderby') {
+        if (tokens[i].token === 'orderby') {
             do {
                 const propertyPath = [];
                 let direction = "asc";
@@ -201,13 +203,13 @@ function getExpression(tokens, parsingContext, level = 0) {
                 do {
                     i++;
 
-                    propertyPath.push(tokens[i]);
+                    propertyPath.push(tokens[i].token);
 
                     i++;
-                } while (tokens[i] === '.');
+                } while (i < tokens.length && tokens[i].token === '.');
 
-                if (["asc", "desc"].includes(tokens[i])) {
-                    direction = tokens[i];
+                if (i < tokens.length && ["asc", "desc"].includes(tokens[i].token)) {
+                    direction = tokens[i].token;
                     i++;
                 }
 
@@ -221,11 +223,11 @@ function getExpression(tokens, parsingContext, level = 0) {
                     valueExtractor,
                     direction
                 });
-            } while (tokens[i] === ',');
+            } while (i < tokens.length && tokens[i].token === ',');
         }
 
-        if (tokens[i] === 'limit') {
-            limit = parseInt(tokens[i + 1]);
+        if (i < tokens.length && tokens[i].token === 'limit') {
+            limit = parseInt(tokens[i + 1].token);
         }
 
         return new OrderByAndLimitExp(orderDefinitions, limit);
@@ -241,16 +243,18 @@ function getExpression(tokens, parsingContext, level = 0) {
     }
 
     for (i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
+        if (Array.isArray(tokens[i])) {
+            expressions.push(getExpression(tokens[i], parsingContext, level++));
+            continue;
+        }
+
+        const token = tokens[i].token;
 
         if (token === '#' || token === '~') {
             continue;
         }
 
-        if (Array.isArray(token)) {
-            expressions.push(getExpression(token, parsingContext, level++));
-        }
-        else if (token.startsWith('#') || token.startsWith('~')) {
+        if (token.startsWith('#') || token.startsWith('~')) {
             expressions.push(parseAttribute(token));
         }
         else if (['orderby', 'limit'].includes(token)) {
@@ -273,7 +277,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             i += 1;
 
             if (!Array.isArray(tokens[i])) {
-                parsingContext.addError(`not keyword should be followed by sub-expression in parenthesis, got ${tokens[i]} instead`);
+                parsingContext.addError(`not keyword should be followed by sub-expression in parenthesis, got ${tokens[i].token} instead`);
                 continue;
             }
 

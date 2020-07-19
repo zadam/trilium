@@ -26,10 +26,15 @@ function lexer(str) {
             return;
         }
 
+        const rec = {
+            token: currentWord,
+            inQuotes: quotes
+        };
+
         if (fulltextEnded) {
-            expressionTokens.push(currentWord);
+            expressionTokens.push(rec);
         } else {
-            fulltextTokens.push(currentWord);
+            fulltextTokens.push(rec);
         }
 
         currentWord = '';
@@ -77,8 +82,14 @@ function lexer(str) {
             continue;
         }
         else if (!quotes) {
-            if (currentWord.length === 0 && (chr === '#' || chr === '~')) {
-                fulltextEnded = true;
+            if (chr === '#' || chr === '~') {
+                if (!fulltextEnded) {
+                    fulltextEnded = true;
+                }
+                else {
+                    finishWord();
+                }
+
                 currentWord = chr;
 
                 continue;

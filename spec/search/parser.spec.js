@@ -1,10 +1,24 @@
 const ParsingContext = require("../../src/services/search/parsing_context.js");
 const parser = require('../../src/services/search/parser.js');
 
+function tokens(...args) {
+    return args.map(arg => {
+        if (Array.isArray(arg)) {
+            return arg;
+        }
+        else {
+            return {
+                token: arg,
+                inQuotes: false
+            };
+        }
+    });
+}
+
 describe("Parser", () => {
     it("fulltext parser without content", () => {
         const rootExp = parser({
-            fulltextTokens: ["hello", "hi"],
+            fulltextTokens: tokens("hello", "hi"),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: false})
         });
@@ -15,7 +29,7 @@ describe("Parser", () => {
 
     it("fulltext parser with content", () => {
         const rootExp = parser({
-            fulltextTokens: ["hello", "hi"],
+            fulltextTokens: tokens("hello", "hi"),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: true})
         });
@@ -36,7 +50,7 @@ describe("Parser", () => {
     it("simple label comparison", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#mylabel", "=", "text"],
+            expressionTokens: tokens("#mylabel", "=", "text"),
             parsingContext: new ParsingContext()
         });
 
@@ -49,7 +63,7 @@ describe("Parser", () => {
     it("simple attribute negation", () => {
         let rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#!mylabel"],
+            expressionTokens: tokens("#!mylabel"),
             parsingContext: new ParsingContext()
         });
 
@@ -60,7 +74,7 @@ describe("Parser", () => {
 
         rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["~!myrelation"],
+            expressionTokens: tokens("~!myrelation"),
             parsingContext: new ParsingContext()
         });
 
@@ -73,7 +87,7 @@ describe("Parser", () => {
     it("simple label AND", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "and", "#second", "=", "text"],
+            expressionTokens: tokens("#first", "=", "text", "and", "#second", "=", "text"),
             parsingContext: new ParsingContext(true)
         });
 
@@ -90,7 +104,7 @@ describe("Parser", () => {
     it("simple label AND without explicit AND", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "#second", "=", "text"],
+            expressionTokens: tokens("#first", "=", "text", "#second", "=", "text"),
             parsingContext: new ParsingContext()
         });
 
@@ -107,7 +121,7 @@ describe("Parser", () => {
     it("simple label OR", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "or", "#second", "=", "text"],
+            expressionTokens: tokens("#first", "=", "text", "or", "#second", "=", "text"),
             parsingContext: new ParsingContext()
         });
 
@@ -123,8 +137,8 @@ describe("Parser", () => {
 
     it("fulltext and simple label", () => {
         const rootExp = parser({
-            fulltextTokens: ["hello"],
-            expressionTokens: ["#mylabel", "=", "text"],
+            fulltextTokens: tokens("hello"),
+            expressionTokens: tokens("#mylabel", "=", "text"),
             parsingContext: new ParsingContext()
         });
 
@@ -141,7 +155,7 @@ describe("Parser", () => {
     it("label sub-expression", () => {
         const rootExp = parser({
             fulltextTokens: [],
-            expressionTokens: ["#first", "=", "text", "or", ["#second", "=", "text", "and", "#third", "=", "text"]],
+            expressionTokens: tokens("#first", "=", "text", "or", tokens("#second", "=", "text", "and", "#third", "=", "text")),
             parsingContext: new ParsingContext()
         });
 
@@ -159,5 +173,19 @@ describe("Parser", () => {
 
         expect(secondSubSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSubSub.attributeName).toEqual("third");
+    });
+});
+
+describe("Invalid tokens", () => {
+    it("incomplete comparison", () => {
+        const parsingContext = new ParsingContext();
+
+        parser({
+            fulltextTokens: [],
+            expressionTokens: tokens("#first", "="),
+            parsingContext
+        });
+
+        expect(parsingContext.error).toEqual('Misplaced or incomplete expression "="')
     });
 });

@@ -51,6 +51,7 @@ class PropertyComparisonExp extends Expression {
             if (value) {
                 value = value.toLowerCase();
             }
+
             if (this.comparator(value)) {
                 resNoteSet.add(note);
             }
