@@ -21,13 +21,16 @@ describe("Parser", () => {
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        const subs = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("NoteCacheFulltextExp");
-        expect(firstSub.tokens).toEqual(["hello", "hi"]);
+        expect(subs[0].constructor.name).toEqual("NoteCacheFulltextExp");
+        expect(subs[0].tokens).toEqual(["hello", "hi"]);
 
-        expect(secondSub.constructor.name).toEqual("NoteContentFulltextExp");
-        expect(secondSub.tokens).toEqual(["hello", "hi"]);
+        expect(subs[1].constructor.name).toEqual("NoteContentProtectedFulltextExp");
+        expect(subs[1].tokens).toEqual(["hello", "hi"]);
+
+        expect(subs[2].constructor.name).toEqual("NoteContentUnprotectedFulltextExp");
+        expect(subs[2].tokens).toEqual(["hello", "hi"]);
     });
 
     it("simple label comparison", () => {
@@ -41,6 +44,30 @@ describe("Parser", () => {
         expect(rootExp.attributeType).toEqual("label");
         expect(rootExp.attributeName).toEqual("mylabel");
         expect(rootExp.comparator).toBeTruthy();
+    });
+
+    it("simple attribute negation", () => {
+        let rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["#!mylabel"],
+            parsingContext: new ParsingContext()
+        });
+
+        expect(rootExp.constructor.name).toEqual("NotExp");
+        expect(rootExp.subExpression.constructor.name).toEqual("AttributeExistsExp");
+        expect(rootExp.subExpression.attributeType).toEqual("label");
+        expect(rootExp.subExpression.attributeName).toEqual("mylabel");
+
+        rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: ["~!myrelation"],
+            parsingContext: new ParsingContext()
+        });
+
+        expect(rootExp.constructor.name).toEqual("NotExp");
+        expect(rootExp.subExpression.constructor.name).toEqual("AttributeExistsExp");
+        expect(rootExp.subExpression.attributeType).toEqual("relation");
+        expect(rootExp.subExpression.attributeName).toEqual("myrelation");
     });
 
     it("simple label AND", () => {

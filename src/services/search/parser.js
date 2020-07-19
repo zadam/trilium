@@ -70,8 +70,8 @@ function getExpression(tokens, parsingContext, level = 0) {
             i++;
 
             return new OrExp([
-                NoteContentUnprotectedFulltextExp(operator, [tokens[i]]),
-                NoteContentProtectedFulltextExp(operator, [tokens[i]])
+                new NoteContentUnprotectedFulltextExp(operator, [tokens[i]]),
+                new NoteContentProtectedFulltextExp(operator, [tokens[i]])
             ]);
         }
 
@@ -132,6 +132,22 @@ function getExpression(tokens, parsingContext, level = 0) {
         }
 
         parsingContext.addError(`Unrecognized note property "${tokens[i]}"`);
+    }
+
+    function parseAttribute(name) {
+        const isLabel = name.startsWith('#');
+
+        name = name.substr(1);
+
+        const isNegated = name.startsWith('!');
+
+        if (isNegated) {
+            name = name.substr(1);
+        }
+
+        const subExp = isLabel ? parseLabel(name) : parseRelation(name);
+
+        return isNegated ? new NotExp(subExp) : subExp;
     }
 
     function parseLabel(labelName) {
@@ -234,15 +250,8 @@ function getExpression(tokens, parsingContext, level = 0) {
         if (Array.isArray(token)) {
             expressions.push(getExpression(token, parsingContext, level++));
         }
-        else if (token.startsWith('#')) {
-            const labelName = token.substr(1);
-
-            expressions.push(parseLabel(labelName));
-        }
-        else if (token.startsWith('~')) {
-            const relationName = token.substr(1);
-
-            expressions.push(parseRelation(relationName));
+        else if (token.startsWith('#') || token.startsWith('~')) {
+            expressions.push(parseAttribute(token));
         }
         else if (['orderby', 'limit'].includes(token)) {
             if (level !== 0) {

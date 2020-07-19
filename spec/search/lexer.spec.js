@@ -64,6 +64,11 @@ describe("Lexer expression", () => {
             .toEqual(["#", "~author", ".", "title", "=", "hugh howey", "and", "note", ".", "book title", "=", "silo"]);
     });
 
+    it("negation of label and relation", () => {
+        expect(lexer(`#!capital ~!neighbor`).expressionTokens)
+            .toEqual(["#!capital", "~!neighbor"]);
+    });
+
     it("negation of sub-expression", () => {
         expect(lexer(`# not(#capital) and note.noteId != "root"`).expressionTokens)
             .toEqual(["#", "not", "(", "#capital", ")", "and", "note", ".", "noteid", "!=", "root"]);

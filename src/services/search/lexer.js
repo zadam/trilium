@@ -83,6 +83,10 @@ function lexer(str) {
 
                 continue;
             }
+            else if (['#', '~'].includes(currentWord) && chr === '!') {
+                currentWord += chr;
+                continue;
+            }
             else if (chr === ' ') {
                 finishWord();
                 continue;
@@ -93,7 +97,10 @@ function lexer(str) {
                 finishWord();
                 continue;
             }
-            else if (fulltextEnded && previousOperatorSymbol() !== isOperatorSymbol(chr)) {
+            else if (fulltextEnded
+                && !['#!', '~!'].includes(currentWord)
+                && previousOperatorSymbol() !== isOperatorSymbol(chr)) {
+
                 finishWord();
 
                 currentWord += chr;
