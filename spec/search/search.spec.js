@@ -1,4 +1,4 @@
-const searchService = require('../../src/services/search/search.js');
+const searchService = require('../../src/services/search/services/search.js');
 const Note = require('../../src/services/note_cache/entities/note.js');
 const Branch = require('../../src/services/note_cache/entities/branch.js');
 const Attribute = require('../../src/services/note_cache/entities/attribute.js');

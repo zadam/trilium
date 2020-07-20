@@ -1,5 +1,5 @@
 const ParsingContext = require("../../src/services/search/parsing_context.js");
-const parser = require('../../src/services/search/parser.js');
+const parse = require('../../src/services/search/services/parse.js');
 
 function tokens(...args) {
     return args.map(arg => {
@@ -17,7 +17,7 @@ function tokens(...args) {
 
 describe("Parser", () => {
     it("fulltext parser without content", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: tokens("hello", "hi"),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: false})
@@ -28,7 +28,7 @@ describe("Parser", () => {
     });
 
     it("fulltext parser with content", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: tokens("hello", "hi"),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: true})
@@ -48,7 +48,7 @@ describe("Parser", () => {
     });
 
     it("simple label comparison", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#mylabel", "=", "text"),
             parsingContext: new ParsingContext()
@@ -61,7 +61,7 @@ describe("Parser", () => {
     });
 
     it("simple attribute negation", () => {
-        let rootExp = parser({
+        let rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#!mylabel"),
             parsingContext: new ParsingContext()
@@ -72,7 +72,7 @@ describe("Parser", () => {
         expect(rootExp.subExpression.attributeType).toEqual("label");
         expect(rootExp.subExpression.attributeName).toEqual("mylabel");
 
-        rootExp = parser({
+        rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("~!myrelation"),
             parsingContext: new ParsingContext()
@@ -85,7 +85,7 @@ describe("Parser", () => {
     });
 
     it("simple label AND", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "text", "and", "#second", "=", "text"),
             parsingContext: new ParsingContext(true)
@@ -102,7 +102,7 @@ describe("Parser", () => {
     });
 
     it("simple label AND without explicit AND", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "text", "#second", "=", "text"),
             parsingContext: new ParsingContext()
@@ -119,7 +119,7 @@ describe("Parser", () => {
     });
 
     it("simple label OR", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "text", "or", "#second", "=", "text"),
             parsingContext: new ParsingContext()
@@ -136,7 +136,7 @@ describe("Parser", () => {
     });
 
     it("fulltext and simple label", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: tokens("hello"),
             expressionTokens: tokens("#mylabel", "=", "text"),
             parsingContext: new ParsingContext()
@@ -153,7 +153,7 @@ describe("Parser", () => {
     });
 
     it("label sub-expression", () => {
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "text", "or", tokens("#second", "=", "text", "and", "#third", "=", "text")),
             parsingContext: new ParsingContext()
@@ -176,11 +176,11 @@ describe("Parser", () => {
     });
 });
 
-describe("Invalid tokens", () => {
+describe("Invalid expressions", () => {
     it("incomplete comparison", () => {
         const parsingContext = new ParsingContext();
 
-        parser({
+        parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "="),
             parsingContext
@@ -192,7 +192,7 @@ describe("Invalid tokens", () => {
     it("comparison between labels is impossible", () => {
         let parsingContext = new ParsingContext();
 
-        parser({
+        parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "#second"),
             parsingContext
@@ -202,7 +202,7 @@ describe("Invalid tokens", () => {
 
         parsingContext = new ParsingContext();
 
-        parser({
+        parse({
             fulltextTokens: [],
             expressionTokens: tokens("#first", "=", "note", ".", "relations", "second"),
             parsingContext
@@ -210,7 +210,7 @@ describe("Invalid tokens", () => {
 
         expect(parsingContext.error).toEqual(`Error near token "note", it's possible to compare with constant only.`);
 
-        const rootExp = parser({
+        const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: [
                 { token: "#first", inQuotes: false },

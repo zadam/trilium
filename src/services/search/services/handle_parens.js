@@ -1,7 +1,7 @@
 /**
  * This will create a recursive object from list of tokens - tokens between parenthesis are grouped in a single array
  */
-function parens(tokens) {
+function handle_parens(tokens) {
     if (tokens.length === 0) {
         return [];
     }
@@ -34,10 +34,10 @@ function parens(tokens) {
 
         tokens = [
             ...tokens.slice(0, leftIdx),
-            parens(tokens.slice(leftIdx + 1, rightIdx)),
+            handle_parens(tokens.slice(leftIdx + 1, rightIdx)),
             ...tokens.slice(rightIdx + 1)
         ];
     }
 }
 
-module.exports = parens;
+module.exports = handle_parens;

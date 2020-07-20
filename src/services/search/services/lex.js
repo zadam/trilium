@@ -1,4 +1,4 @@
-function lexer(str) {
+function lex(str) {
     str = str.toLowerCase();
 
     const fulltextTokens = [];
@@ -130,4 +130,4 @@ function lexer(str) {
     }
 }
 
-module.exports = lexer;
+module.exports = lex;

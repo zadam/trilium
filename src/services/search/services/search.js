@@ -1,16 +1,16 @@
 "use strict";
 
-const lexer = require('./lexer');
-const parens = require('./parens');
-const parser = require('./parser');
-const NoteSet = require("./note_set");
-const SearchResult = require("./search_result");
-const ParsingContext = require("./parsing_context");
-const noteCache = require('../note_cache/note_cache');
-const noteCacheService = require('../note_cache/note_cache_service');
-const hoistedNoteService = require('../hoisted_note');
-const repository = require('../repository');
-const utils = require('../utils');
+const lex = require('./lex.js');
+const handleParens = require('./handle_parens.js');
+const parse = require('./parse.js');
+const NoteSet = require("../note_set.js");
+const SearchResult = require("../search_result.js");
+const ParsingContext = require("../parsing_context.js");
+const noteCache = require('../../note_cache/note_cache.js');
+const noteCacheService = require('../../note_cache/note_cache_service.js');
+const hoistedNoteService = require('../../hoisted_note.js');
+const repository = require('../../repository.js');
+const utils = require('../../utils.js');
 
 /**
  * @param {Expression} expression
@@ -51,10 +51,10 @@ function findNotesWithExpression(expression) {
 }
 
 function parseQueryToExpression(query, parsingContext) {
-    const {fulltextTokens, expressionTokens} = lexer(query);
-    const structuredExpressionTokens = parens(expressionTokens);
+    const {fulltextTokens, expressionTokens} = lex(query);
+    const structuredExpressionTokens = handleParens(expressionTokens);
 
-    const expression = parser({
+    const expression = parse({
         fulltextTokens,
         expressionTokens: structuredExpressionTokens,
         parsingContext

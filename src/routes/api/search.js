@@ -4,7 +4,7 @@ const repository = require('../../services/repository');
 const noteCacheService = require('../../services/note_cache/note_cache.js');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
-const searchService = require('../../services/search/search');
+const searchService = require('../../services/search/services/search.js');
 
 function searchNotes(req) {
     const {count, results} = searchService.searchTrimmedNotes(req.params.searchString);

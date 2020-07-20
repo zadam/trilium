@@ -12,7 +12,7 @@ const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const ws = require('./ws.js');
 const appInfo = require('./app_info');
-const searchService = require('./search/search');
+const searchService = require('./search/services/search.js');
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
