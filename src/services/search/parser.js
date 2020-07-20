@@ -159,6 +159,12 @@ function getExpression(tokens, parsingContext, level = 0) {
             let operator = tokens[i + 1].token;
             const comparedValue = tokens[i + 2].token;
 
+            if (!tokens[i + 2].inQuotes
+                && (comparedValue.startsWith('#') || comparedValue.startsWith('~') || comparedValue === 'note')) {
+                parsingContext.addError(`Error near token "${comparedValue}", it's possible to compare with constant only.`);
+                return;
+            }
+
             parsingContext.highlightedTokens.push(comparedValue);
 
             if (parsingContext.fuzzyAttributeSearch && operator === '=') {

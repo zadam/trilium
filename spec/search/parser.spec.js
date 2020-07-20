@@ -188,4 +188,41 @@ describe("Invalid tokens", () => {
 
         expect(parsingContext.error).toEqual('Misplaced or incomplete expression "="')
     });
+
+    it("comparison between labels is impossible", () => {
+        let parsingContext = new ParsingContext();
+
+        parser({
+            fulltextTokens: [],
+            expressionTokens: tokens("#first", "=", "#second"),
+            parsingContext
+        });
+
+        expect(parsingContext.error).toEqual(`Error near token "#second", it's possible to compare with constant only.`);
+
+        parsingContext = new ParsingContext();
+
+        parser({
+            fulltextTokens: [],
+            expressionTokens: tokens("#first", "=", "note", ".", "relations", "second"),
+            parsingContext
+        });
+
+        expect(parsingContext.error).toEqual(`Error near token "note", it's possible to compare with constant only.`);
+
+        const rootExp = parser({
+            fulltextTokens: [],
+            expressionTokens: [
+                { token: "#first", inQuotes: false },
+                { token: "=", inQuotes: false },
+                { token: "#second", inQuotes: true },
+            ],
+            parsingContext: new ParsingContext()
+        });
+
+        expect(rootExp.constructor.name).toEqual("LabelComparisonExp");
+        expect(rootExp.attributeType).toEqual("label");
+        expect(rootExp.attributeName).toEqual("first");
+        expect(rootExp.comparator).toBeTruthy();
+    });
 });
