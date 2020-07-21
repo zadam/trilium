@@ -22,6 +22,16 @@ describe("Lexer fulltext", () => {
             .toEqual(["i can use \" or ` or #~=*", "without", "problem"]);
     });
 
+    it("quote inside a word does not have a special meaning", () => {
+        const lexResult = lex("d'Artagnan is dead #hero = d'Artagnan");
+
+        expect(lexResult.fulltextTokens.map(t => t.token))
+            .toEqual(["d'artagnan", "is", "dead"]);
+
+        expect(lexResult.expressionTokens.map(t => t.token))
+            .toEqual(['#hero', '=', "d'artagnan"]);
+    });
+
     it("if quote is not ended then it's just one long token", () => {
         expect(lex("'unfinished quote").fulltextTokens.map(t => t.token))
             .toEqual(["unfinished quote"]);
@@ -52,16 +62,16 @@ describe("Lexer expression", () => {
     it("simple label operator with in quotes and without", () => {
         expect(lex("#label*=*'text'").expressionTokens)
             .toEqual([
-                {token: "#label", inQuotes: false},
-                {token: "*=*", inQuotes: false},
-                {token: "text", inQuotes: true}
+                {token: "#label", inQuotes: false, startIndex: 0, endIndex: 5},
+                {token: "*=*", inQuotes: false, startIndex: 6, endIndex: 8},
+                {token: "text", inQuotes: true, startIndex: 10, endIndex: 13}
             ]);
 
         expect(lex("#label*=*text").expressionTokens)
             .toEqual([
-                {token: "#label", inQuotes: false},
-                {token: "*=*", inQuotes: false},
-                {token: "text", inQuotes: false}
+                {token: "#label", inQuotes: false, startIndex: 0, endIndex: 5},
+                {token: "*=*", inQuotes: false, startIndex: 6, endIndex: 8},
+                {token: "text", inQuotes: false, startIndex: 9, endIndex: 12}
             ]);
     });
 
@@ -92,9 +102,8 @@ describe("Lexer invalid queries and edge cases", () => {
             .toEqual(["#label", "~relation"]);
     });
 
-    it("spaces in attribute names and values", () => {
-        // invalid but should be reported by parser as an error
-        expect(lex(`#'long label'="hello o' world" ~'long relation'`).expressionTokens.map(t => t.token))
-            .toEqual(["#long label", "=", "hello o' world", "~long relation"]);
+    it("trailing escape \\", () => {
+        expect(lex('abc \\').fulltextTokens.map(t => t.token))
+            .toEqual(["abc", "\\"]);
     });
 });

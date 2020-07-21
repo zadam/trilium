@@ -4,31 +4,33 @@ function lex(str) {
     const fulltextTokens = [];
     const expressionTokens = [];
 
-    let quotes = false;
+    let quotes = false; // otherwise contains used quote - ', " or `
     let fulltextEnded = false;
     let currentWord = '';
 
-    function isOperatorSymbol(chr) {
+    function isSymbolAnOperator(chr) {
         return ['=', '*', '>', '<', '!'].includes(chr);
     }
 
-    function previousOperatorSymbol() {
+    function isPreviousSymbolAnOperator() {
         if (currentWord.length === 0) {
             return false;
         }
         else {
-            return isOperatorSymbol(currentWord[currentWord.length - 1]);
+            return isSymbolAnOperator(currentWord[currentWord.length - 1]);
         }
     }
 
-    function finishWord() {
+    function finishWord(endIndex) {
         if (currentWord === '') {
             return;
         }
 
         const rec = {
             token: currentWord,
-            inQuotes: !!quotes
+            inQuotes: !!quotes,
+            startIndex: endIndex - currentWord.length + 1,
+            endIndex
         };
 
         if (fulltextEnded) {
@@ -44,7 +46,7 @@ function lex(str) {
         const chr = str[i];
 
         if (chr === '\\') {
-            if ((i + 1) < str.length) {
+            if (i + 1 < str.length) {
                 i++;
 
                 currentWord += str[i];
@@ -57,10 +59,8 @@ function lex(str) {
         }
         else if (['"', "'", '`'].includes(chr)) {
             if (!quotes) {
-                if (currentWord.length === 0 || fulltextEnded) {
-                    if (previousOperatorSymbol()) {
-                        finishWord();
-                    }
+                if (currentWord.length === 0 || isPreviousSymbolAnOperator()) {
+                    finishWord(i - 1);
 
                     quotes = chr;
                 }
@@ -71,7 +71,7 @@ function lex(str) {
                 }
             }
             else if (quotes === chr) {
-                finishWord();
+                finishWord(i - 1);
 
                 quotes = false;
             }
@@ -79,6 +79,7 @@ function lex(str) {
                 // it's a quote but within other kind of quotes so it's valid as a literal character
                 currentWord += chr;
             }
+
             continue;
         }
         else if (!quotes) {
@@ -87,7 +88,7 @@ function lex(str) {
                     fulltextEnded = true;
                 }
                 else {
-                    finishWord();
+                    finishWord(i - 1);
                 }
 
                 currentWord = chr;
@@ -99,20 +100,20 @@ function lex(str) {
                 continue;
             }
             else if (chr === ' ') {
-                finishWord();
+                finishWord(i - 1);
                 continue;
             }
             else if (fulltextEnded && ['(', ')', '.'].includes(chr)) {
-                finishWord();
+                finishWord(i - 1);
                 currentWord += chr;
-                finishWord();
+                finishWord(i);
                 continue;
             }
             else if (fulltextEnded
                 && !['#!', '~!'].includes(currentWord)
-                && previousOperatorSymbol() !== isOperatorSymbol(chr)) {
+                && isPreviousSymbolAnOperator() !== isSymbolAnOperator(chr)) {
 
-                finishWord();
+                finishWord(i - 1);
 
                 currentWord += chr;
                 continue;
@@ -122,7 +123,7 @@ function lex(str) {
         currentWord += chr;
     }
 
-    finishWord();
+    finishWord(str.length - 1);
 
     return {
         fulltextTokens,
