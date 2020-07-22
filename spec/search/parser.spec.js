@@ -1,15 +1,19 @@
 const ParsingContext = require("../../src/services/search/parsing_context.js");
 const parse = require('../../src/services/search/services/parse.js');
 
-function tokens(...args) {
-    return args.map(arg => {
+function tokens(toks, cur = 0) {
+    return toks.map(arg => {
         if (Array.isArray(arg)) {
-            return arg;
+            return tokens(arg, cur);
         }
         else {
+            cur += arg.length;
+
             return {
                 token: arg,
-                inQuotes: false
+                inQuotes: false,
+                startIndex: cur - arg.length,
+                endIndex: cur - 1
             };
         }
     });
@@ -18,7 +22,7 @@ function tokens(...args) {
 describe("Parser", () => {
     it("fulltext parser without content", () => {
         const rootExp = parse({
-            fulltextTokens: tokens("hello", "hi"),
+            fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: false})
         });
@@ -29,7 +33,7 @@ describe("Parser", () => {
 
     it("fulltext parser with content", () => {
         const rootExp = parse({
-            fulltextTokens: tokens("hello", "hi"),
+            fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
             parsingContext: new ParsingContext({includeNoteContent: true})
         });
@@ -50,7 +54,7 @@ describe("Parser", () => {
     it("simple label comparison", () => {
         const rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#mylabel", "=", "text"),
+            expressionTokens: tokens(["#mylabel", "=", "text"]),
             parsingContext: new ParsingContext()
         });
 
@@ -63,7 +67,7 @@ describe("Parser", () => {
     it("simple attribute negation", () => {
         let rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#!mylabel"),
+            expressionTokens: tokens(["#!mylabel"]),
             parsingContext: new ParsingContext()
         });
 
@@ -74,7 +78,7 @@ describe("Parser", () => {
 
         rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("~!myrelation"),
+            expressionTokens: tokens(["~!myrelation"]),
             parsingContext: new ParsingContext()
         });
 
@@ -87,7 +91,7 @@ describe("Parser", () => {
     it("simple label AND", () => {
         const rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "text", "and", "#second", "=", "text"),
+            expressionTokens: tokens(["#first", "=", "text", "and", "#second", "=", "text"]),
             parsingContext: new ParsingContext(true)
         });
 
@@ -104,7 +108,7 @@ describe("Parser", () => {
     it("simple label AND without explicit AND", () => {
         const rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "text", "#second", "=", "text"),
+            expressionTokens: tokens(["#first", "=", "text", "#second", "=", "text"]),
             parsingContext: new ParsingContext()
         });
 
@@ -121,7 +125,7 @@ describe("Parser", () => {
     it("simple label OR", () => {
         const rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "text", "or", "#second", "=", "text"),
+            expressionTokens: tokens(["#first", "=", "text", "or", "#second", "=", "text"]),
             parsingContext: new ParsingContext()
         });
 
@@ -137,8 +141,8 @@ describe("Parser", () => {
 
     it("fulltext and simple label", () => {
         const rootExp = parse({
-            fulltextTokens: tokens("hello"),
-            expressionTokens: tokens("#mylabel", "=", "text"),
+            fulltextTokens: tokens(["hello"]),
+            expressionTokens: tokens(["#mylabel", "=", "text"]),
             parsingContext: new ParsingContext()
         });
 
@@ -155,7 +159,7 @@ describe("Parser", () => {
     it("label sub-expression", () => {
         const rootExp = parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "text", "or", tokens("#second", "=", "text", "and", "#third", "=", "text")),
+            expressionTokens: tokens(["#first", "=", "text", "or", ["#second", "=", "text", "and", "#third", "=", "text"]]),
             parsingContext: new ParsingContext()
         });
 
@@ -182,7 +186,7 @@ describe("Invalid expressions", () => {
 
         parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "="),
+            expressionTokens: tokens(["#first", "="]),
             parsingContext
         });
 
@@ -191,24 +195,26 @@ describe("Invalid expressions", () => {
 
     it("comparison between labels is impossible", () => {
         let parsingContext = new ParsingContext();
+        parsingContext.originalQuery = "#first = #second";
 
         parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "#second"),
+            expressionTokens: tokens(["#first", "=", "#second"]),
             parsingContext
         });
 
-        expect(parsingContext.error).toEqual(`Error near token "#second", it's possible to compare with constant only.`);
+        expect(parsingContext.error).toEqual(`Error near token "#second" in "#first = #second", it's possible to compare with constant only.`);
 
         parsingContext = new ParsingContext();
+        parsingContext.originalQuery = "#first = note.relations.second";
 
         parse({
             fulltextTokens: [],
-            expressionTokens: tokens("#first", "=", "note", ".", "relations", "second"),
+            expressionTokens: tokens(["#first", "=", "note", ".", "relations", "second"]),
             parsingContext
         });
 
-        expect(parsingContext.error).toEqual(`Error near token "note", it's possible to compare with constant only.`);
+        expect(parsingContext.error).toEqual(`Error near token "note" in "#first = note.relations.s...", it's possible to compare with constant only.`);
 
         const rootExp = parse({
             fulltextTokens: [],

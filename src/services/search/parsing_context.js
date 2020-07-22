@@ -5,6 +5,7 @@ class ParsingContext {
         this.includeNoteContent = !!params.includeNoteContent;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
+        this.originalQuery = "";
         this.error = null;
     }
 

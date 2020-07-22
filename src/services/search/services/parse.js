@@ -51,6 +51,16 @@ function getExpression(tokens, parsingContext, level = 0) {
 
     let i;
 
+    function context(i) {
+        let {startIndex, endIndex} = tokens[i];
+        startIndex = Math.max(0, startIndex - 20);
+        endIndex = Math.min(parsingContext.originalQuery.length, endIndex + 20);
+
+        return '"' + (startIndex !== 0 ? "..." : "")
+            + parsingContext.originalQuery.substr(startIndex, endIndex - startIndex)
+            + (endIndex !== parsingContext.originalQuery.length ? "..." : "") + '"';
+    }
+
     function parseNoteProperty() {
         if (tokens[i].token !== '.') {
             parsingContext.addError('Expected "." to separate field path');
@@ -65,7 +75,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const operator = tokens[i].token;
 
             if (!isOperator(operator)) {
-                parsingContext.addError(`After content expected operator, but got "${tokens[i].token}"`);
+                parsingContext.addError(`After content expected operator, but got "${tokens[i].token}" in ${context(i)}`);
                 return;
             }
 
@@ -97,7 +107,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (tokens[i].token === 'labels') {
             if (tokens[i + 1].token !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}"`);
+                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
                 return;
             }
 
@@ -108,7 +118,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (tokens[i].token === 'relations') {
             if (tokens[i + 1].token !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}"`);
+                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
                 return;
             }
 
@@ -124,7 +134,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const comparator = comparatorBuilder(operator, comparedValue);
 
             if (!comparator) {
-                parsingContext.addError(`Can't find operator '${operator}'`);
+                parsingContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
                 return;
             }
 
@@ -133,7 +143,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             return new PropertyComparisonExp(propertyName, comparator);
         }
 
-        parsingContext.addError(`Unrecognized note property "${tokens[i].token}"`);
+        parsingContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
     }
 
     function parseAttribute(name) {
@@ -161,7 +171,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
             if (!tokens[i + 2].inQuotes
                 && (comparedValue.startsWith('#') || comparedValue.startsWith('~') || comparedValue === 'note')) {
-                parsingContext.addError(`Error near token "${comparedValue}", it's possible to compare with constant only.`);
+                parsingContext.addError(`Error near token "${comparedValue}" in ${context(i)}, it's possible to compare with constant only.`);
                 return;
             }
 
@@ -174,7 +184,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const comparator = comparatorBuilder(operator, comparedValue);
 
             if (!comparator) {
-                parsingContext.addError(`Can't find operator '${operator}'`);
+                parsingContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
             } else {
                 i += 2;
 

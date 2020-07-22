@@ -57,7 +57,8 @@ function parseQueryToExpression(query, parsingContext) {
     const expression = parse({
         fulltextTokens,
         expressionTokens: structuredExpressionTokens,
-        parsingContext
+        parsingContext,
+        originalQuery: query
     });
 
     return expression;
