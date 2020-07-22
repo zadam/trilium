@@ -153,31 +153,31 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
         this.$attrInputName = this.$widget.find('.attr-input-name');
-        this.$attrInputName.on('keyup', () => this.updateParent());
+        this.$attrInputName.on('keyup', () => this.updateAttributeInEditor());
 
         this.$attrRowValue = this.$widget.find('.attr-row-value');
         this.$attrInputValue = this.$widget.find('.attr-input-value');
-        this.$attrInputValue.on('keyup', () => this.updateParent());
+        this.$attrInputValue.on('keyup', () => this.updateAttributeInEditor());
 
         this.$attrRowPromoted = this.$widget.find('.attr-row-promoted');
         this.$attrInputPromoted = this.$widget.find('.attr-input-promoted');
-        this.$attrInputPromoted.on('change', () => this.updateDefinition());
+        this.$attrInputPromoted.on('change', () => this.updateAttributeInEditor());
 
         this.$attrRowMultiplicity = this.$widget.find('.attr-row-multiplicity');
         this.$attrInputMultiplicity = this.$widget.find('.attr-input-multiplicity');
-        this.$attrInputMultiplicity.on('change', () => this.updateDefinition());
+        this.$attrInputMultiplicity.on('change', () => this.updateAttributeInEditor());
 
         this.$attrRowLabelType = this.$widget.find('.attr-row-label-type');
         this.$attrInputLabelType = this.$widget.find('.attr-input-label-type');
-        this.$attrInputLabelType.on('change', () => this.updateDefinition());
+        this.$attrInputLabelType.on('change', () => this.updateAttributeInEditor());
 
         this.$attrRowNumberPrecision = this.$widget.find('.attr-row-number-precision');
         this.$attrInputNumberPrecision = this.$widget.find('.attr-input-number-precision');
-        this.$attrInputNumberPrecision.on('change', () => this.updateDefinition());
+        this.$attrInputNumberPrecision.on('change', () => this.updateAttributeInEditor());
 
         this.$attrRowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
         this.$attrInputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
-        this.$attrInputInverseRelation.on('keyup', () => this.updateDefinition());
+        this.$attrInputInverseRelation.on('keyup', () => this.updateAttributeInEditor());
 
         this.$attrRowTargetNote = this.$widget.find('.attr-row-target-note');
         this.$attrInputTargetNote = this.$widget.find('.attr-input-target-note');
@@ -194,7 +194,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             });
 
         this.$attrInputInheritable = this.$widget.find('.attr-input-inheritable');
-        this.$attrInputInheritable.on('change', () => this.updateParent());
+        this.$attrInputInheritable.on('change', () => this.updateAttributeInEditor());
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
@@ -355,7 +355,7 @@ export default class AttributeDetailWidget extends BasicWidget {
         }
     }
 
-    updateParent() {
+    updateAttributeInEditor() {
         let attrName = this.$attrInputName.val();
 
         if (this.attrType === 'label-definition') {
@@ -365,16 +365,19 @@ export default class AttributeDetailWidget extends BasicWidget {
         }
 
         this.attribute.name = attrName;
-        this.attribute.value = this.$attrInputValue.val();
         this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
+
+        if (this.attrType.endsWith('-definition')) {
+            this.attribute.value = this.buildDefinitionValue();
+        }
+        else {
+            this.attribute.value = this.$attrInputValue.val();
+        }
 
         this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
     }
 
-    updateDefinition() {
-        this.attribute.name = this.$attrInputName.val();
-        this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
-
+    buildDefinitionValue() {
         const props = [];
 
         if (this.$attrInputPromoted.is(":checked")) {
@@ -385,8 +388,7 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         if (this.attrType === 'label-definition') {
             props.push(this.$attrInputLabelType.val());
-        }
-        else if (this.attrType === 'relation-definition' && this.$attrInputInverseRelation.val().trim().length > 0) {
+        } else if (this.attrType === 'relation-definition' && this.$attrInputInverseRelation.val().trim().length > 0) {
             props.push("inverse=" + this.$attrInputInverseRelation.val());
         }
 
@@ -394,9 +396,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             this.attrType === 'label-definition'
             && this.$attrInputLabelType.val() === 'number');
 
-        this.attribute.value = props.join(",");
-
-        this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+        return props.join(",");
     }
 
     hide() {
