@@ -121,6 +121,8 @@ const TPL = `
         </tr>
     </table>
 
+    <button class="btn btn-primary btn-sm attr-save-changes-and-close-button" style="width: 100%; margin-top: 15px;">Save & close</button>
+
     <div class="related-notes-container">
         <br/>
 
@@ -198,6 +200,13 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
+
+        this.$saveAndCloseButton = this.$widget.find('.attr-save-changes-and-close-button');
+        this.$saveAndCloseButton.on('click', async () => {
+            await this.triggerCommand('saveAttributes');
+
+            this.hide();
+        });
 
         this.$closeAttrDetailButton.on('click', () => this.hide());
 
@@ -388,6 +397,10 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         if (this.attrType === 'label-definition') {
             props.push(this.$attrInputLabelType.val());
+
+            if (this.$attrInputLabelType.val() === 'number' && this.$attrInputNumberPrecision.val() !== '') {
+                props.push('precision=' + this.$attrInputNumberPrecision.val());
+            }
         } else if (this.attrType === 'relation-definition' && this.$attrInputInverseRelation.val().trim().length > 0) {
             props.push("inverse=" + this.$attrInputInverseRelation.val());
         }

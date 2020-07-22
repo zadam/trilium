@@ -184,6 +184,10 @@ export default class AttributeListWidget extends TabAwareWidget {
         }
     }
 
+    async saveAttributesCommand() {
+        await this.attributeEditorWidget.save();
+    }
+
     updateAttributeListCommand({attributes}) {
         this.attributeEditorWidget.updateAttributeList(attributes);
     }

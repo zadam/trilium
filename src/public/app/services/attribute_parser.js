@@ -203,7 +203,7 @@ function parser(tokens, str, allowEmptyRelations = false) {
             attr.endIndex = tokens[i].endIndex;
         }
         else {
-            throw new Error(`Unrecognized attribute "${text}" in ${context(i)}`);
+            throw new Error(`Invalid attribute "${text}" in ${context(i)}`);
         }
     }
 

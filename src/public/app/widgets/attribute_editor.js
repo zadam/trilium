@@ -17,7 +17,7 @@ const TPL = `
         padding: 0 0 0 5px !important;
         margin: 0 !important;
         color: var(--muted-text-color);
-        max-height: 200px;
+        max-height: 100px;
         overflow: auto;
     }
         
@@ -282,12 +282,12 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     async save() {
-        this.$saveAttributesButton.fadeOut();
-
         const attributes = this.parseAttributes();
 
         if (attributes) {
             await server.put(`notes/${this.noteId}/attributes`, attributes, this.componentId);
+
+            this.$saveAttributesButton.fadeOut();
         }
     }
 
