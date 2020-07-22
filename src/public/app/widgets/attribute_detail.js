@@ -237,12 +237,16 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         results = results.filter(({noteId}) => noteId !== this.noteId);
 
+        const attrName =
+            this.attrType === 'label-definition' ? attribute.name.substr(6)
+                : (this.attrType === 'relation-definition' ? attribute.name.substr(9) : attribute.name);
+
         if (results.length === 0) {
             this.$relatedNotesContainer.hide();
         }
         else {
             this.$relatedNotesContainer.show();
-            this.$relatedNotesTitle.text(`Other notes with ${attribute.type} name "${attribute.name}"`);
+            this.$relatedNotesTitle.text(`Other notes with ${attribute.type} name "${attrName}"`);
 
             this.$relatedNotesList.empty();
 
@@ -278,7 +282,7 @@ export default class AttributeDetailWidget extends BasicWidget {
         }
 
         this.$attrInputName
-            .val(attribute.name)
+            .val(attrName)
             .attr('readonly', () => !isOwned);
 
         this.$attrRowValue.toggle(this.attrType === 'label');
@@ -352,7 +356,15 @@ export default class AttributeDetailWidget extends BasicWidget {
     }
 
     updateParent() {
-        this.attribute.name = this.$attrInputName.val();
+        let attrName = this.$attrInputName.val();
+
+        if (this.attrType === 'label-definition') {
+            attrName = 'label:' + attrName;
+        } else if (this.attrType === 'relation-definition') {
+            attrName = 'relation:' + attrName;
+        }
+
+        this.attribute.name = attrName;
         this.attribute.value = this.$attrInputValue.val();
         this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
 
