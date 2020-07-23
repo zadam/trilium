@@ -49,6 +49,8 @@ async function createNote(parentNoteId, options = {}) {
         window.cutToNote.removeSelection();
     }
 
+    await ws.waitForMaxKnownSyncId();
+
     if (options.activate) {
         const activeTabContext = appContext.tabManager.getActiveTabContext();
         await activeTabContext.setNote(note.noteId);
@@ -62,7 +64,7 @@ async function createNote(parentNoteId, options = {}) {
     }
 
     const noteEntity = await treeCache.getNote(note.noteId);
-    const branchEntity = treeCache.getBranchId(branch.branchId);
+    const branchEntity = treeCache.getBranch(branch.branchId);
 
     return {
         note: noteEntity,

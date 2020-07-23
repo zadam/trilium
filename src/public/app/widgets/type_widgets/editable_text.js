@@ -126,9 +126,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const noteComplement = await treeCache.getNoteComplement(note.noteId);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            if (noteComplement.content) {
-                this.textEditor.setData(noteComplement.content);
-            }
+            this.textEditor.setData(noteComplement.content || "");
         });
     }
 
