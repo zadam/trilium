@@ -241,7 +241,7 @@ class TreeCache {
             return null;
         }
         else if (!noteId) {
-            console.log(`Falsy noteId ${noteId}, returning null.`);
+            console.trace(`Falsy noteId ${noteId}, returning null.`);
             return null;
         }
 

@@ -5,6 +5,7 @@ const NoteSet = require('../note_set');
 const log = require('../../log');
 const noteCache = require('../../note_cache/note_cache');
 const protectedSessionService = require('../../protected_session');
+const striptags = require('striptags');
 
 class NoteContentProtectedFulltextExp extends Expression {
     constructor(operator, tokens) {
@@ -26,7 +27,10 @@ class NoteContentProtectedFulltextExp extends Expression {
 
         const sql = require('../../sql');
 
-        for (let {noteId, content} of sql.iterateRows(`SELECT noteId, content FROM notes JOIN note_contents USING (noteId) WHERE isDeleted = 0 AND isProtected = 1`)) {
+        for (let {noteId, type, mime, content} of sql.iterateRows(`
+                SELECT noteId, type, mime, content 
+                FROM notes JOIN note_contents USING (noteId) 
+                WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 1`)) {
 
             try {
                 content = protectedSessionService.decryptString(content);
@@ -37,6 +41,11 @@ class NoteContentProtectedFulltextExp extends Expression {
             }
 
             content = content.toLowerCase();
+
+            if (type === 'text' && mime === 'text/html') {
+                content = striptags(content);
+                content = content.replace(/&nbsp;/g, ' ');
+            }
 
             if (this.tokens.find(token => !content.includes(token))) {
                 continue;

@@ -3,7 +3,7 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
-const utils = require('../../utils');
+const striptags = require('striptags');
 
 class NoteContentUnprotectedFulltextExp extends Expression {
     constructor(operator, tokens) {
@@ -18,21 +18,25 @@ class NoteContentUnprotectedFulltextExp extends Expression {
 
     execute(inputNoteSet) {
         const resultNoteSet = new NoteSet();
-        const wheres = this.tokens.map(token => "note_contents.content LIKE " + utils.prepareSqlForLike('%', token, '%'));
 
         const sql = require('../../sql');
-console.log(`
-            SELECT notes.noteId 
-            FROM notes
-            JOIN note_contents ON notes.noteId = note_contents.noteId
-            WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
-        const noteIds = sql.getColumn(`
-            SELECT notes.noteId 
-            FROM notes
-            JOIN note_contents ON notes.noteId = note_contents.noteId
-            WHERE isDeleted = 0 AND isProtected = 0 AND ${wheres.join(' AND ')}`);
 
-        for (const noteId of noteIds) {
+        for (let {noteId, type, mime, content} of sql.iterateRows(`
+                SELECT noteId, type, mime, content 
+                FROM notes JOIN note_contents USING (noteId) 
+                WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 0`)) {
+
+            content = content.toLowerCase();
+
+            if (type === 'text' && mime === 'text/html') {
+                content = striptags(content);
+                content = content.replace(/&nbsp;/g, ' ');
+            }
+
+            if (this.tokens.find(token => !content.includes(token))) {
+                continue;
+            }
+
             if (inputNoteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
                 resultNoteSet.add(noteCache.notes[noteId]);
             }

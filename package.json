@@ -66,6 +66,7 @@
     "serve-favicon": "2.5.0",
     "session-file-store": "1.4.0",
     "string-similarity": "4.0.1",
+    "striptags": "^3.1.1",
     "turndown": "6.0.0",
     "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
@@ -75,7 +76,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "electron": "10.0.0-beta.13",
+    "electron": "10.0.0-beta.11",
     "electron-builder": "22.7.0",
     "electron-packager": "15.0.0",
     "electron-rebuild": "1.11.0",
