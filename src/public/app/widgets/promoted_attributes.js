@@ -15,6 +15,7 @@ const TPL = `
         flex-shrink: 0;
         flex-grow: 0;
         overflow: auto;
+        max-height: 400px;
     }
     
     .promoted-attributes td, .promoted-attributes th {

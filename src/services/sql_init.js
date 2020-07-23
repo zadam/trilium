@@ -1,7 +1,6 @@
 const log = require('./log');
 const fs = require('fs');
 const resourceDir = require('./resource_dir');
-const appInfo = require('./app_info');
 const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options');
@@ -9,10 +8,11 @@ const port = require('./port');
 const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
 const migrationService = require('./migration');
+const cls = require('./cls');
 
 const dbReady = utils.deferred();
 
-initDbConnection();
+cls.init(initDbConnection);
 
 function schemaExists() {
     return !!sql.getValue(`SELECT name FROM sqlite_master

@@ -2,6 +2,7 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import AttributeDetailWidget from "./attribute_detail.js";
 import attributeRenderer from "../services/attribute_renderer.js";
 import AttributeEditorWidget from "./attribute_editor.js";
+import options from '../services/options.js';
 
 const TPL = `
 <div class="attribute-list">
@@ -103,15 +104,15 @@ export default class AttributeListWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         this.$attrDisplay = this.$widget.find('.attr-display');
+        this.$attrDisplay.toggle(options.is('attributeListExpanded'));
 
         this.$ownedExpander = this.$widget.find('.attr-owned-expander');
-        this.$ownedExpander.on('click', () => {
-            if (this.$attrDisplay.is(":visible")) {
-                this.$attrDisplay.slideUp(200);
-            }
-            else {
-                this.$attrDisplay.slideDown(200);
-            }
+        this.$ownedExpander.on('click', async () => {
+            const collapse = this.$attrDisplay.is(":visible");
+
+            await options.save('attributeListExpanded', !collapse);
+
+            this.triggerEvent(`attributeListCollapsedStateChanged`, {collapse});
         });
 
         this.$ownedExpanderText = this.$ownedExpander.find('.attr-expander-text');
@@ -137,7 +138,7 @@ export default class AttributeListWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        const ownedAttributes = note.getOwnedAttributes();
+        const ownedAttributes = note.getOwnedAttributes().filter(attr => !attr.isAutoLink);
 
         this.$ownedExpanderText.text(ownedAttributes.length + ' owned ' + this.attrPlural(ownedAttributes.length));
 
@@ -190,5 +191,18 @@ export default class AttributeListWidget extends TabAwareWidget {
 
     updateAttributeListCommand({attributes}) {
         this.attributeEditorWidget.updateAttributeList(attributes);
+    }
+
+    /**
+     * This event is used to synchronize collapsed state of all the tab-cached widgets since they are all rendered
+     * separately but should behave uniformly for the user.
+     */
+    attributeListCollapsedStateChangedEvent({collapse}) {
+        if (collapse) {
+            this.$attrDisplay.slideUp(200);
+        }
+        else {
+            this.$attrDisplay.slideDown(200);
+        }
     }
 }

@@ -37,7 +37,8 @@ const ALLOWED_OPTIONS = new Set([
     'rightPaneWidth',
     'leftPaneVisible',
     'rightPaneVisible',
-    'nativeTitleBarVisible'
+    'nativeTitleBarVisible',
+    'attributeListExpanded'
 ]);
 
 function getOptions() {

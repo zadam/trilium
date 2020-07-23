@@ -171,7 +171,7 @@ const editorConfig = {
     toolbar: {
         items: []
     },
-    placeholder: "Type the labels and relations here ...",
+    placeholder: "Type the labels and relations here, e.g. #year=2020",
     mention: mentionSetup
 };
 
