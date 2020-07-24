@@ -19,20 +19,20 @@ const TPL = `
 
 <h4>Anonymize database</h4>
 
-<p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and some non-sensitive metadata)
+<p>This action will create a new copy of the database and anonymize it (remove all note content and leave only structure and some non-sensitive metadata)
     for sharing online for debugging purposes without fear of leaking your personal data.</p>
 
 <button id="anonymize-button" class="btn">Save anonymized database</button><br/><br/>
 
 <h4>Backup database</h4>
 
-<p>Trilium has automatic backup (daily, weekly, monthly), but you can also trigger backup manually here.</p>
+<p>Trilium has automatic backup (daily, weekly, monthly), but you can also trigger a manual backup here.</p>
 
 <button id="backup-database-button" class="btn">Backup database now</button><br/><br/>
 
 <h4>Vacuum database</h4>
 
-<p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
+<p>This will rebuild the database which will typically result in a smaller database file. No data will be actually changed.</p>
 
 <button id="vacuum-database-button" class="btn">Vacuum database</button>`;
 
