@@ -43,7 +43,7 @@ const TPL = `
     <h4>Note erasure timeout</h4>
 
     <p>Deleted notes are at first only marked as deleted and it is possible to recover them 
-    from Recent Notes dialog. After period of time, deleted notes are "erased" which means 
+    from Recent Notes dialog. After a period of time, deleted notes are "erased" which means 
     their content is not recoverable anymore. This setting allows you to configure the length 
     of the period between deleting and erasing the note.</p>
 
@@ -56,8 +56,8 @@ const TPL = `
 <div>
     <h4>Protected session timeout</h4>
 
-    <p>Protected session timeout is a time period after which the protected session is wiped out from
-        browser's memory. This is measured from the last interaction with protected notes. See <a href="https://github.com/zadam/trilium/wiki/Protected-notes" class="external">wiki</a> for more info.</p>
+    <p>Protected session timeout is a time period after which the protected session is wiped from
+        the browser's memory. This is measured from the last interaction with protected notes. See <a href="https://github.com/zadam/trilium/wiki/Protected-notes" class="external">wiki</a> for more info.</p>
 
     <div class="form-group">
         <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
@@ -68,7 +68,7 @@ const TPL = `
 <div>
     <h4>Note revisions snapshot interval</h4>
 
-    <p>Note revision snapshot time interval is time in seconds after which new note revision will be created for the note. See <a href="https://github.com/zadam/trilium/wiki/Note-revisions" class="external">wiki</a> for more info.</p>
+    <p>Note revision snapshot time interval is time in seconds after which a new note revision will be created for the note. See <a href="https://github.com/zadam/trilium/wiki/Note-revisions" class="external">wiki</a> for more info.</p>
 
     <div class="form-group">
         <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
