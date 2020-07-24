@@ -136,7 +136,6 @@ export default class DesktopMainWindowLayout {
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
                     .child(new TabCachingWidget(() => new AttributeListWidget()))
-                    .child(new TabCachingWidget(() => new PromotedAttributesWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )

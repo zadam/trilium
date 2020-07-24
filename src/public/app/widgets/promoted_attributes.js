@@ -5,34 +5,39 @@ import noteAutocompleteService from "../services/note_autocomplete.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
-<div class="promoted-attributes-wrapper">
+<div>
     <style>
-    .promoted-attributes-wrapper {
+    .promoted-attributes-container {
         margin: auto;
-        /* setting the display to block since "table" doesn't support scrolling */
-        display: block;
-        /** flex-basis: content; - use once "content" is implemented by chrome */
+        display: flex;
+        flex-direction: row;
         flex-shrink: 0;
         flex-grow: 0;
+        justify-content: space-evenly;
         overflow: auto;
         max-height: 400px;
+        flex-wrap: wrap;
     }
     
-    .promoted-attributes td, .promoted-attributes th {
-        padding: 5px;
-        min-width: 50px; /* otherwise checkboxes can collapse into 0 width (if there are only checkboxes) */
+    .promoted-attribute-cell {
+        display: flex;
+        align-items: center;
+        margin: 10px;
+    }
+    
+    .promoted-attribute-cell div.input-group {
+        margin-left: 10px;
     }
     </style>
     
-    <table class="promoted-attributes"></table>
+    <div class="promoted-attributes-container"></div>
 </div>
 `;
 
 export default class PromotedAttributesWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-
-        this.$container = this.$widget.find(".promoted-attributes");
+        this.$container = this.$widget.find(".promoted-attributes-container");
     }
 
     async refreshWithNote(note) {
@@ -48,9 +53,9 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 return def && def.isPromoted;
             });
 
-        if (promoted.length > 0 && !note.hasLabel('hidePromotedAttributes')) {
-            const $tbody = $("<tbody>");
+        const cells = [];
 
+        if (promoted.length > 0 && !note.hasLabel('hidePromotedAttributes')) {
             for (const definitionAttr of promoted) {
                 const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
                 const valueName = definitionAttr.name.substr(definitionType.length + 1);
@@ -71,15 +76,15 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 }
 
                 for (const valueAttr of valueAttrs) {
-                    const $tr = await this.createPromotedAttributeRow(definitionAttr, valueAttr, valueName);
+                    const $cell = await this.createPromotedAttributeCell(definitionAttr, valueAttr, valueName);
 
-                    $tbody.append($tr);
+                    cells.push($cell);
                 }
             }
 
             // we replace the whole content in one step so there can't be any race conditions
             // (previously we saw promoted attributes doubling)
-            this.$container.empty().append($tbody);
+            this.$container.empty().append(...cells);
             this.toggleInt(true);
         }
         else {
@@ -89,10 +94,9 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         return attributes;
     }
 
-    async createPromotedAttributeRow(definitionAttr, valueAttr, valueName) {
+    async createPromotedAttributeCell(definitionAttr, valueAttr, valueName) {
         const definition = definitionAttr.getDefinition();
-        const $tr = $("<tr>");
-        const $labelCell = $("<th>").append(valueName);
+
         const $input = $("<input>")
             .prop("tabindex", 200 + definitionAttr.position)
             .prop("attribute-id", valueAttr.noteId === this.noteId ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
@@ -103,16 +107,14 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             .addClass("promoted-attribute-input")
             .on('change', event => this.promotedAttributeChanged(event));
 
-        const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
-
-        const $actionCell = $("<td>");
+        const $actionCell = $("<div>");
         const $multiplicityCell = $("<td>")
             .addClass("multiplicity")
             .attr("nowrap", true);
 
-        $tr
-            .append($labelCell)
-            .append($inputCell)
+        const $wrapper = $('<div class="promoted-attribute-cell">')
+            .append($("<strong>").text(valueName))
+            .append($("<div>").addClass("input-group").append($input))
             .append($actionCell)
             .append($multiplicityCell);
 
@@ -210,14 +212,14 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 .addClass("bx bx-plus pointer")
                 .prop("title", "Add new attribute")
                 .on('click', async () => {
-                    const $new = await this.createPromotedAttributeRow(definitionAttr, {
+                    const $new = await this.createPromotedAttributeCell(definitionAttr, {
                         attributeId: "",
                         type: valueAttr.type,
                         name: definitionAttr.name,
                         value: ""
                     });
 
-                    $tr.after($new);
+                    $wrapper.after($new);
 
                     $new.find('input').trigger('focus');
                 });
@@ -230,13 +232,13 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                         await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId, this.componentId);
                     }
 
-                    $tr.remove();
+                    $wrapper.remove();
                 });
 
             $multiplicityCell.append(addButton).append(" &nbsp;").append(removeButton);
         }
 
-        return $tr;
+        return $wrapper;
     }
 
     async promotedAttributeChanged(event) {
