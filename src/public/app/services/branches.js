@@ -75,7 +75,7 @@ async function deleteNotes(branchIdsToDelete) {
     const $deleteClonesCheckbox = $('<div class="form-check">')
         .append($('<input type="checkbox" class="form-check-input" id="delete-clones-checkbox">'))
         .append($('<label for="delete-clones-checkbox">')
-                    .text("delete also all note clones")
+                    .text("Also delete all note clones")
                     .attr("title", "all clones of selected notes will be deleted and as such the whole note will be deleted."));
 
     const $nodeTitles = $("<ul>");
