@@ -39,6 +39,10 @@ function getOptionBool(name) {
 function setOption(name, value) {
     const option = require('./repository').getOption(name);
 
+    if (value === true || value === false) {
+        value = value.toString();
+    }
+
     if (option) {
         option.value = value;
 

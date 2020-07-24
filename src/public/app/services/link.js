@@ -158,10 +158,9 @@ $(document).on('mousedown', '.note-detail-text a:not(.reference-link)', function
     }
 });
 
+$(document).on('mousedown', 'a.reference-link', goToLink);
 $(document).on('mousedown', '.note-detail-book a', goToLink);
 $(document).on('mousedown', '.note-detail-render a', goToLink);
-$(document).on('mousedown', '.note-detail-text a.reference-link', goToLink);
-$(document).on('mousedown', '.note-detail-readonly-text a.reference-link', goToLink);
 $(document).on('mousedown', '.note-detail-readonly-text a', goToLink);
 $(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
 $(document).on('click', 'section.include-note a', goToLink);
@@ -173,6 +172,7 @@ $(document).on('click', 'a.ck-link-actions__preview', e => {
 $(document).on('contextmenu', 'a.ck-link-actions__preview', linkContextMenu);
 $(document).on('contextmenu', '.note-detail-text a', linkContextMenu);
 $(document).on('contextmenu', '.note-detail-readonly-text a', linkContextMenu);
+$(document).on('contextmenu', 'a.reference-link', linkContextMenu);
 $(document).on('contextmenu', "a[data-action='note']", linkContextMenu);
 $(document).on('contextmenu', ".note-detail-render a", linkContextMenu);
 $(document).on('contextmenu', ".note-paths-widget a", linkContextMenu);
