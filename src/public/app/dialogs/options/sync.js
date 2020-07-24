@@ -19,7 +19,7 @@ const TPL = `
         <label for="sync-proxy">Sync proxy server (optional)</label>
         <input class="form-control" id="sync-proxy" placeholder="https://<host>:<port>">
 
-        <p><strong>Note:</strong> If you leave proxy setting blank, system proxy will be used (applies to desktop/electron build only)</p>
+        <p><strong>Note:</strong> If you leave the proxy setting blank, the system proxy will be used (applies to desktop/electron build only)</p>
     </div>
 
     <div style="display: flex; justify-content: space-between;">
@@ -33,7 +33,7 @@ const TPL = `
 
 <h4>Sync test</h4>
 
-<p>This will test connection and handshake to the sync server. If sync server isn't initialized, this will set it up to sync with local document.</p>
+<p>This will test the connection and handshake to the sync server. If the sync server isn't initialized, this will set it up to sync with the local document.</p>
 
 <button id="test-sync-button" class="btn">Test sync</button>`;
 
