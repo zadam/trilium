@@ -3,6 +3,7 @@ import treeCache from "../services/tree_cache.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 import BasicWidget from "./basic_widget.js";
+import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
@@ -157,9 +158,24 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$attrInputName = this.$widget.find('.attr-input-name');
         this.$attrInputName.on('keyup', () => this.updateAttributeInEditor());
 
+        this.$attrInputName.on('focus', () => {
+            attributeAutocompleteService.initAttributeNameAutocomplete({
+                $el: this.$attrInputName,
+                attributeType: () => ['relation', 'relation-definition'].includes(this.attrType) ? 'relation' : 'label',
+                open: true
+            });
+        });
+
         this.$attrRowValue = this.$widget.find('.attr-row-value');
         this.$attrInputValue = this.$widget.find('.attr-input-value');
         this.$attrInputValue.on('keyup', () => this.updateAttributeInEditor());
+        this.$attrInputValue.on('focus', () => {
+            attributeAutocompleteService.initLabelValueAutocomplete({
+                $el: this.$attrInputValue,
+                open: true,
+                nameCallback: () => this.$attrInputName.val()
+            });
+        });
 
         this.$attrRowPromoted = this.$widget.find('.attr-row-promoted');
         this.$attrInputPromoted = this.$widget.find('.attr-input-promoted');

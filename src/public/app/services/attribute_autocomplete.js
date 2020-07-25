@@ -33,9 +33,9 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
     }
 }
 
-async function initLabelValueAutocomplete({ $el, open }) {
+async function initLabelValueAutocomplete({ $el, open, nameCallback }) {
     if (!$el.hasClass("aa-input")) {
-        const attributeName = $el.parent().parent().find('.attribute-name').val();
+        const attributeName = nameCallback();
 
         if (attributeName.trim() === "") {
             return;
