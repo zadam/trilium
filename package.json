@@ -81,7 +81,7 @@
     "electron-packager": "15.0.0",
     "electron-rebuild": "1.11.0",
     "esm": "3.2.25",
-    "jasmine": "3.6.0",
+    "jasmine": "3.6.1",
     "jsdoc": "3.6.5",
     "lorem-ipsum": "2.0.3",
     "webpack": "5.0.0-beta.22",

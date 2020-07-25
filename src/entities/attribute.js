@@ -41,14 +41,14 @@ class Attribute extends Entity {
     }
 
     /**
-     * @returns {Promise<Note|null>}
+     * @returns {Note|null}
      */
     getNote() {
         return this.repository.getNote(this.noteId);
     }
 
     /**
-     * @returns {Promise<Note|null>}
+     * @returns {Note|null}
      */
     getTargetNote() {
         if (this.type !== 'relation') {

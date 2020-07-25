@@ -96,7 +96,7 @@ const TPL = `
                 <hr class="w-100">
             </div>
             
-            <div class="inherited-attributes"></div>
+            <div class="inherited-attributes-wrapper"></div>
         </div>
     </div>
 </div>
@@ -128,7 +128,6 @@ export default class AttributeListWidget extends TabAwareWidget {
         });
 
         this.$ownedAndInheritedWrapper = this.$widget.find('.owned-and-inherited-wrapper');
-        this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
 
         this.$ownedExpander = this.$widget.find('.attr-owned-and-inherited-expander');
         this.$ownedExpander.on('click', async () => {
@@ -141,15 +140,15 @@ export default class AttributeListWidget extends TabAwareWidget {
 
         this.$ownedExpanderText = this.$ownedExpander.find('.attr-expander-text');
 
-        this.$inheritedAttributes = this.$widget.find('.inherited-attributes');
+        this.$inheritedAttributesWrapper = this.$widget.find('.inherited-attributes-wrapper');
 
         this.$inheritedExpander = this.$widget.find('.attr-inherited-expander');
         this.$inheritedExpander.on('click', () => {
-            if (this.$inheritedAttributes.is(":visible")) {
-                this.$inheritedAttributes.slideUp(200);
+            if (this.$inheritedAttributesWrapper.is(":visible")) {
+                this.$inheritedAttributesWrapper.slideUp(200);
             }
             else {
-                this.$inheritedAttributes.slideDown(200);
+                this.$inheritedAttributesWrapper.slideDown(200);
             }
         });
 
@@ -163,6 +162,18 @@ export default class AttributeListWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
+        const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedAttributes().length > 0;
+
+        if (hasPromotedAttrs) {
+            this.$allAttrWrapper.show();
+            this.$ownedAndInheritedWrapper.hide();
+            this.$inheritedAttributesWrapper.hide();
+        }
+        else {
+            this.$promotedExpander.hide();
+            this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
+        }
+
         const ownedAttributes = note.getOwnedAttributes().filter(attr => !attr.isAutoLink);
 
         this.$ownedExpanderText.text(ownedAttributes.length + ' owned ' + this.attrPlural(ownedAttributes.length));
@@ -180,9 +191,9 @@ export default class AttributeListWidget extends TabAwareWidget {
 
         this.$inheritedExpanderText.text(inheritedAttributes.length + ' inherited ' + this.attrPlural(inheritedAttributes.length));
 
-        this.$inheritedAttributes.empty();
+        this.$inheritedAttributesWrapper.empty();
 
-        await this.renderInheritedAttributes(inheritedAttributes, this.$inheritedAttributes);
+        await this.renderInheritedAttributes(inheritedAttributes, this.$inheritedAttributesWrapper);
     }
 
     attrPlural(number) {

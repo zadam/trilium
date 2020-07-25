@@ -64,7 +64,7 @@ class NoteRevision extends Entity {
      * This is the same approach as is used for Note's content.
      */
 
-    /** @returns {Promise<*>} */
+    /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
             const res = sql.getRow(`SELECT content, hash FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);

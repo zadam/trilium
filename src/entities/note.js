@@ -70,7 +70,7 @@ class Note extends Entity {
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
 
-    /** @returns {Promise<*>} */
+    /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
             const res = sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
@@ -106,7 +106,7 @@ class Note extends Entity {
         }
     }
 
-    /** @returns {Promise<*>} */
+    /** @returns {*} */
     getJsonContent() {
         const content = this.getContent();
 
@@ -157,7 +157,6 @@ class Note extends Entity {
         syncTableService.addNoteContentSync(this.noteId);
     }
 
-    /** @returns {Promise} */
     setJsonContent(content) {
         this.setContent(JSON.stringify(content, null, '\t'));
     }
@@ -218,7 +217,7 @@ class Note extends Entity {
      *
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Promise<Attribute[]>} note's "owned" attributes - excluding inherited ones
+     * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type, name) {
         if (!this.__ownedAttributeCache) {
@@ -240,7 +239,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Attribute>} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns {Attribute} attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
@@ -251,7 +250,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Attribute[]>} relations targetting this specific note
+     * @returns {Attribute[]} relations targetting this specific note
      */
     getTargetRelations() {
         return this.repository.getEntities("SELECT * FROM attributes WHERE type = 'relation' AND isDeleted = 0 AND value = ?", [this.noteId]);
@@ -260,7 +259,7 @@ class Note extends Entity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Promise<Attribute[]>} all note's attributes, including inherited ones
+     * @returns {Attribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
         if (!this.__attributeCache) {
@@ -283,7 +282,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Promise<Attribute[]>} all note's labels (attributes with type label), including inherited ones
+     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
      */
     getLabels(name) {
         return this.getAttributes(LABEL, name);
@@ -291,7 +290,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Promise<Attribute[]>} all note's labels (attributes with type label), excluding inherited ones
+     * @returns {Attribute[]} all note's labels (attributes with type label), excluding inherited ones
      */
     getOwnedLabels(name) {
         return this.getOwnedAttributes(LABEL, name);
@@ -299,7 +298,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Promise<Attribute[]>} all note's label definitions, including inherited ones
+     * @returns {Attribute[]} all note's label definitions, including inherited ones
      */
     getLabelDefinitions(name) {
         return this.getAttributes(LABEL_DEFINITION, name);
@@ -307,7 +306,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones
+     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
@@ -315,7 +314,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), excluding inherited ones
+     * @returns {Attribute[]} all note's relations (attributes with type relation), excluding inherited ones
      */
     getOwnedRelations(name) {
         return this.getOwnedAttributes(RELATION, name);
@@ -323,7 +322,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Promise<Note[]>}
+     * @returns {Note[]}
      */
     getRelationTargets(name) {
         const relations = this.getRelations(name);
@@ -338,7 +337,7 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Promise<Attribute[]>} all note's relation definitions including inherited ones
+     * @returns {Attribute[]} all note's relation definitions including inherited ones
      */
     getRelationDefinitions(name) {
         return this.getAttributes(RELATION_DEFINITION, name);
@@ -353,7 +352,6 @@ class Note extends Entity {
         this.__ownedAttributeCache = null;
     }
 
-    /** @returns {Promise<void>} */
     loadAttributesToCache() {
         const attributes = this.repository.getEntities(`
             WITH RECURSIVE
@@ -420,7 +418,7 @@ class Note extends Entity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Promise<boolean>} true if note has an attribute with given type and name (including inherited)
+     * @returns {boolean} true if note has an attribute with given type and name (including inherited)
      */
     hasAttribute(type, name) {
         return !!this.getAttribute(type, name);
@@ -429,7 +427,7 @@ class Note extends Entity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Promise<boolean>} true if note has an attribute with given type and name (excluding inherited)
+     * @returns {boolean} true if note has an attribute with given type and name (excluding inherited)
      */
     hasOwnedAttribute(type, name) {
         return !!this.getOwnedAttribute(type, name);
@@ -438,7 +436,7 @@ class Note extends Entity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Promise<Attribute>} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -449,7 +447,7 @@ class Note extends Entity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Promise<string|null>} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
      */
     getAttributeValue(type, name) {
         const attr = this.getAttribute(type, name);
@@ -460,7 +458,7 @@ class Note extends Entity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Promise<string|null>} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
      */
     getOwnedAttributeValue(type, name) {
         const attr = this.getOwnedAttribute(type, name);
@@ -475,7 +473,6 @@ class Note extends Entity {
      * @param {boolean} enabled - toggle On or Off
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value (optional)
-     * @returns {Promise<void>}
      */
     toggleAttribute(type, enabled, name, value) {
         if (enabled) {
@@ -492,7 +489,6 @@ class Note extends Entity {
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value (optional)
-     * @returns {Promise<void>}
      */
     setAttribute(type, name, value) {
         const attributes = this.loadOwnedAttributesToCache();
@@ -526,7 +522,6 @@ class Note extends Entity {
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value (optional)
-     * @returns {Promise<void>}
      */
     removeAttribute(type, name, value) {
         const attributes = this.loadOwnedAttributesToCache();
@@ -542,7 +537,7 @@ class Note extends Entity {
     }
 
     /**
-     * @return {Promise<Attribute>}
+     * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
         const attr = new Attribute({
@@ -571,79 +566,79 @@ class Note extends Entity {
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<boolean>} true if label exists (including inherited)
+     * @returns {boolean} true if label exists (including inherited)
      */
     hasLabel(name) { return this.hasAttribute(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<boolean>} true if label exists (excluding inherited)
+     * @returns {boolean} true if label exists (excluding inherited)
      */
     hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<boolean>} true if relation exists (including inherited)
+     * @returns {boolean} true if relation exists (including inherited)
      */
     hasRelation(name) { return this.hasAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<boolean>} true if relation exists (excluding inherited)
+     * @returns {boolean} true if relation exists (excluding inherited)
      */
     hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<Attribute|null>} label if it exists, null otherwise
+     * @returns {Attribute|null} label if it exists, null otherwise
      */
     getLabel(name) { return this.getAttribute(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<Attribute|null>} label if it exists, null otherwise
+     * @returns {Attribute|null} label if it exists, null otherwise
      */
     getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<Attribute|null>} relation if it exists, null otherwise
+     * @returns {Attribute|null} relation if it exists, null otherwise
      */
     getRelation(name) { return this.getAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<Attribute|null>} relation if it exists, null otherwise
+     * @returns {Attribute|null} relation if it exists, null otherwise
      */
     getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<string|null>} label value if label exists, null otherwise
+     * @returns {string|null} label value if label exists, null otherwise
      */
     getLabelValue(name) { return this.getAttributeValue(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Promise<string|null>} label value if label exists, null otherwise
+     * @returns {string|null} label value if label exists, null otherwise
      */
     getOwnedLabelValue(name) { return this.getOwnedAttributeValue(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<string|null>} relation value if relation exists, null otherwise
+     * @returns {string|null} relation value if relation exists, null otherwise
      */
     getRelationValue(name) { return this.getAttributeValue(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Promise<string|null>} relation value if relation exists, null otherwise
+     * @returns {string|null} relation value if relation exists, null otherwise
      */
     getOwnedRelationValue(name) { return this.getOwnedAttributeValue(RELATION, name); }
 
     /**
      * @param {string} name
-     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
+     * @returns {Note|null} target note of the relation or null (if target is empty or note was not found)
      */
     getRelationTarget(name) {
         const relation = this.getRelation(name);
@@ -653,7 +648,7 @@ class Note extends Entity {
 
     /**
      * @param {string} name
-     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
+     * @returns {Note|null} target note of the relation or null (if target is empty or note was not found)
      */
     getOwnedRelationTarget(name) {
         const relation = this.getOwnedRelation(name);
@@ -667,7 +662,6 @@ class Note extends Entity {
      * @param {boolean} enabled - toggle On or Off
      * @param {string} name - label name
      * @param {string} [value] - label value (optional)
-     * @returns {Promise<void>}
      */
     toggleLabel(enabled, name, value) { return this.toggleAttribute(LABEL, enabled, name, value); }
 
@@ -677,7 +671,6 @@ class Note extends Entity {
      * @param {boolean} enabled - toggle On or Off
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
-     * @returns {Promise<void>}
      */
     toggleRelation(enabled, name, value) { return this.toggleAttribute(RELATION, enabled, name, value); }
 
@@ -686,7 +679,6 @@ class Note extends Entity {
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
-     * @returns {Promise<void>}
      */
     setLabel(name, value) { return this.setAttribute(LABEL, name, value); }
 
@@ -695,7 +687,6 @@ class Note extends Entity {
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
-     * @returns {Promise<void>}
      */
     setRelation(name, value) { return this.setAttribute(RELATION, name, value); }
 
@@ -704,7 +695,6 @@ class Note extends Entity {
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
-     * @returns {Promise<void>}
      */
     removeLabel(name, value) { return this.removeAttribute(LABEL, name, value); }
 
@@ -713,12 +703,11 @@ class Note extends Entity {
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
-     * @returns {Promise<void>}
      */
     removeRelation(name, value) { return this.removeAttribute(RELATION, name, value); }
 
     /**
-     * @return {Promise<string[]>} return list of all descendant noteIds of this note. Returning just noteIds because number of notes can be huge. Includes also this note's noteId
+     * @return {string[]} return list of all descendant noteIds of this note. Returning just noteIds because number of notes can be huge. Includes also this note's noteId
      */
     getDescendantNoteIds() {
         return sql.getColumn(`
@@ -741,7 +730,7 @@ class Note extends Entity {
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
-     * @returns {Promise<Note[]>}
+     * @returns {Note[]}
      */
     getDescendantNotesWithAttribute(type, name, value) {
         const params = [this.noteId, name];
@@ -779,7 +768,7 @@ class Note extends Entity {
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
-     * @returns {Promise<Note[]>}
+     * @returns {Note[]}
      */
     getDescendantNotesWithLabel(name, value) { return this.getDescendantNotesWithAttribute(LABEL, name, value); }
 
@@ -788,14 +777,14 @@ class Note extends Entity {
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value
-     * @returns {Promise<Note[]>}
+     * @returns {Note[]}
      */
     getDescendantNotesWithRelation(name, value) { return this.getDescendantNotesWithAttribute(RELATION, name, value); }
 
     /**
      * Returns note revisions of this note.
      *
-     * @returns {Promise<NoteRevision[]>}
+     * @returns {NoteRevision[]}
      */
     getRevisions() {
         return this.repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
@@ -805,7 +794,7 @@ class Note extends Entity {
      * Get list of links coming out of this note.
      *
      * @deprecated - not intended for general use
-     * @returns {Promise<Attribute[]>}
+     * @returns {Attribute[]}
      */
     getLinks() {
         return this.repository.getEntities(`
@@ -818,7 +807,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Branch[]>}
+     * @returns {Branch[]}
      */
     getBranches() {
         return this.repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
@@ -832,7 +821,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Note[]>} child notes of this note
+     * @returns {Note[]} child notes of this note
      */
     getChildNotes() {
         return this.repository.getEntities(`
@@ -846,7 +835,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Branch[]>} child branches of this note
+     * @returns {Branch[]} child branches of this note
      */
     getChildBranches() {
         return this.repository.getEntities(`
@@ -858,7 +847,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Note[]>} parent notes of this note (note can have multiple parents because of cloning)
+     * @returns {Note[]} parent notes of this note (note can have multiple parents because of cloning)
      */
     getParentNotes() {
         return this.repository.getEntities(`
@@ -872,7 +861,7 @@ class Note extends Entity {
     }
 
     /**
-     * @return {Promise<string[][]>} - array of notePaths (each represented by array of noteIds constituting the particular note path)
+     * @return {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
      */
     getAllNotePaths() {
         if (this.noteId === 'root') {
@@ -893,7 +882,7 @@ class Note extends Entity {
 
     /**
      * @param ancestorNoteId
-     * @return {Promise<boolean>} - true if ancestorNoteId occurs in at least one of the note's paths
+     * @return {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
      */
     isDescendantOfNote(ancestorNoteId) {
         const notePaths = this.getAllNotePaths();

@@ -27,12 +27,12 @@ class Branch extends Entity {
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "deleteId", "prefix"]; }
 
-    /** @returns {Promise<Note|null>} */
+    /** @returns {Note|null} */
     getNote() {
         return this.repository.getNote(this.noteId);
     }
 
-    /** @returns {Promise<Note|null>} */
+    /** @returns {Note|null} */
     getParentNote() {
         return this.repository.getNote(this.parentNoteId);
     }

@@ -43,55 +43,60 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     async refreshWithNote(note) {
         this.$container.empty();
 
-        const attributes = note.getAttributes();
+        const promotedAttributes = this.getPromotedAttributes();
+        const attributes = note.getAttributes();console.log(this.note.getAttributes());
 
-        const promoted = attributes
+        const cells = [];
+
+        if (promotedAttributes.length === 0) {
+            this.toggleInt(false);
+            return;
+        }
+
+        for (const definitionAttr of promotedAttributes) {
+            const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
+            const valueName = definitionAttr.name.substr(definitionType.length + 1);
+
+            let valueAttrs = attributes.filter(el => el.name === valueName && el.type === definitionType);
+
+            if (valueAttrs.length === 0) {
+                valueAttrs.push({
+                    attributeId: "",
+                    type: definitionType,
+                    name: valueName,
+                    value: ""
+                });
+            }
+
+            if (definitionAttr.value.multiplicity === 'single') {
+                valueAttrs = valueAttrs.slice(0, 1);
+            }
+
+            for (const valueAttr of valueAttrs) {
+                const $cell = await this.createPromotedAttributeCell(definitionAttr, valueAttr, valueName);
+
+                cells.push($cell);
+            }
+        }
+
+        // we replace the whole content in one step so there can't be any race conditions
+        // (previously we saw promoted attributes doubling)
+        this.$container.empty().append(...cells);
+        this.toggleInt(true);
+    }
+
+    getPromotedAttributes() {
+        if (this.note.hasLabel('hidePromotedAttributes')) {
+            return [];
+        }
+
+        return this.note.getAttributes()
             .filter(attr => attr.isDefinition())
             .filter(attr => {
                 const def = attr.getDefinition();
 
                 return def && def.isPromoted;
             });
-
-        const cells = [];
-
-        if (promoted.length > 0 && !note.hasLabel('hidePromotedAttributes')) {
-            for (const definitionAttr of promoted) {
-                const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
-                const valueName = definitionAttr.name.substr(definitionType.length + 1);
-
-                let valueAttrs = attributes.filter(el => el.name === valueName && el.type === 'label');
-
-                if (valueAttrs.length === 0) {
-                    valueAttrs.push({
-                        attributeId: "",
-                        type: definitionType,
-                        name: valueName,
-                        value: ""
-                    });
-                }
-
-                if (definitionAttr.value.multiplicity === 'single') {
-                    valueAttrs = valueAttrs.slice(0, 1);
-                }
-
-                for (const valueAttr of valueAttrs) {
-                    const $cell = await this.createPromotedAttributeCell(definitionAttr, valueAttr, valueName);
-
-                    cells.push($cell);
-                }
-            }
-
-            // we replace the whole content in one step so there can't be any race conditions
-            // (previously we saw promoted attributes doubling)
-            this.$container.empty().append(...cells);
-            this.toggleInt(true);
-        }
-        else {
-            this.toggleInt(false);
-        }
-
-        return attributes;
     }
 
     async createPromotedAttributeCell(definitionAttr, valueAttr, valueName) {
