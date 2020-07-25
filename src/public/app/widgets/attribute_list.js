@@ -120,11 +120,11 @@ export default class AttributeListWidget extends TabAwareWidget {
         this.$allAttrWrapper = this.$widget.find('.all-attr-wrapper');
 
         this.$promotedExpander.on('click', async () => {
-            if (this.$allAttrWrapper.is(":visible")) {
-                this.$allAttrWrapper.slideUp(200);
-            } else {
-                this.$allAttrWrapper.slideDown(200);
-            }
+            const collapse = this.$allAttrWrapper.is(":visible");
+
+            await options.save('promotedAttributesExpanded', !collapse);
+
+            this.triggerEvent(`promotedAttributesCollapsedStateChanged`, {collapse});
         });
 
         this.$ownedAndInheritedWrapper = this.$widget.find('.owned-and-inherited-wrapper');
@@ -165,7 +165,7 @@ export default class AttributeListWidget extends TabAwareWidget {
         const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedAttributes().length > 0;
 
         if (hasPromotedAttrs) {
-            this.$allAttrWrapper.show();
+            this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
             this.$ownedAndInheritedWrapper.hide();
             this.$inheritedAttributesWrapper.hide();
         }
@@ -238,6 +238,18 @@ export default class AttributeListWidget extends TabAwareWidget {
             this.$ownedAndInheritedWrapper.slideUp(200);
         } else {
             this.$ownedAndInheritedWrapper.slideDown(200);
+        }
+    }
+
+    /**
+     * This event is used to synchronize collapsed state of all the tab-cached widgets since they are all rendered
+     * separately but should behave uniformly for the user.
+     */
+    promotedAttributesCollapsedStateChangedEvent({collapse}) {
+        if (collapse) {
+            this.$allAttrWrapper.slideUp(200);
+        } else {
+            this.$allAttrWrapper.slideDown(200);
         }
     }
 }

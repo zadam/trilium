@@ -44,7 +44,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         this.$container.empty();
 
         const promotedAttributes = this.getPromotedAttributes();
-        const attributes = note.getAttributes();console.log(this.note.getAttributes());
+        const attributes = note.getAttributes();
 
         const cells = [];
 
