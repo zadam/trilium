@@ -360,6 +360,12 @@ export default class AttributeDetailWidget extends BasicWidget {
 
         this.$widget.css("left", x - this.$widget.outerWidth() / 2);
         this.$widget.css("top", y + 25);
+
+        // so that the detail window always fits
+        this.$widget.css("max-height",
+            this.$widget.outerHeight() + y > $(window).height() - 50
+                        ? $(window).height() - y - 50
+                        : 10000);
     }
 
     getAttrType(attribute) {
