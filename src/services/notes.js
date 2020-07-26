@@ -277,15 +277,9 @@ async function downloadImage(noteId, imageUrl) {
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
-    if (url.length > 2000) {
-        // for very large inline base64 images which fail on regex max size
-        return content.replace(url, `api/images/${imageNote.noteId}/${imageNote.title}`);
-    }
-    else {
-        const quotedUrl = utils.quoteRegex(url);
+    const quotedUrl = utils.quoteRegex(url);
 
-        return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
-    }
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
 async function downloadImages(noteId, content) {
@@ -306,7 +300,9 @@ async function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const {note} = await imageService.saveImage(noteId, imageBuffer, "inline image", true);
 
-            content = replaceUrl(content, url, note);
+            content = content.substr(0, match.index)
+                + `<img src="api/images/${note.noteId}/${note.title}"`
+                + content.substr(match.index + match[0].length);
         }
         else if (!url.includes('api/images/')
             // this is an exception for the web clipper's "imageId"
