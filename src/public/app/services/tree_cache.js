@@ -273,6 +273,12 @@ class TreeCache {
     async getBranchId(parentNoteId, childNoteId) {
         const child = await this.getNote(childNoteId);
 
+        if (!child) {
+            console.error(`Could not find branchId for parent=${parentNoteId}, child=${childNoteId} since child does not exist`);
+
+            return null;
+        }
+
         return child.parentToBranch[parentNoteId];
     }
 
