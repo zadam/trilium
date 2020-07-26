@@ -54,6 +54,12 @@ class Attribute {
         }
 
         const attrNote = this.getNote();
+
+        if (!attrNote) {
+            // the note (owner of the attribute) is not even loaded into the cache so it should not affect anything else
+            return false;
+        }
+
         const owningNotes = [affectedNote, ...affectedNote.getTemplateNotes()];
 
         for (const owningNote of owningNotes) {

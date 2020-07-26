@@ -277,9 +277,15 @@ async function downloadImage(noteId, imageUrl) {
 const downloadImagePromises = {};
 
 function replaceUrl(content, url, imageNote) {
-    const quotedUrl = utils.quoteRegex(url);
+    if (url.length > 2000) {
+        // for very large inline base64 images which fail on regex max size
+        return content.replace(url, `api/images/${imageNote.noteId}/${imageNote.title}`);
+    }
+    else {
+        const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+        return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+    }
 }
 
 function downloadImages(noteId, content) {
@@ -291,8 +297,19 @@ function downloadImages(noteId, content) {
     while (match = re.exec(origContent)) {
         const url = match[1];
 
-        if (!url.includes('api/images/')
-            // this is and exception for the web clipper's "imageId"
+        const inlineImageMatch = /^data:image\/[a-z]+;base64,/.exec(url);
+
+        if (inlineImageMatch) {
+            const imageBase64 = url.substr(inlineImageMatch[0].length);
+            const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+            const imageService = require('../services/image');
+            const {note} = await imageService.saveImage(noteId, imageBuffer, "inline image", true);
+
+            content = replaceUrl(content, url, note);
+        }
+        else if (!url.includes('api/images/')
+            // this is an exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
             if (url in imageUrlToNoteIdMapping) {
