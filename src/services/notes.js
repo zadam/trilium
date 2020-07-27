@@ -298,7 +298,7 @@ function downloadImages(noteId, content) {
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
             const imageService = require('../services/image');
-            const {note} = await imageService.saveImage(noteId, imageBuffer, "inline image", true);
+            const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true);
 
             content = content.substr(0, match.index)
                 + `<img src="api/images/${note.noteId}/${note.title}"`

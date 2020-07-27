@@ -5,13 +5,14 @@ const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
 const optionService = require('./options');
+const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const noteRevisionService = require('./note_revisions.js');
 const isSvg = require('is-svg');
 
-function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
+async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const origImageFormat = getImageType(uploadBuffer);
 
     if (origImageFormat && ["webp", "svg"].includes(origImageFormat.ext)) {
@@ -19,7 +20,7 @@ function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
         shrinkImageSwitch = false;
     }
 
-    const finalImageBuffer = shrinkImageSwitch ? shrinkImage(uploadBuffer) : uploadBuffer;
+    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer) : uploadBuffer;
 
     const imageFormat = getImageType(finalImageBuffer);
 
@@ -49,25 +50,24 @@ function getImageMimeFromExtension(ext) {
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
-    const {buffer, imageFormat} = processImage(uploadBuffer, originalName, true);
-
     const note = repository.getNote(noteId);
 
     noteRevisionService.createNoteRevision(note);
-
-    note.mime = getImageMimeFromExtension(imageFormat.ext);
-
-    note.setContent(buffer);
+    noteRevisionService.protectNoteRevisions(note);
 
     note.setLabel('originalFileName', originalName);
 
-    noteRevisionService.protectNoteRevisions(note);
+    // resizing images asynchronously since JIMP does not support sync operation
+    processImage(uploadBuffer, originalName, true).then(({buffer, imageFormat}) => {
+        sql.transactional(() => {
+            note.mime = getImageMimeFromExtension(imageFormat.ext);
+            note.setContent(buffer);
+        })
+    });
 }
 
 function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
     log.info(`Saving image ${originalName}`);
-
-    const {buffer, imageFormat} = processImage(uploadBuffer, originalName, shrinkImageSwitch);
 
     const fileName = sanitizeFilename(originalName);
 
@@ -76,13 +76,21 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     const {note} = noteService.createNewNote({
         parentNoteId,
         title: fileName,
-        content: buffer,
         type: 'image',
-        mime: getImageMimeFromExtension(imageFormat.ext),
+        mime: 'unknown',
+        content: '',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
 
     note.addLabel('originalFileName', originalName);
+
+    // resizing images asynchronously since JIMP does not support sync operation
+    processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
+        sql.transactional(() => {
+            note.mime = getImageMimeFromExtension(imageFormat.ext);
+            note.setContent(buffer);
+        })
+    });
 
     return {
         fileName,
@@ -92,9 +100,9 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     };
 }
 
-function shrinkImage(buffer) {
+async function shrinkImage(buffer) {
     const jpegQuality = optionService.getOptionInt('imageJpegQuality');
-    let finalImageBuffer = resize(buffer, jpegQuality);
+    let finalImageBuffer = await resize(buffer, jpegQuality);
 
     // if resizing & shrinking did not help with size then save the original
     // (can happen when e.g. resizing PNG into JPEG)
@@ -105,10 +113,10 @@ function shrinkImage(buffer) {
     return finalImageBuffer;
 }
 
-function resize(buffer, quality) {
+async function resize(buffer, quality) {
     const imageMaxWidthHeight = optionService.getOptionInt('imageMaxWidthHeight');
 
-    const image = jimp.read(buffer);
+    const image = await jimp.read(buffer);
 
     if (image.bitmap.width > image.bitmap.height && image.bitmap.width > imageMaxWidthHeight) {
         image.resize(imageMaxWidthHeight, jimp.AUTO);
@@ -122,7 +130,7 @@ function resize(buffer, quality) {
     // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
     image.background(0xFFFFFFFF);
 
-    return image.getBufferAsync(jimp.MIME_JPEG);
+    return await image.getBufferAsync(jimp.MIME_JPEG);
 }
 
 module.exports = {
