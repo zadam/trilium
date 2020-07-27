@@ -20,7 +20,8 @@ function sanitize(dirtyHtml) {
             'label': [ 'class' ],
             'input': [ 'class', 'type', 'disabled' ],
             'code': [ 'class' ]
-        }
+        },
+        allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data']
     });
 }
 

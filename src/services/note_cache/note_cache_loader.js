@@ -154,3 +154,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     noteCache.decryptProtectedNotes();
 });
+
+module.exports = {
+    load
+};

@@ -22,8 +22,6 @@ class NoteCache {
         this.attributeIndex = {};
 
         this.loaded = false;
-        this.loadedResolve = null;
-        this.loadedPromise = new Promise(res => {this.loadedResolve = res;});
     }
 
     /** @return {Attribute[]} */
