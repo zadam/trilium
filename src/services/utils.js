@@ -218,6 +218,9 @@ function formatDownloadTitle(filename, type, mime) {
 }
 
 function timeLimit(promise, limitMs) {
+    // better stack trace if created outside of promise
+    const error = new Error('Process exceeded time limit ' + limitMs);
+
     return new Promise((res, rej) => {
         let resolved = false;
 
@@ -229,7 +232,7 @@ function timeLimit(promise, limitMs) {
 
         setTimeout(() => {
             if (!resolved) {
-                rej(new Error('Process exceeded time limit ' + limitMs));
+                rej(error);
             }
         }, limitMs);
     });

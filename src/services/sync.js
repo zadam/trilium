@@ -132,6 +132,9 @@ async function pullSync(syncContext) {
         const startDate = Date.now();
 
         const resp = await syncRequest(syncContext, 'GET', changesUri);
+
+        const pulledDate = Date.now();
+
         stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
 
         if (stats.outstandingPulls < 0) {
@@ -162,7 +165,7 @@ async function pullSync(syncContext) {
             await setLastSyncedPull(rows[rows.length - 1].sync.id);
         });
 
-        log.info(`Pulled and updated ${rows.length} changes from ${changesUri} in ${Date.now() - startDate}ms`);
+        log.info(`Pulled ${rows.length} changes in ${pulledDate - startDate}ms from ${changesUri} and applied them in ${Date.now() - pulledDate}ms`);
     }
 
     if (appliedPulls > 0) {

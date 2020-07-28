@@ -51,7 +51,7 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
     await optionService.createOption('theme', opts.theme || 'white', false);
 
     await optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
-    await optionService.createOption('syncServerTimeout', '5000', false);
+    await optionService.createOption('syncServerTimeout', '60000', false);
     await optionService.createOption('syncProxy', opts.syncProxy || '', false);
 }
 
