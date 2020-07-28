@@ -51,7 +51,7 @@ function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
     optionService.createOption('theme', opts.theme || 'white', false);
 
     optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
-    optionService.createOption('syncServerTimeout', '5000', false);
+    optionService.createOption('syncServerTimeout', '60000', false);
     optionService.createOption('syncProxy', opts.syncProxy || '', false);
 }
 
