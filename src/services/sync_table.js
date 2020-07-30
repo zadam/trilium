@@ -82,7 +82,8 @@ async function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
                     entityName: entityName,
                     entityId: entityId,
                     sourceId: "SYNC_FILL",
-                    utcSyncDate: dateUtils.utcNowDateTime()
+                    utcSyncDate: dateUtils.utcNowDateTime(),
+                    isSynced: true
                 });
             }
         }
