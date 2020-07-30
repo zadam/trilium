@@ -50,7 +50,7 @@ async function getStats() {
 async function checkSync() {
     return {
         entityHashes: await contentHashService.getEntityHashes(),
-        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        maxSyncId: await sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
     };
 }
 
@@ -124,7 +124,7 @@ async function getChanged(req) {
 
     const ret = {
         syncs: await syncService.getSyncRecords(syncs),
-        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        maxSyncId: await sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
     };
 
     if (ret.syncs.length > 0) {

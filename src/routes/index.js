@@ -23,7 +23,7 @@ async function index(req, res) {
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),
         sourceId: await sourceIdService.generateSourceId(),
-        maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
+        maxSyncIdAtLoad: await sql.getValue("SELECT COALESCE(MAX(id), 0) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,
         appCssNoteIds: await getAppCssNoteIds(),
         isDev: env.isDev(),
