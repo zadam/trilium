@@ -8,7 +8,7 @@ const TPL = `
 <br/>
 <br/>
 
-<button id="fill-sync-rows-button" class="btn">Fill sync rows</button>
+<button id="fill-entity-changes-button" class="btn">Fill entity changes records</button>
 
 <br/>
 <br/>
@@ -41,7 +41,7 @@ export default class AdvancedOptions {
         $("#options-advanced").html(TPL);
 
         this.$forceFullSyncButton = $("#force-full-sync-button");
-        this.$fillEntityChangesButton = $("#fill-sync-rows-button");
+        this.$fillEntityChangesButton = $("#fill-entity-changes-button");
         this.$anonymizeButton = $("#anonymize-button");
         this.$backupDatabaseButton = $("#backup-database-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
@@ -54,7 +54,7 @@ export default class AdvancedOptions {
         });
 
         this.$fillEntityChangesButton.on('click', async () => {
-            await server.post('sync/fill-sync-rows');
+            await server.post('sync/fill-entity-changes');
 
             toastService.showMessage("Sync rows filled successfully");
         });

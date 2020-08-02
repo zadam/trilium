@@ -82,32 +82,32 @@ function forceNoteSync(req) {
     const now = dateUtils.utcNowDateTime();
 
     sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    entityChangesService.addNoteSync(noteId);
+    entityChangesService.addNoteEntityChange(noteId);
 
     sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    entityChangesService.addNoteContentSync(noteId);
+    entityChangesService.addNoteContentEntityChange(noteId);
 
     for (const branchId of sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
 
-        entityChangesService.addBranchSync(branchId);
+        entityChangesService.addBranchEntityChange(branchId);
     }
 
     for (const attributeId of sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
 
-        entityChangesService.addAttributeSync(attributeId);
+        entityChangesService.addAttributeEntityChange(attributeId);
     }
 
     for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.addNoteRevisionSync(noteRevisionId);
+        entityChangesService.addNoteRevisionEntityChange(noteRevisionId);
 
         sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.addNoteRevisionContentSync(noteRevisionId);
+        entityChangesService.addNoteRevisionContentEntityChange(noteRevisionId);
     }
 
-    entityChangesService.addRecentNoteSync(noteId);
+    entityChangesService.addRecentNoteEntityChange(noteId);
 
     log.info("Forcing note sync for " + noteId);
 
@@ -123,12 +123,12 @@ function getChanged(req) {
     const entityChanges = sql.getRows("SELECT * FROM entity_changes WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastEntityChangeId]);
 
     const ret = {
-        syncs: syncService.getEntityChangesRecords(entityChanges),
+        entityChanges: syncService.getEntityChangesRecords(entityChanges),
         maxEntityChangeId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1')
     };
 
-    if (ret.syncs.length > 0) {
-        log.info(`Returning ${ret.syncs.length} entity changes in ${Date.now() - startTime}ms`);
+    if (ret.entityChanges.length > 0) {
+        log.info(`Returning ${ret.entityChanges.length} entity changes in ${Date.now() - startTime}ms`);
     }
 
     return ret;

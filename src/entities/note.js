@@ -66,7 +66,7 @@ class Note extends Entity {
      * part of Note entity with it's own sync. Reasons behind this hybrid design has been:
      *
      * - content can be quite large and it's not necessary to load it / fill memory for any note access even if we don't need a content, especially for bulk operations like search
-     * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and sync rows)
+     * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and entity changes records)
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
 
@@ -154,7 +154,7 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        entityChangesService.addNoteContentSync(this.noteId);
+        entityChangesService.addNoteContentEntityChange(this.noteId);
     }
 
     setJsonContent(content) {

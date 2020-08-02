@@ -159,7 +159,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
 
         const retObject = createNewNote(params);
 
-        entityChangesService.addNoteReorderingSync(params.parentNoteId);
+        entityChangesService.addNoteReorderingEntityChange(params.parentNoteId);
 
         return retObject;
     }

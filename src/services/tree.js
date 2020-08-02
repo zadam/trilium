@@ -138,7 +138,7 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
             position += 10;
         }
 
-        entityChangesService.addNoteReorderingSync(parentNoteId);
+        entityChangesService.addNoteReorderingEntityChange(parentNoteId);
     });
 }
 

@@ -7,7 +7,7 @@ const cls = require('./cls');
 let maxEntityChangeId = 0;
 
 function insertEntityChange(entityName, entityId, sourceId = null, isSynced = true) {
-    const sync = {
+    const entityChange = {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
@@ -15,11 +15,11 @@ function insertEntityChange(entityName, entityId, sourceId = null, isSynced = tr
         isSynced: isSynced ? 1 : 0
     };
 
-    sync.id = sql.replace("sync", sync);
+    entityChange.id = sql.replace("entity_changes", entityChange);
 
-    maxEntityChangeId = Math.max(maxEntityChangeId, sync.id);
+    maxEntityChangeId = Math.max(maxEntityChangeId, entityChange.id);
 
-    return sync;
+    return entityChange;
 }
 
 function addEntityChange(entityName, entityId, sourceId, isSynced) {
@@ -85,13 +85,13 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
         }
 
         if (createdCount > 0) {
-            log.info(`Created ${createdCount} missing sync records for ${entityName}.`);
+            log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
         }
     }
     catch (e) {
         // this is to fix migration from 0.30 to 0.32, can be removed later
         // see https://github.com/zadam/trilium/issues/557
-        log.error(`Filling sync rows failed for ${entityName} ${entityPrimaryKey} with error "${e.message}", continuing`);
+        log.error(`Filling entity changes failed for ${entityName} ${entityPrimaryKey} with error "${e.message}", continuing`);
     }
 }
 
@@ -112,16 +112,16 @@ function fillAllEntityChanges() {
 }
 
 module.exports = {
-    addNoteSync: (noteId, sourceId) => addEntityChange("notes", noteId, sourceId),
-    addNoteContentSync: (noteId, sourceId) => addEntityChange("note_contents", noteId, sourceId),
-    addBranchSync: (branchId, sourceId) => addEntityChange("branches", branchId, sourceId),
-    addNoteReorderingSync: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, sourceId),
-    addNoteRevisionSync: (noteRevisionId, sourceId) => addEntityChange("note_revisions", noteRevisionId, sourceId),
-    addNoteRevisionContentSync: (noteRevisionId, sourceId) => addEntityChange("note_revision_contents", noteRevisionId, sourceId),
-    addOptionsSync: (name, sourceId, isSynced) => addEntityChange("options", name, sourceId, isSynced),
-    addRecentNoteSync: (noteId, sourceId) => addEntityChange("recent_notes", noteId, sourceId),
-    addAttributeSync: (attributeId, sourceId) => addEntityChange("attributes", attributeId, sourceId),
-    addApiTokenSync: (apiTokenId, sourceId) => addEntityChange("api_tokens", apiTokenId, sourceId),
+    addNoteEntityChange: (noteId, sourceId) => addEntityChange("notes", noteId, sourceId),
+    addNoteContentEntityChange: (noteId, sourceId) => addEntityChange("note_contents", noteId, sourceId),
+    addBranchEntityChange: (branchId, sourceId) => addEntityChange("branches", branchId, sourceId),
+    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, sourceId),
+    addNoteRevisionEntityChange: (noteRevisionId, sourceId) => addEntityChange("note_revisions", noteRevisionId, sourceId),
+    addNoteRevisionContentEntityChange: (noteRevisionId, sourceId) => addEntityChange("note_revision_contents", noteRevisionId, sourceId),
+    addOptionEntityChange: (name, sourceId, isSynced) => addEntityChange("options", name, sourceId, isSynced),
+    addRecentNoteEntityChange: (noteId, sourceId) => addEntityChange("recent_notes", noteId, sourceId),
+    addAttributeEntityChange: (attributeId, sourceId) => addEntityChange("attributes", attributeId, sourceId),
+    addApiTokenEntityChange: (apiTokenId, sourceId) => addEntityChange("api_tokens", apiTokenId, sourceId),
     addEntityChange,
     fillAllEntityChanges,
     addEntityChangesForSector,

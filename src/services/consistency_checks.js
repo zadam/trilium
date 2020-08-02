@@ -300,7 +300,7 @@ class ConsistencyChecks {
                             utcDateModified: dateUtils.utcNowDateTime()
                         });
 
-                        entityChangesService.addNoteContentSync(noteId);
+                        entityChangesService.addNoteContentEntityChange(noteId);
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess
@@ -343,14 +343,14 @@ class ConsistencyChecks {
             // we always fix this issue because there does not seem to be a good way to prevent it.
             // Scenario in which this can happen:
             // 1. user on instance A deletes the note (sync for notes is created, but not for note_contents) and is later erased
-            // 2. instance B gets synced from instance A, note is updated because of sync row for notes,
-            //    but note_contents is not because erasion does not create sync rows
+            // 2. instance B gets synced from instance A, note is updated because of entity change for notes,
+            //    but note_contents is not because erasion does not create entity change rows
             // 3. therefore note.isErased = true, but note_contents.content remains not updated and not erased.
             //
             // Considered solutions:
             // - don't sync erased notes - this might prevent syncing also of the isDeleted flag and note would continue
             //   to exist on the other instance
-            // - create sync rows for erased event - this would be a problem for undeletion since erasion might happen
+            // - create entity changes for erased event - this would be a problem for undeletion since erasion might happen
             //   on one instance after undelete and thus would win even though there's no user action behind it
             //
             // So instead we just fix such cases afterwards here.
@@ -555,22 +555,23 @@ class ConsistencyChecks {
             });
     }
 
-    runSyncRowChecks(entityName, key) {
+    runEntityChangeChecks(entityName, key) {
         this.findAndFixIssues(`
         SELECT 
           ${key} as entityId
         FROM 
           ${entityName} 
-          LEFT JOIN sync ON sync.entityName = '${entityName}' AND entityId = ${key} 
+          LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
+                                  AND entity_changes.entityId = ${key} 
         WHERE 
-          sync.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
+          entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             ({entityId}) => {
                 if (this.autoFix) {
                     entityChangesService.addEntityChange(entityName, entityId);
 
-                    logFix(`Created missing sync record for entityName=${entityName}, entityId=${entityId}`);
+                    logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {
-                    logError(`Missing sync record for entityName=${entityName}, entityId=${entityId}`);
+                    logError(`Missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 }
             });
 
@@ -578,31 +579,31 @@ class ConsistencyChecks {
             SELECT 
               id, entityId
             FROM 
-              sync 
+              entity_changes 
               LEFT JOIN ${entityName} ON entityId = ${key} 
             WHERE 
-              sync.entityName = '${entityName}' 
+              entity_changes.entityName = '${entityName}' 
               AND ${key} IS NULL`,
                 ({id, entityId}) => {
                     if (this.autoFix) {
                         sql.execute("DELETE FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-                        logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                        logFix(`Deleted extra entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
                     } else {
-                        logError(`Unrecognized sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                        logError(`Unrecognized entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
                     }
                 });
     }
 
-    findSyncRowsIssues() {
-        this.runSyncRowChecks("notes", "noteId");
-        this.runSyncRowChecks("note_contents", "noteId");
-        this.runSyncRowChecks("note_revisions", "noteRevisionId");
-        this.runSyncRowChecks("branches", "branchId");
-        this.runSyncRowChecks("recent_notes", "noteId");
-        this.runSyncRowChecks("attributes", "attributeId");
-        this.runSyncRowChecks("api_tokens", "apiTokenId");
-        this.runSyncRowChecks("options", "name");
+    findEntityChangeIssues() {
+        this.runEntityChangeChecks("notes", "noteId");
+        this.runEntityChangeChecks("note_contents", "noteId");
+        this.runEntityChangeChecks("note_revisions", "noteRevisionId");
+        this.runEntityChangeChecks("branches", "branchId");
+        this.runEntityChangeChecks("recent_notes", "noteId");
+        this.runEntityChangeChecks("attributes", "attributeId");
+        this.runEntityChangeChecks("api_tokens", "apiTokenId");
+        this.runEntityChangeChecks("options", "name");
     }
 
     findWronglyNamedAttributes() {
@@ -653,7 +654,7 @@ class ConsistencyChecks {
 
         this.findLogicIssues();
 
-        this.findSyncRowsIssues();
+        this.findEntityChangeIssues();
 
         this.findWronglyNamedAttributes();
 

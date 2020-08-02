@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const syncTable = require('./entity_changes.js');
+const eventChangesService = require('./entity_changes.js');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const repository = require('./repository');
@@ -90,7 +90,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
     sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    syncTable.addNoteReorderingSync(afterNote.parentNoteId);
+    eventChangesService.addNoteReorderingEntityChange(afterNote.parentNoteId);
 
     const branch = new Branch({
         noteId: noteId,

@@ -126,7 +126,7 @@ class NoteRevision extends Entity {
 
         sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        entityChangesService.addNoteRevisionContentSync(this.noteRevisionId);
+        entityChangesService.addNoteRevisionContentEntityChange(this.noteRevisionId);
     }
 
     beforeSaving() {

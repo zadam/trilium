@@ -66,7 +66,7 @@ function moveBranchBeforeNote(req) {
     sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
         [beforeNote.parentNoteId, beforeNote.notePosition]);
 
-    entityChangesService.addNoteReorderingSync(beforeNote.parentNoteId);
+    entityChangesService.addNoteReorderingEntityChange(beforeNote.parentNoteId);
 
     if (branchToMove.parentNoteId === beforeNote.parentNoteId) {
         branchToMove.notePosition = beforeNote.notePosition;
@@ -100,7 +100,7 @@ function moveBranchAfterNote(req) {
     sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    entityChangesService.addNoteReorderingSync(afterNote.parentNoteId);
+    entityChangesService.addNoteReorderingEntityChange(afterNote.parentNoteId);
 
     const movedNotePosition = afterNote.notePosition + 10;
 

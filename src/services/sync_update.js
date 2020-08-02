@@ -86,7 +86,7 @@ function updateNote(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace("notes", remoteEntity);
 
-            entityChangesService.addNoteSync(remoteEntity.noteId, sourceId);
+            entityChangesService.addNoteEntityChange(remoteEntity.noteId, sourceId);
         });
 
         return true;
@@ -104,7 +104,7 @@ function updateNoteContent(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace("note_contents", remoteEntity);
 
-            entityChangesService.addNoteContentSync(remoteEntity.noteId, sourceId);
+            entityChangesService.addNoteContentEntityChange(remoteEntity.noteId, sourceId);
         });
 
         return true;
@@ -126,7 +126,7 @@ function updateBranch(remoteEntity, sourceId) {
 
             sql.replace('branches', remoteEntity);
 
-            entityChangesService.addBranchSync(remoteEntity.branchId, sourceId);
+            entityChangesService.addBranchEntityChange(remoteEntity.branchId, sourceId);
         });
 
         return true;
@@ -142,7 +142,7 @@ function updateNoteRevision(remoteEntity, sourceId) {
         if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
             sql.replace('note_revisions', remoteEntity);
 
-            entityChangesService.addNoteRevisionSync(remoteEntity.noteRevisionId, sourceId);
+            entityChangesService.addNoteRevisionEntityChange(remoteEntity.noteRevisionId, sourceId);
 
             log.info("Update/sync note revision " + remoteEntity.noteRevisionId);
         }
@@ -158,7 +158,7 @@ function updateNoteRevisionContent(remoteEntity, sourceId) {
 
             sql.replace('note_revision_contents', remoteEntity);
 
-            entityChangesService.addNoteRevisionContentSync(remoteEntity.noteRevisionId, sourceId);
+            entityChangesService.addNoteRevisionContentEntityChange(remoteEntity.noteRevisionId, sourceId);
         });
 
         return true;
@@ -173,7 +173,7 @@ function updateNoteReordering(entityId, remote, sourceId) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remote[key], key]);
         }
 
-        entityChangesService.addNoteReorderingSync(entityId, sourceId);
+        entityChangesService.addNoteReorderingEntityChange(entityId, sourceId);
     });
 
     return true;
@@ -190,7 +190,7 @@ function updateOptions(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace('options', remoteEntity);
 
-            entityChangesService.addOptionsSync(remoteEntity.name, sourceId, true);
+            entityChangesService.addOptionEntityChange(remoteEntity.name, sourceId, true);
         });
 
         return true;
@@ -206,7 +206,7 @@ function updateRecentNotes(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace('recent_notes', remoteEntity);
 
-            entityChangesService.addRecentNoteSync(remoteEntity.noteId, sourceId);
+            entityChangesService.addRecentNoteEntityChange(remoteEntity.noteId, sourceId);
         });
 
         return true;
@@ -222,7 +222,7 @@ function updateAttribute(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace("attributes", remoteEntity);
 
-            entityChangesService.addAttributeSync(remoteEntity.attributeId, sourceId);
+            entityChangesService.addAttributeEntityChange(remoteEntity.attributeId, sourceId);
         });
 
         return true;
@@ -238,7 +238,7 @@ function updateApiToken(entity, sourceId) {
         sql.transactional(() => {
             sql.replace("api_tokens", entity);
 
-            entityChangesService.addApiTokenSync(entity.apiTokenId, sourceId);
+            entityChangesService.addApiTokenEntityChange(entity.apiTokenId, sourceId);
         });
 
         return true;
