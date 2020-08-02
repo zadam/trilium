@@ -49,7 +49,7 @@ async function createNote(parentNoteId, options = {}) {
         window.cutToNote.removeSelection();
     }
 
-    await ws.waitForMaxKnownSyncId();
+    await ws.waitForMaxKnownEntityChangeId();
 
     if (options.activate) {
         const activeTabContext = appContext.tabManager.getActiveTabContext();
@@ -91,7 +91,7 @@ function parseSelectedHtml(selectedHtml) {
 async function duplicateNote(noteId, parentNoteId) {
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
-    await ws.waitForMaxKnownSyncId();
+    await ws.waitForMaxKnownEntityChangeId();
 
     await appContext.tabManager.activateOrOpenNote(note.noteId);
 

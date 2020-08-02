@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const syncTableService = require('../services/sync_table');
+const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 const cls = require('./cls');
 const entityConstructor = require('../entities/entity_constructor');
@@ -119,7 +119,7 @@ function updateEntity(entity) {
         if (entity.isChanged) {
             const isSynced = entityName !== 'options' || entity.isSynced;
 
-            syncTableService.addEntitySync(entityName, primaryKey, null, isSynced);
+            entityChangesService.addEntityChange(entityName, primaryKey, null, isSynced);
 
             if (!cls.isEntityEventsDisabled()) {
                 const eventPayload = {

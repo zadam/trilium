@@ -5,7 +5,7 @@ const protectedSessionService = require('../services/protected_session');
 const utils = require('../services/utils');
 const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
-const syncTableService = require('../services/sync_table');
+const entityChangesService = require('../services/entity_changes.js');
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
@@ -126,7 +126,7 @@ class NoteRevision extends Entity {
 
         sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
+        entityChangesService.addNoteRevisionContentSync(this.noteRevisionId);
     }
 
     beforeSaving() {

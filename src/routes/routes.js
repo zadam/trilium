@@ -45,7 +45,7 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
-const syncTableService = require('../services/sync_table');
+const entityChangesService = require('../services/entity_changes.js');
 const csurf = require('csurf');
 
 const csrfMiddleware = csurf({
@@ -54,7 +54,7 @@ const csrfMiddleware = csurf({
 });
 
 function apiResultHandler(req, res, result) {
-    res.setHeader('trilium-max-sync-id', syncTableService.getMaxSyncId());
+    res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
@@ -205,7 +205,7 @@ function register(app) {
 
     apiRoute(POST, '/api/sync/test', syncApiRoute.testSync);
     apiRoute(POST, '/api/sync/now', syncApiRoute.syncNow);
-    apiRoute(POST, '/api/sync/fill-sync-rows', syncApiRoute.fillSyncRows);
+    apiRoute(POST, '/api/sync/fill-sync-rows', syncApiRoute.fillEntityChanges);
     apiRoute(POST, '/api/sync/force-full-sync', syncApiRoute.forceFullSync);
     apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
     route(GET, '/api/sync/check', [auth.checkApiAuth], syncApiRoute.checkSync, apiResultHandler);

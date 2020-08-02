@@ -31,7 +31,7 @@ function load() {
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
-    // note that entity can also be just POJO without methods if coming from sync
+    // note that entity can also be just POJO without methods if coming FROM entity_changes
 
     if (!noteCache.loaded) {
         return;

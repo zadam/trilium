@@ -102,11 +102,6 @@ class Attribute extends Entity {
         }
     }
 
-    // cannot be static!
-    updatePojo(pojo) {
-        delete pojo.__note; // FIXME: probably note necessary anymore
-    }
-
     createClone(type, name, value, isInheritable) {
         return new Attribute({
             noteId: this.noteId,

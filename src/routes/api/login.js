@@ -49,7 +49,7 @@ function loginSync(req) {
 
     return {
         sourceId: sourceIdService.getCurrentSourceId(),
-        maxSyncId: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1")
+        maxEntityChangeId: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1")
     };
 }
 

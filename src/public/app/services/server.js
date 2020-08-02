@@ -45,7 +45,7 @@ async function remove(url, sourceId) {
 let i = 1;
 const reqResolves = {};
 
-let maxKnownSyncId = 0;
+let maxKnownEntityChangeId = 0;
 
 async function call(method, url, data, headers = {}) {
     let resp;
@@ -82,10 +82,10 @@ async function call(method, url, data, headers = {}) {
         console.log(`${method} ${url} took ${end - start}ms`);
     }
 
-    const maxSyncIdStr = resp.headers['trilium-max-sync-id'];
+    const maxEntityChangeIdStr = resp.headers['trilium-max-entity-change-id'];
 
-    if (maxSyncIdStr && maxSyncIdStr.trim()) {
-        maxKnownSyncId = Math.max(maxKnownSyncId, parseInt(maxSyncIdStr));
+    if (maxEntityChangeIdStr && maxEntityChangeIdStr.trim()) {
+        maxKnownEntityChangeId = Math.max(maxKnownEntityChangeId, parseInt(maxEntityChangeIdStr));
     }
 
     return resp.body;
@@ -160,5 +160,5 @@ export default {
     ajax,
     // don't remove, used from CKEditor image upload!
     getHeaders,
-    getMaxKnownSyncId: () => maxKnownSyncId
+    getMaxKnownEntityChangeId: () => maxKnownEntityChangeId
 };

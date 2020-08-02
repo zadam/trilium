@@ -67,7 +67,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @return {Promise<void>}
      */
     this.activateNewNote = async notePath => {
-        await ws.waitForMaxKnownSyncId();
+        await ws.waitForMaxKnownEntityChangeId();
 
         await appContext.tabManager.getActiveTabContext().setNote(notePath);
         appContext.triggerEvent('focusAndSelectTitle');
@@ -152,7 +152,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
         if (ret.success) {
             // wait until all the changes done in the script has been synced to frontend before continuing
-            await ws.waitForSyncId(ret.maxSyncId);
+            await ws.waitForEntityChangeId(ret.maxEntityChangeId);
 
             return ret.executionResult;
         }
@@ -402,7 +402,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      */
-    this.waitUntilSynced = ws.waitForMaxKnownSyncId;
+    this.waitUntilSynced = ws.waitForMaxKnownEntityChangeId;
 
     /**
      * This will refresh all currently opened notes which have included note specified in the parameter

@@ -6,7 +6,7 @@ const protectedSessionService = require('../services/protected_session');
 const sql = require('../services/sql');
 const utils = require('../services/utils');
 const dateUtils = require('../services/date_utils');
-const syncTableService = require('../services/sync_table');
+const entityChangesService = require('../services/entity_changes.js');
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -154,7 +154,7 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        syncTableService.addNoteContentSync(this.noteId);
+        entityChangesService.addNoteContentSync(this.noteId);
     }
 
     setJsonContent(content) {

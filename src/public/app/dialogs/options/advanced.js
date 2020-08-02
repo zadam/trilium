@@ -41,7 +41,7 @@ export default class AdvancedOptions {
         $("#options-advanced").html(TPL);
 
         this.$forceFullSyncButton = $("#force-full-sync-button");
-        this.$fillSyncRowsButton = $("#fill-sync-rows-button");
+        this.$fillEntityChangesButton = $("#fill-sync-rows-button");
         this.$anonymizeButton = $("#anonymize-button");
         this.$backupDatabaseButton = $("#backup-database-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
@@ -53,7 +53,7 @@ export default class AdvancedOptions {
             toastService.showMessage("Full sync triggered");
         });
 
-        this.$fillSyncRowsButton.on('click', async () => {
+        this.$fillEntityChangesButton.on('click', async () => {
             await server.post('sync/fill-sync-rows');
 
             toastService.showMessage("Sync rows filled successfully");

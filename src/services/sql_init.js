@@ -84,8 +84,6 @@ async function createInitialDatabase(username, password, theme) {
     const zipImportService = require("./import/zip");
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
-    require('./sync_table').fillAllSyncRows();
-
     sql.transactional(() => {
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 

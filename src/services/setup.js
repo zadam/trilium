@@ -64,7 +64,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
     }
 
     try {
-        log.info("Getting document options from sync server.");
+        log.info("Getting document options FROM entity_changes server.");
 
         // response is expected to contain documentId and documentSecret options
         const resp = await request.exec({

@@ -72,7 +72,7 @@ export default class Entrypoints extends Component {
             isProtected: todayNote.isProtected
         });
 
-        await ws.waitForMaxKnownSyncId();
+        await ws.waitForMaxKnownEntityChangeId();
 
         await appContext.tabManager.openTabWithNote(note.noteId, true);
 

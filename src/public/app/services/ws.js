@@ -13,8 +13,8 @@ const $outstandingSyncsCount = $("#outstanding-syncs-count");
 const messageHandlers = [];
 
 let ws;
-let lastAcceptedSyncId = window.glob.maxSyncIdAtLoad;
-let lastProcessedSyncId = window.glob.maxSyncIdAtLoad;
+let lastAcceptedEntityChangeId = window.glob.maxEntityChangeIdAtLoad;
+let lastProcessedEntityChangeId = window.glob.maxEntityChangeIdAtLoad;
 let lastPingTs;
 let syncDataQueue = [];
 
@@ -38,13 +38,12 @@ function subscribeToMessages(messageHandler) {
 // used to serialize sync operations
 let consumeQueuePromise = null;
 
-// most sync events are sent twice - once immediatelly after finishing the transaction and once during the scheduled ping
-// but we want to process only once
-const processedSyncIds = new Set();
+// to make sure each change event is processed only once. Not clear if this is still necessary
+const processedEntityChangeIds = new Set();
 
 function logRows(syncRows) {
     const filteredRows = syncRows.filter(row =>
-        !processedSyncIds.has(row.id)
+        !processedEntityChangeIds.has(row.id)
         && row.entityName !== 'recent_notes'
         && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
 
@@ -71,8 +70,8 @@ async function handleMessage(event) {
 
             syncDataQueue.push(...syncRows);
 
-            // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
-            lastAcceptedSyncId = Math.max(lastAcceptedSyncId, syncRows[syncRows.length - 1].id);
+            // we set lastAcceptedEntityChangeId even before sync processing and send ping so that backend can start sending more updates
+            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, syncRows[syncRows.length - 1].id);
             sendPing();
 
             // first wait for all the preceding consumers to finish
@@ -100,38 +99,38 @@ async function handleMessage(event) {
     }
 }
 
-let syncIdReachedListeners = [];
+let entityChangeIdReachedListeners = [];
 
-function waitForSyncId(desiredSyncId) {
-    if (desiredSyncId <= lastProcessedSyncId) {
+function waitForEntityChangeId(desiredEntityChangeId) {
+    if (desiredEntityChangeId <= lastProcessedEntityChangeId) {
         return Promise.resolve();
     }
 
-    console.debug("Waiting for", desiredSyncId, 'current is', lastProcessedSyncId);
+    console.debug("Waiting for", desiredEntityChangeId, 'current is', lastProcessedEntityChangeId);
 
     return new Promise((res, rej) => {
-        syncIdReachedListeners.push({
-            desiredSyncId,
+        entityChangeIdReachedListeners.push({
+            desiredEntityChangeId: desiredEntityChangeId,
             resolvePromise: res,
             start: Date.now()
         })
     });
 }
 
-function waitForMaxKnownSyncId() {
-    return waitForSyncId(server.getMaxKnownSyncId());
+function waitForMaxKnownEntityChangeId() {
+    return waitForEntityChangeId(server.getMaxKnownEntityChangeId());
 }
 
-function checkSyncIdListeners() {
-    syncIdReachedListeners
-        .filter(l => l.desiredSyncId <= lastProcessedSyncId)
+function checkEntityChangeIdListeners() {
+    entityChangeIdReachedListeners
+        .filter(l => l.desiredEntityChangeId <= lastProcessedEntityChangeId)
         .forEach(l => l.resolvePromise());
 
-    syncIdReachedListeners = syncIdReachedListeners
-        .filter(l => l.desiredSyncId > lastProcessedSyncId);
+    entityChangeIdReachedListeners = entityChangeIdReachedListeners
+        .filter(l => l.desiredEntityChangeId > lastProcessedEntityChangeId);
 
-    syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastProcessedSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
+    entityChangeIdReachedListeners.filter(l => Date.now() > l.start - 60000)
+        .forEach(l => console.log(`Waiting for entityChangeId ${l.desiredEntityChangeId} while current is ${lastProcessedEntityChangeId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
 }
 
 async function runSafely(syncHandler, syncData) {
@@ -143,18 +142,12 @@ async function runSafely(syncHandler, syncData) {
     }
 }
 
-/**
- * TODO: we should rethink the fact that each sync row is sent twice (once at the end of transaction, once periodically)
- *       and we keep both lastProcessedSyncId and processedSyncIds
- *       it even seems incorrect that when transaction sync rows are received, we incorrectly increase lastProcessedSyncId
- *       and then some syncs might lost (or are *all* sync rows sent from transactions?)
- */
 async function consumeSyncData() {
     if (syncDataQueue.length > 0) {
         const allSyncRows = syncDataQueue;
         syncDataQueue = [];
 
-        const nonProcessedSyncRows = allSyncRows.filter(sync => !processedSyncIds.has(sync.id));
+        const nonProcessedSyncRows = allSyncRows.filter(sync => !processedEntityChangeIds.has(sync.id));
 
         try {
             await utils.timeLimit(processSyncRows(nonProcessedSyncRows), 5000);
@@ -167,13 +160,13 @@ async function consumeSyncData() {
         }
 
         for (const syncRow of nonProcessedSyncRows) {
-            processedSyncIds.add(syncRow.id);
+            processedEntityChangeIds.add(syncRow.id);
         }
 
-        lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncRows[allSyncRows.length - 1].id);
+        lastProcessedEntityChangeId = Math.max(lastProcessedEntityChangeId, allSyncRows[allSyncRows.length - 1].id);
     }
 
-    checkSyncIdListeners();
+    checkEntityChangeIdListeners();
 }
 
 function connectWebSocket() {
@@ -198,7 +191,7 @@ async function sendPing() {
     if (ws.readyState === ws.OPEN) {
         ws.send(JSON.stringify({
             type: 'ping',
-            lastSyncId: lastAcceptedSyncId
+            lastEntityChangeId: lastAcceptedEntityChangeId
         }));
     }
     else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
@@ -394,6 +387,6 @@ async function processSyncRows(syncRows) {
 export default {
     logError,
     subscribeToMessages,
-    waitForSyncId,
-    waitForMaxKnownSyncId
+    waitForEntityChangeId,
+    waitForMaxKnownEntityChangeId
 };

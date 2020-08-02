@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const repository = require('./repository');
 const Branch = require('../entities/branch');
-const syncTableService = require('./sync_table');
+const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
 
 function getNotes(noteIds) {
@@ -138,7 +138,7 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
             position += 10;
         }
 
-        syncTableService.addNoteReorderingSync(parentNoteId);
+        entityChangesService.addNoteReorderingSync(parentNoteId);
     });
 }
 

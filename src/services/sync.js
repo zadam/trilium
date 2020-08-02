@@ -15,7 +15,7 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
-const syncTableService = require('./sync_table');
+const entityChangesService = require('./entity_changes.js');
 const entityConstructor = require('../entities/entity_constructor');
 
 let proxyToggle = true;
@@ -113,10 +113,10 @@ async function doLogin() {
 
     // this is important in a scenario where we setup the sync by manually copying the document
     // lastSyncedPull then could be pretty off for the newly cloned client
-    if (lastSyncedPull > resp.maxSyncId) {
-        log.info(`Lowering last synced pull from ${lastSyncedPull} to ${resp.maxSyncId}`);
+    if (lastSyncedPull > resp.maxEntityChangeId) {
+        log.info(`Lowering last synced pull from ${lastSyncedPull} to ${resp.maxEntityChangeId}`);
 
-        setLastSyncedPull(resp.maxSyncId);
+        setLastSyncedPull(resp.maxEntityChangeId);
     }
 
     return syncContext;
@@ -127,7 +127,7 @@ async function pullSync(syncContext) {
 
     while (true) {
         const lastSyncedPull = getLastSyncedPull();
-        const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
+        const changesUri = '/api/sync/changed?lastEntityChangeId=' + lastSyncedPull;
 
         const startDate = Date.now();
 
@@ -135,7 +135,7 @@ async function pullSync(syncContext) {
 
         const pulledDate = Date.now();
 
-        stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
+        stats.outstandingPulls = resp.maxEntityChangeId - lastSyncedPull;
 
         if (stats.outstandingPulls < 0) {
             stats.outstandingPulls = 0;
@@ -159,13 +159,13 @@ async function pullSync(syncContext) {
                     syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
                 }
 
-                stats.outstandingPulls = resp.maxSyncId - sync.id;
+                stats.outstandingPulls = resp.maxEntityChangeId - sync.id;
             }
 
             setLastSyncedPull(rows[rows.length - 1].sync.id);
         });
 
-        log.info(`Pulled ${rows.length} changes starting at syncId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${stats.outstandingPulls} outstanding pulls`);
+        log.info(`Pulled ${rows.length} changes starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${stats.outstandingPulls} outstanding pulls`);
     }
 
     if (atLeastOnePullApplied) {
@@ -179,7 +179,7 @@ async function pushSync(syncContext) {
     let lastSyncedPush = getLastSyncedPush();
 
     while (true) {
-        const syncs = sql.getRows('SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000', [lastSyncedPush]);
+        const syncs = sql.getRows('SELECT * FROM entity_changes WHERE isSynced = 1 AND id > ? LIMIT 1000', [lastSyncedPush]);
 
         if (syncs.length === 0) {
             log.info("Nothing to push");
@@ -209,7 +209,7 @@ async function pushSync(syncContext) {
             continue;
         }
 
-        const syncRecords = getSyncRecords(filteredSyncs);
+        const syncRecords = getEntityChangesRecords(filteredSyncs);
         const startDate = new Date();
 
         await syncRequest(syncContext, 'PUT', '/api/sync/update', {
@@ -233,13 +233,13 @@ async function checkContentHash(syncContext) {
     const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
     const lastSyncedPullId = getLastSyncedPull();
 
-    if (lastSyncedPullId < resp.maxSyncId) {
-        log.info(`There are some outstanding pulls (${lastSyncedPullId} vs. ${resp.maxSyncId}), skipping content check.`);
+    if (lastSyncedPullId < resp.maxEntityChangeId) {
+        log.info(`There are some outstanding pulls (${lastSyncedPullId} vs. ${resp.maxEntityChangeId}), skipping content check.`);
 
         return true;
     }
 
-    const notPushedSyncs = sql.getValue("SELECT EXISTS(SELECT 1 FROM sync WHERE isSynced = 1 AND id > ?)", [getLastSyncedPush()]);
+    const notPushedSyncs = sql.getValue("SELECT EXISTS(SELECT 1 FROM entity_changes WHERE isSynced = 1 AND id > ?)", [getLastSyncedPush()]);
 
     if (notPushedSyncs) {
         log.info(`There's ${notPushedSyncs} outstanding pushes, skipping content check.`);
@@ -252,7 +252,7 @@ async function checkContentHash(syncContext) {
     for (const {entityName, sector} of failedChecks) {
         const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
-        syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
+        entityChangesService.addEntityChangesForSector(entityName, entityPrimaryKey, sector);
 
         await syncRequest(syncContext, 'POST', `/api/sync/queue-sector/${entityName}/${sector}`);
     }
@@ -287,7 +287,7 @@ const primaryKeys = {
     "attributes": "attributeId"
 };
 
-function getEntityRow(entityName, entityId) {
+function getEntityChangeRow(entityName, entityId) {
     if (entityName === 'note_reordering') {
         return sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [entityId]);
     }
@@ -316,20 +316,20 @@ function getEntityRow(entityName, entityId) {
     }
 }
 
-function getSyncRecords(syncs) {
+function getEntityChangesRecords(entityChanges) {
     const records = [];
     let length = 0;
 
-    for (const sync of syncs) {
-        const entity = getEntityRow(sync.entityName, sync.entityId);
+    for (const entityChange of entityChanges) {
+        const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
 
-        if (sync.entityName === 'options' && !entity.isSynced) {
-            records.push({sync});
+        if (entityChange.entityName === 'options' && !entity.isSynced) {
+            records.push({entityChange});
 
             continue;
         }
 
-        const record = { sync, entity };
+        const record = { entityChange, entity };
 
         records.push(record);
 
@@ -347,8 +347,8 @@ function getLastSyncedPull() {
     return parseInt(optionService.getOption('lastSyncedPull'));
 }
 
-function setLastSyncedPull(syncId) {
-    optionService.setOption('lastSyncedPull', syncId);
+function setLastSyncedPull(entityChangeId) {
+    optionService.setOption('lastSyncedPull', entityChangeId);
 }
 
 function getLastSyncedPush() {
@@ -363,12 +363,12 @@ function updatePushStats() {
     if (syncOptions.isSyncSetup()) {
         const lastSyncedPush = optionService.getOption('lastSyncedPush');
 
-        stats.outstandingPushes = sql.getValue("SELECT COUNT(1) FROM sync WHERE isSynced = 1 AND id > ?", [lastSyncedPush]);
+        stats.outstandingPushes = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE isSynced = 1 AND id > ?", [lastSyncedPush]);
     }
 }
 
-function getMaxSyncId() {
-    return sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync');
+function getMaxEntityChangeId() {
+    return sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes');
 }
 
 sqlInit.dbReady.then(() => {
@@ -383,7 +383,7 @@ sqlInit.dbReady.then(() => {
 module.exports = {
     sync,
     login,
-    getSyncRecords,
+    getEntityChangesRecords,
     stats,
-    getMaxSyncId
+    getMaxEntityChangeId
 };

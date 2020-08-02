@@ -7,7 +7,7 @@ const ws = require('./ws.js');
 const syncMutexService = require('./sync_mutex');
 const repository = require('./repository');
 const cls = require('./cls');
-const syncTableService = require('./sync_table');
+const entityChangesService = require('./entity_changes.js');
 const optionsService = require('./options');
 const Branch = require('../entities/branch');
 const dateUtils = require('./date_utils');
@@ -300,7 +300,7 @@ class ConsistencyChecks {
                             utcDateModified: dateUtils.utcNowDateTime()
                         });
 
-                        syncTableService.addNoteContentSync(noteId);
+                        entityChangesService.addNoteContentSync(noteId);
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess
@@ -566,7 +566,7 @@ class ConsistencyChecks {
           sync.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             ({entityId}) => {
                 if (this.autoFix) {
-                    syncTableService.addEntitySync(entityName, entityId);
+                    entityChangesService.addEntityChange(entityName, entityId);
 
                     logFix(`Created missing sync record for entityName=${entityName}, entityId=${entityId}`);
                 } else {
@@ -585,7 +585,7 @@ class ConsistencyChecks {
               AND ${key} IS NULL`,
                 ({id, entityId}) => {
                     if (this.autoFix) {
-                        sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+                        sql.execute("DELETE FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
                         logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
                     } else {

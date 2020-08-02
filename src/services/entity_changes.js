@@ -1,16 +1,12 @@
-/**
- * TODO: rename "sync" table to something like "changelog" since it now also contains rows which are not synced (isSynced=false)
- */
-
 const sql = require('./sql');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
-let maxSyncId = 0;
+let maxEntityChangeId = 0;
 
-function insertEntitySync(entityName, entityId, sourceId = null, isSynced = true) {
+function insertEntityChange(entityName, entityId, sourceId = null, isSynced = true) {
     const sync = {
         entityName: entityName,
         entityId: entityId,
@@ -21,18 +17,18 @@ function insertEntitySync(entityName, entityId, sourceId = null, isSynced = true
 
     sync.id = sql.replace("sync", sync);
 
-    maxSyncId = Math.max(maxSyncId, sync.id);
+    maxEntityChangeId = Math.max(maxEntityChangeId, sync.id);
 
     return sync;
 }
 
-function addEntitySync(entityName, entityId, sourceId, isSynced) {
-    const sync = insertEntitySync(entityName, entityId, sourceId, isSynced);
+function addEntityChange(entityName, entityId, sourceId, isSynced) {
+    const sync = insertEntityChange(entityName, entityId, sourceId, isSynced);
 
     cls.addSyncRow(sync);
 }
 
-function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
+function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
     const startTime = Date.now();
 
     sql.transactional(() => {
@@ -47,7 +43,7 @@ function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
                 }
             }
 
-            insertEntitySync(entityName, entityId, 'content-check', true);
+            insertEntityChange(entityName, entityId, 'content-check', true);
         }
     });
 
@@ -57,12 +53,12 @@ function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
 function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
     sql.execute(`
       DELETE 
-      FROM sync 
+      FROM entity_changes 
       WHERE sync.entityName = '${entityName}' 
         AND sync.entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
 }
 
-function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
+function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     try {
         cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey);
 
@@ -72,7 +68,7 @@ function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
         let createdCount = 0;
 
         for (const entityId of entityIds) {
-            const existingRows = sql.getValue("SELECT COUNT(1) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
             // we don't want to replace existing entities (which would effectively cause full resync)
             if (existingRows === 0) {
@@ -99,35 +95,35 @@ function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
     }
 }
 
-function fillAllSyncRows() {
+function fillAllEntityChanges() {
     sql.transactional(() => {
-        sql.execute("DELETE FROM sync");
+        sql.execute("DELETE FROM entity_changes");
 
-        fillSyncRows("notes", "noteId");
-        fillSyncRows("note_contents", "noteId");
-        fillSyncRows("branches", "branchId");
-        fillSyncRows("note_revisions", "noteRevisionId");
-        fillSyncRows("note_revision_contents", "noteRevisionId");
-        fillSyncRows("recent_notes", "noteId");
-        fillSyncRows("attributes", "attributeId");
-        fillSyncRows("api_tokens", "apiTokenId");
-        fillSyncRows("options", "name", 'isSynced = 1');
+        fillEntityChanges("notes", "noteId");
+        fillEntityChanges("note_contents", "noteId");
+        fillEntityChanges("branches", "branchId");
+        fillEntityChanges("note_revisions", "noteRevisionId");
+        fillEntityChanges("note_revision_contents", "noteRevisionId");
+        fillEntityChanges("recent_notes", "noteId");
+        fillEntityChanges("attributes", "attributeId");
+        fillEntityChanges("api_tokens", "apiTokenId");
+        fillEntityChanges("options", "name", 'isSynced = 1');
     });
 }
 
 module.exports = {
-    addNoteSync: (noteId, sourceId) => addEntitySync("notes", noteId, sourceId),
-    addNoteContentSync: (noteId, sourceId) => addEntitySync("note_contents", noteId, sourceId),
-    addBranchSync: (branchId, sourceId) => addEntitySync("branches", branchId, sourceId),
-    addNoteReorderingSync: (parentNoteId, sourceId) => addEntitySync("note_reordering", parentNoteId, sourceId),
-    addNoteRevisionSync: (noteRevisionId, sourceId) => addEntitySync("note_revisions", noteRevisionId, sourceId),
-    addNoteRevisionContentSync: (noteRevisionId, sourceId) => addEntitySync("note_revision_contents", noteRevisionId, sourceId),
-    addOptionsSync: (name, sourceId, isSynced) => addEntitySync("options", name, sourceId, isSynced),
-    addRecentNoteSync: (noteId, sourceId) => addEntitySync("recent_notes", noteId, sourceId),
-    addAttributeSync: (attributeId, sourceId) => addEntitySync("attributes", attributeId, sourceId),
-    addApiTokenSync: (apiTokenId, sourceId) => addEntitySync("api_tokens", apiTokenId, sourceId),
-    addEntitySync,
-    fillAllSyncRows,
-    addEntitySyncsForSector,
-    getMaxSyncId: () => maxSyncId
+    addNoteSync: (noteId, sourceId) => addEntityChange("notes", noteId, sourceId),
+    addNoteContentSync: (noteId, sourceId) => addEntityChange("note_contents", noteId, sourceId),
+    addBranchSync: (branchId, sourceId) => addEntityChange("branches", branchId, sourceId),
+    addNoteReorderingSync: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, sourceId),
+    addNoteRevisionSync: (noteRevisionId, sourceId) => addEntityChange("note_revisions", noteRevisionId, sourceId),
+    addNoteRevisionContentSync: (noteRevisionId, sourceId) => addEntityChange("note_revision_contents", noteRevisionId, sourceId),
+    addOptionsSync: (name, sourceId, isSynced) => addEntityChange("options", name, sourceId, isSynced),
+    addRecentNoteSync: (noteId, sourceId) => addEntityChange("recent_notes", noteId, sourceId),
+    addAttributeSync: (attributeId, sourceId) => addEntityChange("attributes", attributeId, sourceId),
+    addApiTokenSync: (apiTokenId, sourceId) => addEntityChange("api_tokens", apiTokenId, sourceId),
+    addEntityChange,
+    fillAllEntityChanges,
+    addEntityChangesForSector,
+    getMaxEntityChangeId: () => maxEntityChangeId
 };

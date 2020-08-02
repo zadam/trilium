@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const syncTable = require('./sync_table');
+const syncTable = require('./entity_changes.js');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const repository = require('./repository');

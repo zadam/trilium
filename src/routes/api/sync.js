@@ -2,7 +2,7 @@
 
 const syncService = require('../../services/sync');
 const syncUpdateService = require('../../services/sync_update');
-const syncTableService = require('../../services/sync_table');
+const entityChangesService = require('../../services/entity_changes.js');
 const sql = require('../../services/sql');
 const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
@@ -50,7 +50,7 @@ function getStats() {
 function checkSync() {
     return {
         entityHashes: contentHashService.getEntityHashes(),
-        maxSyncId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
+        maxEntityChangeId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1')
     };
 }
 
@@ -60,8 +60,8 @@ function syncNow() {
     return syncService.sync();
 }
 
-function fillSyncRows() {
-    syncTableService.fillAllSyncRows();
+function fillEntityChanges() {
+    entityChangesService.fillAllEntityChanges();
 
     log.info("Sync rows have been filled.");
 }
@@ -82,32 +82,32 @@ function forceNoteSync(req) {
     const now = dateUtils.utcNowDateTime();
 
     sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    syncTableService.addNoteSync(noteId);
+    entityChangesService.addNoteSync(noteId);
 
     sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    syncTableService.addNoteContentSync(noteId);
+    entityChangesService.addNoteContentSync(noteId);
 
     for (const branchId of sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
 
-        syncTableService.addBranchSync(branchId);
+        entityChangesService.addBranchSync(branchId);
     }
 
     for (const attributeId of sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
 
-        syncTableService.addAttributeSync(attributeId);
+        entityChangesService.addAttributeSync(attributeId);
     }
 
     for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        syncTableService.addNoteRevisionSync(noteRevisionId);
+        entityChangesService.addNoteRevisionSync(noteRevisionId);
 
         sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        syncTableService.addNoteRevisionContentSync(noteRevisionId);
+        entityChangesService.addNoteRevisionContentSync(noteRevisionId);
     }
 
-    syncTableService.addRecentNoteSync(noteId);
+    entityChangesService.addRecentNoteSync(noteId);
 
     log.info("Forcing note sync for " + noteId);
 
@@ -118,17 +118,17 @@ function forceNoteSync(req) {
 function getChanged(req) {
     const startTime = Date.now();
 
-    const lastSyncId = parseInt(req.query.lastSyncId);
+    const lastEntityChangeId = parseInt(req.query.lastEntityChangedId);
 
-    const syncs = sql.getRows("SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastSyncId]);
+    const entityChanges = sql.getRows("SELECT * FROM entity_changes WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastEntityChangeId]);
 
     const ret = {
-        syncs: syncService.getSyncRecords(syncs),
-        maxSyncId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
+        syncs: syncService.getEntityChangesRecords(entityChanges),
+        maxEntityChangeId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1')
     };
 
     if (ret.syncs.length > 0) {
-        log.info(`Returning ${ret.syncs.length} sync records in ${Date.now() - startTime}ms`);
+        log.info(`Returning ${ret.syncs.length} entity changes in ${Date.now() - startTime}ms`);
     }
 
     return ret;
@@ -155,14 +155,14 @@ function queueSector(req) {
 
     const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
-    syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
+    entityChangesService.addEntityChangesForSector(entityName, entityPrimaryKey, sector);
 }
 
 module.exports = {
     testSync,
     checkSync,
     syncNow,
-    fillSyncRows,
+    fillEntityChanges,
     forceFullSync,
     forceNoteSync,
     getChanged,

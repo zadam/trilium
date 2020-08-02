@@ -2,7 +2,7 @@ const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
-const syncTableService = require('./sync_table');
+const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
@@ -159,7 +159,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
 
         const retObject = createNewNote(params);
 
-        syncTableService.addNoteReorderingSync(params.parentNoteId);
+        entityChangesService.addNoteReorderingSync(params.parentNoteId);
 
         return retObject;
     }

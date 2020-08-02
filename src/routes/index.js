@@ -23,7 +23,7 @@ function index(req, res) {
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),
         sourceId: sourceIdService.generateSourceId(),
-        maxSyncIdAtLoad: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM sync"),
+        maxEntityChangeIdAtLoad: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes"),
         instanceName: config.General ? config.General.instanceName : null,
         appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),

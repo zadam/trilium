@@ -13,7 +13,7 @@ function exec(req) {
         return {
             success: true,
             executionResult: result,
-            maxSyncId: syncService.getMaxSyncId()
+            maxEntityChangeId: syncService.getMaxEntityChangeId()
         };
     }
     catch (e) {
