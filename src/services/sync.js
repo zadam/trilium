@@ -123,7 +123,7 @@ async function doLogin() {
 }
 
 async function pullSync(syncContext) {
-    let appliedPulls = 0;
+    let atLeastOnePullApplied = false;
 
     while (true) {
         const lastSyncedPull = getLastSyncedPull();
@@ -150,10 +150,10 @@ async function pullSync(syncContext) {
         sql.transactional(() => {
             for (const {sync, entity} of rows) {
                 if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
-                    if (appliedPulls === 0 && sync.entity !== 'recent_notes') { // send only for first
+                    if (!atLeastOnePullApplied && sync.entity !== 'recent_notes') { // send only for first
                         ws.syncPullInProgress();
 
-                        appliedPulls++;
+                        atLeastOnePullApplied = true;
                     }
 
                     syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
@@ -165,10 +165,10 @@ async function pullSync(syncContext) {
             setLastSyncedPull(rows[rows.length - 1].sync.id);
         });
 
-        log.info(`Pulled ${rows.length} changes in ${pulledDate - startDate}ms from ${changesUri} and applied them in ${Date.now() - pulledDate}ms`);
+        log.info(`Pulled ${rows.length} changes starting at syncId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${stats.outstandingPulls} outstanding pulls`);
     }
 
-    if (appliedPulls > 0) {
+    if (atLeastOnePullApplied) {
         ws.syncPullFinished();
     }
 
@@ -368,7 +368,7 @@ function updatePushStats() {
 }
 
 function getMaxSyncId() {
-    return sql.getValue('SELECT MAX(id) FROM sync');
+    return sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync');
 }
 
 sqlInit.dbReady.then(() => {

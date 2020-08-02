@@ -50,7 +50,7 @@ function getStats() {
 function checkSync() {
     return {
         entityHashes: contentHashService.getEntityHashes(),
-        maxSyncId: sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        maxSyncId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
     };
 }
 
@@ -124,7 +124,7 @@ function getChanged(req) {
 
     const ret = {
         syncs: syncService.getSyncRecords(syncs),
-        maxSyncId: sql.getValue('SELECT MAX(id) FROM sync WHERE isSynced = 1')
+        maxSyncId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM sync WHERE isSynced = 1')
     };
 
     if (ret.syncs.length > 0) {
