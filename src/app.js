@@ -20,7 +20,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(helmet({
-    hidePoweredBy: false // deactivated because electron 4.0 crashes on this right after startup
+    hidePoweredBy: false, // deactivated because electron 4.0 crashes on this right after startup
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["*", "'unsafe-inline'"]
+        }
+    }
 }));
 
 app.use(bodyParser.json({limit: '500mb'}));
