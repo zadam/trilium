@@ -199,7 +199,7 @@ class TreeCache {
     getNotesFromCache(noteIds, silentNotFoundError = false) {
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                console.log(`Can't find note "${noteId}"`);
+                console.trace(`Can't find note "${noteId}"`);
 
                 return null;
             }
