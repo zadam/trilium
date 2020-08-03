@@ -279,18 +279,15 @@ const downloadImagePromises = {};
 function replaceUrl(content, url, imageNote) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "g"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
 }
 
 async function downloadImages(noteId, content) {
-    const re = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
-    let match;
+    const imageRe = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
+    let imageMatch;
 
-    const origContent = content;
-
-    while (match = re.exec(origContent)) {
-        const url = match[1];
-
+    while (imageMatch = imageRe.exec(content)) {
+        const url = imageMatch[1];
         const inlineImageMatch = /^data:image\/[a-z]+;base64,/.exec(url);
 
         if (inlineImageMatch) {
@@ -300,9 +297,9 @@ async function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const {note} = await imageService.saveImage(noteId, imageBuffer, "inline image", true);
 
-            content = content.substr(0, match.index)
+            content = content.substr(0, imageMatch.index)
                 + `<img src="api/images/${note.noteId}/${note.title}"`
-                + content.substr(match.index + match[0].length);
+                + content.substr(imageMatch.index + imageMatch[0].length);
         }
         else if (!url.includes('api/images/')
             // this is an exception for the web clipper's "imageId"
@@ -316,7 +313,6 @@ async function downloadImages(noteId, content) {
                 }
                 else {
                     content = replaceUrl(content, url, imageNote);
-
                     continue;
                 }
             }
@@ -328,7 +324,6 @@ async function downloadImages(noteId, content) {
                 imageUrlToNoteIdMapping[url] = existingImage.noteId;
 
                 content = replaceUrl(content, url, existingImage);
-
                 continue;
             }
 
