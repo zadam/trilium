@@ -17,8 +17,9 @@ async function getNote(req) {
     if (note.isStringNote()) {
         note.content = await note.getContent();
 
-        if (note.type === 'file') {
-            note.content = note.content.substr(0, 10000);
+        if (note.type === 'file' && note.content.length > 10000) {
+            note.content = note.content.substr(0, 10000)
+                + `\r\n\r\n... and ${note.content.length - 10000} more characters.`;
         }
     }
 
