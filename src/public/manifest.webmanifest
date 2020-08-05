@@ -1,0 +1,15 @@
+{
+  "name": "Trilium",
+  "short_name": "Trilium",
+  "theme_color": "#2196f3",
+  "background_color": "#2196f3",
+  "display": "standalone",
+  "background_color": "DarkGray",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [{
+    "src": "images/app-icons/ios/apple-touch-icon.png",
+    "sizes": "180x180",
+    "type": "image/png"
+  }]
+}
