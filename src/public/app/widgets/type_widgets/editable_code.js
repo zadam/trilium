@@ -44,6 +44,10 @@ const TPL = `
         overflow: auto;
         min-height: 0;
     }
+    
+    .table-schema td {
+        padding: 5px;
+    }
     </style>
 
     <div class="sql-console-area">
@@ -154,13 +158,13 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         for (const table of TABLE_SCHEMA) {
             const $tableLink = $('<button class="btn">').text(table.name);
 
-            const $columns = $("<ul>");
+            const $table = $('<table class="table-schema">');
 
             for (const column of table.columns) {
-                $columns.append(
-                    $("<li>")
-                        .append($("<span>").text(column.name))
-                        .append($("<span>").text(column.type))
+                $table.append(
+                    $("<tr>")
+                        .append($("<td>").text(column.name))
+                        .append($("<td>").text(column.type))
                 );
             }
 
@@ -171,7 +175,8 @@ export default class EditableCodeTypeWidget extends TypeWidget {
                     html: true,
                     placement: 'bottom',
                     boundary: 'window',
-                    title: $columns[0].outerHTML
+                    title: $table[0].outerHTML,
+                    sanitize: false
                 })
                 .on('click', () => this.codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
         }

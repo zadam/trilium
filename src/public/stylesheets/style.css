@@ -131,6 +131,7 @@ span.fancytree-node.muted { opacity: 0.6; }
     padding: 5px;
     cursor: pointer;
     font-size: 1.5em;
+    color: var(--main-text-color);
 }
 
 .icon-action.disabled {
@@ -386,14 +387,17 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .tooltip-inner {
     background-color: var(--tooltip-background-color) !important;
-    max-width: 500px;
-    /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
-    max-height: 300px;
-    overflow: hidden;
     border: 1px solid var(--main-border-color);
     border-radius: 5px;
     text-align: left;
     color: var(--main-text-color) !important;
+    max-width: 500px;
+}
+
+.note-tooltip-content {
+    /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
+    max-height: 300px;
+    overflow: hidden;
 }
 
 .tooltip-inner img {

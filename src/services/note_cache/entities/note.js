@@ -162,7 +162,7 @@ class Note {
                 return this.flatTextCache;
             }
 
-            this.flatTextCache = '';
+            this.flatTextCache = this.noteId + ' ';
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
