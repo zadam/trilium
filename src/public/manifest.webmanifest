@@ -1,10 +1,9 @@
 {
   "name": "Trilium",
   "short_name": "Trilium",
-  "theme_color": "#2196f3",
-  "background_color": "#2196f3",
-  "display": "standalone",
+  "theme_color": "DarkGray",
   "background_color": "DarkGray",
+  "display": "standalone",
   "scope": "/",
   "start_url": "/",
   "icons": [{
