@@ -18,7 +18,7 @@ const sql = require('./sql');
 const log = require('./log');
 const parseFilters = require('./search/parse_filters.js');
 const buildSearchQuery = require('./build_search_query');
-const noteCacheService = require('./note_cache/note_cache.js');
+const noteCacheService = require('./note_cache/note_cache_service');
 
 function searchForNotes(searchString) {
     const noteIds = searchForNoteIds(searchString);

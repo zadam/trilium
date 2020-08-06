@@ -4,7 +4,7 @@ const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const noteCache = require('../../note_cache/note_cache');
 
-class NoteCacheFulltextExp extends Expression {
+class NoteCacheFlatTextExp extends Expression {
     constructor(tokens) {
         super();
 
@@ -70,7 +70,7 @@ class NoteCacheFulltextExp extends Expression {
 
         for (const note of candidateNotes) {
             // autocomplete should be able to find notes by their noteIds as well (only leafs)
-            if (this.tokens.length === 1 && note.noteId === this.tokens[0]) {
+            if (this.tokens.length === 1 && note.noteId.toLowerCase() === this.tokens[0]) {
                 searchDownThePath(note, [], []);
                 continue;
             }
@@ -134,4 +134,4 @@ class NoteCacheFulltextExp extends Expression {
     }
 }
 
-module.exports = NoteCacheFulltextExp;
+module.exports = NoteCacheFlatTextExp;

@@ -170,11 +170,11 @@ class Note {
                 }
             }
 
-            this.flatTextCache += this.title;
+            this.flatTextCache += this.title + ' ';
 
             for (const attr of this.attributes) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.flatTextCache += (attr.type === 'label' ? '#' : '@') + attr.name;
+                this.flatTextCache += ' ' + (attr.type === 'label' ? '#' : '@') + attr.name;
 
                 if (attr.value) {
                     this.flatTextCache += '=' + attr.value;
@@ -182,6 +182,8 @@ class Note {
             }
 
             this.flatTextCache = this.flatTextCache.toLowerCase();
+
+            console.log(this.flatTextCache);
         }
 
         return this.flatTextCache;
