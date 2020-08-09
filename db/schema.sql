@@ -110,17 +110,17 @@ CREATE INDEX IDX_attributes_noteId_index
     on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
     on attributes (value);
-CREATE TABLE IF NOT EXISTS "sync" (
-    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `entityName`	TEXT NOT NULL,
-    `entityId`	TEXT NOT NULL,
-    `sourceId` TEXT NOT NULL,
-    `isSynced` INTEGER default 0 not null,
-    `utcSyncDate`	TEXT NOT NULL);
-CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
-                                                              `entityName`,
-                                                              `entityId`
+CREATE TABLE IF NOT EXISTS "entity_changes" (
+                                                `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                `entityName`	TEXT NOT NULL,
+                                                `entityId`	TEXT NOT NULL,
+                                                `sourceId` TEXT NOT NULL,
+                                                `isSynced` INTEGER default 0 not null,
+                                                `utcChangedDate`	TEXT NOT NULL);
+CREATE UNIQUE INDEX `IDX_entityChanges_entityName_entityId` ON "entity_changes" (
+                                                                                 `entityName`,
+                                                                                 `entityId`
     );
-CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
-                                               `utcSyncDate`
+CREATE INDEX `IDX_entityChanges_utcChangedDate` ON "entity_changes" (
+                                                                  `utcChangedDate`
     );

@@ -10,7 +10,7 @@ function insertEntityChange(entityName, entityId, sourceId = null, isSynced = tr
     const entityChange = {
         entityName: entityName,
         entityId: entityId,
-        utcSyncDate: dateUtils.utcNowDateTime(),
+        utcChangedDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
         isSynced: isSynced ? 1 : 0
     };
@@ -78,7 +78,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                     entityName: entityName,
                     entityId: entityId,
                     sourceId: "SYNC_FILL",
-                    utcSyncDate: dateUtils.utcNowDateTime(),
+                    utcChangedDate: dateUtils.utcNowDateTime(),
                     isSynced: 1
                 });
             }
