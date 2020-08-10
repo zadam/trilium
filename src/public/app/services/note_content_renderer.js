@@ -24,7 +24,7 @@ async function getRenderedContent(note) {
             .attr("src", `api/images/${note.noteId}/${note.title}`)
             .css("max-width", "100%");
     }
-    else if (type === 'file') {
+    else if (type === 'file' || type === 'pdf') {
         function getFileUrl() {
             return utils.getUrlForDownload("api/notes/" + note.noteId + "/download");
         }
@@ -47,19 +47,21 @@ async function getRenderedContent(note) {
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
 
-        $rendered = $('<div>');
+        $rendered = $('<div style="display: flex; flex-direction: column; height: 100%;">');
 
-        if (note.mime === 'application/pdf' && utils.isElectron()) {
-            const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; height: 100%; flex-grow: 100;"></iframe>');
+        if (type === 'pdf') {
+            const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; flex-grow: 100;"></iframe>');
             $pdfPreview.attr("src", utils.getUrlForDownload("api/notes/" + note.noteId + "/open"));
 
             $rendered.append($pdfPreview);
         }
 
-        $rendered
-            .append($downloadButton)
-            .append(' &nbsp; ')
-            .append($openButton);
+        $rendered.append(
+            $("<div>")
+                .append($downloadButton)
+                .append(' &nbsp; ')
+                .append($openButton)
+        );
     }
     else if (type === 'render') {
         $rendered = $('<div>');
@@ -89,6 +91,10 @@ async function getRenderedContent(note) {
 
 function getRenderingType(note) {
     let type = note.type;
+
+    if (type === 'file' && note.mime === 'application/pdf' && utils.isElectron()) {
+        type = 'pdf';
+    }
 
     if (note.isProtected) {
         if (protectedSessionHolder.isProtectedSessionAvailable()) {

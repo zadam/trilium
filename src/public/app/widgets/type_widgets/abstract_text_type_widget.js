@@ -36,10 +36,10 @@ export default class AbstractTextTypeWidget extends TypeWidget {
                     .append($link)
             );
 
-            const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
+            const {renderedContent, type} = await noteContentRenderer.getRenderedContent(note);
 
             $el.append(
-                $('<div class="include-note-content">')
+                $(`<div class="include-note-content type-${type}">`)
                     .append(renderedContent)
             );
         }
