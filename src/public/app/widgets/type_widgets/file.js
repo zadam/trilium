@@ -135,7 +135,7 @@ export default class FileTypeWidget extends TypeWidget {
         this.$pdfPreview.attr('src', '').empty().hide();
 
         if (noteComplement.content) {
-            this.$previewContent.show();
+            this.$previewContent.show().scrollTop(0);
             this.$previewContent.text(noteComplement.content);
         }
         else if (note.mime === 'application/pdf' && utils.isElectron()) {

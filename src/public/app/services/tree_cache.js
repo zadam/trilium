@@ -288,6 +288,13 @@ class TreeCache {
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
             this.noteComplementPromises[noteId] = server.get('notes/' + noteId).then(row => new NoteComplement(row));
+
+            // we don't want to keep large payloads forever in memory so we clean that up quite quickly
+            // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)
+            // this is also a work around for missing invalidation after change
+            this.noteComplementPromises[noteId].then(
+                () => setTimeout(() => this.noteComplementPromises[noteId] = null, 1000)
+            );
         }
 
         return await this.noteComplementPromises[noteId];

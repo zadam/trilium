@@ -155,7 +155,11 @@ function getContentDisposition(filename) {
     return `file; filename="${sanitizedFilename}"; filename*=UTF-8''${sanitizedFilename}`;
 }
 
-const STRING_MIME_TYPES = ["application/x-javascript", "image/svg+xml"];
+const STRING_MIME_TYPES = [
+    "application/javascript",
+    "application/x-javascript",
+    "image/svg+xml"
+];
 
 function isStringNote(type, mime) {
     // render and book are string note in the sense that they are expected to contain empty string

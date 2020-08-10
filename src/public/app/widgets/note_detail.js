@@ -329,4 +329,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
             saveSelection: true
         });
     }
+
+    // used by cutToNote in CKEditor build
+    async saveNoteDetailNowCommand() {
+        await this.spacedUpdate.updateNowIfNecessary();
+    }
 }

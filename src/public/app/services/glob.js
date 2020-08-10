@@ -81,6 +81,8 @@ function setupGlobs() {
 
     $("body").on("click", "a.external", function () {
         window.open($(this).attr("href"), '_blank');
+
+        return false;
     });
 }
 

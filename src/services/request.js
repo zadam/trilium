@@ -84,10 +84,11 @@ function exec(opts) {
 }
 
 function getImage(imageUrl) {
+    const proxyConf = syncOptions.getSyncProxy();
     const opts = {
         method: 'GET',
         url: imageUrl,
-        proxy: syncOptions.getSyncProxy()
+        proxy: proxyConf !== "noproxy" ? proxyConf : null
     };
 
     const client = getClient(opts);
