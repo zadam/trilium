@@ -432,4 +432,10 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     updateAttributeList(attributes) {
         this.renderOwnedAttributes(attributes, false);
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+            this.refresh();
+        }
+    }
 }

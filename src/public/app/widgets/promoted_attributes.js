@@ -43,26 +43,26 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     async refreshWithNote(note) {
         this.$container.empty();
 
-        const promotedAttributes = this.getPromotedAttributes();
-        const attributes = note.getAttributes();
+        const promotedDefAttrs = this.getPromotedDefinitionAttributes();
+        const ownedAttributes = note.getOwnedAttributes();
 
-        const cells = [];
-
-        if (promotedAttributes.length === 0) {
+        if (promotedDefAttrs.length === 0) {
             this.toggleInt(false);
             return;
         }
 
-        for (const definitionAttr of promotedAttributes) {
-            const definitionType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
-            const valueName = definitionAttr.name.substr(definitionType.length + 1);
+        const cells = [];
 
-            let valueAttrs = attributes.filter(el => el.name === valueName && el.type === definitionType);
+        for (const definitionAttr of promotedDefAttrs) {
+            const valueType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
+            const valueName = definitionAttr.name.substr(valueType.length + 1);
+
+            let valueAttrs = ownedAttributes.filter(el => el.name === valueName && el.type === valueType);
 
             if (valueAttrs.length === 0) {
                 valueAttrs.push({
                     attributeId: "",
-                    type: definitionType,
+                    type: valueType,
                     name: valueName,
                     value: ""
                 });
@@ -85,7 +85,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         this.toggleInt(true);
     }
 
-    getPromotedAttributes() {
+    getPromotedDefinitionAttributes() {
         if (this.note.hasLabel('hidePromotedAttributes')) {
             return [];
         }

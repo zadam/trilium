@@ -10,9 +10,7 @@ const TPL = `
   <div class="calendar-header">
     <button class="calendar-btn bx bx-left-arrow-alt" data-calendar-toggle="previous"></button>
 
-    <div class="calendar-header-label" data-calendar-label="month">
-      March 2017
-    </div>
+    <div class="calendar-header-label" data-calendar-label="month"></div>
 
     <button class="calendar-btn bx bx-right-arrow-alt" data-calendar-toggle="next"></button>
   </div>

@@ -61,6 +61,7 @@
 
 .calendar-widget .calendar-date {
   align-items: center;
+  color: var(--main-text-color);
   background-color: var(--main-background-color);
   display: flex;
   flex-direction: column;

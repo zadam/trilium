@@ -162,9 +162,10 @@ export default class AttributeListWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedAttributes().length > 0;
+        const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedDefinitionAttributes().length > 0;
 
         if (hasPromotedAttrs) {
+            this.$promotedExpander.show();
             this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
             this.$ownedAndInheritedWrapper.hide();
             this.$inheritedAttributesWrapper.hide();

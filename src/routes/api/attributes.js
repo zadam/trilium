@@ -89,7 +89,7 @@ function updateNoteAttributes(req) {
 
     const note = repository.getNote(noteId);
 
-    let existingAttrs = note.getAttributes();
+    let existingAttrs = note.getOwnedAttributes();
 
     let position = 0;
 
