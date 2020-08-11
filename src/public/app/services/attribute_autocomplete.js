@@ -26,6 +26,12 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
                 cb(result);
             }
         }]);
+
+        $el.on('autocomplete:opened', () => {
+            if ($el.attr("readonly")) {
+                $el.autocomplete('close');
+            }
+        });
     }
 
     if (open) {
@@ -64,6 +70,12 @@ async function initLabelValueAutocomplete({ $el, open, nameCallback }) {
                 cb(filtered);
             }
         }]);
+
+        $el.on('autocomplete:opened', () => {
+            if ($el.attr("readonly")) {
+                $el.autocomplete('close');
+            }
+        })
     }
 
     if (open) {

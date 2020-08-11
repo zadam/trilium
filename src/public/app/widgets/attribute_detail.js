@@ -295,12 +295,15 @@ export default class AttributeDetailWidget extends BasicWidget {
             }
         }
 
+        this.$saveAndCloseButton.toggle(!!isOwned);
+
         if (isOwned) {
             this.$attrIsOwnedBy.hide();
         }
         else {
             this.$attrIsOwnedBy
                 .show()
+                .empty()
                 .append(attribute.type === 'label' ? 'Label' : 'Relation')
                 .append(' is owned by note ')
                 .append(await linkService.createNoteLink(attribute.noteId))

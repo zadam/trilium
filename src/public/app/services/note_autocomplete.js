@@ -102,6 +102,12 @@ function initNoteAutocomplete($el, options) {
         }
     });
 
+    $el.on('autocomplete:opened', () => {
+        if ($el.attr("readonly")) {
+            $el.autocomplete('close');
+        }
+    });
+
     return $el;
 }
 

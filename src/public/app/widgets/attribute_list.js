@@ -13,7 +13,7 @@ const TPL = `
             margin-right: 7px;
         }
         
-        .inherited-attributes {
+        .inherited-attributes-wrapper {
             color: var(--muted-text-color);
             max-height: 200px;
             overflow: auto;
