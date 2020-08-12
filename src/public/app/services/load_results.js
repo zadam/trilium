@@ -107,8 +107,8 @@ export default class LoadResults {
      *          notably changes in note itself should not have any effect on attributes
      */
     hasAttributeRelatedChanges() {
-        return this.branches.length === 0
-            && this.attributes.length === 0;
+        return this.branches.length > 0
+            || this.attributes.length > 0;
     }
 
     isEmpty() {
