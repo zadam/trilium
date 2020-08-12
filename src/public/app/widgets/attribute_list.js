@@ -33,7 +33,8 @@ const TPL = `
             display: flex; 
             flex-direction: row; 
             color: var(--muted-text-color); 
-            font-size: small;
+            font-size: 90%;
+            margin: 3px 0 3px 0; 
         }
         
         .attribute-list hr {
