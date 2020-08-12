@@ -120,6 +120,13 @@ function init() {
         }
     };
 
+    $.fn.getSelectedNoteId = function () {
+        const notePath = $(this).getSelectedNotePath();
+        const chunks = notePath.split('/');
+
+        return chunks.length >= 1 ? chunks[chunks.length - 1] : null;
+    }
+
     $.fn.setSelectedNotePath = function (notePath) {
         notePath = notePath || "";
 

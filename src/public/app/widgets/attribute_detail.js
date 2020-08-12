@@ -404,6 +404,9 @@ export default class AttributeDetailWidget extends BasicWidget {
         if (this.attrType.endsWith('-definition')) {
             this.attribute.value = this.buildDefinitionValue();
         }
+        else if (this.attrType === 'relation') {
+            this.attribute.value = this.$attrInputTargetNote.getSelectedNoteId();
+        }
         else {
             this.attribute.value = this.$attrInputValue.val();
         }

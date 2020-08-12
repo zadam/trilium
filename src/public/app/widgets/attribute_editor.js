@@ -80,9 +80,8 @@ const mentionSetup = {
                 });
             },
             itemRenderer: item => {
-                const itemElement = document.createElement('span');
+                const itemElement = document.createElement('button');
 
-                itemElement.classList.add('mentions-item');
                 itemElement.innerHTML = `${item.highlightedNotePathTitle} `;
 
                 return itemElement;
