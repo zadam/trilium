@@ -51,7 +51,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             return;
         }
 
-        const cells = [];
+        const $cells = [];
 
         for (const definitionAttr of promotedDefAttrs) {
             const valueType = definitionAttr.name.startsWith('label:') ? 'label' : 'relation';
@@ -68,20 +68,20 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 });
             }
 
-            if (definitionAttr.value.multiplicity === 'single') {
+            if (definitionAttr.getDefinition().multiplicity === 'single') {
                 valueAttrs = valueAttrs.slice(0, 1);
             }
 
             for (const valueAttr of valueAttrs) {
                 const $cell = await this.createPromotedAttributeCell(definitionAttr, valueAttr, valueName);
 
-                cells.push($cell);
+                $cells.push($cell);
             }
         }
 
         // we replace the whole content in one step so there can't be any race conditions
         // (previously we saw promoted attributes doubling)
-        this.$container.empty().append(...cells);
+        this.$container.empty().append(...$cells);
         this.toggleInt(true);
     }
 
@@ -212,7 +212,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             return;
         }
 
-        if (definition.multiplicity === "multivalue") {
+        if (definition.multiplicity === "multi") {
             const addButton = $("<span>")
                 .addClass("bx bx-plus pointer")
                 .prop("title", "Add new attribute")
@@ -220,9 +220,9 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                     const $new = await this.createPromotedAttributeCell(definitionAttr, {
                         attributeId: "",
                         type: valueAttr.type,
-                        name: definitionAttr.name,
+                        name: valueName,
                         value: ""
-                    });
+                    }, valueName);
 
                     $wrapper.after($new);
 
@@ -240,7 +240,11 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                     $wrapper.remove();
                 });
 
-            $multiplicityCell.append(addButton).append(" &nbsp;").append(removeButton);
+            $multiplicityCell
+                .append(" &nbsp;")
+                .append(addButton)
+                .append(" &nbsp;")
+                .append(removeButton);
         }
 
         return $wrapper;

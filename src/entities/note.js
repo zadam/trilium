@@ -400,7 +400,7 @@ class Note extends Entity {
 
                 const definition = definitionAttr.value;
 
-                if (definition.multiplicityType === 'multivalue') {
+                if (definition.multiplicityType === 'multi') {
                     return true;
                 }
                 else {
