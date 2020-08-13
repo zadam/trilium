@@ -162,18 +162,19 @@ export default class AttributeListWidget extends TabAwareWidget {
         this.$widget.append(this.attributeDetailWidget.render());
     }
 
-    async refreshWithNote(note) {
-        const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedDefinitionAttributes().length > 0;
+    async refreshWithNote(note, updateOnly = false) {
+        if (!updateOnly) {
+            const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedDefinitionAttributes().length > 0;
 
-        if (hasPromotedAttrs) {
-            this.$promotedExpander.show();
-            this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
-            this.$ownedAndInheritedWrapper.hide();
-            this.$inheritedAttributesWrapper.hide();
-        }
-        else {
-            this.$promotedExpander.hide();
-            this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
+            if (hasPromotedAttrs) {
+                this.$promotedExpander.show();
+                this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
+                this.$ownedAndInheritedWrapper.hide();
+                this.$inheritedAttributesWrapper.hide();
+            } else {
+                this.$promotedExpander.hide();
+                this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
+            }
         }
 
         const ownedAttributes = note.getOwnedAttributes().filter(attr => !attr.isAutoLink);
@@ -252,6 +253,12 @@ export default class AttributeListWidget extends TabAwareWidget {
             this.$allAttrWrapper.slideUp(200);
         } else {
             this.$allAttrWrapper.slideDown(200);
+        }
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+            this.refreshWithNote(this.note, true);
         }
     }
 }

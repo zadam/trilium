@@ -410,7 +410,9 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         const $attributesContainer = $("<div>");
 
         for (const attribute of ownedAttributes) {
-            attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
+            if (!attribute.isDeleted) {
+                attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
+            }
         }
 
         this.textEditor.setData($attributesContainer.html());

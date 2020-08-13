@@ -31,7 +31,7 @@ export default class TabAwareWidget extends BasicWidget {
             const start = Date.now();
 
             this.toggleInt(true);
-            await this.refreshWithNote(this.note, this.notePath);
+            await this.refreshWithNote(this.note);
 
             const end = Date.now();
 
@@ -44,7 +44,7 @@ export default class TabAwareWidget extends BasicWidget {
         }
     }
 
-    async refreshWithNote(note, notePath) {}
+    async refreshWithNote(note) {}
 
     async tabNoteSwitchedEvent({tabContext, notePath}) {
         // if notePath does not match then the tabContext has been switched to another note in the mean time

@@ -2,10 +2,10 @@ import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
-import BasicWidget from "./basic_widget.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -18,9 +18,10 @@ const TPL = `
             z-index: 1000;
             padding: 15px;
             position: absolute;
-            max-width: 600px;
+            width: 500px;
             max-height: 600px;
             overflow: auto;
+            box-shadow: 10px 10px 93px -25px var(--main-text-color);
         }
         
         .related-notes-list {
@@ -44,6 +45,11 @@ const TPL = `
         .close-attr-detail-button {
             font-size: x-large;
             cursor: pointer;
+        }
+        
+        .attr-save-delete-button-container {
+            display: flex; 
+            margin-top: 15px;
         }
     </style>
 
@@ -122,7 +128,14 @@ const TPL = `
         </tr>
     </table>
 
-    <button class="btn btn-primary btn-sm attr-save-changes-and-close-button" style="width: 100%; margin-top: 15px;">Save & close</button>
+    <div class="attr-save-delete-button-container">
+        <button class="btn btn-primary btn-sm attr-save-changes-and-close-button" 
+            style="flex-grow: 1; margin-right: 20px">
+            Save & close</button>
+            
+        <button class="btn btn-secondary btn-sm attr-delete-button">
+            Delete</button>
+    </div>
 
     <div class="related-notes-container">
         <br/>
@@ -144,7 +157,7 @@ const ATTR_TITLES = {
     "relation-definition": "Relation definition detail"
 };
 
-export default class AttributeDetailWidget extends BasicWidget {
+export default class AttributeDetailWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
@@ -155,52 +168,52 @@ export default class AttributeDetailWidget extends BasicWidget {
         this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
-        this.$attrInputName = this.$widget.find('.attr-input-name');
-        this.$attrInputName.on('keyup', () => this.updateAttributeInEditor());
+        this.$inputName = this.$widget.find('.attr-input-name');
+        this.$inputName.on('keyup', () => this.updateAttributeInEditor());
 
-        this.$attrInputName.on('focus', () => {
+        this.$inputName.on('focus', () => {
             attributeAutocompleteService.initAttributeNameAutocomplete({
-                $el: this.$attrInputName,
+                $el: this.$inputName,
                 attributeType: () => ['relation', 'relation-definition'].includes(this.attrType) ? 'relation' : 'label',
                 open: true
             });
         });
 
-        this.$attrRowValue = this.$widget.find('.attr-row-value');
-        this.$attrInputValue = this.$widget.find('.attr-input-value');
-        this.$attrInputValue.on('keyup', () => this.updateAttributeInEditor());
-        this.$attrInputValue.on('focus', () => {
+        this.$rowValue = this.$widget.find('.attr-row-value');
+        this.$inputValue = this.$widget.find('.attr-input-value');
+        this.$inputValue.on('keyup', () => this.updateAttributeInEditor());
+        this.$inputValue.on('focus', () => {
             attributeAutocompleteService.initLabelValueAutocomplete({
-                $el: this.$attrInputValue,
+                $el: this.$inputValue,
                 open: true,
-                nameCallback: () => this.$attrInputName.val()
+                nameCallback: () => this.$inputName.val()
             });
         });
 
-        this.$attrRowPromoted = this.$widget.find('.attr-row-promoted');
-        this.$attrInputPromoted = this.$widget.find('.attr-input-promoted');
-        this.$attrInputPromoted.on('change', () => this.updateAttributeInEditor());
+        this.$rowPromoted = this.$widget.find('.attr-row-promoted');
+        this.$inputPromoted = this.$widget.find('.attr-input-promoted');
+        this.$inputPromoted.on('change', () => this.updateAttributeInEditor());
 
-        this.$attrRowMultiplicity = this.$widget.find('.attr-row-multiplicity');
-        this.$attrInputMultiplicity = this.$widget.find('.attr-input-multiplicity');
-        this.$attrInputMultiplicity.on('change', () => this.updateAttributeInEditor());
+        this.$rowMultiplicity = this.$widget.find('.attr-row-multiplicity');
+        this.$inputMultiplicity = this.$widget.find('.attr-input-multiplicity');
+        this.$inputMultiplicity.on('change', () => this.updateAttributeInEditor());
 
-        this.$attrRowLabelType = this.$widget.find('.attr-row-label-type');
-        this.$attrInputLabelType = this.$widget.find('.attr-input-label-type');
-        this.$attrInputLabelType.on('change', () => this.updateAttributeInEditor());
+        this.$rowLabelType = this.$widget.find('.attr-row-label-type');
+        this.$inputLabelType = this.$widget.find('.attr-input-label-type');
+        this.$inputLabelType.on('change', () => this.updateAttributeInEditor());
 
-        this.$attrRowNumberPrecision = this.$widget.find('.attr-row-number-precision');
-        this.$attrInputNumberPrecision = this.$widget.find('.attr-input-number-precision');
-        this.$attrInputNumberPrecision.on('change', () => this.updateAttributeInEditor());
+        this.$rowNumberPrecision = this.$widget.find('.attr-row-number-precision');
+        this.$inputNumberPrecision = this.$widget.find('.attr-input-number-precision');
+        this.$inputNumberPrecision.on('change', () => this.updateAttributeInEditor());
 
-        this.$attrRowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
-        this.$attrInputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
-        this.$attrInputInverseRelation.on('keyup', () => this.updateAttributeInEditor());
+        this.$rowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
+        this.$inputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
+        this.$inputInverseRelation.on('keyup', () => this.updateAttributeInEditor());
 
-        this.$attrRowTargetNote = this.$widget.find('.attr-row-target-note');
-        this.$attrInputTargetNote = this.$widget.find('.attr-input-target-note');
+        this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
+        this.$inputTargetNote = this.$widget.find('.attr-input-target-note');
 
-        noteAutocompleteService.initNoteAutocomplete(this.$attrInputTargetNote)
+        noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote)
             .on('autocomplete:selected', (event, suggestion, dataset) => {
                 if (!suggestion.notePath) {
                     return false;
@@ -211,14 +224,27 @@ export default class AttributeDetailWidget extends BasicWidget {
                 this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
             });
 
-        this.$attrInputInheritable = this.$widget.find('.attr-input-inheritable');
-        this.$attrInputInheritable.on('change', () => this.updateAttributeInEditor());
+        this.$inputInheritable = this.$widget.find('.attr-input-inheritable');
+        this.$inputInheritable.on('change', () => this.updateAttributeInEditor());
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
 
+        this.$attrSaveDeleteButtonContainer = this.$widget.find('.attr-save-delete-button-container');
+
         this.$saveAndCloseButton = this.$widget.find('.attr-save-changes-and-close-button');
         this.$saveAndCloseButton.on('click', async () => {
+            await this.triggerCommand('saveAttributes');
+
+            this.hide();
+        });
+
+        this.$deleteButton = this.$widget.find('.attr-delete-button');
+        this.$deleteButton.on('click', async () => {
+            await this.triggerCommand('updateAttributeList', {
+                attributes: this.allAttributes.filter(attr => attr !== this.attribute)
+            });
+
             await this.triggerCommand('saveAttributes');
 
             this.hide();
@@ -295,7 +321,7 @@ export default class AttributeDetailWidget extends BasicWidget {
             }
         }
 
-        this.$saveAndCloseButton.toggle(!!isOwned);
+        this.$attrSaveDeleteButtonContainer.toggle(!!isOwned);
 
         if (isOwned) {
             this.$attrIsOwnedBy.hide();
@@ -309,53 +335,53 @@ export default class AttributeDetailWidget extends BasicWidget {
                 .append(await linkService.createNoteLink(attribute.noteId))
         }
 
-        this.$attrInputName
+        this.$inputName
             .val(attrName)
             .attr('readonly', () => !isOwned);
 
-        this.$attrRowValue.toggle(this.attrType === 'label');
-        this.$attrRowTargetNote.toggle(this.attrType === 'relation');
+        this.$rowValue.toggle(this.attrType === 'label');
+        this.$rowTargetNote.toggle(this.attrType === 'relation');
 
-        this.$attrRowPromoted.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
-        this.$attrInputPromoted
+        this.$rowPromoted.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
+        this.$inputPromoted
             .prop("checked", !!definition.isPromoted)
             .attr('disabled', () => !isOwned);
 
-        this.$attrRowMultiplicity.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
-        this.$attrInputMultiplicity
+        this.$rowMultiplicity.toggle(['label-definition', 'relation-definition'].includes(this.attrType));
+        this.$inputMultiplicity
             .val(definition.multiplicity)
             .attr('disabled', () => !isOwned);
 
-        this.$attrRowLabelType.toggle(this.attrType === 'label-definition');
-        this.$attrInputLabelType
+        this.$rowLabelType.toggle(this.attrType === 'label-definition');
+        this.$inputLabelType
             .val(definition.labelType)
             .attr('disabled', () => !isOwned);
 
-        this.$attrRowNumberPrecision.toggle(this.attrType === 'label-definition' && definition.labelType === 'number');
-        this.$attrInputNumberPrecision
+        this.$rowNumberPrecision.toggle(this.attrType === 'label-definition' && definition.labelType === 'number');
+        this.$inputNumberPrecision
             .val(definition.numberPrecision)
             .attr('disabled', () => !isOwned);
 
-        this.$attrRowInverseRelation.toggle(this.attrType === 'relation-definition');
-        this.$attrInputInverseRelation
+        this.$rowInverseRelation.toggle(this.attrType === 'relation-definition');
+        this.$inputInverseRelation
             .val(definition.inverseRelation)
             .attr('disabled', () => !isOwned);
 
         if (attribute.type === 'label') {
-            this.$attrInputValue
+            this.$inputValue
                 .val(attribute.value)
                 .attr('readonly', () => !isOwned);
         }
         else if (attribute.type === 'relation') {
             const targetNote = await treeCache.getNote(attribute.value);
 
-            this.$attrInputTargetNote
+            this.$inputTargetNote
                 .attr('readonly', () => !isOwned)
                 .val(targetNote ? targetNote.title : "")
                 .setSelectedNotePath(attribute.value);
         }
 
-        this.$attrInputInheritable
+        this.$inputInheritable
             .prop("checked", !!attribute.isInheritable)
             .attr('disabled', () => !isOwned);
 
@@ -390,7 +416,7 @@ export default class AttributeDetailWidget extends BasicWidget {
     }
 
     updateAttributeInEditor() {
-        let attrName = this.$attrInputName.val();
+        let attrName = this.$inputName.val();
 
         if (this.attrType === 'label-definition') {
             attrName = 'label:' + attrName;
@@ -399,16 +425,16 @@ export default class AttributeDetailWidget extends BasicWidget {
         }
 
         this.attribute.name = attrName;
-        this.attribute.isInheritable = this.$attrInputInheritable.is(":checked");
+        this.attribute.isInheritable = this.$inputInheritable.is(":checked");
 
         if (this.attrType.endsWith('-definition')) {
             this.attribute.value = this.buildDefinitionValue();
         }
         else if (this.attrType === 'relation') {
-            this.attribute.value = this.$attrInputTargetNote.getSelectedNoteId();
+            this.attribute.value = this.$inputTargetNote.getSelectedNoteId();
         }
         else {
-            this.attribute.value = this.$attrInputValue.val();
+            this.attribute.value = this.$inputValue.val();
         }
 
         this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
@@ -417,25 +443,25 @@ export default class AttributeDetailWidget extends BasicWidget {
     buildDefinitionValue() {
         const props = [];
 
-        if (this.$attrInputPromoted.is(":checked")) {
+        if (this.$inputPromoted.is(":checked")) {
             props.push("promoted");
         }
 
-        props.push(this.$attrInputMultiplicity.val());
+        props.push(this.$inputMultiplicity.val());
 
         if (this.attrType === 'label-definition') {
-            props.push(this.$attrInputLabelType.val());
+            props.push(this.$inputLabelType.val());
 
-            if (this.$attrInputLabelType.val() === 'number' && this.$attrInputNumberPrecision.val() !== '') {
-                props.push('precision=' + this.$attrInputNumberPrecision.val());
+            if (this.$inputLabelType.val() === 'number' && this.$inputNumberPrecision.val() !== '') {
+                props.push('precision=' + this.$inputNumberPrecision.val());
             }
-        } else if (this.attrType === 'relation-definition' && this.$attrInputInverseRelation.val().trim().length > 0) {
-            props.push("inverse=" + this.$attrInputInverseRelation.val());
+        } else if (this.attrType === 'relation-definition' && this.$inputInverseRelation.val().trim().length > 0) {
+            props.push("inverse=" + this.$inputInverseRelation.val());
         }
 
-        this.$attrRowNumberPrecision.toggle(
+        this.$rowNumberPrecision.toggle(
             this.attrType === 'label-definition'
-            && this.$attrInputLabelType.val() === 'number');
+            && this.$inputLabelType.val() === 'number');
 
         return props.join(",");
     }
@@ -450,5 +476,9 @@ export default class AttributeDetailWidget extends BasicWidget {
             class: 'reference-link',
             'data-note-path': noteId
         });
+    }
+
+    async noteSwitched() {
+        this.hide();
     }
 }

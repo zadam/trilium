@@ -59,8 +59,8 @@ export default class NotePathsWidget extends TabAwareWidget {
         this.$dropdown.on('show.bs.dropdown', () => this.renderDropdown());
     }
 
-    async refreshWithNote(note, notePath) {
-        const noteIdsPath = treeService.parseNotePath(notePath);
+    async refreshWithNote(note) {
+        const noteIdsPath = treeService.parseNotePath(this.notePath);
 
         this.$currentPath.empty();
 
