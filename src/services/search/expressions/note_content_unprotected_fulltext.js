@@ -26,7 +26,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
                 FROM notes JOIN note_contents USING (noteId) 
                 WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 0`)) {
 
-            content = content.toLowerCase();
+            content = content.toString().toLowerCase();
 
             if (type === 'text' && mime === 'text/html') {
                 content = striptags(content);
