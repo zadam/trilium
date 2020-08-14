@@ -79,6 +79,7 @@ const TPL = `
                 <span class="slider checked"></span>
             </span>
         </div>
+        <a data-trigger-command="findInText" class="dropdown-item">Search in note <kbd data-command="findInText"></a>
         <a data-trigger-command="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
         <a data-trigger-command="showAttributes" class="dropdown-item show-attributes-button"><kbd data-command="showAttributes"></kbd> Attributes</a>
         <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
