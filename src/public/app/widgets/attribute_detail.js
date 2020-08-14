@@ -6,6 +6,7 @@ import attributeAutocompleteService from "../services/attribute_autocomplete.js"
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 import TabAwareWidget from "./tab_aware_widget.js";
+import SpacedUpdate from "../services/spaced_update.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -159,6 +160,8 @@ const ATTR_TITLES = {
 
 export default class AttributeDetailWidget extends TabAwareWidget {
     doRender() {
+        this.relatedNotesSpacedUpdate = new SpacedUpdate(async () => this.updateRelatedNotes(), 1000);
+
         this.$widget = $(TPL);
 
         this.$title = this.$widget.find('.attr-detail-title');
@@ -169,7 +172,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
         this.$inputName = this.$widget.find('.attr-input-name');
-        this.$inputName.on('keyup', () => this.updateAttributeInEditor());
+        this.$inputName.on('keyup', () => this.userEditedAttribute());
 
         this.$inputName.on('focus', () => {
             attributeAutocompleteService.initAttributeNameAutocomplete({
@@ -181,7 +184,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         this.$rowValue = this.$widget.find('.attr-row-value');
         this.$inputValue = this.$widget.find('.attr-input-value');
-        this.$inputValue.on('keyup', () => this.updateAttributeInEditor());
+        this.$inputValue.on('keyup', () => this.userEditedAttribute());
         this.$inputValue.on('focus', () => {
             attributeAutocompleteService.initLabelValueAutocomplete({
                 $el: this.$inputValue,
@@ -192,23 +195,23 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         this.$rowPromoted = this.$widget.find('.attr-row-promoted');
         this.$inputPromoted = this.$widget.find('.attr-input-promoted');
-        this.$inputPromoted.on('change', () => this.updateAttributeInEditor());
+        this.$inputPromoted.on('change', () => this.userEditedAttribute());
 
         this.$rowMultiplicity = this.$widget.find('.attr-row-multiplicity');
         this.$inputMultiplicity = this.$widget.find('.attr-input-multiplicity');
-        this.$inputMultiplicity.on('change', () => this.updateAttributeInEditor());
+        this.$inputMultiplicity.on('change', () => this.userEditedAttribute());
 
         this.$rowLabelType = this.$widget.find('.attr-row-label-type');
         this.$inputLabelType = this.$widget.find('.attr-input-label-type');
-        this.$inputLabelType.on('change', () => this.updateAttributeInEditor());
+        this.$inputLabelType.on('change', () => this.userEditedAttribute());
 
         this.$rowNumberPrecision = this.$widget.find('.attr-row-number-precision');
         this.$inputNumberPrecision = this.$widget.find('.attr-input-number-precision');
-        this.$inputNumberPrecision.on('change', () => this.updateAttributeInEditor());
+        this.$inputNumberPrecision.on('change', () => this.userEditedAttribute());
 
         this.$rowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
         this.$inputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
-        this.$inputInverseRelation.on('keyup', () => this.updateAttributeInEditor());
+        this.$inputInverseRelation.on('keyup', () => this.userEditedAttribute());
 
         this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
         this.$inputTargetNote = this.$widget.find('.attr-input-target-note');
@@ -222,10 +225,11 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 this.attribute.value = suggestion.notePath;
 
                 this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+                this.updateRelatedNotes();
             });
 
         this.$inputInheritable = this.$widget.find('.attr-input-inheritable');
-        this.$inputInheritable.on('change', () => this.updateAttributeInEditor());
+        this.$inputInheritable.on('change', () => this.userEditedAttribute());
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
@@ -262,6 +266,11 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.toggleInt(false); // initial state is hidden
     }
 
+    userEditedAttribute() {
+        this.updateAttributeInEditor();
+        this.relatedNotesSpacedUpdate.scheduleUpdate();
+    }
+
     async showAttributeDetail({allAttributes, attribute, isOwned, x, y}) {
         if (!attribute) {
             this.hide();
@@ -270,6 +279,10 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         }
 
         this.attrType = this.getAttrType(attribute);
+
+        const attrName =
+            this.attrType === 'label-definition' ? attribute.name.substr(6)
+                : (this.attrType === 'relation-definition' ? attribute.name.substr(9) : attribute.name);
 
         const definition = this.attrType.endsWith('-definition')
             ? promotedAttributeDefinitionParser.parse(attribute.value)
@@ -280,46 +293,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.allAttributes = allAttributes;
         this.attribute = attribute;
 
-        let {results, count} = await server.post('search-related', attribute);
-
-        for (const res of results) {
-            res.noteId = res.notePathArray[res.notePathArray.length - 1];
-        }
-
-        results = results.filter(({noteId}) => noteId !== this.noteId);
-
-        const attrName =
-            this.attrType === 'label-definition' ? attribute.name.substr(6)
-                : (this.attrType === 'relation-definition' ? attribute.name.substr(9) : attribute.name);
-
-        if (results.length === 0) {
-            this.$relatedNotesContainer.hide();
-        }
-        else {
-            this.$relatedNotesContainer.show();
-            this.$relatedNotesTitle.text(`Other notes with ${attribute.type} name "${attrName}"`);
-
-            this.$relatedNotesList.empty();
-
-            const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
-
-            for (const note of displayedNotes) {
-                const notePath = treeService.getSomeNotePath(note);
-                const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
-
-                this.$relatedNotesList.append(
-                    $("<li>").append($noteLink)
-                );
-            }
-
-            if (results.length > DISPLAYED_NOTES) {
-                this.$relatedNotesMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
-            }
-            else {
-                this.$relatedNotesMoreNotes.hide();
-            }
-        }
+        await this.updateRelatedNotes();
 
         this.$attrSaveDeleteButtonContainer.toggle(!!isOwned);
 
@@ -395,6 +369,43 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.$widget.outerHeight() + y > $(window).height() - 50
                         ? $(window).height() - y - 50
                         : 10000);
+    }
+
+    async updateRelatedNotes() {
+        let {results, count} = await server.post('search-related', this.attribute);
+
+        for (const res of results) {
+            res.noteId = res.notePathArray[res.notePathArray.length - 1];
+        }
+
+        results = results.filter(({noteId}) => noteId !== this.noteId);
+
+        if (results.length === 0) {
+            this.$relatedNotesContainer.hide();
+        } else {
+            this.$relatedNotesContainer.show();
+            this.$relatedNotesTitle.text(`Other notes with ${this.attribute.type} name "${this.attribute.name}"`);
+
+            this.$relatedNotesList.empty();
+
+            const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
+            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
+
+            for (const note of displayedNotes) {
+                const notePath = treeService.getSomeNotePath(note);
+                const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
+
+                this.$relatedNotesList.append(
+                    $("<li>").append($noteLink)
+                );
+            }
+
+            if (results.length > DISPLAYED_NOTES) {
+                this.$relatedNotesMoreNotes.show().text(`... and ${count - DISPLAYED_NOTES} more.`);
+            } else {
+                this.$relatedNotesMoreNotes.hide();
+            }
+        }
     }
 
     getAttrType(attribute) {
