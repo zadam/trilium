@@ -20,7 +20,8 @@
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
     "test": "jasmine",
-    "test-es6": "node -r esm spec-es6/attribute_parser.spec.js "
+    "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
+    "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
     "async-mutex": "0.2.4",
