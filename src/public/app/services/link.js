@@ -132,51 +132,8 @@ function linkContextMenu(e) {
     });
 }
 
-// when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
-// of opening the link in new window/tab
-$(document).on('mousedown', "a[data-action='note']", goToLink);
-$(document).on('mousedown', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
-$(document).on('dblclick', '.note-detail-text a', goToLink);
-$(document).on('mousedown', '.note-detail-text a:not(.reference-link)', function (e) {
-    const $link = $(e.target).closest("a");
-    const notePath = getNotePathFromLink($link);
-
-    if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
-        // if it's a ctrl-click, then we open on new tab, otherwise normal flow (CKEditor opens link-editing dialog)
-        e.preventDefault();
-
-        if (notePath) {
-            appContext.tabManager.openTabWithNote(notePath, false);
-        }
-        else {
-            const address = $link.attr('href');
-
-            window.open(address, '_blank');
-        }
-
-        return true;
-    }
-});
-
-$(document).on('mousedown', 'a.reference-link', goToLink);
-$(document).on('mousedown', '.note-detail-book a', goToLink);
-$(document).on('mousedown', '.note-detail-render a', goToLink);
-$(document).on('mousedown', '.note-detail-readonly-text a', goToLink);
-$(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
-$(document).on('click', 'section.include-note a', goToLink);
-$(document).on('click', 'a.ck-link-actions__preview', e => {
-    e.preventDefault();
-    e.stopPropagation();
-});
-
-$(document).on('contextmenu', 'a.ck-link-actions__preview', linkContextMenu);
-$(document).on('contextmenu', '.note-detail-text a', linkContextMenu);
-$(document).on('contextmenu', '.note-detail-readonly-text a', linkContextMenu);
-$(document).on('contextmenu', 'a.reference-link', linkContextMenu);
-$(document).on('contextmenu', "a[data-action='note']", linkContextMenu);
-$(document).on('contextmenu', ".note-detail-render a", linkContextMenu);
-$(document).on('contextmenu', ".note-paths-widget a", linkContextMenu);
-$(document).on('contextmenu', "section.include-note a", linkContextMenu);
+$(document).on('mousedown', "a", goToLink);
+$(document).on('contextmenu', 'a', linkContextMenu);
 
 export default {
     getNotePathFromUrl,

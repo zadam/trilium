@@ -20,7 +20,7 @@ const TPL = `
         font-family: var(--detail-text-font-family);
     }
         
-    .note-detail-readonly-text p:first-child, .note-detail-text::before {
+    .note-detail-readonly-text p:first-child, .note-detail-editable-text::before {
         margin-top: 0;
     }
     

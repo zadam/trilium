@@ -42,23 +42,27 @@ const mentionSetup = {
 };
 
 const TPL = `
-<div class="note-detail-text note-detail-printable">
+<div class="note-detail-editable-text note-detail-printable">
     <style>
-    .note-detail-text h1 { font-size: 2.0em; }
-    .note-detail-text h2 { font-size: 1.8em; }
-    .note-detail-text h3 { font-size: 1.6em; }
-    .note-detail-text h4 { font-size: 1.4em; }
-    .note-detail-text h5 { font-size: 1.2em; }
-    .note-detail-text h6 { font-size: 1.1em; }
+    .note-detail-editable-text a:hover {
+        cursor: pointer;
+    }
     
-    .note-detail-text {
+    .note-detail-editable-text h1 { font-size: 2.0em; }
+    .note-detail-editable-text h2 { font-size: 1.8em; }
+    .note-detail-editable-text h3 { font-size: 1.6em; }
+    .note-detail-editable-text h4 { font-size: 1.4em; }
+    .note-detail-editable-text h5 { font-size: 1.2em; }
+    .note-detail-editable-text h6 { font-size: 1.1em; }
+    
+    .note-detail-editable-text {
         overflow: auto;
         height: 100%;
         font-family: var(--detail-text-font-family);
         padding-left: 12px;
     }
     
-    .note-detail-text-editor {
+    .note-detail-editable-text-editor {
         padding-top: 10px;
         border: 0 !important;
         box-shadow: none !important;
@@ -66,12 +70,12 @@ const TPL = `
         min-height: 500px;
     }
     
-    .note-detail-text p:first-child, .note-detail-text::before {
+    .note-detail-editable-text p:first-child, .note-detail-editable-text::before {
         margin-top: 0;
     }
     </style>
 
-    <div class="note-detail-text-editor" tabindex="300"></div>
+    <div class="note-detail-editable-text-editor" tabindex="300"></div>
 </div>
 `;
 
@@ -80,7 +84,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$editor = this.$widget.find('.note-detail-text-editor');
+        this.$editor = this.$widget.find('.note-detail-editable-text-editor');
 
         this.initialized = this.initEditor();
 
