@@ -45,7 +45,13 @@ async function mouseEnterHandler() {
     const note = await treeCache.getNote(noteId);
     const noteComplement = await treeCache.getNoteComplement(noteId);
 
-    const html = '<div class="note-tooltip-content">' + await renderTooltip(note, noteComplement) + '</div>';
+    const content = await renderTooltip(note, noteComplement);
+
+    if (utils.isHtmlEmpty(content)) {
+        return;
+    }
+
+    const html = '<div class="note-tooltip-content">' + content + '</div>';
 
     // we need to check if we're still hovering over the element
     // since the operation to get tooltip content was async, it is possible that

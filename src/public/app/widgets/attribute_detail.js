@@ -159,6 +159,11 @@ const ATTR_TITLES = {
 };
 
 export default class AttributeDetailWidget extends TabAwareWidget {
+    isEnabled() {
+        // this widget is not activated in a standard way
+        return false;
+    }
+
     doRender() {
         this.relatedNotesSpacedUpdate = new SpacedUpdate(async () => this.updateRelatedNotes(), 1000);
 
@@ -262,8 +267,6 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 this.hide();
             }
         });
-
-        this.toggleInt(false); // initial state is hidden
     }
 
     userEditedAttribute() {
@@ -293,7 +296,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.allAttributes = allAttributes;
         this.attribute = attribute;
 
-        await this.updateRelatedNotes();
+        // can be slightly slower so just make it async
+        this.updateRelatedNotes();
 
         this.$attrSaveDeleteButtonContainer.toggle(!!isOwned);
 
