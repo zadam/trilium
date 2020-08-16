@@ -93,9 +93,9 @@ function getValue(query, params = []) {
     return row[Object.keys(row)[0]];
 }
 
-const PARAM_LIMIT = 900; // actual limit is 999
+// smaller values can result in better performance due to better usage of statement cache
+const PARAM_LIMIT = 100;
 
-// this is to overcome 999 limit of number of query parameters
 function getManyRows(query, params) {
     let results = [];
 
@@ -114,7 +114,11 @@ function getManyRows(query, params) {
         const questionMarks = curParams.map(() => ":param" + i++).join(",");
         const curQuery = query.replace(/\?\?\?/g, questionMarks);
 
-        const subResults = dbConnection.prepare(curQuery).all(curParamsObj);
+        const statement = curParams.length === PARAM_LIMIT
+            ? stmt(curQuery)
+            : dbConnection.prepare(curQuery);
+
+        const subResults = statement.all(curParamsObj);
         results = results.concat(subResults);
     }
 

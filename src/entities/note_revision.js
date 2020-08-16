@@ -15,7 +15,6 @@ const entityChangesService = require('../services/entity_changes.js');
  * @property {string} type
  * @property {string} mime
  * @property {string} title
- * @property {int} contentLength
  * @property {boolean} isErased
  * @property {boolean} isProtected
  * @property {string} dateLastEdited
@@ -29,7 +28,7 @@ const entityChangesService = require('../services/entity_changes.js');
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
@@ -101,11 +100,6 @@ class NoteRevision extends Entity {
     }
 
     setContent(content) {
-        // force updating note itself so that utcDateModified is represented correctly even for the content
-        this.forcedChange = true;
-        this.contentLength = content === null ? 0 : content.length;
-        this.save();
-
         this.content = content;
 
         const pojo = {

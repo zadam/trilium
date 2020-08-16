@@ -10,6 +10,7 @@ const TPL = `
         display: flex;
         align-items: center;
         padding-top: 4px;
+        height: 35px;
     }
     
     .standard-top-widget button {

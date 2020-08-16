@@ -12,7 +12,6 @@ function getNotes(noteIds) {
         SELECT 
           noteId,
           title,
-          contentLength,
           isProtected,
           type,
           mime,

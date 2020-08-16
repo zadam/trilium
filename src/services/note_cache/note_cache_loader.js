@@ -15,7 +15,7 @@ sqlInit.dbReady.then(() => {
 function load() {
     noteCache.reset();
 
-    for (const row of sql.iterateRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified, contentLength FROM notes WHERE isDeleted = 0`, [])) {
+    for (const row of sql.iterateRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`, [])) {
         new Note(noteCache, row);
     }
 

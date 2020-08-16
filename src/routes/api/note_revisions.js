@@ -9,8 +9,12 @@ const path = require('path');
 
 function getNoteRevisions(req) {
     return repository.getEntities(`
-        SELECT * FROM note_revisions 
-        WHERE noteId = ? AND isErased = 0
+        SELECT note_revisions.*,
+               LENGTH(note_revision_contents.content) AS contentLength
+        FROM note_revisions
+        JOIN note_revision_contents ON note_revisions.noteRevisionId = note_revision_contents.noteRevisionId 
+        WHERE noteId = ? 
+          AND isErased = 0
         ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }
 

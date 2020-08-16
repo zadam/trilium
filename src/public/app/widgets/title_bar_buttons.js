@@ -35,6 +35,7 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         }
 
         this.$widget = $(TPL);
+        this.contentSized();
 
         const $minimizeBtn = this.$widget.find(".minimize-btn");
         const $maximizeBtn = this.$widget.find(".maximize-btn");

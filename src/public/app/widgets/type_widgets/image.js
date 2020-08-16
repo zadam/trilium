@@ -127,8 +127,10 @@ class ImageTypeWidget extends TypeWidget {
 
         this.$widget.show();
 
+        const noteComplement = await this.tabContext.getNoteComplement();
+
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(note.contentLength + " bytes");
+        this.$fileSize.text(noteComplement.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
         const imageHash = utils.randomString(10);

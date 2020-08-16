@@ -957,6 +957,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isEmptyForTree()) {
+            return;
+        }
+
         const activeNode = this.getActiveNode();
         const activeNodeFocused = activeNode && activeNode.hasFocus();
         const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;

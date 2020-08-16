@@ -23,6 +23,7 @@ export default class HistoryNavigationWidget extends BasicWidget {
     doRender() {
         if (utils.isElectron()) {
             this.$widget = $(TPL);
+            this.contentSized();
 
             const contextMenuHandler = e => {
                 e.preventDefault();

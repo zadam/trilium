@@ -20,7 +20,6 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} type - one of "text", "code", "file" or "render"
  * @property {string} mime - MIME type, e.g. "text/html"
  * @property {string} title - note title
- * @property {int} contentLength - length of content
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string|null} deleteId - ID identifying delete transaction
@@ -106,6 +105,16 @@ class Note extends Entity {
         }
     }
 
+    getContentMetadata() {
+        return sql.getRow(`
+            SELECT 
+                LENGTH(content) AS contentLength, 
+                dateModified, 
+                utcDateModified 
+            FROM note_contents 
+            WHERE noteId = ?`, [this.noteId]);
+    }
+
     /** @returns {*} */
     getJsonContent() {
         const content = this.getContent();
@@ -129,16 +138,12 @@ class Note extends Entity {
             content = Buffer.isBuffer(content) ? content : Buffer.from(content);
         }
 
-        // force updating note itself so that dateModified is represented correctly even for the content
-        this.forcedChange = true;
-        this.contentLength = content.byteLength;
-        this.save();
-
         this.content = content;
 
         const pojo = {
             noteId: this.noteId,
             content: content,
+            dateModified: dateUtils.localNowDateTime(),
             utcDateModified: dateUtils.utcNowDateTime(),
             hash: utils.hash(this.noteId + "|" + content.toString())
         };
@@ -901,10 +906,6 @@ class Note extends Entity {
 
         if (!this.utcDateCreated) {
             this.utcDateCreated = dateUtils.utcNowDateTime();
-        }
-
-        if (this.contentLength === undefined) {
-            this.contentLength = -1;
         }
 
         super.beforeSaving();

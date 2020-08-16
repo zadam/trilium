@@ -18,7 +18,6 @@ const PROP_MAPPING = {
     "datemodified": "dateModified",
     "utcdatecreated": "utcDateCreated",
     "utcdatemodified": "utcDateModified",
-    "contentlength": "contentLength",
     "parentcount": "parentCount",
     "childrencount": "childrenCount",
     "attributecount": "attributeCount",

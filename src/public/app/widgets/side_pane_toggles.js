@@ -43,6 +43,8 @@ export default class SidePaneToggles extends BasicWidget {
 
         this.$widget.find(".show-left-pane-button").on('click', () => this.toggleAndSave('left', true));
         this.$widget.find(".hide-left-pane-button").on('click', () => this.toggleAndSave('left', false));
+
+        this.$widget.css("contain", "none"); // this widget overflows so we need to override default containment
     }
 
     toggleSidebar(side, show) {

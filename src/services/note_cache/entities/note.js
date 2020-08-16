@@ -14,8 +14,6 @@ class Note {
         this.type = row.type;
         /** @param {string} */
         this.mime = row.mime;
-        /** @param {number} */
-        this.contentLength = row.contentLength;
         /** @param {string} */
         this.dateCreated = row.dateCreated;
         /** @param {string} */
@@ -182,8 +180,6 @@ class Note {
             }
 
             this.flatTextCache = this.flatTextCache.toLowerCase();
-
-            console.log(this.flatTextCache);
         }
 
         return this.flatTextCache;

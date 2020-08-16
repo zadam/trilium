@@ -64,8 +64,8 @@ export default class NoteInfoWidget extends CollapsibleWidget {
             .attr("title", noteComplement.dateCreated);
 
         this.$dateModified
-            .text(noteComplement.dateModified.substr(0, 16))
-            .attr("title", noteComplement.dateCreated);
+            .text(noteComplement.combinedDateModified.substr(0, 16))
+            .attr("title", noteComplement.combinedDateModified);
 
         this.$type.text(note.type);
 
@@ -78,7 +78,7 @@ export default class NoteInfoWidget extends CollapsibleWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.isNoteReloaded(this.noteId)) {
+        if (loadResults.isNoteReloaded(this.noteId) || loadResults.isNoteContentReloaded(this.noteId)) {
             this.refresh();
         }
     }

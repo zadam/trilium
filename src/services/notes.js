@@ -466,7 +466,6 @@ function saveNoteRevision(note) {
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
-            contentLength: -1, // will be updated in .setContent()
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call
@@ -699,7 +698,6 @@ function eraseDeletedNotes() {
     sql.executeMany(`
         UPDATE notes 
         SET title = '[deleted]',
-            contentLength = 0,
             isProtected = 0,
             isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);
@@ -719,8 +717,7 @@ function eraseDeletedNotes() {
     sql.executeMany(`
         UPDATE note_revisions 
         SET isErased = 1,
-            title = NULL,
-            contentLength = 0
+            title = NULL
         WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
 
     sql.executeMany(`

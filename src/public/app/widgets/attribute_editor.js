@@ -183,6 +183,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$editor = this.$widget.find('.attribute-list-editor');
 
         this.initialized = this.initEditor();

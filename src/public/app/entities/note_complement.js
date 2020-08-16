@@ -6,8 +6,13 @@ class NoteComplement {
         /** @param {string} */
         this.noteId = row.noteId;
 
-        /** @param {string} */
+        /**
+         * @param {string} - can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         */
         this.content = row.content;
+
+        /** @param {int} */
+        this.contentLength = row.contentLength;
 
         /** @param {string} */
         this.dateCreated = row.dateCreated;
@@ -20,6 +25,12 @@ class NoteComplement {
 
         /** @param {string} */
         this.utcDateModified = row.utcDateModified;
+
+        /** @param {string} */
+        this.combinedDateModified = row.combinedDateModified;
+
+        /** @param {string} */
+        this.combinedUtcDateModified = row.combinedUtcDateModified;
     }
 }
 

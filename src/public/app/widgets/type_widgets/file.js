@@ -126,11 +126,11 @@ export default class FileTypeWidget extends TypeWidget {
 
         this.$fileNoteId.text(note.noteId);
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(note.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
         const noteComplement = await this.tabContext.getNoteComplement();
 
+        this.$fileSize.text(noteComplement.contentLength + " bytes");
         this.$previewContent.empty().hide();
         this.$pdfPreview.attr('src', '').empty().hide();
 

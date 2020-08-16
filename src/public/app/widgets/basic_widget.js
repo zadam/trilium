@@ -25,6 +25,11 @@ class BasicWidget extends Component {
         return this;
     }
 
+    contentSized() {
+        this.css('contain', 'layout paint');
+        return this;
+    }
+
     collapsible() {
         this.css('min-height', '0');
         return this;

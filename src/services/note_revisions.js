@@ -34,7 +34,6 @@ function createNoteRevision(note) {
         noteId: note.noteId,
         // title and text should be decrypted now
         title: note.title,
-        contentLength: -1, // will be updated in .setContent()
         type: note.type,
         mime: note.mime,
         isProtected: false, // will be fixed in the protectNoteRevisions() call

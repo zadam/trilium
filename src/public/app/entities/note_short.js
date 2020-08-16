@@ -45,8 +45,6 @@ class NoteShort {
         this.noteId = row.noteId;
         /** @param {string} */
         this.title = row.title;
-        /** @param {int} */
-        this.contentLength = row.contentLength;
         /** @param {boolean} */
         this.isProtected = !!row.isProtected;
         /** @param {string} one of 'text', 'code', 'file' or 'render' */
