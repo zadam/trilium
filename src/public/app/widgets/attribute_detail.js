@@ -63,7 +63,7 @@ const TPL = `
     <div class="attr-is-owned-by"></div>
 
     <table class="attr-edit-table">
-        <tr>
+        <tr title="Attribute name can be composed of alphanumeric characters, colon and underscore only">
             <th>Name:</th>
             <td><input type="text" class="attr-input-name form-control" /></td>
         </tr>
@@ -159,15 +159,15 @@ const ATTR_TITLES = {
 };
 
 export default class AttributeDetailWidget extends TabAwareWidget {
-    isEnabled() {
+    async refresh() {
         // this widget is not activated in a standard way
-        return false;
     }
 
     doRender() {
         this.relatedNotesSpacedUpdate = new SpacedUpdate(async () => this.updateRelatedNotes(), 1000);
 
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
 
@@ -280,7 +280,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
             return;
         }
-
+console.log("RENDERING");
         this.attrType = this.getAttrType(attribute);
 
         const attrName =
@@ -373,6 +373,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.$widget.outerHeight() + y > $(window).height() - 50
                         ? $(window).height() - y - 50
                         : 10000);
+
+        console.log("RENDERING DONE");
     }
 
     async updateRelatedNotes() {

@@ -825,3 +825,7 @@ body {
 .ck.ck-mentions > .ck-list__item {
     max-width: 600px;
 }
+
+ul.fancytree-container li {
+    contain: layout paint;
+}

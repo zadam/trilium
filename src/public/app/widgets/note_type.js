@@ -34,7 +34,7 @@ const TPL = `
 export default class NoteTypeWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
 

@@ -93,7 +93,7 @@ const TPL = `
 export default class NoteActionsWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$showSourceButton = this.$widget.find('.show-source-button');
 

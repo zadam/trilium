@@ -312,6 +312,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
             scrollParent: this.$tree,
             minExpandLevel: 2, // root can't be collapsed
             click: (event, data) => {
+                this.activityDetected();
+
                 const targetType = data.targetType;
                 const node = data.node;
 
@@ -911,6 +913,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async refresh() {
         this.toggleInt(this.isEnabled());
 
+        this.activityDetected();
+
         const oldActiveNode = this.getActiveNode();
         let oldActiveNodeFocused = false;
 
@@ -956,7 +960,44 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
+    activityDetected() {
+        if (this.autoCollapseTimeoutId) {
+            clearTimeout(this.autoCollapseTimeoutId);
+        }
+
+        this.autoCollapseTimeoutId = setTimeout(() => {
+            /*
+             * We're collapsing notes after period of inactivity to "cleanup" the tree - users rarely
+             * collapse the notes and the tree becomes unusuably large.
+             * Some context: https://github.com/zadam/trilium/issues/1192
+             */
+
+            const noteIdsToKeepExpanded = new Set(
+                appContext.tabManager.getTabContexts()
+                    .map(tc => tc.notePathArray)
+                    .flat()
+            );
+
+            let noneCollapsedYet = true;
+
+            this.tree.getRootNode().visit(node => {
+                if (node.isExpanded() && !noteIdsToKeepExpanded.has(node.data.noteId)) {
+                    node.setExpanded(false);
+
+                    if (noneCollapsedYet) {
+                        toastService.showMessage("Auto collapsing notes after inactivity...");
+                        noneCollapsedYet = false;
+                    }
+
+                    console.log("Auto collapsed", node.data.noteId);
+                }
+            }, false);
+        }, 600 * 1000);
+    }
+
     async entitiesReloadedEvent({loadResults}) {
+        this.activityDetected();
+
         if (loadResults.isEmptyForTree()) {
             return;
         }

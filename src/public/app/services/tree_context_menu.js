@@ -16,7 +16,7 @@ class TreeContextMenu {
         this.treeWidget = treeWidget;
         this.node = node;
     }
-    
+
     async show(e) {
         contextMenu.show({
             x: e.pageX,
@@ -111,7 +111,14 @@ class TreeContextMenu {
         const notePath = treeService.getNotePath(this.node);
 
         if (command === 'openInTab') {
-            appContext.tabManager.openTabWithNote(notePath);
+
+            const start = Date.now();
+
+            await this.node.load(true);
+
+            console.log("Reload took", Date.now() - start, "ms");
+
+//            appContext.tabManager.openTabWithNote(notePath);
         }
         else if (command === "insertNoteAfter") {
             const parentNoteId = this.node.data.parentNoteId;

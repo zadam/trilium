@@ -116,7 +116,7 @@ export default class AttributeListWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$promotedExpander = this.$widget.find('.attr-promoted-expander');
         this.$allAttrWrapper = this.$widget.find('.all-attr-wrapper');

@@ -26,6 +26,8 @@ class NoteComplement {
         /** @param {string} */
         this.utcDateModified = row.utcDateModified;
 
+        // "combined" date modified give larger out of note's and note_content's dateModified
+
         /** @param {string} */
         this.combinedDateModified = row.combinedDateModified;
 

@@ -85,6 +85,11 @@ class TabContext extends Component {
         return treeCache.notes[this.noteId];
     }
 
+    /** @property {string[]} */
+    get notePathArray() {
+        return this.notePath ? this.notePath.split('/') : [];
+    }
+
     /** @return {NoteComplement} */
     async getNoteComplement() {
         if (!this.noteId) {

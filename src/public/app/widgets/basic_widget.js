@@ -30,6 +30,11 @@ class BasicWidget extends Component {
         return this;
     }
 
+    overflowing() {
+        this.css('contain', 'none');
+        return this;
+    }
+
     collapsible() {
         this.css('min-height', '0');
         return this;
