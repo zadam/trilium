@@ -1,13 +1,6 @@
 import attributeParser from '../src/public/app/services/attribute_parser.js';
 import {describe, it, expect, execute} from './mini_test.js';
 
-describe("Preprocessor", () => {
-    it("relation with value", () => {
-        expect(attributeParser.preprocess('<p>~relation&nbsp;= <a class="reference-link" href="#root/RclIpMauTOKS/NFi2gL4xtPxM" some-attr="abc" data-note-path="root/RclIpMauTOKS/NFi2gL4xtPxM">note</a>&nbsp;</p>'))
-            .toEqual("~relation = #root/RclIpMauTOKS/NFi2gL4xtPxM ");
-    });
-});
-
 describe("Lexer", () => {
     it("simple label", () => {
         expect(attributeParser.lexer("#label").map(t => t.text))
@@ -95,11 +88,16 @@ describe("Parser", () => {
         expect(attrs[0].name).toEqual("token");
         expect(attrs[0].value).toEqual('NFi2gL4xtPxM');
     });
+});
 
-    // it("error cases", () => {
-    //     expect(() => attributeParser.parser(["~token"].map(t => ({text: t})), "~token"))
-    //         .toThrow('Relation "~token" should point to a note.');
-    // });
+describe("error cases", () => {
+    it("error cases", () => {
+        expect(() => attributeParser.lexAndParse('~token'))
+            .toThrow('Relation "~token" in "~token" should point to a note.');
+
+        expect(() => attributeParser.lexAndParse("#a&b/s"))
+            .toThrow(`Attribute name "a&b/s" contains disallowed characters, only alphanumeric characters, colon and underscore are allowed.`);
+    });
 });
 
 execute();

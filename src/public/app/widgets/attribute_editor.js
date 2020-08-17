@@ -293,13 +293,20 @@ export default class AttributeEditorWidget extends TabAwareWidget {
 
     parseAttributes() {
         try {
-            const attrs = attributesParser.lexAndParse(this.textEditor.getData());
+            const attrs = attributesParser.lexAndParse(this.getPreprocessedData());
 
             return attrs;
         }
         catch (e) {
-            this.$errors.show().text(e.message);
+            this.$errors.text(e.message).slideDown();
         }
+    }
+
+    getPreprocessedData() {
+        const str = this.textEditor.getData()
+            .replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
+
+        return $("<div>").html(str).text();
     }
 
     async initEditor() {
@@ -332,18 +339,18 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    async handleEditorClick(e) {
+    async handleEditorClick(e) {console.log("click")
         const pos = this.textEditor.model.document.selection.getFirstPosition();
 
-        if (pos && pos.textNode && pos.textNode.data) {
+        if (pos && pos.textNode && pos.textNode.data) {console.log(pos);
             const clickIndex = this.getClickIndex(pos);
 
             let parsedAttrs;
 
             try {
-                parsedAttrs = attributesParser.lexAndParse(this.textEditor.getData(), true);
+                parsedAttrs = attributesParser.lexAndParse(this.getPreprocessedData(), true);
             }
-            catch (e) {
+            catch (e) {console.log(e);
                 // the input is incorrect because user messed up with it and now needs to fix it manually
                 return null;
             }
@@ -357,13 +364,15 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 }
             }
 
-            this.attributeDetailWidget.showAttributeDetail({
-                allAttributes: parsedAttrs,
-                attribute: matchedAttr,
-                isOwned: true,
-                x: e.pageX,
-                y: e.pageY
-            });
+            setTimeout(() => {
+                this.attributeDetailWidget.showAttributeDetail({
+                    allAttributes: parsedAttrs,
+                    attribute: matchedAttr,
+                    isOwned: true,
+                    x: e.pageX,
+                    y: e.pageY
+                });
+            }, 100);
         }
     }
 

@@ -4,6 +4,7 @@ const noteCache = require('./note_cache');
 const hoistedNoteService = require('../hoisted_note');
 const protectedSessionService = require('../protected_session');
 const stringSimilarity = require('string-similarity');
+const log = require('../log');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
@@ -61,6 +62,11 @@ function isInAncestor(noteId, ancestorNoteId) {
 function getNoteTitle(childNoteId, parentNoteId) {
     const childNote = noteCache.notes[childNoteId];
     const parentNote = noteCache.notes[parentNoteId];
+
+    if (!childNote) {
+        log.info(`Cannot find note in cache for noteId ${childNoteId}`);
+        return "[error fetching title]";
+    }
 
     let title;
 

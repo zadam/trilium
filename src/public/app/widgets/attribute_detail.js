@@ -158,6 +158,8 @@ const ATTR_TITLES = {
     "relation-definition": "Relation definition detail"
 };
 
+const ATTR_NAME_MATCHER = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
+
 export default class AttributeDetailWidget extends TabAwareWidget {
     async refresh() {
         // this widget is not activated in a standard way
@@ -280,7 +282,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
             return;
         }
-console.log("RENDERING");
+
         this.attrType = this.getAttrType(attribute);
 
         const attrName =
@@ -365,16 +367,16 @@ console.log("RENDERING");
 
         this.toggleInt(true);
 
-        this.$widget.css("left", x - this.$widget.outerWidth() / 2);
-        this.$widget.css("top", y + 25);
+        const offset = this.parent.$widget.offset();
+
+        this.$widget.css("left", x - offset.left - this.$widget.outerWidth() / 2);
+        this.$widget.css("top", y - offset.top + 70);
 
         // so that the detail window always fits
         this.$widget.css("max-height",
             this.$widget.outerHeight() + y > $(window).height() - 50
                         ? $(window).height() - y - 50
                         : 10000);
-
-        console.log("RENDERING DONE");
     }
 
     async updateRelatedNotes() {
@@ -434,6 +436,13 @@ console.log("RENDERING");
 
     updateAttributeInEditor() {
         let attrName = this.$inputName.val();
+
+        if (!ATTR_NAME_MATCHER.test(attrName)) {
+            // invalid characters are simply ignored (from user perspective they are not even entered)
+            attrName = attrName.replace(/[^\p{L}\p{N}_:]/ug, "");
+
+            this.$inputName.val(attrName);
+        }
 
         if (this.attrType === 'label-definition') {
             attrName = 'label:' + attrName;

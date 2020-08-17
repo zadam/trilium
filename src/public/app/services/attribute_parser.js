@@ -1,17 +1,3 @@
-function preprocess(str) {
-    if (str.startsWith('<p>')) {
-        str = str.substr(3);
-    }
-
-    if (str.endsWith('</p>')) {
-        str = str.substr(0, str.length - 4);
-    }
-
-    str = str.replace(/&nbsp;/g, " ");
-
-    return str.replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1");
-}
-
 function lexer(str) {
     const tokens = [];
 
@@ -117,6 +103,14 @@ function lexer(str) {
     return tokens;
 }
 
+const attrNameMatcher = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
+
+function checkAttributeName(attrName) {
+    if (!attrNameMatcher.test(attrName)) {
+        throw new Error(`Attribute name "${attrName}" contains disallowed characters, only alphanumeric characters, colon and underscore are allowed.`);
+    }
+}
+
 function parser(tokens, str, allowEmptyRelations = false) {
     const attrs = [];
 
@@ -149,9 +143,13 @@ function parser(tokens, str, allowEmptyRelations = false) {
         }
 
         if (text.startsWith('#')) {
+            const labelName = text.substr(1);
+
+            checkAttributeName(labelName);
+
             const attr = {
                 type: 'label',
-                name: text.substr(1),
+                name: labelName,
                 isInheritable: isInheritable(),
                 startIndex: startIndex,
                 endIndex: tokens[i].endIndex // i could be moved by isInheritable
@@ -171,9 +169,13 @@ function parser(tokens, str, allowEmptyRelations = false) {
             attrs.push(attr);
         }
         else if (text.startsWith('~')) {
+            const relationName = text.substr(1);
+
+            checkAttributeName(relationName);
+
             const attr = {
                 type: 'relation',
-                name: text.substr(1),
+                name: relationName,
                 isInheritable: isInheritable(),
                 startIndex: startIndex,
                 endIndex: tokens[i].endIndex // i could be moved by isInheritable
@@ -211,15 +213,12 @@ function parser(tokens, str, allowEmptyRelations = false) {
 }
 
 function lexAndParse(str, allowEmptyRelations = false) {
-    str = preprocess(str);
-
     const tokens = lexer(str);
 
     return parser(tokens, str, allowEmptyRelations);
 }
 
 export default {
-    preprocess,
     lexer,
     parser,
     lexAndParse
