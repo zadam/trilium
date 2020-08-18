@@ -14,6 +14,7 @@ const TPL = `
 export default class RunScriptButtonsWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$renderButton = this.$widget.find('.render-button');
         this.$executeScriptButton = this.$widget.find('.execute-script-button');
