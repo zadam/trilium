@@ -109,7 +109,7 @@ class Note extends Entity {
         return sql.getRow(`
             SELECT 
                 LENGTH(content) AS contentLength, 
-                dateModified, 
+                dateModified,
                 utcDateModified 
             FROM note_contents 
             WHERE noteId = ?`, [this.noteId]);

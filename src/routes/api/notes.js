@@ -25,6 +25,8 @@ function getNote(req) {
 
     const contentMetadata = note.getContentMetadata();
 
+    note.contentLength = contentMetadata.contentLength;
+
     note.combinedUtcDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.utcDateModified : contentMetadata.utcDateModified;
     note.combinedDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified;
 

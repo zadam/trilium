@@ -18,6 +18,7 @@ function updateFile(req) {
     noteRevisionService.createNoteRevision(note);
 
     note.mime = file.mimetype.toLowerCase();
+    note.save();
 
     note.setContent(file.buffer);
 

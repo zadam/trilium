@@ -15,7 +15,7 @@ const isSvg = require('is-svg');
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const origImageFormat = getImageType(uploadBuffer);
 
-    if (origImageFormat && ["webp", "svg"].includes(origImageFormat.ext)) {
+    if (origImageFormat && ["webp", "svg", "gif"].includes(origImageFormat.ext)) {
         // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
         shrinkImageSwitch = false;
     }
@@ -61,6 +61,8 @@ function updateImage(noteId, uploadBuffer, originalName) {
     processImage(uploadBuffer, originalName, true).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             note.mime = getImageMimeFromExtension(imageFormat.ext);
+            note.save();
+
             note.setContent(buffer);
         })
     });
@@ -88,6 +90,8 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             note.mime = getImageMimeFromExtension(imageFormat.ext);
+            note.save();
+
             note.setContent(buffer);
         })
     });

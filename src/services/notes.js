@@ -105,7 +105,7 @@ function createNewNote(params) {
         throw new Error(`Note title must not be empty`);
     }
 
-    sql.transactional(() => {
+    return sql.transactional(() => {
         const note = new Note({
             noteId: params.noteId, // optionally can force specific noteId
             title: params.title,
@@ -744,8 +744,8 @@ function duplicateNote(noteId, parentNoteId) {
     const newNote = new Note(origNote);
     newNote.noteId = undefined; // force creation of new note
     newNote.title += " (dup)";
-
     newNote.save();
+
     newNote.setContent(origNote.getContent());
 
     const newBranch = new Branch({

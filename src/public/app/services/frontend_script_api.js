@@ -176,7 +176,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<NoteShort[]>}
      */
     this.searchForNotes = async searchString => {
-        const noteIds = await this.runOnServer(async searchString => {
+        const noteIds = await this.runOnBackend(async searchString => {
             const notes = await api.searchForNotes(searchString);
 
             return notes.map(note => note.noteId);
