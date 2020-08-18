@@ -34,12 +34,12 @@ async function executeBundle(bundle, apiParams = {}) {
     cls.set('sourceId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
-    const script = "function() {\r\n" + bundle.script + "\r\n}";
+    const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
-        return execute(ctx, script);
+        return await execute(ctx, script);
     }
     catch (e) {
         log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
@@ -52,7 +52,7 @@ async function executeBundle(bundle, apiParams = {}) {
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
+async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = repository.getNote(startNoteId);
     const currentNote = repository.getNote(currentNoteId);
     const originEntity = repository.getEntityFromName(originEntityName, originEntityId);
@@ -63,11 +63,11 @@ function executeScript(script, params, startNoteId, currentNoteId, originEntityN
 
     const bundle = getScriptBundle(currentNote);
 
-    return executeBundle(bundle, { startNote, originEntity });
+    return await executeBundle(bundle, { startNote, originEntity });
 }
 
-function execute(ctx, script) {
-    return (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
+async function execute(ctx, script) {
+    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
 }
 
 function getParams(params) {

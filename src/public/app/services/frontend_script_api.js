@@ -176,11 +176,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<NoteShort[]>}
      */
     this.searchForNotes = async searchString => {
-        const noteIds = await this.runOnBackend(async searchString => {
-            const notes = await api.searchForNotes(searchString);
-
-            return notes.map(note => note.noteId);
-        }, [searchString]);
+        const noteIds = await this.runOnBackend(
+            searchString => api.searchForNotes(searchString).map(note => note.noteId),
+            [searchString]);
 
         return await treeCache.getNotes(noteIds);
     };

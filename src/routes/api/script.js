@@ -5,10 +5,18 @@ const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 const syncService = require('../../services/sync');
 
-function exec(req) {
+async function exec(req) {
     try {
-        const result = scriptService.executeScript(req.body.script, req.body.params, req.body.startNoteId,
-            req.body.currentNoteId, req.body.originEntityName, req.body.originEntityId);
+        const {body} = req;
+
+        const result = await scriptService.executeScript(
+            body.script,
+            body.params,
+            body.startNoteId,
+            body.currentNoteId,
+            body.originEntityName,
+            body.originEntityId
+        );
 
         return {
             success: true,
@@ -21,10 +29,10 @@ function exec(req) {
     }
 }
 
-function run(req) {
+async function run(req) {
     const note = repository.getNote(req.params.noteId);
 
-    const result = scriptService.executeNote(note, { originEntity: note });
+    const result = await scriptService.executeNote(note, { originEntity: note });
 
     return { executionResult: result };
 }
