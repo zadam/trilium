@@ -105,35 +105,37 @@ function createNewNote(params) {
         throw new Error(`Note title must not be empty`);
     }
 
-    const note = new Note({
-        noteId: params.noteId, // optionally can force specific noteId
-        title: params.title,
-        isProtected: !!params.isProtected,
-        type: params.type,
-        mime: deriveMime(params.type, params.mime)
-    }).save();
+    sql.transactional(() => {
+        const note = new Note({
+            noteId: params.noteId, // optionally can force specific noteId
+            title: params.title,
+            isProtected: !!params.isProtected,
+            type: params.type,
+            mime: deriveMime(params.type, params.mime)
+        }).save();
 
-    note.setContent(params.content);
+        note.setContent(params.content);
 
-    const branch = new Branch({
-        noteId: note.noteId,
-        parentNoteId: params.parentNoteId,
-        notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
-        prefix: params.prefix,
-        isExpanded: !!params.isExpanded
-    }).save();
+        const branch = new Branch({
+            noteId: note.noteId,
+            parentNoteId: params.parentNoteId,
+            notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
+            prefix: params.prefix,
+            isExpanded: !!params.isExpanded
+        }).save();
 
-    scanForLinks(note);
+        scanForLinks(note);
 
-    copyChildAttributes(parentNote, note);
+        copyChildAttributes(parentNote, note);
 
-    triggerNoteTitleChanged(note);
-    triggerChildNoteCreated(note, parentNote);
+        triggerNoteTitleChanged(note);
+        triggerChildNoteCreated(note, parentNote);
 
-    return {
-        note,
-        branch
-    };
+        return {
+            note,
+            branch
+        };
+    });
 }
 
 function createNewNoteWithTarget(target, targetBranchId, params) {

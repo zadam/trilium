@@ -69,13 +69,6 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getAttribute = repository.getAttribute;
 
     /**
-     * @method
-     * @param {string} imageId
-     * @returns {Image|null}
-     */
-    this.getImage = repository.getImage;
-
-    /**
      * Retrieves first entity from the SQL's result set.
      *
      * @method
@@ -275,19 +268,21 @@ function BackendScriptApi(currentNote, apiParams) {
             extraOptions.content = content;
         }
 
-        const {note, branch} = noteService.createNewNote(extraOptions);
+        sql.transactional(() => {
+            const {note, branch} = noteService.createNewNote(extraOptions);
 
-        for (const attr of extraOptions.attributes || []) {
-            attributeService.createAttribute({
-                noteId: note.noteId,
-                type: attr.type,
-                name: attr.name,
-                value: attr.value,
-                isInheritable: !!attr.isInheritable
-            });
-        }
+            for (const attr of extraOptions.attributes || []) {
+                attributeService.createAttribute({
+                    noteId: note.noteId,
+                    type: attr.type,
+                    name: attr.name,
+                    value: attr.value,
+                    isInheritable: !!attr.isInheritable
+                });
+            }
 
-        return {note, branch};
+            return {note, branch};
+        });
     };
 
     /**
@@ -373,9 +368,6 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * This functions wraps code which is supposed to be running in transaction. If transaction already
      * exists, then we'll use that transaction.
-     *
-     * This method is required only when script has label manualTransactionHandling, all other scripts are
-     * transactional by default.
      *
      * @method
      * @param {function} func

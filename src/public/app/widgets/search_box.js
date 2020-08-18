@@ -44,6 +44,7 @@ const TPL = `
 export default class SearchBoxWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$searchBox = this.$widget;
         this.$closeSearchButton = this.$widget.find(".close-search-button");

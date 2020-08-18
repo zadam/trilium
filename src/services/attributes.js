@@ -13,7 +13,6 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'calendarRoot' },
     { type: 'label', name: 'archived' },
     { type: 'label', name: 'excludeFromExport' },
-    { type: 'label', name: 'manualTransactionHandling' },
     { type: 'label', name: 'disableInclusion' },
     { type: 'label', name: 'appCss' },
     { type: 'label', name: 'appTheme' },

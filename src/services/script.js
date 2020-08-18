@@ -39,12 +39,7 @@ async function executeBundle(bundle, apiParams = {}) {
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
-        if (bundle.note.hasOwnedLabel('manualTransactionHandling')) {
-            return execute(ctx, script);
-        }
-        else {
-            return sql.transactional(() => execute(ctx, script));
-        }
+        return execute(ctx, script);
     }
     catch (e) {
         log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
@@ -159,7 +154,7 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
     if (note.isJavaScript()) {
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
-${root ? 'return ' : ''}((function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
+${root ? 'return ' : ''}await ((async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
 ${note.getContent()};
