@@ -115,7 +115,7 @@ class Note {
     }
 
     hasAttribute(type, name) {
-        return this.attributes.find(attr => attr.type === type && attr.name === name);
+        return !!this.attributes.find(attr => attr.type === type && attr.name === name);
     }
 
     getLabelValue(name) {

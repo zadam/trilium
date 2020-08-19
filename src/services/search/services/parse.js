@@ -25,16 +25,24 @@ function getFulltext(tokens, parsingContext) {
     if (tokens.length === 0) {
         return null;
     }
-    else if (parsingContext.includeNoteContent) {
-        return new OrExp([
+
+    let textSearchExpression;
+
+    if (parsingContext.includeNoteContent) {
+        textSearchExpression = new OrExp([
             new NoteCacheFulltextExp(tokens),
             new NoteContentProtectedFulltextExp('*=*', tokens),
             new NoteContentUnprotectedFulltextExp('*=*', tokens)
         ]);
     }
     else {
-        return new NoteCacheFulltextExp(tokens);
+        textSearchExpression = new NoteCacheFulltextExp(tokens);
     }
+
+    return new AndExp([
+        textSearchExpression,
+        new PropertyComparisonExp("isarchived", comparatorBuilder("=", "false"))
+    ]);
 }
 
 function isOperator(str) {

@@ -75,11 +75,6 @@ class NoteCacheFlatTextExp extends Expression {
                 continue;
             }
 
-            // for leaf note it doesn't matter if "archived" label is inheritable or not
-            if (note.isArchived) {
-                continue;
-            }
-
             const foundAttrTokens = [];
 
             for (const attribute of note.ownedAttributes) {

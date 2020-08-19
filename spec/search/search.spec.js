@@ -544,6 +544,23 @@ describe("Search", () => {
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
     });
 
+    it("test that fulltext does not match archived notes", () => {
+        const italy = note("Italy").label("capital", "Rome");
+        const slovakia = note("Slovakia").label("capital", "Bratislava");
+
+        rootNote
+            .child(note("Reddit").label('archived', '', true)
+                .child(note('Post X'))
+                .child(note('Post Y')))
+            .child(note ('Reddit is bad'));
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = searchService.findNotesWithQuery('reddit', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Reddit is bad");
+    });
+
     // FIXME: test what happens when we order without any filter criteria
 
     // it("comparison between labels", () => {
