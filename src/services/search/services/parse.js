@@ -127,6 +127,17 @@ function getExpression(tokens, parsingContext, level = 0) {
             return parseRelation(tokens[i].token);
         }
 
+        if (tokens[i].token === 'text') {
+            if (tokens[i + 1].token !== '*=*') {
+                parsingContext.addError(`Virtual attribute "note.text" supports only *=* operator, instead given "${tokens[i + 1].token}" in ${context(i)}`);
+                return;
+            }
+
+            i += 2;
+
+            return getFulltext([tokens[i]], parsingContext);
+        }
+
         if (PropertyComparisonExp.isProperty(tokens[i].token)) {
             const propertyName = tokens[i].token;
             const operator = tokens[i + 1].token;

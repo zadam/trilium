@@ -27,7 +27,7 @@ describe("Parser", () => {
             parsingContext: new ParsingContext({includeNoteContent: false})
         });
 
-        expect(rootExp.constructor.name).toEqual("NoteCacheFulltextExp");
+        expect(rootExp.constructor.name).toEqual("NoteCacheFlatTextExp");
         expect(rootExp.tokens).toEqual(["hello", "hi"]);
     });
 
@@ -41,7 +41,7 @@ describe("Parser", () => {
         expect(rootExp.constructor.name).toEqual("OrExp");
         const subs = rootExp.subExpressions;
 
-        expect(subs[0].constructor.name).toEqual("NoteCacheFulltextExp");
+        expect(subs[0].constructor.name).toEqual("NoteCacheFlatTextExp");
         expect(subs[0].tokens).toEqual(["hello", "hi"]);
 
         expect(subs[1].constructor.name).toEqual("NoteContentProtectedFulltextExp");
@@ -149,7 +149,7 @@ describe("Parser", () => {
         expect(rootExp.constructor.name).toEqual("AndExp");
         const [firstSub, secondSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("NoteCacheFulltextExp");
+        expect(firstSub.constructor.name).toEqual("NoteCacheFlatTextExp");
         expect(firstSub.tokens).toEqual(["hello"]);
 
         expect(secondSub.constructor.name).toEqual("LabelComparisonExp");

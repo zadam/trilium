@@ -1,7 +1,6 @@
 const searchService = require('../../src/services/search/services/search.js');
 const Note = require('../../src/services/note_cache/entities/note.js');
 const Branch = require('../../src/services/note_cache/entities/branch.js');
-const Attribute = require('../../src/services/note_cache/entities/attribute.js');
 const ParsingContext = require('../../src/services/search/parsing_context.js');
 const dateUtils = require('../../src/services/date_utils.js');
 const noteCache = require('../../src/services/note_cache/note_cache.js');
@@ -17,33 +16,33 @@ describe("Search", () => {
         new Branch(noteCache, {branchId: 'root', noteId: 'root', parentNoteId: 'none'});
     });
 
-    it("simple path match", async () => {
+    it("simple path match", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria"))
         );
 
         const parsingContext = new ParsingContext();
-        const searchResults = await searchService.findNotesWithQuery('europe austria', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('europe austria', parsingContext);
 
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("only end leafs are results", async () => {
+    it("only end leafs are results", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria"))
         );
 
         const parsingContext = new ParsingContext();
-        const searchResults = await searchService.findNotesWithQuery('europe', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('europe', parsingContext);
 
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
     });
 
-    it("only end leafs are results", async () => {
+    it("only end leafs are results", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria")
@@ -52,12 +51,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('Vienna', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('Vienna', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("label comparison with short syntax", async () => {
+    it("label comparison with short syntax", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria")
@@ -68,12 +67,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('#capital=Vienna', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('#capital=Vienna', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("label comparison with full syntax", async () => {
+    it("label comparison with full syntax", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria")
@@ -84,12 +83,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.labels.capital=Prague', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# note.labels.capital=Prague', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
-    it("numeric label comparison", async () => {
+    it("numeric label comparison", () => {
         rootNote
             .child(note("Europe")
                 .label('country', '', true)
@@ -101,12 +100,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('#country #population >= 10000000', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('#country #population >= 10000000', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
-    it("numeric label comparison fallback to string comparison", async () => {
+    it("numeric label comparison fallback to string comparison", () => {
         // dates should not be coerced into numbers which would then give wrong numbers
 
         rootNote
@@ -122,17 +121,17 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('#established <= 1955-01-01', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('#established <= 1955-01-01', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Hungary")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('#established > 1955-01-01', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#established > 1955-01-01', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
-    it("smart date comparisons", async () => {
+    it("smart date comparisons", () => {
         // dates should not be coerced into numbers which would then give wrong numbers
 
         rootNote
@@ -145,8 +144,8 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        async function test(query, expectedResultCount) {
-            const searchResults = await searchService.findNotesWithQuery(query, parsingContext);
+        function test(query, expectedResultCount) {
+            const searchResults = searchService.findNotesWithQuery(query, parsingContext);
             expect(searchResults.length).toEqual(expectedResultCount);
 
             if (expectedResultCount === 1) {
@@ -154,27 +153,27 @@ describe("Search", () => {
             }
         }
 
-        await test("#year = YEAR", 1);
-        await test("#year >= YEAR", 1);
-        await test("#year <= YEAR", 1);
-        await test("#year < YEAR+1", 1);
-        await test("#year > YEAR+1", 0);
+        test("#year = YEAR", 1);
+        test("#year >= YEAR", 1);
+        test("#year <= YEAR", 1);
+        test("#year < YEAR+1", 1);
+        test("#year > YEAR+1", 0);
 
-        await test("#month = MONTH", 1);
+        test("#month = MONTH", 1);
 
-        await test("#date = TODAY", 1);
-        await test("#date > TODAY", 0);
-        await test("#date > TODAY-1", 1);
-        await test("#date < TODAY+1", 1);
-        await test("#date < 'TODAY + 1'", 1);
+        test("#date = TODAY", 1);
+        test("#date > TODAY", 0);
+        test("#date > TODAY-1", 1);
+        test("#date < TODAY+1", 1);
+        test("#date < 'TODAY + 1'", 1);
 
-        await test("#dateTime <= NOW+10", 1);
-        await test("#dateTime < NOW-10", 0);
-        await test("#dateTime >= NOW-10", 1);
-        await test("#dateTime < NOW-10", 0);
+        test("#dateTime <= NOW+10", 1);
+        test("#dateTime < NOW-10", 0);
+        test("#dateTime >= NOW-10", 1);
+        test("#dateTime < NOW-10", 0);
     });
 
-    it("logical or", async () => {
+    it("logical or", () => {
         rootNote
             .child(note("Europe")
                 .label('country', '', true)
@@ -188,13 +187,13 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('#languageFamily = slavic OR #languageFamily = germanic', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('#languageFamily = slavic OR #languageFamily = germanic', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("fuzzy attribute search", async () => {
+    it("fuzzy attribute search", () => {
         rootNote
             .child(note("Europe")
                 .label('country', '', true)
@@ -205,23 +204,23 @@ describe("Search", () => {
 
         let parsingContext = new ParsingContext({fuzzyAttributeSearch: false});
 
-        let searchResults = await searchService.findNotesWithQuery('#language', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('#language', parsingContext);
         expect(searchResults.length).toEqual(0);
 
-        searchResults = await searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
         expect(searchResults.length).toEqual(0);
 
         parsingContext = new ParsingContext({fuzzyAttributeSearch: true});
 
-        searchResults = await searchService.findNotesWithQuery('#language', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#language', parsingContext);
         expect(searchResults.length).toEqual(2);
 
-        searchResults = await searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#languageFamily=ger', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("filter by note property", async () => {
+    it("filter by note property", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria"))
@@ -229,12 +228,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('# note.title =* czech', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('# note.title =* czech', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
-    it("filter by note's parent", async () => {
+    it("filter by note's parent", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria"))
@@ -246,21 +245,21 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Asia', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Asia', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taiwan")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.parents.title = Europe', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.parents.title = Europe', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
     });
 
-    it("filter by note's ancestor", async () => {
+    it("filter by note's ancestor", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria"))
@@ -274,16 +273,16 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('#city AND note.ancestors.title = Europe', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('#city AND note.ancestors.title = Europe', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('#city AND note.ancestors.title = Asia', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#city AND note.ancestors.title = Asia', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taipei")).toBeTruthy();
     });
 
-    it("filter by note's child", async () => {
+    it("filter by note's child", () => {
         rootNote
             .child(note("Europe")
                 .child(note("Austria")
@@ -295,21 +294,21 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.children.title =* Aust', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# note.children.title =* Aust', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Oceania")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.children.title =* Aust AND note.children.title *= republic', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.children.title =* Aust AND note.children.title *= republic', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.children.children.title = Prague', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.children.children.title = Prague', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Europe")).toBeTruthy();
     });
 
-    it("filter by relation's note properties using short syntax", async () => {
+    it("filter by relation's note properties using short syntax", () => {
         const austria = note("Austria");
         const portugal = note("Portugal");
 
@@ -325,16 +324,16 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# ~neighbor.title = Austria', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# ~neighbor.title = Austria', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# ~neighbor.title = Portugal', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# ~neighbor.title = Portugal', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Spain")).toBeTruthy();
     });
 
-    it("filter by relation's note properties using long syntax", async () => {
+    it("filter by relation's note properties using long syntax", () => {
         const austria = note("Austria");
         const portugal = note("Portugal");
 
@@ -350,12 +349,12 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        const searchResults = await searchService.findNotesWithQuery('# note.relations.neighbor.title = Austria', parsingContext);
+        const searchResults = searchService.findNotesWithQuery('# note.relations.neighbor.title = Austria', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
-    it("filter by multiple level relation", async () => {
+    it("filter by multiple level relation", () => {
         const austria = note("Austria");
         const slovakia = note("Slovakia");
         const italy = note("Italy");
@@ -376,17 +375,17 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.relations.neighbor.relations.neighbor.title = Italy', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# note.relations.neighbor.relations.neighbor.title = Italy', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
 
-        searchResults = await searchService.findNotesWithQuery('# note.relations.neighbor.relations.neighbor.title = Ukraine', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.relations.neighbor.relations.neighbor.title = Ukraine', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
-    it("test note properties", async () => {
+    it("test note properties", () => {
         const austria = note("Austria");
 
         austria.relation('myself', austria.note);
@@ -415,8 +414,8 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        async function test(propertyName, value, expectedResultCount) {
-            const searchResults = await searchService.findNotesWithQuery(`# note.${propertyName} = ${value}`, parsingContext);
+        function test(propertyName, value, expectedResultCount) {
+            const searchResults = searchService.findNotesWithQuery(`# note.${propertyName} = ${value}`, parsingContext);
             expect(searchResults.length).toEqual(expectedResultCount);
 
             if (expectedResultCount === 1) {
@@ -424,47 +423,44 @@ describe("Search", () => {
             }
         }
 
-        await test("type", "text", 1);
-        await test("type", "code", 0);
+        test("type", "text", 1);
+        test("type", "code", 0);
 
-        await test("mime", "text/html", 1);
-        await test("mime", "application/json", 0);
+        test("mime", "text/html", 1);
+        test("mime", "application/json", 0);
 
-        await test("isProtected", "false", 7);
-        await test("isProtected", "true", 0);
+        test("isProtected", "false", 7);
+        test("isProtected", "true", 0);
 
-        await test("dateCreated", "'2020-05-14 12:11:42.001+0200'", 1);
-        await test("dateCreated", "wrong", 0);
+        test("dateCreated", "'2020-05-14 12:11:42.001+0200'", 1);
+        test("dateCreated", "wrong", 0);
 
-        await test("dateModified", "'2020-05-14 13:11:42.001+0200'", 1);
-        await test("dateModified", "wrong", 0);
+        test("dateModified", "'2020-05-14 13:11:42.001+0200'", 1);
+        test("dateModified", "wrong", 0);
 
-        await test("utcDateCreated", "'2020-05-14 10:11:42.001Z'", 1);
-        await test("utcDateCreated", "wrong", 0);
+        test("utcDateCreated", "'2020-05-14 10:11:42.001Z'", 1);
+        test("utcDateCreated", "wrong", 0);
 
-        await test("utcDateModified", "'2020-05-14 11:11:42.001Z'", 1);
-        await test("utcDateModified", "wrong", 0);
+        test("utcDateModified", "'2020-05-14 11:11:42.001Z'", 1);
+        test("utcDateModified", "wrong", 0);
 
-        await test("contentLength", "1001", 1);
-        await test("contentLength", "10010", 0);
+        test("parentCount", "2", 1);
+        test("parentCount", "3", 0);
 
-        await test("parentCount", "2", 1);
-        await test("parentCount", "3", 0);
+        test("childrenCount", "2", 1);
+        test("childrenCount", "10", 0);
 
-        await test("childrenCount", "2", 1);
-        await test("childrenCount", "10", 0);
+        test("attributeCount", "3", 1);
+        test("attributeCount", "4", 0);
 
-        await test("attributeCount", "3", 1);
-        await test("attributeCount", "4", 0);
+        test("labelCount", "2", 1);
+        test("labelCount", "3", 0);
 
-        await test("labelCount", "2", 1);
-        await test("labelCount", "3", 0);
-
-        await test("relationCount", "1", 1);
-        await test("relationCount", "2", 0);
+        test("relationCount", "1", 1);
+        test("relationCount", "2", 0);
     });
 
-    it("test order by", async () => {
+    it("test order by", () => {
         const italy = note("Italy").label("capital", "Rome");
         const slovakia = note("Slovakia").label("capital", "Bratislava");
         const austria = note("Austria").label("capital", "Vienna");
@@ -479,40 +475,40 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.title', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.title', parsingContext);
         expect(searchResults.length).toEqual(4);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
         expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Slovakia");
         expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Ukraine");
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital', parsingContext);
         expect(searchResults.length).toEqual(4);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Ukraine");
         expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Italy");
         expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Austria");
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC', parsingContext);
         expect(searchResults.length).toEqual(4);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
         expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Ukraine");
         expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Slovakia");
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC limit 2', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC limit 2', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 0', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 0', parsingContext);
         expect(searchResults.length).toEqual(0);
 
-        searchResults = await searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1000', parsingContext);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1000', parsingContext);
         expect(searchResults.length).toEqual(4);
     });
 
-    it("test not(...)", async () => {
+    it("test not(...)", () => {
         const italy = note("Italy").label("capital", "Rome");
         const slovakia = note("Slovakia").label("capital", "Bratislava");
 
@@ -523,14 +519,34 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = await searchService.findNotesWithQuery('# not(#capital) and note.noteId != root', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('# not(#capital) and note.noteId != root', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Europe");
+
+        searchResults = searchService.findNotesWithQuery('#!capital and note.noteId != root', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Europe");
     });
 
+    it("test note.text *=* something", () => {
+        const italy = note("Italy").label("capital", "Rome");
+        const slovakia = note("Slovakia").label("capital", "Bratislava");
+
+        rootNote
+            .child(note("Europe")
+                .child(slovakia)
+                .child(italy));
+
+        const parsingContext = new ParsingContext();
+
+        let searchResults = searchService.findNotesWithQuery('# note.text *=* rati and note.noteId != root', parsingContext);
+        expect(searchResults.length).toEqual(1);
+        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
+    });
+
     // FIXME: test what happens when we order without any filter criteria
 
-    // it("comparison between labels", async () => {
+    // it("comparison between labels", () => {
     //     rootNote
     //         .child(note("Europe")
     //             .child(note("Austria")
@@ -546,7 +562,7 @@ describe("Search", () => {
     //
     //     const parsingContext = new ParsingContext();
     //
-    //     const searchResults = await searchService.findNotesWithQuery('#capital = #largestCity', parsingContext);
+    //     const searchResults = searchService.findNotesWithQuery('#capital = #largestCity', parsingContext);
     //     expect(searchResults.length).toEqual(2);
     //     expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     //     expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
