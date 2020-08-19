@@ -46,6 +46,8 @@ const TPL = `
         .close-attr-detail-button {
             font-size: x-large;
             cursor: pointer;
+            position: relative;
+            top: -2px;
         }
         
         .attr-save-delete-button-container {
@@ -58,7 +60,7 @@ const TPL = `
         }
     </style>
 
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <h5 class="attr-detail-title"></h5>
         
         <span class="bx bx-x close-attr-detail-button"></span>
