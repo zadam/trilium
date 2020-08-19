@@ -52,6 +52,10 @@ const TPL = `
             display: flex; 
             margin-top: 15px;
         }
+        
+        .attr-detail input[readonly] {
+            background-color: var(--accented-background-color) !important;
+        }
     </style>
 
     <div style="display: flex; justify-content: space-between;">
@@ -265,7 +269,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         $(window).on('mouseup', e => {
             if (!$(e.target).closest(this.$widget[0]).length
-                && !$(e.target).closest(".algolia-autocomplete").length) {
+                && !$(e.target).closest(".algolia-autocomplete").length
+                && !$(e.target).closest("#context-menu-container").length) {
                 this.hide();
             }
         });

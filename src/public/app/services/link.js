@@ -83,9 +83,6 @@ function goToLink(e) {
             const activeTabContext = appContext.tabManager.getActiveTabContext();
             activeTabContext.setNote(notePath);
         }
-        else {
-            return false;
-        }
     }
     else {
         if (e.which === 1) {
@@ -94,9 +91,6 @@ function goToLink(e) {
             if (address && address.startsWith('http')) {
                 window.open(address, '_blank');
             }
-        }
-        else {
-            return false;
         }
     }
 
@@ -132,7 +126,8 @@ function linkContextMenu(e) {
     });
 }
 
-$(document).on('mousedown', "a", goToLink);
+$(document).on('click', "a", goToLink);
+$(document).on('auxclick', "a", goToLink); // to handle middle button
 $(document).on('contextmenu', 'a', linkContextMenu);
 
 export default {
