@@ -46,15 +46,21 @@ const TPL = `
         .close-attr-detail-button {
             font-size: x-large;
             cursor: pointer;
+            position: relative;
+            top: -2px;
         }
         
         .attr-save-delete-button-container {
             display: flex; 
             margin-top: 15px;
         }
+        
+        .attr-detail input[readonly] {
+            background-color: var(--accented-background-color) !important;
+        }
     </style>
 
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <h5 class="attr-detail-title"></h5>
         
         <span class="bx bx-x close-attr-detail-button"></span>
@@ -265,7 +271,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         $(window).on('mouseup', e => {
             if (!$(e.target).closest(this.$widget[0]).length
-                && !$(e.target).closest(".algolia-autocomplete").length) {
+                && !$(e.target).closest(".algolia-autocomplete").length
+                && !$(e.target).closest("#context-menu-container").length) {
                 this.hide();
             }
         });
