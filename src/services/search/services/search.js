@@ -14,7 +14,7 @@ const utils = require('../../utils.js');
 
 /**
  * @param {Expression} expression
- * @return {Promise<SearchResult[]>}
+ * @return {SearchResult[]}
  */
 function findNotesWithExpression(expression) {
     const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
@@ -67,7 +67,7 @@ function parseQueryToExpression(query, parsingContext) {
 /**
  * @param {string} query
  * @param {ParsingContext} parsingContext
- * @return {Promise<SearchResult[]>}
+ * @return {SearchResult[]}
  */
 function findNotesWithQuery(query, parsingContext) {
     const expression = parseQueryToExpression(query, parsingContext);
@@ -79,6 +79,9 @@ function findNotesWithQuery(query, parsingContext) {
     return findNotesWithExpression(expression);
 }
 
+/**
+ * @return {SearchResult[]}
+ */
 function searchNotes(query) {
     if (!query.trim().length) {
         return [];

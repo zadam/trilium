@@ -23,7 +23,7 @@ function searchNotes(req) {
     }
 }
 
-function searchFromNote(req) {
+async function searchFromNote(req) {
     const note = repository.getNote(req.params.noteId);
 
     if (!note) {
@@ -44,15 +44,16 @@ function searchFromNote(req) {
         return [];
     }
 
-    let noteIds;
+    let searchResultNoteIds;
 
     try {
         if (json.searchString.startsWith('=')) {
             const relationName = json.searchString.substr(1).trim();
 
-            noteIds = searchFromRelation(note, relationName);
+            searchResultNoteIds = await searchFromRelation(note, relationName);
         } else {
-            noteIds = searchService.searchForNoteIds(json.searchString);
+            searchResultNoteIds = searchService.searchNotes(json.searchString)
+                .map(sr => sr.noteId);
         }
     }
     catch (e) {
@@ -62,16 +63,17 @@ function searchFromNote(req) {
     }
 
     // we won't return search note's own noteId
-    noteIds = noteIds.filter(noteId => noteId !== note.noteId);
+    // also don't allow root since that would force infinite cycle
+    searchResultNoteIds = searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
 
-    if (noteIds.length > 200) {
-        noteIds = noteIds.slice(0, 200);
+    if (searchResultNoteIds.length > 200) {
+        searchResultNoteIds = searchResultNoteIds.slice(0, 200);
     }
 
-    return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
+    return searchResultNoteIds;
 }
 
-function searchFromRelation(note, relationName) {
+async function searchFromRelation(note, relationName) {
     const scriptNote = note.getRelationTarget(relationName);
 
     if (!scriptNote) {
@@ -92,7 +94,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const result = scriptService.executeNote(scriptNote, { originEntity: note });
+    const result = await scriptService.executeNote(scriptNote, { originEntity: note });
 
     if (!Array.isArray(result)) {
         log.info(`Result from ${scriptNote.noteId} is not an array.`);

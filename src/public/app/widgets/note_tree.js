@@ -589,7 +589,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const note = await branch.getNote();
 
         if (!note) {
-            throw new Error(`Branch has no note ` + branch.noteId);
+            throw new Error(`Branch has no note "${branch.noteId}": ${JSON.stringify(note)}`);
         }
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;

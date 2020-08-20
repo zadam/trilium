@@ -165,23 +165,22 @@ class TreeCache {
 
         for (const note of resp.notes) {
             if (note.type === 'search') {
-                const searchResults = await server.get('search-note/' + note.noteId);
+                const searchResultNoteIds = await server.get('search-note/' + note.noteId);
 
-                if (!searchResults) {
+                if (!searchResultNoteIds) {
                     throw new Error(`Search note ${note.noteId} failed.`);
                 }
 
                 // force to load all the notes at once instead of one by one
-                await this.getNotes(searchResults.map(res => res.noteId));
+                await this.getNotes(searchResultNoteIds);
 
                 const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
 
-                searchResults.forEach((result, index) => branches.push({
+                searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
                     // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
-                    branchId: "virt" + result.noteId + '-' + note.noteId,
-                    noteId: result.noteId,
+                    branchId: "virt" + resultNoteId + '-' + note.noteId,
+                    noteId: resultNoteId,
                     parentNoteId: note.noteId,
-                    prefix: this.getBranch(result.branchId).prefix,
                     notePosition: (index + 1) * 10
                 }));
 
@@ -217,7 +216,7 @@ class TreeCache {
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                console.log(`Can't find note "${noteId}"`);
+                console.trace(`Can't find note "${noteId}"`);
 
                 return null;
             }
