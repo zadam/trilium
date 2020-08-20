@@ -98,7 +98,17 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
 
 async function shrinkImage(buffer, originalName) {
     // we do resizing with max (100) quality which will be trimmed during optimization step next
-    const resizedImage = await resize(buffer, 100);
+    let resizedImage;
+
+    try {
+        resizedImage = await resize(buffer, 100);
+    }
+    catch (e) {
+        log.error("Failed to resize image '" + originalName + "'\nStack: " + e.stack);
+
+        resizedImage = buffer;
+    }
+
     let finalImageBuffer;
 
     const jpegQuality = await optionService.getOptionInt('imageJpegQuality');
@@ -107,7 +117,15 @@ async function shrinkImage(buffer, originalName) {
         finalImageBuffer = await optimize(resizedImage, jpegQuality);
     } catch (e) {
         log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
-        finalImageBuffer = await resize(buffer, jpegQuality);
+
+        try {
+            finalImageBuffer = await resize(buffer, jpegQuality);
+        }
+        catch (e) {
+            log.error("Failed to resize image '" + originalName + "'\nStack: " + e.stack);
+
+            finalImageBuffer = buffer;
+        }
     }
 
     // if resizing & shrinking did not help with size then save the original
