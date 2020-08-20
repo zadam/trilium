@@ -92,7 +92,7 @@ function copyChildAttributes(parentNote, childNote) {
  * - {integer} notePosition - default is last existing notePosition in a parent + 10
  *
  * @param params
- * @return {Promise<{note: Note, branch: Branch}>}
+ * @return {{note: Note, branch: Branch}}
  */
 function createNewNote(params) {
     const parentNote = repository.getNote(params.parentNoteId);

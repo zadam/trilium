@@ -1,7 +1,7 @@
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
-<div class="note-detail-search note-detail-printable">
+<div class="note-detail-search note-detail-printable" style="padding: 20px;">
     <div style="display: flex; align-items: center; margin-right: 20px; margin-top: 15px;">
         <strong>Search string: &nbsp; &nbsp;</strong>
         <textarea rows="4" style="width: auto !important; flex-grow: 4" class="search-string form-control"></textarea>

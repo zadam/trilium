@@ -20,7 +20,7 @@ async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
         shrinkImageSwitch = false;
     }
 
-    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer) : uploadBuffer;
+    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer, originalName) : uploadBuffer;
 
     const imageFormat = getImageType(finalImageBuffer);
 
@@ -104,11 +104,20 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     };
 }
 
-async function shrinkImage(buffer) {
+async function shrinkImage(buffer, originalName) {
     const jpegQuality = optionService.getOptionInt('imageJpegQuality');
-    let finalImageBuffer = await resize(buffer, jpegQuality);
 
-    // if resizing & shrinking did not help with size then save the original
+    let finalImageBuffer;
+    try {
+        finalImageBuffer = await resize(buffer, jpegQuality);
+    }
+    catch (e) {
+        log.error("Failed to resize image '" + originalName + "'\nStack: " + e.stack);
+
+        finalImageBuffer = buffer;
+    }
+
+    // if resizing did not help with size then save the original
     // (can happen when e.g. resizing PNG into JPEG)
     if (finalImageBuffer.byteLength >= buffer.byteLength) {
         finalImageBuffer = buffer;

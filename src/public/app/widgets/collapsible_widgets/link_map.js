@@ -1,4 +1,5 @@
 import CollapsibleWidget from "../collapsible_widget.js";
+import treeCache from "../../services/tree_cache.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -88,6 +89,20 @@ export default class LinkMapWidget extends CollapsibleWidget {
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes().find(attr => attr.type === 'relation' && (attr.noteId === this.noteId || attr.value === this.noteId))) {
             this.noteSwitched();
+        }
+
+        const changedNoteIds = loadResults.getNoteIds();
+
+        if (changedNoteIds.length > 0) {
+            const $linkMapContainer = this.$body.find('.link-map-container');
+
+            for (const noteId of changedNoteIds) {
+                const note = treeCache.notes[noteId];
+
+                if (note) {
+                    $linkMapContainer.find(`a[data-note-path="${noteId}"]`).text(note.title);
+                }
+            }
         }
     }
 }

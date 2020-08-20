@@ -9,7 +9,7 @@ function getOption(name) {
 }
 
 /**
- * @return {Promise<number>}
+ * @return {number}
  */
 function getOptionInt(name) {
     const val = getOption(name);
@@ -24,7 +24,7 @@ function getOptionInt(name) {
 }
 
 /**
- * @return {Promise<boolean>}
+ * @return {boolean}
  */
 function getOptionBool(name) {
     const val = getOption(name);
