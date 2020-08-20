@@ -22,6 +22,29 @@ describe("Lexer fulltext", () => {
             .toEqual(["i can use \" or ` or #~=*", "without", "problem"]);
     });
 
+    it("I can use backslash to escape quotes", () => {
+        expect(lex("hello \\\"world\\\"").fulltextTokens.map(t => t.token))
+            .toEqual(["hello", '"world"']);
+
+        expect(lex("hello \\\'world\\\'").fulltextTokens.map(t => t.token))
+            .toEqual(["hello", "'world'"]);
+
+        expect(lex("hello \\\`world\\\`").fulltextTokens.map(t => t.token))
+            .toEqual(["hello", '`world`']);
+
+        expect(lex('"hello \\\"world\\\"').fulltextTokens.map(t => t.token))
+            .toEqual(['hello "world"']);
+
+        expect(lex("'hello \\\'world\\\''").fulltextTokens.map(t => t.token))
+            .toEqual(["hello 'world'"]);
+
+        expect(lex("`hello \\\`world\\\``").fulltextTokens.map(t => t.token))
+            .toEqual(["hello `world`"]);
+
+        expect(lex("\\#token").fulltextTokens.map(t => t.token))
+            .toEqual(["#token"]);
+    });
+
     it("quote inside a word does not have a special meaning", () => {
         const lexResult = lex("d'Artagnan is dead #hero = d'Artagnan");
 
