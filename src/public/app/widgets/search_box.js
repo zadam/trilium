@@ -3,6 +3,7 @@ import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import noteCreateService from "../services/note_create.js";
 import utils from "../services/utils.js";
+import treeCache from "../services/tree_cache.js";
 
 const TPL = `
 <div class="search-box">
@@ -105,14 +106,13 @@ export default class SearchBoxWidget extends BasicWidget {
             return;
         }
 
-        // FIXME
-        let activeNote = appContext.tabManager.getActiveTabNote();
+        let parent = appContext.tabManager.getActiveTabNote();
 
-        if (activeNote.type === 'search') {
-            activeNote = activeNote.getParentNotes()[0];
+        if (parent.type === 'search') {
+            parent = await treeCache.getNote('root');
         }
 
-        await noteCreateService.createNote(activeNote.noteId, {
+        await noteCreateService.createNote(parent.noteId, {
             type: "search",
             mime: "application/json",
             title: searchString,
