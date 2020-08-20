@@ -83,6 +83,10 @@ function lex(str) {
             continue;
         }
         else if (!quotes) {
+            if (!fulltextEnded && currentWord === 'note' && chr === '.') {
+                fulltextEnded = true;
+            }
+
             if (chr === '#' || chr === '~') {
                 if (!fulltextEnded) {
                     fulltextEnded = true;

@@ -75,6 +75,19 @@ describe("Lexer expression", () => {
             ]);
     });
 
+    it("note. prefix also separates fulltext from expression", () => {
+        expect(lex(`hello fulltext note.labels.capital = Prague`).expressionTokens.map(t => t.token))
+            .toEqual(["note", ".", "labels", ".", "capital", "=", "prague"]);
+    });
+
+    it("note. prefix in quotes will note start expression", () => {
+        expect(lex(`hello fulltext "note.txt"`).expressionTokens.map(t => t.token))
+            .toEqual([]);
+
+        expect(lex(`hello fulltext "note.txt"`).fulltextTokens.map(t => t.token))
+            .toEqual(["hello", "fulltext", "note.txt"]);
+    });
+
     it("complex expressions with and, or and parenthesis", () => {
         expect(lex(`# (#label=text OR #second=text) AND ~relation`).expressionTokens.map(t => t.token))
             .toEqual(["#", "(", "#label", "=", "text", "or", "#second", "=", "text", ")", "and", "~relation"]);
