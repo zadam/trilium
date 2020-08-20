@@ -54,7 +54,7 @@
     "jimp": "0.10.3",
     "mime-types": "2.1.27",
     "multer": "1.4.2",
-    "node-abi": "2.16.0",
+    "node-abi": "2.18.0",
     "open": "7.0.3",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",

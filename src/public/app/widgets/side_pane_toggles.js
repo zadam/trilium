@@ -20,8 +20,8 @@ const TPL = `
     }
     </style>
     
-    <button class="hide-left-pane-button btn btn-sm icon-button bx bx-chevrons-left" title="Show sidebar"></button>
-    <button class="show-left-pane-button btn btn-sm icon-button bx bx-chevrons-right" title="Hide sidebar"></button>
+    <button class="hide-left-pane-button btn btn-sm icon-button bx bx-chevrons-left" title="Hide sidebar"></button>
+    <button class="show-left-pane-button btn btn-sm icon-button bx bx-chevrons-right" title="Show sidebar"></button>
             
     <button class="hide-right-pane-button btn btn-sm icon-button bx bx-chevrons-right" title="Hide sidebar"></button>
     <button class="show-right-pane-button btn btn-sm icon-button bx bx-chevrons-left" title="Show sidebar"></button>
