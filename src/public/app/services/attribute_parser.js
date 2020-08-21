@@ -1,4 +1,6 @@
-function lexer(str) {
+function lex(str) {
+    str = str.trim();
+
     const tokens = [];
 
     let quotes = false;
@@ -106,12 +108,16 @@ function lexer(str) {
 const attrNameMatcher = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
 
 function checkAttributeName(attrName) {
+    if (attrName.length === 0) {
+        throw new Error("Attribute name is empty, please fill the name.");
+    }
+
     if (!attrNameMatcher.test(attrName)) {
         throw new Error(`Attribute name "${attrName}" contains disallowed characters, only alphanumeric characters, colon and underscore are allowed.`);
     }
 }
 
-function parser(tokens, str, allowEmptyRelations = false) {
+function parse(tokens, str, allowEmptyRelations = false) {
     const attrs = [];
 
     function context(i) {
@@ -213,13 +219,13 @@ function parser(tokens, str, allowEmptyRelations = false) {
 }
 
 function lexAndParse(str, allowEmptyRelations = false) {
-    const tokens = lexer(str);
+    const tokens = lex(str);
 
-    return parser(tokens, str, allowEmptyRelations);
+    return parse(tokens, str, allowEmptyRelations);
 }
 
 export default {
-    lexer,
-    parser,
+    lex,
+    parse,
     lexAndParse
 }

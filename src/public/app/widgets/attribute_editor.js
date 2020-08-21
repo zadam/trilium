@@ -7,6 +7,13 @@ import libraryLoader from "../services/library_loader.js";
 import treeCache from "../services/tree_cache.js";
 import attributeRenderer from "../services/attribute_renderer.js";
 
+const HELP_TEXT = `
+<p>To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code></p> 
+
+<p>For relation, type <code>~author = @</code> which should bring up an autocomplete where you can look up the desired note.</p>
+
+<p>Alternatively you can add label and relation using the <code>+</code> button on the right side.</p>`;
+
 const TPL = `
 <div style="position: relative">
     <style>
@@ -170,7 +177,7 @@ const editorConfig = {
     toolbar: {
         items: []
     },
-    placeholder: "Type the labels and relations here, e.g. #year=2020",
+    placeholder: "Type the labels and relations here",
     mention: mentionSetup
 };
 
@@ -339,10 +346,10 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    async handleEditorClick(e) {console.log("click")
+    async handleEditorClick(e) {
         const pos = this.textEditor.model.document.selection.getFirstPosition();
 
-        if (pos && pos.textNode && pos.textNode.data) {console.log(pos);
+        if (pos && pos.textNode && pos.textNode.data) {
             const clickIndex = this.getClickIndex(pos);
 
             let parsedAttrs;
@@ -350,7 +357,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             try {
                 parsedAttrs = attributesParser.lexAndParse(this.getPreprocessedData(), true);
             }
-            catch (e) {console.log(e);
+            catch (e) {
                 // the input is incorrect because user messed up with it and now needs to fix it manually
                 return null;
             }
@@ -365,15 +372,37 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             }
 
             setTimeout(() => {
-                this.attributeDetailWidget.showAttributeDetail({
-                    allAttributes: parsedAttrs,
-                    attribute: matchedAttr,
-                    isOwned: true,
-                    x: e.pageX,
-                    y: e.pageY
-                });
+                if (matchedAttr) {
+                    this.$editor.tooltip('hide');
+
+                    this.attributeDetailWidget.showAttributeDetail({
+                        allAttributes: parsedAttrs,
+                        attribute: matchedAttr,
+                        isOwned: true,
+                        x: e.pageX,
+                        y: e.pageY
+                    });
+                }
+                else {
+                    this.showHelpTooltip();
+                }
             }, 100);
         }
+        else {
+            this.showHelpTooltip();
+        }
+    }
+
+    showHelpTooltip() {console.log("showHelpTooltip");
+        this.attributeDetailWidget.hide();
+
+        this.$editor.tooltip({
+            trigger: 'focus',
+            html: true,
+            title: HELP_TEXT,
+            placement: 'bottom',
+            offset: "0,20"
+        });
     }
 
     getClickIndex(pos) {
@@ -424,7 +453,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
             }
         }
-
+        
         this.textEditor.setData($attributesContainer.html());
 
         if (saved) {
@@ -436,7 +465,12 @@ export default class AttributeEditorWidget extends TabAwareWidget {
 
     async focusOnAttributesEvent({tabId}) {
         if (this.tabContext.tabId === tabId) {
-            this.$editor.trigger('focus');
+            if (this.$editor.is(":visible")) {
+                this.$editor.trigger('focus');
+            }
+            else {
+                this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
+            }
         }
     }
 
