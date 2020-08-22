@@ -7,15 +7,11 @@ then
     ./bin/copy-trilium.sh $SRC_DIR
 fi
 
-echo "Copying required linux-x64 binaries"
-
-rm -r $SRC_DIR/node_modules/sqlite3/lib/binding/*
-rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
-
 rm -r $SRC_DIR/src/public/app-dist/*.mobile.*
 
-cp -r bin/deps/linux-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
-cp bin/deps/linux-x64/image/pngquant $SRC_DIR/node_modules/pngquant-bin/vendor/
+echo "Copying required linux-x64 binaries"
+
+cp -r bin/better-sqlite3/linux-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 
