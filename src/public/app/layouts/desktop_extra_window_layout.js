@@ -8,8 +8,8 @@ import NoteTitleWidget from "../widgets/note_title.js";
 import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
-import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
+import AttributeListWidget from "../widgets/attribute_list.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -23,7 +23,7 @@ export default class DesktopExtraWindowLayout {
             .setParent(appContext)
             .id('root-widget')
             .css('height', '100vh')
-            .child(new FlexContainer('row')
+            .child(new FlexContainer('row').overflowing()
                 .child(new GlobalMenuWidget())
                 .child(new TabRowWidget())
                 .child(new TitleBarButtonsWidget()))
@@ -31,13 +31,14 @@ export default class DesktopExtraWindowLayout {
                 .collapsible()
                 .child(new FlexContainer('column').id('center-pane').css('flex-grow', '1')
                     .child(new FlexContainer('row').class('title-row')
+                        .overflowing()
                         .cssBlock('.title-row > * { margin: 5px; }')
                         .child(new NoteTitleWidget())
                         .child(new RunScriptButtonsWidget().hideInZenMode())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
-                    .child(new TabCachingWidget(() => new PromotedAttributesWidget()))
+                    .child(new TabCachingWidget(() => new AttributeListWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )

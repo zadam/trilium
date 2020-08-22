@@ -109,7 +109,7 @@ export default class DesktopMainWindowLayout {
             .setParent(appContext)
             .id('root-widget')
             .css('height', '100vh')
-            .child(new FlexContainer('row')
+            .child(new FlexContainer('row').overflowing()
                 .css('height', '35px')
                 .child(new GlobalMenuWidget())
                 .child(new TabRowWidget())

@@ -33,7 +33,7 @@ const WIDGET_TPL = `
 class GlobalButtonsWidget extends BasicWidget {
     doRender() {
         this.$widget = $(WIDGET_TPL);
-        this.contentSized();
+        this.overflowing();
     }
 }
 

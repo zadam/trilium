@@ -66,6 +66,7 @@ const TPL = `
 export default class StandardTopWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
         const historyNavigationWidget = new HistoryNavigationWidget();
         this.child(historyNavigationWidget);

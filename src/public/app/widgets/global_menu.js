@@ -104,7 +104,7 @@ const TPL = `
 export default class GlobalMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$widget.find(".show-about-dialog-button").on('click',
             () => import("../dialogs/about.js").then(d => d.showDialog()));
