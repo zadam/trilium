@@ -1,5 +1,6 @@
 "use strict";
 
+const dayjs = require("dayjs");
 const AndExp = require('../expressions/and.js');
 const OrExp = require('../expressions/or.js');
 const NotExp = require('../expressions/not.js');
@@ -14,7 +15,7 @@ const NoteCacheFulltextExp = require('../expressions/note_cache_flat_text.js');
 const NoteContentProtectedFulltextExp = require('../expressions/note_content_protected_fulltext.js');
 const NoteContentUnprotectedFulltextExp = require('../expressions/note_content_unprotected_fulltext.js');
 const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
-const comparatorBuilder = require('./build_comparator.js');
+const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor.js');
 
 function getFulltext(tokens, parsingContext) {
@@ -41,7 +42,7 @@ function getFulltext(tokens, parsingContext) {
 
     return new AndExp([
         textSearchExpression,
-        new PropertyComparisonExp("isarchived", comparatorBuilder("=", "false"))
+        new PropertyComparisonExp("isarchived", buildComparator("=", "false"))
     ]);
 }
 
@@ -67,6 +68,55 @@ function getExpression(tokens, parsingContext, level = 0) {
         return '"' + (startIndex !== 0 ? "..." : "")
             + parsingContext.originalQuery.substr(startIndex, endIndex - startIndex)
             + (endIndex !== parsingContext.originalQuery.length ? "..." : "") + '"';
+    }
+
+    function resolveConstantOperand() {
+        const operand = tokens[i];
+
+        if (!operand.inQuotes
+            && (operand.token.startsWith('#') || operand.token.startsWith('~') || operand.token === 'note')) {
+            parsingContext.addError(`Error near token "${operand.token}" in ${context(i)}, it's possible to compare with constant only.`);
+            return null;
+        }
+
+        if (operand.inQuotes || !["now", "today", "month", "year"].includes(operand.token)) {
+            return operand.token;
+        }
+
+        let delta = 0;
+
+        if (i + 2 < tokens.length) {
+            if (tokens[i + 1].token === '+') {
+                delta += parseInt(tokens[i + 2].token);
+            }
+            else if (tokens[i + 1].token === '-') {
+                delta -= parseInt(tokens[i + 2].token);
+            }
+        }
+
+        let format, date;
+
+        if (operand.token === 'now') {
+            date = dayjs().add(delta, 'second');
+            format = "YYYY-MM-DD HH:mm:ss";
+        }
+        else if (operand.token === 'today') {
+            date = dayjs().add(delta, 'day');
+            format = "YYYY-MM-DD";
+        }
+        else if (operand.token === 'month') {
+            date = dayjs().add(delta, 'month');
+            format = "YYYY-MM";
+        }
+        else if (operand.token === 'year') {
+            date = dayjs().add(delta, 'year');
+            format = "YYYY";
+        }
+        else {
+            throw new Error("Unrecognized keyword: " + operand.token);
+        }
+
+        return date.format(format);
     }
 
     function parseNoteProperty() {
@@ -150,7 +200,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const propertyName = tokens[i].token;
             const operator = tokens[i + 1].token;
             const comparedValue = tokens[i + 2].token;
-            const comparator = comparatorBuilder(operator, comparedValue);
+            const comparator = buildComparator(operator, comparedValue);
 
             if (!comparator) {
                 parsingContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
@@ -186,11 +236,12 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (i < tokens.length - 2 && isOperator(tokens[i + 1].token)) {
             let operator = tokens[i + 1].token;
-            const comparedValue = tokens[i + 2].token;
 
-            if (!tokens[i + 2].inQuotes
-                && (comparedValue.startsWith('#') || comparedValue.startsWith('~') || comparedValue === 'note')) {
-                parsingContext.addError(`Error near token "${comparedValue}" in ${context(i)}, it's possible to compare with constant only.`);
+            i += 2;
+
+            const comparedValue = resolveConstantOperand();
+
+            if (comparedValue === null) {
                 return;
             }
 
@@ -200,13 +251,11 @@ function getExpression(tokens, parsingContext, level = 0) {
                 operator = '*=*';
             }
 
-            const comparator = comparatorBuilder(operator, comparedValue);
+            const comparator = buildComparator(operator, comparedValue);
 
             if (!comparator) {
-                parsingContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
+                parsingContext.addError(`Can't find operator '${operator}' in ${context(i - 1)}`);
             } else {
-                i += 2;
-
                 return new LabelComparisonExp('label', labelName, comparator);
             }
         } else {

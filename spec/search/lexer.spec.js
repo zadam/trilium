@@ -65,6 +65,11 @@ describe("Lexer fulltext", () => {
             .toEqual(["what's", "u=p", "<b(r*t)h>"]);
     });
 
+    it("operator characters in expressions are separate tokens", () => {
+        expect(lex("# abc+=-def**-+d").expressionTokens.map(t => t.token))
+            .toEqual(["#", "abc", "+=-", "def", "**-+", "d"]);
+    });
+
     it("escaping special characters", () => {
         expect(lex("hello \\#\\~\\'").fulltextTokens.map(t => t.token))
             .toEqual(["hello", "#~'"]);

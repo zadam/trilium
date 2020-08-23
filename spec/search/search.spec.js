@@ -121,11 +121,11 @@ describe("Search", () => {
 
         const parsingContext = new ParsingContext();
 
-        let searchResults = searchService.findNotesWithQuery('#established <= 1955-01-01', parsingContext);
+        let searchResults = searchService.findNotesWithQuery('#established <= "1955-01-01"', parsingContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Hungary")).toBeTruthy();
 
-        searchResults = searchService.findNotesWithQuery('#established > 1955-01-01', parsingContext);
+        searchResults = searchService.findNotesWithQuery('#established > "1955-01-01"', parsingContext);
         expect(searchResults.length).toEqual(2);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
@@ -154,20 +154,30 @@ describe("Search", () => {
         }
 
         test("#year = YEAR", 1);
+        test("#year = 'YEAR'", 0);
         test("#year >= YEAR", 1);
         test("#year <= YEAR", 1);
         test("#year < YEAR+1", 1);
+        test("#year < YEAR + 1", 1);
+        test("#year < year + 1", 1);
         test("#year > YEAR+1", 0);
 
         test("#month = MONTH", 1);
+        test("#month = month", 1);
+        test("#month = 'MONTH'", 0);
 
         test("#date = TODAY", 1);
+        test("#date = today", 1);
+        test("#date = 'today'", 0);
         test("#date > TODAY", 0);
         test("#date > TODAY-1", 1);
+        test("#date > TODAY - 1", 1);
         test("#date < TODAY+1", 1);
+        test("#date < TODAY + 1", 1);
         test("#date < 'TODAY + 1'", 1);
 
         test("#dateTime <= NOW+10", 1);
+        test("#dateTime <= NOW + 10", 1);
         test("#dateTime < NOW-10", 0);
         test("#dateTime >= NOW-10", 1);
         test("#dateTime < NOW-10", 0);

@@ -219,7 +219,7 @@ describe("Invalid expressions", () => {
             parsingContext
         });
 
-        expect(parsingContext.error).toEqual(`Error near token "note" in "#first = note.relations.s...", it's possible to compare with constant only.`);
+        expect(parsingContext.error).toEqual(`Error near token "note" in "#first = note.relations.second", it's possible to compare with constant only.`);
 
         const rootExp = parse({
             fulltextTokens: [],
