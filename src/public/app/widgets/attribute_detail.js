@@ -25,6 +25,11 @@ const TPL = `
             box-shadow: 10px 10px 93px -25px var(--main-text-color);
         }
         
+        .attr-help td {
+            color: var(--muted-text-color);
+            padding: 5px;
+        }
+        
         .related-notes-list {
             padding-left: 20px;
             margin-top: 10px;
@@ -73,24 +78,26 @@ const TPL = `
             <th>Name:</th>
             <td><input type="text" class="attr-input-name form-control" /></td>
         </tr>
+        <tr class="attr-help"></tr>
         <tr class="attr-row-value">
             <th>Value:</th>
             <td><input type="text" class="attr-input-value form-control" /></td>
         </tr>
         <tr class="attr-row-target-note">
-            <th>Target note:</th>
+            <th title="Relation is a named connection between source note and target note.">Target note:</th>
             <td>
                 <div class="input-group">
                     <input type="text" class="attr-input-target-note form-control" />
                 </div>
             </td>
         </tr>
-        <tr class="attr-row-promoted">
+        <tr class="attr-row-promoted"
+            title="Promoted attribute is displayed prominently on the note.">
             <th>Promoted:</th>
             <td><input type="checkbox" class="attr-input-promoted form-control form-control-sm" /></td>
         </tr>
         <tr class="attr-row-multiplicity">
-            <th>Multiplicity:</th>
+            <th title="Multiplicity defines how many attributes of the same name can be created - at max 1 or more than 1.">Multiplicity:</th>
             <td>
                 <select class="attr-input-multiplicity form-control">
                   <option value="single">Single value</option>
@@ -99,7 +106,7 @@ const TPL = `
             </td>
         </tr>
         <tr class="attr-row-label-type">
-            <th>Type:</th>
+            <th title="Type of the label will help Trilium to choose suitable interface to enter the label value.">Type:</th>
             <td>
                 <select class="attr-input-label-type form-control">
                   <option value="text">Text</option>
@@ -111,7 +118,7 @@ const TPL = `
             </td>
         </tr>
         <tr class="attr-row-number-precision">
-            <th>Precision:</th>
+            <th title="What number of digits after floating point should be available in the value setting interface.">Precision:</th>
             <td>
                 <div class="input-group">
                     <input type="number" class="form-control attr-input-number-precision" style="text-align: right">
@@ -122,14 +129,14 @@ const TPL = `
             </td>
         </tr>
         <tr class="attr-row-inverse-relation">
-            <th>Inverse relation:</th>
+            <th title="Optional setting to define to which relation is this one opposite. Example: Father - Son are inverse relations to each other.">Inverse relation:</th>
             <td>
                 <div class="input-group">
                     <input type="text" class="attr-input-inverse-relation form-control" />
                 </div>
             </td>
         </tr>
-        <tr>
+        <tr title="Inheritable attribute will be inherited to all descendants under this tree.">
             <th>Inheritable:</th>
             <td><input type="checkbox" class="attr-input-inheritable form-control form-control-sm" /></td>
         </tr>
@@ -166,6 +173,45 @@ const ATTR_TITLES = {
 
 const ATTR_NAME_MATCHER = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
 
+const ATTR_HELP = {
+    "label": {
+        "disableVersioning": "disables auto-versioning. Useful for e.g. large, but unimportant notes - e.g. large JS libraries used for scripting",
+        "calendarRoot": "marks note which should be used as root for day notes. Only one should be marked as such.",
+        "archived": "notes with this label won't be visible by default in search results (also in Jump To, Add Link dialogs etc).",
+        "excludeFromExport": "notes (with their sub-tree) won't be included in any note export",
+        "run": `defines on which events script should run. Possible values are:
+                <ul>
+                    <li>frontendStartup - when Trilium frontend starts up (or is refreshed).</li>
+                    <li>backendStartup - when Trilium backend starts up</li>
+                    <li>hourly - run once an hour</li>
+                    <li>daily - run once a day</li>
+                </ul>`,
+        "disableInclusion": "scripts with this label won't be included into parent script execution.",
+        "sorted": "keeps child notes sorted by title alphabetically",
+        "hidePromotedAttributes": "Hide promoted attributes on this note",
+        "readOnly": "editor is in read only mode. Works only for text notes.",
+        "autoReadOnlyDisabled": "text/code notes can be set automatically into read mode when they are too large. You can disable this behavior on per-note basis by adding this label to the note",
+        "appCss": "marks CSS notes which are loaded into the Trilium application and can thus be used to modify Trilium's looks.",
+        "appTheme": "marks CSS notes which are full Trilium themes and are thus available in Trilium options.",
+        "cssClass": "value of this label is then added as CSS class to the node representing given note in the tree. This can be useful for advanced theming. Can be used in template notes.",
+        "iconClass": "value of this label is added as a CSS class to the icon on the tree which can help visually distinguish the notes in the tree. Example might be bx bx-home - icons are taken from boxicons. Can be used in template notes.",
+        "bookZoomLevel": 'applies only to book note and sets the "zoom level" (how many notes fit on 1 row)',
+        "customRequestHandler": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>',
+        "customResourceProvider": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>'
+    },
+    "relation": {
+        "runOnNoteCreation": "executes when note is created on backend",
+        "runOnNoteTitleChange": "executes when note title is changed (includes note creation as well)",
+        "runOnNoteChange": "executes when note is changed (includes note creation as well)",
+        "runOnChildNoteCreation": "executes when new note is created under this note",
+        "runOnAttributeCreation": "executes when new attribute is created under this note",
+        "runOnAttributeChange": "executes when attribute is changed under this note",
+        "template": "attached note's attributes will be inherited even without parent-child relationship. See template for details.",
+        "renderNote": 'notes of type "render HTML note" will be rendered using a code note (HTML or script) and it is necessary to point using this relation to which note should be rendered',
+        "widget": "target of this relation will be executed and rendered as a widget in the sidebar"
+    }
+};
+
 export default class AttributeDetailWidget extends TabAwareWidget {
     async refresh() {
         // this widget is not activated in a standard way
@@ -178,11 +224,6 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
-
-        this.$relatedNotesContainer = this.$widget.find('.related-notes-container');
-        this.$relatedNotesTitle = this.$relatedNotesContainer.find('.related-notes-tile');
-        this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
-        this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
         this.$inputName = this.$widget.find('.attr-input-name');
         this.$inputName.on('keyup', () => this.userEditedAttribute());
@@ -267,6 +308,13 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.hide();
         });
 
+        this.$attrHelp = this.$widget.find('.attr-help');
+
+        this.$relatedNotesContainer = this.$widget.find('.related-notes-container');
+        this.$relatedNotesTitle = this.$relatedNotesContainer.find('.related-notes-tile');
+        this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
+        this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
+
         this.$closeAttrDetailButton.on('click', () => this.hide());
 
         $(window).on('mouseup', e => {
@@ -280,7 +328,26 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
     userEditedAttribute() {
         this.updateAttributeInEditor();
+        this.updateHelp();
         this.relatedNotesSpacedUpdate.scheduleUpdate();
+    }
+
+    updateHelp() {
+        const attrName = this.$inputName.val();
+
+        if (this.attrType in ATTR_HELP && attrName in ATTR_HELP[this.attrType]) {
+            this.$attrHelp
+                .empty()
+                .append($("<td colspan=2>")
+                    .append($("<strong>").text(attrName))
+                    .append(" - ")
+                    .append(ATTR_HELP[this.attrType][attrName])
+                )
+                .show();
+        }
+        else {
+            this.$attrHelp.empty().hide();
+        }
     }
 
     async showAttributeDetail({allAttributes, attribute, isOwned, x, y}) {
@@ -371,6 +438,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$inputInheritable
             .prop("checked", !!attribute.isInheritable)
             .attr('disabled', () => !isOwned);
+
+        this.updateHelp();
 
         this.toggleInt(true);
 
