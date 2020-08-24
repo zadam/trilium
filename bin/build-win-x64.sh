@@ -9,15 +9,7 @@ fi
 
 echo "Copying required windows binaries"
 
-rm -r $SRC_DIR/node_modules/sqlite3/lib/binding/*
-rm -r $SRC_DIR/node_modules/mozjpeg/vendor/*
-rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
-rm -r $SRC_DIR/node_modules/giflossy/vendor/*
-
-cp -r bin/deps/win-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
-cp bin/deps/win-x64/image/cjpeg.exe $SRC_DIR/node_modules/mozjpeg/vendor/
-cp bin/deps/win-x64/image/pngquant.exe $SRC_DIR/node_modules/pngquant-bin/vendor/
-cp bin/deps/win-x64/image/gifsicle.exe $SRC_DIR/node_modules/giflossy/vendor/
+cp -r bin/better-sqlite3/win-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 
 rm -r $SRC_DIR/src/public/app-dist/*.mobile.*
 
