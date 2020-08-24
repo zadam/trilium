@@ -30,16 +30,16 @@ function isRootNode(node) {
 async function checkNoteAccess(notePath) {
     // notePath argument can contain only noteId which is not good when hoisted since
     // then we need to check the whole note path
-    const runNotePath = await treeService.getRunPath(notePath);
+    const resolvedNotePath = await treeService.resolveNotePath(notePath);
 
-    if (!runNotePath) {
+    if (!resolvedNotePath) {
         console.log("Cannot activate " + notePath);
         return false;
     }
 
     const hoistedNoteId = getHoistedNoteId();
 
-    if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
+    if (hoistedNoteId !== 'root' && !resolvedNotePath.includes(hoistedNoteId)) {
         const confirmDialog = await import('../dialogs/confirm.js');
 
         if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?")) {

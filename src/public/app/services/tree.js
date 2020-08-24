@@ -6,25 +6,25 @@ import hoistedNoteService from '../services/hoisted_note.js';
 import appContext from "./app_context.js";
 
 /**
- * Accepts notePath which might or might not be valid and returns an existing path as close to the original
- * notePath as possible.
  * @return {string|null}
  */
 async function resolveNotePath(notePath) {
-    const runPath = await getRunPath(notePath);
+    const runPath = await resolveNotePathToSegments(notePath);
 
     return runPath ? runPath.join("/") : null;
 }
 
 /**
- * Accepts notePath and tries to resolve it. Part of the path might not be valid because of note moving (which causes
+ * Accepts notePath which might or might not be valid and returns an existing path as close to the original
+ * notePath as possible. Part of the path might not be valid because of note moving (which causes
  * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
  *
  * @return {string[]}
  */
-async function getRunPath(notePath, logErrors = true) {
+async function resolveNotePathToSegments(notePath, logErrors = true) {
     utils.assertArguments(notePath);
 
+    // we might get notePath with the tabId suffix, remove it if present
     notePath = notePath.split("-")[0].trim();
 
     if (notePath.length === 0) {
@@ -54,48 +54,38 @@ async function getRunPath(notePath, logErrors = true) {
             const child = await treeCache.getNote(childNoteId);
 
             if (!child) {
-                console.log("Can't find note " + childNoteId);
+                console.log(`Can't find note ${childNoteId}`);
                 return;
             }
 
             const parents = child.getParentNotes();
 
-            if (!parents) {
-                ws.logError("No parents found for " + childNoteId);
+            if (!parents.length) {
+                if (logErrors) {
+                    ws.logError(`No parents found for ${childNoteId}`);
+                }
+
                 return;
             }
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
                 if (logErrors) {
-                    console.log(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
+                    console.log(utils.now(), `Did not find parent ${parentNoteId} for child ${childNoteId}, available parents: ${parents}`);
                 }
 
-                if (parents.length > 0) {
-                    if (logErrors) {
-                        console.log(utils.now(), "Available parents:", parents);
+                const someNotePath = getSomeNotePath(parents[0]);
+
+                if (someNotePath) { // in case it's root the path may be empty
+                    const pathToRoot = someNotePath.split("/").reverse();
+
+                    for (const noteId of pathToRoot) {
+                        effectivePath.push(noteId);
                     }
 
-                    const someNotePath = getSomeNotePath(parents[0]);
-
-                    if (someNotePath) { // in case it's root the path may be empty
-                        const pathToRoot = someNotePath.split("/").reverse();
-
-                        for (const noteId of pathToRoot) {
-                            effectivePath.push(noteId);
-                        }
-
-                        effectivePath.push('root');
-                    }
-
-                    break;
+                    effectivePath.push('root');
                 }
-                else {
-                    if (logErrors) {
-                        console.log("No parents so no run path.");
-                    }
 
-                    return;
-                }
+                break;
             }
         }
 
@@ -136,7 +126,7 @@ function getSomeNotePath(note) {
 }
 
 async function sortAlphabetically(noteId) {
-    await server.put('notes/' + noteId + '/sort');
+    await server.put(`notes/${noteId}/sort`);
 }
 
 ws.subscribeToMessages(message => {
@@ -238,7 +228,7 @@ async function getNoteTitle(noteId, parentNoteId = null) {
             const branch = treeCache.getBranch(branchId);
 
             if (branch && branch.prefix) {
-                title = branch.prefix + ' - ' + title;
+                title = `${branch.prefix} - ${title}`;
             }
         }
     }
@@ -290,8 +280,8 @@ function parseNotePath(notePath) {
 export default {
     sortAlphabetically,
     resolveNotePath,
+    resolveNotePathToSegments,
     getSomeNotePath,
-    getRunPath,
     getParentProtectedStatus,
     getNotePath,
     getNoteIdFromNotePath,

@@ -303,12 +303,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$tree.fancytree({
             titlesTabbable: true,
             autoScroll: true,
-            keyboard: false, // we takover keyboard handling in the hotkeys plugin
+            keyboard: true,
             extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
             source: treeData,
             scrollOfs: {
-                top: 200,
-                bottom: 200
+                top: 100,
+                bottom: 100
             },
             scrollParent: this.$tree,
             minExpandLevel: 2, // root can't be collapsed
@@ -372,10 +372,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }));
 
                     data.dataTransfer.setData("text", JSON.stringify(notes));
-
-                    // This function MUST be defined to enable dragging for the tree.
-                    // Return false to cancel dragging of node.
-                    return true;
+                    return true; // allow dragging to start
                 },
                 dragEnter: (node, data) => true, // allow drop on any node
                 dragOver: (node, data) => true,
@@ -528,6 +525,38 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
+    async prepareSearchNoteChildren(note) {
+        await treeCache.reloadNotes([note.noteId]);
+
+        const newNote = await treeCache.getNote(note.noteId);
+
+        return await this.prepareNormalNoteChildren(newNote);
+    }
+
+    async prepareNormalNoteChildren(parentNote) {
+        utils.assertArguments(parentNote);
+
+        const noteList = [];
+
+        const hideArchivedNotes = this.hideArchivedNotes;
+
+        for (const branch of this.getChildBranches(parentNote)) {
+            if (hideArchivedNotes) {
+                const note = await branch.getNote();
+
+                if (note.hasLabel('archived')) {
+                    continue;
+                }
+            }
+
+            const node = await this.prepareNode(branch);
+
+            noteList.push(node);
+        }
+
+        return noteList;
+    }
+
     getIconClass(note) {
         const labels = note.getLabels('iconClass');
 
@@ -631,30 +660,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async prepareNormalNoteChildren(parentNote) {
-        utils.assertArguments(parentNote);
-
-        const noteList = [];
-
-        const hideArchivedNotes = this.hideArchivedNotes;
-
-        for (const branch of this.getChildBranches(parentNote)) {
-            if (hideArchivedNotes) {
-                const note = await branch.getNote();
-
-                if (note.hasLabel('archived')) {
-                    continue;
-                }
-            }
-
-            const node = await this.prepareNode(branch);
-
-            noteList.push(node);
-        }
-
-        return noteList;
-    }
-
     getChildBranches(parentNote) {
         let childBranches = parentNote.getChildBranches();
 
@@ -676,14 +681,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         // note may appear as folder but not contain any children when all of them are archived
 
         return childBranches;
-    }
-
-    async prepareSearchNoteChildren(note) {
-        await treeCache.reloadNotes([note.noteId]);
-
-        const newNote = await treeCache.getNote(note.noteId);
-
-        return await this.prepareNormalNoteChildren(newNote);
     }
 
     getExtraClasses(note) {
@@ -810,9 +807,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         /** @const {FancytreeNode} */
         let parentNode = null;
 
-        const runPath = await treeService.getRunPath(notePath, logErrors);
+        const resolvedNotePathSegments = await treeService.resolveNotePathToSegments(notePath, logErrors);
 
-        if (!runPath) {
+        if (!resolvedNotePathSegments) {
             if (logErrors) {
                 console.error("Could not find run path for notePath:", notePath);
             }
@@ -820,7 +817,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return;
         }
 
-        for (const childNoteId of runPath) {
+        for (const childNoteId of resolvedNotePathSegments) {
             if (childNoteId === hoistedNoteId) {
                 // there must be exactly one node with given hoistedNoteId
                 parentNode = this.getNodesByNoteId(childNoteId)[0];
@@ -870,16 +867,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     /** @return {FancytreeNode} */
     findChildNode(parentNode, childNoteId) {
-        let foundChildNode = null;
-
-        for (const childNode of parentNode.getChildren()) {
-            if (childNode.data.noteId === childNoteId) {
-                foundChildNode = childNode;
-                break;
-            }
-        }
-
-        return foundChildNode;
+        return parentNode.getChildren().find(childNode => childNode.data.noteId === childNoteId);
     }
 
     /** @return {FancytreeNode} */
@@ -1154,6 +1142,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async setExpanded(branchId, isExpanded) {
+        console.log("expand", isExpanded);
+
+
         utils.assertArguments(branchId);
 
         const branch = treeCache.getBranch(branchId);
@@ -1190,35 +1181,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async getHotKeys() {
         const actions = await keyboardActionsService.getActionsForScope('note-tree');
-        const hotKeyMap = {
-            // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
-            // after opening context menu, standard shortcuts don't work, but they are detected here
-            // so we essentially takeover the standard handling with our implementation.
-            "left": node => {
-                node.navigate($.ui.keyCode.LEFT, true);
-                this.clearSelectedNodes();
-
-                return false;
-            },
-            "right": node => {
-                node.navigate($.ui.keyCode.RIGHT, true);
-                this.clearSelectedNodes();
-
-                return false;
-            },
-            "up": node => {
-                node.navigate($.ui.keyCode.UP, true);
-                this.clearSelectedNodes();
-
-                return false;
-            },
-            "down": node => {
-                node.navigate($.ui.keyCode.DOWN, true);
-                this.clearSelectedNodes();
-
-                return false;
-            }
-        };
+        const hotKeyMap = {};
 
         for (const action of actions) {
             for (const shortcut of action.effectiveShortcuts) {

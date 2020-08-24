@@ -26,25 +26,25 @@ class TabContext extends Component {
 
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const noteId = treeService.getNoteIdFromNotePath(inputNotePath);
-        let notePath;
+        let resolvedNotePath;
 
         if ((await treeCache.getNote(noteId)).isDeleted) {
             // no point in trying to resolve canonical notePath
-            notePath = inputNotePath;
+            resolvedNotePath = inputNotePath;
         }
         else {
-            notePath = await treeService.resolveNotePath(inputNotePath);
+            resolvedNotePath = await treeService.resolveNotePath(inputNotePath);
 
-            if (!notePath) {
+            if (!resolvedNotePath) {
                 console.error(`Cannot resolve note path ${inputNotePath}`);
                 return;
             }
 
-            if (notePath === this.notePath) {
+            if (resolvedNotePath === this.notePath) {
                 return;
             }
 
-            if (await hoistedNoteService.checkNoteAccess(notePath) === false) {
+            if (await hoistedNoteService.checkNoteAccess(resolvedNotePath) === false) {
                 return; // note is outside of hoisted subtree and user chose not to unhoist
             }
         }
@@ -53,7 +53,7 @@ class TabContext extends Component {
 
         utils.closeActiveDialog();
 
-        this.notePath = notePath;
+        this.notePath = resolvedNotePath;
         this.noteId = noteId;
 
         this.autoBookDisabled = false;
@@ -62,7 +62,7 @@ class TabContext extends Component {
 
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (notePath && notePath === this.notePath) {
+            if (resolvedNotePath && resolvedNotePath === this.notePath) {
                 await server.post('recent-notes', {
                     noteId: this.note.noteId,
                     notePath: this.notePath

@@ -368,12 +368,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "zoomOut",
-        defaultShortcuts: ["CommandOrControl+-"],
+        defaultShortcuts: isElectron ? ["CommandOrControl+-"] : [],
         scope: "window"
     },
     {
         actionName: "zoomIn",
-        defaultShortcuts: ["CommandOrControl+="],
+        defaultShortcuts: isElectron ? ["CommandOrControl+="] : [],
         scope: "window"
     },
     {
