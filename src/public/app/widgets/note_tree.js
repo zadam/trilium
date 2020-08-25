@@ -248,7 +248,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             this.reloadTreeFromCache();
         });
 
-        this.initialized = this.initFancyTree();
+        this.initFancyTree();
 
         this.setupNoteTitleTooltip();
     }
@@ -302,7 +302,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         this.$tree.fancytree({
             titlesTabbable: true,
-            autoScroll: true,
             keyboard: true,
             extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
             source: treeData,
@@ -1346,12 +1345,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     editNoteTitleCommand({node}) {
         appContext.triggerCommand('focusOnTitle');
-    }
-
-    activateParentNoteCommand({node}) {
-        if (!hoistedNoteService.isRootNode(node)) {
-            node.getParent().setActive().then(this.clearSelectedNodes);
-        }
     }
 
     protectSubtreeCommand({node}) {

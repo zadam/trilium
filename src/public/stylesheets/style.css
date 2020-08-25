@@ -783,7 +783,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 .fancytree-loading span.fancytree-expander {
     width: 16px;
     height: 16px;
-    margin-left: 2px;
+    margin-left: 4px;
 }
 
 .fancytree-loading span.fancytree-expander:after {

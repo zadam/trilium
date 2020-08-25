@@ -64,12 +64,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "note-tree"
     },
     {
-        actionName: "activateParentNote",
-        defaultShortcuts: ["Backspace"],
-        description: "Activates the parent note of currently active note",
-        scope: "note-tree"
-    },
-    {
         actionName: "sortChildNotes",
         defaultShortcuts: ["Alt+S"],
         description: "Sort child notes",
