@@ -50,23 +50,30 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     };
 }
 
-function getTree() {
-    const hoistedNoteId = optionService.getOption('hoistedNoteId');
+function getTree(req) {
+    const subTreeNoteId = req.query.subTreeNoteId || optionService.getOption('hoistedNoteId');
 
-    // we fetch all branches of notes, even if that particular branch isn't visible
-    // this allows us to e.g. detect and properly display clones
     const noteIds = sql.getColumn(`
         WITH RECURSIVE
-            tree(branchId, noteId, isExpanded) AS (
-            SELECT branchId, noteId, isExpanded FROM branches WHERE noteId = ? 
-            UNION ALL
-            SELECT branches.branchId, branches.noteId, branches.isExpanded FROM branches
-              JOIN tree ON branches.parentNoteId = tree.noteId
-              WHERE tree.isExpanded = 1 AND branches.isDeleted = 0
-          )
-        SELECT noteId FROM tree`, [hoistedNoteId]);
+            treeWithDescendants(noteId, isExpanded) AS (
+                SELECT noteId, 1 FROM branches WHERE parentNoteId = ? AND isDeleted = 0
+                UNION
+                SELECT branches.noteId, branches.isExpanded FROM branches
+                  JOIN treeWithDescendants ON branches.parentNoteId = treeWithDescendants.noteId
+                WHERE treeWithDescendants.isExpanded = 1 
+                  AND branches.isDeleted = 0
+            ),
+            treeWithDescendantsAndAscendants AS (
+                SELECT noteId FROM treeWithDescendants
+                UNION
+                SELECT branches.parentNoteId FROM branches
+                  JOIN treeWithDescendantsAndAscendants ON branches.noteId = treeWithDescendantsAndAscendants.noteId
+                WHERE branches.isDeleted = 0
+                  AND branches.parentNoteId != ?
+            )
+        SELECT noteId FROM treeWithDescendantsAndAscendants`, [subTreeNoteId, subTreeNoteId]);
 
-    noteIds.push('root');
+    noteIds.push(subTreeNoteId);
 
     return getNotesAndBranchesAndAttributes(noteIds);
 }

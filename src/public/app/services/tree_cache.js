@@ -20,8 +20,6 @@ class TreeCache {
     async loadInitialTree() {
         const resp = await server.get('tree');
 
-        await this.loadParents(resp, false);
-
         // clear the cache only directly before adding new content which is important for e.g. switching to protected session
 
         /** @type {Object.<string, NoteShort>} */
@@ -37,6 +35,14 @@ class TreeCache {
         this.noteComplementPromises = {};
 
         this.addResp(resp);
+    }
+
+    async loadSubTree(subTreeNoteId) {
+        const resp = await server.get('tree?subTreeNoteId=' + subTreeNoteId);
+
+        this.addResp(resp);
+
+        return this.notes[subTreeNoteId];
     }
 
     async loadParents(resp, additiveLoad) {

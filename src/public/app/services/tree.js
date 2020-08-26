@@ -70,7 +70,7 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
                 if (logErrors) {
-                    console.log(utils.now(), `Did not find parent ${parentNoteId} for child ${childNoteId}, available parents: ${parents}`);
+                    console.log(utils.now(), `Did not find parent ${parentNoteId} for child ${childNoteId}, available parents: ${parents.map(p => p.noteId)}`);
                 }
 
                 const someNotePath = getSomeNotePath(parents[0]);

@@ -50,7 +50,7 @@ const TPL = `
 export default class NotePathsWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$currentPath = this.$widget.find('.current-path');
         this.$dropdown = this.$widget.find(".dropdown");

@@ -29,6 +29,11 @@ class Branch {
     }
 
     /** @returns {NoteShort} */
+    getNoteFromCache() {
+        return this.treeCache.getNoteFromCache(this.noteId);
+    }
+
+    /** @returns {NoteShort} */
     async getParentNote() {
         return this.treeCache.getNote(this.parentNoteId);
     }

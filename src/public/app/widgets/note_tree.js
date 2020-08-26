@@ -297,8 +297,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await options.save("hideIncludedImages_" + this.treeName, val.toString());
     }
 
-    async initFancyTree() {
-        const treeData = [await this.prepareRootNode()];
+    initFancyTree() {
+        const treeData = [this.prepareRootNode()];
 
         this.$tree.fancytree({
             titlesTabbable: true,
@@ -354,7 +354,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),
-            hotkeys: utils.isMobile() ? undefined : { keydown: await this.getHotKeys() },
+            //hotkeys: utils.isMobile() ? undefined : { keydown: await this.getHotKeys() },
             dnd5: {
                 autoExpandMS: 600,
                 dragStart: (node, data) => {
@@ -443,34 +443,41 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         data.result = [];
                         return;
                     }
-                }
 
-                data.result = treeCache.getNote(noteId).then(note => this.prepareChildren(note));
+                    data.result = treeCache.reloadNotes([noteId]).then(() => {
+                       const note = treeCache.getNoteFromCache(noteId);
+
+                       return this.prepareChildren(note);
+                    });
+                }
+                else {
+                    data.result = treeCache.loadSubTree(noteId).then(note => this.prepareChildren(note));
+                }
             },
             clones: {
                 highlightActiveClones: true
             },
-            enhanceTitle: async function (event, data) {
-                const node = data.node;
-                const $span = $(node.span);
-
-                if (node.data.noteId !== 'root'
-                    && node.data.noteId === hoistedNoteService.getHoistedNoteId()
-                    && $span.find('.unhoist-button').length === 0) {
-
-                    const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
-
-                    $span.append(unhoistButton);
-                }
-
-                const note = await treeCache.getNote(node.data.noteId);
-
-                if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
-                    const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
-
-                    $span.append(refreshSearchButton);
-                }
-            },
+            // enhanceTitle: async function (event, data) {
+            //     const node = data.node;
+            //     const $span = $(node.span);
+            //
+            //     if (node.data.noteId !== 'root'
+            //         && node.data.noteId === hoistedNoteService.getHoistedNoteId()
+            //         && $span.find('.unhoist-button').length === 0) {
+            //
+            //         const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
+            //
+            //         $span.append(unhoistButton);
+            //     }
+            //
+            //     const note = await treeCache.getNote(node.data.noteId);
+            //
+            //     if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
+            //         const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
+            //
+            //         $span.append(refreshSearchButton);
+            //     }
+            // },
             // this is done to automatically lazy load all expanded notes after tree load
             loadChildren: (event, data) => {
                 data.node.visit((subNode) => {
@@ -497,9 +504,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.tree = $.ui.fancytree.getTree(this.$tree);
     }
 
-    async prepareRootNode() {
-        await treeCache.initializedPromise;
-
+    prepareRootNode() {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
         let hoistedBranch;
@@ -508,31 +513,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
             hoistedBranch = treeCache.getBranch('root');
         }
         else {
-            const hoistedNote = await treeCache.getNote(hoistedNoteId);
-            hoistedBranch = (await hoistedNote.getBranches())[0];
+            const hoistedNote = treeCache.getNoteFromCache(hoistedNoteId);
+            hoistedBranch = hoistedNote.getBranches()[0];
         }
 
-        return await this.prepareNode(hoistedBranch);
+        return this.prepareNode(hoistedBranch);
     }
 
-    async prepareChildren(note) {
-        if (note.type === 'search') {
-            return await this.prepareSearchNoteChildren(note);
-        }
-        else {
-            return await this.prepareNormalNoteChildren(note);
-        }
-    }
-
-    async prepareSearchNoteChildren(note) {
-        await treeCache.reloadNotes([note.noteId]);
-
-        const newNote = await treeCache.getNote(note.noteId);
-
-        return await this.prepareNormalNoteChildren(newNote);
-    }
-
-    async prepareNormalNoteChildren(parentNote) {
+    /**
+     * @param {NoteShort} parentNote
+     */
+    prepareChildren(parentNote) {
         utils.assertArguments(parentNote);
 
         const noteList = [];
@@ -541,14 +532,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         for (const branch of this.getChildBranches(parentNote)) {
             if (hideArchivedNotes) {
-                const note = await branch.getNote();
+                const note = branch.getNoteFromCache();
 
                 if (note.hasLabel('archived')) {
                     continue;
                 }
             }
 
-            const node = await this.prepareNode(branch);
+            const node = this.prepareNode(branch);
 
             noteList.push(node);
         }
@@ -613,10 +604,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.renderTitle();
     }
 
-    async prepareNode(branch) {
-        const note = await branch.getNote();
+    /**
+     * @param {Branch} branch
+     */
+    prepareNode(branch) {
+        const note = branch.getNoteFromCache();
 
         if (!note) {
+            console.log("branch", branch);
+
             throw new Error(`Branch has no note "${branch.noteId}": ${JSON.stringify(note)}`);
         }
 
@@ -642,7 +638,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         };
 
         if (node.folder && node.expanded) {
-            node.children = await this.prepareChildren(note);
+            node.children = this.prepareChildren(note);
         }
 
         return node;
@@ -1141,9 +1137,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async setExpanded(branchId, isExpanded) {
-        console.log("expand", isExpanded);
-
-
         utils.assertArguments(branchId);
 
         const branch = treeCache.getBranch(branchId);
@@ -1157,7 +1150,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const activeNotePath = activeNode !== null ? treeService.getNotePath(activeNode) : null;
 
-        const rootNode = await this.prepareRootNode();
+        const rootNode = this.prepareRootNode();
 
         await this.batchUpdate(async () => {
             await this.tree.reload([rootNode]);
