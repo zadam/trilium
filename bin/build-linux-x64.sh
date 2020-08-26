@@ -11,7 +11,7 @@ rm -r $SRC_DIR/src/public/app-dist/*.mobile.*
 
 echo "Copying required linux-x64 binaries"
 
-cp -r bin/better-sqlite3/linux-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+cp -r bin/better-sqlite3/linux-desktop-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 

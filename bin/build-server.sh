@@ -16,9 +16,11 @@ cd ..
 
 mv dist/node-v${NODE_VERSION}-linux-x64 $PKG_DIR/node
 
+rm -r $PKG_DIR/node/lib/node_modules/npm
+
 rm -r $PKG_DIR/node_modules/electron*
 
-cp -r bin/better-sqlite3/linux-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+cp -r bin/better-sqlite3/linux-server-better_sqlite3.node $PKG_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 
 printf "#!/bin/sh\n./node/bin/node src/www" > $PKG_DIR/trilium.sh
 chmod 755 $PKG_DIR/trilium.sh
