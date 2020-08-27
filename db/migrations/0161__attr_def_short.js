@@ -2,7 +2,19 @@ const sql = require('../../src/services/sql');
 
 module.exports = () => {
     for (const attr of sql.getRows("SELECT * FROM attributes WHERE name LIKE 'label:%'")) {
-        const obj = JSON.parse(attr.value);
+        let obj;
+
+        try {
+            obj = JSON.parse(attr.value);
+        }
+        catch (e) {
+            console.log(`Parsing attribute definition "${attr.value}" of ${attr.attributeId} failed with error "${e.message}", setting to default value.`);
+
+            sql.execute('UPDATE attributes SET value = ? WHERE attributeId = ?',
+                ["multi,text", attr.attributeId]);
+
+            continue;
+        }
 
         const tokens = [];
 
@@ -30,7 +42,19 @@ module.exports = () => {
     }
 
     for (const attr of sql.getRows("SELECT * FROM attributes WHERE name LIKE 'relation:%'")) {
-        const obj = JSON.parse(attr.value);
+        let obj;
+
+        try {
+            obj = JSON.parse(attr.value);
+        }
+        catch (e) {
+            console.log(`Parsing attribute definition "${attr.value}" of ${attr.attributeId} failed with error "${e.message}", setting to default value.`);
+
+            sql.execute('UPDATE attributes SET value = ? WHERE attributeId = ?',
+                ["multi", attr.attributeId]);
+
+            continue;
+        }
 
         const tokens = [];
 
