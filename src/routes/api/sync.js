@@ -139,11 +139,10 @@ function getChanged(req) {
 }
 
 function update(req) {
-    const sourceId = req.body.sourceId;
-    const entities = req.body.entities;
+    const {sourceId, entities} = req.body;
 
-    for (const {sync, entity} of entities) {
-        syncUpdateService.updateEntity(sync, entity, sourceId);
+    for (const {entityChange, entity} of entities) {
+        syncUpdateService.updateEntity(entityChange, entity, sourceId);
     }
 }
 

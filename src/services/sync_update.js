@@ -3,13 +3,13 @@ const log = require('./log');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 
-function updateEntity(sync, entity, sourceId) {
+function updateEntity(entityChange, entity, sourceId) {
     // can be undefined for options with isSynced=false
     if (!entity) {
         return false;
     }
 
-    const {entityName} = sync;
+    const {entityName} = entityChange;
     let updated;
 
     if (entityName === 'notes') {
@@ -28,7 +28,7 @@ function updateEntity(sync, entity, sourceId) {
         updated = updateNoteRevisionContent(entity, sourceId);
     }
     else if (entityName === 'note_reordering') {
-        updated = updateNoteReordering(sync.entityId, entity, sourceId);
+        updated = updateNoteReordering(entityChange.entityId, entity, sourceId);
     }
     else if (entityName === 'options') {
         updated = updateOptions(entity, sourceId);
