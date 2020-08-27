@@ -1,5 +1,7 @@
 "use strict";
 
+import Note from "./note.js";
+
 class Branch {
     constructor(noteCache, row) {
         /** @param {NoteCache} */
@@ -17,13 +19,8 @@ class Branch {
             return;
         }
 
-        const childNote = this.noteCache.notes[this.noteId];
+        const childNote = this.childNote;
         const parentNote = this.parentNote;
-
-        if (!childNote) {
-            console.log(`Cannot find child note ${this.noteId} of a branch ${this.branchId}`);
-            return;
-        }
 
         childNote.parents.push(parentNote);
         childNote.parentBranches.push(this);
@@ -35,14 +32,23 @@ class Branch {
     }
 
     /** @return {Note} */
-    get parentNote() {
-        const note = this.noteCache.notes[this.parentNoteId];
-
-        if (!note) {
-            console.log(`Cannot find note ${this.parentNoteId}`);
+    get childNote() {
+        if (!(this.noteId in this.noteCache.notes)) {
+            // entities can come out of order in sync, create skeleton which will be filled later
+            this.noteCache.notes[this.noteId] = new Note(this.noteCache, {noteId: this.noteId});
         }
 
-        return note;
+        return this.noteCache.notes[this.noteId];
+    }
+
+    /** @return {Note} */
+    get parentNote() {
+        if (!(this.parentNoteId in this.noteCache.notes)) {
+            // entities can come out of order in sync, create skeleton which will be filled later
+            this.noteCache.notes[this.parentNoteId] = new Note(this.noteCache, {noteId: this.parentNoteId});
+        }
+
+        return this.noteCache.notes[this.parentNoteId];
     }
 }
 

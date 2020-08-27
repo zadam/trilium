@@ -1,5 +1,7 @@
 "use strict";
 
+import Note from './note.js';
+
 class Attribute {
     constructor(noteCache, row) {
         /** @param {NoteCache} */
@@ -23,6 +25,12 @@ class Attribute {
         this.isInheritable = !!row.isInheritable;
 
         this.noteCache.attributes[this.attributeId] = this;
+
+        if (!(this.noteId in this.noteCache.notes)) {
+            // entities can come out of order in sync, create skeleton which will be filled later
+            this.noteCache.notes[this.noteId] = new Note(this.noteCache, {noteId: this.noteId});
+        }
+
         this.noteCache.notes[this.noteId].ownedAttributes.push(this);
 
         const key = `${this.type}-${this.name}`;
