@@ -58,7 +58,6 @@
     "open": "7.2.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
-    "rcedit": "2.2.0",
     "request": "^2.88.2",
     "rimraf": "3.0.2",
     "sanitize-filename": "1.6.3",
@@ -86,6 +85,7 @@
     "jasmine": "3.6.1",
     "jsdoc": "3.6.5",
     "lorem-ipsum": "2.0.3",
+    "rcedit": "2.2.0",
     "webpack": "5.0.0-beta.28",
     "webpack-cli": "4.0.0-beta.8"
   },

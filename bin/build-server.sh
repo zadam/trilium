@@ -17,6 +17,7 @@ cd ..
 mv dist/node-v${NODE_VERSION}-linux-x64 $PKG_DIR/node
 
 rm -r $PKG_DIR/node/lib/node_modules/npm
+rm -r $PKG_DIR/node/include/node
 
 rm -r $PKG_DIR/node_modules/electron*
 

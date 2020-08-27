@@ -29,6 +29,17 @@ cp webpack-* $DIR/
 # run in subshell (so we return to original dir)
 (cd $DIR && npm install --only=prod)
 
+# cleanup of useless files in dependencies
+rm -r $DIR/node_modules/image-q/demo
+rm -r $DIR/node_modules/better-sqlite3/deps/sqlite3.tar.gz
+rm -r $DIR/node_modules/@jimp/plugin*
+rm -r $DIR/node_modules/jimp/browser
+
+# delete all tests (there are often large images as test file for jimp etc.)
+find $DIR/node_modules -name test -exec rm -rf {} \;
+find $DIR/node_modules -name docs -exec rm -rf {} \;
+find $DIR/node_modules -name demo -exec rm -rf {} \;
+
 find $DIR/libraries -name "*.map" -type f -delete
 
 rm -r $DIR/src/public/app
