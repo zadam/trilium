@@ -46,21 +46,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
-        const note = await treeCache.getNote(noteId, true);
-
-        let title;
-
-        if (!note) {
-            title = '[missing]';
-        }
-        else if (!note.isDeleted) {
-            title = note.title;
-        }
-        else {
-            title = note.isErased ? '[erased]' : `${note.title} (deleted)`;
-        }
-
-        $el.text(title);
+        await linkService.loadReferenceLinkTitle(noteId, $el);
     }
 
     refreshIncludedNote($container, noteId) {

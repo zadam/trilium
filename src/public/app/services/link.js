@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
+import treeCache from "./tree_cache.js";
 
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
@@ -125,6 +126,24 @@ function linkContextMenu(e) {
     });
 }
 
+async function loadReferenceLinkTitle(noteId, $el) {
+    const note = await treeCache.getNote(noteId, true);
+
+    let title;
+
+    if (!note) {
+        title = '[missing]';
+    }
+    else if (!note.isDeleted) {
+        title = note.title;
+    }
+    else {
+        title = note.isErased ? '[erased]' : `${note.title} (deleted)`;
+    }
+
+    $el.text(title);
+}
+
 $(document).on('click', "a", goToLink);
 $(document).on('auxclick', "a", goToLink); // to handle middle button
 $(document).on('contextmenu', 'a', linkContextMenu);
@@ -132,5 +151,6 @@ $(document).on('contextmenu', 'a', linkContextMenu);
 export default {
     getNotePathFromUrl,
     createNoteLink,
-    goToLink
+    goToLink,
+    loadReferenceLinkTitle
 };

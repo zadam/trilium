@@ -11,10 +11,16 @@ const TPL = `
     .note-detail-read-only-code-content {
         padding: 10px;
     }
+    
+    .edit-code-note-container {
+        position: absolute; 
+        top: 0px; 
+        right: 10px;
+    }
     </style>
 
-    <div class="alert alert-warning no-print" style="margin-bottom: 0;">
-        <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">Read only</a> code view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
+    <div class="alert alert-warning no-print edit-code-note-container">
+         <a href="#" class="edit-note">Edit</a> <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">?</a>
     </div>
 
     <pre class="note-detail-read-only-code-content"></pre>

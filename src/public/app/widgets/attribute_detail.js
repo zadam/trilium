@@ -22,7 +22,7 @@ const TPL = `
             width: 500px;
             max-height: 600px;
             overflow: auto;
-            box-shadow: 10px 10px 93px -25px var(--main-text-color);
+            box-shadow: 10px 10px 93px -25px black;
         }
         
         .attr-help td {

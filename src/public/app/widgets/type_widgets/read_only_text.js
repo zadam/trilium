@@ -27,10 +27,16 @@ const TPL = `
     .note-detail-readonly-text img {
         max-width: 100%;
     }
+    
+    .edit-text-note-container {
+        position: absolute; 
+        top: 5px; 
+        right: 10px;
+    }
     </style>
 
-    <div class="alert alert-warning no-print">
-        <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">Read only</a> text view is shown. <a href="#" class="edit-note">Click here</a> to edit the note.
+    <div class="alert alert-warning no-print edit-text-note-container">
+         <a href="#" class="edit-note">Edit</a> <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">?</a>
     </div>
 
     <div class="note-detail-readonly-text-content ck-content"></div>

@@ -1,4 +1,5 @@
 import ws from "./ws.js";
+import linkService from "./link.js";
 
 function renderAttribute(attribute, $container, renderIsInheritable) {
     const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';
@@ -48,11 +49,15 @@ function formatValue(val) {
 }
 
 function createNoteLink(noteId) {
-    return $("<a>", {
+    const $link = $("<a>", {
         href: '#' + noteId,
         class: 'reference-link',
         'data-note-path': noteId
     });
+
+    linkService.loadReferenceLinkTitle(noteId, $link);
+
+    return $link;
 }
 
 export default {
