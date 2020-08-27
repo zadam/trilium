@@ -355,8 +355,8 @@ function getLastSyncedPush() {
     return parseInt(optionService.getOption('lastSyncedPush'));
 }
 
-function setLastSyncedPush(lastSyncedPush) {
-    optionService.setOption('lastSyncedPush', lastSyncedPush);
+function setLastSyncedPush(entityChangeId) {
+    optionService.setOption('lastSyncedPush', entityChangeId);
 }
 
 function updatePushStats() {

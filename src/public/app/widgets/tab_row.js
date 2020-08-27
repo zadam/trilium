@@ -44,23 +44,25 @@ const TAB_ROW_TPL = `
     .note-tab-row {
         box-sizing: border-box;
         position: relative;
-        height: 34px;
-        min-height: 34px;
+        height: 36px;
         width: 100%;
         background: var(--main-background-color);
-        border-radius: 5px 5px 0 0;
         overflow: hidden;
         margin-top: 2px;
     }
+    
     .note-tab-row * {
         box-sizing: inherit;
         font: inherit;
     }
+    
     .note-tab-row .note-tab-row-container {
+        box-sizing: border-box;
         position: relative;
         width: 100%;
         height: 100%;
     }
+    
     .note-tab-row .note-tab {
         position: absolute;
         left: 0;
@@ -84,6 +86,7 @@ const TAB_ROW_TPL = `
         font-size: 24px;
         cursor: pointer;
         border-bottom: 1px solid var(--main-border-color);
+        box-sizing: border-box;
     }
     
     .note-new-tab:hover {
@@ -92,14 +95,14 @@ const TAB_ROW_TPL = `
     }
     
     .tab-row-filler {
+        box-sizing: border-box;
         -webkit-app-region: drag;
         position: absolute;
         left: 0;
-        height: 33px;
+        height: 36px;
     }
     
     .tab-row-filler .tab-row-border {
-        position: relative;
         background: linear-gradient(to right, var(--main-border-color), transparent);
         height: 1px;
         margin-top: 32px;

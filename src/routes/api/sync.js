@@ -41,10 +41,14 @@ function getStats() {
         return {};
     }
 
-    return {
+    const stats = {
         initialized: optionService.getOption('initialized') === 'true',
         stats: syncService.stats
     };
+
+    log.info(`Returning sync stats: ${JSON.stringify(stats)}`);
+
+    return stats;
 }
 
 function checkSync() {
@@ -118,7 +122,7 @@ function forceNoteSync(req) {
 function getChanged(req) {
     const startTime = Date.now();
 
-    const lastEntityChangeId = parseInt(req.query.lastEntityChangedId);
+    const lastEntityChangeId = parseInt(req.query.lastEntityChangeId);
 
     const entityChanges = sql.getRows("SELECT * FROM entity_changes WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastEntityChangeId]);
 

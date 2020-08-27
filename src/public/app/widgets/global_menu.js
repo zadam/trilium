@@ -7,12 +7,18 @@ const TPL = `
     <style>
     .global-menu-wrapper {
         height: 35px;
+        box-sizing: border-box;
         border-bottom: 1px solid var(--main-border-color);
+    }
+    
+    .global-menu {
+        height: 34px;
+        box-sizing: border-box;
     }
     
     .global-menu button {
         margin-right: 10px;
-        height: 33px;
+        height: 34px;
         border: none;
     }
     

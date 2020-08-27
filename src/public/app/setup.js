@@ -133,9 +133,14 @@ async function checkOutstandingSyncs() {
     const { stats, initialized } = await $.get('api/sync/stats');
 
     if (initialized) {
-        const remote = utils.dynamicRequire('electron').remote;
-        remote.app.relaunch();
-        remote.app.exit(0);
+        if (utils.isElectron()) {
+            const remote = utils.dynamicRequire('electron').remote;
+            remote.app.relaunch();
+            remote.app.exit(0);
+        }
+        else {
+            utils.reloadApp();
+        }
     }
     else {
         const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
