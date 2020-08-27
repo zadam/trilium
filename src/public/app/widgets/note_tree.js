@@ -303,7 +303,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$tree.fancytree({
             titlesTabbable: true,
             keyboard: true,
-            extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
+            extensions: ["dnd5", "clones"],
             source: treeData,
             scrollOfs: {
                 top: 100,
@@ -354,7 +354,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),
-            //hotkeys: utils.isMobile() ? undefined : { keydown: await this.getHotKeys() },
             dnd5: {
                 autoExpandMS: 600,
                 dragStart: (node, data) => {
@@ -457,27 +456,27 @@ export default class NoteTreeWidget extends TabAwareWidget {
             clones: {
                 highlightActiveClones: true
             },
-            // enhanceTitle: async function (event, data) {
-            //     const node = data.node;
-            //     const $span = $(node.span);
-            //
-            //     if (node.data.noteId !== 'root'
-            //         && node.data.noteId === hoistedNoteService.getHoistedNoteId()
-            //         && $span.find('.unhoist-button').length === 0) {
-            //
-            //         const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
-            //
-            //         $span.append(unhoistButton);
-            //     }
-            //
-            //     const note = await treeCache.getNote(node.data.noteId);
-            //
-            //     if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
-            //         const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
-            //
-            //         $span.append(refreshSearchButton);
-            //     }
-            // },
+            enhanceTitle: async function (event, data) {
+                const node = data.node;
+                const $span = $(node.span);
+
+                if (node.data.noteId !== 'root'
+                    && node.data.noteId === hoistedNoteService.getHoistedNoteId()
+                    && $span.find('.unhoist-button').length === 0) {
+
+                    const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
+
+                    $span.append(unhoistButton);
+                }
+
+                const note = await treeCache.getNote(node.data.noteId);
+
+                if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
+                    const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
+
+                    $span.append(refreshSearchButton);
+                }
+            },
             // this is done to automatically lazy load all expanded notes after tree load
             loadChildren: (event, data) => {
                 data.node.visit((subNode) => {
@@ -489,6 +488,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 });
             }
         });
+
+        if (!utils.isMobile()) {
+            this.getHotKeys().then(hotKeys => {
+                for (const key in hotKeys) {
+                    const handler = hotKeys[key];
+
+                    $(this.tree.$container).on('keydown', null, key, evt => {
+                        const node = this.tree.getActiveNode();
+                        return handler(node, evt);
+                        // return false from the handler will stop default handling.
+                    });
+                }
+            });
+        }
 
         this.$tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
@@ -611,9 +624,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const note = branch.getNoteFromCache();
 
         if (!note) {
-            console.log("branch", branch);
-
-            throw new Error(`Branch has no note "${branch.noteId}": ${JSON.stringify(note)}`);
+            throw new Error(`Branch has no note "${branch.noteId}": ${JSON.stringify(branch)}`);
         }
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
@@ -633,11 +644,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
             refKey: note.noteId,
             lazy: true,
             folder: isFolder,
-            expanded: branch.isExpanded || hoistedNoteId === note.noteId,
+            expanded: (branch.isExpanded || hoistedNoteId === note.noteId) && note.type !== 'search',
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
 
-        if (node.folder && node.expanded) {
+        if (isFolder && node.expanded) {
             node.children = this.prepareChildren(note);
         }
 
@@ -645,14 +656,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     isFolder(note) {
-        if (note.type === 'search') {
-            return true;
-        }
-        else {
-            const childBranches = this.getChildBranches(note);
-
-            return childBranches.length > 0;
-        }
+        return note.type === 'search'
+            || this.getChildBranches(note).length > 0;
     }
 
     getChildBranches(parentNote) {

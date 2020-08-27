@@ -1,5 +1,5 @@
 function reloadApp() {
-    window.location.reload(true);
+    //window.location.reload(true);
 }
 
 function parseDate(str) {
