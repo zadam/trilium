@@ -1,6 +1,6 @@
 "use strict";
 
-import Note from "./note.js";
+const Note = require('./note.js');
 
 class Branch {
     constructor(noteCache, row) {

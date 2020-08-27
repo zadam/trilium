@@ -32,8 +32,9 @@ cp webpack-* $DIR/
 # cleanup of useless files in dependencies
 rm -r $DIR/node_modules/image-q/demo
 rm -r $DIR/node_modules/better-sqlite3/deps/sqlite3.tar.gz
-rm -r $DIR/node_modules/@jimp/plugin*
+rm -r $DIR/node_modules/@jimp/plugin-print/fonts
 rm -r $DIR/node_modules/jimp/browser
+rm -r $DIR/node_modules/jimp/fonts
 
 # delete all tests (there are often large images as test file for jimp etc.)
 find $DIR/node_modules -name test -exec rm -rf {} \;
