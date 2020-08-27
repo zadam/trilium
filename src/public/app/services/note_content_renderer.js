@@ -92,7 +92,7 @@ async function getRenderedContent(note) {
 function getRenderingType(note) {
     let type = note.type;
 
-    if (type === 'file' && note.mime === 'application/pdf' && utils.isElectron()) {
+    if (type === 'file' && note.mime === 'application/pdf') {
         type = 'pdf';
     }
 
