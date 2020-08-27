@@ -32,6 +32,7 @@ const TPL = `
     .tree {
         height: 100%;
         overflow: auto;
+        padding-bottom: 20px;
     }
     
     .refresh-search-button {
