@@ -1,9 +1,7 @@
 import BasicWidget from "./basic_widget.js";
 import utils from "../services/utils.js";
-import keyboardActionService from "../services/keyboard_actions.js";
 import contextMenu from "../services/context_menu.js";
 import treeService from "../services/tree.js";
-import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="history-navigation">
@@ -21,37 +19,37 @@ const TPL = `
 
 export default class HistoryNavigationWidget extends BasicWidget {
     doRender() {
-        if (utils.isElectron()) {
-            this.$widget = $(TPL);
-            this.contentSized();
-
-            const contextMenuHandler = e => {
-                e.preventDefault();
-
-                if (this.webContents.history.length < 2) {
-                    return;
-                }
-
-                this.showContextMenu(e);
-            };
-
-            this.$backInHistory = this.$widget.find("[data-trigger-command='backInNoteHistory']");
-            this.$backInHistory.on('contextmenu', contextMenuHandler);
-
-            this.$forwardInHistory = this.$widget.find("[data-trigger-command='forwardInNoteHistory']");
-            this.$forwardInHistory.on('contextmenu', contextMenuHandler);
-
-            const electron = utils.dynamicRequire('electron');
-            this.webContents = electron.remote.getCurrentWindow().webContents;
-
-            // without this the history is preserved across frontend reloads
-            this.webContents.clearHistory();
-
-            this.refresh();
-        }
-        else {
+        if (!utils.isElectron()) {
             this.$widget = $("<div>");
+            return;
         }
+
+        this.$widget = $(TPL);
+        this.contentSized();
+
+        const contextMenuHandler = e => {
+            e.preventDefault();
+
+            if (this.webContents.history.length < 2) {
+                return;
+            }
+
+            this.showContextMenu(e);
+        };
+
+        this.$backInHistory = this.$widget.find("[data-trigger-command='backInNoteHistory']");
+        this.$backInHistory.on('contextmenu', contextMenuHandler);
+
+        this.$forwardInHistory = this.$widget.find("[data-trigger-command='forwardInNoteHistory']");
+        this.$forwardInHistory.on('contextmenu', contextMenuHandler);
+
+        const electron = utils.dynamicRequire('electron');
+        this.webContents = electron.remote.getCurrentWindow().webContents;
+
+        // without this the history is preserved across frontend reloads
+        this.webContents.clearHistory();
+
+        this.refresh();
     }
 
     async showContextMenu(e) {
@@ -93,8 +91,11 @@ export default class HistoryNavigationWidget extends BasicWidget {
             return;
         }
 
-        this.$backInHistory.toggleClass('disabled', !this.webContents.canGoBack());
-        this.$forwardInHistory.toggleClass('disabled', !this.webContents.canGoForward());
+        // disabling this because in electron 9 there's weird performance problem which makes these webContents calls
+        // block UI thread for > 1 second on specific notes (book notes displaying underlying render notes with scripts)
+
+        // this.$backInHistory.toggleClass('disabled', !this.webContents.canGoBack());
+        // this.$forwardInHistory.toggleClass('disabled', !this.webContents.canGoForward());
     }
 
     activeNoteChangedEvent() {
