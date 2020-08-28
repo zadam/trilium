@@ -6,12 +6,15 @@ const sqlInit = require('./sql_init');
 const utils = require('./utils');
 const passwordEncryptionService = require('./password_encryption');
 const optionService = require('./options');
+const config = require('./config');
+
+const noAuthentication = config.General && config.General.noAuthentication === true;
 
 function checkAuth(req, res, next) {
     if (!sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
-    else if (!req.session.loggedIn && !utils.isElectron()) {
+    else if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
         res.redirect("login");
     }
     else {
@@ -22,7 +25,7 @@ function checkAuth(req, res, next) {
 // for electron things which need network stuff
 // currently we're doing that for file upload because handling form data seems to be difficult
 function checkApiAuthOrElectron(req, res, next) {
-    if (!req.session.loggedIn && !utils.isElectron()) {
+    if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
         reject(req, res, "Not authorized");
     }
     else {
@@ -31,7 +34,7 @@ function checkApiAuthOrElectron(req, res, next) {
 }
 
 function checkApiAuth(req, res, next) {
-    if (!req.session.loggedIn) {
+    if (!req.session.loggedIn && !noAuthentication) {
         reject(req, res, "Not authorized");
     }
     else {

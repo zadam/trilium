@@ -3,6 +3,7 @@ const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
 const cls = require('./cls');
+const config = require('./config');
 const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
 
@@ -12,7 +13,9 @@ function init(httpServer, sessionParser) {
     webSocketServer = new WebSocket.Server({
         verifyClient: (info, done) => {
             sessionParser(info.req, {}, () => {
-                const allowed = utils.isElectron() || info.req.session.loggedIn;
+                const allowed = utils.isElectron()
+                    || info.req.session.loggedIn
+                    || (config.General && config.General.noAuthentication);
 
                 if (!allowed) {
                     log.error("WebSocket connection not allowed because session is neither electron nor logged in.");
