@@ -977,14 +977,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         toastService.showMessage("Auto collapsing notes after inactivity...");
                         noneCollapsedYet = false;
                     }
-
-                    console.log("Auto collapsed", node.data.noteId);
                 }
             }, false);
         }, 600 * 1000);
     }
 
-    async entitiesReloadedEvent({loadResults}) {console.log(loadResults);
+    async entitiesReloadedEvent({loadResults}) {
         this.activityDetected();
 
         if (loadResults.isEmptyForTree()) {

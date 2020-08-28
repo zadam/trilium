@@ -55,8 +55,6 @@ function getRecentChanges(req) {
 
     recentChanges = recentChanges.slice(0, Math.min(500, recentChanges.length));
 
-    console.log(recentChanges);
-
     for (const change of recentChanges) {
         if (change.current_isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {

@@ -7,6 +7,7 @@ const escape = require('escape-html');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const path = require('path');
+const log = require('./log');
 
 function newEntityId() {
     return randomString(12);
@@ -65,13 +66,13 @@ function prepareSqlForLike(prefix, str, suffix) {
 }
 
 function stopWatch(what, func) {
-    const start = new Date();
+    const start = Date.now();
 
     const ret = func();
 
-    const tookMs = Date.now() - start.getTime();
+    const tookMs = Date.now() - start;
 
-    console.log(`${what} took ${tookMs}ms`);
+    log.info(`${what} took ${tookMs}ms`);
 
     return ret;
 }

@@ -394,7 +394,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    showHelpTooltip() {console.log("showHelpTooltip");
+    showHelpTooltip() {
         this.attributeDetailWidget.hide();
 
         this.$editor.tooltip({
@@ -454,7 +454,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
             }
         }
-        
+
         this.textEditor.setData($attributesContainer.html());
 
         if (saved) {

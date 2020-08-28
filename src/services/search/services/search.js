@@ -30,7 +30,7 @@ function findNotesWithExpression(expression) {
 
     const noteSet = expression.execute(allNoteSet, searchContext);
 
-    let searchResults = noteSet.notes
+    const searchResults = noteSet.notes
         .map(note => searchContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
         .filter(notePathArray => notePathArray.includes(hoistedNoteService.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
@@ -70,13 +70,15 @@ function parseQueryToExpression(query, parsingContext) {
  * @return {SearchResult[]}
  */
 function findNotesWithQuery(query, parsingContext) {
-    const expression = parseQueryToExpression(query, parsingContext);
+    return utils.stopWatch(`Search with query "${query}"`, () => {
+        const expression = parseQueryToExpression(query, parsingContext);
 
-    if (!expression) {
-        return [];
-    }
+        if (!expression) {
+            return [];
+        }
 
-    return findNotesWithExpression(expression);
+        return findNotesWithExpression(expression);
+    });
 }
 
 /**

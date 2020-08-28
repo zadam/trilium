@@ -127,7 +127,7 @@ class ImageTypeWidget extends TypeWidget {
 
         this.$widget.show();
 
-        const noteComplement = await this.tabContext.getNoteComplement();console.log(noteComplement, note);
+        const noteComplement = await this.tabContext.getNoteComplement();
 
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileSize.text(noteComplement.contentLength + " bytes");
