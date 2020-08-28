@@ -620,11 +620,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
     /**
      * @param {Branch} branch
      */
-    prepareNode(branch) {
+    prepareNode(branch, forceLazy = false) {
         const note = branch.getNoteFromCache();
 
         if (!note) {
-            throw new Error(`Branch has no note "${branch.noteId}": ${JSON.stringify(branch)}`);
+            throw new Error(`Branch "${branch.branchId}" has no note "${branch.noteId}"`);
         }
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
@@ -648,7 +648,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
 
-        if (isFolder && node.expanded) {
+        if (isFolder && node.expanded && !forceLazy) {
             node.children = this.prepareChildren(note);
         }
 
@@ -984,7 +984,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }, 600 * 1000);
     }
 
-    async entitiesReloadedEvent({loadResults}) {
+    async entitiesReloadedEvent({loadResults}) {console.log(loadResults);
         this.activityDetected();
 
         if (loadResults.isEmptyForTree()) {
@@ -1058,7 +1058,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branch.noteId);
 
                     if (!found) {
-                        parentNode.addChildren([await this.prepareNode(branch)]);
+                        // make sure it's loaded
+                        await treeCache.getNote(branch.noteId);
+
+                        // we're forcing lazy since it's not clear if the whole required subtree is in tree cache
+                        parentNode.addChildren([this.prepareNode(branch, true)]);
 
                         this.sortChildren(parentNode);
                     }

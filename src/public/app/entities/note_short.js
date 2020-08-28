@@ -56,6 +56,10 @@ class NoteShort {
     }
 
     addParent(parentNoteId, branchId) {
+        if (parentNoteId === 'none') {
+            return;
+        }
+
         if (!this.parents.includes(parentNoteId)) {
             this.parents.push(parentNoteId);
         }
@@ -451,7 +455,7 @@ class NoteShort {
         }
 
         for (const parentNote of this.getParentNotes()) {
-            if (parentNote.hasAncestor(ancestorNote)) {console.log(parentNote);
+            if (parentNote.hasAncestor(ancestorNote)) {
                 return true;
             }
         }
