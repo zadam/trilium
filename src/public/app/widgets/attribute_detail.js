@@ -445,7 +445,28 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         const offset = this.parent.$widget.offset();
 
-        this.$widget.css("left", x - offset.left - this.$widget.outerWidth() / 2);
+        const left = x - offset.left - this.$widget.outerWidth() / 2;
+
+        if (left < 0) {
+            this.$widget
+                .css("left", "10px")
+                .css("right", "");
+        }
+        else {
+            const right = left + this.$widget.outerWidth();
+
+            if (right > $(window).width() - 10) {
+                this.$widget
+                    .css("left", "")
+                    .css("right", "10px");
+            }
+            else {
+                this.$widget
+                    .css("left", left)
+                    .css("right", "");
+            }
+        }
+
         this.$widget.css("top", y - offset.top + 70);
 
         // so that the detail window always fits
