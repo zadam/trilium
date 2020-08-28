@@ -120,5 +120,8 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".logout-button").toggle(!utils.isElectron());
 
         this.$widget.find(".open-dev-tools-button").toggle(utils.isElectron());
+
+        this.$widget.on('click', '.dropdown-item',
+            () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
     }
 }

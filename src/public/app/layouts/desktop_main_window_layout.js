@@ -130,7 +130,7 @@ export default class DesktopMainWindowLayout {
                 )
                 .child(new FlexContainer('column').id('center-pane')
                     .child(new FlexContainer('row').class('title-row')
-                        .cssBlock('.title-row > * { margin: 5px; }')
+                        .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
                         .overflowing()
                         .child(new NoteTitleWidget())
                         .child(new RunScriptButtonsWidget().hideInZenMode())

@@ -32,7 +32,7 @@ export default class DesktopExtraWindowLayout {
                 .child(new FlexContainer('column').id('center-pane').css('flex-grow', '1')
                     .child(new FlexContainer('row').class('title-row')
                         .overflowing()
-                        .cssBlock('.title-row > * { margin: 5px; }')
+                        .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
                         .child(new NoteTitleWidget())
                         .child(new RunScriptButtonsWidget().hideInZenMode())
                         .child(new NoteTypeWidget().hideInZenMode())

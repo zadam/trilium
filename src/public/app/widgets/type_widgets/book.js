@@ -42,7 +42,7 @@ const TPL = `
     
     .note-detail-book {
         height: 100%;
-        padding: 10px;
+        padding: 0 10px 10px 10px;
         position: relative;
     }
     

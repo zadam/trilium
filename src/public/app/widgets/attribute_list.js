@@ -57,11 +57,11 @@ const TPL = `
         }
         
         .attr-expander:not(.error):hover hr {
-            border-color: black;
+            border-color: var(--main-text-color);
         }
         
-        .attr-expander:not(.error):hover .attr-expander-text {
-            color: black;
+        .attr-expander:hover .attr-expander-text {
+            color: var(--main-text-color);
         }
     </style>
     
