@@ -152,6 +152,12 @@ function getSomePath(note, path = []) {
 
 function getNotePath(noteId) {
     const note = noteCache.notes[noteId];
+
+    if (!note) {
+        console.trace(`Cannot find note ${noteId} in cache.`);
+        return;
+    }
+
     const retPath = getSomePath(note);
 
     if (retPath) {

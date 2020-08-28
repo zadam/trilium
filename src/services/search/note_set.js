@@ -4,6 +4,7 @@ class NoteSet {
     constructor(notes = []) {
         /** @type {Note[]} */
         this.notes = notes;
+        this.noteIdSet = new Set(notes.map(note => note.noteId));
         /** @type {boolean} */
         this.sorted = false;
     }
@@ -11,6 +12,7 @@ class NoteSet {
     add(note) {
         if (!this.hasNote(note)) {
             this.notes.push(note);
+            this.noteIdSet.add(note.noteId);
         }
     }
 
@@ -25,12 +27,12 @@ class NoteSet {
     }
 
     hasNoteId(noteId) {
-        // TODO: optimize
-        return !!this.notes.find(note => note.noteId === noteId);
+        return this.noteIdSet.has(noteId);
     }
 
     mergeIn(anotherNoteSet) {
         this.notes = this.notes.concat(anotherNoteSet.notes);
+        this.noteIdSet = new Set(this.notes.map(note => note.noteId));
     }
 
     minus(anotherNoteSet) {
