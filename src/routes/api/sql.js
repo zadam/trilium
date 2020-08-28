@@ -22,12 +22,19 @@ function execute(req) {
     try {
         const results = [];
 
-        for (const query of queries) {
-            if (!query.trim()) {
+        for (let query of queries) {
+            query = query.trim();
+
+            if (!query) {
                 continue;
             }
 
-            results.push(sql.getRows(query));
+            if (query.toLowerCase().startsWith('select')) {
+                results.push(sql.getRows(query));
+            }
+            else {
+                results.push(sql.execute(query));
+            }
         }
 
         return {
