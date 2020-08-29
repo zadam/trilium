@@ -241,7 +241,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * @method
-     * @deprecated please use createNote() API method instead
+     * @deprecated please use createNewNote() API method instead
      *
      * @param {string} parentNoteId - create new note under this parent
      * @param {string} title
