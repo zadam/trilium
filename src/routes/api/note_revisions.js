@@ -138,7 +138,7 @@ function getEditedNotesOnDate(req) {
         LIMIT 50`, {date: req.params.date + '%'});
 
     for (const note of notes) {
-        const notePath = noteCacheService.getNotePath(note.noteId);
+        const notePath = note.isDeleted ? null : noteCacheService.getNotePath(note.noteId);
 
         note.notePath = notePath ? notePath.notePath : null;
     }
