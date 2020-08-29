@@ -99,7 +99,14 @@ function updateNoteContent(remoteEntity, sourceId) {
     const localEntity = sql.getRow("SELECT * FROM note_contents WHERE noteId = ?", [remoteEntity.noteId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
+        // we always use Buffer object which is different from normal saving - there we use simple string type for "string notes"
+        // the problem is that in general it's not possible to whether a note_content is string note or note (syncs can arrive out of order)
         remoteEntity.content = remoteEntity.content === null ? null : Buffer.from(remoteEntity.content, 'base64');
+
+        if (remoteEntity.content && remoteEntity.content.byteLength === 0) {
+            // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
+            remoteEntity.content = "";
+        }
 
         sql.transactional(() => {
             sql.replace("note_contents", remoteEntity);

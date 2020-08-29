@@ -66,7 +66,11 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 return;
             }
 
-            note.setContent(targetNote.getContent());
+            const targetNoteContent = targetNote.getContent();
+
+            if (targetNoteContent) {
+                note.setContent(targetNoteContent);
+            }
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
             treeService.sortNotesAlphabetically(entity.noteId);
