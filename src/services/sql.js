@@ -197,8 +197,20 @@ function executeScript(query) {
 
 function wrap(query, func) {
     const startTimestamp = Date.now();
+    let result;
 
-    const result = func(stmt(query));
+    try {
+        result = func(stmt(query));
+    }
+    catch (e) {
+        if (e.message.includes("The database connection is not open")) {
+            // this often happens on killing the app which puts these alerts in front of user
+            // in these cases error should be simply ignored.
+            console.log(e.message);
+
+            return null
+        }
+    }
 
     const milliseconds = Date.now() - startTimestamp;
 

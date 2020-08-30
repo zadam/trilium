@@ -13,10 +13,15 @@ import utils from '../services/utils.js';
  */
 export default class Component {
     constructor() {
-        this.componentId = `comp-` + utils.randomString(8);
+        this.componentId = `comp-` + this.sanitizedClassName + '-' + utils.randomString(8);
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();
+    }
+
+    get sanitizedClassName() {
+        // webpack mangles names and sometimes uses unsafe characters
+        return this.constructor.name.replace(/[^A-Z0-9]/ig, "_");
     }
 
     setParent(parent) {
@@ -76,7 +81,17 @@ export default class Component {
             return false;
         }
 
-        await fun.call(this, data);
+        const startTime = Date.now();
+
+        const promise = fun.call(this, data);
+
+        const took = Date.now() - startTime;
+
+        if (glob.isDev && took > 20) { // measuring only sync handlers
+            console.log(`Call to ${fun.name} in ${this.componentId} took ${took}ms`);
+        }
+
+        await promise;
 
         return true;
     }
