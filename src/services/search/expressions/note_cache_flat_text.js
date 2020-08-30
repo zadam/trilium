@@ -36,6 +36,12 @@ class NoteCacheFlatTextExp extends Expression {
 
             const foundAttrTokens = [];
 
+            for (const token of tokens) {
+                if (note.type.includes(token) || note.mime.includes(token)) {
+                    foundAttrTokens.push(token);
+                }
+            }
+
             for (const attribute of note.ownedAttributes) {
                 for (const token of tokens) {
                     if (attribute.name.toLowerCase().includes(token)
@@ -77,10 +83,18 @@ class NoteCacheFlatTextExp extends Expression {
 
             const foundAttrTokens = [];
 
+            for (const token of this.tokens) {
+                if (note.type.includes(token) || note.mime.includes(token)) {
+                    foundAttrTokens.push(token);
+                }
+            }
+
             for (const attribute of note.ownedAttributes) {
+                const lcName = attribute.name.toLowerCase();
+                const lcValue = attribute.value.toLowerCase();
+
                 for (const token of this.tokens) {
-                    if (attribute.name.toLowerCase().includes(token)
-                        || attribute.value.toLowerCase().includes(token)) {
+                    if (lcName.includes(token) || lcValue.includes(token)) {
                         foundAttrTokens.push(token);
                     }
                 }

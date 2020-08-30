@@ -851,6 +851,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                     if (!foundChildNode) {
                         if (logErrors) {
+                            // besides real errors this can be also caused by hiding of e.g. included images
+                            // these are real notes with real notePath, user can display them in a detail
+                            // but they don't have a node in the tree
+
                             ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
                         }
 

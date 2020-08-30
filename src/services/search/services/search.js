@@ -146,6 +146,14 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
         result.highlightedNotePathTitle = result.notePathTitle;
 
+        if (highlightedTokens.find(token => note.type.includes(token))) {
+            result.highlightedNotePathTitle += ` <small>type: ${note.type}</small>`;
+        }
+
+        if (highlightedTokens.find(token => note.mime.includes(token))) {
+            result.highlightedNotePathTitle += ` <small>mime: ${note.mime}</small>`;
+        }
+
         for (const attr of note.attributes) {
             if (highlightedTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
                 result.highlightedNotePathTitle += ` <small>${formatAttribute(attr)}</small>`;

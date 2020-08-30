@@ -160,7 +160,7 @@ class Note {
                 return this.flatTextCache;
             }
 
-            this.flatTextCache = this.noteId + ' ';
+            this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime;
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
