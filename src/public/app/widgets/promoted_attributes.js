@@ -37,6 +37,7 @@ const TPL = `
 export default class PromotedAttributesWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
         this.$container = this.$widget.find(".promoted-attributes-container");
     }
 

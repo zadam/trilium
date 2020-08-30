@@ -174,6 +174,7 @@ export default class AttributeListWidget extends TabAwareWidget {
                 this.$inheritedAttributesWrapper.hide();
             } else {
                 this.$promotedExpander.hide();
+                this.$allAttrWrapper.show();
                 this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
             }
         }
