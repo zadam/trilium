@@ -133,6 +133,8 @@ function searchNotesForAutocomplete(query) {
 }
 
 function highlightSearchResults(searchResults, highlightedTokens) {
+    highlightedTokens = Array.from(new Set(highlightedTokens));
+
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
