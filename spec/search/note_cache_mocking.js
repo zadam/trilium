@@ -57,8 +57,8 @@ function id() {
     return randtoken.generate(10);
 }
 
-function note(title) {
-    const note = new Note(noteCache, {noteId: id(), title});
+function note(title, type = 'text', mime = 'text/html') {
+    const note = new Note(noteCache, {noteId: id(), title, type, mime});
 
     return new NoteBuilder(note);
 }

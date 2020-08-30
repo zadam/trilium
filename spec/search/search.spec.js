@@ -29,6 +29,49 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
+    it("normal search looks also at attributes", () => {
+        const austria = note("Austria");
+        const vienna = note("Vienna");
+
+        rootNote
+            .child(austria
+                .relation('capital', vienna))
+            .child(vienna
+                .label('inhabitants', '1888776'));
+
+        const parsingContext = new ParsingContext();
+        let searchResults = searchService.findNotesWithQuery('capital', parsingContext);
+
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+
+        searchResults = searchService.findNotesWithQuery('inhabitants', parsingContext);
+
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Vienna")).toBeTruthy();
+    });
+
+    it("normal search looks also at type and mime", () => {
+        rootNote
+            .child(note("Effective Java", 'book', ''))
+            .child(note("Hello World.java", 'code', 'text/x-java'));
+
+        const parsingContext = new ParsingContext();
+        let searchResults = searchService.findNotesWithQuery('book', parsingContext);
+
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Effective Java")).toBeTruthy();
+
+        searchResults = searchService.findNotesWithQuery('text', parsingContext); // should match mime
+
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Hello World.java")).toBeTruthy();
+
+        searchResults = searchService.findNotesWithQuery('java', parsingContext);
+
+        expect(searchResults.length).toEqual(2);
+    });
+
     it("only end leafs are results", () => {
         rootNote
             .child(note("Europe")
@@ -413,8 +456,6 @@ describe("Search", () => {
             .child(note("Mozart")
                 .child(austria));
 
-        austria.note.type = 'text';
-        austria.note.mime = 'text/html';
         austria.note.isProtected = false;
         austria.note.dateCreated = '2020-05-14 12:11:42.001+0200';
         austria.note.dateModified = '2020-05-14 13:11:42.001+0200';
@@ -427,16 +468,12 @@ describe("Search", () => {
         function test(propertyName, value, expectedResultCount) {
             const searchResults = searchService.findNotesWithQuery(`# note.${propertyName} = ${value}`, parsingContext);
             expect(searchResults.length).toEqual(expectedResultCount);
-
-            if (expectedResultCount === 1) {
-                expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
-            }
         }
 
-        test("type", "text", 1);
+        test("type", "text", 6);
         test("type", "code", 0);
 
-        test("mime", "text/html", 1);
+        test("mime", "text/html", 6);
         test("mime", "application/json", 0);
 
         test("isProtected", "false", 7);
