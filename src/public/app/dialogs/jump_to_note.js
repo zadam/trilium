@@ -30,9 +30,8 @@ function showInFullText(e) {
 
     const searchText = $autoComplete.val();
 
-    searchNotesService.resetSearch();
-    searchNotesService.showSearch();
-    searchNotesService.doSearch(searchText);
+    appContext.triggerCommand('showSearch', {searchText});
+    appContext.triggerCommand('searchForResults', {searchText});
 
     $dialog.modal('hide');
 }

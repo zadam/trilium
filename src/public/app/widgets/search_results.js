@@ -1,6 +1,4 @@
 import BasicWidget from "./basic_widget.js";
-import toastService from "../services/toast.js";
-import server from "../services/server.js";
 
 const TPL = `
 <div class="search-results">
