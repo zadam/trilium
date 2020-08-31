@@ -65,14 +65,16 @@ function prepareSqlForLike(prefix, str, suffix) {
     return `'${prefix}${value}${suffix}' ESCAPE '\\'`;
 }
 
-function stopWatch(what, func) {
+function stopWatch(what, func, timeLimit = 0) {
     const start = Date.now();
 
     const ret = func();
 
     const tookMs = Date.now() - start;
 
-    log.info(`${what} took ${tookMs}ms`);
+    if (tookMs >= timeLimit) {
+        log.info(`${what} took ${tookMs}ms`);
+    }
 
     return ret;
 }
