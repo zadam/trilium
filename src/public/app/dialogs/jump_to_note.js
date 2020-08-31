@@ -30,6 +30,9 @@ export async function showDialog() {
     }
     else {
         $autoComplete
+            // hack, the actual search value is stored in <pre> element next to the search input
+            // this is important because the search input value is replaced with the suggestion note's title
+            .autocomplete("val", $autoComplete.next().text())
             .trigger('focus')
             .trigger('select');
     }

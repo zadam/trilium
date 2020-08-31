@@ -6,7 +6,14 @@ function init(callback) {
 }
 
 function wrap(callback) {
-    return () => init(callback);
+    return () => {
+        try {
+            init(callback);
+        }
+        catch (e) {
+            console.log(`Error occurred: ${e.message}: ${e.stack}`);
+        }
+    }
 }
 
 function get(key) {
