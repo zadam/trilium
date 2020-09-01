@@ -27,7 +27,7 @@ async function setupActionsForElement(scope, $el, component) {
 
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName));
+			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName, {tabId: appContext.tabManager.activeTabId}));
 		}
 	}
 }
@@ -35,7 +35,7 @@ async function setupActionsForElement(scope, $el, component) {
 getActionsForScope("window").then(actions => {
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName));
+			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {tabId: appContext.tabManager.activeTabId}));
 		}
 	}
 });

@@ -330,6 +330,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         await this.triggerCommand('saveAttributes');
 
         this.hide();
+
+        this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
     }
 
     userEditedAttribute() {

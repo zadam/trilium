@@ -224,12 +224,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         separator: "Dialogs"
     },
-    { // FIXME
-        actionName: "showAttributes",
-        defaultShortcuts: ["Alt+A"],
-        description: "Shows Attributes",
-        scope: "window"
-    },
     {
         actionName: "showNoteInfo",
         defaultShortcuts: [],
@@ -312,6 +306,29 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: [],
         description: "Cuts the selection from the current note and creates subnote with the selected text",
         scope: "text-detail"
+    },
+
+    {
+        separator: "Attributes (labels & relations)"
+    },
+
+    {
+        actionName: "focusOnAttributes",
+        defaultShortcuts: ["Alt+A"],
+        description: "Put focus into attribute editor",
+        scope: "window"
+    },
+    {
+        actionName: "addNewLabel",
+        defaultShortcuts: ["Alt+L"],
+        description: "Create new label",
+        scope: "window"
+    },
+    {
+        actionName: "addNewRelation",
+        defaultShortcuts: ["Alt+R"],
+        description: "Create new relation",
+        scope: "window"
     },
 
     {

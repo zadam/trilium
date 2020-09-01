@@ -221,14 +221,24 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             y: e.pageY,
             orientation: 'left',
             items: [
-                {title: "Add new label", command: "addNewLabel", uiIcon: "hash"},
-                {title: "Add new relation", command: "addNewRelation", uiIcon: "transfer"},
+                {title: `Add new label <kbd data-command="addNewLabel"></kbd>`, command: "addNewLabel", uiIcon: "hash"},
+                {title: `Add new relation <kbd data-command="addNewRelation"></kbd>`, command: "addNewRelation", uiIcon: "transfer"},
                 {title: "----"},
                 {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
                 {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
             ],
             selectMenuItemHandler: ({command}) => this.handleAddNewAttributeCommand(command)
         });
+    }
+
+    // triggered from keyboard shortcut
+    addNewLabelEvent() {
+        this.handleAddNewAttributeCommand('addNewLabel');
+    }
+
+    // triggered from keyboard shortcut
+    addNewRelationEvent() {
+        this.handleAddNewAttributeCommand('addNewRelation');
     }
 
     async handleAddNewAttributeCommand(command) {
@@ -466,6 +476,10 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         if (this.tabContext.tabId === tabId) {
             if (this.$editor.is(":visible")) {
                 this.$editor.trigger('focus');
+
+                this.textEditor.model.change(writer => { // put focus to the end of the content
+                    writer.setSelection(writer.createPositionAt(this.textEditor.model.document.getRoot(), 'end'));
+                });
             }
             else {
                 this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
