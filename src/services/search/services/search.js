@@ -78,7 +78,7 @@ function findNotesWithQuery(query, parsingContext) {
         }
 
         return findNotesWithExpression(expression);
-    });
+    }, 20);
 }
 
 /**
@@ -180,7 +180,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
 function formatAttribute(attr) {
     if (attr.type === 'relation') {
-        return '@' + utils.escapeHtml(attr.name) + "=…";
+        return '~' + utils.escapeHtml(attr.name) + "=…";
     }
     else if (attr.type === 'label') {
         let label = '#' + utils.escapeHtml(attr.name);

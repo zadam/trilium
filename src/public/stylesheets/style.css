@@ -829,3 +829,8 @@ body {
 ul.fancytree-container li {
     contain: layout paint;
 }
+
+/** ckeditor's autocomplete */
+.ck.ck-balloon-panel {
+    z-index: 10001;
+}

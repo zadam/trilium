@@ -55,6 +55,7 @@ const TPL = `
     
     .attribute-errors {
         color: red;
+        padding: 5px 50px 0px 5px; /* large right padding to avoid buttons */
     }
     </style>
     
@@ -196,11 +197,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         this.initialized = this.initEditor();
 
         this.$editor.on('keydown', async e => {
-            const keycode = (e.keyCode ? e.keyCode : e.which);
-
-            if (keycode === 13) {
-                this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
-
+            if (e.which === 13) {
                 await this.save();
             }
 
@@ -283,7 +280,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 attribute: attrs[attrs.length - 1],
                 isOwned: true,
                 x: (rect.left + rect.right) / 2,
-                y: rect.bottom
+                y: rect.bottom,
+                focus: 'name'
             });
         }, 100);
     }
@@ -402,7 +400,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             html: true,
             title: HELP_TEXT,
             placement: 'bottom',
-            offset: "0,20"
+            offset: "0,30"
         });
     }
 

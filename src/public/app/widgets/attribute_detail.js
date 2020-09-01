@@ -7,6 +7,7 @@ import noteAutocompleteService from "../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 import TabAwareWidget from "./tab_aware_widget.js";
 import SpacedUpdate from "../services/spaced_update.js";
+import utils from "../services/utils.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -145,7 +146,7 @@ const TPL = `
     <div class="attr-save-delete-button-container">
         <button class="btn btn-primary btn-sm attr-save-changes-and-close-button" 
             style="flex-grow: 1; margin-right: 20px">
-            Save & close</button>
+            Save & close <kbd>Ctrl+Enter</kbd></button>
             
         <button class="btn btn-secondary btn-sm attr-delete-button">
             Delete</button>
@@ -221,6 +222,9 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.relatedNotesSpacedUpdate = new SpacedUpdate(async () => this.updateRelatedNotes(), 1000);
 
         this.$widget = $(TPL);
+
+        utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
+
         this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
@@ -291,11 +295,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$attrSaveDeleteButtonContainer = this.$widget.find('.attr-save-delete-button-container');
 
         this.$saveAndCloseButton = this.$widget.find('.attr-save-changes-and-close-button');
-        this.$saveAndCloseButton.on('click', async () => {
-            await this.triggerCommand('saveAttributes');
-
-            this.hide();
-        });
+        this.$saveAndCloseButton.on('click', () => this.saveAndClose());
 
         this.$deleteButton = this.$widget.find('.attr-delete-button');
         this.$deleteButton.on('click', async () => {
@@ -326,6 +326,12 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         });
     }
 
+    async saveAndClose() {
+        await this.triggerCommand('saveAttributes');
+
+        this.hide();
+    }
+
     userEditedAttribute() {
         this.updateAttributeInEditor();
         this.updateHelp();
@@ -350,7 +356,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         }
     }
 
-    async showAttributeDetail({allAttributes, attribute, isOwned, x, y}) {
+    async showAttributeDetail({allAttributes, attribute, isOwned, x, y, focus}) {
         if (!attribute) {
             this.hide();
 
@@ -474,6 +480,10 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.$widget.outerHeight() + y > $(window).height() - 50
                         ? $(window).height() - y - 50
                         : 10000);
+
+        if (focus === 'name') {
+            this.$inputName.focus().select();
+        }
     }
 
     async updateRelatedNotes() {
