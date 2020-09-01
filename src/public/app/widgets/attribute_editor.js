@@ -414,6 +414,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             placement: 'bottom',
             offset: "0,30"
         });
+
+        this.$editor.tooltip('show');
     }
 
     getClickIndex(pos) {
