@@ -351,7 +351,9 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
 
         if (this.$errors.is(":visible")) {
-            this.$errors.slideUp();
+            // using .hide() instead of .slideUp() since this will also hide the error after confirming
+            // mention for relation name which suits up. When using.slideUp() error will appear and the slideUp which is weird
+            this.$errors.hide();
         }
     }
 
