@@ -12,7 +12,7 @@ function renderAttribute(attribute, $container, renderIsInheritable) {
             $container.append(document.createTextNode(formatValue(attribute.value)));
         }
 
-        $container.append("&nbsp;");
+        $container.append(" ");
     } else if (attribute.type === 'relation') {
         if (attribute.isAutoLink) {
             return;
@@ -21,7 +21,7 @@ function renderAttribute(attribute, $container, renderIsInheritable) {
         if (attribute.value) {
             $container.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
             $container.append(createNoteLink(attribute.value));
-            $container.append("&nbsp;");
+            $container.append(" ");
         } else {
             ws.logError(`Relation ${attribute.attributeId} has empty target`);
         }
