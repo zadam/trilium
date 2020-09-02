@@ -224,6 +224,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
+        utils.bindElShortcut(this.$widget, 'escape', () => alert("H!"));
 
         this.contentSized();
 
@@ -452,40 +453,40 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.toggleInt(true);
 
         const offset = this.parent.$widget.offset();
+        const detPosition = this.getDetailPosition(x, offset);
 
-        const left = x - offset.left - this.$widget.outerWidth() / 2;
-
-        if (left < 0) {
-            this.$widget
-                .css("left", "10px")
-                .css("right", "");
-        }
-        else {
-            const right = left + this.$widget.outerWidth();
-
-            if (right > $(window).width() - 10) {
-                this.$widget
-                    .css("left", "")
-                    .css("right", "10px");
-            }
-            else {
-                this.$widget
-                    .css("left", left)
-                    .css("right", "");
-            }
-        }
-
-        this.$widget.css("top", y - offset.top + 70);
-
-        // so that the detail window always fits
-        this.$widget.css("max-height",
-            this.$widget.outerHeight() + y > $(window).height() - 50
-                        ? $(window).height() - y - 50
-                        : 10000);
+        this.$widget
+            .css("left", detPosition.left)
+            .css("right", detPosition.right)
+            .css("top", y - offset.top + 70)
+            .css("max-height",
+                this.$widget.outerHeight() + y > $(window).height() - 50
+                    ? $(window).height() - y - 50
+                    : 10000);
 
         if (focus === 'name') {
-            this.$inputName.focus().select();
+            this.$inputName
+                .trigger('focus')
+                .trigger('select');
         }
+    }
+
+    getDetailPosition(x, offset) {
+        let left = x - offset.left - this.$widget.outerWidth() / 2;
+        let right = "";
+
+        if (left < 0) {
+            left = 10;
+        } else {
+            const rightEdge = left + this.$widget.outerWidth();
+
+            if (rightEdge > this.parent.$widget.outerWidth() - 10) {
+                left = "";
+                right = 10;
+            }
+        }
+
+        return {left, right};
     }
 
     async updateRelatedNotes() {
