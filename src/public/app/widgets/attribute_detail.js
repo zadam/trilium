@@ -69,7 +69,7 @@ const TPL = `
     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <h5 class="attr-detail-title"></h5>
         
-        <span class="bx bx-x close-attr-detail-button"></span>
+        <span class="bx bx-x close-attr-detail-button" title="Cancel changes and close"></span>
     </div>
 
     <div class="attr-is-owned-by"></div>
@@ -190,7 +190,7 @@ const ATTR_HELP = {
         "disableInclusion": "scripts with this label won't be included into parent script execution.",
         "sorted": "keeps child notes sorted by title alphabetically",
         "hidePromotedAttributes": "Hide promoted attributes on this note",
-        "readOnly": "editor is in read only mode. Works only for text notes.",
+        "readOnly": "editor is in read only mode. Works only for text and code notes.",
         "autoReadOnlyDisabled": "text/code notes can be set automatically into read mode when they are too large. You can disable this behavior on per-note basis by adding this label to the note",
         "appCss": "marks CSS notes which are loaded into the Trilium application and can thus be used to modify Trilium's looks.",
         "appTheme": "marks CSS notes which are full Trilium themes and are thus available in Trilium options.",
@@ -224,7 +224,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
-        utils.bindElShortcut(this.$widget, 'escape', () => alert("H!"));
+        utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
         this.contentSized();
 
@@ -291,6 +291,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$inputInheritable.on('change', () => this.userEditedAttribute());
 
         this.$closeAttrDetailButton = this.$widget.find('.close-attr-detail-button');
+        this.$closeAttrDetailButton.on('click', () => this.cancelAndClose());
+
         this.$attrIsOwnedBy = this.$widget.find('.attr-is-owned-by');
 
         this.$attrSaveDeleteButtonContainer = this.$widget.find('.attr-save-delete-button-container');
@@ -316,8 +318,6 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
-        this.$closeAttrDetailButton.on('click', () => this.hide());
-
         $(window).on('mouseup', e => {
             if (!$(e.target).closest(this.$widget[0]).length
                 && !$(e.target).closest(".algolia-autocomplete").length
@@ -329,6 +329,14 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
     async saveAndClose() {
         await this.triggerCommand('saveAttributes');
+
+        this.hide();
+
+        this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
+    }
+
+    async cancelAndClose() {
+        await this.triggerCommand('reloadAttributes');
 
         this.hide();
 
