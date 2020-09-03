@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-echo "Running tests"
-
-npm run test-all || { echo 'unit tests failed' ; exit 1; }
-
 echo "Deleting existing builds"
 
 rm -rf dist/*
