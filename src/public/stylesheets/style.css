@@ -354,6 +354,7 @@ pre:not(.CodeMirror-line) {
     font-size: 1.3em;
     padding-left: 5px;
     padding-right: 5px;
+    padding-top: 8px;
 }
 
 .go-to-selected-note-button {

@@ -167,6 +167,9 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 }
 
                 $input.prop("step", step);
+                $input
+                    .css("text-align", "right")
+                    .css("width", "120");
             }
             else if (definition.labelType === 'boolean') {
                 $input.prop("type", "checkbox");
@@ -182,7 +185,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 $input.prop("placeholder", "http://website...");
 
                 const $openButton = $("<span>")
-                    .addClass("input-group-text open-external-link-button bx bx-trending-up")
+                    .addClass("input-group-text open-external-link-button bx bx-window-open")
                     .prop("title", "Open external link")
                     .on('click', () => window.open($input.val(), '_blank'));
 
