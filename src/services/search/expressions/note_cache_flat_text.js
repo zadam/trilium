@@ -84,7 +84,9 @@ class NoteCacheFlatTextExp extends Expression {
             const foundAttrTokens = [];
 
             for (const token of this.tokens) {
-                if (note.type.includes(token) || note.mime.includes(token)) {
+                // not clear why, but sometimes note.type or note.mime is undefined
+                if ((note.type && note.type.includes(token))
+                    || (note.mime && note.mime.includes(token))) {
                     foundAttrTokens.push(token);
                 }
 
