@@ -37,11 +37,11 @@ async function sync() {
             do {
                 const syncContext = await login();
 
-                await pushSync(syncContext);
+                await pushChanges(syncContext);
 
-                await pullSync(syncContext);
+                await pullChanges(syncContext);
 
-                await pushSync(syncContext);
+                await pushChanges(syncContext);
 
                 await syncFinished(syncContext);
 
@@ -122,7 +122,7 @@ async function doLogin() {
     return syncContext;
 }
 
-async function pullSync(syncContext) {
+async function pullChanges(syncContext) {
     let atLeastOnePullApplied = false;
 
     while (true) {
@@ -175,7 +175,7 @@ async function pullSync(syncContext) {
     log.info("Finished pull");
 }
 
-async function pushSync(syncContext) {
+async function pushChanges(syncContext) {
     let lastSyncedPush = getLastSyncedPush();
 
     while (true) {

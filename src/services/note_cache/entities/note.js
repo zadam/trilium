@@ -6,6 +6,33 @@ class Note {
     constructor(noteCache, row) {
         /** @param {NoteCache} */
         this.noteCache = noteCache;
+
+        this.update(row);
+
+        /** @param {Branch[]} */
+        this.parentBranches = [];
+        /** @param {Note[]} */
+        this.parents = [];
+        /** @param {Note[]} */
+        this.children = [];
+        /** @param {Attribute[]} */
+        this.ownedAttributes = [];
+
+        /** @param {Attribute[]|null} */
+        this.attributeCache = null;
+        /** @param {Attribute[]|null} */
+        this.inheritableAttributeCache = null;
+
+        /** @param {Attribute[]} */
+        this.targetRelations = [];
+
+        this.noteCache.notes[this.noteId] = this;
+
+        /** @param {Note[]|null} */
+        this.ancestorCache = null;
+    }
+
+    update(row) {
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */
@@ -26,34 +53,11 @@ class Note {
         this.isProtected = !!row.isProtected;
         /** @param {boolean} */
         this.isDecrypted = !row.isProtected || !!row.isContentAvailable;
-        /** @param {Branch[]} */
-        this.parentBranches = [];
-        /** @param {Note[]} */
-        this.parents = [];
-        /** @param {Note[]} */
-        this.children = [];
-        /** @param {Attribute[]} */
-        this.ownedAttributes = [];
 
-        /** @param {Attribute[]|null} */
-        this.attributeCache = null;
-        /** @param {Attribute[]|null} */
-        this.inheritableAttributeCache = null;
-
-        /** @param {Attribute[]} */
-        this.targetRelations = [];
+        this.decrypt();
 
         /** @param {string|null} */
         this.flatTextCache = null;
-
-        this.noteCache.notes[this.noteId] = this;
-
-        if (protectedSessionService.isProtectedSessionAvailable()) {
-            this.decrypt();
-        }
-
-        /** @param {Note[]|null} */
-        this.ancestorCache = null;
     }
 
     /** @return {Attribute[]} */

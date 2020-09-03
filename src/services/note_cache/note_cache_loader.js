@@ -31,7 +31,7 @@ function load() {
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
-    // note that entity can also be just POJO without methods if coming FROM entity_changes
+    // note that entity can also be just POJO without methods if coming from sync
 
     if (!noteCache.loaded) {
         return;
@@ -44,15 +44,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete noteCache.notes[noteId];
         }
         else if (noteId in noteCache.notes) {
-            const note = noteCache.notes[noteId];
-
-            // we can assume we have protected session since we managed to update
-            note.title = entity.title;
-            note.isProtected = entity.isProtected;
-            note.isDecrypted = !entity.isProtected || !!entity.isContentAvailable;
-            note.flatTextCache = null;
-
-            note.decrypt();
+            noteCache.notes[noteId].update(entity);
         }
         else {
             const note = new Note(noteCache, entity);
