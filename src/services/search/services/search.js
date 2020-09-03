@@ -126,6 +126,7 @@ function searchNotesForAutocomplete(query) {
     return searchResults.map(result => {
         return {
             notePath: result.notePath,
+            noteTitle: noteCacheService.getNoteTitle(result.noteId),
             notePathTitle: result.notePathTitle,
             highlightedNotePathTitle: result.highlightedNotePathTitle
         }

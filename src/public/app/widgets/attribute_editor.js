@@ -467,7 +467,13 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             }
         }
 
-        this.textEditor.setData($attributesContainer.html() + "&nbsp;");
+        let htmlAttrs = $attributesContainer.html();
+
+        if (htmlAttrs.length > 0) {
+            htmlAttrs += "&nbsp;";
+        }
+
+        this.textEditor.setData(htmlAttrs);
 
         if (saved) {
             this.lastSavedContent = this.textEditor.getData();
