@@ -57,12 +57,16 @@ function getRecentNotes(activeNoteId) {
       LIMIT 200`, params);
 
     return recentNotes.map(rn => {
-        const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));
+        const notePathArray = rn.notePath.split('/');
+
+        const noteTitle = noteCacheService.getNoteTitle(notePathArray[notePathArray.length - 1]);
+        const notePathTitle = noteCacheService.getNoteTitleForPath(notePathArray);
 
         return {
             notePath: rn.notePath,
-            notePathTitle: title,
-            highlightedNotePathTitle: utils.escapeHtml(title)
+            noteTitle,
+            notePathTitle,
+            highlightedNotePathTitle: utils.escapeHtml(notePathTitle)
         };
     });
 }

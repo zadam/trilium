@@ -95,7 +95,12 @@ function initNoteAutocomplete($el, options) {
         }
     ]);
 
-    $el.on('autocomplete:selected', (event, suggestion) => $el.setSelectedNotePath(suggestion.notePath));
+    $el.on('autocomplete:selected', (event, suggestion) => {
+        $el.setSelectedNotePath(suggestion.notePath);
+
+        $el.autocomplete("val", suggestion.noteTitle);
+    });
+
     $el.on('autocomplete:closed', () => {
         if (!$el.val().trim()) {
             clearText($el);
