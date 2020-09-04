@@ -15,7 +15,6 @@ import AttributeListWidget from "../widgets/attribute_list.js";
 import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
-import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
 import NoteInfoWidget from "../widgets/collapsible_widgets/note_info.js";
 import CalendarWidget from "../widgets/collapsible_widgets/calendar.js";

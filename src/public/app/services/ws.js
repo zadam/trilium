@@ -156,7 +156,9 @@ async function consumeSyncData() {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
 
             // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
-            utils.reloadApp();
+            if (!glob.isDev) {
+                utils.reloadApp();
+            }
         }
 
         for (const syncRow of nonProcessedSyncRows) {
