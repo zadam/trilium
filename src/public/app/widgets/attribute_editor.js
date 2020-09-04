@@ -232,13 +232,17 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     // triggered from keyboard shortcut
-    addNewLabelEvent() {
-        this.handleAddNewAttributeCommand('addNewLabel');
+    addNewLabelEvent({tabId}) {
+        if (this.isTab(tabId)) {
+            this.handleAddNewAttributeCommand('addNewLabel');
+        }
     }
 
     // triggered from keyboard shortcut
-    addNewRelationEvent() {
-        this.handleAddNewAttributeCommand('addNewRelation');
+    addNewRelationEvent({tabId}) {
+        if (this.isTab(tabId)) {
+            this.handleAddNewAttributeCommand('addNewRelation');
+        }
     }
 
     async handleAddNewAttributeCommand(command) {
@@ -459,11 +463,17 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     async renderOwnedAttributes(ownedAttributes, saved) {
+        ownedAttributes = ownedAttributes.filter(oa => !oa.isDeleted);
+
         const $attributesContainer = $("<div>");
 
-        for (const attribute of ownedAttributes) {
-            if (!attribute.isDeleted) {
-                attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
+        for (let i = 0; i < ownedAttributes.length; i++) {
+            const attribute = ownedAttributes[i];
+
+            attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
+
+            if (i < ownedAttributes.length - 1) {
+                $attributesContainer.append(" ");
             }
         }
 

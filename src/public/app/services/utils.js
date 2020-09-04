@@ -230,6 +230,7 @@ function closeActiveDialog() {
 
 let $lastFocusedElement = null;
 
+// perhaps there should be saved focused element per tab?
 function saveFocusedElement() {
     $lastFocusedElement = $(":focus");
 }

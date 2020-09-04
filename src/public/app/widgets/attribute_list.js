@@ -220,9 +220,9 @@ export default class AttributeListWidget extends TabAwareWidget {
                     y: e.pageY
                 }));
 
-            $container.append($span);
-
             attributeRenderer.renderAttribute(attribute, $span, false);
+
+            $container.append($span);
         }
     }
 

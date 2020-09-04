@@ -11,19 +11,15 @@ function renderAttribute(attribute, $container, renderIsInheritable) {
             $container.append('=');
             $container.append(document.createTextNode(formatValue(attribute.value)));
         }
-
-        $container.append(" ");
     } else if (attribute.type === 'relation') {
         if (attribute.isAutoLink) {
             return;
         }
 
+        // when the relation has just been created then it might not have a value
         if (attribute.value) {
             $container.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
             $container.append(createNoteLink(attribute.value));
-            $container.append(" ");
-        } else {
-            ws.logError(`Relation ${attribute.attributeId} has empty target`);
         }
     } else {
         ws.logError("Unknown attr type: " + attribute.type);

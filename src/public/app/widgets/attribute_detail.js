@@ -327,52 +327,14 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         });
     }
 
-    async saveAndClose() {
-        await this.triggerCommand('saveAttributes');
-
-        this.hide();
-
-        this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
-    }
-
-    async cancelAndClose() {
-        await this.triggerCommand('reloadAttributes');
-
-        this.hide();
-
-        this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
-    }
-
-    userEditedAttribute() {
-        this.updateAttributeInEditor();
-        this.updateHelp();
-        this.relatedNotesSpacedUpdate.scheduleUpdate();
-    }
-
-    updateHelp() {
-        const attrName = this.$inputName.val();
-
-        if (this.attrType in ATTR_HELP && attrName in ATTR_HELP[this.attrType]) {
-            this.$attrHelp
-                .empty()
-                .append($("<td colspan=2>")
-                    .append($("<strong>").text(attrName))
-                    .append(" - ")
-                    .append(ATTR_HELP[this.attrType][attrName])
-                )
-                .show();
-        }
-        else {
-            this.$attrHelp.empty().hide();
-        }
-    }
-
     async showAttributeDetail({allAttributes, attribute, isOwned, x, y, focus}) {
         if (!attribute) {
             this.hide();
 
             return;
         }
+
+        utils.saveFocusedElement();
 
         this.attrType = this.getAttrType(attribute);
 
@@ -444,12 +406,20 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 .attr('readonly', () => !isOwned);
         }
         else if (attribute.type === 'relation') {
-            const targetNote = await treeCache.getNote(attribute.value);
-
             this.$inputTargetNote
                 .attr('readonly', () => !isOwned)
-                .val(targetNote ? targetNote.title : "")
-                .setSelectedNotePath(attribute.value);
+                .val("")
+                .setSelectedNotePath("");
+
+            if (attribute.value) {
+                const targetNote = await treeCache.getNote(attribute.value);
+
+                if (targetNote) {
+                    this.$inputTargetNote
+                        .val(targetNote ? targetNote.title : "")
+                        .setSelectedNotePath(attribute.value);
+                }
+            }
         }
 
         this.$inputInheritable
@@ -495,6 +465,46 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         }
 
         return {left, right};
+    }
+
+    async saveAndClose() {
+        await this.triggerCommand('saveAttributes');
+
+        this.hide();
+
+        utils.focusSavedElement();
+    }
+
+    async cancelAndClose() {
+        await this.triggerCommand('reloadAttributes');
+
+        this.hide();
+
+        utils.focusSavedElement();
+    }
+
+    userEditedAttribute() {
+        this.updateAttributeInEditor();
+        this.updateHelp();
+        this.relatedNotesSpacedUpdate.scheduleUpdate();
+    }
+
+    updateHelp() {
+        const attrName = this.$inputName.val();
+
+        if (this.attrType in ATTR_HELP && attrName in ATTR_HELP[this.attrType]) {
+            this.$attrHelp
+                .empty()
+                .append($("<td colspan=2>")
+                    .append($("<strong>").text(attrName))
+                    .append(" - ")
+                    .append(ATTR_HELP[this.attrType][attrName])
+                )
+                .show();
+        }
+        else {
+            this.$attrHelp.empty().hide();
+        }
     }
 
     async updateRelatedNotes() {
