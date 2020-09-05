@@ -38,7 +38,8 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             position,
             isInheritable
         FROM attributes
-        WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
+        WHERE isDeleted = 0 
+          AND (noteId IN (???) OR (type = 'relation' AND value IN (???)))`, noteIds);
 
     // sorting in memory is faster
     attributes.sort((a, b) => a.position - b.position < 0 ? -1 : 1);

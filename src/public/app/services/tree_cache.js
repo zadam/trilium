@@ -141,7 +141,7 @@ class TreeCache {
 
             const note = this.notes[attributeRow.noteId];
 
-            if (!note.attributes.includes(attributeId)) {
+            if (note && !note.attributes.includes(attributeId)) {
                 note.attributes.push(attributeId);
             }
 

@@ -482,6 +482,17 @@ class NoteShort {
     }
 
     /**
+     * Get relations which target this note
+     *
+     * @returns {NoteShort[]}
+     */
+    async getTargetRelationSourceNotes() {
+        const targetRelations = this.getTargetRelations();
+
+        return await this.treeCache.getNotes(targetRelations.map(tr => tr.noteId));
+    }
+
+    /**
      * Return note complement which is most importantly note's content
      *
      * @return {Promise<NoteComplement>}
