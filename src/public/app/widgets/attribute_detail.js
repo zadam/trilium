@@ -215,7 +215,9 @@ const ATTR_HELP = {
 
 export default class AttributeDetailWidget extends TabAwareWidget {
     async refresh() {
-        // this widget is not activated in a standard way
+        // switching note/tab should close the widget
+
+        this.hide();
     }
 
     doRender() {

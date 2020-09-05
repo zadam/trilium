@@ -219,4 +219,16 @@ export default class Entrypoints extends Component {
 
         toastService.showMessage("Note executed");
     }
+
+    hideAllTooltips() {
+        $(".tooltip").removeClass("show");
+    }
+
+    tabNoteSwitchedEvent() {
+        this.hideAllTooltips();
+    }
+
+    activeTabChangedEvent() {
+        this.hideAllTooltips();
+    }
 }

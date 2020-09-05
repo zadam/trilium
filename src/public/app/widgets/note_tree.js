@@ -905,6 +905,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     async refresh() {
         this.toggleInt(this.isEnabled());
+        this.$treeSettingsPopup.hide();
 
         this.activityDetected();
 
