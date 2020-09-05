@@ -46,6 +46,8 @@ class NoteRevisionsWidget extends CollapsibleWidget {
             return;
         }
 
+        const groupedRevisionItems = this.getGroupedRevisionItems(revisionItems);
+
         if (note.noteId !== this.noteId) {
             return;
         }
@@ -54,21 +56,45 @@ class NoteRevisionsWidget extends CollapsibleWidget {
 
         const $list = this.$body.find('.note-revision-list');
 
-        for (const item of revisionItems) {
-            const $listItem = $('<li>').append($("<a>", {
-                'data-action': 'note-revision',
-                'data-note-path': note.noteId,
-                'data-note-revision-id': item.noteRevisionId,
-                title: 'This revision was last edited on ' + item.dateLastEdited,
-                href: 'javascript:'
-            }).text(item.dateLastEdited.substr(0, 16)));
+        for (const [date, items] of groupedRevisionItems) {
+            const $listItem = $('<li>').append($("<strong>").text(date + ": "));
+            const revsWithinADay = [];
 
-            if (item.contentLength !== null) {
-                $listItem.append($("<span>").text(` (${item.contentLength} bytes)`))
+            for (const item of items) {
+                const $rev = $("<span>");
+
+
+                $rev.append($("<a>", {
+                        'data-action': 'note-revision',
+                        'data-note-path': note.noteId,
+                        'data-note-revision-id': item.noteRevisionId,
+                        title: 'This revision was last edited on ' + item.dateLastEdited,
+                        href: 'javascript:'
+                    })
+                    .text(item.dateLastEdited.substr(11, 5)));
+
+                revsWithinADay.push($rev.html());
             }
 
+            $listItem.append(revsWithinADay.join(", "));
             $list.append($listItem);
         }
+    }
+
+    getGroupedRevisionItems(revisionItems) {
+        const grouped = new Map(); // map preserves order of insertion
+
+        for (const item of revisionItems) {
+            const [date] = item.dateLastEdited.substr(0, 16).split(" ");
+
+            if (!grouped.has(date)) {
+                grouped.set(date, []);
+            }
+
+            grouped.get(date).push(item);
+        }
+
+        return grouped;
     }
 
     entitiesReloadedEvent({loadResults}) {
