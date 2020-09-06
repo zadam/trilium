@@ -222,7 +222,9 @@ export default class AttributeListWidget extends TabAwareWidget {
 
             attributeRenderer.renderAttribute(attribute, $span, false);
 
-            $container.append($span);
+            $container
+                .append($span)
+                .append(" ");
         }
     }
 
