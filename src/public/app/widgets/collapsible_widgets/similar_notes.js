@@ -3,8 +3,35 @@ import linkService from "../../services/link.js";
 import server from "../../services/server.js";
 import treeCache from "../../services/tree_cache.js";
 
+const TPL = `
+<div>
+    <style>
+        .similar-notes-content a {
+            display: inline-block;
+            border: 1px dotted var(--main-border-color);
+            border-radius: 20px;
+            background-color: var(--accented-background-color);
+            padding: 0 10px 0 10px;
+            margin: 3px;
+            max-width: 10em;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
+
+    <div class="similar-notes-content"></div>
+</div>
+`;
+
 export default class SimilarNotesWidget extends CollapsibleWidget {
     get widgetTitle() { return "Similar notes"; }
+
+    async doRenderBody() {
+        this.$body.html(TPL);
+
+        this.$similarNotesContent = this.$body.find(".similar-notes-content");
+    }
 
     get help() {
         return {
@@ -15,7 +42,7 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
     noteSwitched() {
         const noteId = this.noteId;
 
-        this.$body.empty();
+        this.$similarNotesContent.empty();
 
         // avoid executing this expensive operation multiple times when just going through notes (with keyboard especially)
         // until the users settles on a note
@@ -33,7 +60,7 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
         const similarNotes = await server.get('similar-notes/' + this.noteId);
 
         if (similarNotes.length === 0) {
-            this.$body.text("No similar notes found ...");
+            this.$similarNotesContent.text("No similar notes found ...");
             return;
         }
 
@@ -41,7 +68,7 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
 
         await treeCache.getNotes(noteIds, true); // preload all at once
 
-        const $list = $('<ul>');
+        const $list = $('<div>');
 
         for (const similarNote of similarNotes) {
             const note = await treeCache.getNote(similarNote.noteId, true);
@@ -50,13 +77,13 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
                 continue;
             }
 
-            const $item = $("<li>")
-                .append(await linkService.createNoteLink(similarNote.notePath.join("/"), {showNotePath: true}));
+            const $item = (await linkService.createNoteLink(similarNote.notePath.join("/")))
+                .css("font-size", 24 * similarNote.coeff);
 
             $list.append($item);
         }
 
-        this.$body.empty().append($list);
+        this.$similarNotesContent.empty().append($list);
     }
 
     entitiesReloadedEvent({loadResults}) {
