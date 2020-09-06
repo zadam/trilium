@@ -105,6 +105,7 @@ class Note extends Entity {
         }
     }
 
+    /** @returns {{contentLength, dateModified, utcDateModified}} */
     getContentMetadata() {
         return sql.getRow(`
             SELECT 

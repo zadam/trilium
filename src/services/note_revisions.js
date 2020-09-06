@@ -30,6 +30,8 @@ function createNoteRevision(note) {
         return;
     }
 
+    const contentMetadata = note.getContentMetadata();
+
     const noteRevision = new NoteRevision({
         noteId: note.noteId,
         // title and text should be decrypted now
@@ -37,10 +39,14 @@ function createNoteRevision(note) {
         type: note.type,
         mime: note.mime,
         isProtected: false, // will be fixed in the protectNoteRevisions() call
-        utcDateLastEdited: note.utcDateModified,
+        utcDateLastEdited: note.utcDateModified > contentMetadata.utcDateModified
+            ? note.utcDateModified
+            : contentMetadata.utcDateModified,
         utcDateCreated: dateUtils.utcNowDateTime(),
         utcDateModified: dateUtils.utcNowDateTime(),
-        dateLastEdited: note.dateModified,
+        dateLastEdited: note.dateModified > contentMetadata.dateModified
+            ? note.dateModified
+            : contentMetadata.dateModified,
         dateCreated: dateUtils.localNowDateTime()
     }).save();
 
