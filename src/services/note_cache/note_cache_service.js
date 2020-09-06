@@ -177,7 +177,7 @@ function getNotePath(noteId) {
 function evaluateSimilarity(sourceNote, candidateNote, results) {
     let coeff = stringSimilarity.compareTwoStrings(sourceNote.flatText, candidateNote.flatText);
 
-    if (coeff > 0.4) {
+    if (coeff > 0.5) {
         const notePath = getSomePath(candidateNote);
 
         // this takes care of note hoisting
@@ -214,7 +214,7 @@ function findSimilarNotes(noteId) {
     }
 
     for (const note of Object.values(noteCache.notes)) {
-        if (note.isProtected && !note.isDecrypted) {
+        if (note.noteId === origNote.noteId) {
             continue;
         }
 

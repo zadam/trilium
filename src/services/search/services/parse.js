@@ -27,23 +27,16 @@ function getFulltext(tokens, parsingContext) {
         return null;
     }
 
-    let textSearchExpression;
-
     if (parsingContext.includeNoteContent) {
-        textSearchExpression = new OrExp([
+        return new OrExp([
             new NoteCacheFulltextExp(tokens),
             new NoteContentProtectedFulltextExp('*=*', tokens),
             new NoteContentUnprotectedFulltextExp('*=*', tokens)
         ]);
     }
     else {
-        textSearchExpression = new NoteCacheFulltextExp(tokens);
+        return new NoteCacheFulltextExp(tokens);
     }
-
-    return new AndExp([
-        textSearchExpression,
-        new PropertyComparisonExp("isarchived", buildComparator("=", "false"))
-    ]);
 }
 
 function isOperator(str) {
@@ -399,6 +392,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
 function parse({fulltextTokens, expressionTokens, parsingContext}) {
     return AndExp.of([
+        parsingContext.excludeArchived ? new PropertyComparisonExp("isarchived", buildComparator("=", "false")) : null,
         getFulltext(fulltextTokens, parsingContext),
         getExpression(expressionTokens, parsingContext)
     ]);

@@ -113,8 +113,8 @@ function addImagesToNote(images, note, content) {
             new Attribute({
                 noteId: imageNote.noteId,
                 type: 'label',
-                name: 'hideInAutocomplete'
-            }).save();
+                name: 'archived'
+            }).save(); // so that these image notes don't show up in search / autocomplete
 
             new Attribute({
                 noteId: note.noteId,

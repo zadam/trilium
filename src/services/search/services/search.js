@@ -91,6 +91,7 @@ function searchNotes(query) {
 
     const parsingContext = new ParsingContext({
         includeNoteContent: true,
+        excludeArchived: true,
         fuzzyAttributeSearch: false
     });
 
@@ -114,6 +115,7 @@ function searchNotesForAutocomplete(query) {
 
     const parsingContext = new ParsingContext({
         includeNoteContent: false,
+        excludeArchived: true,
         fuzzyAttributeSearch: true
     });
 
