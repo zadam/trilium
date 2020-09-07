@@ -162,7 +162,7 @@ export default class Entrypoints extends Component {
     }
 
     async searchForResultsCommand({searchText}) {
-        const response = await server.get('search/' + encodeURIComponent(searchText));
+        const response = await server.get('search/' + encodeURIComponent(searchText) + '?includeNoteContent=true&excludeArchived=true&fuzzyAttributeSearch=false');
 
         if (!response.success) {
             toastService.showError("Search failed.", 3000);

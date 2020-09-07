@@ -1,13 +1,19 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const ParsingContext = require('../../services/search/parsing_context');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 
 function searchNotes(req) {
-    const {count, results} = searchService.searchTrimmedNotes(req.params.searchString);
+    const parsingContext = new ParsingContext({
+        includeNoteContent: req.query.includeNoteContent === 'true',
+        excludeArchived: req.query.excludeArchived === 'true',
+        fuzzyAttributeSearch: req.query.fuzzyAttributeSearch === 'true'
+    });
+
+    const {count, results} = searchService.searchTrimmedNotes(req.params.searchString, parsingContext);
 
     try {
         return {

@@ -11,7 +11,8 @@ const axios = require('axios');
 const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const appInfo = require('./app_info');
-const searchService = require('./search/services/search.js');
+const searchService = require('./search/services/search');
+const ParsingContext = require("./search/parsing_context");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -90,10 +91,18 @@ function BackendScriptApi(currentNote, apiParams) {
      * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
      *
      * @method
-     * @param {string} searchString
+     * @param {string} query
+     * @param {ParsingContext} [parsingContext]
      * @returns {Note[]}
      */
-    this.searchForNotes = searchService.searchNoteEntities;
+    this.searchForNotes = (query, parsingContext) => {
+        parsingContext = parsingContext || new ParsingContext();
+
+        const noteIds = searchService.findNotesWithQuery(query, parsingContext)
+            .map(sr => sr.noteId);
+
+        return repository.getNotes(noteIds);
+    };
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:

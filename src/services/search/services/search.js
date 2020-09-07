@@ -70,6 +70,10 @@ function parseQueryToExpression(query, parsingContext) {
  * @return {SearchResult[]}
  */
 function findNotesWithQuery(query, parsingContext) {
+    if (!query.trim().length) {
+        return [];
+    }
+
     return utils.stopWatch(`Search with query "${query}"`, () => {
         const expression = parseQueryToExpression(query, parsingContext);
 
@@ -81,25 +85,8 @@ function findNotesWithQuery(query, parsingContext) {
     }, 20);
 }
 
-/**
- * @return {SearchResult[]}
- */
-function searchNotes(query) {
-    if (!query.trim().length) {
-        return [];
-    }
-
-    const parsingContext = new ParsingContext({
-        includeNoteContent: true,
-        excludeArchived: true,
-        fuzzyAttributeSearch: false
-    });
-
-    return findNotesWithQuery(query, parsingContext);
-}
-
-function searchTrimmedNotes(query) {
-    const allSearchResults = searchNotes(query);
+function searchTrimmedNotes(query, parsingContext) {
+    const allSearchResults = findNotesWithQuery(query, parsingContext);
     const trimmedSearchResults = allSearchResults.slice(0, 200);
 
     return {
@@ -109,23 +96,17 @@ function searchTrimmedNotes(query) {
 }
 
 function searchNotesForAutocomplete(query) {
-    if (!query.trim().length) {
-        return [];
-    }
-
     const parsingContext = new ParsingContext({
         includeNoteContent: false,
         excludeArchived: true,
         fuzzyAttributeSearch: true
     });
 
-    let searchResults = findNotesWithQuery(query, parsingContext);
+    const results = searchTrimmedNotes(query, parsingContext);
 
-    searchResults = searchResults.slice(0, 200);
+    highlightSearchResults(results, parsingContext.highlightedTokens);
 
-    highlightSearchResults(searchResults, parsingContext.highlightedTokens);
-
-    return searchResults.map(result => {
+    return results.map(result => {
         return {
             notePath: result.notePath,
             noteTitle: noteCacheService.getNoteTitle(result.noteId),
@@ -198,15 +179,8 @@ function formatAttribute(attr) {
     }
 }
 
-function searchNoteEntities(query) {
-    return searchNotes(query)
-        .map(res => repository.getNote(res.noteId));
-}
-
 module.exports = {
-    searchNotes,
     searchTrimmedNotes,
     searchNotesForAutocomplete,
-    findNotesWithQuery,
-    searchNoteEntities
+    findNotesWithQuery
 };
