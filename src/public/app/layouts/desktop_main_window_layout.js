@@ -20,7 +20,7 @@ import NoteInfoWidget from "../widgets/collapsible_widgets/note_info.js";
 import CalendarWidget from "../widgets/collapsible_widgets/calendar.js";
 import LinkMapWidget from "../widgets/collapsible_widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/collapsible_widgets/note_revisions.js";
-import SimilarNotesWidget from "../widgets/collapsible_widgets/similar_notes.js";
+import SimilarNotesWidget from "../widgets/similar_notes.js";
 import WhatLinksHereWidget from "../widgets/collapsible_widgets/what_links_here.js";
 import SidePaneToggles from "../widgets/side_pane_toggles.js";
 import EditedNotesWidget from "../widgets/collapsible_widgets/edited_notes.js";
@@ -138,6 +138,7 @@ export default class DesktopMainWindowLayout {
                     )
                     .child(new TabCachingWidget(() => new AttributeListWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
+                    .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )
                 .child(new SidePaneContainer('right')
@@ -148,7 +149,6 @@ export default class DesktopMainWindowLayout {
                     .child(new TabCachingWidget(() => new EditedNotesWidget()))
                     .child(new TabCachingWidget(() => new LinkMapWidget()))
                     .child(new TabCachingWidget(() => new NoteRevisionsWidget()))
-                    .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(new TabCachingWidget(() => new WhatLinksHereWidget()))
                     .child(...this.customWidgets.get('right-pane'))
                 )

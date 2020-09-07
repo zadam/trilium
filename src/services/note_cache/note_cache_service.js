@@ -229,7 +229,7 @@ function findSimilarNotes(noteId) {
 
     results.sort((a, b) => a.coeff > b.coeff ? -1 : 1);
 
-    return results.length > 50 ? results.slice(0, 50) : results;
+    return results.length > 50 ? results.slice(0, 200) : results;
 }
 
 /**

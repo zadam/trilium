@@ -102,7 +102,7 @@ function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    const results = searchTrimmedNotes(query, parsingContext);
+    const {results} = searchTrimmedNotes(query, parsingContext);
 
     highlightSearchResults(results, parsingContext.highlightedTokens);
 

@@ -82,7 +82,7 @@ export default class StandardTopWidget extends BasicWidget {
         this.$leaveProtectedSessionButton = this.$widget.find(".leave-protected-session-button");
         this.$leaveProtectedSessionButton.on('click', protectedSessionService.leaveProtectedSession);
 
-        return this.$widget
+        return this.$widget;
     }
 
     protectedSessionStartedEvent() {

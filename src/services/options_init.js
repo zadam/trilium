@@ -86,7 +86,8 @@ const defaultOptions = [
     { name: 'hideArchivedNotes_main', value: 'false', isSynced: false },
     { name: 'hideIncludedImages_main', value: 'true', isSynced: false },
     { name: 'attributeListExpanded', value: 'false', isSynced: false },
-    { name: 'promotedAttributesExpanded', value: 'false', isSynced: true }
+    { name: 'promotedAttributesExpanded', value: 'true', isSynced: true },
+    { name: 'similarNotesExpanded', value: 'true', isSynced: true }
 ];
 
 function initStartupOptions() {

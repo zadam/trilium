@@ -56,7 +56,7 @@ const TPL = `
             cursor: pointer;
         }
         
-        .attr-expander:not(.error):hover hr {
+        .attr-expander:hover hr {
             border-color: var(--main-text-color);
         }
         

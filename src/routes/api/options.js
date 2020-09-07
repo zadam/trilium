@@ -39,7 +39,8 @@ const ALLOWED_OPTIONS = new Set([
     'rightPaneVisible',
     'nativeTitleBarVisible',
     'attributeListExpanded',
-    'promotedAttributesExpanded'
+    'promotedAttributesExpanded',
+    'similarNotesExpanded'
 ]);
 
 function getOptions() {
