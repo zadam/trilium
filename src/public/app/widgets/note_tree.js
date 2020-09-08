@@ -32,7 +32,7 @@ const TPL = `
     .tree {
         height: 100%;
         overflow: auto;
-        padding-bottom: 20px;
+        padding-bottom: 35px;
     }
     
     .refresh-search-button {
@@ -464,9 +464,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     && node.data.noteId === hoistedNoteService.getHoistedNoteId()
                     && $span.find('.unhoist-button').length === 0) {
 
-                    const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
+                    const unhoistButton = $('<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree">[<a class="unhoist-button">unhoist</a>]</span>');
 
-                    $span.append(unhoistButton);
+                    // prepending since appending could push out (when note title is too long)
+                    // the button too much to the right so that it's not visible
+                    $span.prepend(unhoistButton);
                 }
 
                 const note = await treeCache.getNote(node.data.noteId);

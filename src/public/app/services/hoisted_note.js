@@ -1,6 +1,7 @@
 import options from './options.js';
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
+import treeCache from "./tree_cache.js";
 
 function getHoistedNoteId() {
     return options.get('hoistedNoteId');
@@ -8,6 +9,8 @@ function getHoistedNoteId() {
 
 async function setHoistedNoteId(noteId) {
     await options.save('hoistedNoteId', noteId);
+
+    await treeCache.loadInitialTree();
 
     // FIXME - just use option load event
     appContext.triggerEvent('hoistedNoteChanged', {noteId});

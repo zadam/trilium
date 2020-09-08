@@ -207,7 +207,7 @@ export default class AttributeListWidget extends TabAwareWidget {
 
     async renderInheritedAttributes(attributes, $container) {
         for (const attribute of attributes) {
-            const $attr = await attributeRenderer.renderAttribute(attribute, false)
+            const $attr = (await attributeRenderer.renderAttribute(attribute, false))
                 .on('click', e => this.attributeDetailWidget.showAttributeDetail({
                     attribute: {
                         noteId: attribute.noteId,
