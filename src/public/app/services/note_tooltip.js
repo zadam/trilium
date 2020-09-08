@@ -2,6 +2,7 @@ import treeService from "./tree.js";
 import linkService from "./link.js";
 import treeCache from "./tree_cache.js";
 import utils from "./utils.js";
+import attributeRenderer from "./attribute_renderer.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -82,51 +83,16 @@ async function renderTooltip(note, noteComplement) {
         return '<div>Note has been deleted.</div>';
     }
 
-    const attributes = note.getAttributes();
+    const someNotePath = treeService.getSomeNotePath(note);
+    let content = $("<h5>").text(await treeService.getNotePathTitle(someNotePath)).prop('outerHTML');
 
-    let content = '';
+    const attributes = note.getAttributes()
+        .filter(attr => !attr.isDefinition());
 
-    const promoted = attributes
-        .filter(attr => attr.type === 'label-definition' || attr.type === 'relation-definition')
-        .filter(attr => !attr.name.startsWith("child:"))
-        .filter(attr => {
-            const json = attr.jsonValue;
-
-            return json && json.isPromoted;
-        });
-
-    if (promoted.length > 0) {
-        const $table = $("<table>").addClass("promoted-attributes-in-tooltip");
-
-        for (const definitionAttr of promoted) {
-            const definitionType = definitionAttr.type;
-            const valueType = definitionType.substr(0, definitionType.length - 11);
-
-            let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
-
-            for (const valueAttr of valueAttrs) {
-                if (!valueAttr.value) {
-                    continue;
-                }
-
-                let $value = "";
-
-                if (valueType === 'label') {
-                    $value = $("<td>").text(valueAttr.value);
-                }
-                else if (valueType === 'relation' && valueAttr.value) {
-                    $value = $("<td>").append(await linkService.createNoteLink(valueAttr.value));
-                }
-
-                const $row = $("<tr>")
-                    .append($("<th>").text(definitionAttr.name))
-                    .append($value);
-
-                $table.append($row);
-            }
-        }
-
-        content += $table.prop('outerHTML');
+    if (attributes.length > 0) {
+        content += '<div class="tooltip-attributes"><strong>Attributes: </strong> '
+                +  (await attributeRenderer.renderAttributes(attributes)).html()
+                + '</div>'
     }
 
     if (note.type === 'text' && !utils.isHtmlEmpty(noteComplement.content)) {

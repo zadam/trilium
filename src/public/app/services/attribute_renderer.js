@@ -1,29 +1,32 @@
 import ws from "./ws.js";
-import linkService from "./link.js";
+import treeCache from "./tree_cache.js";
 
-function renderAttribute(attribute, $container, renderIsInheritable) {
+async function renderAttribute(attribute, renderIsInheritable) {
     const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';
+    const $attr = $("<span>");
 
     if (attribute.type === 'label') {
-        $container.append(document.createTextNode('#' + attribute.name + isInheritable));
+        $attr.append(document.createTextNode('#' + attribute.name + isInheritable));
 
         if (attribute.value) {
-            $container.append('=');
-            $container.append(document.createTextNode(formatValue(attribute.value)));
+            $attr.append('=');
+            $attr.append(document.createTextNode(formatValue(attribute.value)));
         }
     } else if (attribute.type === 'relation') {
         if (attribute.isAutoLink) {
-            return;
+            return $attr;
         }
 
         // when the relation has just been created then it might not have a value
         if (attribute.value) {
-            $container.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
-            $container.append(createNoteLink(attribute.value));
+            $attr.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
+            $attr.append(await createNoteLink(attribute.value));
         }
     } else {
         ws.logError("Unknown attr type: " + attribute.type);
     }
+
+    return $attr;
 }
 
 function formatValue(val) {
@@ -44,18 +47,39 @@ function formatValue(val) {
     }
 }
 
-function createNoteLink(noteId) {
-    const $link = $("<a>", {
+async function createNoteLink(noteId) {
+    const note = await treeCache.getNote(noteId);
+
+    if (!note) {
+        return;
+    }
+
+    return $("<a>", {
         href: '#' + noteId,
         class: 'reference-link',
         'data-note-path': noteId
-    });
+    })
+        .text(note.title);
+}
 
-    linkService.loadReferenceLinkTitle(noteId, $link);
+async function renderAttributes(attributes, renderIsInheritable) {
+    const $container = $("<span>");
 
-    return $link;
+    for (let i = 0; i < attributes.length; i++) {
+        const attribute = attributes[i];
+
+        const $attr = await renderAttribute(attribute, renderIsInheritable);
+        $container.append($attr.html()); // .html() to get only inner HTML, we don't want any spans
+
+        if (i < attributes.length - 1) {
+            $container.append(" ");
+        }
+    }
+
+    return $container;
 }
 
 export default {
-    renderAttribute
+    renderAttribute,
+    renderAttributes
 }

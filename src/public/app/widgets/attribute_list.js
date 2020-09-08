@@ -205,9 +205,9 @@ export default class AttributeListWidget extends TabAwareWidget {
         return 'attribute' + (number === 1 ? '' : 's');
     }
 
-    renderInheritedAttributes(attributes, $container) {
+    async renderInheritedAttributes(attributes, $container) {
         for (const attribute of attributes) {
-            const $span = $("<span>")
+            const $attr = await attributeRenderer.renderAttribute(attribute, false)
                 .on('click', e => this.attributeDetailWidget.showAttributeDetail({
                     attribute: {
                         noteId: attribute.noteId,
@@ -220,10 +220,8 @@ export default class AttributeListWidget extends TabAwareWidget {
                     y: e.pageY
                 }));
 
-            attributeRenderer.renderAttribute(attribute, $span, false);
-
             $container
-                .append($span)
+                .append($attr)
                 .append(" ");
         }
     }

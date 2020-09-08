@@ -465,19 +465,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     async renderOwnedAttributes(ownedAttributes, saved) {
         ownedAttributes = ownedAttributes.filter(oa => !oa.isDeleted);
 
-        const $attributesContainer = $("<div>");
-
-        for (let i = 0; i < ownedAttributes.length; i++) {
-            const attribute = ownedAttributes[i];
-
-            attributeRenderer.renderAttribute(attribute, $attributesContainer, true);
-
-            if (i < ownedAttributes.length - 1) {
-                $attributesContainer.append(" ");
-            }
-        }
-
-        let htmlAttrs = $attributesContainer.html();
+        let htmlAttrs = (await attributeRenderer.renderAttributes(ownedAttributes, true)).html();
 
         if (htmlAttrs.length > 0) {
             htmlAttrs += "&nbsp;";
