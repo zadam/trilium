@@ -12,7 +12,7 @@ const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
-const ParsingContext = require("./search/parsing_context");
+const SearchContext = require("./search/search_context.js");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -92,13 +92,13 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} query
-     * @param {ParsingContext} [parsingContext]
+     * @param {SearchContext} [searchContext]
      * @returns {Note[]}
      */
-    this.searchForNotes = (query, parsingContext) => {
-        parsingContext = parsingContext || new ParsingContext();
+    this.searchForNotes = (query, searchContext) => {
+        searchContext = searchContext || new SearchContext();
 
-        const noteIds = searchService.findNotesWithQuery(query, parsingContext)
+        const noteIds = searchService.findNotesWithQuery(query, searchContext)
             .map(sr => sr.noteId);
 
         return repository.getNotes(noteIds);

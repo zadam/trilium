@@ -18,16 +18,16 @@ const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
 const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor.js');
 
-function getFulltext(tokens, parsingContext) {
+function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => t.token);
 
-    parsingContext.highlightedTokens.push(...tokens);
+    searchContext.highlightedTokens.push(...tokens);
 
     if (tokens.length === 0) {
         return null;
     }
 
-    if (parsingContext.includeNoteContent) {
+    if (searchContext.includeNoteContent) {
         return new OrExp([
             new NoteCacheFulltextExp(tokens),
             new NoteContentProtectedFulltextExp('*=*', tokens),
@@ -43,7 +43,7 @@ function isOperator(str) {
     return str.match(/^[=<>*]+$/);
 }
 
-function getExpression(tokens, parsingContext, level = 0) {
+function getExpression(tokens, searchContext, level = 0) {
     if (tokens.length === 0) {
         return null;
     }
@@ -56,11 +56,11 @@ function getExpression(tokens, parsingContext, level = 0) {
     function context(i) {
         let {startIndex, endIndex} = tokens[i];
         startIndex = Math.max(0, startIndex - 20);
-        endIndex = Math.min(parsingContext.originalQuery.length, endIndex + 20);
+        endIndex = Math.min(searchContext.originalQuery.length, endIndex + 20);
 
         return '"' + (startIndex !== 0 ? "..." : "")
-            + parsingContext.originalQuery.substr(startIndex, endIndex - startIndex)
-            + (endIndex !== parsingContext.originalQuery.length ? "..." : "") + '"';
+            + searchContext.originalQuery.substr(startIndex, endIndex - startIndex)
+            + (endIndex !== searchContext.originalQuery.length ? "..." : "") + '"';
     }
 
     function resolveConstantOperand() {
@@ -68,7 +68,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (!operand.inQuotes
             && (operand.token.startsWith('#') || operand.token.startsWith('~') || operand.token === 'note')) {
-            parsingContext.addError(`Error near token "${operand.token}" in ${context(i)}, it's possible to compare with constant only.`);
+            searchContext.addError(`Error near token "${operand.token}" in ${context(i)}, it's possible to compare with constant only.`);
             return null;
         }
 
@@ -114,7 +114,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
     function parseNoteProperty() {
         if (tokens[i].token !== '.') {
-            parsingContext.addError('Expected "." to separate field path');
+            searchContext.addError('Expected "." to separate field path');
             return;
         }
 
@@ -126,7 +126,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const operator = tokens[i].token;
 
             if (!isOperator(operator)) {
-                parsingContext.addError(`After content expected operator, but got "${tokens[i].token}" in ${context(i)}`);
+                searchContext.addError(`After content expected operator, but got "${tokens[i].token}" in ${context(i)}`);
                 return;
             }
 
@@ -158,7 +158,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (tokens[i].token === 'labels') {
             if (tokens[i + 1].token !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
+                searchContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
                 return;
             }
 
@@ -169,7 +169,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (tokens[i].token === 'relations') {
             if (tokens[i + 1].token !== '.') {
-                parsingContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
+                searchContext.addError(`Expected "." to separate field path, got "${tokens[i + 1].token}" in ${context(i)}`);
                 return;
             }
 
@@ -180,13 +180,13 @@ function getExpression(tokens, parsingContext, level = 0) {
 
         if (tokens[i].token === 'text') {
             if (tokens[i + 1].token !== '*=*') {
-                parsingContext.addError(`Virtual attribute "note.text" supports only *=* operator, instead given "${tokens[i + 1].token}" in ${context(i)}`);
+                searchContext.addError(`Virtual attribute "note.text" supports only *=* operator, instead given "${tokens[i + 1].token}" in ${context(i)}`);
                 return;
             }
 
             i += 2;
 
-            return getFulltext([tokens[i]], parsingContext);
+            return getFulltext([tokens[i]], searchContext);
         }
 
         if (PropertyComparisonExp.isProperty(tokens[i].token)) {
@@ -196,7 +196,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             const comparator = buildComparator(operator, comparedValue);
 
             if (!comparator) {
-                parsingContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
+                searchContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
                 return;
             }
 
@@ -205,7 +205,7 @@ function getExpression(tokens, parsingContext, level = 0) {
             return new PropertyComparisonExp(propertyName, comparator);
         }
 
-        parsingContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
+        searchContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
     }
 
     function parseAttribute(name) {
@@ -225,7 +225,7 @@ function getExpression(tokens, parsingContext, level = 0) {
     }
 
     function parseLabel(labelName) {
-        parsingContext.highlightedTokens.push(labelName);
+        searchContext.highlightedTokens.push(labelName);
 
         if (i < tokens.length - 2 && isOperator(tokens[i + 1].token)) {
             let operator = tokens[i + 1].token;
@@ -238,33 +238,33 @@ function getExpression(tokens, parsingContext, level = 0) {
                 return;
             }
 
-            parsingContext.highlightedTokens.push(comparedValue);
+            searchContext.highlightedTokens.push(comparedValue);
 
-            if (parsingContext.fuzzyAttributeSearch && operator === '=') {
+            if (searchContext.fuzzyAttributeSearch && operator === '=') {
                 operator = '*=*';
             }
 
             const comparator = buildComparator(operator, comparedValue);
 
             if (!comparator) {
-                parsingContext.addError(`Can't find operator '${operator}' in ${context(i - 1)}`);
+                searchContext.addError(`Can't find operator '${operator}' in ${context(i - 1)}`);
             } else {
                 return new LabelComparisonExp('label', labelName, comparator);
             }
         } else {
-            return new AttributeExistsExp('label', labelName, parsingContext.fuzzyAttributeSearch);
+            return new AttributeExistsExp('label', labelName, searchContext.fuzzyAttributeSearch);
         }
     }
 
     function parseRelation(relationName) {
-        parsingContext.highlightedTokens.push(relationName);
+        searchContext.highlightedTokens.push(relationName);
 
         if (i < tokens.length - 2 && tokens[i + 1].token === '.') {
             i += 1;
 
             return new RelationWhereExp(relationName, parseNoteProperty());
         } else {
-            return new AttributeExistsExp('relation', relationName, parsingContext.fuzzyAttributeSearch);
+            return new AttributeExistsExp('relation', relationName, searchContext.fuzzyAttributeSearch);
         }
     }
 
@@ -293,7 +293,7 @@ function getExpression(tokens, parsingContext, level = 0) {
                 const valueExtractor = new ValueExtractor(propertyPath);
 
                 if (valueExtractor.validate()) {
-                    parsingContext.addError(valueExtractor.validate());
+                    searchContext.addError(valueExtractor.validate());
                 }
 
                 orderDefinitions.push({
@@ -321,7 +321,7 @@ function getExpression(tokens, parsingContext, level = 0) {
 
     for (i = 0; i < tokens.length; i++) {
         if (Array.isArray(tokens[i])) {
-            expressions.push(getExpression(tokens[i], parsingContext, level++));
+            expressions.push(getExpression(tokens[i], searchContext, level++));
             continue;
         }
 
@@ -336,7 +336,7 @@ function getExpression(tokens, parsingContext, level = 0) {
         }
         else if (['orderby', 'limit'].includes(token)) {
             if (level !== 0) {
-                parsingContext.addError('orderBy can appear only on the top expression level');
+                searchContext.addError('orderBy can appear only on the top expression level');
                 continue;
             }
 
@@ -354,11 +354,11 @@ function getExpression(tokens, parsingContext, level = 0) {
             i += 1;
 
             if (!Array.isArray(tokens[i])) {
-                parsingContext.addError(`not keyword should be followed by sub-expression in parenthesis, got ${tokens[i].token} instead`);
+                searchContext.addError(`not keyword should be followed by sub-expression in parenthesis, got ${tokens[i].token} instead`);
                 continue;
             }
 
-            expressions.push(new NotExp(getExpression(tokens[i], parsingContext, level++)));
+            expressions.push(new NotExp(getExpression(tokens[i], searchContext, level++)));
         }
         else if (token === 'note') {
             i++;
@@ -372,14 +372,14 @@ function getExpression(tokens, parsingContext, level = 0) {
                 op = token;
             }
             else if (op !== token) {
-                parsingContext.addError('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
+                searchContext.addError('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
             }
         }
         else if (isOperator(token)) {
-            parsingContext.addError(`Misplaced or incomplete expression "${token}"`);
+            searchContext.addError(`Misplaced or incomplete expression "${token}"`);
         }
         else {
-            parsingContext.addError(`Unrecognized expression "${token}"`);
+            searchContext.addError(`Unrecognized expression "${token}"`);
         }
 
         if (!op && expressions.length > 1) {
@@ -390,11 +390,11 @@ function getExpression(tokens, parsingContext, level = 0) {
     return getAggregateExpression();
 }
 
-function parse({fulltextTokens, expressionTokens, parsingContext}) {
+function parse({fulltextTokens, expressionTokens, searchContext}) {
     return AndExp.of([
-        parsingContext.excludeArchived ? new PropertyComparisonExp("isarchived", buildComparator("=", "false")) : null,
-        getFulltext(fulltextTokens, parsingContext),
-        getExpression(expressionTokens, parsingContext)
+        searchContext.excludeArchived ? new PropertyComparisonExp("isarchived", buildComparator("=", "false")) : null,
+        getFulltext(fulltextTokens, searchContext),
+        getExpression(expressionTokens, searchContext)
     ]);
 }
 

@@ -1,4 +1,4 @@
-const ParsingContext = require("../../src/services/search/parsing_context.js");
+const SearchContext = require("../../src/services/search/search_context.js");
 const parse = require('../../src/services/search/services/parse.js');
 
 function tokens(toks, cur = 0) {
@@ -24,7 +24,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
-            parsingContext: new ParsingContext({includeNoteContent: false})
+            searchContext: new SearchContext({includeNoteContent: false})
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -36,7 +36,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
-            parsingContext: new ParsingContext({includeNoteContent: true})
+            searchContext: new SearchContext({includeNoteContent: true})
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -59,7 +59,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#mylabel", "=", "text"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("LabelComparisonExp");
@@ -72,7 +72,7 @@ describe("Parser", () => {
         let rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#!mylabel"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("NotExp");
@@ -83,7 +83,7 @@ describe("Parser", () => {
         rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["~!myrelation"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("NotExp");
@@ -96,7 +96,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "text", "and", "#second", "=", "text"]),
-            parsingContext: new ParsingContext(true)
+            searchContext: new SearchContext(true)
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -113,7 +113,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "text", "#second", "=", "text"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -130,7 +130,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "text", "or", "#second", "=", "text"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -147,7 +147,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello"]),
             expressionTokens: tokens(["#mylabel", "=", "text"]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
@@ -165,7 +165,7 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "text", "or", ["#second", "=", "text", "and", "#third", "=", "text"]]),
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("OrExp");
@@ -187,39 +187,39 @@ describe("Parser", () => {
 
 describe("Invalid expressions", () => {
     it("incomplete comparison", () => {
-        const parsingContext = new ParsingContext();
+        const searchContext = new SearchContext();
 
         parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "="]),
-            parsingContext
+            searchContext
         });
 
-        expect(parsingContext.error).toEqual('Misplaced or incomplete expression "="')
+        expect(searchContext.error).toEqual('Misplaced or incomplete expression "="')
     });
 
     it("comparison between labels is impossible", () => {
-        let parsingContext = new ParsingContext();
-        parsingContext.originalQuery = "#first = #second";
+        let searchContext = new SearchContext();
+        searchContext.originalQuery = "#first = #second";
 
         parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "#second"]),
-            parsingContext
+            searchContext
         });
 
-        expect(parsingContext.error).toEqual(`Error near token "#second" in "#first = #second", it's possible to compare with constant only.`);
+        expect(searchContext.error).toEqual(`Error near token "#second" in "#first = #second", it's possible to compare with constant only.`);
 
-        parsingContext = new ParsingContext();
-        parsingContext.originalQuery = "#first = note.relations.second";
+        searchContext = new SearchContext();
+        searchContext.originalQuery = "#first = note.relations.second";
 
         parse({
             fulltextTokens: [],
             expressionTokens: tokens(["#first", "=", "note", ".", "relations", "second"]),
-            parsingContext
+            searchContext
         });
 
-        expect(parsingContext.error).toEqual(`Error near token "note" in "#first = note.relations.second", it's possible to compare with constant only.`);
+        expect(searchContext.error).toEqual(`Error near token "note" in "#first = note.relations.second", it's possible to compare with constant only.`);
 
         const rootExp = parse({
             fulltextTokens: [],
@@ -228,7 +228,7 @@ describe("Invalid expressions", () => {
                 { token: "=", inQuotes: false },
                 { token: "#second", inQuotes: true },
             ],
-            parsingContext: new ParsingContext()
+            searchContext: new SearchContext()
         });
 
         expect(rootExp.constructor.name).toEqual("LabelComparisonExp");

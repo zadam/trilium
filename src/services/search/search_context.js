@@ -1,6 +1,6 @@
 "use strict";
 
-class ParsingContext {
+class SearchContext {
     constructor(params = {}) {
         this.includeNoteContent = !!params.includeNoteContent;
         this.excludeArchived = !!params.excludeArchived;
@@ -18,4 +18,4 @@ class ParsingContext {
     }
 }
 
-module.exports = ParsingContext;
+module.exports = SearchContext;
