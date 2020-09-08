@@ -30,14 +30,6 @@ class Attribute extends Entity {
         super(row);
 
         this.isInheritable = !!this.isInheritable;
-
-        if (this.isDefinition()) {
-            try {
-                this.value = JSON.parse(this.value);
-            }
-            catch (e) {
-            }
-        }
     }
 
     /**
@@ -66,7 +58,7 @@ class Attribute extends Entity {
      * @return {boolean}
      */
     isDefinition() {
-        return this.type === 'label-definition' || this.type === 'relation-definition';
+        return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));
     }
 
     beforeSaving() {

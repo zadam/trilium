@@ -9,9 +9,7 @@ const dateUtils = require('../services/date_utils');
 const entityChangesService = require('../services/entity_changes.js');
 
 const LABEL = 'label';
-const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
-const RELATION_DEFINITION = 'relation-definition';
 
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
@@ -303,14 +301,6 @@ class Note extends Entity {
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's label definitions, including inherited ones
-     */
-    getLabelDefinitions(name) {
-        return this.getAttributes(LABEL_DEFINITION, name);
-    }
-
-    /**
      * @param {string} [name] - relation name to filter
      * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
      */
@@ -339,14 +329,6 @@ class Note extends Entity {
         }
 
         return targets;
-    }
-
-    /**
-     * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relation definitions including inherited ones
-     */
-    getRelationDefinitions(name) {
-        return this.getAttributes(RELATION_DEFINITION, name);
     }
 
     /**

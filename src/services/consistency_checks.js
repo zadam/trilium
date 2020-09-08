@@ -500,9 +500,7 @@ class ConsistencyChecks {
                     FROM attributes
                     WHERE isDeleted = 0
                       AND type != 'label'
-                      AND type != 'label-definition'
-                      AND type != 'relation'
-                      AND type != 'relation-definition'`,
+                      AND type != 'relation'`,
             ({attributeId, type}) => {
                 if (this.autoFix) {
                     const attribute = repository.getAttribute(attributeId);

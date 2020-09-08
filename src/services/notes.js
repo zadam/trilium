@@ -464,6 +464,12 @@ function saveNoteRevision(note) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
+        const content = note.getContent();
+
+        if (!content) {
+            return;
+        }
+
         const noteRevision = new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
@@ -478,7 +484,7 @@ function saveNoteRevision(note) {
             dateCreated: dateUtils.localNowDateTime()
         }).save();
 
-        noteRevision.setContent(note.getContent());
+        noteRevision.setContent(content);
     }
 }
 

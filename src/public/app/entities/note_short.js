@@ -3,9 +3,7 @@ import Attribute from './attribute.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 
 const LABEL = 'label';
-const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
-const RELATION_DEFINITION = 'relation-definition';
 
 /**
  * FIXME: since there's no "full note" anymore we can rename this to Note
@@ -244,14 +242,6 @@ class NoteShort {
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's label definitions, including inherited ones
-     */
-    getLabelDefinitions(name) {
-        return this.getAttributes(LABEL_DEFINITION, name);
-    }
-
-    /**
      * @param {string} [name] - relation name to filter
      * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
      */
@@ -265,14 +255,6 @@ class NoteShort {
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
-    }
-
-    /**
-     * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relation definitions including inherited ones
-     */
-    getRelationDefinitions(name) {
-        return this.getAttributes(RELATION_DEFINITION, name);
     }
 
     /**
