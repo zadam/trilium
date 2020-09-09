@@ -157,7 +157,7 @@ class Note {
      */
     get flatText() {
         if (!this.flatTextCache) {
-            this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime + ' ';
+            this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime + ' ' + this.dateCreated.substr(0, 16) + ' ';
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {

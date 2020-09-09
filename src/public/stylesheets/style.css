@@ -836,7 +836,12 @@ body {
 }
 
 .ck.ck-mentions > .ck-list__item {
-    max-width: 600px;
+    max-width: 700px;
+}
+
+.ck.ck-mentions > .ck-list__item .ck-button {
+    /* wrap text for very long note path title */
+    white-space: normal !important;
 }
 
 ul.fancytree-container li {
