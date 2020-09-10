@@ -3,7 +3,7 @@
 const noteCacheService = require('../../services/note_cache/note_cache_service');
 const repository = require('../../services/repository');
 
-function getSimilarNotes(req) {
+async function getSimilarNotes(req) {
     const noteId = req.params.noteId;
 
     const note = repository.getNote(noteId);
@@ -12,7 +12,7 @@ function getSimilarNotes(req) {
         return [404, `Note ${noteId} not found.`];
     }
 
-    const results = noteCacheService.findSimilarNotes(noteId);
+    const results = await noteCacheService.findSimilarNotes(noteId);
 
     return results
         .filter(note => note.noteId !== noteId);

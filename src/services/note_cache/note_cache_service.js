@@ -5,6 +5,7 @@ const hoistedNoteService = require('../hoisted_note');
 const protectedSessionService = require('../protected_session');
 const stringSimilarity = require('string-similarity');
 const log = require('../log');
+const dateUtils = require('../date_utils');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
@@ -174,8 +175,22 @@ function getNotePath(noteId) {
     }
 }
 
-function evaluateSimilarity(sourceNote, candidateNote, results) {
+function evaluateSimilarity(sourceNote, candidateNote, dates, results) {
     let coeff = stringSimilarity.compareTwoStrings(sourceNote.flatText, candidateNote.flatText);
+    const {utcDateCreated} = candidateNote;
+
+    /**
+     * We want to improve standing of notes which have been created in similar time to each other since
+     * there's a good chance they are related.
+     *
+     * But there's an exception - if they were created really close to each other (withing few seconds) then
+     * they are probably part of the import and not created by hand - these OTOH should not benefit.
+     */
+    if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
+        && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
+
+        coeff += 0.3;
+    }
 
     if (coeff > 0.5) {
         const notePath = getSomePath(candidateNote);
@@ -203,7 +218,7 @@ function setImmediatePromise() {
     });
 }
 
-function findSimilarNotes(noteId) {
+async function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
 
@@ -213,17 +228,28 @@ function findSimilarNotes(noteId) {
         return [];
     }
 
+    const dateCreatedTs = dateUtils.parseDateTime(origNote.utcDateCreated);
+
+    const dates = {
+        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 1800)),
+        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
+        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
+        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
+    };
+
+    console.log("ORIG:", origNote.flatText);
+
     for (const note of Object.values(noteCache.notes)) {
         if (note.noteId === origNote.noteId) {
             continue;
         }
 
-        evaluateSimilarity(origNote, note, results);
+        evaluateSimilarity(origNote, note, dates, results);
 
         i++;
 
         if (i % 200 === 0) {
-            setImmediatePromise();
+            await setImmediatePromise();
         }
     }
 

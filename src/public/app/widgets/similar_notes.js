@@ -101,9 +101,9 @@ export default class SimilarNotesWidget extends TabAwareWidget {
         }, 1000);
     }
 
-    async refreshWithNote(note) {
+    async refresh() {
         // remember which title was when we found the similar notes
-        this.title = note.title;
+        this.title = this.note.title;
 
         const similarNotes = await server.get('similar-notes/' + this.noteId);
 
