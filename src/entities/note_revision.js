@@ -33,6 +33,7 @@ class NoteRevision extends Entity {
     constructor(row) {
         super(row);
 
+        this.isErased = !!this.isErased;
         this.isProtected = !!this.isProtected;
 
         if (this.isProtected) {

@@ -86,8 +86,9 @@ function downloadNoteRevision(req, res) {
 function eraseOneNoteRevision(noteRevision) {
     noteRevision.isErased = true;
     noteRevision.title = null;
-    noteRevision.setContent(null);
     noteRevision.save();
+
+    noteRevision.setContent(null);
 }
 
 function eraseAllNoteRevisions(req) {

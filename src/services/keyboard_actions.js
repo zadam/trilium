@@ -364,7 +364,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "findInText",
-        defaultShortcuts: ["CommandOrControl+F"],
+        defaultShortcuts: isElectron ? ["CommandOrControl+F"] : [],
         scope: "window"
     },
     {
