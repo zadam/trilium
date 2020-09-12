@@ -104,11 +104,7 @@ const TPL = `
         border-radius: 5px;
     }
     
-    span.fancytree-active:not(.fancytree-focused) .fancytree-title {
-        border-style: dashed !important;
-    }
-    
-    span.fancytree-focused .fancytree-title, span.fancytree-focused.fancytree-selected .fancytree-title {
+    span.fancytree-active .fancytree-title, span.fancytree-active.fancytree-selected .fancytree-title {
         color: var(--active-item-text-color) !important;
         background-color: var(--active-item-background-color) !important;
         border-color: var(--main-background-color) !important; /* invisible border */
