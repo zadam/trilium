@@ -1,8 +1,10 @@
 "use strict";
 
+
 const Entity = require('./entity');
 const dateUtils = require('../services/date_utils');
 const sql = require('../services/sql');
+const promotedAttributeDefinitionParser = require("../services/promoted_attribute_definition_parser");
 
 /**
  * Attribute is key value pair owned by a note.
@@ -59,6 +61,20 @@ class Attribute extends Entity {
      */
     isDefinition() {
         return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));
+    }
+
+    getDefinition() {
+        return promotedAttributeDefinitionParser.parse(this.value);
+    }
+
+    getDefinedName() {
+        if (this.type === 'label' && this.name.startsWith('label:')) {
+            return this.name.substr(6);
+        } else if (this.type === 'label' && this.name.startsWith('relation:')) {
+            return this.name.substr(9);
+        } else {
+            return this.name;
+        }
     }
 
     beforeSaving() {

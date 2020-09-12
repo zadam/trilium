@@ -380,15 +380,15 @@ class Note extends Entity {
                 return firstDefinitionIndex === index;
             }
             else {
-                const definitionAttr = attributes.find(el => el.type === attr.type + '-definition' && el.name === attr.name);
+                const definitionAttr = attributes.find(el => el.type === 'label' && el.name === attr.type + ':' + attr.name);
 
                 if (!definitionAttr) {
                     return true;
                 }
 
-                const definition = definitionAttr.value;
+                const definition = definitionAttr.getDefinition();
 
-                if (definition.multiplicityType === 'multi') {
+                if (definition.multiplicity === 'multi') {
                     return true;
                 }
                 else {
@@ -866,6 +866,16 @@ class Note extends Entity {
         }
 
         return notePaths;
+    }
+
+    getRelationDefinitions() {
+        return this.getLabels()
+            .filter(l => l.name.startsWith("relation:"));
+    }
+
+    getLabelDefinitions() {
+        return this.getLabels()
+            .filter(l => l.name.startsWith("relation:"));
     }
 
     /**

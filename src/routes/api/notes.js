@@ -139,7 +139,7 @@ function getRelationMap(req) {
     for (const note of notes) {
         resp.noteTitles[note.noteId] = note.title;
 
-        resp.relations = resp.relations.concat((note.getRelations())
+        resp.relations = resp.relations.concat(note.getRelations()
             .filter(relation => noteIds.includes(relation.value))
             .map(relation => ({
                 attributeId: relation.attributeId,
@@ -149,8 +149,10 @@ function getRelationMap(req) {
             })));
 
         for (const relationDefinition of note.getRelationDefinitions()) {
-            if (relationDefinition.value.inverseRelation) {
-                resp.inverseRelations[relationDefinition.name] = relationDefinition.value.inverseRelation;
+            const def = relationDefinition.getDefinition();
+
+            if (def.inverseRelation) {
+                resp.inverseRelations[relationDefinition.getDefinedName()] = def.inverseRelation;
             }
         }
     }
