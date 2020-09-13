@@ -84,6 +84,11 @@ async function renderTooltip(note, noteComplement) {
     }
 
     const someNotePath = treeService.getSomeNotePath(note);
+
+    if (!someNotePath) {
+        return;
+    }
+
     let content = $("<h5>").text(await treeService.getNotePathTitle(someNotePath)).prop('outerHTML');
 
     const attributes = note.getAttributes()

@@ -67,6 +67,10 @@ const TPL = `
 `;
 
 export default class SimilarNotesWidget extends TabAwareWidget {
+    isEnabled() {
+        return super.isEnabled() && !this.note.hasLabel('similarNotesWidgetDisabled');
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();

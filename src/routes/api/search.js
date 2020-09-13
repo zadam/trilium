@@ -119,8 +119,14 @@ async function searchFromRelation(note, relationName) {
 function getRelatedNotes(req) {
     const attr = req.body;
 
-    const matchingNameAndValue = searchService.searchNotes(formatAttrForSearch(attr, true));
-    const matchingName = searchService.searchNotes(formatAttrForSearch(attr, false));
+    const searchSettings = {
+        includeNoteContent: false,
+        excludeArchived: true,
+        fuzzyAttributeSearch: false
+    };
+
+    const matchingNameAndValue = searchService.findNotesWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
+    const matchingName = searchService.findNotesWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
 
     const results = [];
 
