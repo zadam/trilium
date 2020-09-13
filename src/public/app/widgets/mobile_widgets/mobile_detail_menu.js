@@ -3,12 +3,14 @@ import appContext from "../../services/app_context.js";
 import contextMenu from "../../services/context_menu.js";
 import noteCreateService from "../../services/note_create.js";
 import branchService from "../../services/branches.js";
+import treeService from "../../services/tree.js";
 
-const TPL = `<button type="button" class="action-button bx bx-menu"></button>`;
+const TPL = `<button type="button" class="action-button bx bx-menu" style="padding-top: 10px;"></button>`;
 
 class MobileDetailMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
         this.$widget.on("click", async e => {
             const note = appContext.tabManager.getActiveTabNote();
@@ -27,9 +29,15 @@ class MobileDetailMenuWidget extends BasicWidget {
                         noteCreateService.createNote(note.noteId);
                     }
                     else if (command === "delete") {
-                        if (await branchService.deleteNotes(note.getBranchIds()[0])) {
-                            // move to the tree
-                            togglePanes();
+                        const notePath = appContext.tabManager.getActiveTabNotePath();
+                        const branchId = await treeService.getBranchIdFromNotePath(notePath);
+
+                        if (!branchId) {
+                            throw new Error(`Cannot get branchId for notePath ${notePath}`);
+                        }
+
+                        if (await branchService.deleteNotes([branchId])) {
+                            this.triggerCommand('setActiveScreen', {screen:'tree'})
                         }
                     }
                     else {

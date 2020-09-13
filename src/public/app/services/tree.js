@@ -158,6 +158,12 @@ function getNoteIdFromNotePath(notePath) {
     return lastSegment.split("-")[0];
 }
 
+async function getBranchIdFromNotePath(notePath) {
+    const {noteId, parentNoteId} = getNoteIdAndParentIdFromNotePath(notePath);
+
+    return await treeCache.getBranchId(parentNoteId, noteId);
+}
+
 function getNoteIdAndParentIdFromNotePath(notePath) {
     if (notePath === 'root') {
         return {
@@ -185,7 +191,7 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
     return {
         parentNoteId,
         noteId
-    }
+    };
 }
 
 function getNotePath(node) {
@@ -286,6 +292,7 @@ export default {
     getNotePath,
     getNoteIdFromNotePath,
     getNoteIdAndParentIdFromNotePath,
+    getBranchIdFromNotePath,
     getNoteTitle,
     getNotePathTitle,
     getHashValueFromAddress,
