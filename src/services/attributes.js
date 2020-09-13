@@ -27,6 +27,11 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'customResourceProvider', isDangerous: true },
     { type: 'label', name: 'bookZoomLevel', isDangerous: false },
     { type: 'label', name: 'widget', isDangerous: true },
+    { type: 'label', name: 'noteInfoWidgetDisabled' },
+    { type: 'label', name: 'linkMapWidgetDisabled' },
+    { type: 'label', name: 'noteRevisionsWidgetDisabled' },
+    { type: 'label', name: 'whatLinksHereWidgetDisabled' },
+    { type: 'label', name: 'similarNotesWidgetDisabled' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

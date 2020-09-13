@@ -106,6 +106,10 @@ export default class SimilarNotesWidget extends TabAwareWidget {
     }
 
     async refresh() {
+        if (!this.isEnabled()) {
+            return;
+        }
+
         // remember which title was when we found the similar notes
         this.title = this.note.title;
 
