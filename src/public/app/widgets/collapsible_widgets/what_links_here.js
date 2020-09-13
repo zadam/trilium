@@ -2,6 +2,10 @@ import CollapsibleWidget from "../collapsible_widget.js";
 import linkService from "../../services/link.js";
 
 export default class WhatLinksHereWidget extends CollapsibleWidget {
+    isEnabled() {
+        return super.isEnabled() && !this.note.hasLabel('whatLinksHereWidgetDisabled');
+    }
+
     get widgetTitle() { return "What links here"; }
 
     get help() {

@@ -7,6 +7,10 @@ const TPL = `
 `;
 
 class NoteRevisionsWidget extends CollapsibleWidget {
+    isEnabled() {
+        return super.isEnabled() && !this.note.hasLabel('noteRevisionsWidgetDisabled');
+    }
+
     get widgetTitle() { return "Note revisions"; }
 
     get help() {

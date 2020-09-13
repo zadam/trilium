@@ -42,6 +42,10 @@ const TPL = `
 `;
 
 export default class NoteInfoWidget extends CollapsibleWidget {
+    isEnabled() {
+        return super.isEnabled() && !this.note.hasLabel('noteInfoWidgetDisabled');
+    }
+
     get widgetTitle() { return "Note info"; }
 
     async doRenderBody() {

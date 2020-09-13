@@ -10,6 +10,10 @@ const TPL = `
 `;
 
 export default class LinkMapWidget extends CollapsibleWidget {
+    isEnabled() {
+        return super.isEnabled() && !this.note.hasLabel('linkMapWidgetDisabled');
+    }
+
     get widgetTitle() { return "Link map"; }
 
     get help() {
