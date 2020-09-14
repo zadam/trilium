@@ -72,6 +72,10 @@ class NoteShort {
 
         this.childToBranch[childNoteId] = branchId;
 
+        this.sortChildren();
+    }
+
+    sortChildren() {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {

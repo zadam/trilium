@@ -7,6 +7,7 @@ import Attribute from "../entities/attribute.js";
 import options from "./options.js";
 import treeCache from "./tree_cache.js";
 import noteAttributeCache from "./note_attribute_cache.js";
+import tree from "./tree.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -306,11 +307,23 @@ async function processSyncRows(syncRows) {
     }
 
     for (const sync of syncRows.filter(sync => sync.entityName === 'note_reordering')) {
+        const parentNoteIdsToSort = new Set();
+
         for (const branchId in sync.positions) {
             const branch = treeCache.branches[branchId];
 
             if (branch) {
                 branch.notePosition = sync.positions[branchId];
+
+                parentNoteIdsToSort.add(branch.parentNoteId);
+            }
+        }
+
+        for (const parentNoteId of parentNoteIdsToSort) {
+            const parentNote = treeCache.notes[parentNoteId];
+
+            if (parentNote) {
+                parentNote.sortChildren();
             }
         }
 

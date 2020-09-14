@@ -1066,6 +1066,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         parentNode.addChildren([this.prepareNode(branch, true)]);
 
                         this.sortChildren(parentNode);
+
+                        // this might be a first child which would force an icon change
+                        noteIdsToUpdate.add(branch.parentNoteId);
                     }
                 }
             }
