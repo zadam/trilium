@@ -26,6 +26,7 @@ const TPL = `
         color: var(--muted-text-color);
         max-height: 100px;
         overflow: auto;
+        transition: opacity .1s linear;
     }
         
     .save-attributes-button {
@@ -307,6 +308,12 @@ export default class AttributeEditorWidget extends TabAwareWidget {
             await server.put(`notes/${this.noteId}/attributes`, attributes, this.componentId);
 
             this.$saveAttributesButton.fadeOut();
+
+            // blink the attribute text to give visual hint that save has been executed
+            this.$editor.css('opacity', 0);
+
+            // revert back
+            setTimeout(() => this.$editor.css('opacity', 1), 100);
         }
     }
 
