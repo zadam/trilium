@@ -58,7 +58,13 @@ async function searchFromNote(req) {
 
             searchResultNoteIds = await searchFromRelation(note, relationName);
         } else {
-            searchResultNoteIds = searchService.searchNotes(json.searchString)
+            const searchContext = new SearchContext({
+                includeNoteContent: true,
+                excludeArchived: true,
+                fuzzyAttributeSearch: false
+            });
+
+            searchResultNoteIds = searchService.findNotesWithQuery(json.searchString, searchContext)
                 .map(sr => sr.noteId);
         }
     }
