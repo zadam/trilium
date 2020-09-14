@@ -61,7 +61,7 @@ function deriveMime(type, mime) {
 }
 
 function copyChildAttributes(parentNote, childNote) {
-    for (const attr of parentNote.getOwnedAttributes()) {
+    for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
             new Attribute({
                 noteId: childNote.noteId,
