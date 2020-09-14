@@ -64,6 +64,8 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     const noteType = NOTE_TYPES.find(nt => nt.type === type);
 
                     this.save(noteType.type, noteType.mime);
+
+                    this.$widget.find('.dropdown-toggle').dropdown('toggle');
                 });
 
             if (this.note.type === noteType.type) {

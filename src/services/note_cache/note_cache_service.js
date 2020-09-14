@@ -237,8 +237,6 @@ async function findSimilarNotes(noteId) {
         maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
     };
 
-    console.log("ORIG:", origNote.flatText);
-
     for (const note of Object.values(noteCache.notes)) {
         if (note.noteId === origNote.noteId) {
             continue;

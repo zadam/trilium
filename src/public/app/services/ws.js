@@ -7,7 +7,6 @@ import Attribute from "../entities/attribute.js";
 import options from "./options.js";
 import treeCache from "./tree_cache.js";
 import noteAttributeCache from "./note_attribute_cache.js";
-import tree from "./tree.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
