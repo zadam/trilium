@@ -3,9 +3,7 @@
 const noteCache = require('./note_cache');
 const hoistedNoteService = require('../hoisted_note');
 const protectedSessionService = require('../protected_session');
-const stringSimilarity = require('string-similarity');
 const log = require('../log');
-const dateUtils = require('../date_utils');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
@@ -175,87 +173,6 @@ function getNotePath(noteId) {
     }
 }
 
-function evaluateSimilarity(sourceNote, candidateNote, dates, results) {
-    let coeff = stringSimilarity.compareTwoStrings(sourceNote.flatText, candidateNote.flatText);
-    const {utcDateCreated} = candidateNote;
-
-    /**
-     * We want to improve standing of notes which have been created in similar time to each other since
-     * there's a good chance they are related.
-     *
-     * But there's an exception - if they were created really close to each other (withing few seconds) then
-     * they are probably part of the import and not created by hand - these OTOH should not benefit.
-     */
-    if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
-        && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
-
-        coeff += 0.3;
-    }
-
-    if (coeff > 0.5) {
-        const notePath = getSomePath(candidateNote);
-
-        // this takes care of note hoisting
-        if (!notePath) {
-            return;
-        }
-
-        if (isNotePathArchived(notePath)) {
-            coeff -= 0.2; // archived penalization
-        }
-
-        results.push({coeff, notePath, noteId: candidateNote.noteId});
-    }
-}
-
-/**
- * Point of this is to break up long running sync process to avoid blocking
- * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
- */
-function setImmediatePromise() {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(), 0);
-    });
-}
-
-async function findSimilarNotes(noteId) {
-    const results = [];
-    let i = 0;
-
-    const origNote = noteCache.notes[noteId];
-
-    if (!origNote) {
-        return [];
-    }
-
-    const dateCreatedTs = dateUtils.parseDateTime(origNote.utcDateCreated);
-
-    const dates = {
-        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 1800)),
-        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
-        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
-        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
-    };
-
-    for (const note of Object.values(noteCache.notes)) {
-        if (note.noteId === origNote.noteId) {
-            continue;
-        }
-
-        evaluateSimilarity(origNote, note, dates, results);
-
-        i++;
-
-        if (i % 200 === 0) {
-            await setImmediatePromise();
-        }
-    }
-
-    results.sort((a, b) => a.coeff > b.coeff ? -1 : 1);
-
-    return results.length > 50 ? results.slice(0, 200) : results;
-}
-
 /**
  * @param noteId
  * @returns {boolean} - true if note exists (is not deleted) and is available in current note hoisting
@@ -274,5 +191,5 @@ module.exports = {
     isAvailable,
     isArchived,
     isInAncestor,
-    findSimilarNotes
+    isNotePathArchived
 };
