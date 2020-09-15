@@ -2,10 +2,47 @@ const noteCache = require('./note_cache');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 
-function computeScore(candidateNote, dates) {
-    let score = 0;
+function gatherRewards(rewardMap, text) {
+    if (!text) {
+        return 0;
+    }
 
+    let counter = 0;
 
+    for (const word of text.toLowerCase().split(/\W+/)) {
+        counter += rewardMap[word] || 0;
+    }
+
+    return counter;
+}
+
+function computeScore(candidateNote, ancestorNoteIds, rewardMap, dates) {
+    let score =
+        gatherRewards(rewardMap, candidateNote.title)
+        + gatherRewards(rewardMap, candidateNote.type);
+        + gatherRewards(rewardMap, trimMime(candidateNote.mime));
+
+    for (const ancestorNote of candidateNote.ancestors) {
+        if (!ancestorNoteIds.includes(ancestorNote.noteId)) {
+            score += gatherRewards(rewardMap, ancestorNote.title);
+
+            for (const branch of ancestorNote.parentBranches) {
+                score += gatherRewards(rewardMap, branch.prefix);
+            }
+        }
+    }
+
+    for (const branch of candidateNote.parentBranches) {
+        score += gatherRewards(rewardMap, branch.prefix);
+    }
+
+    for (const attr of candidateNote.attributes) {
+        if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
+            score += gatherRewards(rewardMap, attr.name);
+        }
+
+        score += gatherRewards(rewardMap, attr.value);
+    }
 
     /**
      * We want to improve standing of notes which have been created in similar time to each other since
@@ -19,16 +56,16 @@ function computeScore(candidateNote, dates) {
     if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
         && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
 
-        score += 0.3;
+        score += 3;
     }
 
     return score;
 }
 
-function evaluateSimilarity(sourceNote, candidateNote, rewardMap, dates, results) {
-    let score = computeScore(candidateNote, rewardMap, dates);
+function evaluateSimilarity(sourceNote, candidateNote, ancestorNoteIds, rewardMap, dates, results) {
+    let score = computeScore(candidateNote, ancestorNoteIds, rewardMap, dates);
 
-    if (score > 0.5) {
+    if (score >= 4) {
         const notePath = noteCacheService.getSomePath(candidateNote);
 
         // this takes care of note hoisting
@@ -37,7 +74,7 @@ function evaluateSimilarity(sourceNote, candidateNote, rewardMap, dates, results
         }
 
         if (noteCacheService.isNotePathArchived(notePath)) {
-            score -= 0.2; // archived penalization
+            score -= 1; // archived penalization
         }
 
         results.push({score, notePath, noteId: candidateNote.noteId});
@@ -68,36 +105,36 @@ function buildRewardMap(note) {
     const map = {};
 
     for (const ancestorNote of note.ancestors) {
-        updateMap(map, ancestorNote.title, 0.4);
+        addToRewardMap(map, ancestorNote.title, 0.4);
 
         for (const branch of ancestorNote.parentBranches) {
-            updateMap(map, branch.prefix, 0.4);
+            addToRewardMap(map, branch.prefix, 0.4);
         }
     }
 
-    updateMap(map, note.type, 0.2);
-    updateMap(map, processMime(note.mime), 0.3);
+    addToRewardMap(map, note.type, 0.2);
+    addToRewardMap(map, trimMime(note.mime), 0.3);
 
-    updateMap(map, note.title, 1);
+    addToRewardMap(map, note.title, 1);
 
     for (const branch of note.parentBranches) {
-        updateMap(map, branch.prefix, 1);
+        addToRewardMap(map, branch.prefix, 1);
     }
 
     for (const attr of note.attributes) {
         const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
         if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
-            updateMap(map, attr.name, reward);
+            addToRewardMap(map, attr.name, reward);
         }
 
-        updateMap(map, attr.value, reward);
+        addToRewardMap(map, attr.value, reward);
     }
 
     return map;
 }
 
-function processMime(mime) {
+function trimMime(mime) {
     if (!mime) {
         return;
     }
@@ -118,21 +155,19 @@ function processMime(mime) {
     return str;
 }
 
-function updateMap(map, text, baseReward) {
+function addToRewardMap(map, text, baseReward) {
     if (!text) {
         return;
     }
 
-    for (const word of text.split(/\W+/)) {
-        map[word] = map[word] || 0;
+    for (const word of text.toLowerCase().split(/\W+/)) {
+        if (word) {
+            map[word] = map[word] || 0;
 
-        // reward grows with the length of matched string
-        map[word] += baseReward * Math.sqrt(word.length);
+            // reward grows with the length of matched string
+            map[word] += baseReward * Math.sqrt(word.length);
+        }
     }
-}
-
-function tokenize(str) {
-    return ;
 }
 
 async function findSimilarNotes(noteId) {
@@ -155,24 +190,25 @@ async function findSimilarNotes(noteId) {
     };
 
     const rewardMap = buildRewardMap(baseNote);
+    const ancestorNoteIds = baseNote.ancestors.map(note => note.noteId);
 
     for (const candidateNote of Object.values(noteCache.notes)) {
         if (candidateNote.noteId === baseNote.noteId) {
             continue;
         }
 
-        evaluateSimilarity(baseNote, candidateNote, rewardMap, dates, results);
+        evaluateSimilarity(baseNote, candidateNote, ancestorNoteIds, rewardMap, dates, results);
 
         i++;
 
-        if (i % 200 === 0) {
+        if (i % 1000 === 0) {
             await setImmediatePromise();
         }
     }
 
     results.sort((a, b) => a.score > b.score ? -1 : 1);
 
-    return results.length > 50 ? results.slice(0, 200) : results;
+    return results.length > 200 ? results.slice(0, 200) : results;
 }
 
 module.exports = {

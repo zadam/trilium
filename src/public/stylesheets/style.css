@@ -649,7 +649,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .component {
-    contain: layout size;
+    contain: size;
 }
 
 .toast {

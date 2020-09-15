@@ -36,6 +36,11 @@ const TPL = `
         overflow: hidden; 
         text-overflow: ellipsis;
     }
+    
+    .note-path-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
     </style>
 
     <div class="current-path"></div>
