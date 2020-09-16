@@ -18,13 +18,18 @@ function gatherRewards(rewardMap, text) {
 
 function computeScore(candidateNote, ancestorNoteIds, rewardMap, dates) {
     let score =
-        gatherRewards(rewardMap, candidateNote.title)
-        + gatherRewards(rewardMap, candidateNote.type);
+        gatherRewards(rewardMap, candidateNote.type);
         + gatherRewards(rewardMap, trimMime(candidateNote.mime));
 
+    if (candidateNote.isDecrypted) {
+        score += gatherRewards(rewardMap, candidateNote.title);
+    }
+
     for (const ancestorNote of candidateNote.ancestors) {
-        if (!ancestorNoteIds.includes(ancestorNote.noteId)) {
-            score += gatherRewards(rewardMap, ancestorNote.title);
+        if (!ancestorNoteIds.has(ancestorNote.noteId)) {
+            if (ancestorNote.isDecrypted) {
+                score += gatherRewards(rewardMap, ancestorNote.title);
+            }
 
             for (const branch of ancestorNote.parentBranches) {
                 score += gatherRewards(rewardMap, branch.prefix);
@@ -81,16 +86,6 @@ function evaluateSimilarity(sourceNote, candidateNote, ancestorNoteIds, rewardMa
     }
 }
 
-/**
- * Point of this is to break up long running sync process to avoid blocking
- * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
- */
-function setImmediatePromise() {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(), 0);
-    });
-}
-
 const IGNORED_ATTR_NAMES = [
     "includenotelink",
     "internallink",
@@ -105,7 +100,9 @@ function buildRewardMap(note) {
     const map = {};
 
     for (const ancestorNote of note.ancestors) {
-        addToRewardMap(map, ancestorNote.title, 0.4);
+        if (ancestorNote.isDecrypted) {
+            addToRewardMap(map, ancestorNote.title, 0.4);
+        }
 
         for (const branch of ancestorNote.parentBranches) {
             addToRewardMap(map, branch.prefix, 0.4);
@@ -115,7 +112,9 @@ function buildRewardMap(note) {
     addToRewardMap(map, note.type, 0.2);
     addToRewardMap(map, trimMime(note.mime), 0.3);
 
-    addToRewardMap(map, note.title, 1);
+    if (note.isDecrypted) {
+        addToRewardMap(map, note.title, 1);
+    }
 
     for (const branch of note.parentBranches) {
         addToRewardMap(map, branch.prefix, 1);
@@ -170,7 +169,7 @@ function addToRewardMap(map, text, baseReward) {
     }
 }
 
-async function findSimilarNotes(noteId) {
+function findSimilarNotes(noteId) {const start = Date.now();
     const results = [];
     let i = 0;
 
@@ -190,7 +189,7 @@ async function findSimilarNotes(noteId) {
     };
 
     const rewardMap = buildRewardMap(baseNote);
-    const ancestorNoteIds = baseNote.ancestors.map(note => note.noteId);
+    const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
 
     for (const candidateNote of Object.values(noteCache.notes)) {
         if (candidateNote.noteId === baseNote.noteId) {
@@ -202,13 +201,23 @@ async function findSimilarNotes(noteId) {
         i++;
 
         if (i % 1000 === 0) {
-            await setImmediatePromise();
+            //await setImmediatePromise();
         }
     }
 
     results.sort((a, b) => a.score > b.score ? -1 : 1);
-
+console.log("Similarity search took", Date.now() - start, "ms");
     return results.length > 200 ? results.slice(0, 200) : results;
+}
+
+/**
+ * Point of this is to break up long running sync process to avoid blocking
+ * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
+ */
+function setImmediatePromise() {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), 0);
+    });
 }
 
 module.exports = {
