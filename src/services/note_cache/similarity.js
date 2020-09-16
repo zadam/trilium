@@ -2,90 +2,6 @@ const noteCache = require('./note_cache');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 
-function gatherRewards(rewardMap, text) {
-    if (!text) {
-        return 0;
-    }
-
-    let counter = 0;
-
-    for (const word of text.toLowerCase().split(/\W+/)) {
-        counter += rewardMap[word] || 0;
-    }
-
-    return counter;
-}
-
-function computeScore(candidateNote, ancestorNoteIds, rewardMap, dates) {
-    let score =
-        gatherRewards(rewardMap, candidateNote.type);
-        + gatherRewards(rewardMap, trimMime(candidateNote.mime));
-
-    if (candidateNote.isDecrypted) {
-        score += gatherRewards(rewardMap, candidateNote.title);
-    }
-
-    for (const ancestorNote of candidateNote.ancestors) {
-        if (!ancestorNoteIds.has(ancestorNote.noteId)) {
-            if (ancestorNote.isDecrypted) {
-                score += gatherRewards(rewardMap, ancestorNote.title);
-            }
-
-            for (const branch of ancestorNote.parentBranches) {
-                score += gatherRewards(rewardMap, branch.prefix);
-            }
-        }
-    }
-
-    for (const branch of candidateNote.parentBranches) {
-        score += gatherRewards(rewardMap, branch.prefix);
-    }
-
-    for (const attr of candidateNote.attributes) {
-        if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
-            score += gatherRewards(rewardMap, attr.name);
-        }
-
-        score += gatherRewards(rewardMap, attr.value);
-    }
-
-    /**
-     * We want to improve standing of notes which have been created in similar time to each other since
-     * there's a good chance they are related.
-     *
-     * But there's an exception - if they were created really close to each other (withing few seconds) then
-     * they are probably part of the import and not created by hand - these OTOH should not benefit.
-     */
-    const {utcDateCreated} = candidateNote;
-
-    if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
-        && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
-
-        score += 3;
-    }
-
-    return score;
-}
-
-function evaluateSimilarity(sourceNote, candidateNote, ancestorNoteIds, rewardMap, dates, results) {
-    let score = computeScore(candidateNote, ancestorNoteIds, rewardMap, dates);
-
-    if (score >= 4) {
-        const notePath = noteCacheService.getSomePath(candidateNote);
-
-        // this takes care of note hoisting
-        if (!notePath) {
-            return;
-        }
-
-        if (noteCacheService.isNotePathArchived(notePath)) {
-            score -= 1; // archived penalization
-        }
-
-        results.push({score, notePath, noteId: candidateNote.noteId});
-    }
-}
-
 const IGNORED_ATTR_NAMES = [
     "includenotelink",
     "internallink",
@@ -99,35 +15,50 @@ const IGNORED_ATTR_NAMES = [
 function buildRewardMap(note) {
     const map = {};
 
+    function addToRewardMap(text, baseReward) {
+        if (!text) {
+            return;
+        }
+
+        for (const word of text.toLowerCase().split(/\W+/)) {
+            if (word) {
+                map[word] = map[word] || 0;
+
+                // reward grows with the length of matched string
+                map[word] += baseReward * Math.sqrt(word.length);
+            }
+        }
+    }
+
     for (const ancestorNote of note.ancestors) {
         if (ancestorNote.isDecrypted) {
-            addToRewardMap(map, ancestorNote.title, 0.4);
+            addToRewardMap(ancestorNote.title, 0.4);
         }
 
         for (const branch of ancestorNote.parentBranches) {
-            addToRewardMap(map, branch.prefix, 0.4);
+            addToRewardMap(branch.prefix, 0.4);
         }
     }
 
-    addToRewardMap(map, note.type, 0.2);
-    addToRewardMap(map, trimMime(note.mime), 0.3);
+    addToRewardMap(note.type, 0.2);
+    addToRewardMap(trimMime(note.mime), 0.3);
 
     if (note.isDecrypted) {
-        addToRewardMap(map, note.title, 1);
+        addToRewardMap(note.title, 1);
     }
 
     for (const branch of note.parentBranches) {
-        addToRewardMap(map, branch.prefix, 1);
+        addToRewardMap(branch.prefix, 1);
     }
 
     for (const attr of note.attributes) {
         const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
         if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
-            addToRewardMap(map, attr.name, reward);
+            addToRewardMap(attr.name, reward);
         }
 
-        addToRewardMap(map, attr.value, reward);
+        addToRewardMap(attr.value, reward);
     }
 
     return map;
@@ -154,21 +85,6 @@ function trimMime(mime) {
     return str;
 }
 
-function addToRewardMap(map, text, baseReward) {
-    if (!text) {
-        return;
-    }
-
-    for (const word of text.toLowerCase().split(/\W+/)) {
-        if (word) {
-            map[word] = map[word] || 0;
-
-            // reward grows with the length of matched string
-            map[word] += baseReward * Math.sqrt(word.length);
-        }
-    }
-}
-
 function findSimilarNotes(noteId) {const start = Date.now();
     const results = [];
     let i = 0;
@@ -191,12 +107,95 @@ function findSimilarNotes(noteId) {const start = Date.now();
     const rewardMap = buildRewardMap(baseNote);
     const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
 
+    function gatherRewards(text) {
+        if (!text) {
+            return 0;
+        }
+
+        let counter = 0;
+
+        for (const word of text.toLowerCase().split(/\W+/)) {
+            counter += rewardMap[word] || 0;
+        }
+
+        return counter;
+    }
+
+    function computeScore(candidateNote) {
+        let score = gatherRewards(candidateNote.type);
+                  + gatherRewards(trimMime(candidateNote.mime));
+
+        if (candidateNote.isDecrypted) {
+            score += gatherRewards(candidateNote.title);
+        }
+
+        for (const ancestorNote of candidateNote.ancestors) {
+            if (!ancestorNoteIds.has(ancestorNote.noteId)) {
+                if (ancestorNote.isDecrypted) {
+                    score += gatherRewards(ancestorNote.title);
+                }
+
+                for (const branch of ancestorNote.parentBranches) {
+                    score += gatherRewards(branch.prefix);
+                }
+            }
+        }
+
+        for (const branch of candidateNote.parentBranches) {
+            score += gatherRewards(branch.prefix);
+        }
+
+        for (const attr of candidateNote.attributes) {
+            if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
+                score += gatherRewards(attr.name);
+            }
+
+            score += gatherRewards(attr.value);
+        }
+
+        /**
+         * We want to improve standing of notes which have been created in similar time to each other since
+         * there's a good chance they are related.
+         *
+         * But there's an exception - if they were created really close to each other (withing few seconds) then
+         * they are probably part of the import and not created by hand - these OTOH should not benefit.
+         */
+        const {utcDateCreated} = candidateNote;
+
+        if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
+            && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
+
+            score += 3;
+        }
+
+        return score;
+    }
+
+    function evaluateSimilarity(candidateNote) {
+        let score = computeScore(candidateNote);
+
+        if (score >= 4) {
+            const notePath = noteCacheService.getSomePath(candidateNote);
+
+            // this takes care of note hoisting
+            if (!notePath) {
+                return;
+            }
+
+            if (noteCacheService.isNotePathArchived(notePath)) {
+                score -= 1; // archived penalization
+            }
+
+            results.push({score, notePath, noteId: candidateNote.noteId});
+        }
+    }
+
     for (const candidateNote of Object.values(noteCache.notes)) {
         if (candidateNote.noteId === baseNote.noteId) {
             continue;
         }
 
-        evaluateSimilarity(baseNote, candidateNote, ancestorNoteIds, rewardMap, dates, results);
+        evaluateSimilarity(candidateNote);
 
         i++;
 
