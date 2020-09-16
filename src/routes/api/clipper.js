@@ -53,7 +53,7 @@ function addClipping(req) {
         clippingNote.setLabel('pageUrl', pageUrl);
     }
 
-    const rewrittenContent = addImagesToNote(images, clippingNote, content);
+    const rewrittenContent = processContent(images, clippingNote, content);
 
     const existingContent = clippingNote.getContent();
 
@@ -85,7 +85,7 @@ function createNote(req) {
         note.setLabel('pageUrl', pageUrl);
     }
 
-    const rewrittenContent = addImagesToNote(images, note, content);
+    const rewrittenContent = processContent(images, note, content);
 
     note.setContent(rewrittenContent);
 
@@ -94,8 +94,11 @@ function createNote(req) {
     };
 }
 
-function addImagesToNote(images, note, content) {
-    let rewrittenContent = content;
+function processContent(images, note, content) {
+    // H1 is not supported so convert it to H2
+    let rewrittenContent = content
+        .replace(/<h1/ig, "<h2")
+        .replace(/<\/h1/ig, "</h2");
 
     if (images) {
         for (const {src, dataUrl, imageId} of images) {

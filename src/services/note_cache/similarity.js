@@ -11,9 +11,9 @@ const IGNORED_ATTR_NAMES = [
 
 function filterLabelValue(value) {
     return value
-        .replace(/https?:\/\//i, "")
-        .replace(/www\./i, "")
-        .replace(/(\.net|\.com|\.org|\.info|\.edu)/i, "");
+        .replace(/https?:\/\//ig, "")
+        .replace(/www\./ig, "")
+        .replace(/(\.net|\.com|\.org|\.info|\.edu)/ig, "");
 }
 
 /**

@@ -250,14 +250,14 @@ function importEnex(taskContext, file, parentNote) {
             }
 
             const createFileNote = () => {
-                const resourceNote = (noteService.createNewNote({
+                const resourceNote = noteService.createNewNote({
                     parentNoteId: noteEntity.noteId,
                     title: resource.title,
                     content: resource.content,
                     type: 'file',
                     mime: resource.mime,
                     isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
-                })).note;
+                }).note;
 
                 for (const attr of resource.attributes) {
                     noteEntity.addAttribute(attr.type, attr.name, attr.value);

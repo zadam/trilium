@@ -55,6 +55,8 @@ function deriveMime(type, mime) {
         mime = 'application/json';
     } else if (['render', 'book'].includes(type)) {
         mime = '';
+    } else {
+        mime = 'application/octet-stream';
     }
 
     return mime;
