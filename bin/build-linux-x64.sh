@@ -13,6 +13,8 @@ echo "Copying required linux-x64 binaries"
 
 cp -r bin/better-sqlite3/linux-desktop-better_sqlite3.node $SRC_DIR/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 
+echo "Packaging linux x64 electron build"
+
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 
 BUILD_DIR=./dist/trilium-linux-x64

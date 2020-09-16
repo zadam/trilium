@@ -31,6 +31,7 @@ cp webpack-* $DIR/
 
 # cleanup of useless files in dependencies
 rm -r $DIR/node_modules/image-q/demo
+rm -r $DIR/node_modules/better-sqlite3/Release
 rm -r $DIR/node_modules/better-sqlite3/deps/sqlite3.tar.gz
 rm -r $DIR/node_modules/@jimp/plugin-print/fonts
 rm -r $DIR/node_modules/jimp/browser

@@ -13,6 +13,8 @@ cp -r bin/better-sqlite3/mac-better_sqlite3.node $SRC_DIR/node_modules/better-sq
 
 rm -r $SRC_DIR/src/public/app-dist/*.mobile.*
 
+echo "Packaging mac x64 electron build"
+
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=images/app-icons/mac/icon.icns
 
 BUILD_DIR=./dist/trilium-mac-x64

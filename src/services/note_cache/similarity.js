@@ -9,6 +9,13 @@ const IGNORED_ATTR_NAMES = [
     "relationmaplink"
 ];
 
+function filterLabelValue(value) {
+    return value
+        .replace(/https?:\/\//i, "")
+        .replace(/www\./i, "")
+        .replace(/(\.net|\.com|\.org|\.info|\.edu)/i, "");
+}
+
 /**
  * @param {Note} note
  */
@@ -20,7 +27,7 @@ function buildRewardMap(note) {
             return;
         }
 
-        for (const word of text.toLowerCase().split(/\W+/)) {
+        for (const word of splitToWords(text)) {
             if (word) {
                 map[word] = map[word] || 0;
 
@@ -58,7 +65,7 @@ function buildRewardMap(note) {
             addToRewardMap(attr.name, reward);
         }
 
-        addToRewardMap(attr.value, reward);
+        addToRewardMap(filterLabelValue(attr.value), reward);
     }
 
     return map;
@@ -67,7 +74,7 @@ function buildRewardMap(note) {
 const mimeCache = {};
 
 function trimMime(mime) {
-    if (!mime) {
+    if (!mime || mime === 'text/html') {
         return;
     }
 
@@ -85,6 +92,7 @@ function trimMime(mime) {
             }
         }
 
+        mimeCache[mime] = str;
         mimeCache[mime] = str;
     }
 
@@ -104,7 +112,24 @@ function buildDateLimits(baseNote) {
 
 const wordCache = {};
 
-function findSimilarNotes(noteId) {
+function splitToWords(text) {
+    let words = wordCache[text];
+
+    if (!words) {
+        wordCache[text] = words = text.toLowerCase().split(/\W+/);
+
+        for (const idx in words) {
+            // special case for english plurals
+            if (words[idx].endsWith("s")) {
+                words[idx] = words[idx].substr(0, words[idx] - 1);
+            }
+        }
+    }
+
+    return words;
+}
+
+async function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
 
@@ -124,16 +149,14 @@ function findSimilarNotes(noteId) {
             return 0;
         }
 
-        let words = wordCache[text];
-
-        if (!words) {
-            words = wordCache[text] = text.toLowerCase().split(/\W+/);
-        }
-
         let counter = 0;
 
-        for (const word of words) {
-            counter += rewardMap[word] * factor || 0;
+        // when the title is very long then weight of each individual word should be lower
+        // also pretty important in e.g. long URLs in label values
+        const lengthPenalization = 1 / Math.pow(text.length, 0.3);
+
+        for (const word of splitToWords(text)) {
+            counter += rewardMap[word] * factor * lengthPenalization || 0;
         }
 
         return counter;
@@ -146,11 +169,11 @@ function findSimilarNotes(noteId) {
             for (const parentNote of note.parents) {
                 if (!ancestorNoteIds.has(parentNote.noteId)) {
                     if (parentNote.isDecrypted) {
-                        score += gatherRewards(parentNote.title, 0.5);
+                        score += gatherRewards(parentNote.title, 0.3);
                     }
 
                     for (const branch of parentNote.parentBranches) {
-                        score += gatherRewards(branch.prefix, 0.5)
+                        score += gatherRewards(branch.prefix, 0.3)
                                + gatherAncestorRewards(branch.parentNote);
                     }
                 }
@@ -163,8 +186,7 @@ function findSimilarNotes(noteId) {
     }
 
     function computeScore(candidateNote) {
-        let score = gatherRewards(candidateNote.type)
-                  + gatherRewards(trimMime(candidateNote.mime))
+        let score = gatherRewards(trimMime(candidateNote.mime))
                   + gatherAncestorRewards(candidateNote);
 
         if (candidateNote.isDecrypted) {
@@ -183,6 +205,10 @@ function findSimilarNotes(noteId) {
             score += gatherRewards(attr.value);
         }
 
+        if (candidateNote.type === baseNote.type) {
+            score += 0.2;
+        }
+
         /**
          * We want to improve standing of notes which have been created in similar time to each other since
          * there's a good chance they are related.
@@ -195,7 +221,7 @@ function findSimilarNotes(noteId) {
         if (utcDateCreated >= dateLimits.minDate && utcDateCreated <= dateLimits.maxDate
             && utcDateCreated < dateLimits.minExcludedDate && utcDateCreated > dateLimits.maxExcludedDate) {
 
-            score += 3;
+            score += 1;
         }
 
         return score;
@@ -208,7 +234,7 @@ function findSimilarNotes(noteId) {
 
         let score = computeScore(candidateNote);
 
-        if (score >= 4) {
+        if (score >= 1) {
             const notePath = noteCacheService.getSomePath(candidateNote);
 
             // this takes care of note hoisting
@@ -217,7 +243,7 @@ function findSimilarNotes(noteId) {
             }
 
             if (noteCacheService.isNotePathArchived(notePath)) {
-                score -= 1; // archived penalization
+                score -= 0.5; // archived penalization
             }
 
             results.push({score, notePath, noteId: candidateNote.noteId});
@@ -226,7 +252,7 @@ function findSimilarNotes(noteId) {
         i++;
 
         if (i % 1000 === 0) {
-            //await setImmediatePromise();
+            await setImmediatePromise();
         }
     }
 
