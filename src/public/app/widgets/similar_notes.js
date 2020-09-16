@@ -30,8 +30,15 @@ const TPL = `
         flex-direction: row; 
         color: var(--muted-text-color); 
         font-size: 90%;
-        margin: 0;
-        align-items: center;
+        m
+    }
+    
+    .similar-notes-expander hr {
+        height: 1px;
+        border-color: var(--main-border-color);
+        position: relative;
+        top: 4px;
+        margin-top: 5px;
     }
     
     .similar-notes-expander-text {

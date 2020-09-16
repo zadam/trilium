@@ -32,11 +32,11 @@ function buildRewardMap(note) {
 
     for (const ancestorNote of note.ancestors) {
         if (ancestorNote.isDecrypted) {
-            addToRewardMap(ancestorNote.title, 0.4);
+            addToRewardMap(ancestorNote.title, 0.3);
         }
 
         for (const branch of ancestorNote.parentBranches) {
-            addToRewardMap(branch.prefix, 0.4);
+            addToRewardMap(branch.prefix, 0.3);
         }
     }
 
@@ -64,28 +64,47 @@ function buildRewardMap(note) {
     return map;
 }
 
+const mimeCache = {};
+
 function trimMime(mime) {
     if (!mime) {
         return;
     }
 
-    const chunks = mime.split('/');
+    if (!(mime in mimeCache)) {
+        const chunks = mime.split('/');
 
-    if (chunks.length < 2) {
-        return;
+        let str = "";
+
+        if (chunks.length >= 2) {
+            // we're not interested in 'text/' or 'application/' prefix
+            str = chunks[1];
+
+            if (str.startsWith('-x')) {
+                str = str.substr(2);
+            }
+        }
+
+        mimeCache[mime] = str;
     }
 
-    // we're not interested in 'text/' or 'application/' prefix
-    let str = chunks[1];
-
-    if (str.startsWith('-x')) {
-        str = str.substr(2);
-    }
-
-    return str;
+    return mimeCache[mime];
 }
 
-function findSimilarNotes(noteId) {const start = Date.now();
+function buildDateLimits(baseNote) {
+    const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated);
+
+    return {
+        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 1800)),
+        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
+        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
+        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
+    };
+}
+
+const wordCache = {};
+
+function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
 
@@ -95,50 +114,61 @@ function findSimilarNotes(noteId) {const start = Date.now();
         return [];
     }
 
-    const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated);
-
-    const dates = {
-        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 1800)),
-        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
-        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
-        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
-    };
-
+    const dateLimits = buildDateLimits(baseNote);
     const rewardMap = buildRewardMap(baseNote);
+    const ancestorRewardCache = {};
     const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
 
-    function gatherRewards(text) {
+    function gatherRewards(text, factor = 1) {
         if (!text) {
             return 0;
         }
 
+        let words = wordCache[text];
+
+        if (!words) {
+            words = wordCache[text] = text.toLowerCase().split(/\W+/);
+        }
+
         let counter = 0;
 
-        for (const word of text.toLowerCase().split(/\W+/)) {
-            counter += rewardMap[word] || 0;
+        for (const word of words) {
+            counter += rewardMap[word] * factor || 0;
         }
 
         return counter;
     }
 
+    function gatherAncestorRewards(note) {
+        if (!(note.noteId in ancestorRewardCache)) {
+            let score = 0;
+
+            for (const parentNote of note.parents) {
+                if (!ancestorNoteIds.has(parentNote.noteId)) {
+                    if (parentNote.isDecrypted) {
+                        score += gatherRewards(parentNote.title, 0.5);
+                    }
+
+                    for (const branch of parentNote.parentBranches) {
+                        score += gatherRewards(branch.prefix, 0.5)
+                               + gatherAncestorRewards(branch.parentNote);
+                    }
+                }
+            }
+
+            ancestorRewardCache[note.noteId] = score;
+        }
+
+        return ancestorRewardCache[note.noteId];
+    }
+
     function computeScore(candidateNote) {
-        let score = gatherRewards(candidateNote.type);
-                  + gatherRewards(trimMime(candidateNote.mime));
+        let score = gatherRewards(candidateNote.type)
+                  + gatherRewards(trimMime(candidateNote.mime))
+                  + gatherAncestorRewards(candidateNote);
 
         if (candidateNote.isDecrypted) {
             score += gatherRewards(candidateNote.title);
-        }
-
-        for (const ancestorNote of candidateNote.ancestors) {
-            if (!ancestorNoteIds.has(ancestorNote.noteId)) {
-                if (ancestorNote.isDecrypted) {
-                    score += gatherRewards(ancestorNote.title);
-                }
-
-                for (const branch of ancestorNote.parentBranches) {
-                    score += gatherRewards(branch.prefix);
-                }
-            }
         }
 
         for (const branch of candidateNote.parentBranches) {
@@ -162,8 +192,8 @@ function findSimilarNotes(noteId) {const start = Date.now();
          */
         const {utcDateCreated} = candidateNote;
 
-        if (utcDateCreated >= dates.minDate && utcDateCreated <= dates.maxDate
-            && utcDateCreated < dates.minExcludedDate && utcDateCreated > dates.maxExcludedDate) {
+        if (utcDateCreated >= dateLimits.minDate && utcDateCreated <= dateLimits.maxDate
+            && utcDateCreated < dateLimits.minExcludedDate && utcDateCreated > dateLimits.maxExcludedDate) {
 
             score += 3;
         }
@@ -171,7 +201,11 @@ function findSimilarNotes(noteId) {const start = Date.now();
         return score;
     }
 
-    function evaluateSimilarity(candidateNote) {
+    for (const candidateNote of Object.values(noteCache.notes)) {
+        if (candidateNote.noteId === baseNote.noteId) {
+            continue;
+        }
+
         let score = computeScore(candidateNote);
 
         if (score >= 4) {
@@ -188,14 +222,6 @@ function findSimilarNotes(noteId) {const start = Date.now();
 
             results.push({score, notePath, noteId: candidateNote.noteId});
         }
-    }
-
-    for (const candidateNote of Object.values(noteCache.notes)) {
-        if (candidateNote.noteId === baseNote.noteId) {
-            continue;
-        }
-
-        evaluateSimilarity(candidateNote);
 
         i++;
 
@@ -205,7 +231,7 @@ function findSimilarNotes(noteId) {const start = Date.now();
     }
 
     results.sort((a, b) => a.score > b.score ? -1 : 1);
-console.log("Similarity search took", Date.now() - start, "ms");
+
     return results.length > 200 ? results.slice(0, 200) : results;
 }
 
