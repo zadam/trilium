@@ -332,6 +332,18 @@ class Note {
             this.isDecrypted = true;
         }
     }
+
+    // for logging etc
+    get pojo() {
+        const pojo = {...this};
+
+        delete pojo.noteCache;
+        delete pojo.ancestorCache;
+        delete pojo.attributeCache;
+        delete pojo.flatTextCache;
+
+        return pojo;
+    }
 }
 
 module.exports = Note;

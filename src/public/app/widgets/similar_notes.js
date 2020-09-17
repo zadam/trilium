@@ -8,7 +8,7 @@ const TPL = `
 <div class="similar-notes-widget hide-in-zen-mode">
     <style>    
     .similar-notes-wrapper {
-        max-height: 100px;
+        max-height: 75px;
         overflow: auto;
     }
 

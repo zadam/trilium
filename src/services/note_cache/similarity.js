@@ -6,7 +6,21 @@ const IGNORED_ATTR_NAMES = [
     "includenotelink",
     "internallink",
     "imagelink",
-    "relationmaplink"
+    "relationmaplink",
+    "template",
+    "disableversioning",
+    "archived",
+    "hidepromotedattributes",
+    "keyboardshortcut",
+    "bookzoomlevel",
+    "noteinfowidgetdisabled",
+    "linkmapwidgetdisabled",
+    "noterevisionswidgetdisabled",
+    "whatlinksherewidgetdisabled",
+    "similarnoteswidgetdisabled",
+    "disableinclusion",
+    "rendernote",
+    "pageurl",
 ];
 
 function filterLabelValue(value) {
@@ -41,6 +55,10 @@ function buildRewardMap(note) {
     }
 
     for (const ancestorNote of note.ancestors) {
+        if (ancestorNote.noteId === 'root') {
+            continue;
+        }
+
         if (ancestorNote.isDecrypted) {
             addToRewardMap(ancestorNote.title, 0.3);
         }
@@ -61,6 +79,12 @@ function buildRewardMap(note) {
     }
 
     for (const attr of note.attributes) {
+        if (attr.name.startsWith('child:')
+            || attr.name.startsWith('relation:')
+            || attr.name.startsWith('label:')) {
+            continue;
+        }
+
         // inherited notes get small penalization
         const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
@@ -213,6 +237,12 @@ async function findSimilarNotes(noteId) {
         }
 
         for (const attr of candidateNote.attributes) {
+            if (attr.name.startsWith('child:')
+                || attr.name.startsWith('relation:')
+                || attr.name.startsWith('label:')) {
+                continue;
+            }
+
             if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
                 score += gatherRewards(attr.name);
             }
@@ -276,6 +306,16 @@ async function findSimilarNotes(noteId) {
     }
 
     results.sort((a, b) => a.score > b.score ? -1 : 1);
+
+    results.forEach(r => {
+        const note = noteCache.notes[r.noteId];
+
+        if (!note.isDecrypted) {
+            console.log(note.pojo);
+        }
+    });
+
+    console.log(rewardMap);
 
     return results.length > 200 ? results.slice(0, 200) : results;
 }
