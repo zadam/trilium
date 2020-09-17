@@ -87,7 +87,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {ToolbarButtonOptions} opts
      */
     this.addButtonToToolbar = opts => {
-        const buttonId = "toolbar-button-" + opts.title.replace(/[^a-zA-Z0-9]/g, "-");
+        const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
 
         const button = $('<button>')
             .addClass("btn btn-sm")
