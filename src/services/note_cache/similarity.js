@@ -22,7 +22,7 @@ function filterLabelValue(value) {
 function buildRewardMap(note) {
     const map = {};
 
-    function addToRewardMap(text, baseReward) {
+    function addToRewardMap(text, rewardFactor) {
         if (!text) {
             return;
         }
@@ -32,7 +32,10 @@ function buildRewardMap(note) {
                 map[word] = map[word] || 0;
 
                 // reward grows with the length of matched string
-                map[word] += baseReward * Math.sqrt(word.length);
+                const length = word.length
+                    - 0.9; // to penalize specifically very short words - 1 and 2 characters
+
+                map[word] += rewardFactor * Math.pow(length, 0.7);
             }
         }
     }
@@ -47,8 +50,7 @@ function buildRewardMap(note) {
         }
     }
 
-    addToRewardMap(note.type, 0.2);
-    addToRewardMap(trimMime(note.mime), 0.3);
+    addToRewardMap(trimMime(note.mime), 0.5);
 
     if (note.isDecrypted) {
         addToRewardMap(note.title, 1);
@@ -59,6 +61,7 @@ function buildRewardMap(note) {
     }
 
     for (const attr of note.attributes) {
+        // inherited notes get small penalization
         const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
         if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
@@ -103,14 +106,20 @@ function buildDateLimits(baseNote) {
     const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated);
 
     return {
-        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 1800)),
+        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 3600)),
         minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
         maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
-        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 1800)),
+        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 3600)),
     };
 }
 
 const wordCache = {};
+
+const WORD_BLACKLIST = [
+    "a", "the", "in", "for", "from", "but", "s", "so", "if", "while", "until",
+    "whether", "after", "before", "because", "since", "when", "where", "how",
+    "than", "then", "and", "either", "or", "neither", "nor", "both", "also"
+];
 
 function splitToWords(text) {
     let words = wordCache[text];
@@ -119,8 +128,14 @@ function splitToWords(text) {
         wordCache[text] = words = text.toLowerCase().split(/\W+/);
 
         for (const idx in words) {
+            if (WORD_BLACKLIST.includes(words[idx])) {
+                words[idx] = "";
+            }
             // special case for english plurals
-            if (words[idx].endsWith("s")) {
+            else if (words[idx].length > 2 && words[idx].endsWith("es")) {
+                words[idx] = words[idx].substr(0, words[idx] - 2);
+            }
+            else if (words[idx].length > 1 && words[idx].endsWith("s")) {
                 words[idx] = words[idx].substr(0, words[idx] - 1);
             }
         }
@@ -218,10 +233,14 @@ async function findSimilarNotes(noteId) {
          */
         const {utcDateCreated} = candidateNote;
 
-        if (utcDateCreated >= dateLimits.minDate && utcDateCreated <= dateLimits.maxDate
-            && utcDateCreated < dateLimits.minExcludedDate && utcDateCreated > dateLimits.maxExcludedDate) {
-
-            score += 1;
+        if (utcDateCreated < dateLimits.minExcludedDate && utcDateCreated > dateLimits.maxExcludedDate) {
+            if (utcDateCreated >= dateLimits.minDate && utcDateCreated <= dateLimits.maxDate) {
+                score += 1;
+            }
+            else if (utcDateCreated.substr(0, 10) === dateLimits.minDate.substr(0, 10) || utcDateCreated.substr(0, 10) === dateLimits.maxDate.substr(0, 10)) {
+                // smaller bonus when outside of the window but within same date
+                score += 0.5;
+            }
         }
 
         return score;
@@ -234,7 +253,7 @@ async function findSimilarNotes(noteId) {
 
         let score = computeScore(candidateNote);
 
-        if (score >= 1) {
+        if (score >= 1.5) {
             const notePath = noteCacheService.getSomePath(candidateNote);
 
             // this takes care of note hoisting

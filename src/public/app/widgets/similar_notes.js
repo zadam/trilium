@@ -148,7 +148,7 @@ export default class SimilarNotesWidget extends TabAwareWidget {
             }
 
             const $item = (await linkService.createNoteLink(similarNote.notePath.join("/")))
-                .css("font-size", 24 * (1 - 1 / (similarNote.score)));
+                .css("font-size", 24 * (1 - 1 / (1 +  similarNote.score)));
 
             $list.append($item);
         }
