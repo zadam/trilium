@@ -155,9 +155,13 @@ async function consumeSyncData() {
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
 
-            // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
-            if (!glob.isDev) {
+            if (!glob.isDev && !options.is('debugModeEnabled')) {
+                // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
+
                 utils.reloadApp();
+            }
+            else {
+                alert("Encountered error, check out the console.");
             }
         }
 
