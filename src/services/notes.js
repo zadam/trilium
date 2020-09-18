@@ -466,27 +466,7 @@ function saveNoteRevision(note) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-        const content = note.getContent();
-
-        if (!content) {
-            return;
-        }
-
-        const noteRevision = new NoteRevision({
-            noteId: note.noteId,
-            // title and text should be decrypted now
-            title: note.title,
-            type: note.type,
-            mime: note.mime,
-            isProtected: false, // will be fixed in the protectNoteRevisions() call
-            utcDateLastEdited: note.utcDateModified,
-            utcDateCreated: dateUtils.utcNowDateTime(),
-            utcDateModified: dateUtils.utcNowDateTime(),
-            dateLastEdited: note.dateModified,
-            dateCreated: dateUtils.localNowDateTime()
-        }).save();
-
-        noteRevision.setContent(content);
+        noteRevisionService.createNoteRevision(note);
     }
 }
 
