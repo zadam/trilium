@@ -341,6 +341,9 @@ class Note {
         delete pojo.ancestorCache;
         delete pojo.attributeCache;
         delete pojo.flatTextCache;
+        delete pojo.children;
+        delete pojo.parents;
+        delete pojo.parentBranches;
 
         return pojo;
     }

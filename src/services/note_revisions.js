@@ -36,7 +36,7 @@ function createNoteRevision(note) {
         return;
     }
 
-    const contentMetadata = note.getContentMetadata();console.log("contentMetadata", contentMetadata);
+    const contentMetadata = note.getContentMetadata();
 
     const noteRevision = new NoteRevision({
         noteId: note.noteId,

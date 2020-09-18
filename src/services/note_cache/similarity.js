@@ -2,6 +2,14 @@ const noteCache = require('./note_cache');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 
+const DEBUG = false;
+
+const IGNORED_ATTRS = [
+    "datenote",
+    "monthnote",
+    "yearnote"
+];
+
 const IGNORED_ATTR_NAMES = [
     "includenotelink",
     "internallink",
@@ -88,6 +96,10 @@ function buildRewardMap(note) {
         // inherited notes get small penalization
         const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
+        if (IGNORED_ATTRS.includes(attr.name)) {
+            continue;
+        }
+
         if (!IGNORED_ATTR_NAMES.includes(attr.name)) {
             addToRewardMap(attr.name, reward);
         }
@@ -149,7 +161,7 @@ function splitToWords(text) {
     let words = wordCache[text];
 
     if (!words) {
-        wordCache[text] = words = text.toLowerCase().split(/\W+/);
+        wordCache[text] = words = text.toLowerCase().split(/[^\p{L}\p{N}]+/u);
 
         for (const idx in words) {
             if (WORD_BLACKLIST.includes(words[idx])) {
@@ -182,6 +194,7 @@ async function findSimilarNotes(noteId) {
     const rewardMap = buildRewardMap(baseNote);
     const ancestorRewardCache = {};
     const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
+    let displayRewards = false;
 
     function gatherRewards(text, factor = 1) {
         if (!text) {
@@ -195,7 +208,13 @@ async function findSimilarNotes(noteId) {
         const lengthPenalization = 1 / Math.pow(text.length, 0.3);
 
         for (const word of splitToWords(text)) {
-            counter += rewardMap[word] * factor * lengthPenalization || 0;
+            const reward = rewardMap[word] * factor * lengthPenalization || 0;
+
+            if (displayRewards && reward > 0) {
+                console.log(`Reward ${Math.round(reward * 10) / 10} for word: ${word}`);
+            }
+
+            counter += reward;
         }
 
         return counter;
@@ -240,6 +259,10 @@ async function findSimilarNotes(noteId) {
             if (attr.name.startsWith('child:')
                 || attr.name.startsWith('relation:')
                 || attr.name.startsWith('label:')) {
+                continue;
+            }
+
+            if (IGNORED_ATTRS.includes(attr.name)) {
                 continue;
             }
 
@@ -307,15 +330,20 @@ async function findSimilarNotes(noteId) {
 
     results.sort((a, b) => a.score > b.score ? -1 : 1);
 
-    results.forEach(r => {
-        const note = noteCache.notes[r.noteId];
+    if (DEBUG) {
+        console.log("REWARD MAP", rewardMap);
 
-        if (!note.isDecrypted) {
-            console.log(note.pojo);
+        if (results.length >= 1) {
+            const note = noteCache.notes[results[0].noteId];
+
+            console.log("WINNER", note.pojo);
+
+            displayRewards = true;
+            const totalReward = computeScore(note);
+
+            console.log("Total reward:", Math.round(totalReward * 10) / 10);
         }
-    });
-
-    console.log(rewardMap);
+    }
 
     return results.length > 200 ? results.slice(0, 200) : results;
 }
