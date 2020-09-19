@@ -2,7 +2,7 @@ const noteCache = require('./note_cache');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 
-const DEBUG = false;
+const DEBUG = true;
 
 const IGNORED_ATTRS = [
     "datenote",
@@ -31,7 +31,7 @@ const IGNORED_ATTR_NAMES = [
     "pageurl",
 ];
 
-function filterLabelValue(value) {
+function filterUrlValue(value) {
     return value
         .replace(/https?:\/\//ig, "")
         .replace(/www\./ig, "")
@@ -94,7 +94,7 @@ function buildRewardMap(note) {
         }
 
         // inherited notes get small penalization
-        const reward = note.noteId === attr.noteId ? 0.8 : 0.5;
+        let reward = note.noteId === attr.noteId ? 0.8 : 0.5;
 
         if (IGNORED_ATTRS.includes(attr.name)) {
             continue;
@@ -104,7 +104,16 @@ function buildRewardMap(note) {
             addToRewardMap(attr.name, reward);
         }
 
-        addToRewardMap(filterLabelValue(attr.value), reward);
+        let value = attr.value;
+
+        if (value.startsWith('http')) {
+            value = filterUrlValue(value);
+
+            // words in URLs are not that valuable
+            reward = reward / 2;
+        }
+
+        addToRewardMap(value, reward);
     }
 
     return map;
@@ -178,6 +187,16 @@ function splitToWords(text) {
     }
 
     return words;
+}
+
+/**
+ * includeNoteLink and imageLink relation mean that notes are clearly related, but so clearly
+ * that it doesn't actually need to be shown to the user.
+ */
+function hasConnectingRelation(sourceNote, targetNote) {
+    return sourceNote.attributes.find(attr => attr.type === 'relation'
+                                           && ['includenotelink', 'imagelink'].includes(attr.name)
+                                           && attr.value === targetNote.noteId);
 }
 
 async function findSimilarNotes(noteId) {
@@ -270,7 +289,17 @@ async function findSimilarNotes(noteId) {
                 score += gatherRewards(attr.name);
             }
 
-            score += gatherRewards(attr.value);
+            let value = attr.value;
+            let factor = 1;
+
+            if (value.startsWith('http')) {
+                value = filterUrlValue(value);
+
+                // words in URLs are not that valuable
+                factor = 0.5;
+            }
+
+            score += gatherRewards(attr.value, factor);
         }
 
         if (candidateNote.type === baseNote.type) {
@@ -300,13 +329,15 @@ async function findSimilarNotes(noteId) {
     }
 
     for (const candidateNote of Object.values(noteCache.notes)) {
-        if (candidateNote.noteId === baseNote.noteId) {
+        if (candidateNote.noteId === baseNote.noteId
+            || hasConnectingRelation(candidateNote, baseNote)
+            || hasConnectingRelation(baseNote, candidateNote)) {
             continue;
         }
 
         let score = computeScore(candidateNote);
 
-        if (score >= 1.5) {
+        if (score >= 2) {
             const notePath = noteCacheService.getSomePath(candidateNote);
 
             // this takes care of note hoisting
