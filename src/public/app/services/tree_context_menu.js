@@ -3,7 +3,6 @@ import treeCache from "./tree_cache.js";
 import hoistedNoteService from './hoisted_note.js';
 import clipboard from './clipboard.js';
 import protectedSessionHolder from "./protected_session_holder.js";
-import appContext from "./app_context.js";
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
 

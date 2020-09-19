@@ -276,6 +276,10 @@ class TreeCache {
     }
 
     async getBranchId(parentNoteId, childNoteId) {
+        if (childNoteId === 'root') {
+            return 'root';
+        }
+
         const child = await this.getNote(childNoteId);
 
         if (!child) {
