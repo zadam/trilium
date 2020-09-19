@@ -18,6 +18,7 @@ const TPL = `
         height: 100%;
         padding: 10px;
         font-family: var(--detail-text-font-family);
+        position: relative;
     }
         
     .note-detail-readonly-text p:first-child, .note-detail-editable-text::before {
