@@ -666,8 +666,12 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .ck-mentions .ck-button {
-    font-size: var(--main-font-size) !important;
+    font-size: var(--detail-font-size) !important;
     padding: 5px;
+}
+
+.ck-mentions .ck-button b {
+    font-size: var(--detail-font-size) !important;
 }
 
 .ck-mentions .ck-button.ck-on {

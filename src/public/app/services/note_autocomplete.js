@@ -1,16 +1,31 @@
 import server from "./server.js";
 import appContext from "./app_context.js";
 import utils from './utils.js';
+import noteCreateService from './note_create.js';
+import treeService from './tree.js';
 
 // this key needs to have this value so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
 async function autocompleteSource(term, cb) {
-    const result = await server.get('autocomplete'
-        + '?query=' + encodeURIComponent(term)
-        + '&activeNoteId=' + appContext.tabManager.getActiveTabNoteId());
+    const activeNoteId = appContext.tabManager.getActiveTabNoteId();
 
-    cb(result);
+    let results = await server.get('autocomplete'
+            + '?query=' + encodeURIComponent(term)
+            + '&activeNoteId=' + activeNoteId);
+
+    if (term.trim().length >= 1) {
+        results = [
+            {
+                action: 'create',
+                noteTitle: term,
+                parentNoteId: activeNoteId,
+                highlightedNotePathTitle: `Create and link child note "${term}"`
+            }
+        ].concat(results);
+    }
+
+    cb(results);
 }
 
 function clearText($el) {
@@ -86,19 +101,30 @@ function initNoteAutocomplete($el, options) {
             source: autocompleteSource,
             displayKey: 'notePathTitle',
             templates: {
-                suggestion: function(suggestion) {
-                    return suggestion.highlightedNotePathTitle;
-                }
+                suggestion: suggestion => suggestion.highlightedNotePathTitle
             },
             // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
             cache: false
         }
     ]);
 
-    $el.on('autocomplete:selected', (event, suggestion) => {
+    $el.on('autocomplete:selected', async (event, suggestion) => {
+        if (suggestion.action === 'create') {
+            const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
+                title: suggestion.noteTitle,
+                activate: false
+            });
+
+            suggestion.notePath = treeService.getSomeNotePath(note);
+        }
+
         $el.setSelectedNotePath(suggestion.notePath);
 
         $el.autocomplete("val", suggestion.noteTitle);
+
+        $el.autocomplete("close");
+
+        $el.trigger('autocomplete:noteselected', [event, suggestion]);
     });
 
     $el.on('autocomplete:closed', () => {
