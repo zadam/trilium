@@ -6,6 +6,7 @@ const TPL = `
     .note-detail-read-only-code {
         overflow: auto;
         height: 100%;
+        position: relative;
     }
     
     .note-detail-read-only-code-content {
