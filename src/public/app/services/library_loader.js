@@ -4,6 +4,7 @@ const CODE_MIRROR = {
     js: [
         "libraries/codemirror/codemirror.js",
         "libraries/codemirror/addon/mode/loadmode.js",
+        "libraries/codemirror/addon/mode/simple.js",
         "libraries/codemirror/addon/fold/xml-fold.js",
         "libraries/codemirror/addon/edit/matchbrackets.js",
         "libraries/codemirror/addon/edit/matchtags.js",
