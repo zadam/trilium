@@ -76,7 +76,7 @@
       if (ch == "#") {
         stream.next();
         // Hex color
-        if (stream.match(/^[0-9a-f]{3}([0-9a-f]([0-9a-f]{2}){0,2})?\b/i)) {
+        if (stream.match(/^[0-9a-f]{3}([0-9a-f]([0-9a-f]{2}){0,2})?\b(?!-)/i)) {
           return ["atom", "atom"];
         }
         // ID selector

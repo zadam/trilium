@@ -50,7 +50,11 @@ CodeMirror.defineMode("pascal", function() {
       state.tokenize = tokenComment;
       return tokenComment(stream, state);
     }
-    if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
+    if (ch == "{") {
+      state.tokenize = tokenCommentBraces;
+      return tokenCommentBraces(stream, state);
+    }
+    if (/[\[\]\(\),;\:\.]/.test(ch)) {
       return null;
     }
     if (/\d/.test(ch)) {
@@ -94,6 +98,17 @@ CodeMirror.defineMode("pascal", function() {
         break;
       }
       maybeEnd = (ch == "*");
+    }
+    return "comment";
+  }
+
+  function tokenCommentBraces(stream, state) {
+    var ch;
+    while (ch = stream.next()) {
+      if (ch == "}") {
+        state.tokenize = null;
+        break;
+      }
     }
     return "comment";
   }

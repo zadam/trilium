@@ -369,7 +369,8 @@ CodeMirror.defineMode("verilog", function(config, parserConfig) {
 
     blockCommentStart: "/*",
     blockCommentEnd: "*/",
-    lineComment: "//"
+    lineComment: "//",
+    fold: "indent"
   };
 });
 

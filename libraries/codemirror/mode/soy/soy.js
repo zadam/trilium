@@ -21,7 +21,6 @@
     "@inject": paramData,
     "@inject?": paramData,
     "@state": paramData,
-    "@state?": paramData,
     "template": { soyState: "templ-def", variableScope: true},
     "literal": { },
     "msg": {},
@@ -35,9 +34,9 @@
     "switch": {},
     "case": { noEndTag: true, reduceIndent: true},
     "default": { noEndTag: true, reduceIndent: true},
-    "foreach": { variableScope: true, soyState: "var-def" },
+    "foreach": { variableScope: true, soyState: "for-loop" },
     "ifempty": { noEndTag: true, reduceIndent: true},
-    "for": { variableScope: true, soyState: "var-def" },
+    "for": { variableScope: true, soyState: "for-loop" },
     "call": { soyState: "templ-ref" },
     "param": { soyState: "param-ref"},
     "print": { noEndTag: true },
@@ -126,16 +125,55 @@
       this.scope = scope;
     }
 
+    function expression(stream, state) {
+      var match;
+      if (stream.match(/[[]/)) {
+        state.soyState.push("list-literal");
+        state.context = new Context(state.context, "list-literal", state.variables);
+        state.lookupVariables = false;
+        return null;
+      } else if (stream.match(/map\b/)) {
+        state.soyState.push("map-literal");
+        return "keyword";
+      } else if (stream.match(/record\b/)) {
+        state.soyState.push("record-literal");
+        return "keyword";
+      } else if (stream.match(/([\w]+)(?=\()/)) {
+        return "variable callee";
+      } else if (match = stream.match(/^["']/)) {
+        state.soyState.push("string");
+        state.quoteKind = match[0];
+        return "string";
+      } else if (stream.match(/^[(]/)) {
+        state.soyState.push("open-parentheses");
+        return null;
+      } else if (stream.match(/(null|true|false)(?!\w)/) ||
+          stream.match(/0x([0-9a-fA-F]{2,})/) ||
+          stream.match(/-?([0-9]*[.])?[0-9]+(e[0-9]*)?/)) {
+        return "atom";
+      } else if (stream.match(/(\||[+\-*\/%]|[=!]=|\?:|[<>]=?)/)) {
+        // Tokenize filter, binary, null propagator, and equality operators.
+        return "operator";
+      } else if (match = stream.match(/^\$([\w]+)/)) {
+        return ref(state.variables, match[1], !state.lookupVariables);
+      } else if (match = stream.match(/^\w+/)) {
+        return /^(?:as|and|or|not|in|if)$/.test(match[0]) ? "keyword" : null;
+      }
+
+      stream.next();
+      return null;
+    }
+
     return {
       startState: function() {
         return {
           soyState: [],
-          templates: null,
           variables: prepend(null, 'ij'),
           scopes: null,
           indent: 0,
           quoteKind: null,
           context: null,
+          lookupVariables: true, // Is unknown variables considered an error
           localStates: [{
             mode: modes.html,
             state: CodeMirror.startState(modes.html)
@@ -147,11 +185,11 @@
         return {
           tag: state.tag, // Last seen Soy tag.
           soyState: state.soyState.concat([]),
-          templates: state.templates,
           variables: state.variables,
           context: state.context,
           indent: state.indent, // Indentation of the following line.
           quoteKind: state.quoteKind,
+          lookupVariables: state.lookupVariables,
           localStates: state.localStates.map(function(localState) {
             return {
               mode: localState.mode,
@@ -203,7 +241,6 @@
         switch (last(state.soyState)) {
           case "templ-def":
             if (match = stream.match(/^\.?([\w]+(?!\.[\w]+)*)/)) {
-              state.templates = prepend(state.templates, match[1]);
               state.soyState.pop();
               return "def";
             }
@@ -220,6 +257,11 @@
               // Otherwise
               return "variable";
             }
+            if (match = stream.match(/^\$([\w]+)/)) {
+              state.soyState.pop();
+              return ref(state.variables, match[1], !state.lookupVariables);
+            }
+
             stream.next();
             return null;
 
@@ -249,13 +291,67 @@
             stream.next();
             return null;
 
-          case "param-type":
-            if (stream.peek() == "}") {
+          case "open-parentheses":
+            if (stream.match(/[)]/)) {
               state.soyState.pop();
               return null;
             }
-            if (stream.eatWhile(/^([\w]+|[?])/)) {
+            return expression(stream, state);
+
+          case "param-type":
+            var peekChar = stream.peek();
+            if ("}]=>,".indexOf(peekChar) != -1) {
+              state.soyState.pop();
+              return null;
+            } else if (peekChar == "[") {
+              state.soyState.push('param-type-record');
+              return null;
+            } else if (peekChar == "(") {
+              state.soyState.push('param-type-template');
+              return null;
+            } else if (peekChar == "<") {
+              state.soyState.push('param-type-parameter');
+              return null;
+            } else if (match = stream.match(/^([\w]+|[?])/)) {
               return "type";
+            }
+            stream.next();
+            return null;
+
+          case "param-type-record":
+            var peekChar = stream.peek();
+            if (peekChar == "]") {
+              state.soyState.pop();
+              return null;
+            }
+            if (stream.match(/^\w+/)) {
+              state.soyState.push('param-type');
+              return "property";
+            }
+            stream.next();
+            return null;
+
+          case "param-type-parameter":
+            if (stream.match(/^[>]/)) {
+              state.soyState.pop();
+              return null;
+            }
+            if (stream.match(/^[<,]/)) {
+              state.soyState.push('param-type');
+              return null;
+            }
+            stream.next();
+            return null;
+
+          case "param-type-template":
+            if (stream.match(/[>]/)) {
+              state.soyState.pop();
+              state.soyState.push('param-type');
+              return null;
+            }
+            if (stream.match(/^\w+/)) {
+              state.soyState.push('param-type');
+              return "def";
             }
             stream.next();
             return null;
@@ -265,6 +361,96 @@
               state.variables = prepend(state.variables, match[1]);
               state.soyState.pop();
               return "def";
+            }
+            stream.next();
+            return null;
+
+          case "for-loop":
+            if (stream.match(/\bin\b/)) {
+              state.soyState.pop();
+              return "keyword";
+            }
+            if (stream.peek() == "$") {
+              state.soyState.push('var-def');
+              return null;
+            }
+            stream.next();
+            return null;
+
+          case "record-literal":
+            if (stream.match(/^[)]/)) {
+              state.soyState.pop();
+              return null;
+            }
+            if (stream.match(/[(,]/)) {
+              state.soyState.push("map-value")
+              state.soyState.push("record-key")
+              return null;
+            }
+            stream.next()
+            return null;
+
+          case "map-literal":
+            if (stream.match(/^[)]/)) {
+              state.soyState.pop();
+              return null;
+            }
+            if (stream.match(/[(,]/)) {
+              state.soyState.push("map-value")
+              state.soyState.push("map-value")
+              return null;
+            }
+            stream.next()
+            return null;
+
+          case "list-literal":
+            if (stream.match(/\]/)) {
+              state.soyState.pop();
+              state.lookupVariables = true;
+              popcontext(state);
+              return null;
+            }
+            if (stream.match(/\bfor\b/)) {
+              state.lookupVariables = true;
+              state.soyState.push('for-loop');
+              return "keyword";
+            }
+            return expression(stream, state);
+
+          case "record-key":
+            if (stream.match(/[\w]+/)) {
+              return "property";
+            }
+            if (stream.match(/^[:]/)) {
+              state.soyState.pop();
+              return null;
+            }
+            stream.next();
+            return null;
+
+          case "map-value":
+            if (stream.peek() == ")" || stream.peek() == "," || stream.match(/^[:)]/)) {
+              state.soyState.pop();
+              return null;
+            }
+            return expression(stream, state);
+
+          case "import":
+            if (stream.eat(";")) {
+              state.soyState.pop();
+              state.indent -= 2 * config.indentUnit;
+              return null;
+            }
+            if (stream.match(/\w+(?=\s+as)/)) {
+              return "variable";
+            }
+            if (match = stream.match(/\w+/)) {
+              return /(from|as)/.test(match[0]) ? "keyword" : "def";
+            }
+            if (match = stream.match(/^["']/)) {
+              state.soyState.push("string");
+              state.quoteKind = match[0];
+              return "string";
             }
             stream.next();
             return null;
@@ -288,7 +474,7 @@
               state.soyState.pop();
               return "keyword";
             } else if (stream.match(/^([\w?]+)(?==)/)) {
-              if (stream.current() == "kind" && (match = stream.match(/^="([^"]+)/, false))) {
+              if (state.context && state.context.tag == tagName && stream.current() == "kind" && (match = stream.match(/^="([^"]+)/, false))) {
                 var kind = match[1];
                 state.context.kind = kind;
                 var mode = modes[kind] || modes.html;
@@ -302,34 +488,11 @@
                 });
               }
               return "attribute";
-            } else if (match = stream.match(/([\w]+)(?=\()/)) {
-              return "variable callee";
-            } else if (match = stream.match(/^["']/)) {
-              state.soyState.push("string");
-              state.quoteKind = match;
-              return "string";
             }
-            if (stream.match(/(null|true|false)(?!\w)/) ||
-              stream.match(/0x([0-9a-fA-F]{2,})/) ||
-              stream.match(/-?([0-9]*[.])?[0-9]+(e[0-9]*)?/)) {
-              return "atom";
-            }
-            if (stream.match(/(\||[+\-*\/%]|[=!]=|\?:|[<>]=?)/)) {
-              // Tokenize filter, binary, null propagator, and equality operators.
-              return "operator";
-            }
-            if (match = stream.match(/^\$([\w]+)/)) {
-              return ref(state.variables, match[1]);
-            }
-            if (match = stream.match(/^\w+/)) {
-              return /^(?:as|and|or|not|in)$/.test(match[0]) ? "keyword" : null;
-            }
-            stream.next();
-            return null;
+            return expression(stream, state);
 
           case "literal":
             if (stream.match(/^(?=\{\/literal})/)) {
-              state.indent -= config.indentUnit;
               state.soyState.pop();
               return this.token(stream, state);
             }
@@ -388,6 +551,10 @@
           state.tag = "print";
           state.indent += 2 * config.indentUnit;
           state.soyState.push("tag");
+          return "keyword";
+        } else if (!state.context && stream.match(/\bimport\b/)) {
+          state.soyState.push("import");
+          state.indent += 2 * config.indentUnit;
           return "keyword";
         }
 

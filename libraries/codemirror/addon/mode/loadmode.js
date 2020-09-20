@@ -16,8 +16,8 @@
     var countDown = n;
     return function() { if (--countDown == 0) cont(); };
   }
-  function ensureDeps(mode, cont) {
-    var deps = CodeMirror.modes[mode].dependencies;
+  function ensureDeps(mode, cont, options) {
+    var modeObj = CodeMirror.modes[mode], deps = modeObj && modeObj.dependencies;
     if (!deps) return cont();
     var missing = [];
     for (var i = 0; i < deps.length; ++i) {
@@ -27,16 +27,18 @@
     if (!missing.length) return cont();
     var split = splitCallback(cont, missing.length);
     for (var i = 0; i < missing.length; ++i)
-      CodeMirror.requireMode(missing[i], split);
+      CodeMirror.requireMode(missing[i], split, options);
   }
 
-  CodeMirror.requireMode = function(mode, cont) {
+  CodeMirror.requireMode = function(mode, cont, options) {
     if (typeof mode != "string") mode = mode.name;
-    if (CodeMirror.modes.hasOwnProperty(mode)) return ensureDeps(mode, cont);
+    if (CodeMirror.modes.hasOwnProperty(mode)) return ensureDeps(mode, cont, options);
     if (loading.hasOwnProperty(mode)) return loading[mode].push(cont);
 
-    var file = CodeMirror.modeURL.replace(/%N/g, mode);
-    if (env == "plain") {
+    var file = options && options.path ? options.path(mode) : CodeMirror.modeURL.replace(/%N/g, mode);
+    if (options && options.loadMode) {
+      options.loadMode(file, function() { ensureDeps(mode, cont, options) })
+    } else if (env == "plain") {
       var script = document.createElement("script");
       script.src = file;
       var others = document.getElementsByTagName("script")[0];
@@ -44,7 +46,7 @@
       CodeMirror.on(script, "load", function() {
         ensureDeps(mode, function() {
           for (var i = 0; i < list.length; ++i) list[i]();
-        });
+        }, options);
       });
       others.parentNode.insertBefore(script, others);
     } else if (env == "cjs") {
@@ -55,10 +57,10 @@
     }
   };
 
-  CodeMirror.autoLoadMode = function(instance, mode) {
+  CodeMirror.autoLoadMode = function(instance, mode, options) {
     if (!CodeMirror.modes.hasOwnProperty(mode))
       CodeMirror.requireMode(mode, function() {
         instance.setOption("mode", instance.getOption("mode"));
-      });
+      }, options);
   };
 });

@@ -12,11 +12,14 @@
   "use strict";
   var GUTTER_ID = "CodeMirror-lint-markers";
 
-  function showTooltip(e, content) {
+  function showTooltip(cm, e, content) {
     var tt = document.createElement("div");
-    tt.className = "CodeMirror-lint-tooltip";
+    tt.className = "CodeMirror-lint-tooltip cm-s-" + cm.options.theme;
     tt.appendChild(content.cloneNode(true));
-    document.body.appendChild(tt);
+    if (cm.state.lint.options.selfContain)
+      cm.getWrapperElement().appendChild(tt);
+    else
+      document.body.appendChild(tt);
 
     function position(e) {
       if (!tt.parentNode) return CodeMirror.off(document, "mousemove", position);
@@ -38,8 +41,8 @@
     setTimeout(function() { rm(tt); }, 600);
   }
 
-  function showTooltipFor(e, content, node) {
-    var tooltip = showTooltip(e, content);
+  function showTooltipFor(cm, e, content, node) {
+    var tooltip = showTooltip(cm, e, content);
     function hide() {
       CodeMirror.off(node, "mouseout", hide);
       if (tooltip) { hideTooltip(tooltip); tooltip = null; }
@@ -78,7 +81,7 @@
     state.marked.length = 0;
   }
 
-  function makeMarker(labels, severity, multiple, tooltips) {
+  function makeMarker(cm, labels, severity, multiple, tooltips) {
     var marker = document.createElement("div"), inner = marker;
     marker.className = "CodeMirror-lint-marker-" + severity;
     if (multiple) {
@@ -87,7 +90,7 @@
     }
 
     if (tooltips != false) CodeMirror.on(inner, "mouseover", function(e) {
-      showTooltipFor(e, labels, inner);
+      showTooltipFor(cm, e, labels, inner);
     });
 
     return marker;
@@ -113,9 +116,9 @@
     var tip = document.createElement("div");
     tip.className = "CodeMirror-lint-message-" + severity;
     if (typeof ann.messageHTML != 'undefined') {
-        tip.innerHTML = ann.messageHTML;
+      tip.innerHTML = ann.messageHTML;
     } else {
-        tip.appendChild(document.createTextNode(ann.message));
+      tip.appendChild(document.createTextNode(ann.message));
     }
     return tip;
   }
@@ -186,7 +189,7 @@
       }
 
       if (state.hasGutter)
-        cm.setGutterMarker(line, GUTTER_ID, makeMarker(tipLabel, maxSeverity, anns.length > 1,
+        cm.setGutterMarker(line, GUTTER_ID, makeMarker(cm, tipLabel, maxSeverity, anns.length > 1,
                                                        state.options.tooltips));
     }
     if (options.onUpdateLinting) options.onUpdateLinting(annotationsNotSorted, annotations, cm);
@@ -199,14 +202,14 @@
     state.timeout = setTimeout(function(){startLinting(cm);}, state.options.delay || 500);
   }
 
-  function popupTooltips(annotations, e) {
+  function popupTooltips(cm, annotations, e) {
     var target = e.target || e.srcElement;
     var tooltip = document.createDocumentFragment();
     for (var i = 0; i < annotations.length; i++) {
       var ann = annotations[i];
       tooltip.appendChild(annotationTooltip(ann));
     }
-    showTooltipFor(e, tooltip, target);
+    showTooltipFor(cm, e, tooltip, target);
   }
 
   function onMouseOver(cm, e) {
@@ -220,7 +223,7 @@
       var ann = spans[i].__annotation;
       if (ann) annotations.push(ann);
     }
-    if (annotations.length) popupTooltips(annotations, e);
+    if (annotations.length) popupTooltips(cm, annotations, e);
   }
 
   CodeMirror.defineOption("lint", false, function(cm, val, old) {

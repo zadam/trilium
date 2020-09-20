@@ -42,7 +42,7 @@
     var ERRORCLASS = "error";
 
     var delimiters = parserConf.delimiters || parserConf.singleDelimiters || /^[\(\)\[\]\{\}@,:`=;\.\\]/;
-    //               (Backwards-compatiblity with old, cumbersome config system)
+    //               (Backwards-compatibility with old, cumbersome config system)
     var operators = [parserConf.singleOperators, parserConf.doubleOperators, parserConf.doubleDelimiters, parserConf.tripleDelimiters,
                      parserConf.operators || /^([-+*/%\/&|^]=?|[<>=]+|\/\/=?|\*\*=?|!=|[~!@]|\.\.\.)/]
     for (var i = 0; i < operators.length; i++) if (!operators[i]) operators.splice(i--, 1)
@@ -98,11 +98,11 @@
       return tokenBaseInner(stream, state);
     }
 
-    function tokenBaseInner(stream, state) {
+    function tokenBaseInner(stream, state, inFormat) {
       if (stream.eatSpace()) return null;
 
       // Handle Comments
-      if (stream.match(/^#.*/)) return "comment";
+      if (!inFormat && stream.match(/^#.*/)) return "comment";
 
       // Handle Number Literals
       if (stream.match(/^[0-9\.]/, false)) {
@@ -177,7 +177,7 @@
 
       // Handle non-detected items
       stream.next();
-      return ERRORCLASS;
+      return inFormat ? null :ERRORCLASS;
     }
 
     function formatStringFactory(delimiter, tokenOuter) {
@@ -189,7 +189,7 @@
 
       function tokenNestedExpr(depth) {
         return function(stream, state) {
-          var inner = tokenBaseInner(stream, state)
+          var inner = tokenBaseInner(stream, state, true)
           if (inner == "punctuation") {
             if (stream.current() == "{") {
               state.tokenize = tokenNestedExpr(depth + 1)

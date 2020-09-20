@@ -103,7 +103,7 @@
       // Do we look like '\command' ?  If so, attempt to apply the plugin 'command'
       if (source.match(/^\\[a-zA-Z@]+/)) {
         var cmdName = source.current().slice(1);
-        plug = plugins[cmdName] || plugins["DEFAULT"];
+        plug = plugins.hasOwnProperty(cmdName) ? plugins[cmdName] : plugins["DEFAULT"];
         plug = new plug();
         pushCommand(state, plug);
         setState(state, beginParams);

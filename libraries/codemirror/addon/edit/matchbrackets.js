@@ -118,16 +118,24 @@
   }
 
   CodeMirror.defineOption("matchBrackets", false, function(cm, val, old) {
-    if (old && old != CodeMirror.Init) {
-      cm.off("cursorActivity", doMatchBrackets);
+    function clear(cm) {
       if (cm.state.matchBrackets && cm.state.matchBrackets.currentlyHighlighted) {
         cm.state.matchBrackets.currentlyHighlighted();
         cm.state.matchBrackets.currentlyHighlighted = null;
       }
     }
+
+    if (old && old != CodeMirror.Init) {
+      cm.off("cursorActivity", doMatchBrackets);
+      cm.off("focus", doMatchBrackets)
+      cm.off("blur", clear)
+      clear(cm);
+    }
     if (val) {
       cm.state.matchBrackets = typeof val == "object" ? val : {};
       cm.on("cursorActivity", doMatchBrackets);
+      cm.on("focus", doMatchBrackets)
+      cm.on("blur", clear)
     }
   });
 

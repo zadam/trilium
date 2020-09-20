@@ -38,7 +38,7 @@ CodeMirror.defineMode('powershell', function() {
     /param|process|return|switch|throw|trap|try|until|where|while/
   ], { suffix: notCharacterOrDash });
 
-  var punctuation = /[\[\]{},;`\.]|@[({]/;
+  var punctuation = /[\[\]{},;`\\\.]|@[({]/;
   var wordOperators = buildRegexp([
     'f',
     /b?not/,
