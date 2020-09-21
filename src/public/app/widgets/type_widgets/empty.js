@@ -22,7 +22,7 @@ export default class EmptyTypeWidget extends TypeWidget {
         this.$autoComplete = this.$widget.find(".note-autocomplete");
 
         noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, { hideGoToSelectedNoteButton: true })
-            .on('autocomplete:selected', function(event, suggestion, dataset) {
+            .on('autocomplete:noteselected', function(event, suggestion, dataset) {
                 if (!suggestion.notePath) {
                     return false;
                 }

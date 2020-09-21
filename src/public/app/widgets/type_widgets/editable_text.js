@@ -14,21 +14,7 @@ const mentionSetup = {
     feeds: [
         {
             marker: '@',
-            feed: queryText => {
-                return new Promise((res, rej) => {
-                    noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        res(rows.map(row => {
-                            return {
-                                id: '@' + row.notePathTitle,
-                                name: row.notePathTitle,
-                                link: '#' + row.notePath,
-                                notePath: row.notePath,
-                                highlightedNotePathTitle: row.highlightedNotePathTitle
-                            }
-                        }));
-                    });
-                });
-            },
+            feed: queryText => noteAutocompleteService.autocompleteSourceForCKEditor(queryText),
             itemRenderer: item => {
                 const itemElement = document.createElement('button');
 
@@ -259,19 +245,12 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async createNoteForReferenceLink(title) {
-        const {parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(this.notePath);
-
-        const {note} = await noteCreateService.createNote(parentNoteId, {
+        const {note} = await noteCreateService.createNote(this.noteId, {
             activate: false,
-            title: title,
-            target: 'after',
-            targetBranchId: await treeCache.getBranchId(parentNoteId, this.noteId),
-            type: 'text'
+            title: title
         });
 
-        const notePath = treeService.getSomeNotePath(note);
-
-        return notePath;
+        return treeService.getSomeNotePath(note);
     }
 
     async refreshIncludedNoteEvent({noteId}) {

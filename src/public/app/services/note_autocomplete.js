@@ -7,6 +7,24 @@ import treeService from './tree.js';
 // this key needs to have this value so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
+async function autocompleteSourceForCKEditor(queryText) {
+    return await new Promise((res, rej) => {
+        autocompleteSource(queryText, rows => {
+            res(rows.map(row => {
+                return {
+                    action: row.action,
+                    noteTitle: row.noteTitle,
+                    id: '@' + row.notePathTitle,
+                    name: row.notePathTitle,
+                    link: '#' + row.notePath,
+                    notePath: row.notePath,
+                    highlightedNotePathTitle: row.highlightedNotePathTitle
+                }
+            }));
+        });
+    });
+}
+
 async function autocompleteSource(term, cb) {
     const activeNoteId = appContext.tabManager.getActiveTabNoteId();
 
@@ -17,9 +35,9 @@ async function autocompleteSource(term, cb) {
     if (term.trim().length >= 1) {
         results = [
             {
-                action: 'create',
+                action: 'create-note',
                 noteTitle: term,
-                parentNoteId: activeNoteId,
+                parentNoteId: activeNoteId || 'root',
                 highlightedNotePathTitle: `Create and link child note "${term}"`
             }
         ].concat(results);
@@ -109,7 +127,7 @@ function initNoteAutocomplete($el, options) {
     ]);
 
     $el.on('autocomplete:selected', async (event, suggestion) => {
-        if (suggestion.action === 'create') {
+        if (suggestion.action === 'create-note') {
             const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
                 title: suggestion.noteTitle,
                 activate: false
@@ -124,7 +142,7 @@ function initNoteAutocomplete($el, options) {
 
         $el.autocomplete("close");
 
-        $el.trigger('autocomplete:noteselected', [event, suggestion]);
+        $el.trigger('autocomplete:noteselected', [suggestion]);
     });
 
     $el.on('autocomplete:closed', () => {
@@ -173,6 +191,7 @@ function init() {
 
 export default {
     autocompleteSource,
+    autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,
     init

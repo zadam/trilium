@@ -154,7 +154,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                         }
                     }]);
 
-                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e))
+                    $input.on('autocomplete:noteselected', e => this.promotedAttributeChanged(e))
                 });
             }
             else if (definition.labelType === 'number') {
@@ -205,7 +205,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             // no need to wait for this
             noteAutocompleteService.initNoteAutocomplete($input);
 
-            $input.on('autocomplete:selected', (event, suggestion, dataset) => {
+            $input.on('autocomplete:noteselected', (event, suggestion, dataset) => {
                 this.promotedAttributeChanged(event);
             });
 

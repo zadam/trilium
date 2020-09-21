@@ -278,7 +278,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$inputTargetNote = this.$widget.find('.attr-input-target-note');
 
         noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote)
-            .on('autocomplete:selected', (event, suggestion, dataset) => {
+            .on('autocomplete:noteselected', (event, suggestion, dataset) => {
                 if (!suggestion.notePath) {
                     return false;
                 }

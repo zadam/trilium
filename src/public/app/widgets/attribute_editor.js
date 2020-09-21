@@ -6,6 +6,8 @@ import attributesParser from "../services/attribute_parser.js";
 import libraryLoader from "../services/library_loader.js";
 import treeCache from "../services/tree_cache.js";
 import attributeRenderer from "../services/attribute_renderer.js";
+import noteCreateService from "../services/note_create.js";
+import treeService from "../services/tree.js";
 
 const HELP_TEXT = `
 <p>To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code></p> 
@@ -73,21 +75,7 @@ const mentionSetup = {
     feeds: [
         {
             marker: '@',
-            feed: queryText => {
-                return new Promise((res, rej) => {
-                    noteAutocompleteService.autocompleteSource(queryText, rows => {
-                        res(rows.map(row => {
-                            return {
-                                id: '@' + row.notePathTitle,
-                                name: row.notePathTitle,
-                                link: '#' + row.notePath,
-                                notePath: row.notePath,
-                                highlightedNotePathTitle: row.highlightedNotePathTitle
-                            }
-                        }));
-                    });
-                });
-            },
+            feed: queryText => noteAutocompleteService.autocompleteSourceForCKEditor(queryText),
             itemRenderer: item => {
                 const itemElement = document.createElement('button');
 
@@ -500,6 +488,15 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
             }
         }
+    }
+
+    async createNoteForReferenceLink(title) {
+        const {note} = await noteCreateService.createNote(this.noteId, {
+            activate: false,
+            title: title
+        });
+
+        return treeService.getSomeNotePath(note);
     }
 
     updateAttributeList(attributes) {

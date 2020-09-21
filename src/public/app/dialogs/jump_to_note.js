@@ -13,7 +13,7 @@ export async function showDialog() {
     utils.openDialog($dialog);
 
     noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
-        .on('autocomplete:selected', function(event, suggestion, dataset) {
+        .on('autocomplete:noteselected', function(event, suggestion, dataset) {
             if (!suggestion.notePath) {
                 return false;
             }

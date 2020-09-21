@@ -43,8 +43,6 @@ export async function showDialog(widget) {
     noteAutocompleteService.initNoteAutocomplete($autoComplete);
 
     $autoComplete.on('autocomplete:noteselected', function(event, suggestion, dataset) {
-        console.log("SELECTED", suggestion);
-
         if (!suggestion.notePath) {
             return false;
         }
