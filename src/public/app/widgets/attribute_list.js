@@ -11,6 +11,7 @@ const TPL = `
         .attribute-list {
             margin-left: 7px;
             margin-right: 7px;
+            position: relative;
         }
         
         .inherited-attributes-wrapper {
