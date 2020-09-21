@@ -499,8 +499,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         return treeService.getSomeNotePath(note);
     }
 
-    updateAttributeList(attributes) {
-        this.renderOwnedAttributes(attributes, false);
+    async updateAttributeList(attributes) {
+        await this.renderOwnedAttributes(attributes, false);
     }
 
     entitiesReloadedEvent({loadResults}) {
