@@ -104,6 +104,12 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             mention: mentionSetup,
             codeBlock: {
                 languages: codeBlockLanguages
+            },
+            math: {
+                engine: 'katex',
+                outputType: 'span', // or script
+                forceOutputType: false, // forces output to use outputType
+                enablePreview: true // Enable preview view
             }
         });
 

@@ -162,7 +162,10 @@ const editorConfig = {
         'CodeBlock',
         'SelectAll',
         'IncludeNote',
-        'CutToNote'
+        'CutToNote',
+        'Mathematics',
+        'indentBlockShortcutPlugin',
+        'removeFormatLinksPlugin'
     ],
     toolbar: {
         items: []
