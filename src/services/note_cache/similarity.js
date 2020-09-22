@@ -1,8 +1,10 @@
 const noteCache = require('./note_cache');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
+const repository = require('../repository');
+const { JSDOM } = require("jsdom");
 
-const DEBUG = true;
+const DEBUG = false;
 
 const IGNORED_ATTRS = [
     "datenote",
@@ -116,6 +118,28 @@ function buildRewardMap(note) {
         addToRewardMap(value, reward);
     }
 
+    if (note.type === 'text' && note.isDecrypted) {
+        const noteEntity = repository.getNote(note.noteId);
+        const content = noteEntity.getContent();
+        const dom = new JSDOM(content);
+
+        function addHeadingsToRewardMap(elName, rewardFactor) {
+            for (const el of dom.window.document.querySelectorAll(elName)) {
+                addToRewardMap(el.textContent, rewardFactor);
+            }
+        }
+
+        // title is the top with weight 1 so smaller headings will have lower weight
+
+        // technically H1 is not supported but for the case it's present let's weigh it just as H2
+        addHeadingsToRewardMap("h1", 0.9);
+        addHeadingsToRewardMap("h2", 0.9);
+        addHeadingsToRewardMap("h3", 0.8);
+        addHeadingsToRewardMap("h4", 0.7);
+        addHeadingsToRewardMap("h5", 0.6);
+        addHeadingsToRewardMap("h6", 0.5);
+    }
+
     return map;
 }
 
@@ -148,13 +172,13 @@ function trimMime(mime) {
 }
 
 function buildDateLimits(baseNote) {
-    const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated);
+    const dateCreatedTs = dateUtils.parseDateTime(baseNote.utcDateCreated).getTime();
 
     return {
-        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 3600)),
-        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5)),
-        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5)),
-        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 3600)),
+        minDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 3600 * 1000)),
+        minExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs - 5 * 1000)),
+        maxExcludedDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 5 * 1000)),
+        maxDate: dateUtils.utcDateStr(new Date(dateCreatedTs + 3600 * 1000)),
     };
 }
 
@@ -211,8 +235,10 @@ async function findSimilarNotes(noteId) {
 
     const dateLimits = buildDateLimits(baseNote);
     const rewardMap = buildRewardMap(baseNote);
-    const ancestorRewardCache = {};
+    let ancestorRewardCache = {};
     const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
+    ancestorNoteIds.add(baseNote.noteId);
+
     let displayRewards = false;
 
     function gatherRewards(text, factor = 1) {
@@ -227,10 +253,12 @@ async function findSimilarNotes(noteId) {
         const lengthPenalization = 1 / Math.pow(text.length, 0.3);
 
         for (const word of splitToWords(text)) {
-            const reward = rewardMap[word] * factor * lengthPenalization || 0;
+            const reward = (rewardMap[word] * factor * lengthPenalization) || 0;
 
             if (displayRewards && reward > 0) {
                 console.log(`Reward ${Math.round(reward * 10) / 10} for word: ${word}`);
+                console.log(`Before: ${counter}, add ${reward}, res: ${counter + reward}`);
+                console.log(`${rewardMap[word]} * ${factor} * ${lengthPenalization}`);
             }
 
             counter += reward;
@@ -240,11 +268,20 @@ async function findSimilarNotes(noteId) {
     }
 
     function gatherAncestorRewards(note) {
+        if (ancestorNoteIds.has(note.noteId)) {
+            return 0;
+        }
+
         if (!(note.noteId in ancestorRewardCache)) {
             let score = 0;
 
             for (const parentNote of note.parents) {
                 if (!ancestorNoteIds.has(parentNote.noteId)) {
+
+                    if (displayRewards) {
+                        console.log("Considering", parentNote.title);
+                    }
+
                     if (parentNote.isDecrypted) {
                         score += gatherRewards(parentNote.title, 0.3);
                     }
@@ -303,6 +340,10 @@ async function findSimilarNotes(noteId) {
         }
 
         if (candidateNote.type === baseNote.type) {
+            if (displayRewards) {
+                console.log("Adding reward for same note type");
+            }
+
             score += 0.2;
         }
 
@@ -315,11 +356,20 @@ async function findSimilarNotes(noteId) {
          */
         const {utcDateCreated} = candidateNote;
 
-        if (utcDateCreated < dateLimits.minExcludedDate && utcDateCreated > dateLimits.maxExcludedDate) {
+        if (utcDateCreated < dateLimits.minExcludedDate || utcDateCreated > dateLimits.maxExcludedDate) {
             if (utcDateCreated >= dateLimits.minDate && utcDateCreated <= dateLimits.maxDate) {
+                if (displayRewards) {
+                    console.log("Adding reward for very similar date of creation");
+                }
+
                 score += 1;
             }
-            else if (utcDateCreated.substr(0, 10) === dateLimits.minDate.substr(0, 10) || utcDateCreated.substr(0, 10) === dateLimits.maxDate.substr(0, 10)) {
+            else if (utcDateCreated.substr(0, 10) === dateLimits.minDate.substr(0, 10)
+                   || utcDateCreated.substr(0, 10) === dateLimits.maxDate.substr(0, 10)) {
+                if (displayRewards) {
+                    console.log("Adding reward for same day of creation");
+                }
+
                 // smaller bonus when outside of the window but within same date
                 score += 0.5;
             }
@@ -337,7 +387,7 @@ async function findSimilarNotes(noteId) {
 
         let score = computeScore(candidateNote);
 
-        if (score >= 2) {
+        if (score >= 1.5) {
             const notePath = noteCacheService.getSomePath(candidateNote);
 
             // this takes care of note hoisting
@@ -365,14 +415,17 @@ async function findSimilarNotes(noteId) {
         console.log("REWARD MAP", rewardMap);
 
         if (results.length >= 1) {
-            const note = noteCache.notes[results[0].noteId];
+            for (const {noteId} of results) {
+                const note = noteCache.notes[noteId];
 
-            console.log("WINNER", note.pojo);
+                console.log("NOTE", note.pojo);
 
-            displayRewards = true;
-            const totalReward = computeScore(note);
+                displayRewards = true;
+                ancestorRewardCache = {}; // reset cache
+                const totalReward = computeScore(note);
 
-            console.log("Total reward:", Math.round(totalReward * 10) / 10);
+                console.log("Total reward:", Math.round(totalReward * 10) / 10);
+            }
         }
     }
 
