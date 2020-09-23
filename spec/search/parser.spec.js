@@ -24,12 +24,13 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello", "hi"]),
             expressionTokens: [],
-            searchContext: new SearchContext({includeNoteContent: false})
+            searchContext: new SearchContext({includeNoteContent: false, excludeArchived: true})
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
-        expect(rootExp.subExpressions[0].constructor.name).toEqual("NoteCacheFlatTextExp");
-        expect(rootExp.subExpressions[0].tokens).toEqual(["hello", "hi"]);
+        expect(rootExp.subExpressions[0].constructor.name).toEqual("PropertyComparisonExp");
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("NoteCacheFlatTextExp");
+        expect(rootExp.subExpressions[1].tokens).toEqual(["hello", "hi"]);
     });
 
     it("fulltext parser with content", () => {
@@ -39,11 +40,9 @@ describe("Parser", () => {
             searchContext: new SearchContext({includeNoteContent: true})
         });
 
-        expect(rootExp.constructor.name).toEqual("AndExp");
-        expect(rootExp.subExpressions[0].constructor.name).toEqual("OrExp");
-        expect(rootExp.subExpressions[1].constructor.name).toEqual("PropertyComparisonExp");
+        expect(rootExp.constructor.name).toEqual("OrExp");
 
-        const subs = rootExp.subExpressions[0].subExpressions;
+        const subs = rootExp.subExpressions;
 
         expect(subs[0].constructor.name).toEqual("NoteCacheFlatTextExp");
         expect(subs[0].tokens).toEqual(["hello", "hi"]);
@@ -147,18 +146,20 @@ describe("Parser", () => {
         const rootExp = parse({
             fulltextTokens: tokens(["hello"]),
             expressionTokens: tokens(["#mylabel", "=", "text"]),
-            searchContext: new SearchContext()
+            searchContext: new SearchContext({excludeArchived: true})
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        const [firstSub, secondSub, thirdSub] = rootExp.subExpressions;
 
-        expect(firstSub.constructor.name).toEqual("AndExp");
-        expect(firstSub.subExpressions[0].constructor.name).toEqual("NoteCacheFlatTextExp");
-        expect(firstSub.subExpressions[0].tokens).toEqual(["hello"]);
+        expect(firstSub.constructor.name).toEqual("PropertyComparisonExp");
+        expect(firstSub.propertyName).toEqual('isArchived');
 
-        expect(secondSub.constructor.name).toEqual("LabelComparisonExp");
-        expect(secondSub.attributeName).toEqual("mylabel");
+        expect(secondSub.constructor.name).toEqual("NoteCacheFlatTextExp");
+        expect(secondSub.tokens).toEqual(["hello"]);
+
+        expect(thirdSub.constructor.name).toEqual("LabelComparisonExp");
+        expect(thirdSub.attributeName).toEqual("mylabel");
     });
 
     it("label sub-expression", () => {
@@ -235,5 +236,17 @@ describe("Invalid expressions", () => {
         expect(rootExp.attributeType).toEqual("label");
         expect(rootExp.attributeName).toEqual("first");
         expect(rootExp.comparator).toBeTruthy();
+    });
+
+    it("searching by relation without note property", () => {
+        const searchContext = new SearchContext();
+
+        parse({
+            fulltextTokens: [],
+            expressionTokens: tokens(["~first", "=", "text", "-", "abc"]),
+            searchContext
+        });
+
+        expect(searchContext.error).toEqual('Misplaced or incomplete expression "="')
     });
 });

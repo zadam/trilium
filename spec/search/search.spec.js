@@ -601,7 +601,7 @@ describe("Search", () => {
                 .child(note('Post Y')))
             .child(note ('Reddit is bad'));
 
-        const searchContext = new SearchContext();
+        const searchContext = new SearchContext({excludeArchived: true});
 
         let searchResults = searchService.findNotesWithQuery('reddit', searchContext);
         expect(searchResults.length).toEqual(1);
