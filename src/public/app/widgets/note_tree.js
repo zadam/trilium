@@ -15,6 +15,7 @@ import clipboard from "../services/clipboard.js";
 import protectedSessionService from "../services/protected_session.js";
 import syncService from "../services/sync.js";
 import options from "../services/options.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -1362,8 +1363,18 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     duplicateNoteCommand({node}) {
-        const branch = treeCache.getBranch(node.data.branchId);
+        const nodesToDuplicate = this.getSelectedOrActiveNodes(node);
 
-        noteCreateService.duplicateNote(node.data.noteId, branch.parentNoteId);
+        for (const nodeToDuplicate of nodesToDuplicate) {
+            const note = treeCache.getNoteFromCache(nodeToDuplicate.data.noteId);
+
+            if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+                continue;
+            }
+
+            const branch = treeCache.getBranch(nodeToDuplicate.data.branchId);
+
+            noteCreateService.duplicateNote(nodeToDuplicate.data.noteId, branch.parentNoteId);
+        }
     }
 }

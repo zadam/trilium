@@ -727,7 +727,7 @@ function duplicateNote(noteId, parentNoteId) {
     }
 
     // might be null if orig note is not in the target parentNoteId
-    const origBranch = (origNote.getBranches()).find(branch => branch.parentNoteId === parentNoteId);
+    const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === parentNoteId);
 
     const newNote = new Note(origNote);
     newNote.noteId = undefined; // force creation of new note
