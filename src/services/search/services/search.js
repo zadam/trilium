@@ -73,6 +73,8 @@ function findNotesWithQuery(query, searchContext) {
         return [];
     }
 
+    searchContext.originalQuery = query;
+
     return utils.stopWatch(`Search with query "${query}"`, () => {
         const expression = parseQueryToExpression(query, searchContext);
 

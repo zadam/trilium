@@ -17,7 +17,8 @@ function searchNotes(req) {
 
     try {
         return {
-            success: true,
+            success: !searchContext.hasError(),
+            message: searchContext.getError(),
             count,
             results
         }

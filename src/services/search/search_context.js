@@ -16,6 +16,14 @@ class SearchContext {
             this.error = error;
         }
     }
+
+    hasError() {
+        return !!this.error;
+    }
+
+    getError() {
+        return this.error;
+    }
 }
 
 module.exports = SearchContext;
