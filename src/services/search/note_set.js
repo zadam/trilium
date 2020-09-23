@@ -31,8 +31,12 @@ class NoteSet {
     }
 
     mergeIn(anotherNoteSet) {
-        this.notes = this.notes.concat(anotherNoteSet.notes);
-        this.noteIdSet = new Set(this.notes.map(note => note.noteId));
+        for (const note of anotherNoteSet.notes) {
+            if (!this.noteIdSet.has(note.noteId)) {
+                this.noteIdSet.add(note.noteId);
+                this.notes.push(note);
+            }
+        }
     }
 
     minus(anotherNoteSet) {
