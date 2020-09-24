@@ -186,7 +186,11 @@ function getExpression(tokens, searchContext, level = 0) {
 
             i += 2;
 
-            return getFulltext([tokens[i]], searchContext);
+            return new OrExp([
+                new PropertyComparisonExp('title', buildComparator('*=*', tokens[i].token)),
+                new NoteContentProtectedFulltextExp('*=*', [tokens[i].token]),
+                new NoteContentUnprotectedFulltextExp('*=*', [tokens[i].token])
+            ]);
         }
 
         if (PropertyComparisonExp.isProperty(tokens[i].token)) {

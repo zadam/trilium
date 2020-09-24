@@ -166,7 +166,7 @@ export default class Entrypoints extends Component {
 
         if (!response.success) {
             toastService.showError("Search failed: " + response.message, 10000);
-            return;
+            // even in this case we'll show the results
         }
 
         this.triggerEvent('searchResults', {results: response.results});
