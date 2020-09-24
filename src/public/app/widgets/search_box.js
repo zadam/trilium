@@ -177,6 +177,6 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.showSearchEvent();
 
-        this.$searchInput.val(`@in=${noteId} @text*=*`);
+        this.$searchInput.val(`YOUR_SEARCH_TEXT note.ancestors.noteId=${noteId}`);
     }
 }
