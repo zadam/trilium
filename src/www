@@ -99,7 +99,7 @@ async function startTrilium() {
         }
     )
 
-    httpServer.on('listening', () => log.info('Listening on port' + httpServer.address().port));
+    httpServer.on('listening', () => log.info('Listening on port ' + httpServer.address().port));
 
     ws.init(httpServer, sessionParser);
 

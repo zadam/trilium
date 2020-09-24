@@ -40,11 +40,11 @@ const RIGHT_PANE_CSS = `
 
 #right-pane .card-header {
     background: inherit;
-    padding: 3px 10px 3px 10px;
+    padding: 6px 10px 3px 10px;
     width: 99%; /* to give minimal right margin */
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);
-    border-width: 1px;
+    border-width: 0 0 1px 0;
     border-radius: 4px;
     border-style: solid;
     display: flex;
