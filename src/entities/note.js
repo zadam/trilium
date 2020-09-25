@@ -805,7 +805,7 @@ class Note extends Entity {
      * @returns {boolean} - true if note has children
      */
     hasChildren() {
-        return (this.getChildNotes()).length > 0;
+        return this.getChildNotes().length > 0;
     }
 
     /**
