@@ -24,46 +24,12 @@ const TPL = `
         white-space: nowrap;
         overflow: hidden;
     }
-    
-    .similar-notes-expander {
-        display: flex; 
-        flex-direction: row; 
-        color: var(--muted-text-color); 
-        font-size: 90%;
-        m
-    }
-    
-    .similar-notes-expander hr {
-        height: 1px;
-        border-color: var(--main-border-color);
-        position: relative;
-        top: 4px;
-        margin-top: 5px;
-    }
-    
-    .similar-notes-expander-text {
-        padding-left: 20px;
-        padding-right: 20px;
-        white-space: nowrap;
-    }
-    
-    .similar-notes-expander:hover {
-        cursor: pointer;
-    }
-    
-    .similar-notes-expander:hover hr {
-        border-color: var(--main-text-color);
-    }
-    
-    .similar-notes-expander:hover .similar-notes-expander-text {
-        color: var(--main-text-color);
-    }
     </style>
 
-    <div class="similar-notes-expander">
+    <div class="area-expander">
         <hr class="w-100">
         
-        <div class="similar-notes-expander-text"
+        <div class="area-expander-text"
              title="This list contains notes which might be similar to the current note based on textual similarity of note title, its labels and relations."></div>
         
         <hr class="w-100">
@@ -83,9 +49,9 @@ export default class SimilarNotesWidget extends TabAwareWidget {
         this.overflowing();
 
         this.$similarNotesWrapper = this.$widget.find(".similar-notes-wrapper");
-        this.$similarNotesExpanderText = this.$widget.find(".similar-notes-expander-text");
+        this.$expanderText = this.$widget.find(".area-expander-text");
 
-        this.$expander = this.$widget.find('.similar-notes-expander');
+        this.$expander = this.$widget.find('.area-expander');
         this.$expander.on('click', async () => {
             const collapse = this.$similarNotesWrapper.is(":visible");
 
@@ -132,7 +98,7 @@ export default class SimilarNotesWidget extends TabAwareWidget {
             this.$similarNotesWrapper.show();
         }
 
-        this.$similarNotesExpanderText.text(`${similarNotes.length} similar note${similarNotes.length === 1 ? '': "s"}`);
+        this.$expanderText.text(`${similarNotes.length} similar note${similarNotes.length === 1 ? '': "s"}`);
 
         const noteIds = similarNotes.flatMap(note => note.notePath);
 

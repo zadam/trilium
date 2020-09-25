@@ -856,3 +856,36 @@ ul.fancytree-container li {
 .ck.ck-balloon-panel {
     z-index: 10001;
 }
+
+.area-expander {
+    display: flex;
+    flex-direction: row;
+    color: var(--muted-text-color);
+    font-size: 90%;
+}
+
+.area-expander hr {
+    height: 1px;
+    border-color: var(--main-border-color);
+    position: relative;
+    top: 4px;
+    margin-top: 5px;
+}
+
+.area-expander-text {
+    padding-left: 20px;
+    padding-right: 20px;
+    white-space: nowrap;
+}
+
+.area-expander:hover {
+    cursor: pointer;
+}
+
+.area-expander:hover hr {
+    border-color: var(--main-text-color);
+}
+
+.area-expander:hover .area-expander-text {
+    color: var(--main-text-color);
+}

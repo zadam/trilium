@@ -30,7 +30,7 @@ const TPL = `
             border-color: red !important;
         }
         
-        .attr-expander {
+        .area-expander {
             display: flex; 
             flex-direction: row; 
             color: var(--muted-text-color); 
@@ -47,29 +47,29 @@ const TPL = `
             margin-bottom: 0;
         }
         
-        .attr-expander-text {
+        .area-expander-text {
             padding-left: 20px;
             padding-right: 20px;
             white-space: nowrap;
         }
         
-        .attr-expander:hover {
+        .area-expander:hover {
             cursor: pointer;
         }
         
-        .attr-expander:hover hr {
+        .area-expander:hover hr {
             border-color: var(--main-text-color);
         }
         
-        .attr-expander:hover .attr-expander-text {
+        .area-expander:hover .area-expander-text {
             color: var(--main-text-color);
         }
     </style>
     
-    <div class="attr-expander attr-promoted-expander">
+    <div class="area-expander attr-promoted-expander">
         <hr class="w-100">
         
-        <div class="attr-expander-text">Promoted attributes</div>
+        <div class="area-expander-text">Promoted attributes</div>
         
         <hr class="w-100">
     </div>
@@ -77,10 +77,10 @@ const TPL = `
     <div class="all-attr-wrapper">
         <div class="promoted-attributes-placeholder"></div>
     
-        <div class="attr-expander attr-owned-and-inherited-expander">
+        <div class="area-expander attr-owned-and-inherited-expander">
             <hr class="w-100">
             
-            <div class="attr-expander-text"></div>
+            <div class="area-expander-text"></div>
             
             <hr class="w-100">
         </div>
@@ -90,10 +90,10 @@ const TPL = `
             
             <hr class="w-100 attr-inherited-empty-expander" style="margin-bottom: 10px;">
             
-            <div class="attr-expander attr-inherited-expander">
+            <div class="area-expander attr-inherited-expander">
                 <hr class="w-100">
                 
-                <div class="attr-expander-text"></div>
+                <div class="area-expander-text"></div>
                 
                 <hr class="w-100">
             </div>
@@ -141,7 +141,7 @@ export default class AttributeListWidget extends TabAwareWidget {
             this.triggerEvent(`attributeListCollapsedStateChanged`, {collapse});
         });
 
-        this.$ownedExpanderText = this.$ownedExpander.find('.attr-expander-text');
+        this.$ownedExpanderText = this.$ownedExpander.find('.area-expander-text');
 
         this.$inheritedAttributesWrapper = this.$widget.find('.inherited-attributes-wrapper');
 
@@ -155,7 +155,7 @@ export default class AttributeListWidget extends TabAwareWidget {
             }
         });
 
-        this.$inheritedExpanderText = this.$inheritedExpander.find('.attr-expander-text');
+        this.$inheritedExpanderText = this.$inheritedExpander.find('.area-expander-text');
 
         this.$inheritedEmptyExpander = this.$widget.find('.attr-inherited-empty-expander');
 
