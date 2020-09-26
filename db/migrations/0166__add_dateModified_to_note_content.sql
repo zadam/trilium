@@ -11,7 +11,7 @@ INSERT INTO note_contents_mig (noteId, content, hash, dateModified, utcDateModif
     SELECT noteId,
            content,
            hash,
-           (SELECT dateModified FROM notes WHERE noteId = note_contents.noteId),
+           COALESCE((SELECT dateModified FROM notes WHERE noteId = note_contents.noteId), utcDateModified),
            utcDateModified
     FROM note_contents;
 
