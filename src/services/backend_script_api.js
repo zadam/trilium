@@ -276,7 +276,7 @@ function BackendScriptApi(currentNote, apiParams) {
             extraOptions.content = content;
         }
 
-        sql.transactional(() => {
+        return sql.transactional(() => {
             const {note, branch} = noteService.createNewNote(extraOptions);
 
             for (const attr of extraOptions.attributes || []) {
