@@ -852,7 +852,10 @@ ul.fancytree-container li {
     contain: layout paint;
 }
 
-/** ckeditor's autocomplete */
+/**
+    ckeditor's autocomplete
+    should be higher than 1070 of tooltip
+*/
 .ck.ck-balloon-panel {
-    z-index: 1001;
+    z-index: 1101;
 }
