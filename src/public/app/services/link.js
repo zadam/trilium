@@ -85,7 +85,9 @@ function goToLink(e) {
         }
     }
     else {
-        if (e.which === 1) {
+        if ((e.which === 1 && e.ctrlKey) || e.which === 2
+            || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
+        ) {
             const address = $link.attr('href');
 
             if (address && address.startsWith('http')) {

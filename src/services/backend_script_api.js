@@ -249,7 +249,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * @method
-     * @deprecated please use createNewNote() API method instead
+     * @deprecated please use createTextNote() with similar API for simpler use cases or createNewNote() for more complex needs
      *
      * @param {string} parentNoteId - create new note under this parent
      * @param {string} title
@@ -276,7 +276,7 @@ function BackendScriptApi(currentNote, apiParams) {
             extraOptions.content = content;
         }
 
-        sql.transactional(() => {
+        return sql.transactional(() => {
             const {note, branch} = noteService.createNewNote(extraOptions);
 
             for (const attr of extraOptions.attributes || []) {

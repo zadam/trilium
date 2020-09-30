@@ -106,6 +106,10 @@ function buildRewardMap(note) {
             addToRewardMap(attr.name, reward);
         }
 
+        if (attr.name === 'cliptype') {
+            reward /= 2;
+        }
+
         let value = attr.value;
 
         if (value.startsWith('http')) {

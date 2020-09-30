@@ -28,13 +28,14 @@
         <article>
             <pre class="prettyprint source linenums"><code>import server from '../services/server.js';
 import Attribute from './attribute.js';
+import noteAttributeCache from "../services/note_attribute_cache.js";
 
 const LABEL = 'label';
-const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
-const RELATION_DEFINITION = 'relation-definition';
 
 /**
+ * FIXME: since there's no "full note" anymore we can rename this to Note
+ *
  * This note's representation is used in note tree and is kept in TreeCache.
  */
 class NoteShort {
@@ -70,8 +71,6 @@ class NoteShort {
         this.noteId = row.noteId;
         /** @param {string} */
         this.title = row.title;
-        /** @param {int} */
-        this.contentLength = row.contentLength;
         /** @param {boolean} */
         this.isProtected = !!row.isProtected;
         /** @param {string} one of 'text', 'code', 'file' or 'render' */
@@ -83,6 +82,10 @@ class NoteShort {
     }
 
     addParent(parentNoteId, branchId) {
+        if (parentNoteId === 'none') {
+            return;
+        }
+
         if (!this.parents.includes(parentNoteId)) {
             this.parents.push(parentNoteId);
         }
@@ -97,6 +100,10 @@ class NoteShort {
 
         this.childToBranch[childNoteId] = branchId;
 
+        this.sortChildren();
+    }
+
+    sortChildren() {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
@@ -184,9 +191,9 @@ class NoteShort {
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
             .map(attributeId => this.treeCache.attributes[attributeId])
-            .filter(attr => !!attr);
+            .filter(Boolean); // filter out nulls;
 
-        return this.__filterAttrs(attrs, type, name)
+        return this.__filterAttrs(attrs, type, name);
     }
 
     /**
@@ -195,48 +202,66 @@ class NoteShort {
      * @returns {Attribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
-        const ownedAttributes = this.getOwnedAttributes();
+        return this.__filterAttrs(this.__getCachedAttributes([]), type, name);
+    }
 
-        const attrArrs = [
-            ownedAttributes
-        ];
-
-        for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' &amp;&amp; oa.name === 'template')) {
-            const templateNote = this.treeCache.getNoteFromCache(templateAttr.value);
-
-            if (templateNote) {
-                attrArrs.push(templateNote.getAttributes());
-            }
+    __getCachedAttributes(path) {
+        // notes/clones cannot form tree cycles, it is possible to create attribute inheritance cycle via templates
+        // when template instance is a parent of template itself
+        if (path.includes(this.noteId)) {
+            return [];
         }
 
-        if (this.noteId !== 'root') {
-            for (const parentNote of this.getParentNotes()) {
-                // these virtual parent-child relationships are also loaded into frontend tree cache
-                if (parentNote.type !== 'search') {
-                    attrArrs.push(parentNote.getInheritableAttributes());
+        if (!(this.noteId in noteAttributeCache.attributes)) {
+            const newPath = [...path, this.noteId];
+            const attrArrs = [ this.getOwnedAttributes() ];
+
+            if (this.noteId !== 'root') {
+                for (const parentNote of this.getParentNotes()) {
+                    // these virtual parent-child relationships are also loaded into frontend tree cache
+                    if (parentNote.type !== 'search') {
+                        attrArrs.push(parentNote.__getInheritableAttributes(newPath));
+                    }
+                }
+            }
+
+            for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' &amp;&amp; attr.name === 'template')) {
+                const templateNote = this.treeCache.notes[templateAttr.value];
+
+                if (templateNote &amp;&amp; templateNote.noteId !== this.noteId) {
+                    attrArrs.push(templateNote.__getCachedAttributes(newPath));
+                }
+            }
+
+            noteAttributeCache.attributes[this.noteId] = [];
+            const addedAttributeIds = new Set();
+
+            for (const attr of attrArrs.flat()) {
+                if (!addedAttributeIds.has(attr.attributeId)) {
+                    addedAttributeIds.add(attr.attributeId);
+
+                    noteAttributeCache.attributes[this.noteId].push(attr);
                 }
             }
         }
 
-        const attributes = attrArrs.flat();
-
-        return this.__filterAttrs(attributes, type, name);
+        return noteAttributeCache.attributes[this.noteId];
     }
 
     __filterAttrs(attributes, type, name) {
-        if (type &amp;&amp; name) {
+        if (!type &amp;&amp; !name) {
+            return attributes;
+        } else if (type &amp;&amp; name) {
             return attributes.filter(attr => attr.type === type &amp;&amp; attr.name === name);
         } else if (type) {
             return attributes.filter(attr => attr.type === type);
         } else if (name) {
             return attributes.filter(attr => attr.name === name);
-        } else {
-            return attributes;
         }
     }
 
-    getInheritableAttributes() {
-        const attrs = this.getAttributes();
+    __getInheritableAttributes(path) {
+        const attrs = this.__getCachedAttributes(path);
 
         return attrs.filter(attr => attr.isInheritable);
     }
@@ -258,14 +283,6 @@ class NoteShort {
     }
 
     /**
-     * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's label definitions, including inherited ones
-     */
-    getLabelDefinitions(name) {
-        return this.getAttributes(LABEL_DEFINITION, name);
-    }
-
-    /**
      * @param {string} [name] - relation name to filter
      * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
      */
@@ -279,14 +296,6 @@ class NoteShort {
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
-    }
-
-    /**
-     * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relation definitions including inherited ones
-     */
-    getRelationDefinitions(name) {
-        return this.getAttributes(RELATION_DEFINITION, name);
     }
 
     /**
@@ -449,6 +458,35 @@ class NoteShort {
     }
 
     /**
+     * @returns {NoteShort[]}
+     */
+    getTemplateNotes() {
+        const relations = this.getRelations('template');
+
+        return relations.map(rel => this.treeCache.notes[rel.value]);
+    }
+
+    hasAncestor(ancestorNote) {
+        if (this.noteId === ancestorNote.noteId) {
+            return true;
+        }
+
+        for (const templateNote of this.getTemplateNotes()) {
+            if (templateNote.hasAncestor(ancestorNote)) {
+                return true;
+            }
+        }
+
+        for (const parentNote of this.getParentNotes()) {
+            if (parentNote.hasAncestor(ancestorNote)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Clear note's attributes cache to force fresh reload for next attribute request.
      * Cache is note instance scoped.
      */
@@ -464,6 +502,26 @@ class NoteShort {
     getTargetRelations() {
         return this.targetRelations
             .map(attributeId => this.treeCache.attributes[attributeId]);
+    }
+
+    /**
+     * Get relations which target this note
+     *
+     * @returns {NoteShort[]}
+     */
+    async getTargetRelationSourceNotes() {
+        const targetRelations = this.getTargetRelations();
+
+        return await this.treeCache.getNotes(targetRelations.map(tr => tr.noteId));
+    }
+
+    /**
+     * Return note complement which is most importantly note's content
+     *
+     * @return {Promise&lt;NoteComplement>}
+     */
+    async getNoteComplement() {
+        return await this.treeCache.getNoteComplement(this.noteId);
     }
 
     get toString() {
@@ -483,7 +541,8 @@ class NoteShort {
     }
 }
 
-export default NoteShort;</code></pre>
+export default NoteShort;
+</code></pre>
         </article>
     </section>
 
@@ -499,7 +558,7 @@ export default NoteShort;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a>
 </footer>
 
 <script> prettyPrint(); </script>

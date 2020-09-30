@@ -123,6 +123,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
+    // < and > are used for marking <small> and </small>
     highlightedTokens = highlightedTokens.map(token => token.replace('/[<\{\}]/g', ''));
 
     // sort by the longest so we first highlight longest matches
@@ -131,19 +132,19 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     for (const result of searchResults) {
         const note = noteCache.notes[result.noteId];
 
-        result.highlightedNotePathTitle = result.notePathTitle;
+        result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
 
         if (highlightedTokens.find(token => note.type.includes(token))) {
-            result.highlightedNotePathTitle += ` <small>type: ${note.type}</small>`;
+            result.highlightedNotePathTitle += ` <type: ${note.type}>`;
         }
 
         if (highlightedTokens.find(token => note.mime.includes(token))) {
-            result.highlightedNotePathTitle += ` <small>mime: ${note.mime}</small>`;
+            result.highlightedNotePathTitle += ` <mime: ${note.mime}>`;
         }
 
         for (const attr of note.attributes) {
             if (highlightedTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
-                result.highlightedNotePathTitle += ` <small>${formatAttribute(attr)}</small>`;
+                result.highlightedNotePathTitle += ` <${formatAttribute(attr)}>`;
             }
         }
     }
@@ -158,6 +159,8 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
     for (const result of searchResults) {
         result.highlightedNotePathTitle = result.highlightedNotePathTitle
+            .replace(/</g, "<small>")
+            .replace(/>/g, "</small>")
             .replace(/{/g, "<b>")
             .replace(/}/g, "</b>");
     }

@@ -205,7 +205,16 @@ class NoteShort {
                 }
             }
 
-            noteAttributeCache.attributes[this.noteId] = attrArrs.flat();
+            noteAttributeCache.attributes[this.noteId] = [];
+            const addedAttributeIds = new Set();
+
+            for (const attr of attrArrs.flat()) {
+                if (!addedAttributeIds.has(attr.attributeId)) {
+                    addedAttributeIds.add(attr.attributeId);
+
+                    noteAttributeCache.attributes[this.noteId].push(attr);
+                }
+            }
         }
 
         return noteAttributeCache.attributes[this.noteId];

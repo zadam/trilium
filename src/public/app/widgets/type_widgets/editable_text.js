@@ -34,6 +34,10 @@ const TPL = `
         cursor: pointer;
     }
     
+    .note-detail-editable-text a[href^="http://"], .note-detail-editable-text a[href^="https://"] {
+        cursor: text !important;
+    }
+    
     .note-detail-editable-text h1 { font-size: 2.0em; }
     .note-detail-editable-text h2 { font-size: 1.8em; }
     .note-detail-editable-text h3 { font-size: 1.6em; }

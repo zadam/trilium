@@ -92,7 +92,18 @@ class Note {
                 }
             }
 
-            this.attributeCache = parentAttributes.concat(templateAttributes);
+            this.attributeCache = [];
+
+            const addedAttributeIds = new Set();
+
+            for (const attr of parentAttributes.concat(templateAttributes)) {
+                if (!addedAttributeIds.has(attr.attributeId)) {
+                    addedAttributeIds.add(attr.attributeId);
+
+                    this.attributeCache.push(attr);
+                }
+            }
+
             this.inheritableAttributeCache = [];
 
             for (const attr of this.attributeCache) {

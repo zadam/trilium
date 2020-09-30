@@ -373,6 +373,7 @@ class Note extends Entity {
                 return false;
             }
 
+            // FIXME: this code is quite questionable, one problem is that other caches (TreeCache, NoteCache) have nothing like that
             if (attr.isDefinition()) {
                 const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
 
