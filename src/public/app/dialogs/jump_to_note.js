@@ -13,6 +13,8 @@ export async function showDialog() {
     utils.openDialog($dialog);
 
     noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
+        // clear any event listener added in previous invocation of this function
+        .off('autocomplete:noteselected')
         .on('autocomplete:noteselected', function(event, suggestion, dataset) {
             if (!suggestion.notePath) {
                 return false;
