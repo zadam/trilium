@@ -67,6 +67,9 @@ function showRecentNotes($el) {
 
 function initNoteAutocomplete($el, options) {
     if ($el.hasClass("note-autocomplete-input") || utils.isMobile()) {
+        // clear any event listener added in previous invocation of this function
+        $el.off('autocomplete:noteselected');
+
         return $el;
     }
 
@@ -156,6 +159,9 @@ function initNoteAutocomplete($el, options) {
             $el.autocomplete('close');
         }
     });
+
+    // clear any event listener added in previous invocation of this function
+    $el.off('autocomplete:noteselected');
 
     return $el;
 }
