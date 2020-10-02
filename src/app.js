@@ -21,12 +21,7 @@ app.set('view engine', 'ejs');
 
 app.use(helmet({
     hidePoweredBy: false, // deactivated because electron 4.0 crashes on this right after startup
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["*", "'unsafe-inline'", "'unsafe-eval'"],
-            imgSrc: ["'self' data:"]
-        }
-    }
+    contentSecurityPolicy: false
 }));
 
 app.use(bodyParser.json({limit: '500mb'}));
