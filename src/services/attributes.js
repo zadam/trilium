@@ -109,7 +109,16 @@ function getAttributeNames(type, nameLike) {
         }
     }
 
-    names.sort();
+    names.sort((a, b) => {
+        const aPrefix = a.toLowerCase().startsWith(nameLike);
+        const bPrefix = b.toLowerCase().startsWith(nameLike);
+
+        if (aPrefix !== bPrefix) {
+            return aPrefix ? -1 : 1;
+        }
+
+        return a < b ? -1 : 1;
+    });
 
     return names;
 }
