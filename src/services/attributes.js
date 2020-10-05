@@ -2,7 +2,6 @@
 
 const repository = require('./repository');
 const sql = require('./sql');
-const utils = require('./utils');
 const Attribute = require('../entities/attribute');
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];

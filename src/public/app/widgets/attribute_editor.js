@@ -71,106 +71,6 @@ const TPL = `
 </div>
 `;
 
-const mentionSetup = {
-    feeds: [
-        {
-            marker: '@',
-            feed: queryText => noteAutocompleteService.autocompleteSourceForCKEditor(queryText),
-            itemRenderer: item => {
-                const itemElement = document.createElement('button');
-
-                itemElement.innerHTML = `${item.highlightedNotePathTitle} `;
-
-                return itemElement;
-            },
-            minimumCharacters: 0
-        },
-        {
-            marker: '#',
-            feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=label&query=${encodeURIComponent(queryText)}`);
-
-                return names.map(name => {
-                    return {
-                        id: '#' + name,
-                        name: name
-                    }
-                });
-            },
-            minimumCharacters: 0,
-            attributeMention: true
-        },
-        {
-            marker: '~',
-            feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=relation&query=${encodeURIComponent(queryText)}`);
-
-                return names.map(name => {
-                    return {
-                        id: '~' + name,
-                        name: name
-                    }
-                });
-            },
-            minimumCharacters: 0,
-            attributeMention: true
-        }
-    ]
-};
-
-const editorConfig = {
-    removePlugins: [
-        'Enter',
-        'ShiftEnter',
-        'Heading',
-        'Link',
-        'Autoformat',
-        'Bold',
-        'Italic',
-        'Underline',
-        'Strikethrough',
-        'Code',
-        'Superscript',
-        'Subscript',
-        'BlockQuote',
-        'Image',
-        'ImageCaption',
-        'ImageStyle',
-        'ImageToolbar',
-        'ImageUpload',
-        'ImageResize',
-        'List',
-        'TodoList',
-        'PasteFromOffice',
-        'Table',
-        'TableToolbar',
-        'TableProperties',
-        'TableCellProperties',
-        'Indent',
-        'IndentBlock',
-        'BlockToolbar',
-        'ParagraphButtonUI',
-        'HeadingButtonsUI',
-        'UploadimagePlugin',
-        'InternalLinkPlugin',
-        'MarkdownImportPlugin',
-        'CuttonotePlugin',
-        'TextTransformation',
-        'Font',
-        'FontColor',
-        'FontBackgroundColor',
-        'CodeBlock',
-        'SelectAll',
-        'IncludeNote',
-        'CutToNote'
-    ],
-    toolbar: {
-        items: []
-    },
-    placeholder: "Type the labels and relations here",
-    mention: mentionSetup
-};
-
 export default class AttributeEditorWidget extends TabAwareWidget {
     constructor(attributeDetailWidget) {
         super();
@@ -331,7 +231,125 @@ export default class AttributeEditorWidget extends TabAwareWidget {
 
         this.$editor.on("click", e => this.handleEditorClick(e));
 
-        this.textEditor = await BalloonEditor.create(this.$editor[0], editorConfig);
+        this.textEditor = await BalloonEditor.create(this.$editor[0], {
+            removePlugins: [
+                'Enter',
+                'ShiftEnter',
+                'Heading',
+                'Link',
+                'Autoformat',
+                'Bold',
+                'Italic',
+                'Underline',
+                'Strikethrough',
+                'Code',
+                'Superscript',
+                'Subscript',
+                'BlockQuote',
+                'Image',
+                'ImageCaption',
+                'ImageStyle',
+                'ImageToolbar',
+                'ImageUpload',
+                'ImageResize',
+                'List',
+                'TodoList',
+                'PasteFromOffice',
+                'Table',
+                'TableToolbar',
+                'TableProperties',
+                'TableCellProperties',
+                'Indent',
+                'IndentBlock',
+                'BlockToolbar',
+                'ParagraphButtonUI',
+                'HeadingButtonsUI',
+                'UploadimagePlugin',
+                'InternalLinkPlugin',
+                'MarkdownImportPlugin',
+                'CuttonotePlugin',
+                'TextTransformation',
+                'Font',
+                'FontColor',
+                'FontBackgroundColor',
+                'CodeBlock',
+                'SelectAll',
+                'IncludeNote',
+                'CutToNote'
+            ],
+            toolbar: {
+                items: []
+            },
+            placeholder: "Type the labels and relations here",
+            mention: {
+                feeds: [
+                    {
+                        marker: '@',
+                        feed: queryText => noteAutocompleteService.autocompleteSourceForCKEditor(queryText),
+                        itemRenderer: item => {
+                            const itemElement = document.createElement('button');
+
+                            itemElement.innerHTML = `${item.highlightedNotePathTitle} `;
+
+                            return itemElement;
+                        },
+                        minimumCharacters: 0
+                    },
+                    {
+                        marker: '#',
+                        feed: async queryText => {
+                            const names = await server.get(`attributes/names/?type=label&query=${encodeURIComponent(queryText)}`);
+
+                            return names.map(name => {
+                                return {
+                                    id: '#' + name,
+                                    name: name
+                                }
+                            });
+                        },
+                        minimumCharacters: 0,
+                        attributeMention: true
+                    },
+                    {
+                        marker: '~',
+                        feed: async queryText => {
+                            const names = await server.get(`attributes/names/?type=relation&query=${encodeURIComponent(queryText)}`);
+
+                            return names.map(name => {
+                                return {
+                                    id: '~' + name,
+                                    name: name
+                                }
+                            });
+                        },
+                        minimumCharacters: 0,
+                        attributeMention: true
+                    },
+                    {
+                        marker: '=',
+                        feed: async queryText => {
+                            const attr = this.getCurrentAttr();
+
+                            console.log("= attr", attr);
+
+                            const names = await server.get(`attributes/values/${encodeURIComponent(attr.name)}`);
+
+                            console.log("names", names);
+
+                            return names.map(name => {
+                                return {
+                                    id: '=' + name,
+                                    name: ' ' + name
+                                }
+                            });
+                        },
+                        minimumCharacters: 0,
+                        attributeMention: true
+                    }
+                ]
+            }
+        });
+
         this.textEditor.model.document.on('change:data', () => this.dataChanged());
 
         // disable spellcheck for attribute editor
@@ -356,51 +374,52 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    async handleEditorClick(e) {
+    getCurrentAttr() {
         const pos = this.textEditor.model.document.selection.getFirstPosition();
 
-        if (pos && pos.textNode && pos.textNode.data) {
-            const clickIndex = this.getClickIndex(pos);
+        if (!pos || !pos.textNode || !pos.textNode.data) {
+            console.log("no pos", pos, pos.textNode);
 
-            let parsedAttrs;
-
-            try {
-                parsedAttrs = attributesParser.lexAndParse(this.getPreprocessedData(), true);
-            }
-            catch (e) {
-                // the input is incorrect because user messed up with it and now needs to fix it manually
-                return null;
-            }
-
-            let matchedAttr = null;
-
-            for (const attr of parsedAttrs) {
-                if (clickIndex > attr.startIndex && clickIndex <= attr.endIndex) {
-                    matchedAttr = attr;
-                    break;
-                }
-            }
-
-            setTimeout(() => {
-                if (matchedAttr) {
-                    this.$editor.tooltip('hide');
-
-                    this.attributeDetailWidget.showAttributeDetail({
-                        allAttributes: parsedAttrs,
-                        attribute: matchedAttr,
-                        isOwned: true,
-                        x: e.pageX,
-                        y: e.pageY
-                    });
-                }
-                else {
-                    this.showHelpTooltip();
-                }
-            }, 100);
+            return;
         }
-        else {
-            this.showHelpTooltip();
+
+        const clickIndex = this.getClickIndex(pos);
+
+        let parsedAttrs;
+
+        try {
+            parsedAttrs = attributesParser.lexAndParse(this.getPreprocessedData(), {
+                allowEmptyValues: true
+            });
+        } catch (e) {
+            console.log(e);
+
+            // the input is incorrect because user messed up with it and now needs to fix it manually
+            return null;
         }
+
+        return parsedAttrs.find(attr => clickIndex > attr.startIndex && clickIndex <= attr.endIndex);
+    }
+
+    async handleEditorClick(e) {
+        const matchedAttr = this.getCurrentAttr();
+
+        setTimeout(() => {
+            if (matchedAttr) {
+                this.$editor.tooltip('hide');
+
+                this.attributeDetailWidget.showAttributeDetail({
+                    allAttributes: parsedAttrs,
+                    attribute: matchedAttr,
+                    isOwned: true,
+                    x: e.pageX,
+                    y: e.pageY
+                });
+            }
+            else {
+                this.showHelpTooltip();
+            }
+        }, 100);
     }
 
     showHelpTooltip() {

@@ -117,7 +117,7 @@ function checkAttributeName(attrName) {
     }
 }
 
-function parse(tokens, str, allowEmptyRelations = false) {
+function parse(tokens, str, opts) {console.log("tokens", tokens);
     const attrs = [];
 
     function context(i) {
@@ -162,14 +162,22 @@ function parse(tokens, str, allowEmptyRelations = false) {
             };
 
             if (i + 1 < tokens.length && tokens[i + 1].text === "=") {
-                if (i + 2 >= tokens.length) {
-                    throw new Error(`Missing value for label "${text}" in ${context(i)}`);
+                if (i + 2 >= tokens.length || tokens[i + 2].text.startsWith('#')) {
+                    if (opts.allowEmptyValues) {
+                        attr.endIndex = tokens[i + 1].endIndex + 1;
+
+                        i++;
+                    }
+                    else {
+                        throw new Error(`Missing value for label "${text}" in ${context(i)}`);
+                    }
                 }
+                else {
+                    i += 2;
 
-                i += 2;
-
-                attr.value = tokens[i].text;
-                attr.endIndex = tokens[i].endIndex;
+                    attr.value = tokens[i].text;
+                    attr.endIndex = tokens[i].endIndex;
+                }
             }
 
             attrs.push(attr);
@@ -190,7 +198,7 @@ function parse(tokens, str, allowEmptyRelations = false) {
             attrs.push(attr);
 
             if (i + 2 >= tokens.length || tokens[i + 1].text !== '=') {
-                if (allowEmptyRelations) {
+                if (opts.allowEmptyValues) {
                     break;
                 }
                 else {
@@ -218,10 +226,14 @@ function parse(tokens, str, allowEmptyRelations = false) {
     return attrs;
 }
 
-function lexAndParse(str, allowEmptyRelations = false) {
+function lexAndParse(str, opts) {
+    const options = Object.assign({
+        allowEmptyValues: false
+    }, opts);
+
     const tokens = lex(str);
 
-    return parse(tokens, str, allowEmptyRelations);
+    return parse(tokens, str, options);
 }
 
 export default {
