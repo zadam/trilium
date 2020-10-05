@@ -38,6 +38,10 @@ const TPL = `
         cursor: text !important;
     }
     
+    .note-detail-editable-text *:first-child {
+        margin-top: 0 !important;
+    }
+    
     .note-detail-editable-text h1 { font-size: 2.0em; }
     .note-detail-editable-text h2 { font-size: 1.8em; }
     .note-detail-editable-text h3 { font-size: 1.6em; }
@@ -58,10 +62,6 @@ const TPL = `
         box-shadow: none !important;
         /* This is because with empty content height of editor is 0 and it's impossible to click into it */
         min-height: 500px;
-    }
-    
-    .note-detail-editable-text p:first-child, .note-detail-editable-text::before {
-        margin-top: 0;
     }
     </style>
 
