@@ -229,6 +229,7 @@ function exportToZip(taskContext, branch, format, res) {
                 content = `<html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="${cssUrl}">
 </head>
 <body>
@@ -356,6 +357,7 @@ ${content}
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <frameset cols="25%,75%">
     <frame name="navigation" src="navigation.html">
