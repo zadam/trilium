@@ -23,17 +23,17 @@ function protectNoteRevisions(note) {
 
 /**
  * @param {Note} note
- * @return {NoteRevision}
+ * @return {NoteRevision|null}
  */
 function createNoteRevision(note) {
     if (note.hasLabel("disableVersioning")) {
-        return;
+        return null;
     }
 
     const content = note.getContent();
 
-    if (!content) {
-        return;
+    if (!content || (Buffer.isBuffer(content) && content.byteLength === 0)) {
+        return null;
     }
 
     const contentMetadata = note.getContentMetadata();

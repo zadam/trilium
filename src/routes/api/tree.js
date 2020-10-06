@@ -71,8 +71,17 @@ function getTree(req) {
                   JOIN treeWithDescendantsAndAscendants ON branches.noteId = treeWithDescendantsAndAscendants.noteId
                 WHERE branches.isDeleted = 0
                   AND branches.parentNoteId != ?
+            ),
+            treeWithDescendantsAscendantsAndTemplates AS (
+                SELECT noteId FROM treeWithDescendantsAndAscendants
+                UNION
+                SELECT attributes.value FROM attributes
+                   JOIN treeWithDescendantsAscendantsAndTemplates ON attributes.noteId = treeWithDescendantsAscendantsAndTemplates.noteId
+                WHERE attributes.isDeleted = 0
+                    AND attributes.type = 'relation'
+                    AND attributes.name = 'template'
             )
-        SELECT noteId FROM treeWithDescendantsAndAscendants`, [subTreeNoteId, subTreeNoteId]);
+        SELECT noteId FROM treeWithDescendantsAscendantsAndTemplates`, [subTreeNoteId, subTreeNoteId]);
 
     noteIds.push(subTreeNoteId);
 

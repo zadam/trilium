@@ -49,6 +49,10 @@ function isInAncestor(noteId, ancestorNoteId) {
 
     const note = noteCache.notes[noteId];
 
+    if (!note) {
+        return false;
+    }
+
     for (const parentNote of note.parents) {
         if (isInAncestor(parentNote.noteId, ancestorNoteId)) {
             return true;

@@ -12,9 +12,11 @@ const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 
 function getSectorHashes(tableName, primaryKeyName, whereBranch) {
-    const hashes = sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName} `
-        + (whereBranch ? `WHERE ${whereBranch} ` : '')
-        + ` ORDER BY ${primaryKeyName}`);
+    const hashes = sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName}`
+        + (whereBranch ? ` WHERE ${whereBranch} ` : ''));
+
+    // sorting is faster in memory
+    hashes.sort((a, b) => a.id < b.id ? -1 : 1);
 
     const map = {};
 
