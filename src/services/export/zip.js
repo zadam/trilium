@@ -226,11 +226,13 @@ function exportToZip(taskContext, branch, format, res) {
             if (!content.substr(0, 100).toLowerCase().includes("<html")) {
                 const cssUrl = "../".repeat(noteMeta.notePath.length - 1) + 'style.css';
 
+                // <base> element will make sure external links are openable - https://github.com/zadam/trilium/issues/1289#issuecomment-704066809
                 content = `<html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="${cssUrl}">
+    <base target="_parent">
 </head>
 <body>
   <h1>${utils.escapeHtml(title)}</h1>
