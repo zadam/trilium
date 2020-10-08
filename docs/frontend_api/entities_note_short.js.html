@@ -335,7 +335,7 @@ class NoteShort {
     getAttribute(type, name) {
         const attributes = this.getAttributes(type, name);
 
-        return attributes.length > 0 ? attributes[0] : 0;
+        return attributes.length > 0 ? attributes[0] : null;
     }
 
     /**
