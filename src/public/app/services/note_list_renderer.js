@@ -36,6 +36,8 @@ const TPL = `
     <style>
     .note-list {
         overflow: hidden;
+        position: relative;
+        height: 100%;
     }
     
     .note-book-card {
@@ -70,7 +72,37 @@ const TPL = `
     .note-book-title {
         flex-grow: 0;
     }
+    
+    .note-list-container {
+        height: 100%;
+        overflow: auto;
+    }
+    
+    .note-expander {
+        font-size: x-large;
+        position: relative;
+        top: 2px;
+        cursor: pointer;
+    }
     </style>
+    
+    <div class="btn-group floating-button" style="right: 20px; top: 10px;">
+        <button type="button"
+                class="expand-children-button btn icon-button bx bx-move-vertical"
+                title="Expand all children"></button>
+
+        &nbsp;
+
+        <button type="button"
+                class="list-view-button btn icon-button bx bx-menu"
+                title="List view"></button>
+
+        &nbsp;
+
+        <button type="button"
+                class="grid-view-button btn icon-button bx bx-grid-alt"
+                title="Grid view"></button>
+    </div>
     
     <div class="note-list-container"></div>
 </div>`;
@@ -130,7 +162,8 @@ async function renderList(notes, parentNote = null) {
     return $noteList;
 }
 
-async function renderNote(note) {
+// TODO: we should also render (promoted) attributes
+async function renderNote(note, renderContent) {
     const notePath = /*this.notePath + '/' + */ note.noteId;
 
     const $content = $('<div class="note-book-content">')
@@ -139,34 +172,40 @@ async function renderNote(note) {
     const $card = $('<div class="note-book-card">')
         .attr('data-note-id', note.noteId)
         .css("flex-basis", ZOOMS[zoomLevel].width)
-        .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(notePath, {showTooltip: false})))
+        .append(
+            $('<h5 class="note-book-title">')
+                .append('<span class="note-expander bx bx-chevron-right"></span>')
+                .append(await linkService.createNoteLink(notePath, {showTooltip: false}))
+        )
         .append($content);
 
-    try {
-        const {type, renderedContent} = await noteContentRenderer.getRenderedContent(note);
+    if (renderContent) {
+        try {
+            const {type, renderedContent} = await noteContentRenderer.getRenderedContent(note);
 
-        $card.addClass("type-" + type);
-        $content.append(renderedContent);
-    } catch (e) {
-        console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
+            $card.addClass("type-" + type);
+            $content.append(renderedContent);
+        } catch (e) {
+            console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
 
-        $content.append("rendering error");
-    }
+            $content.append("rendering error");
+        }
 
-    const imageLinks = note.getRelations('imageLink');
+        const imageLinks = note.getRelations('imageLink');
 
-    const childCount = note.getChildNoteIds()
-        .filter(childNoteId => !imageLinks.find(rel => rel.value === childNoteId))
-        .length;
+        const childCount = note.getChildNoteIds()
+            .filter(childNoteId => !imageLinks.find(rel => rel.value === childNoteId))
+            .length;
 
-    if (childCount > 0) {
-        const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
+        if (childCount > 0) {
+            const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
 
-        $card.append($('<div class="note-book-children">')
-            .append($(`<a class="note-book-open-children-button no-print" href="javascript:">+ Show ${label}</a>`))
-            .append($(`<a class="note-book-hide-children-button no-print" href="javascript:">- Hide ${label}</a>`).hide())
-            .append($('<div class="note-book-children-content">'))
-        );
+            $card.append($('<div class="note-book-children">')
+                .append($(`<a class="note-book-open-children-button no-print" href="javascript:">+ Show ${label}</a>`))
+                .append($(`<a class="note-book-hide-children-button no-print" href="javascript:">- Hide ${label}</a>`).hide())
+                .append($('<div class="note-book-children-content">'))
+            );
+        }
     }
 
     return $card;

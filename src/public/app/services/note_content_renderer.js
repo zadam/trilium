@@ -26,7 +26,7 @@ async function getRenderedContent(note) {
     }
     else if (type === 'file' || type === 'pdf') {
         function getFileUrl() {
-            return utils.getUrlForDownload("api/notes/" + note.noteId + "/download");
+            return utils.getUrlForDownload(`api/notes/${note.noteId}/download`);
         }
 
         const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
@@ -51,7 +51,7 @@ async function getRenderedContent(note) {
 
         if (type === 'pdf') {
             const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; flex-grow: 100;"></iframe>');
-            $pdfPreview.attr("src", utils.getUrlForDownload("api/notes/" + note.noteId + "/open"));
+            $pdfPreview.attr("src", utils.getUrlForDownload(`api/notes/${note.noteId}/open`));
 
             $rendered.append($pdfPreview);
         }

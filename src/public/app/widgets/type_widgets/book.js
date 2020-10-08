@@ -8,6 +8,8 @@ const TPL = `
         height: 100%;
         padding: 0 10px 10px 10px;
         position: relative;
+        display: flex;
+        flex-direction: column;
     }
     
     .note-book-auto-message {
@@ -19,8 +21,9 @@ const TPL = `
         margin-top: 5px;
     }
     
-    .note-book-content {
+    .note-detail-book-content {
         flex-grow: 1;
+        min-height: 0;
     }
     </style>
 
