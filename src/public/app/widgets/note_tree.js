@@ -369,8 +369,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     data.dataTransfer.setData("text", JSON.stringify(notes));
                     return true; // allow dragging to start
                 },
-                dragEnter: (node, data) => true, // allow drop on any node
-                dragOver: (node, data) => true,
+                dragEnter: (node, data) => node.data.noteType !== 'search',
                 dragDrop: async (node, data) => {
                     if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
                         (['after', 'before'].includes(data.hitMode)
@@ -1154,6 +1153,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         utils.assertArguments(branchId);
 
         const branch = treeCache.getBranch(branchId);
+
+        if (!branch) {
+            // in case of virtual branches there's nothing to update
+            return;
+        }
+
         branch.isExpanded = isExpanded;
 
         await server.put(`branches/${branchId}/expanded/${isExpanded ? 1 : 0}`);
