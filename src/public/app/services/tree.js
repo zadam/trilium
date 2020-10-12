@@ -62,7 +62,7 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
 
             if (!parents.length) {
                 if (logErrors) {
-                    ws.logError(`No parents found for ${childNoteId}`);
+                    ws.logError(`No parents found for ${childNoteId} (${child.title})`);
                 }
 
                 return;
@@ -70,7 +70,9 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
                 if (logErrors) {
-                    console.log(utils.now(), `Did not find parent ${parentNoteId} for child ${childNoteId}, available parents: ${parents.map(p => p.noteId)}`);
+                    const parent = treeCache.getNoteFromCache(parentNoteId);
+
+                    console.log(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}`);
                 }
 
                 const someNotePath = getSomeNotePath(parents[0]);
@@ -113,7 +115,7 @@ function getSomeNotePath(note) {
         const parents = cur.getParentNotes();
 
         if (!parents.length) {
-            console.error(`Can't find parents for note ${cur.noteId}`);
+            logError(`Can't find parents for note ${cur.noteId}`);
             return;
         }
 
@@ -196,7 +198,7 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
 
 function getNotePath(node) {
     if (!node) {
-        console.error("Node is null");
+        logError("Node is null");
         return "";
     }
 

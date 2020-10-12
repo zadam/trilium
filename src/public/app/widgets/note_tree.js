@@ -406,7 +406,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             notes = JSON.parse(jsonStr);
                         }
                         catch (e) {
-                            console.error(`Cannot parse ${jsonStr} into notes for drop`);
+                            logError(`Cannot parse ${jsonStr} into notes for drop`);
                             return;
                         }
 
@@ -809,7 +809,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         if (!resolvedNotePathSegments) {
             if (logErrors) {
-                console.error("Could not find run path for notePath:", notePath);
+                logError("Could not find run path for notePath:", notePath);
             }
 
             return;
@@ -1152,11 +1152,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async setExpanded(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
-        const branch = treeCache.getBranch(branchId);
+        const branch = treeCache.getBranch(branchId, true);
 
         if (!branch) {
-            // in case of virtual branches there's nothing to update
-            return;
+            if (branchId && branchId.startsWith('virt')) {
+                // in case of virtual branches there's nothing to update
+                return;
+            }
+            else {
+                logError(`Cannot find branch=${branchId}`);
+                return;
+            }
         }
 
         branch.isExpanded = isExpanded;

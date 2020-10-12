@@ -51,7 +51,7 @@ $form.on('submit', () => {
         treeCache.getBranchId(parentNoteId, noteId).then(branchId => moveNotesTo(branchId));
     }
     else {
-        console.error("No path to move to.");
+        logError("No path to move to.");
     }
 
     return false;

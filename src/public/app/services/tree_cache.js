@@ -267,7 +267,7 @@ class TreeCache {
     getBranch(branchId, silentNotFoundError = false) {
         if (!(branchId in this.branches)) {
             if (!silentNotFoundError) {
-                console.error(`Not existing branch ${branchId}`);
+                logError(`Not existing branch ${branchId}`);
             }
         }
         else {
@@ -283,7 +283,7 @@ class TreeCache {
         const child = await this.getNote(childNoteId);
 
         if (!child) {
-            console.error(`Could not find branchId for parent=${parentNoteId}, child=${childNoteId} since child does not exist`);
+            logError(`Could not find branchId for parent=${parentNoteId}, child=${childNoteId} since child does not exist`);
 
             return null;
         }

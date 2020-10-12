@@ -11,7 +11,7 @@ function getNotePathFromUrl(url) {
 
 async function createNoteLink(notePath, options = {}) {
     if (!notePath || !notePath.trim()) {
-        console.error("Missing note path");
+        logError("Missing note path");
 
         return $("<span>").text("[missing note]");
     }

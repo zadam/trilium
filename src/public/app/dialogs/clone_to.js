@@ -61,7 +61,7 @@ $form.on('submit', () => {
         cloneNotesTo(notePath);
     }
     else {
-        console.error("No path to clone to.");
+        logError("No path to clone to.");
     }
 
     return false;

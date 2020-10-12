@@ -36,7 +36,7 @@ class TabContext extends Component {
             resolvedNotePath = await treeService.resolveNotePath(inputNotePath);
 
             if (!resolvedNotePath) {
-                console.error(`Cannot resolve note path ${inputNotePath}`);
+                logError(`Cannot resolve note path ${inputNotePath}`);
                 return;
             }
 
