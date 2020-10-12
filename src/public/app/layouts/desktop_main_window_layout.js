@@ -77,6 +77,17 @@ const RIGHT_PANE_CSS = `
     text-decoration: none;
 }
 
+#right-pane .widget-toggle-button {
+    cursor: pointer;
+    color: var(--main-text-color) !important;
+    position: relative;
+    top: 2px;
+}
+
+#right-pane .widget-toggle-button:hover {
+    text-decoration: none !important;
+}
+
 #right-pane .body-wrapper {
     overflow: auto;
 }
