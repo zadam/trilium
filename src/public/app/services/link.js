@@ -149,6 +149,18 @@ async function loadReferenceLinkTitle(noteId, $el) {
 $(document).on('click', "a", goToLink);
 $(document).on('auxclick', "a", goToLink); // to handle middle button
 $(document).on('contextmenu', 'a', linkContextMenu);
+$(document).on('dblclick', "a", e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $link = $(e.target).closest("a");
+
+    const address = $link.attr('href');
+
+    if (address && address.startsWith('http')) {
+        window.open(address, '_blank');
+    }
+});
 
 export default {
     getNotePathFromUrl,
