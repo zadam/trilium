@@ -69,7 +69,7 @@ class TreeContextMenu {
             { title: 'Search in subtree <kbd data-command="searchInSubtree"></kbd>', command: "searchInSubtree", uiIcon: "search",
                 enabled: notSearch && noSelectedNotes },
             isHoisted ? null : { title: 'Hoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
-            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="ToggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "arrow-up" },
+            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="ToggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "arrow-from-bottom" },
             { title: 'Edit branch prefix <kbd data-command="editBranchPrefix"></kbd>', command: "editBranchPrefix", uiIcon: "empty",
                 enabled: isNotRoot && parentNotSearch && noSelectedNotes},
             { title: "Advanced", uiIcon: "empty", enabled: true, items: [

@@ -460,7 +460,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     && node.data.noteId === hoistedNoteService.getHoistedNoteId()
                     && $span.find('.unhoist-button').length === 0) {
 
-                    const unhoistButton = $('<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree">[<a class="unhoist-button">unhoist</a>]</span>');
+                    const action = await keyboardActionsService.getAction('unhoist');
+                    let shortcuts = action.effectiveShortcuts.join(',');
+                    shortcuts = shortcuts ? `(${shortcuts})` : '';
+
+                    const unhoistButton = $(`<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree ${shortcuts}">[<a class="unhoist-button">unhoist</a>]</span>`);
 
                     // prepending since appending could push out (when note title is too long)
                     // the button too much to the right so that it's not visible
