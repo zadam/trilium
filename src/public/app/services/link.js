@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
 import treeCache from "./tree_cache.js";
+import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
@@ -89,9 +90,16 @@ function goToLink(e) {
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
         ) {
             const address = $link.attr('href');
+console.log("address", address);
+            if (address) {
+                if (address.toLowerCase().startsWith('http')) {
+                    window.open(address, '_blank');
+                }
+                else if (address.toLowerCase().startsWith('file:') && utils.isElectron()) {
+                    const electron = utils.dynamicRequire('electron');
 
-            if (address && address.startsWith('http')) {
-                window.open(address, '_blank');
+                    electron.shell.openPath(address);
+                }
             }
         }
     }

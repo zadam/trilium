@@ -65,10 +65,6 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         this.$content.html('');
     }
 
-    scrollToTop() {
-        this.$content.scrollTop(0);
-    }
-
     async doRefresh(note) {
         const noteComplement = await treeCache.getNoteComplement(note.noteId);
 

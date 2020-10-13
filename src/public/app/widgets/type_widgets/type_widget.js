@@ -25,6 +25,12 @@ export default class TypeWidget extends TabAwareWidget {
         }
     }
 
+    async noteSwitched() {
+        this.scrollToTop();
+
+        await super.noteSwitched();
+    }
+
     isActive() {
         return this.$widget.is(":visible");
     }
