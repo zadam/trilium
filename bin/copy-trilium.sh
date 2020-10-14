@@ -7,10 +7,6 @@ fi
 
 npm run webpack
 
-# problem with circular dependencies: https://github.com/webpack/webpack/issues/9173
-# source issue: https://github.com/zadam/trilium/issues/1300
-find ./src/public/app-dist -type f -exec sed -i 's/const /var /g' {} +
-
 DIR=$1
 
 rm -rf $DIR
