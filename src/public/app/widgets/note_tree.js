@@ -159,16 +159,6 @@ const TPL = `
 </div>
 `;
 
-const NOTE_TYPE_ICONS = {
-    "file": "bx bx-file",
-    "image": "bx bx-image",
-    "code": "bx bx-code",
-    "render": "bx bx-extension",
-    "search": "bx bx-file-find",
-    "relation-map": "bx bx-map-alt",
-    "book": "bx bx-book"
-};
-
 export default class NoteTreeWidget extends TabAwareWidget {
     constructor(treeName) {
         super();
@@ -562,40 +552,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return noteList;
     }
 
-    getIconClass(note) {
-        const labels = note.getLabels('iconClass');
-
-        return labels.map(l => l.value).join(' ');
-    }
-
     getIcon(note, isFolder) {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
-        const iconClass = this.getIconClass(note);
-
-        if (iconClass) {
-            return iconClass;
-        }
-        else if (note.noteId === 'root') {
-            return "bx bx-chevrons-right";
-        }
-        else if (note.noteId === hoistedNoteId) {
+        if (note.noteId !== 'root' && note.noteId === hoistedNoteId) {
             return "bx bxs-arrow-from-bottom";
         }
-        else if (note.type === 'text') {
-            if (isFolder) {
-                return "bx bx-folder";
-            }
-            else {
-                return "bx bx-note";
-            }
-        }
-        else if (note.type === 'code' && note.mime.startsWith('text/x-sql')) {
-            return "bx bx-data";
-        }
-        else {
-            return NOTE_TYPE_ICONS[note.type];
-        }
+
+        return note.getIcon(isFolder);
     }
 
     updateNode(node) {
