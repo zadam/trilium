@@ -62,14 +62,19 @@ const RIGHT_PANE_CSS = `
 }
 
 #right-pane .widget-header-action {
-    color: var(--link-color) !important;
     cursor: pointer;
+    color: var(--main-text-color) !important;
+    text-decoration: none;
+    font-size: large;
+    position: relative;
+    top: 2px;
 }
 
 #right-pane .widget-help {
     color: var(--muted-text-color);
     position: relative;
     top: 2px;
+    font-size: large;
 }
 
 #right-pane .widget-help.no-link:hover {
@@ -82,6 +87,7 @@ const RIGHT_PANE_CSS = `
     color: var(--main-text-color) !important;
     position: relative;
     top: 2px;
+    font-size: large;
 }
 
 #right-pane .widget-toggle-button:hover {
