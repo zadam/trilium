@@ -1,6 +1,7 @@
 "use strict";
 
 const utils = require('./utils');
+const log = require('./log');
 const dataEncryptionService = require('./data_encryption');
 const cls = require('./cls');
 
@@ -35,10 +36,15 @@ function isProtectedSessionAvailable() {
 }
 
 function decryptNotes(notes) {
-    for (const note of notes) {
-        if (note.isProtected) {
-            note.title = decryptString(note.title);
+    try {
+        for (const note of notes) {
+            if (note.isProtected) {
+                note.title = decryptString(note.title);
+            }
         }
+    }
+    catch (e) {
+        log.error(`Could not decrypt protected notes: ${e.message} ${e.stack}`);
     }
 }
 

@@ -4,6 +4,7 @@ const sql = require('../sql.js');
 const eventService = require('../events.js');
 const noteCache = require('./note_cache');
 const sqlInit = require('../sql_init');
+const log = require('../log');
 const Note = require('./entities/note');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
@@ -147,7 +148,12 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 });
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
-    noteCache.decryptProtectedNotes();
+    try {
+        noteCache.decryptProtectedNotes();
+    }
+    catch (e) {
+        log.error(`Could not decrypt protected notes: ${e.message} ${e.stack}`);
+    }
 });
 
 module.exports = {
