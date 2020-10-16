@@ -35,6 +35,14 @@ function saveNote(req) {
         mime: 'text/html'
     });
 
+    if (req.body.label && req.body.label.trim()){
+        let value;
+        if (req.body.labelValue && req.body.labelValue.trim()){
+            value = req.body.labelValue;
+        }
+        note.setLabel(req.body.label, value);
+    }
+
     return {
         noteId: note.noteId,
         branchId: branch.branchId
