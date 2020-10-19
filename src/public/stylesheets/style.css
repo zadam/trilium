@@ -111,6 +111,10 @@ span.fancytree-node.muted { opacity: 0.6; }
 
 .zen-mode #center-pane {
     width: 100% !important;
+    /* limit max width to improve readability */
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .ui-autocomplete {
