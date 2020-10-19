@@ -82,8 +82,10 @@ class TabContext extends Component {
             });
         }
 
-        // close dangling autocompletes after closing the tab
-        $(".aa-input").autocomplete("close");
+        if (utils.isDesktop()) {
+            // close dangling autocompletes after closing the tab
+            $(".aa-input").autocomplete("close");
+        }
     }
 
     /** @property {NoteShort} */
