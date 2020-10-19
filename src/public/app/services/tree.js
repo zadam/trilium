@@ -62,7 +62,7 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
 
             if (!parents.length) {
                 if (logErrors) {
-                    ws.logError(`No parents found for ${childNoteId} (${child.title})`);
+                    ws.logError(`No parents found for ${childNoteId} (${child.title}) for path ${notePath}`);
                 }
 
                 return;
@@ -83,8 +83,6 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
                     for (const noteId of pathToRoot) {
                         effectivePath.push(noteId);
                     }
-
-                    effectivePath.push('root');
                 }
 
                 break;

@@ -173,6 +173,9 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             }
             else if (definition.labelType === 'boolean') {
                 $input.prop("type", "checkbox");
+                // hack, without this the checkbox is invisible
+                // we should be using a different bootstrap structure for checkboxes
+                $input.css('width', '80px');
 
                 if (valueAttr.value === "true") {
                     $input.prop("checked", "checked");

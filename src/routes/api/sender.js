@@ -35,6 +35,12 @@ function saveNote(req) {
         mime: 'text/html'
     });
 
+    if (req.body.labels) {
+        for (const {name, value} of req.body.labels) {
+            note.setLabel(name, value);
+        }
+    }
+
     return {
         noteId: note.noteId,
         branchId: branch.branchId

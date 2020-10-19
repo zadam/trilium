@@ -47,6 +47,9 @@ class TabContext extends Component {
             if (await hoistedNoteService.checkNoteAccess(resolvedNotePath) === false) {
                 return; // note is outside of hoisted subtree and user chose not to unhoist
             }
+
+            // if user choise to unhoist, cache was reloaded, but might not contain this note (since it's on unexpanded path)
+            await treeCache.getNote(noteId);
         }
 
         await this.triggerEvent('beforeNoteSwitch', {tabContext: this});
@@ -78,10 +81,17 @@ class TabContext extends Component {
                 notePath: this.notePath
             });
         }
+
+        // close dangling autocompletes after closing the tab
+        $(".aa-input").autocomplete("close");
     }
 
     /** @property {NoteShort} */
     get note() {
+        if (this.noteId && !(this.noteId in treeCache.notes)) {
+            logError(`Cannot find tabContext's note id='${this.noteId}'`);
+        }
+
         return treeCache.notes[this.noteId];
     }
 
