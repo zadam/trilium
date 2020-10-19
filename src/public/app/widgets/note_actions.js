@@ -126,13 +126,6 @@ export default class NoteActionsWidget extends TabAwareWidget {
             this.$showSourceButton.attr('disabled', 'disabled');
         }
 
-        if (note.type === 'text') {
-            this.$exportNoteButton.removeAttr('disabled');
-        }
-        else {
-            this.$exportNoteButton.attr('disabled', 'disabled');
-        }
-
         this.$protectButton.toggle(!note.isProtected);
         this.$unprotectButton.toggle(!!note.isProtected);
     }
