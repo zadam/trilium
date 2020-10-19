@@ -21,7 +21,7 @@ function sanitize(dirtyHtml) {
             'input': [ 'class', 'type', 'disabled' ],
             'code': [ 'class' ]
         },
-        allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data']
+        allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data', 'evernote']
     });
 }
 
