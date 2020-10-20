@@ -85,35 +85,53 @@ class TreeCache {
         for (const noteRow of noteRows) {
             const {noteId} = noteRow;
 
-            const oldNote = this.notes[noteId];
+            let note = this.notes[noteId];
 
-            if (oldNote) {
-                for (const childNoteId of oldNote.children) {
-                    const childNote = this.notes[childNoteId];
+            if (note) {
+                note.update(noteRow);
 
-                    if (childNote) {
-                        childNote.parents = childNote.parents.filter(p => p !== noteId);
+                // search note doesn't have child branches in database and all the children are virtual branches
+                if (note.type !== 'search') {
+                    for (const childNoteId of note.children) {
+                        const childNote = this.notes[childNoteId];
 
-                        delete this.branches[childNote.parentToBranch[noteId]];
-                        delete childNote.parentToBranch[noteId];
+                        if (childNote) {
+                            childNote.parents = childNote.parents.filter(p => p !== noteId);
+
+                            delete this.branches[childNote.parentToBranch[noteId]];
+                            delete childNote.parentToBranch[noteId];
+                        }
                     }
+
+                    note.children = [];
+                    note.childToBranch = [];
                 }
 
-                for (const parentNoteId of oldNote.parents) {
+                // we want to remove all "real" branches (represented in the database) since those will be created
+                // from branches argument but want to preserve all virtual ones from saved search
+                note.parents = note.parents.filter(parentNoteId => {
                     const parentNote = this.notes[parentNoteId];
+                    const branch = this.branches[parentNote.childToBranch[noteId]];
 
-                    if (parentNote) {
-                        parentNote.children = parentNote.children.filter(p => p !== noteId);
-
-                        delete this.branches[parentNote.childToBranch[noteId]];
-                        delete parentNote.childToBranch[noteId];
+                    if (!parentNote || !branch) {
+                        return false;
                     }
-                }
+
+                    if (branch.fromSearchNote) {
+                        return true;
+                    }
+
+                    parentNote.children = parentNote.children.filter(p => p !== noteId);
+
+                    delete this.branches[parentNote.childToBranch[noteId]];
+                    delete parentNote.childToBranch[noteId];
+
+                    return false;
+                });
             }
-
-            const note = new NoteShort(this, noteRow);
-
-            this.notes[note.noteId] = note;
+            else {
+                this.notes[noteId] = new NoteShort(this, noteRow);
+            }
         }
 
         for (const branchRow of branchRows) {
@@ -187,7 +205,8 @@ class TreeCache {
                     branchId: "virt" + resultNoteId + '-' + note.noteId,
                     noteId: resultNoteId,
                     parentNoteId: note.noteId,
-                    notePosition: (index + 1) * 10
+                    notePosition: (index + 1) * 10,
+                    fromSearchNote: true
                 }));
 
                 // update this note with standard (parent) branches + virtual (children) branches

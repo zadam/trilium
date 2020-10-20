@@ -80,7 +80,7 @@
     "electron": "9.3.2",
     "electron-builder": "22.9.1",
     "electron-packager": "15.1.0",
-    "electron-rebuild": "2.2.0",
+    "electron-rebuild": "2.3.0",
     "esm": "3.2.25",
     "jasmine": "3.6.2",
     "jsdoc": "3.6.6",
