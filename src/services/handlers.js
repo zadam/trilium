@@ -6,17 +6,15 @@ const repository = require('./repository');
 const Attribute = require('../entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
-    const runRelations = note.getRelations(relationName);
+    // same script note can get here with multiple ways, but execute only once
+    const notesToRun = new Set(
+        note.getRelations(relationName)
+            .map(relation => relation.getTargetNote())
+            .filter(note => !!note)
+    );
 
-    for (const relation of runRelations) {
-        const scriptNote = relation.getTargetNote();
-
-        if (scriptNote) {
-            scriptService.executeNoteNoException(scriptNote, { originEntity });
-        }
-        else {
-            log.error(`Target note ${relation.value} of atttribute ${relation.attributeId} has not been found.`);
-        }
+    for (const noteToRun of notesToRun) {
+        scriptService.executeNoteNoException(noteToRun, { originEntity });
     }
 }
 

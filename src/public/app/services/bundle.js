@@ -64,7 +64,7 @@ async function getWidgetBundlesByParent() {
             widget = await executeBundle(bundle);
         }
         catch (e) {
-            console.error("Widget initialization failed: ", e);
+            logError("Widget initialization failed: ", e);
             continue;
         }
 

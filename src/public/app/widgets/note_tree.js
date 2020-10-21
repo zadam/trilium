@@ -159,16 +159,6 @@ const TPL = `
 </div>
 `;
 
-const NOTE_TYPE_ICONS = {
-    "file": "bx bx-file",
-    "image": "bx bx-image",
-    "code": "bx bx-code",
-    "render": "bx bx-extension",
-    "search": "bx bx-file-find",
-    "relation-map": "bx bx-map-alt",
-    "book": "bx bx-book"
-};
-
 export default class NoteTreeWidget extends TabAwareWidget {
     constructor(treeName) {
         super();
@@ -369,8 +359,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     data.dataTransfer.setData("text", JSON.stringify(notes));
                     return true; // allow dragging to start
                 },
-                dragEnter: (node, data) => true, // allow drop on any node
-                dragOver: (node, data) => true,
+                dragEnter: (node, data) => node.data.noteType !== 'search',
                 dragDrop: async (node, data) => {
                     if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
                         (['after', 'before'].includes(data.hitMode)
@@ -407,7 +396,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             notes = JSON.parse(jsonStr);
                         }
                         catch (e) {
-                            console.error(`Cannot parse ${jsonStr} into notes for drop`);
+                            logError(`Cannot parse ${jsonStr} into notes for drop`);
                             return;
                         }
 
@@ -461,7 +450,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     && node.data.noteId === hoistedNoteService.getHoistedNoteId()
                     && $span.find('.unhoist-button').length === 0) {
 
-                    const unhoistButton = $('<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree">[<a class="unhoist-button">unhoist</a>]</span>');
+                    const action = await keyboardActionsService.getAction('unhoist');
+                    let shortcuts = action.effectiveShortcuts.join(',');
+                    shortcuts = shortcuts ? `(${shortcuts})` : '';
+
+                    const unhoistButton = $(`<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree ${shortcuts}">[<a class="unhoist-button">unhoist</a>]</span>`);
 
                     // prepending since appending could push out (when note title is too long)
                     // the button too much to the right so that it's not visible
@@ -559,40 +552,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return noteList;
     }
 
-    getIconClass(note) {
-        const labels = note.getLabels('iconClass');
-
-        return labels.map(l => l.value).join(' ');
-    }
-
     getIcon(note, isFolder) {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
-        const iconClass = this.getIconClass(note);
-
-        if (iconClass) {
-            return iconClass;
-        }
-        else if (note.noteId === 'root') {
-            return "bx bx-chevrons-right";
-        }
-        else if (note.noteId === hoistedNoteId) {
+        if (note.noteId !== 'root' && note.noteId === hoistedNoteId) {
             return "bx bxs-arrow-from-bottom";
         }
-        else if (note.type === 'text') {
-            if (isFolder) {
-                return "bx bx-folder";
-            }
-            else {
-                return "bx bx-note";
-            }
-        }
-        else if (note.type === 'code' && note.mime.startsWith('text/x-sql')) {
-            return "bx bx-data";
-        }
-        else {
-            return NOTE_TYPE_ICONS[note.type];
-        }
+
+        return note.getIcon(isFolder);
     }
 
     updateNode(node) {
@@ -810,7 +777,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         if (!resolvedNotePathSegments) {
             if (logErrors) {
-                console.error("Could not find run path for notePath:", notePath);
+                logError("Could not find run path for notePath:", notePath);
             }
 
             return;
@@ -1153,7 +1120,19 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async setExpanded(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
-        const branch = treeCache.getBranch(branchId);
+        const branch = treeCache.getBranch(branchId, true);
+
+        if (!branch) {
+            if (branchId && branchId.startsWith('virt')) {
+                // in case of virtual branches there's nothing to update
+                return;
+            }
+            else {
+                logError(`Cannot find branch=${branchId}`);
+                return;
+            }
+        }
+
         branch.isExpanded = isExpanded;
 
         await server.put(`branches/${branchId}/expanded/${isExpanded ? 1 : 0}`);

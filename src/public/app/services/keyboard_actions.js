@@ -111,5 +111,6 @@ export default {
 	setElementActionHandler,
 	updateDisplayedShortcuts,
 	setupActionsForElement,
-	getActionsForScope
+	getActionsForScope,
+	getAction
 };

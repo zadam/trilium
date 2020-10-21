@@ -63,6 +63,27 @@ export default class LinkMap {
             noteIds.add(this.note.noteId);
         }
 
+        await treeCache.getNotes(Array.from(noteIds));
+
+        // pre-fetch the link titles, it's important to have hte construction afterwards synchronous
+        // since jsPlumb caculates width of the element
+        const $linkTitles = {};
+
+        for (const noteId of noteIds) {
+            const note = await treeCache.getNote(noteId);
+
+            $linkTitles[noteId] = await linkService.createNoteLink(noteId, {title: note.title});
+
+            $linkTitles[noteId].on('click', e => {
+                try {
+                    $linkTitles[noteId].tooltip('dispose');
+                }
+                catch (e) {}
+
+                linkService.goToLink(e);
+            })
+        }
+
         // preload all notes
         const notes = await treeCache.getNotes(Array.from(noteIds), true);
 
@@ -98,18 +119,15 @@ export default class LinkMap {
                 .addClass("note-box")
                 .prop("id", noteBoxId);
 
-            linkService.createNoteLink(noteId, {title: note.title}).then($link => {
-                $link.on('click', e => {
-                    try {
-                        $link.tooltip('dispose');
-                    }
-                    catch (e) {}
+            const $link = $linkTitles[noteId];
 
-                    linkService.goToLink(e);
-                });
-
-                $noteBox.append($("<span>").addClass("title").append($link));
-            });
+            $noteBox.append(
+                $("<span>")
+                    .addClass(note.getIcon()),
+                $("<span>")
+                    .addClass("title")
+                    .append($link)
+            );
 
             if (noteId === this.note.noteId) {
                 $noteBox.addClass("link-map-active-note");

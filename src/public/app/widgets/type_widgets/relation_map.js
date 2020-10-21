@@ -539,7 +539,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 const note = this.mapData.notes.find(note => note.noteId === noteId);
 
                 if (!note) {
-                    console.error(`Note ${noteId} not found!`);
+                    logError(`Note ${noteId} not found!`);
                     return;
                 }
 

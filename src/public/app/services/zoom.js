@@ -25,6 +25,8 @@ class ZoomService extends Component {
 
     async setZoomFactorAndSave(zoomFactor) {
         if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
+            zoomFactor = Math.round(zoomFactor * 10) / 10;
+
             this.setZoomFactor(zoomFactor);
 
             await options.save('zoomFactor', zoomFactor);

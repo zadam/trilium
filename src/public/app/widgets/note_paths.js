@@ -158,7 +158,9 @@ export default class NotePathsWidget extends TabAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)) {
+        if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)
+            || loadResults.isNoteReloaded(this.noteId)) {
+
             this.refresh();
         }
     }

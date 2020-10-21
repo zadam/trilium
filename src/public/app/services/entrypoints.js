@@ -91,6 +91,10 @@ export default class Entrypoints extends Component {
         }
     }
 
+    async unhoistCommand() {
+        hoistedNoteService.unhoist();
+    }
+
     copyWithoutFormattingCommand() {
         utils.copySelectionToClipboard();
     }

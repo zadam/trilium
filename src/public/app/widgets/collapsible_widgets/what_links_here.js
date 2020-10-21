@@ -15,7 +15,11 @@ export default class WhatLinksHereWidget extends CollapsibleWidget {
     }
 
     get headerActions() {
-        const $showFullButton = $("<a>").append("show link map").addClass('widget-header-action');
+        const $showFullButton = $("<a>")
+            .addClass("bx bx-map-alt")
+            .addClass('widget-header-action')
+            .attr('title', 'Show full link map');
+
         $showFullButton.on('click', async () => {
             const linkMapDialog = await import("../../dialogs/link_map.js");
             linkMapDialog.showDialog();

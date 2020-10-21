@@ -19,8 +19,7 @@ let lastPingTs;
 let syncDataQueue = [];
 
 function logError(message) {
-    console.log(utils.now(), message); // needs to be separate from .trace()
-    console.trace();
+    console.error(utils.now(), message); // needs to be separate from .trace()
 
     if (ws && ws.readyState === 1) {
         ws.send(JSON.stringify({
@@ -30,6 +29,8 @@ function logError(message) {
         }));
     }
 }
+
+window.logError = logError;
 
 function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);

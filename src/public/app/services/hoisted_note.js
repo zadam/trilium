@@ -8,6 +8,10 @@ function getHoistedNoteId() {
 }
 
 async function setHoistedNoteId(noteId) {
+    if (getHoistedNoteId() === noteId) {
+        return;
+    }
+
     await options.save('hoistedNoteId', noteId);
 
     await treeCache.loadInitialTree();

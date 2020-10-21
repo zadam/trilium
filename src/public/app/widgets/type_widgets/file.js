@@ -75,11 +75,17 @@ export default class FileTypeWidget extends TypeWidget {
 
         this.$downloadButton.on('click', () => utils.download(this.getFileUrl()));
 
-        this.$openButton.on('click', () => {
+        this.$openButton.on('click', async () => {
             if (utils.isElectron()) {
-                const open = utils.dynamicRequire("open");
+                const resp = await server.post("notes/" + this.noteId + "/saveToTmpDir");
 
-                open(this.getFileUrl(), {url: true});
+                const electron = utils.dynamicRequire('electron');
+                const res = await electron.shell.openPath(resp.tmpFilePath);
+
+                if (res) {
+                    // fallback in case there's no default application for this file
+                    open(this.getFileUrl(), {url: true});
+                }
             }
             else {
                 window.location.href = this.getFileUrl();

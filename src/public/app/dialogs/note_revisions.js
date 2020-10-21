@@ -157,8 +157,8 @@ async function setContentPane() {
 
         if (fullNoteRevision.content) {
             $table.append($("<tr>").append(
-                $("<th>").text("Preview:"),
-                $("<td>").append(
+                $('<td colspan="2">').append(
+                    $('<div style="font-weight: bold;">').text("Preview:"),
                     $('<pre class="file-preview-content"></pre>')
                         .text(fullNoteRevision.content)
                 )

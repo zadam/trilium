@@ -86,7 +86,7 @@ $form.on('submit', () => {
         textTypeWidget.addLink(notePath, linkTitle);
     }
     else {
-        console.error("No path to add link.");
+        logError("No path to add link.");
     }
 
     return false;

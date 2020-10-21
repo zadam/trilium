@@ -88,6 +88,11 @@ export default class SimilarNotesWidget extends TabAwareWidget {
 
         const similarNotes = await server.get('similar-notes/' + this.noteId);
 
+        if (!similarNotes) {
+            this.toggleInt(false);
+            return;
+        }
+
         this.toggleInt(similarNotes.length > 0);
 
         if (similarNotes.length === 0) {

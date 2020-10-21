@@ -1,6 +1,7 @@
 import treeCache from "../../services/tree_cache.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import treeService from "../../services/tree.js";
+import libraryLoader from "../../services/library_loader.js";
 
 const TPL = `
 <div class="note-detail-readonly-text note-detail-printable">
@@ -65,10 +66,6 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         this.$content.html('');
     }
 
-    scrollToTop() {
-        this.$content.scrollTop(0);
-    }
-
     async doRefresh(note) {
         const noteComplement = await treeCache.getNoteComplement(note.noteId);
 
@@ -86,6 +83,12 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
             this.loadIncludedNote(noteId, $(el));
         });
+
+        if (this.$content.find('span.math-tex').length > 0) {
+            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+
+            renderMathInElement(this.$content[0], {});
+        }
     }
 
     async refreshIncludedNoteEvent({noteId}) {

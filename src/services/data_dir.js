@@ -10,6 +10,7 @@
 
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 
 function getAppDataDir() {
     let appDataDir = os.homedir(); // fallback if OS is not recognized
@@ -43,13 +44,13 @@ function getTriliumDataDir() {
         return process.env.TRILIUM_DATA_DIR;
     }
 
-    const homePath = os.homedir() + "/" + DIR_NAME;
+    const homePath = os.homedir() + path.sep + DIR_NAME;
 
     if (fs.existsSync(homePath)) {
         return homePath;
     }
 
-    const appDataPath = getAppDataDir() + '/' + DIR_NAME;
+    const appDataPath = getAppDataDir() + path.sep + DIR_NAME;
 
     if (!fs.existsSync(appDataPath)) {
         fs.mkdirSync(appDataPath, 0o700);
@@ -59,10 +60,10 @@ function getTriliumDataDir() {
 }
 
 const TRILIUM_DATA_DIR =  getTriliumDataDir();
-const DOCUMENT_PATH = TRILIUM_DATA_DIR + "/document.db";
-const BACKUP_DIR = TRILIUM_DATA_DIR + "/backup";
-const LOG_DIR = TRILIUM_DATA_DIR + "/log";
-const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + "/anonymized-db";
+const DOCUMENT_PATH = TRILIUM_DATA_DIR + path.sep + "document.db";
+const BACKUP_DIR = TRILIUM_DATA_DIR + path.sep + "backup";
+const LOG_DIR = TRILIUM_DATA_DIR + path.sep + "log";
+const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + path.sep + "anonymized-db";
 
 module.exports = {
     TRILIUM_DATA_DIR,

@@ -171,6 +171,7 @@ function register(app) {
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
     route(GET, '/api/notes/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
+    apiRoute(POST, '/api/notes/:noteId/saveToTmpDir', filesRoute.saveToTmpDir);
 
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getEffectiveNoteAttributes);
     apiRoute(PUT, '/api/notes/:noteId/attributes', attributesRoute.updateNoteAttributes);

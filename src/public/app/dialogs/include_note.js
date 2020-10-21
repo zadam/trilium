@@ -46,7 +46,7 @@ $form.on('submit', () => {
         includeNote(notePath);
     }
     else {
-        console.error("No noteId to include.");
+        logError("No noteId to include.");
     }
 
     return false;

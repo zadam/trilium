@@ -353,6 +353,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "unhoist",
+        defaultShortcuts: ["Alt+U"],
+        description: "Unhoist from anywhere",
+        scope: "window"
+    },
+    {
         actionName: "reloadFrontendApp",
         defaultShortcuts: ["F5", "CommandOrControl+R"],
         scope: "window"

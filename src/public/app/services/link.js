@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
 import treeCache from "./tree_cache.js";
+import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
@@ -11,7 +12,7 @@ function getNotePathFromUrl(url) {
 
 async function createNoteLink(notePath, options = {}) {
     if (!notePath || !notePath.trim()) {
-        console.error("Missing note path");
+        logError("Missing note path");
 
         return $("<span>").text("[missing note]");
     }
@@ -89,9 +90,16 @@ function goToLink(e) {
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
         ) {
             const address = $link.attr('href');
+console.log("address", address);
+            if (address) {
+                if (address.toLowerCase().startsWith('http')) {
+                    window.open(address, '_blank');
+                }
+                else if (address.toLowerCase().startsWith('file:') && utils.isElectron()) {
+                    const electron = utils.dynamicRequire('electron');
 
-            if (address && address.startsWith('http')) {
-                window.open(address, '_blank');
+                    electron.shell.openPath(address);
+                }
             }
         }
     }
@@ -149,6 +157,18 @@ async function loadReferenceLinkTitle(noteId, $el) {
 $(document).on('click', "a", goToLink);
 $(document).on('auxclick', "a", goToLink); // to handle middle button
 $(document).on('contextmenu', 'a', linkContextMenu);
+$(document).on('dblclick', "a", e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $link = $(e.target).closest("a");
+
+    const address = $link.attr('href');
+
+    if (address && address.startsWith('http')) {
+        window.open(address, '_blank');
+    }
+});
 
 export default {
     getNotePathFromUrl,

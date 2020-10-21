@@ -48,6 +48,11 @@ const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
 const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
 
+const KATEX = {
+    js: [ "libraries/katex/katex.min.js", "libraries/katex/auto-render.min.js" ],
+    css: [ "libraries/katex/katex.min.css" ]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -95,5 +100,6 @@ export default {
     RELATION_MAP,
     LINK_MAP,
     PRINT_THIS,
-    CALENDAR_WIDGET
+    CALENDAR_WIDGET,
+    KATEX
 }

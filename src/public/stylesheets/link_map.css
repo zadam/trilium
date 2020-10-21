@@ -4,22 +4,21 @@
 }
 
 .link-map-container .note-box {
-    padding: 8px;
+    padding: 0px 8px 8px 8px;
     position: absolute !important;
     background-color: var(--main-background-color);
     color: var(--main-text-color);
     z-index: 4;
     border: 1px solid #666;
-    box-shadow: 2px 2px 19px #999;
     border-radius: 8px;
     opacity: 0.8;
     font-size: 11px;
     width: auto;
-    height: auto;
-    max-width: 200px;
     min-width: 120px;
-    max-height: 100px;
+    max-width: 250px;
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .link-map-container .note-box:hover {
@@ -47,4 +46,21 @@
 
 .link-map-widget .note-box .title {
     font-size: 19px !important;
+    font-weight: 600
+}
+
+#link-map-dialog .note-box .bx {
+    font-size: 24px !important;
+    position: relative;
+    top: 6px;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.link-map-widget .note-box .bx {
+    font-size: 30px !important;
+    position: relative;
+    top: 6px;
+    display: inline-block;
+    margin-right: 5px;
 }
