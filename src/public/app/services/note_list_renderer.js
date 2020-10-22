@@ -96,6 +96,10 @@ const TPL = `
         padding-right: 3px;
         cursor: pointer;
     }
+    
+    .note-list-pager {
+        text-align: center;
+    }
     </style>
     
     <div class="btn-group floating-button" style="right: 20px; top: 10px;">
@@ -121,7 +125,7 @@ const TPL = `
                 class="grid-view-button btn icon-button bx bx-grid-alt"
                 title="Grid view"></button>
     </div>
-    
+
     <div class="note-list-container"></div>
 </div>`;
 
@@ -132,6 +136,49 @@ async function toggleCards(cards, expand) {
         const note = await treeCache.getNote(noteId);
 
         await toggleContent($card, note, expand);
+    }
+}
+
+async function renderPage(parentNote, notes, $container, page, pageSize) {
+    const imageLinks = parentNote ? parentNote.getRelations('imageLink') : [];
+
+    const startIdx = (page - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+
+    const pageNotes = notes.slice(startIdx, Math.min(endIdx, notes.length));
+
+    for (const note of pageNotes) {
+        // image is already visible in the parent note so no need to display it separately in the book
+        if (imageLinks.find(rel => rel.value === note.noteId)) {
+            continue;
+        }
+
+        const $card = await renderNote(note);
+
+        $container.append($card);
+    }
+}
+
+async function renderNoteListContent($noteList, parentNote, notes, page = 1, pageSize = 2) {
+    const $container = $noteList.find('.note-list-container').empty();
+
+    $container.append('<div class="note-list-pager"></div>');
+
+    await renderPage(parentNote, notes, $container, page, pageSize);
+
+    $container.append('<div class="note-list-pager"></div>');
+
+    const $pager = $noteList.find('.note-list-pager');
+
+    for (let i = 1; i <= Math.ceil(notes.length / pageSize); i++) {
+        $pager.append(
+            i === page
+                ? $('<span>').text(i).css('text-decoration', 'underline').css('font-weight', "bold")
+                : $('<a href="javascript:">')
+                    .text(i)
+                    .on('click', () => renderNoteListContent($noteList, parentNote, notes, i, pageSize)),
+            " &nbsp; "
+        );
     }
 }
 
@@ -156,29 +203,7 @@ async function renderList(notes, parentNote = null) {
         await toggleCards($expandedCards, false);
     });
 
-    $noteList.on('click', '.note-book-hide-children-button', async ev => {
-        const $card = $(ev.target).closest('.note-book-card');
-
-        $card.find('.note-book-open-children-button').show();
-        $card.find('.note-book-hide-children-button').hide();
-
-        $card.find('.note-book-children-content').empty();
-    });
-
-    const $container = $noteList.find('.note-list-container');
-
-    const imageLinks = parentNote ? parentNote.getRelations('imageLink') : [];
-
-    for (const note of notes) {
-        // image is already visible in the parent note so no need to display it separately in the book
-        if (imageLinks.find(rel => rel.value === note.noteId)) {
-            continue;
-        }
-
-        const $card = await renderNote(note);
-
-        $container.append($card);
-    }
+    await renderNoteListContent($noteList, parentNote, notes);
 
     return $noteList;
 }
