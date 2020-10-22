@@ -52,7 +52,7 @@ function updateNoteAttribute(req) {
         attribute.type = body.type;
     }
 
-    if (body.value.trim()) {
+    if (attribute.type === 'label' || body.value.trim()) {
         attribute.value = body.value;
     }
     else {
@@ -61,6 +61,8 @@ function updateNoteAttribute(req) {
     }
 
     attribute.save();
+
+    console.log("Saving", attribute);
 
     return {
         attributeId: attribute.attributeId

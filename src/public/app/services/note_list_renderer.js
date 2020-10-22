@@ -1,6 +1,7 @@
 import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
 import treeCache from "./tree_cache.js";
+import attributeService from "./attributes.js";
 
 const ZOOMS = {
     1: {
@@ -182,7 +183,7 @@ async function renderNoteListContent($noteList, parentNote, notes, page = 1, pag
     }
 }
 
-async function renderList(notes, parentNote = null) {
+async function renderList(notes, parentNote) {
     const $noteList = $(TPL);
 
     $noteList.find('.expand-children-button').on('click', async () => {
@@ -194,6 +195,10 @@ async function renderList(notes, parentNote = null) {
             }
 
             await toggleCards($unexpandedCards, true);
+
+            if (!parentNote.hasLabel('expanded')) {
+                await attributeService.addLabel(parentNote.noteId, 'expanded');
+            }
         }
     });
 
@@ -201,6 +206,11 @@ async function renderList(notes, parentNote = null) {
         const $expandedCards = $noteList.find('.note-book-card.expanded');
 
         await toggleCards($expandedCards, false);
+
+        // owned is important - we shouldn't remove inherited expanded labels
+        for (const expandedAttr of parentNote.getOwnedLabels('expanded')) {
+            await attributeService.removeAttributeById(parentNote.noteId, expandedAttr.attributeId);
+        }
     });
 
     await renderNoteListContent($noteList, parentNote, notes);
