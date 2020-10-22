@@ -100,6 +100,12 @@ const TPL = `
     
     <div class="btn-group floating-button" style="right: 20px; top: 10px;">
         <button type="button"
+                class="collapse-all-button btn icon-button bx bx-layer-minus"
+                title="Collapse all notes"></button>
+
+        &nbsp;
+        
+        <button type="button"
                 class="expand-children-button btn icon-button bx bx-move-vertical"
                 title="Expand all children"></button>
 
@@ -119,27 +125,36 @@ const TPL = `
     <div class="note-list-container"></div>
 </div>`;
 
+async function toggleCards(cards, expand) {
+    for (const card of cards) {
+        const $card = $(card);
+        const noteId = $card.attr('data-note-id');
+        const note = await treeCache.getNote(noteId);
+
+        await toggleContent($card, note, expand);
+    }
+}
+
 async function renderList(notes, parentNote = null) {
     const $noteList = $(TPL);
 
-    // $zoomInButton.on('click', () => this.setZoom(this.zoomLevel - 1));
-    // $zoomOutButton.on('click', () => this.setZoom(this.zoomLevel + 1));
-    //
-    // $expandChildrenButton.on('click', async () => {
-    //     for (let i = 1; i < 30; i++) { // protection against infinite cycle
-    //         const $unexpandedLinks = this.$content.find('.note-book-open-children-button:visible');
-    //
-    //         if ($unexpandedLinks.length === 0) {
-    //             break;
-    //         }
-    //
-    //         for (const link of $unexpandedLinks) {
-    //             const $card = $(link).closest(".note-book-card");
-    //
-    //             await this.expandCard($card);
-    //         }
-    //     }
-    // });
+    $noteList.find('.expand-children-button').on('click', async () => {
+        for (let i = 1; i < 30; i++) { // protection against infinite cycle
+            const $unexpandedCards = $noteList.find('.note-book-card:not(.expanded)');
+
+            if ($unexpandedCards.length === 0) {
+                break;
+            }
+
+            await toggleCards($unexpandedCards, true);
+        }
+    });
+
+    $noteList.find('.collapse-all-button').on('click', async () => {
+        const $expandedCards = $noteList.find('.note-book-card.expanded');
+
+        await toggleCards($expandedCards, false);
+    });
 
     $noteList.on('click', '.note-book-hide-children-button', async ev => {
         const $card = $(ev.target).closest('.note-book-card');
@@ -198,7 +213,7 @@ async function renderNoteContent(note) {
 async function renderNote(note, expand) {
     const notePath = /*this.notePath + '/' + */ note.noteId;
 
-    const $expander = $('<span class="note-expander bx bx-chevron-right" href="javascript:"></span>');
+    const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
 
     const $card = $('<div class="note-book-card">')
         .attr('data-note-id', note.noteId)
@@ -209,7 +224,7 @@ async function renderNote(note, expand) {
                 .append(await linkService.createNoteLink(notePath, {showTooltip: false}))
         );
 
-    $expander.on('click', async () => await toggleContent($card, note, !$expander.hasClass("expanded")));
+    $expander.on('click', () => toggleContent($card, note, !$card.hasClass("expanded")));
 
     await toggleContent($card, note, expand);
 
