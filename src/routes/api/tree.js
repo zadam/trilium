@@ -54,14 +54,15 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 function getTree(req) {
     const subTreeNoteId = req.query.subTreeNoteId || optionService.getOption('hoistedNoteId');
 
+    // FIXME: this query does not return ascendants of template notes
     const noteIds = sql.getColumn(`
         WITH RECURSIVE
-            treeWithDescendants(noteId) AS (
-                SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0
+            treeWithDescendants(noteId, isExpanded) AS (
+                SELECT noteId, isExpanded FROM branches WHERE parentNoteId = ? AND isDeleted = 0
                 UNION
-                SELECT branches.noteId FROM branches
+                SELECT branches.noteId, branches.isExpanded FROM branches
                   JOIN treeWithDescendants ON branches.parentNoteId = treeWithDescendants.noteId
-                WHERE branches.isExpanded = 1 
+                WHERE treeWithDescendants.isExpanded = 1 
                   AND branches.isDeleted = 0
             ),
             treeWithDescendantsAndAscendants AS (
@@ -83,7 +84,7 @@ function getTree(req) {
             )
         SELECT noteId FROM treeWithDescendantsAscendantsAndTemplates`, [subTreeNoteId, subTreeNoteId]);
 
-    noteIds.push(subTreeNoteId);
+    noteIds.push(subTreeNoteId);console.log("noteIds", noteIds);
 
     return getNotesAndBranchesAndAttributes(noteIds);
 }
