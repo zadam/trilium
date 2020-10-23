@@ -126,10 +126,10 @@ class NoteListRenderer {
         this.notes = notes;
         this.page = 1;
         this.pageSize = 2;
+        this.viewType = 'list';
 
-        this.$noteList.find('.grid-view-button').on('click', async () => {
-
-        });
+        this.$noteList.find('.list-view-button').on('click', () => this.toggleViewType('list'));
+        this.$noteList.find('.grid-view-button').on('click', () => this.toggleViewType('grid'));
 
         this.$noteList.find('.expand-children-button').on('click', async () => {
             for (let i = 1; i < 30; i++) { // protection against infinite cycle
@@ -159,6 +159,21 @@ class NoteListRenderer {
         });
     }
 
+    async toggleViewType(type) {
+        if (type !== 'list' && type !== 'grid') {
+            throw new Error(`Invalid view type ${type}`);
+        }
+
+        this.viewType = type;
+
+        this.$noteList
+            .removeClass('grid-view')
+            .removeClass('list-view')
+            .addClass(this.viewType + '-view');
+
+        await this.renderList();
+    }
+
     async renderList() {
         const $container = this.$noteList.find('.note-list-container').empty();
 
@@ -186,7 +201,7 @@ class NoteListRenderer {
     }
 
     renderPager() {
-        const $pager = this.$noteList.find('.note-list-pager');
+        const $pager = this.$noteList.find('.note-list-pager').empty();
 
         for (let i = 1; i <= Math.ceil(this.notes.length / this.pageSize); i++) {
             $pager.append(
@@ -261,7 +276,7 @@ class NoteListRenderer {
     }
 
     async toggleContent($card, note, expand) {
-        if ((expand && $card.hasClass("expanded")) || (!expand && !$card.hasClass("expanded"))) {
+        if (this.viewType === 'list' && ((expand && $card.hasClass("expanded")) || (!expand && !$card.hasClass("expanded")))) {
             return;
         }
 
