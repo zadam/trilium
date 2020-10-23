@@ -20,6 +20,9 @@ class TreeCache {
     async loadInitialTree() {
         const resp = await server.get('tree');
 
+        // FIXME: we need to do this to cover for ascendants of template notes which are not loaded
+        await this.loadParents(resp, false);
+
         // clear the cache only directly before adding new content which is important for e.g. switching to protected session
 
         /** @type {Object.<string, NoteShort>} */
@@ -39,6 +42,8 @@ class TreeCache {
 
     async loadSubTree(subTreeNoteId) {
         const resp = await server.get('tree?subTreeNoteId=' + subTreeNoteId);
+
+        await this.loadParents(resp, true);
 
         this.addResp(resp);
 
