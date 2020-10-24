@@ -176,6 +176,7 @@ function register(app) {
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getEffectiveNoteAttributes);
     apiRoute(PUT, '/api/notes/:noteId/attributes', attributesRoute.updateNoteAttributes);
     apiRoute(PUT, '/api/notes/:noteId/attribute', attributesRoute.updateNoteAttribute);
+    apiRoute(PUT, '/api/notes/:noteId/set-attribute', attributesRoute.setNoteAttribute);
     apiRoute(PUT, '/api/notes/:noteId/relations/:name/to/:targetNoteId', attributesRoute.createRelation);
     apiRoute(DELETE, '/api/notes/:noteId/relations/:name/to/:targetNoteId', attributesRoute.deleteRelation);
     apiRoute(DELETE, '/api/notes/:noteId/attributes/:attributeId', attributesRoute.deleteNoteAttribute);
