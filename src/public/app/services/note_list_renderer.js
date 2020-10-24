@@ -48,6 +48,8 @@ const TPL = `
     
     .note-book-card.expanded .note-book-content {
         display: block;
+        min-height: 0;
+        height: 100%;
     }
     
     .note-book-title {
@@ -64,6 +66,12 @@ const TPL = `
         justify-content: center;
         text-align: center;
         padding: 10px;
+    }
+    
+    .note-book-content.type-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
     }
     
     .note-book-card.type-image .note-book-content img, .note-book-card.type-text .note-book-content img {
