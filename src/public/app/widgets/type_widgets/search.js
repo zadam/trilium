@@ -1,11 +1,18 @@
 import TypeWidget from "./type_widget.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
+import SpacedUpdate from "../../services/spaced_update.js";
+import server from "../../services/server.js";
+import toastService from "../../services/toast.js";
+import NoteListRenderer from "../../services/note_list_renderer.js";
 
 const TPL = `
 <div class="note-detail-search note-detail-printable">
     <style>
     .note-detail-search {
         padding: 7px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .search-setting-table {
@@ -48,6 +55,11 @@ const TPL = `
     .search-setting-expander:hover .search-setting-expander-text {
         color: var(--main-text-color);
     }
+    
+    .note-result-wrapper {
+        height: 100%;
+        overflow: auto;
+    }
     </style>
 
     <div class="area-expander">
@@ -63,7 +75,7 @@ const TPL = `
             <tr>
                 <td>Search string:</td>
                 <td colspan="3">
-                    <input type="text" class="form-control">
+                    <input type="text" class="form-control search-string">
                 </td>
             </tr>
             <tr>
@@ -85,6 +97,8 @@ const TPL = `
 
         <hr class="w-100 search-setting-empty-expander" style="margin-bottom: 10px;">
     </div>
+    
+    <div class="note-result-wrapper"></div>
 </div>`;
 
 export default class SearchTypeWidget extends TypeWidget {
@@ -93,12 +107,25 @@ export default class SearchTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$searchString = this.$widget.find(".search-string");
+        this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
+
         this.$component = this.$widget.find('.note-detail-search');
 
         this.$settingsArea = this.$widget.find('.search-settings');
 
+        this.spacedUpdate = new SpacedUpdate(() => this.updateSearch(), 2000);
+
         this.$limitSearchToSubtree = this.$widget.find('.limit-search-to-subtree');
         noteAutocompleteService.initNoteAutocomplete(this.$limitSearchToSubtree);
+
+        this.$limitSearchToSubtree.on('autocomplete:closed', e => {
+            this.spacedUpdate.scheduleUpdate();
+        });
+
+        this.$searchWithinNoteContent = this.$widget.find('.search-within-note-content');
+        this.$searchWithinNoteContent.on('change', () => {
+            this.spacedUpdate.scheduleUpdate();
+        });
 
         this.$settingExpander = this.$widget.find('.area-expander');
         this.$settingExpander.on('click', async () => {
@@ -110,25 +137,42 @@ export default class SearchTypeWidget extends TypeWidget {
                 this.$settingsArea.slideDown(200);
             }
         });
+
+        this.$noteResultWrapper = this.$widget.find('.note-result-wrapper');
+    }
+
+    async updateSearch() {
+        const searchString = this.$searchString.val();
+        const subNoteId = this.$limitSearchToSubtree.getSelectedNoteId();
+        const includeNoteContent = this.$searchWithinNoteContent.is(":checked");
+
+        const response = await server.get(`search/${encodeURIComponent(searchString)}?includeNoteContent=${includeNoteContent}&excludeArchived=true&fuzzyAttributeSearch=false`);
+
+        if (!response.success) {
+            toastService.showError("Search failed: " + response.message, 10000);
+            // even in this case we'll show the results
+        }
+
+        const resultNoteIds = response.results.map(res => res.notePathArray[res.notePathArray.length - 1]);
+
+        const noteListRenderer = new NoteListRenderer(this.note, resultNoteIds);
+
+        this.$noteResultWrapper.empty().append(await noteListRenderer.renderList());
     }
 
     async doRefresh(note) {
-        this.$help.html(window.glob.SEARCH_HELP_TEXT);
-
         this.$component.show();
 
-        try {
-            const noteComplement = await this.tabContext.getNoteComplement();
-            const json = JSON.parse(noteComplement.content);
-
-            this.$searchString.val(json.searchString);
-        }
-        catch (e) {
-            console.log(e);
-            this.$searchString.val('');
-        }
-
-        this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
+        // try {
+        //     const noteComplement = await this.tabContext.getNoteComplement();
+        //     const json = JSON.parse(noteComplement.content);
+        //
+        //     this.$searchString.val(json.searchString);
+        // }
+        // catch (e) {
+        //     console.log(e);
+        //     this.$searchString.val('');
+        // }
     }
 
     getContent() {

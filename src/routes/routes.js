@@ -190,6 +190,7 @@ function register(app) {
     apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
     apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
     apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
+    apiRoute(POST, '/api/search-note', dateNotesRoute.createSearchNote);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);

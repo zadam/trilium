@@ -34,10 +34,18 @@ async function createSqlConsole() {
     return await treeCache.getNote(note.noteId);
 }
 
+/** @return {NoteShort} */
+async function createSearchNote() {
+    const note = await server.post('search-note');
+
+    return await treeCache.getNote(note.noteId);
+}
+
 export default {
     getTodayNote,
     getDateNote,
     getMonthNote,
     getYearNote,
-    createSqlConsole
+    createSqlConsole,
+    createSearchNote
 }

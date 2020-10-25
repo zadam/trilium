@@ -135,12 +135,20 @@ const TPL = `
 </div>`;
 
 class NoteListRenderer {
-    constructor(parentNote, notes) {
+    /*
+     * We're using noteIds so that it's not necessary to load all notes at once when paging
+     */
+    constructor(parentNote, noteIds) {
         this.$noteList = $(TPL);
         this.parentNote = parentNote;
-        this.notes = notes;
+        this.noteIds = noteIds;
         this.page = 1;
-        this.pageSize = 6;
+        this.pageSize = parseInt(parentNote.getLabelValue('pageSize'));
+
+        if (!this.pageSize || this.pageSize < 1 || this.pageSize > 10000) {
+            this.pageSize = 10;
+        }
+
         this.viewType = parentNote.getLabelValue('viewType');
 
         if (!['list', 'grid'].includes(this.viewType)) {
@@ -205,7 +213,8 @@ class NoteListRenderer {
         const startIdx = (this.page - 1) * this.pageSize;
         const endIdx = startIdx + this.pageSize;
 
-        const pageNotes = this.notes.slice(startIdx, Math.min(endIdx, this.notes.length));
+        const pageNoteIds = this.noteIds.slice(startIdx, Math.min(endIdx, this.noteIds.length));
+        const pageNotes = await treeCache.getNotes(pageNoteIds);
 
         for (const note of pageNotes) {
             // image is already visible in the parent note so no need to display it separately in the book
@@ -213,7 +222,7 @@ class NoteListRenderer {
                 continue;
             }
 
-            const $card = await this.renderNote(note);
+            const $card = await this.renderNote(note, this.parentNote.hasLabel('expanded'));
 
             $container.append($card);
         }
@@ -225,7 +234,7 @@ class NoteListRenderer {
 
     renderPager() {
         const $pager = this.$noteList.find('.note-list-pager').empty();
-        const pageCount = Math.ceil(this.notes.length / this.pageSize);
+        const pageCount = Math.ceil(this.noteIds.length / this.pageSize);
 
         $pager.toggle(pageCount > 1);
 
@@ -255,7 +264,8 @@ class NoteListRenderer {
     }
 
     // TODO: we should also render (promoted) attributes
-    async renderNote(note) {
+    // FIXME: showing specific path might be necessary because of a match in the patch
+    async renderNote(note, expand = false) {
         const notePath = /*this.notePath + '/' + */ note.noteId;
 
         const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
@@ -270,7 +280,7 @@ class NoteListRenderer {
 
         $expander.on('click', () => this.toggleContent($card, note, !$card.hasClass("expanded")));
 
-        await this.toggleContent($card, note, this.parentNote.hasLabel('expanded'));
+        await this.toggleContent($card, note, expand);
 
         return $card;
     }

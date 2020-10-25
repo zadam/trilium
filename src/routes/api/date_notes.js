@@ -51,10 +51,27 @@ function createSqlConsole() {
     return note;
 }
 
+function createSearchNote() {
+    const today = dateUtils.localNowDate();
+
+    const todayNote = dateNoteService.getDateNote(today);
+
+    const {note} = noteService.createNewNote({
+        parentNoteId: todayNote.noteId,
+        title: 'Search',
+        content: "",
+        type: 'search',
+        mime: 'application/json'
+    });
+
+    return note;
+}
+
 module.exports = {
     getDateNote,
     getMonthNote,
     getYearNote,
     getDateNotesForMonth,
-    createSqlConsole
+    createSqlConsole,
+    createSearchNote
 };
