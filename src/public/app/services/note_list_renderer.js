@@ -300,7 +300,9 @@ class NoteListRenderer {
         const $content = $('<div class="note-book-content">');
 
         try {
-            const {renderedContent, type} = await noteContentRenderer.getRenderedContent(note);
+            const {renderedContent, type} = await noteContentRenderer.getRenderedContent(note, {
+                trim: this.viewType === 'grid' // for grid only short content is needed
+            });
 
             $content.append(renderedContent);
             $content.addClass("type-" + type);
