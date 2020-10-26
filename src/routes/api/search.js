@@ -38,7 +38,8 @@ async function searchFromNote(req) {
     }
 
     if (note.isDeleted) {
-        return [400, `Note ${req.params.noteId} is deleted.`];
+        // this can be triggered from recent changes and it's harmless to return empty list rather than fail
+        return [];
     }
 
     if (note.type !== 'search') {

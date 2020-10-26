@@ -115,13 +115,13 @@ export default class TabManager extends Component {
 
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
             window.history.pushState(null, "", url);
+        }
 
-            document.title = "Trilium Notes";
+        document.title = "Trilium Notes";
 
-            if (activeTabContext.note) {
-                // it helps navigating in history if note title is included in the title
-                document.title += " - " + activeTabContext.note.title;
-            }
+        if (activeTabContext.note) {
+            // it helps navigating in history if note title is included in the title
+            document.title += " - " + activeTabContext.note.title;
         }
 
         this.triggerEvent('activeNoteChanged'); // trigger this even in on popstate event

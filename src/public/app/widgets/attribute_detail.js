@@ -283,7 +283,9 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                     return false;
                 }
 
-                this.attribute.value = suggestion.notePath;
+                const pathChunks = suggestion.notePath.split('/');
+
+                this.attribute.value = pathChunks[pathChunks.length - 1]; // noteId
 
                 this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
                 this.updateRelatedNotes();
