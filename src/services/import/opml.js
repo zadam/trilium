@@ -11,8 +11,8 @@ const htmlSanitizer = require('../html_sanitizer');
  * @param {Note} parentNote
  * @return {Promise<*[]|*>}
  */
-function importOpml(taskContext, fileBuffer, parentNote) {
-    const xml = new Promise(function(resolve, reject)
+async function importOpml(taskContext, fileBuffer, parentNote) {
+    const xml = await new Promise(function(resolve, reject)
     {
         parseString(fileBuffer, function (err, result) {
             if (err) {
