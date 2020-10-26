@@ -161,30 +161,20 @@ class NoteListRenderer {
         this.$noteList.find('.grid-view-button').on('click', () => this.toggleViewType('grid'));
 
         this.$noteList.find('.expand-children-button').on('click', async () => {
-            for (let i = 1; i < 30; i++) { // protection against infinite cycle
-                const $unexpandedCards = this.$noteList.find('.note-book-card:not(.expanded)');
-
-                if ($unexpandedCards.length === 0) {
-                    break;
-                }
-
-                await this.toggleCards($unexpandedCards, true);
-
-                if (!this.parentNote.hasLabel('expanded')) {
-                    await attributeService.addLabel(this.parentNote.noteId, 'expanded');
-                }
+            if (!this.parentNote.hasLabel('expanded')) {
+                await attributeService.addLabel(this.parentNote.noteId, 'expanded');
             }
+
+            await this.renderList();
         });
 
         this.$noteList.find('.collapse-all-button').on('click', async () => {
-            const $expandedCards = this.$noteList.find('.note-book-card.expanded');
-
-            await this.toggleCards($expandedCards, false);
-
             // owned is important - we shouldn't remove inherited expanded labels
             for (const expandedAttr of this.parentNote.getOwnedLabels('expanded')) {
                 await attributeService.removeAttributeById(this.parentNote.noteId, expandedAttr.attributeId);
             }
+
+            await this.renderList();
         });
     }
 
@@ -250,16 +240,6 @@ class NoteListRenderer {
                         }),
                 " &nbsp; "
             );
-        }
-    }
-
-    async toggleCards(cards, expand) {
-        for (const card of cards) {
-            const $card = $(card);
-            const noteId = $card.attr('data-note-id');
-            const note = await treeCache.getNote(noteId);
-
-            await this.toggleContent($card, note, expand);
         }
     }
 
