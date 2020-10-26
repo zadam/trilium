@@ -191,8 +191,8 @@ class TreeCache {
             if (note.type === 'search') {
                 const searchResultNoteIds = await server.get('search-note/' + note.noteId);
 
-                if (!searchResultNoteIds) {
-                    throw new Error(`Search note ${note.noteId} failed.`);
+                if (!Array.isArray(searchResultNoteIds)) {
+                    throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
                 }
 
                 // force to load all the notes at once instead of one by one
