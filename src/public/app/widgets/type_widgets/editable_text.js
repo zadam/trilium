@@ -181,7 +181,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         });
     }
 
-    addTextToActiveEditorEvent(text) {
+    addTextToActiveEditorEvent({text}) {
         if (!this.isActive()) {
             return;
         }
