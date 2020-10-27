@@ -247,6 +247,6 @@ describe("Invalid expressions", () => {
             searchContext
         });
 
-        expect(searchContext.error).toEqual('Misplaced or incomplete expression "="')
+        expect(searchContext.error).toEqual('Relation can be compared only with property, e.g. ~relation.title=hello in ""')
     });
 });
