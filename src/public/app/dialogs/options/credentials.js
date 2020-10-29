@@ -8,6 +8,11 @@ const TPL = `
 <p>Your username is <strong id="credentials-username"></strong>.</p>
 
 <h3>Change password</h3>
+
+<div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
+  Please take care to remember your new password. Password is used to encrypt protected notes. If you forget your password, then all your protected notes are forever lost with no recovery options.
+</div>
+
 <form id="change-password-form">
     <div class="form-group">
         <label for="old-password">Old password</label>
