@@ -3,6 +3,7 @@ import linkService from "./link.js";
 import treeCache from "./tree_cache.js";
 import utils from "./utils.js";
 import attributeRenderer from "./attribute_renderer.js";
+import libraryLoader from "./library_loader.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -101,7 +102,15 @@ async function renderTooltip(note, noteComplement) {
     }
 
     if (note.type === 'text' && !utils.isHtmlEmpty(noteComplement.content)) {
-        content += '<div class="ck-content">' + noteComplement.content + '</div>';
+        const $content = $('<div class="ck-content">').append(noteComplement.content);
+
+        if ($content.find('span.math-tex').length > 0) {
+            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+
+            renderMathInElement($content[0], {});
+        }
+
+        content += $content[0].outerHTML;
     }
     else if (note.type === 'code' && noteComplement.content && noteComplement.content.trim()) {
         content += $("<pre>")

@@ -3,6 +3,7 @@ import utils from "./utils.js";
 import renderService from "./render.js";
 import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
+import libraryLoader from "./library_loader.js";
 
 async function getRenderedContent(note) {
     const type = getRenderingType(note);
@@ -13,6 +14,12 @@ async function getRenderedContent(note) {
         const fullNote = await server.get('notes/' + note.noteId);
 
         $rendered = $('<div class="ck-content">').html(fullNote.content);
+
+        if ($rendered.find('span.math-tex').length > 0) {
+            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+
+            renderMathInElement($rendered[0], {});
+        }
     }
     else if (type === 'code') {
         const fullNote = await server.get('notes/' + note.noteId);
