@@ -203,6 +203,11 @@ class TreeCache {
                 // force to load all the notes at once instead of one by one
                 await this.getNotes(searchResultNoteIds);
 
+                // reset all the virtual branches from old search results
+                if (note.noteId in treeCache.notes) {
+                    treeCache.notes[note.noteId].children = [];
+                }
+
                 const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
 
                 searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
