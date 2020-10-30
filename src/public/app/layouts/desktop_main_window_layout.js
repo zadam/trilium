@@ -24,6 +24,8 @@ import SimilarNotesWidget from "../widgets/similar_notes.js";
 import WhatLinksHereWidget from "../widgets/collapsible_widgets/what_links_here.js";
 import SidePaneToggles from "../widgets/side_pane_toggles.js";
 import EditedNotesWidget from "../widgets/collapsible_widgets/edited_notes.js";
+import CollapsibleSectionContainer from "../widgets/collapsible_section_container.js";
+import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -153,7 +155,12 @@ export default class DesktopMainWindowLayout {
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
-                    .child(new TabCachingWidget(() => new AttributeListWidget()))
+                    .child(
+                        new TabCachingWidget(() => new CollapsibleSectionContainer()
+                            .child(new PromotedAttributesWidget())
+                            .child(new AttributeListWidget())
+                        )
+                    )
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))

@@ -1,6 +1,6 @@
-import BasicWidget from "./basic_widget.js";
+import AbstractContainer from "./abstract_container.js";
 
-export default class FlexContainer extends BasicWidget {
+export default class FlexContainer extends AbstractContainer {
     constructor(direction) {
         super();
 
@@ -9,29 +9,6 @@ export default class FlexContainer extends BasicWidget {
         }
 
         this.attrs.style = `display: flex; flex-direction: ${direction};`;
-
-        this.children = [];
-
-        this.positionCounter = 10;
-    }
-
-    child(...components) {
-        if (!components) {
-            return this;
-        }
-
-        super.child(...components);
-
-        for (const component of components) {
-            if (!component.position) {
-                component.position = this.positionCounter;
-                this.positionCounter += 10;
-            }
-        }
-
-        this.children.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
-
-        return this;
     }
 
     doRender() {

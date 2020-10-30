@@ -3,7 +3,6 @@ import AttributeDetailWidget from "./attribute_detail.js";
 import attributeRenderer from "../services/attribute_renderer.js";
 import AttributeEditorWidget from "./attribute_editor.js";
 import options from '../services/options.js';
-import PromotedAttributesWidget from "./promoted_attributes.js";
 
 const TPL = `
 <div class="attribute-list">
@@ -108,11 +107,15 @@ export default class AttributeListWidget extends TabAwareWidget {
     constructor() {
         super();
 
-        this.promotedAttributesWidget = new PromotedAttributesWidget().setParent(this);
         this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
         this.attributeEditorWidget = new AttributeEditorWidget(this.attributeDetailWidget).setParent(this);
 
-        this.child(this.promotedAttributesWidget, this.attributeEditorWidget, this.attributeDetailWidget);
+        this.child(this.attributeEditorWidget, this.attributeDetailWidget);
+    }
+
+    renderTitle() {
+        this.$title = $('<div>').text('Attribute list');
+        return this.$title;
     }
 
     doRender() {
@@ -159,25 +162,24 @@ export default class AttributeListWidget extends TabAwareWidget {
 
         this.$inheritedEmptyExpander = this.$widget.find('.attr-inherited-empty-expander');
 
-        this.$widget.find('.promoted-attributes-placeholder').replaceWith(this.promotedAttributesWidget.render());
         this.$widget.find('.attr-editor-placeholder').replaceWith(this.attributeEditorWidget.render());
         this.$widget.append(this.attributeDetailWidget.render());
     }
 
     async refreshWithNote(note, updateOnly = false) {
         if (!updateOnly) {
-            const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedDefinitionAttributes().length > 0;
-
-            if (hasPromotedAttrs) {
-                this.$promotedExpander.show();
-                this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
-                this.$ownedAndInheritedWrapper.hide();
-                this.$inheritedAttributesWrapper.hide();
-            } else {
-                this.$promotedExpander.hide();
-                this.$allAttrWrapper.show();
-                this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
-            }
+            // const hasPromotedAttrs = this.promotedAttributesWidget.getPromotedDefinitionAttributes().length > 0;
+            //
+            // if (hasPromotedAttrs) {
+            //     this.$promotedExpander.show();
+            //     this.$allAttrWrapper.toggle(options.is('promotedAttributesExpanded'));
+            //     this.$ownedAndInheritedWrapper.hide();
+            //     this.$inheritedAttributesWrapper.hide();
+            // } else {
+            //     this.$promotedExpander.hide();
+            //     this.$allAttrWrapper.show();
+            //     this.$ownedAndInheritedWrapper.toggle(options.is('attributeListExpanded'));
+            // }
         }
 
         const ownedAttributes = note.getOwnedAttributes().filter(attr => !attr.isAutoLink);

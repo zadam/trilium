@@ -85,7 +85,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "2.2.0",
-    "webpack": "5.2.0",
+    "webpack": "5.3.2",
     "webpack-cli": "4.1.0"
   },
   "optionalDependencies": {

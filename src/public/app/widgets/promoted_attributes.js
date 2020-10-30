@@ -41,6 +41,11 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         this.$container = this.$widget.find(".promoted-attributes-container");
     }
 
+    renderTitle() {
+        this.$title = $('<div>').text('Promoted attributes');
+        return this.$title;
+    }
+
     async refreshWithNote(note) {
         this.$container.empty();
 
