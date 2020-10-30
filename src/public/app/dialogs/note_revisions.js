@@ -2,6 +2,7 @@ import utils from '../services/utils.js';
 import server from '../services/server.js';
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
+import libraryLoader from "../services/library_loader.js";
 
 const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
@@ -132,6 +133,12 @@ async function setContentPane() {
 
     if (revisionItem.type === 'text') {
         $content.html(fullNoteRevision.content);
+
+        if ($content.find('span.math-tex').length > 0) {
+            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+
+            renderMathInElement($content[0], {});
+        }
     }
     else if (revisionItem.type === 'code') {
         $content.html($("<pre>").text(fullNoteRevision.content));

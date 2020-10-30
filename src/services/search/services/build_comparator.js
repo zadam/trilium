@@ -5,9 +5,9 @@ const stringComparators = {
     ">=": comparedValue => (val => val >= comparedValue),
     "<": comparedValue => (val => val < comparedValue),
     "<=": comparedValue => (val => val <= comparedValue),
-    "*=": comparedValue => (val => val.endsWith(comparedValue)),
-    "=*": comparedValue => (val => val.startsWith(comparedValue)),
-    "*=*": comparedValue => (val => val.includes(comparedValue)),
+    "*=": comparedValue => (val => val && val.endsWith(comparedValue)),
+    "=*": comparedValue => (val => val && val.startsWith(comparedValue)),
+    "*=*": comparedValue => (val => val && val.includes(comparedValue)),
 };
 
 const numericComparators = {

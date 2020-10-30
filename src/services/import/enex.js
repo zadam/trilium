@@ -1,5 +1,4 @@
 const sax = require("sax");
-const FileType = require('file-type');
 const stream = require('stream');
 const log = require("../log");
 const utils = require("../utils");
@@ -138,17 +137,6 @@ function importEnex(taskContext, file, parentNote) {
             }
             else if (currentTag === 'mime') {
                 resource.mime = text.toLowerCase();
-
-                if (text.startsWith("image/")) {
-                    resource.title = "image";
-
-                    // images don't have "file-name" tag so we'll create attribute here
-                    resource.attributes.push({
-                        type: 'label',
-                        name: 'originalFileName',
-                        value: resource.title + "." + text.substr(6) // extension from mime type
-                    });
-                }
             }
         }
         else if (previousTag === 'note') {
@@ -243,11 +231,7 @@ function importEnex(taskContext, file, parentNote) {
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
 
-            const fileTypeFromBuffer = FileType.fromBuffer(resource.content);
-            if (fileTypeFromBuffer) {
-              // If fileType returns something for buffer, then set the mime given
-              resource.mime = fileTypeFromBuffer.mime;
-            }
+            resource.mime = resource.mime || "application/octet-stream";
 
             const createFileNote = () => {
                 const resourceNote = noteService.createNewNote({
@@ -260,7 +244,7 @@ function importEnex(taskContext, file, parentNote) {
                 }).note;
 
                 for (const attr of resource.attributes) {
-                    noteEntity.addAttribute(attr.type, attr.name, attr.value);
+                    resourceNote.addAttribute(attr.type, attr.name, attr.value);
                 }
 
                 updateDates(resourceNote.noteId, utcDateCreated, utcDateModified);
@@ -274,9 +258,17 @@ function importEnex(taskContext, file, parentNote) {
 
             if (resource.mime && resource.mime.startsWith('image/')) {
                 try {
-                    const originalName = "image." + resource.mime.substr(6);
+                    const originalName = (resource.title && resource.title !== 'resource')
+                        ? resource.title
+                        : `image.${resource.mime.substr(6)}`; // default if real name is not present
 
                     const {url, note: imageNote} = imageService.saveImage(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
+
+                    for (const attr of resource.attributes) {
+                        if (attr.name !== 'originalFileName') { // this one is already saved in imageService
+                            imageNote.addAttribute(attr.type, attr.name, attr.value);
+                        }
+                    }
 
                     updateDates(imageNote.noteId, utcDateCreated, utcDateModified);
 

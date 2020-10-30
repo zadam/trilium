@@ -53,8 +53,8 @@ describe("Search", () => {
 
     it("normal search looks also at type and mime", () => {
         rootNote
-            .child(note("Effective Java", 'book', ''))
-            .child(note("Hello World.java", 'code', 'text/x-java'));
+            .child(note("Effective Java", {type: 'book', mime:''}))
+            .child(note("Hello World.java", {type: 'code', mime: 'text/x-java'}));
 
         const searchContext = new SearchContext();
         let searchResults = searchService.findNotesWithQuery('book', searchContext);
@@ -178,7 +178,7 @@ describe("Search", () => {
         // dates should not be coerced into numbers which would then give wrong numbers
 
         rootNote
-            .child(note("My note")
+            .child(note("My note", {dateCreated: dateUtils.localNowDateTime()})
                 .label('year', new Date().getFullYear().toString())
                 .label('month', dateUtils.localNowDate().substr(0, 7))
                 .label('date', dateUtils.localNowDate())
@@ -208,6 +208,8 @@ describe("Search", () => {
         test("#month = MONTH", 1);
         test("#month = month", 1);
         test("#month = 'MONTH'", 0);
+
+        test("note.dateCreated =* month", 1);
 
         test("#date = TODAY", 1);
         test("#date = today", 1);
@@ -586,7 +588,7 @@ describe("Search", () => {
 
         const searchContext = new SearchContext();
 
-        let searchResults = searchService.findNotesWithQuery('# note.text *=* rati and note.noteId != root', searchContext);
+        let searchResults = searchService.findNotesWithQuery('# note.text *=* vaki and note.noteId != root', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
     });

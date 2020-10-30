@@ -80,10 +80,14 @@ function getExpression(tokens, searchContext, level = 0) {
 
         if (i + 2 < tokens.length) {
             if (tokens[i + 1].token === '+') {
-                delta += parseInt(tokens[i + 2].token);
+                i += 2;
+
+                delta += parseInt(tokens[i].token);
             }
             else if (tokens[i + 1].token === '-') {
-                delta -= parseInt(tokens[i + 2].token);
+                i += 2;
+
+                delta -= parseInt(tokens[i].token);
             }
         }
 
@@ -196,15 +200,17 @@ function getExpression(tokens, searchContext, level = 0) {
         if (PropertyComparisonExp.isProperty(tokens[i].token)) {
             const propertyName = tokens[i].token;
             const operator = tokens[i + 1].token;
-            const comparedValue = tokens[i + 2].token;
+
+            i += 2;
+
+            const comparedValue = resolveConstantOperand();
+
             const comparator = buildComparator(operator, comparedValue);
 
             if (!comparator) {
-                searchContext.addError(`Can't find operator '${operator}' in ${context(i)}`);
+                searchContext.addError(`Can't find operator '${operator}' in ${context(i - 2)}`);
                 return;
             }
-
-            i += 2;
 
             return new PropertyComparisonExp(propertyName, comparator);
         }

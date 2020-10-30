@@ -154,7 +154,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                         }
                     }]);
 
-                    $input.on('autocomplete:noteselected', e => this.promotedAttributeChanged(e))
+                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e))
                 });
             }
             else if (definition.labelType === 'number') {

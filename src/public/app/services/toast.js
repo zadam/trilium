@@ -54,7 +54,7 @@ function closePersistent(id) {
 }
 
 function showMessage(message, delay = 2000) {
-    console.debug(utils.now(), "message: ", message);
+    console.debug(utils.now(), "message:", message);
 
     toast({
         title: "Info",

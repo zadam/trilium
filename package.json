@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.44.8",
+  "version": "0.45.2",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
@@ -40,7 +40,6 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.17.1",
-    "file-type": "16.0.0",
     "fs-extra": "9.0.1",
     "helmet": "4.1.1",
     "html": "1.0.0",
@@ -77,7 +76,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.2",
-    "electron": "9.3.2",
+    "electron": "9.3.3",
     "electron-builder": "22.9.1",
     "electron-packager": "15.1.0",
     "electron-rebuild": "2.3.2",
