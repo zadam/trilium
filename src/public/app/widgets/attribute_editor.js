@@ -17,7 +17,7 @@ const HELP_TEXT = `
 <p>Alternatively you can add label and relation using the <code>+</code> button on the right side.</p>`;
 
 const TPL = `
-<div style="position: relative">
+<div style="position: relative; padding-top: 10px; padding-bottom: 10px">
     <style>
     .attribute-list-editor {
         border: 0 !important;

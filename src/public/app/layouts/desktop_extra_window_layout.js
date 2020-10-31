@@ -9,7 +9,7 @@ import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
-import AttributeListWidget from "../widgets/attribute_list.js";
+import OwnedAttributeListWidget from "../widgets/owned_attribute_list.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -39,7 +39,7 @@ export default class DesktopExtraWindowLayout {
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
-                    .child(new TabCachingWidget(() => new AttributeListWidget()))
+                    .child(new TabCachingWidget(() => new OwnedAttributeListWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )

@@ -81,7 +81,7 @@
     "electron-packager": "15.1.0",
     "electron-rebuild": "2.3.2",
     "esm": "3.2.25",
-    "jasmine": "3.6.2",
+    "jasmine": "3.6.3",
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "2.2.0",
