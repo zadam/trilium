@@ -117,6 +117,8 @@ function convertTextToHtml(text) {
 }
 
 function importMarkdown(taskContext, file, parentNote) {
+    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+
     const markdownContent = file.buffer.toString("UTF-8");
 
     const reader = new commonmark.Parser();
@@ -127,7 +129,7 @@ function importMarkdown(taskContext, file, parentNote) {
 
     htmlContent = htmlSanitizer.sanitize(htmlContent);
 
-    const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
+    htmlContent = handleH1(htmlContent, title);
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
@@ -143,11 +145,24 @@ function importMarkdown(taskContext, file, parentNote) {
     return note;
 }
 
+function handleH1(content, title) {
+    content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
+        if (title.trim() === text.trim()) {
+            return ""; // remove whole H1 tag
+        } else {
+            return `<h2>${text}</h2>`;
+        }
+    });
+    return content;
+}
+
 function importHtml(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
     let content = file.buffer.toString("UTF-8");
 
     content = htmlSanitizer.sanitize(content);
+
+    content = handleH1(content, title);
 
     const {note} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,

@@ -275,7 +275,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                     return ""; // remove whole H1 tag
                 }
                 else {
-                    return match;
+                    return `<h2>${text}</h2>`;
                 }
             });
 
