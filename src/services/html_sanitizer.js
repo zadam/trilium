@@ -5,8 +5,7 @@ const sanitizeHtml = require('sanitize-html');
 function sanitize(dirtyHtml) {
     return sanitizeHtml(dirtyHtml, {
         allowedTags: [
-            // h1 is removed since that should be note's title
-            'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
             'li', 'b', 'i', 'strong', 'em', 'strike', 'abbr', 'code', 'hr', 'br', 'div',
             'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'section', 'img',
             'figure', 'span', 'label', 'input'
