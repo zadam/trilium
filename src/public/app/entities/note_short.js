@@ -60,7 +60,7 @@ class NoteShort {
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
         /** @param {boolean} */
-        this.isDeleted = row.isDeleted;
+        this.isDeleted = !!row.isDeleted;
     }
 
     addParent(parentNoteId, branchId) {
