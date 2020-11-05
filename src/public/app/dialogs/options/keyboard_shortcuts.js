@@ -81,7 +81,7 @@ export default class KeyboardShortcutsOptions {
                               .filter(shortcut => !!shortcut);
 
             const opts = {};
-            opts['keyboardShortcuts' + actionName] = JSON.stringify(shortcuts);
+            opts['keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1)] = JSON.stringify(shortcuts);
 
             server.put('options', opts);
         });

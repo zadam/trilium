@@ -1,6 +1,7 @@
 import utils from "../../services/utils.js";
 import toastService from "../../services/toast.js";
 import server from "../../services/server.js";
+import openService from "../../services/open.js";
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
@@ -64,7 +65,7 @@ class ImageTypeWidget extends TypeWidget {
         this.$fileSize = this.$widget.find(".image-filesize");
 
         this.$imageDownloadButton = this.$widget.find(".image-download");
-        this.$imageDownloadButton.on('click', () => utils.download(this.getFileUrl()));
+        this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));
 
         this.$copyToClipboardButton.on('click',() => {
             this.$imageWrapper.attr('contenteditable','true');
@@ -144,10 +145,6 @@ class ImageTypeWidget extends TypeWidget {
         range.selectNodeContents(element);
         selection.removeAllRanges();
         selection.addRange(range);
-    }
-
-    getFileUrl() {
-        return utils.getUrlForDownload(`api/notes/${this.noteId}/download`);
     }
 }
 

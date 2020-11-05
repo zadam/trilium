@@ -1,4 +1,5 @@
 import utils from "../../services/utils.js";
+import openService from "../../services/open.js";
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 import TypeWidget from "./type_widget.js";
@@ -73,24 +74,8 @@ export default class FileTypeWidget extends TypeWidget {
         this.$uploadNewRevisionButton = this.$widget.find(".file-upload-new-revision");
         this.$uploadNewRevisionInput = this.$widget.find(".file-upload-new-revision-input");
 
-        this.$downloadButton.on('click', () => utils.download(this.getFileUrl()));
-
-        this.$openButton.on('click', async () => {
-            if (utils.isElectron()) {
-                const resp = await server.post("notes/" + this.noteId + "/saveToTmpDir");
-
-                const electron = utils.dynamicRequire('electron');
-                const res = await electron.shell.openPath(resp.tmpFilePath);
-
-                if (res) {
-                    // fallback in case there's no default application for this file
-                    open(this.getFileUrl(), {url: true});
-                }
-            }
-            else {
-                window.location.href = this.getFileUrl();
-            }
-        });
+        this.$downloadButton.on('click', () => openService.downloadFileNote(this.noteId));
+        this.$openButton.on('click', () => openService.openFileNote(this.noteId));
 
         this.$uploadNewRevisionButton.on("click", () => {
             this.$uploadNewRevisionInput.trigger("click");
@@ -146,14 +131,10 @@ export default class FileTypeWidget extends TypeWidget {
         }
         else if (note.mime === 'application/pdf') {
             this.$pdfPreview.show();
-            this.$pdfPreview.attr("src", utils.getUrlForDownload("api/notes/" + this.noteId + "/open"));
+            this.$pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"));
         }
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         this.$openButton.toggle(!note.isProtected);
-    }
-
-    getFileUrl() {
-        return utils.getUrlForDownload("api/notes/" + this.noteId + "/download");
     }
 }

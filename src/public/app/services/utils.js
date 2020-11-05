@@ -105,24 +105,6 @@ function formatLabel(label) {
     return str;
 }
 
-function getHost() {
-    const url = new URL(window.location.href);
-    return url.protocol + "//" + url.hostname + ":" + url.port;
-}
-
-function download(url) {
-    url += '?' + Date.now(); // don't use cache
-
-    if (isElectron()) {
-        const remote = dynamicRequire('electron').remote;
-
-        remote.getCurrentWebContents().downloadURL(url);
-    }
-    else {
-        window.location.href = url;
-    }
-}
-
 function toObject(array, fn) {
     const obj = {};
 
@@ -294,20 +276,6 @@ async function clearBrowserCache() {
     }
 }
 
-/**
- * @param url - should be without initial slash!!!
- */
-function getUrlForDownload(url) {
-    if (isElectron()) {
-        // electron needs absolute URL so we extract current host, port, protocol
-        return getHost() + '/' + url;
-    }
-    else {
-        // web server can be deployed on subdomain so we need to use relative path
-        return url;
-    }
-}
-
 function copySelectionToClipboard() {
     const text = window.getSelection().toString();
     if (navigator.clipboard) {
@@ -366,7 +334,6 @@ export default {
     escapeHtml,
     stopWatch,
     formatLabel,
-    download,
     toObject,
     randomString,
     bindGlobalShortcut,
@@ -384,7 +351,6 @@ export default {
     focusSavedElement,
     isHtmlEmpty,
     clearBrowserCache,
-    getUrlForDownload,
     normalizeShortcut,
     copySelectionToClipboard,
     isCKEditorInitialized,

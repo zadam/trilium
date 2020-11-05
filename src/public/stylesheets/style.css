@@ -59,7 +59,7 @@ ul.fancytree-container {
     font-size: x-large;
     text-transform: none;
     line-height: 1;
-    content: "\ea1d";
+    content: "\e9b2";
     position: relative;
     top: -2px;
     margin-right: 5px;
@@ -72,7 +72,7 @@ ul.fancytree-container {
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
     font-family: 'boxicons' !important;
-    content: "\ea17";
+    content: "\e9ac";
 }
 
 /** some common text styling for cssClass label */

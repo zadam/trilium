@@ -3,6 +3,7 @@ import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
+import openService from "../services/open.js";
 
 const $dialog = $("#export-dialog");
 const $form = $("#export-form");
@@ -73,9 +74,9 @@ $form.on('submit', () => {
 function exportBranch(branchId, type, format, version) {
     taskId = utils.randomString(10);
 
-    const url = utils.getUrlForDownload(`api/notes/${branchId}/export/${type}/${format}/${version}/${taskId}`);
+    const url = openService.getUrlForDownload(`api/notes/${branchId}/export/${type}/${format}/${version}/${taskId}`);
 
-    utils.download(url);
+    openService.download(url);
 }
 
 $('input[name=export-type]').on('change', function () {
