@@ -12,6 +12,10 @@ async function handleRequest(req, res) {
     const attrs = repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
 
     for (const attr of attrs) {
+        if (!attr.value.trim()) {
+            continue;
+        }
+
         const regex = new RegExp(attr.value);
         let match;
 
