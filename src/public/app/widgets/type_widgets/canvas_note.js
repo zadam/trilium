@@ -1,78 +1,66 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
-import EraserBrushFactory from './canvas-note-utils/EraserBrush.js';
+import {InfiniteCanvas} from './canvas-note-utils/infinite-drawing-canvas.js';
 
+import { initButtons, initPens } from './canvas-note-utils/gui.js';
+import _debounce from './canvas-note-utils/lib/lodash.debounce.js';
 
 const TPL = `
-<div class="note-detail-canvas-note note-detail-printable">
-    
-    <style>
-    #drawing-mode {
-      margin-bottom: 10px;
-      vertical-align: top;
-    }
-    #drawing-mode-options {
-        position: relative;
-      display: inline-block;
-      vertical-align: top;
-      margin-bottom: 10px;
-      margin-top: 10px;
-      background: #f5f2f0;
-      padding: 10px;
-    }
-    label {
-      display: inline-block; width: 130px;
-    }
-    .info {
-      display: inline-block;
-      width: 25px;
-      background: #ffc;
-    }
-    #bd-wrapper {
-      min-width: 1500px;
-    }
-    </style>
-    <div id="drawing-mode-options">
-    <label for="drawing-mode-selector">Mode:</label>
-    <select id="drawing-mode-selector">
-      <option>Pencil</option>
-      <option>Circle</option>
-      <option>Spray</option>
-      <option>Pattern</option>
-      <option>Eraser</option>
-    </select><br>
-
-    <label for="drawing-line-width">Line width:</label>
-    <span class="info">30</span><input type="range" value="30" min="0" max="150" id="drawing-line-width"><br>
-
-    <label for="drawing-color">Line color:</label>
-    <input type="color" value="#005E7A" id="drawing-color"><br>
-
-    <label for="drawing-shadow-color">Shadow color:</label>
-    <input type="color" value="#005E7A" id="drawing-shadow-color"><br>
-
-    <label for="drawing-shadow-width">Shadow width:</label>
-    <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width"><br>
-
-    <label for="drawing-shadow-offset">Shadow offset:</label>
-    <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
+  <div id="parentContainer" class="note-detail-canvas-note note-detail-printable"
+    style="resize: both; overflow:auto; width: 100%; height: 80%; border: 4px double red;">
+    <div id="canvasContainer" style="width: 1500px; height: 1500px;">
+      <canvas id="c" class="canvasElement" style="border:1px solid #aaa; width: 1500px; height: 1500px"></canvas>
+    </div>
+    <br />
   </div>
-    <div style="display: block; position: relative; margin-left: 10px">
-      <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button>
-      <button id="clear-canvas" class="btn btn-info">Clear</button>
-      <button id="save-canvas" class="btn btn-info">Save</button>
-      <button id="refresh-canvas" class="btn btn-info">Refresh</button>
-      <button id="undo"><-</button>
-      <button id="redo">-></button>
-    
-    </div>
-    <div id="canvasWrapper" style="display: inline-block; background-color: red; border: 3px double black">
-    <canvas id="c" style="border:1px solid #aaa; position: absolute; touch-action:none; user-select: none;"></canvas>
-    </div>
-</div>`;
+  
+  <div id="pens-and-markers">
+<!--    Drawing:-->
+<!--    <button id="undo" disabled><i class='bx bx-undo'></i></button>-->
+<!--    <button id="redo" disabled><i class='bx bx-redo'></i></button>-->
+    Pens:
+    <button id="pen-1" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid black"></i></button>
+    <button id="pen-2" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid red"></i></button>
+    <button id="pen-3" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid green"></i></button>
+    <button id="pen-4" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid blue"></i></button>
+    <br />
+    <button id="marker-1" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid yellow"></i></button>
+    <button id="marker-2" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid wheat"></i></button>
+    <button id="marker-3" class="btn btn-info"><i class='bx bx-pen'
+        style="border-left: 7px solid rgba(51,204,0, 0.5)"></i></button>
+    <button id="marker-4" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid skyblue"></i></button>
+    <button id="eraser" class="btn btn-info"><i class='bx bx-eraser' style="border-left: 7px solid black"></i></button>
+    <button id="eraser-path" class="btn btn-info"><i class='bx bx-eraser' style="border-left: 7px dashed rgba(236,195,220, 20)"><i class='bx bx-shape-polygon' ></i></i></button>
+    Shapes:
+    <button id="text-1" class="btn btn-info"><i class='bx bx-text' style="border-left: 3px solid black"></i></button>
+    <br />
+    Mode:
+    <button id="mode-select" class="btn btn-info"><i class='bx bx-pointer'></i></button>
+    <!-- <button id="mode-1" class="btn btn-info"><i class='bx bx-mouse'></i></button> -->
+    <button id="mode-drawWithTouch" class="btn btn-info"><i class='bx bxs-hand-up'></i> Draw with Touch</button>
+    <!-- <button id="mode-3" class="btn btn-info"><i class='bx bx-stats'></i>Pen-Touch-Mouse</button> -->
+    <br />
+    Canvas:
+    Enlarge <input type="number" value=100 id="enlargeValue" style="width: 60px" />px
+    <button id="enlarge-left" class="btn btn-info"><i class='bx bxs-dock-left'></i></button>
+    <button id="enlarge-top" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-90' ></i></button>
+    <button id="enlarge-bottom" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-270' ></i></button>
+    <button id="enlarge-right" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-180' ></i></button>
+    Crop: 
+    <button id="crop-canvas" class="btn btn-info"><i class='bx bx-crop'></i></button>
+    <br />
+    <button id="zoom-100" class="btn btn-info">Zoom 100%</button>
+    <button id="clear-canvas" class="btn btn-info">Clear</button>
+  </div>
+`;
 
 export default class CanvasNoteTypeWidget extends TypeWidget {
+    constructor() {
+        super();
+
+        this.initCanvas = this.initCanvas.bind(this);
+    }
     static getType() {
         return "canvas-note";
     }
@@ -84,16 +72,17 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
             .requireLibrary(libraryLoader.CANVAS_NOTE)
             .then(() => {
                 console.log("fabric.js-loaded")
-                this.initFabric();
+                this.initCanvas();
             });
 
         return this.$widget;
     }
 
     async doRefresh(note) {
+        // get note from backend and put into canvas
         const noteComplement = await this.tabContext.getNoteComplement();
-        if (this.__canvas && noteComplement.content) {
-            this.__canvas.loadFromJSON(noteComplement.content);
+        if (this.canvas && noteComplement.content) {
+            this.canvas.loadFromJSON(noteComplement.content);
         }
         console.log('doRefresh', note, noteComplement);
     }
@@ -111,246 +100,22 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
         this.spacedUpdate.scheduleUpdate();
     }
 
-    initFabric() {
-        const self = this;
-        const canvas = this.__canvas = new fabric.Canvas('c', {
-            isDrawingMode: true
-        });
-        fabric.Object.prototype.transparentCorners = false;
+    initCanvas() {
+        const myCanvas = new InfiniteCanvas(
+            $('.canvasElement'),
+            $('#parentContainer'),
+            $('#canvasContainer'),
+        );
 
-        canvas.on('after:render', () => {
-            self.saveData();
-        });
+        this.infiniteCanvas = myCanvas.initFabric();
+        this.canvas = this.infiniteCanvas.$canvas;
 
-        window.addEventListener('resize', resizeCanvas, false);
+        this.canvas.setWidth(myCanvas.width);
+        this.canvas.setHeight(myCanvas.height);
 
-        function resizeCanvas() {
-            const width = $('.note-detail-canvas-note').width();
-            const height = $('.note-detail-canvas-note').height()
-            console.log(`setting canvas to ${width} x ${height}px`)
-            canvas.setWidth(width);
-            canvas.setHeight(height);
-            canvas.renderAll();
-        }
-
-        // resize on init
-        resizeCanvas();
-
-        const {EraserBrush} = EraserBrushFactory(fabric);
-
-        var drawingModeEl = $('#drawing-mode'),
-            drawingOptionsEl = $('#drawing-mode-options'),
-            drawingColorEl = $('#drawing-color'),
-            drawingShadowColorEl = $('#drawing-shadow-color'),
-            drawingLineWidthEl = $('#drawing-line-width'),
-            drawingShadowWidth = $('#drawing-shadow-width'),
-            drawingShadowOffset = $('#drawing-shadow-offset'),
-            saveCanvas = $('#save-canvas'),
-            refreshCanvas = $('#refresh-canvas'),
-            clearEl = $('#clear-canvas'),
-            undo = $('#undo'),
-            redo = $('#redo')
-        ;
-
-        const deletedItems = [];
-
-        undo.on('click', function () {
-            // Source: https://stackoverflow.com/a/28666556
-            var lastItemIndex = (canvas.getObjects().length - 1);
-            var item = canvas.item(lastItemIndex);
-
-            deletedItems.push(item);
-            // if(item.get('type') === 'path') {
-            canvas.remove(item);
-            canvas.renderAll();
-            // }
-        })
-
-        redo.on('click', function () {
-            const lastItem = deletedItems.pop();
-            if (lastItem) {
-                canvas.add(lastItem);
-                canvas.renderAll();
-            }
-        })
-
-        clearEl.on('click', function () {
-            console.log('cE-oC');
-            canvas.clear()
-        });
-
-        saveCanvas.on('click', function () {
-            console.log('sC-oC');
-            const canvasContent = canvas.toJSON();
-            console.log('Canvas JSON', canvasContent);
-            self.saveData();
-        });
-        refreshCanvas.on('click', function () {
-            console.log('rC-oC');
-            self.doRefresh('no note entity needed for refresh, only noteComplement');
-        });
-        drawingModeEl.on('click', function () {
-            canvas.isDrawingMode = !canvas.isDrawingMode;
-            if (canvas.isDrawingMode) {
-                drawingModeEl.html('Cancel drawing mode');
-                drawingOptionsEl.css('display', '');
-            } else {
-                drawingModeEl.html('Enter drawing mode');
-                drawingOptionsEl.css('display', 'none');
-            }
-        });
-        //
-        // if (fabric.PatternBrush) {
-        //     var vLinePatternBrush = new fabric.PatternBrush(canvas);
-        //     vLinePatternBrush.getPatternSrc = function () {
-        //
-        //         var patternCanvas = fabric.document.createElement('canvas');
-        //         patternCanvas.width = patternCanvas.height = 10;
-        //         var ctx = patternCanvas.getContext('2d');
-        //
-        //         ctx.strokeStyle = this.color;
-        //         ctx.lineWidth = 5;
-        //         ctx.beginPath();
-        //         ctx.moveTo(0, 5);
-        //         ctx.lineTo(10, 5);
-        //         ctx.closePath();
-        //         ctx.stroke();
-        //
-        //         return patternCanvas;
-        //     };
-        //
-        //     var hLinePatternBrush = new fabric.PatternBrush(canvas);
-        //     hLinePatternBrush.getPatternSrc = function () {
-        //
-        //         var patternCanvas = fabric.document.createElement('canvas');
-        //         patternCanvas.width = patternCanvas.height = 10;
-        //         var ctx = patternCanvas.getContext('2d');
-        //
-        //         ctx.strokeStyle = this.color;
-        //         ctx.lineWidth = 5;
-        //         ctx.beginPath();
-        //         ctx.moveTo(5, 0);
-        //         ctx.lineTo(5, 10);
-        //         ctx.closePath();
-        //         ctx.stroke();
-        //
-        //         return patternCanvas;
-        //     };
-        //
-        //     var squarePatternBrush = new fabric.PatternBrush(canvas);
-        //     squarePatternBrush.getPatternSrc = function () {
-        //
-        //         var squareWidth = 10, squareDistance = 2;
-        //
-        //         var patternCanvas = fabric.document.createElement('canvas');
-        //         patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
-        //         var ctx = patternCanvas.getContext('2d');
-        //
-        //         ctx.fillStyle = this.color;
-        //         ctx.fillRect(0, 0, squareWidth, squareWidth);
-        //
-        //         return patternCanvas;
-        //     };
-        //
-        //     var diamondPatternBrush = new fabric.PatternBrush(canvas);
-        //     diamondPatternBrush.getPatternSrc = function () {
-        //
-        //         var squareWidth = 10, squareDistance = 5;
-        //         var patternCanvas = fabric.document.createElement('canvas');
-        //         var rect = new fabric.Rect({
-        //             width: squareWidth,
-        //             height: squareWidth,
-        //             angle: 45,
-        //             fill: this.color
-        //         });
-        //
-        //         var canvasWidth = rect.getBoundingRect().width;
-        //
-        //         patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
-        //         rect.set({left: canvasWidth / 2, top: canvasWidth / 2});
-        //
-        //         var ctx = patternCanvas.getContext('2d');
-        //         rect.render(ctx);
-        //
-        //         return patternCanvas;
-        //     };
-        //
-        //     // var img = new Image();
-        //     // img.src = './libraries/canvas-note/honey_im_subtle.png';
-        //
-        //     // var texturePatternBrush = new fabric.PatternBrush(canvas);
-        //     // texturePatternBrush.source = img;
-        // }
-
-        $('#drawing-mode-selector').change(function () {
-            if (false) {
-            }
-                // else if (this.value === 'hline') {
-                //     canvas.freeDrawingBrush = vLinePatternBrush;
-                // } else if (this.value === 'vline') {
-                //     canvas.freeDrawingBrush = hLinePatternBrush;
-                // } else if (this.value === 'square') {
-                //     canvas.freeDrawingBrush = squarePatternBrush;
-                // } else if (this.value === 'diamond') {
-                //     canvas.freeDrawingBrush = diamondPatternBrush;
-                // }
-                // else if (this.value === 'texture') {
-                //   canvas.freeDrawingBrush = texturePatternBrush;
-            // }
-            else if (this.value === "Eraser") {
-                // to use it, just set the brush
-                const eraserBrush = new EraserBrush(canvas);
-                eraserBrush.width = parseInt(drawingLineWidthEl.val(), 10) || 1;
-                eraserBrush.color = 'rgb(236,195,195)'; // erser works with opacity!
-                canvas.freeDrawingBrush = eraserBrush;
-                canvas.isDrawingMode = true;
-            } else {
-                canvas.freeDrawingBrush = new fabric[this.value + 'Brush'](canvas);
-                canvas.freeDrawingBrush.color = drawingColorEl.val();
-                canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.val(), 10) || 1;
-                canvas.freeDrawingBrush.shadow = new fabric.Shadow({
-                    blur: parseInt(drawingShadowWidth.val(), 10) || 0,
-                    offsetX: 0,
-                    offsetY: 0,
-                    affectStroke: true,
-                    color: drawingShadowColorEl.val(),
-                });
-            }
-
-
-        });
-
-        drawingColorEl.change(function () {
-            canvas.freeDrawingBrush.color = this.value;
-        });
-        drawingShadowColorEl.change(function () {
-            canvas.freeDrawingBrush.shadow.color = this.value;
-        })
-        drawingLineWidthEl.change(function () {
-            canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
-            drawingLineWidthEl.prev().html(this.value);
-        });
-        drawingShadowWidth.change(function () {
-            canvas.freeDrawingBrush.shadow.blur = parseInt(this.value, 10) || 0;
-            drawingShadowWidth.prev().html(this.value);
-        });
-        drawingShadowOffset.change(function () {
-            canvas.freeDrawingBrush.shadow.offsetX = parseInt(this.value, 10) || 0;
-            canvas.freeDrawingBrush.shadow.offsetY = parseInt(this.value, 10) || 0;
-            drawingShadowOffset.prev().html(this.value);
-        })
-
-        if (canvas.freeDrawingBrush) {
-            canvas.freeDrawingBrush.color = drawingColorEl.value;
-            canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
-            canvas.freeDrawingBrush.shadow = new fabric.Shadow({
-                blur: parseInt(drawingShadowWidth.value, 10) || 0,
-                offsetX: 0,
-                offsetY: 0,
-                affectStroke: true,
-                color: drawingShadowColorEl.value,
-            });
-        }
+        // Buttons
+        initButtons(this.infiniteCanvas);
+        initPens(this.infiniteCanvas);
     }
 }
 
