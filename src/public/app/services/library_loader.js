@@ -58,7 +58,9 @@ const MERMAID = {
 
 const CANVAS_NOTE = {
     js: [
-        "libraries/canvas-note/fabric.4.0.0-beta.12.min.js",
+        "libraries/canvas-note/fabric.4.1.0.custom.js",
+        "libraries/canvas-note/hammer.2.0.8.min.js",
+        "libraries/canvas-note/jquery.hammer.js",
     ],
     // css: [
     //     "stylesheets/somestyle.css"
