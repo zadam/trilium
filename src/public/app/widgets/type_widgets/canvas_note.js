@@ -8,7 +8,8 @@ import _debounce from './canvas-note-utils/lib/lodash.debounce.js';
 
 const TPL = `
   <div id="parentContainer" class="note-detail-canvas-note note-detail-printable"
-    style="resize: both; overflow:auto; width: 100%; height: 80%; border: 4px double red;">
+    style=" /*resize: both;*/
+     overflow:auto; width: 100%; height: 80%; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;">
     <div id="canvasContainer" style="width: 1500px; height: 1500px;">
       <canvas id="c" class="canvasElement" style="border:1px solid #aaa; width: 1500px; height: 1500px"></canvas>
     </div>
