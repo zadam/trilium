@@ -1,9 +1,9 @@
 import server from "./server.js";
-import utils from "./utils.js";
 import renderService from "./render.js";
 import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import libraryLoader from "./library_loader.js";
+import openService from "./open.js";
 
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
@@ -36,24 +36,11 @@ async function getRenderedContent(note, options = {}) {
             .css("max-width", "100%");
     }
     else if (type === 'file' || type === 'pdf') {
-        function getFileUrl() {
-            return utils.getUrlForDownload(`api/notes/${note.noteId}/download`);
-        }
-
         const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
         const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
-        $downloadButton.on('click', () => utils.download(getFileUrl()));
-        $openButton.on('click', () => {
-            if (utils.isElectron()) {
-                const open = utils.dynamicRequire("open");
-
-                open(getFileUrl(), {url: true});
-            }
-            else {
-                window.location.href = getFileUrl();
-            }
-        });
+        $downloadButton.on('click', () => openService.downloadFileNote(note.noteId));
+        $openButton.on('click', () => openService.openFileNote(note.noteId));
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
@@ -62,7 +49,7 @@ async function getRenderedContent(note, options = {}) {
 
         if (type === 'pdf') {
             const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; flex-grow: 100;"></iframe>');
-            $pdfPreview.attr("src", utils.getUrlForDownload(`api/notes/${note.noteId}/open`));
+            $pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"));
 
             $rendered.append($pdfPreview);
         }

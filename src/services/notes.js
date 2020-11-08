@@ -687,7 +687,7 @@ function eraseDeletedNotes() {
 
     sql.executeMany(`
         UPDATE notes 
-        SET title = '[deleted]',
+        SET title = '[erased]',
             isProtected = 0,
             isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);

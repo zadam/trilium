@@ -3,6 +3,7 @@ import server from '../services/server.js';
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import libraryLoader from "../services/library_loader.js";
+import openService from "../services/open.js";
 
 const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
@@ -121,11 +122,7 @@ async function setContentPane() {
 
     const $downloadButton = $('<button class="btn btn-sm btn-primary" type="button">Download</button>');
 
-    $downloadButton.on('click', () => {
-        const url = utils.getUrlForDownload(`api/notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}/download`);
-
-        utils.download(url);
-    });
+    $downloadButton.on('click', () => openService.downloadNoteRevision(revisionItem.noteId, revisionItem.noteRevisionId));
 
     $titleButtons.append($downloadButton);
 

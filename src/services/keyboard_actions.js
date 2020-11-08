@@ -365,7 +365,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "openDevTools",
-        defaultShortcuts: ["CommandOrControl+Shift+I"],
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+I"] : [],
         scope: "window"
     },
     {
@@ -408,13 +408,7 @@ for (const action of DEFAULT_KEYBOARD_ACTIONS) {
     }
 }
 
-let cachedActions = null;
-
 function getKeyboardActions() {
-    if (cachedActions) {
-        return cachedActions;
-    }
-
     const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
     for (const action of actions) {
@@ -441,8 +435,6 @@ function getKeyboardActions() {
             }
         }
     }
-
-    cachedActions = actions;
 
     return actions;
 }
