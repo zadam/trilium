@@ -114,7 +114,7 @@ const EraserBrushFactory = (fabric) => {
         const fabricImage = await fabricImageFromURLPromise(erasedGroupDataURL);
         // TODO: If complete path was erased, remove canvas object completely! Right now, an empty image is added
         console.log(eraserPath, erasedGroup, 'fabricimage', fabricImage);
-        console.image(erasedGroupDataURL);
+        // console.image(erasedGroupDataURL);
         fabricImage.set({
           left: erasedGroup.left,
           top: erasedGroup.top,
