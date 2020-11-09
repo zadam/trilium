@@ -13,11 +13,12 @@ img.src = deleteIcon;
  * const canvasState = new CanvasState();
  * canvasState.on('selecting', ()=>{});
  * canvasState.activate('selecting');
-Inspiration: https://stackoverflow.com/a/53917410
-https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+ Inspiration: https://stackoverflow.com/a/53917410
+ https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
  */
 class CanvasState extends EventTarget {
   constructor(initialState) {
+    super();
     this.states = {
       IDLE: 'idle',
       INTERACTING: 'interacting',
@@ -99,6 +100,9 @@ class InfiniteCanvas {
     this.resetZoom = this.resetZoom.bind(this);
     this.cropCanvas = this.cropCanvas.bind(this);
     this.placeTextBox = this.placeTextBox.bind(this);
+    this.getInfiniteCanvas = this.getInfiniteCanvas.bind(this);
+    this.setInfiniteCanvas = this.setInfiniteCanvas.bind(this);
+    this.overrideFabric = this.overrideFabric.bind(this);
   }
 
   overrideFabric() {
@@ -179,6 +183,55 @@ class InfiniteCanvas {
   }
 
   /**
+   * prepares object that has width, scale and height of current view
+   * @returns {{canvas: *, width: *, lastScale: number, height: *}}
+   */
+  getInfiniteCanvas() {
+    const canvas = this.$canvas;
+    const canvasContent = canvas.toJSON();
+    console.log('Canvas JSON', canvasContent);
+    const payload = {
+      width: this.width,
+      height: this.height,
+      lastScale: this.lastScale,
+      canvas: canvasContent,
+    };
+    return payload;
+  }
+
+  /**
+   * load infinite canvas json into canvas
+   * @param infiniteCanvasState
+   */
+  async setInfiniteCanvas(infiniteCanvasState) {
+    const self = this;
+    const canvasContainer = this.$canvasContainer;
+    const {lastScale, width, height, canvas} = infiniteCanvasState;
+
+    // console.log('sICJSON', payload, canvasContainer);
+
+    return new Promise((resolve, reject) => {
+      const savedCanvas = canvas;
+      if (savedCanvas) {
+        this.$canvas.loadFromJSON(savedCanvas, function() {
+          console.log('loaded?');
+          self.width = self.scaledWidth = parseInt(width, 10);
+          self.height = self.scaledHeight = parseInt(height, 10);
+          self.lastScale = lastScale;
+          self.$canvas.setWidth(self.width);
+          self.$canvas.setHeight(self.height);
+          self.$canvasContainer.width(self.width).height(self.height);
+          self.$canvas.renderAll();
+          resolve();
+        });
+      } else {
+        console.log('payload empty?');
+        reject('payload empty?');
+      }
+    });
+  }
+
+  /**
    *
    * @param {string} direction [top, left, right, bottom]
    * @param {float} distance distance in px
@@ -205,7 +258,7 @@ class InfiniteCanvas {
     }
 
     let newWidth = this.scaledWidth,
-      newHeight = this.scaledHeight;
+        newHeight = this.scaledHeight;
 
     if (direction === 'top' || direction === 'bottom') {
       newHeight = this.scaledHeight + distance;
@@ -246,7 +299,10 @@ class InfiniteCanvas {
     // place text box independent of touch type
     if (this.activatePlaceTextBox) {
       if (fabricEvent && fabricEvent.absolutePointer) {
-        this.placeTextBox(fabricEvent.absolutePointer.x, fabricEvent.absolutePointer.y);
+        this.placeTextBox(
+            fabricEvent.absolutePointer.x,
+            fabricEvent.absolutePointer.y,
+        );
         this.activatePlaceTextBox = false;
         return;
       }
@@ -284,13 +340,13 @@ class InfiniteCanvas {
   placeTextBox(x, y) {
     const canvas = this.$canvas;
     canvas.add(
-      new fabric.IText('Tap and Type', {
-        fontFamily: 'Arial',
-        // fontWeith: '200',
-        fontSize: 15,
-        left: x,
-        top: y,
-      }),
+        new fabric.IText('Tap and Type', {
+          fontFamily: 'Arial',
+          // fontWeith: '200',
+          fontSize: 15,
+          left: x,
+          top: y,
+        }),
     );
     canvas.isDrawingMode = false;
   }
@@ -333,8 +389,8 @@ class InfiniteCanvas {
     console.log('panstart', e);
 
     if (
-      e.pointerType === 'touch' &&
-      !this.drawWithTouch // pointertype mouse and canvas state mouse-drag
+        e.pointerType === 'touch' &&
+        !this.drawWithTouch // pointertype mouse and canvas state mouse-drag
     ) {
       canvas.isDrawingMode = false;
       canvas.isDragging = true;
@@ -454,14 +510,14 @@ class InfiniteCanvas {
   /**
    * Crop the canvas to the surrounding box of all elements on the canvas
    *
-    Learnings: we must NOT use fabric.Group, since this messes with items and then
-    SVG export is scwed. Items coordinates are not set correctly!
-    fabric.Group(items).aCoords does NOT work.
-    Therefore we need to get bounding box ourselves
-    Note: Or maybe we can use group, destroy and readd everything afterwards:
-    http://fabricjs.com/manage-selection
-    https://gist.github.com/msievers/6069778#gistcomment-2030151
-    https://stackoverflow.com/a/31828460
+   Learnings: we must NOT use fabric.Group, since this messes with items and then
+   SVG export is scwed. Items coordinates are not set correctly!
+   fabric.Group(items).aCoords does NOT work.
+   Therefore we need to get bounding box ourselves
+   Note: Or maybe we can use group, destroy and readd everything afterwards:
+   http://fabricjs.com/manage-selection
+   https://gist.github.com/msievers/6069778#gistcomment-2030151
+   https://stackoverflow.com/a/31828460
    */
   async cropCanvas() {
     console.log('cropCanvas');

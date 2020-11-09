@@ -9,7 +9,7 @@ import _debounce from './canvas-note-utils/lib/lodash.debounce.js';
 const TPL = `
   <div id="parentContainer" class="note-detail-canvas-note note-detail-printable"
     style=" /*resize: both;*/
-     overflow:auto; width: 100%; height: 80%; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;">
+     overflow:auto; width: 100%; height: 70%; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;">
     <div id="canvasContainer" style="width: 1500px; height: 1500px;">
       <canvas id="c" class="canvasElement" style="border:1px solid #aaa; width: 1500px; height: 1500px"></canvas>
     </div>
@@ -25,7 +25,6 @@ const TPL = `
     <button id="pen-2" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid red"></i></button>
     <button id="pen-3" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid green"></i></button>
     <button id="pen-4" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid blue"></i></button>
-    <br />
     <button id="marker-1" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid yellow"></i></button>
     <button id="marker-2" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid wheat"></i></button>
     <button id="marker-3" class="btn btn-info"><i class='bx bx-pen'
@@ -61,6 +60,9 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
         super();
 
         this.initCanvas = this.initCanvas.bind(this);
+        this.saveData = this.saveData.bind(this);
+        this.getContent = this.getContent.bind(this);
+        this.doRefresh = this.doRefresh.bind(this);
     }
     static getType() {
         return "canvas-note";
@@ -74,6 +76,14 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
             .then(() => {
                 console.log("fabric.js-loaded")
                 this.initCanvas();
+            })
+            .then(async () => {
+                const noteComplement = await this.tabContext.getNoteComplement();
+                if (this.infiniteCanvas && noteComplement.content) {
+                    const content = JSON.parse(noteComplement.content || "");
+                    await this.infiniteCanvas.setInfiniteCanvas(content);
+                }
+                this.canvas.on('after:render', _debounce(this.saveData, 1000));
             });
 
         return this.$widget;
@@ -82,8 +92,9 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
     async doRefresh(note) {
         // get note from backend and put into canvas
         const noteComplement = await this.tabContext.getNoteComplement();
-        if (this.canvas && noteComplement.content) {
-            this.canvas.loadFromJSON(noteComplement.content);
+        if (this.infiniteCanvas && noteComplement.content) {
+            const content = JSON.parse(noteComplement.content || "");
+            await this.infiniteCanvas.setInfiniteCanvas(content);
         }
         console.log('doRefresh', note, noteComplement);
     }
@@ -92,9 +103,9 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
      * Function gets data that will be sent via spacedUpdate.scheduleUpdate();
      */
     getContent() {
-        const content = JSON.stringify(this.__canvas.toJSON());
+        const content = this.infiniteCanvas.getInfiniteCanvas();
         console.log('gC', content);
-        return content;
+        return JSON.stringify(content);
     }
 
     saveData() {
@@ -110,6 +121,7 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
 
         this.infiniteCanvas = myCanvas.initFabric();
         this.canvas = this.infiniteCanvas.$canvas;
+        // this.canvas.clear();
 
         this.canvas.setWidth(myCanvas.width);
         this.canvas.setHeight(myCanvas.height);
