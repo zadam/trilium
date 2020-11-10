@@ -6,9 +6,6 @@
         <option name="TAB_SIZE" value="2" />
       </value>
     </option>
-    <H2CodeStyleSettings version="5">
-      <option name="USE_GENERAL_STYLE" value="false" />
-    </H2CodeStyleSettings>
     <JSCodeStyleSettings version="0">
       <option name="USE_EXPLICIT_JS_EXTENSION" value="TRUE" />
     </JSCodeStyleSettings>
