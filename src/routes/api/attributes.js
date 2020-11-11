@@ -28,8 +28,10 @@ function updateNoteAttribute(req) {
             || body.name !== attribute.name
             || (body.type === 'relation' && body.value !== attribute.value)) {
 
+            let newAttribute;
+
             if (body.type !== 'relation' || !!body.value.trim()) {
-                const newAttribute = attribute.createClone(body.type, body.name, body.value);
+                newAttribute = attribute.createClone(body.type, body.name, body.value);
                 newAttribute.save();
             }
 
@@ -37,7 +39,7 @@ function updateNoteAttribute(req) {
             attribute.save();
 
             return {
-                attributeId: attribute.attributeId
+                attributeId: newAttribute ? newAttribute.attributeId : null
             };
         }
     }
