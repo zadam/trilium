@@ -147,8 +147,10 @@ function updateNoteAttributes(req) {
 
     // all the remaining existing attributes are not defined anymore and should be deleted
     for (const toDeleteAttr of existingAttrs) {
-        toDeleteAttr.isDeleted = true;
-        toDeleteAttr.save();
+        if (!toDeleteAttr.isAutoLink()) {
+            toDeleteAttr.isDeleted = true;
+            toDeleteAttr.save();
+        }
     }
 }
 

@@ -34,6 +34,10 @@ class Attribute extends Entity {
         this.isInheritable = !!this.isInheritable;
     }
 
+    isAutoLink() {
+        return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
+    }
+
     /**
      * @returns {Note|null}
      */
