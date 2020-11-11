@@ -52,8 +52,9 @@ function updateNoteAttribute(req) {
         attribute.type = body.type;
     }
 
-    if (body.value.trim()) {
+    if (body.type !== 'relation' || body.value.trim()) {
         attribute.value = body.value;
+        attribute.isDeleted = false;
     }
     else {
         // relations should never have empty target
