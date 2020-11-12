@@ -64,6 +64,7 @@ function getHost() {
 }
 
 export default {
+    download,
     downloadFileNote,
     openFileNote,
     downloadNoteRevision,
