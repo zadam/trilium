@@ -23,5 +23,7 @@ RUN set -x \
 # Bundle app source
 COPY . .
 
+USER node
+
 EXPOSE 8080
 CMD [ "node", "./src/www" ]
