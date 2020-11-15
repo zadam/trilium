@@ -13,13 +13,13 @@ const dateUtils = require('../../services/date_utils');
 const entityConstructor = require('../../entities/entity_constructor');
 const utils = require('../../services/utils');
 
-function testSync() {
+async function testSync() {
     try {
         if (!syncOptions.isSyncSetup()) {
             return { success: false, message: "Sync server host is not configured. Please configure sync first." };
         }
 
-        syncService.login();
+        await syncService.login();
 
         // login was successful so we'll kick off sync now
         // this is important in case when sync server has been just initialized
