@@ -1,5 +1,6 @@
 const sax = require("sax");
 const stream = require('stream');
+const {Throttle} = require('stream-throttle');
 const log = require("../log");
 const utils = require("../utils");
 const sql = require("../sql");
@@ -341,7 +342,10 @@ function importEnex(taskContext, file, parentNote) {
         const bufferStream = new stream.PassThrough();
         bufferStream.end(file.buffer);
 
-        bufferStream.pipe(saxStream);
+        bufferStream
+            // rate limiting to improve responsiveness during / after import
+            .pipe(new Throttle({rate: 300000}))
+            .pipe(saxStream);
     });
 }
 
