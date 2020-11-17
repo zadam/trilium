@@ -11,6 +11,7 @@ const entityChangesService = require('./entity_changes.js');
 const optionsService = require('./options');
 const Branch = require('../entities/branch');
 const dateUtils = require('./date_utils');
+const attributeService = require('./attributes');
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -607,20 +608,10 @@ class ConsistencyChecks {
     findWronglyNamedAttributes() {
         const attrNames = sql.getColumn(`SELECT DISTINCT name FROM attributes`);
 
-        const attrNameMatcher = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
-
         for (const origName of attrNames) {
-            if (!attrNameMatcher.test(origName)) {
-                let fixedName;
+            const fixedName = attributeService.sanitizeAttributeName(origName);
 
-                if (origName === '') {
-                    fixedName = "unnamed";
-                }
-                else {
-                    // any not allowed character should be replaced with underscore
-                    fixedName = origName.replace(/[^\p{L}\p{N}_:]/ug, "_");
-                }
-
+            if (fixedName !== origName) {
                 if (this.autoFix) {
                     // there isn't a good way to update this:
                     // - just SQL query will fix it in DB but not notify frontend (or other caches) that it has been fixed

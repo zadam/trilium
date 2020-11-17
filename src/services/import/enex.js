@@ -7,6 +7,7 @@ const noteService = require("../notes");
 const imageService = require("../image");
 const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require("../html_sanitizer");
+const attributeService = require("../attributes");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
@@ -105,9 +106,17 @@ function importEnex(taskContext, file, parentNote) {
         const previousTag = getPreviousTag();
 
         if (previousTag === 'note-attributes') {
+            let labelName = currentTag;
+
+            if (labelName === 'source-url') {
+                labelName = 'sourceUrl';
+            }
+
+            labelName = attributeService.sanitizeAttributeName(labelName);
+
             note.attributes.push({
                 type: 'label',
-                name: currentTag,
+                name: labelName,
                 value: text
             });
         }
@@ -149,7 +158,7 @@ function importEnex(taskContext, file, parentNote) {
             } else if (currentTag === 'tag') {
                 note.attributes.push({
                     type: 'label',
-                    name: text,
+                    name: attributeService.sanitizeAttributeName(text),
                     value: ''
                 })
             }
@@ -227,6 +236,10 @@ function importEnex(taskContext, file, parentNote) {
         taskContext.increaseProgressCount();
 
         for (const resource of resources) {
+            if (!resource.content) {
+                continue;
+            }
+
             const hash = utils.md5(resource.content);
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');

@@ -4,6 +4,7 @@ const imageType = require('image-type');
 const imageService = require('../../services/image');
 const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
+const attributeService = require('../../services/attributes');
 
 function uploadImage(req) {
     const file = req.file;
@@ -37,7 +38,7 @@ function saveNote(req) {
 
     if (req.body.labels) {
         for (const {name, value} of req.body.labels) {
-            note.setLabel(name, value);
+            note.setLabel(attributeService.sanitizeAttributeName(name), value);
         }
     }
 
