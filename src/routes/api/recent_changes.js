@@ -31,19 +31,36 @@ function getRecentChanges(req) {
         }
     }
 
+    // now we need to also collect date points not represented in note revisions:
+    // 1. creation for all notes (dateCreated)
+    // 2. deletion for deleted notes (dateModified)
     const notes = sql.getRows(`
-        SELECT
-            notes.noteId,
-            notes.isDeleted AS current_isDeleted,
-            notes.deleteId AS current_deleteId,
-            notes.isErased AS current_isErased,
-            notes.title AS current_title,
-            notes.isProtected AS current_isProtected,
-            notes.title,
-            notes.utcDateCreated AS utcDate,
-            notes.dateCreated AS date
-        FROM
-            notes`);
+            SELECT
+                notes.noteId,
+                notes.isDeleted AS current_isDeleted,
+                notes.deleteId AS current_deleteId,
+                notes.isErased AS current_isErased,
+                notes.title AS current_title,
+                notes.isProtected AS current_isProtected,
+                notes.title,
+                notes.utcDateCreated AS utcDate,
+                notes.dateCreated AS date
+            FROM
+                notes
+        UNION ALL
+            SELECT
+                notes.noteId,
+                notes.isDeleted AS current_isDeleted,
+                notes.deleteId AS current_deleteId,
+                notes.isErased AS current_isErased,
+                notes.title AS current_title,
+                notes.isProtected AS current_isProtected,
+                notes.title,
+                notes.utcDateModified AS utcDate,
+                notes.dateModified AS date
+            FROM
+                notes
+            WHERE notes.isDeleted = 1 AND notes.isErased = 0`);
 
     for (const note of notes) {
         if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
