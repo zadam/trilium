@@ -43,7 +43,7 @@ function getStats() {
 
     const stats = {
         initialized: optionService.getOption('initialized') === 'true',
-        stats: syncService.stats
+        outstandingPullCount: syncService.getOutstandingPullCount()
     };
 
     log.info(`Returning sync stats: ${JSON.stringify(stats)}`);

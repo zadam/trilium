@@ -110,8 +110,7 @@ function sendPing(client, syncRows = []) {
 
     sendMessage(client, {
         type: 'sync',
-        data: syncRows,
-        outstandingSyncs: stats.outstandingPushes + stats.outstandingPulls
+        data: syncRows
     });
 }
 

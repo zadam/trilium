@@ -130,7 +130,7 @@ function SetupModel() {
 }
 
 async function checkOutstandingSyncs() {
-    const { stats, initialized } = await $.get('api/sync/stats');
+    const { outstandingPullCount, initialized } = await $.get('api/sync/stats');
 
     if (initialized) {
         if (utils.isElectron()) {
@@ -143,9 +143,7 @@ async function checkOutstandingSyncs() {
         }
     }
     else {
-        const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
-
-        $("#outstanding-syncs").html(totalOutstandingSyncs);
+        $("#outstanding-syncs").html(outstandingPullCount);
     }
 }
 

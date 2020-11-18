@@ -8,8 +8,6 @@ import options from "./options.js";
 import treeCache from "./tree_cache.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 
-const $outstandingSyncsCount = $("#outstanding-syncs-count");
-
 const messageHandlers = [];
 
 let ws;
@@ -63,8 +61,6 @@ async function handleMessage(event) {
     if (message.type === 'sync') {
         let syncRows = message.data;
         lastPingTs = Date.now();
-
-        $outstandingSyncsCount.html(message.outstandingSyncs);
 
         if (syncRows.length > 0) {
             logRows(syncRows);

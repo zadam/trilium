@@ -20,10 +20,7 @@ const entityConstructor = require('../entities/entity_constructor');
 
 let proxyToggle = true;
 
-const stats = {
-    outstandingPushes: 0,
-    outstandingPulls: 0
-};
+let outstandingPullCount = 0;
 
 async function sync() {
     try {
@@ -135,11 +132,7 @@ async function pullChanges(syncContext) {
 
         const pulledDate = Date.now();
 
-        stats.outstandingPulls = resp.maxEntityChangeId - lastSyncedPull;
-
-        if (stats.outstandingPulls < 0) {
-            stats.outstandingPulls = 0;
-        }
+        outstandingPullCount = Math.max(0, resp.maxEntityChangeId - lastSyncedPull);
 
         const {entityChanges} = resp;
 
@@ -159,13 +152,13 @@ async function pullChanges(syncContext) {
                     syncUpdateService.updateEntity(entityChange, entity, syncContext.sourceId);
                 }
 
-                stats.outstandingPulls = resp.maxEntityChangeId - entityChange.id;
+                outstandingPullCount = Math.max(0, resp.maxEntityChangeId - entityChange.id);
             }
 
             setLastSyncedPull(entityChanges[entityChanges.length - 1].entityChange.id);
         });
 
-        log.info(`Pulled ${entityChanges.length} changes starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${stats.outstandingPulls} outstanding pulls`);
+        log.info(`Pulled ${entityChanges.length} changes starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
     }
 
     if (atLeastOnePullApplied) {
@@ -359,16 +352,12 @@ function setLastSyncedPush(entityChangeId) {
     optionService.setOption('lastSyncedPush', entityChangeId);
 }
 
-function updatePushStats() {
-    if (syncOptions.isSyncSetup()) {
-        const lastSyncedPush = optionService.getOption('lastSyncedPush');
-
-        stats.outstandingPushes = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE isSynced = 1 AND id > ?", [lastSyncedPush]);
-    }
-}
-
 function getMaxEntityChangeId() {
     return sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes');
+}
+
+function getOutstandingPullCount() {
+    return outstandingPullCount;
 }
 
 sqlInit.dbReady.then(() => {
@@ -376,14 +365,12 @@ sqlInit.dbReady.then(() => {
 
     // kickoff initial sync immediately
     setTimeout(cls.wrap(sync), 3000);
-
-    setInterval(cls.wrap(updatePushStats), 1000);
 });
 
 module.exports = {
     sync,
     login,
     getEntityChangesRecords,
-    stats,
+    getOutstandingPullCount,
     getMaxEntityChangeId
 };
