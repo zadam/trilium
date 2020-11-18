@@ -39,10 +39,6 @@ function importEnex(taskContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     })).note;
 
-    // we're persisting notes as we parse the document, but these are run asynchronously and may not be finished
-    // when we finish parsing. We use this to be sure that all saving has been finished before returning successfully.
-    const saveNotePromises = [];
-
     function extractContent(content) {
         const openingNoteIndex = content.indexOf('<en-note>');
 
@@ -314,13 +310,7 @@ function importEnex(taskContext, file, parentNote) {
         updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
     }
 
-    saxStream.on("closetag", tag => {
-        path.pop();
-
-        if (tag === 'note') {
-            saveNotePromises.push(saveNote());
-        }
-    });
+    saxStream.on("closetag", tag => path.pop());
 
     saxStream.on("opencdata", () => {
         //console.log("opencdata");
@@ -337,14 +327,14 @@ function importEnex(taskContext, file, parentNote) {
     return new Promise((resolve, reject) =>
     {
         // resolve only when we parse the whole document AND saving of all notes have been finished
-        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => resolve(rootNote)) });
+        saxStream.on("end", () => resolve(rootNote));
 
         const bufferStream = new stream.PassThrough();
         bufferStream.end(file.buffer);
 
         bufferStream
             // rate limiting to improve responsiveness during / after import
-            .pipe(new Throttle({rate: 300000}))
+            .pipe(new Throttle({rate: 500000}))
             .pipe(saxStream);
     });
 }
