@@ -37,7 +37,7 @@ function getImageType(buffer) {
         }
     }
     else {
-        return imageType(buffer);
+        return imageType(buffer) || "jpg"; // optimistic JPG default
     }
 }
 

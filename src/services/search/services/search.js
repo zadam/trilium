@@ -17,9 +17,13 @@ const utils = require('../../utils.js');
  */
 function findNotesWithExpression(expression) {
     const hoistedNote = noteCache.notes[hoistedNoteService.getHoistedNoteId()];
-    const allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
+    let allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
         : Object.values(noteCache.notes);
+
+    // in the process of loading data sometimes we create "skeleton" note instances which are expected to be filled later
+    // in case of inconsistent data this might not work and search will then crash on these
+    allNotes = allNotes.filter(note => note.type !== undefined);
 
     const allNoteSet = new NoteSet(allNotes);
 

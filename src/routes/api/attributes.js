@@ -28,8 +28,10 @@ function updateNoteAttribute(req) {
             || body.name !== attribute.name
             || (body.type === 'relation' && body.value !== attribute.value)) {
 
+            let newAttribute;
+
             if (body.type !== 'relation' || !!body.value.trim()) {
-                const newAttribute = attribute.createClone(body.type, body.name, body.value);
+                newAttribute = attribute.createClone(body.type, body.name, body.value);
                 newAttribute.save();
             }
 
@@ -37,7 +39,7 @@ function updateNoteAttribute(req) {
             attribute.save();
 
             return {
-                attributeId: attribute.attributeId
+                attributeId: newAttribute ? newAttribute.attributeId : null
             };
         }
     }
@@ -54,6 +56,7 @@ function updateNoteAttribute(req) {
 
     if (attribute.type === 'label' || body.value.trim()) {
         attribute.value = body.value;
+        attribute.isDeleted = false;
     }
     else {
         // relations should never have empty target
@@ -160,8 +163,10 @@ function updateNoteAttributes(req) {
 
     // all the remaining existing attributes are not defined anymore and should be deleted
     for (const toDeleteAttr of existingAttrs) {
-        toDeleteAttr.isDeleted = true;
-        toDeleteAttr.save();
+        if (!toDeleteAttr.isAutoLink()) {
+            toDeleteAttr.isDeleted = true;
+            toDeleteAttr.save();
+        }
     }
 }
 

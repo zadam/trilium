@@ -4,6 +4,7 @@ const imageType = require('image-type');
 const imageService = require('../../services/image');
 const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
+const attributeService = require('../../services/attributes');
 
 function uploadImage(req) {
     const file = req.file;
@@ -35,12 +36,10 @@ function saveNote(req) {
         mime: 'text/html'
     });
 
-    if (req.body.label && req.body.label.trim()){
-        let value;
-        if (req.body.labelValue && req.body.labelValue.trim()){
-            value = req.body.labelValue;
+    if (req.body.labels) {
+        for (const {name, value} of req.body.labels) {
+            note.setLabel(attributeService.sanitizeAttributeName(name), value);
         }
-        note.setLabel(req.body.label, value);
     }
 
     return {

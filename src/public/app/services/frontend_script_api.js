@@ -274,7 +274,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} notePath (or noteId)
-     * @param {string} [noteTitle] - if not present we'll use note title
+     * @param {object} [params]
+     * @param {boolean} [params.showTooltip=true] - enable/disable tooltip on the link
+     * @param {boolean} [params.showNotePath=false] - show also whole note's path as part of the link
+     * @param {string} [title=] - custom link tile with note's title as default
      */
     this.createNoteLink = linkService.createNoteLink;
 
