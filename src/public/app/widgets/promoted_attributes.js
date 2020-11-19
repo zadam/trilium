@@ -39,11 +39,24 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.overflowing();
         this.$container = this.$widget.find(".promoted-attributes-container");
+
+        this.$title = $('<div>');
     }
 
-    renderTitle() {
-        this.$title = $('<div>').text('Promoted attributes');
-        return this.$title;
+    renderTitle(note) {
+        const promotedDefAttrs = this.getPromotedDefinitionAttributes();
+
+        if (promotedDefAttrs.length === 0) {
+            return { show: false };
+        }
+
+        this.$title.text(`Promoted attrs (${promotedDefAttrs.length})`);
+
+        return {
+            show: true,
+            activate: true,
+            $title: this.$title
+        };
     }
 
     async refreshWithNote(note) {
@@ -292,6 +305,8 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
             this.refresh();
+
+            this.renderTitle(this.note);
         }
     }
 }

@@ -34,7 +34,7 @@ const TPL = `
     .save-attributes-button {
         color: var(--muted-text-color);
         position: absolute; 
-        bottom: 3px;
+        bottom: 14px;
         right: 25px;
         cursor: pointer;
         border: 1px solid transparent;
@@ -44,7 +44,7 @@ const TPL = `
     .add-new-attribute-button {
         color: var(--muted-text-color);
         position: absolute; 
-        bottom: 2px;
+        bottom: 13px;
         right: 0; 
         cursor: pointer;
         border: 1px solid transparent;

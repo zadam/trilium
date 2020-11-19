@@ -16,7 +16,7 @@ const TPL = `
     </style>
 
     <div class="inherited-attributes-container"></div>
-</div>`
+</div>`;
 
 export default class InheritedAttributesWidget extends TabAwareWidget {
     constructor() {
@@ -26,9 +26,15 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
         this.child(this.attributeDetailWidget);
     }
 
-    renderTitle() {
-        this.$title = $('<div>').text('Inherited attributes');
-        return this.$title;
+    renderTitle(note) {
+        const inheritedAttributes = this.getInheritedAttributes(note);
+
+        this.$title.text(`Inherited attrs (${inheritedAttributes.length})`);
+
+        return {
+            show: true,
+            $title: this.$title
+        };
     }
 
     doRender() {
@@ -37,12 +43,19 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
 
         this.$container = this.$widget.find('.inherited-attributes-container');
         this.$widget.append(this.attributeDetailWidget.render());
+
+        this.$title = $('<div>');
     }
 
     async refreshWithNote(note) {
         this.$container.empty();
 
-        const inheritedAttributes = note.getAttributes().filter(attr => attr.noteId !== this.noteId);
+        const inheritedAttributes = this.getInheritedAttributes(note);
+
+        if (inheritedAttributes.length === 0) {
+            this.$container.append("No inherited attributes.");
+            return;
+        }
 
         for (const attribute of inheritedAttributes) {
             const $attr = (await attributeRenderer.renderAttribute(attribute, false))
@@ -62,5 +75,9 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
                 .append($attr)
                 .append(" ");
         }
+    }
+
+    getInheritedAttributes(note) {
+        return note.getAttributes().filter(attr => attr.noteId !== this.noteId);
     }
 }

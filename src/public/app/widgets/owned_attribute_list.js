@@ -8,6 +8,7 @@ const TPL = `
         .attribute-list {
             margin-left: 7px;
             margin-right: 7px;
+            margin-top: 3px;
             position: relative;
         }
         
@@ -30,9 +31,15 @@ export default class OwnedAttributeListWidget extends TabAwareWidget {
         this.child(this.attributeEditorWidget, this.attributeDetailWidget);
     }
 
-    renderTitle() {
-        this.$title = $('<div>').text('Owned attributes');
-        return this.$title;
+    renderTitle(note) {
+        const ownedNotes = note.getAttributes().filter(attr => attr.noteId === this.noteId)
+
+        this.$title.text(`Owned attrs (${ownedNotes.length})`);
+
+        return {
+            show: true,
+            $title: this.$title
+        };
     }
 
     doRender() {
@@ -41,6 +48,8 @@ export default class OwnedAttributeListWidget extends TabAwareWidget {
 
         this.$widget.find('.attr-editor-placeholder').replaceWith(this.attributeEditorWidget.render());
         this.$widget.append(this.attributeDetailWidget.render());
+
+        this.$title = $('<div>');
     }
 
     async saveAttributesCommand() {
@@ -58,6 +67,8 @@ export default class OwnedAttributeListWidget extends TabAwareWidget {
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
             this.refreshWithNote(this.note, true);
+
+            this.renderTitle(this.note);
         }
     }
 }

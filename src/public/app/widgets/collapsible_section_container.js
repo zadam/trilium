@@ -4,7 +4,7 @@ const TPL = `
 <div class="section-container">
     <style>
     .section-container {
-        margin-bottom: 10px;
+        margin-bottom: 10px;  
     }
     
     .section-title-container {
@@ -12,6 +12,8 @@ const TPL = `
         flex-direction: row;
         justify-content: center;
         margin-top: 7px;
+        margin-left: 10px;
+        margin-right: 10px;
     }
     
     .section-title {
@@ -42,6 +44,8 @@ const TPL = `
     .section-body {
         display: none;
         border-bottom: 1px solid var(--main-border-color);
+        margin-left: 10px;
+        margin-right: 10px;
     }
     
     .section-body.active {
@@ -88,17 +92,7 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
         this.$titleContainer = this.$widget.find('.section-title-container');
         this.$bodyContainer = this.$widget.find('.section-body-container');
 
-        this.$titleContainer.append('<div class="section-title section-title-empty">');
-
         for (const widget of this.children) {
-            this.$titleContainer.append(
-                $('<div class="section-title section-title-real">')
-                    .attr('data-section-component-id', widget.componentId)
-                    .append(widget.renderTitle())
-            );
-
-            this.$titleContainer.append('<div class="section-title section-title-empty">');
-
             this.$bodyContainer.append(
                 $('<div class="section-body">')
                     .attr('data-section-component-id', widget.componentId)
@@ -115,13 +109,56 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
             this.$bodyContainer.find('.section-body').removeClass("active");
 
             if (activate) {
-                this.$titleContainer.find(`.section-title-real[data-section-component-id="${$sectionTitle.attr('data-section-component-id')}"]`).addClass("active");
-                this.$bodyContainer.find(`.section-body[data-section-component-id="${$sectionTitle.attr('data-section-component-id')}"]`).addClass("active");
+                const sectionComponentId = $sectionTitle.attr('data-section-component-id');
+
+                this.lastActiveComponentId = sectionComponentId;
+
+                this.$titleContainer.find(`.section-title-real[data-section-component-id="${sectionComponentId}"]`).addClass("active");
+                this.$bodyContainer.find(`.section-body[data-section-component-id="${sectionComponentId}"]`).addClass("active");
+            }
+            else {
+                this.lastActiveComponentId = null;
             }
         });
     }
 
     async refreshWithNote(note) {
-        this.$titleContainer.find('.section-title-real:first').trigger('click');
+        let $sectionToActivate, $lastActiveSection;
+
+        this.$titleContainer.empty().append('<div class="section-title section-title-empty">');
+
+        for (const widget of this.children) {
+            const ret = widget.renderTitle(note);
+
+            if (!ret.show) {
+                continue;
+            }
+
+            const $sectionTitle = $('<div class="section-title section-title-real">')
+                .attr('data-section-component-id', widget.componentId)
+                .append(ret.$title);
+
+            this.$titleContainer.append($sectionTitle);
+            this.$titleContainer.append('<div class="section-title section-title-empty">');
+
+            if (ret.activate && !$sectionToActivate) {
+                $sectionToActivate = $sectionTitle;
+            }
+
+            if (this.lastActiveComponentId === widget.componentId) {
+                $lastActiveSection = $sectionTitle;
+            }
+        }
+
+        if (!$sectionToActivate) {
+            $sectionToActivate = $lastActiveSection;
+        }
+
+        if ($sectionToActivate) {
+            $sectionToActivate.trigger('click');
+        }
+        else {
+            this.$bodyContainer.find('.section-body').removeClass("active");
+        }
     }
 }
