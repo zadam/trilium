@@ -38,7 +38,7 @@ class Branch extends Entity {
     }
 
     beforeSaving() {
-        if (this.notePosition === undefined) {
+        if (this.notePosition === undefined || this.notePosition === null) {
             const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
             this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
         }

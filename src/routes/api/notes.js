@@ -187,10 +187,10 @@ function changeTitle(req) {
     return note;
 }
 
-function duplicateNote(req) {
+function duplicateSubtree(req) {
     const {noteId, parentNoteId} = req.params;
 
-    return noteService.duplicateNote(noteId, parentNoteId);
+    return noteService.duplicateSubtree(noteId, parentNoteId);
 }
 
 module.exports = {
@@ -204,5 +204,5 @@ module.exports = {
     setNoteTypeMime,
     getRelationMap,
     changeTitle,
-    duplicateNote
+    duplicateSubtree
 };
