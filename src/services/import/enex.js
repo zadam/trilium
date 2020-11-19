@@ -310,7 +310,13 @@ function importEnex(taskContext, file, parentNote) {
         updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
     }
 
-    saxStream.on("closetag", tag => path.pop());
+    saxStream.on("closetag", tag => {
+        path.pop();
+
+        if (tag === 'note') {
+            saveNote();
+        }
+    });
 
     saxStream.on("opencdata", () => {
         //console.log("opencdata");
