@@ -1341,7 +1341,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         protectedSessionService.protectNote(node.data.noteId, false, true);
     }
 
-    duplicateNoteCommand({node}) {
+    duplicateSubtreeCommand({node}) {
         const nodesToDuplicate = this.getSelectedOrActiveNodes(node);
 
         for (const nodeToDuplicate of nodesToDuplicate) {
@@ -1353,7 +1353,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             const branch = treeCache.getBranch(nodeToDuplicate.data.branchId);
 
-            noteCreateService.duplicateNote(nodeToDuplicate.data.noteId, branch.parentNoteId);
+            noteCreateService.duplicateSubtree(nodeToDuplicate.data.noteId, branch.parentNoteId);
         }
     }
 }

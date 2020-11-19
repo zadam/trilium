@@ -154,7 +154,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/restore-revision/:noteRevisionId', noteRevisionsApiRoute.restoreNoteRevision);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
-    apiRoute(POST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateNote);
+    apiRoute(POST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateSubtree);
 
     apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
 

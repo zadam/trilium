@@ -719,26 +719,68 @@ function eraseDeletedNotes() {
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
-function duplicateNote(noteId, parentNoteId) {
-    const origNote = repository.getNote(noteId);
+// do a replace in str - all keys should be replaced by the corresponding values
+function replaceByMap(str, mapObj) {
+    const re = new RegExp(Object.keys(mapObj).join("|"),"g");
 
+    return str.replace(re, matched => mapObj[matched]);
+}
+
+function duplicateSubtree(origNoteId, newParentNoteId) {
+    if (origNoteId === 'root') {
+        throw new Error('Duplicating root is not possible');
+    }
+
+    const origNote = repository.getNote(origNoteId);
+    // might be null if orig note is not in the target newParentNoteId
+    const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === newParentNoteId);
+
+    const noteIdMapping = getNoteIdMapping(origNote);
+
+    const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
+
+    res.note.title += " (dup)";
+    res.note.save();
+
+    return res;
+}
+
+function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
+    if (origNoteId === 'root') {
+        throw new Error('Duplicating root is not possible');
+    }
+
+    const origNote = repository.getNote(origNoteId);
+    const noteIdMapping = getNoteIdMapping(origNote);
+
+    for (const childBranch of origNote.getChildBranches()) {
+        duplicateSubtreeInner(childBranch.getNote(), childBranch, newNoteId, noteIdMapping);
+    }
+}
+
+function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available`);
     }
 
-    // might be null if orig note is not in the target parentNoteId
-    const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === parentNoteId);
-
     const newNote = new Note(origNote);
-    newNote.noteId = undefined; // force creation of new note
-    newNote.title += " (dup)";
+    newNote.noteId = noteIdMapping[origNote.noteId];
+    newNote.dateCreated = dateUtils.localNowDateTime();
+    newNote.utcDateCreated = dateUtils.utcNowDateTime();
     newNote.save();
 
-    newNote.setContent(origNote.getContent());
+    let content = origNote.getContent();
+
+    if (['text', 'relation-map', 'search'].includes(origNote.type)) {
+        // fix links in the content
+        content = replaceByMap(content, noteIdMapping);
+    }
+
+    newNote.setContent(content);
 
     const newBranch = new Branch({
         noteId: newNote.noteId,
-        parentNoteId: parentNoteId,
+        parentNoteId: newParentNoteId,
         // here increasing just by 1 to make sure it's directly after original
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
@@ -746,15 +788,36 @@ function duplicateNote(noteId, parentNoteId) {
     for (const attribute of origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
+        attr.utcDateCreated = dateUtils.utcNowDateTime();
         attr.noteId = newNote.noteId;
 
+        // if relation points to within the duplicated tree then replace the target to the duplicated note
+        // if it points outside of duplicated tree then keep the original target
+        if (attr.type === 'relation' && attr.value in noteIdMapping) {
+            attr.value = noteIdMapping[attr.value];
+        }
+
         attr.save();
+    }
+
+    for (const childBranch of origNote.getChildBranches()) {
+        duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
     }
 
     return {
         note: newNote,
         branch: newBranch
     };
+}
+
+function getNoteIdMapping(origNote) {
+    const noteIdMapping = {};
+
+    // pregenerate new noteIds since we'll need to fix relation references even for not yet created notes
+    for (const origNoteId of origNote.getDescendantNoteIds()) {
+        noteIdMapping[origNoteId] = utils.newEntityId();
+    }
+    return noteIdMapping;
 }
 
 sqlInit.dbReady.then(() => {
@@ -772,7 +835,8 @@ module.exports = {
     undeleteNote,
     protectNoteRecursively,
     scanForLinks,
-    duplicateNote,
+    duplicateSubtree,
+    duplicateSubtreeWithoutRoot,
     getUndeletedParentBranches,
     triggerNoteTitleChanged
 };

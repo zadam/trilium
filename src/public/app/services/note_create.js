@@ -88,7 +88,7 @@ function parseSelectedHtml(selectedHtml) {
     }
 }
 
-async function duplicateNote(noteId, parentNoteId) {
+async function duplicateSubtree(noteId, parentNoteId) {
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
     await ws.waitForMaxKnownEntityChangeId();
@@ -102,5 +102,5 @@ async function duplicateNote(noteId, parentNoteId) {
 export default {
     createNote,
     createNewTopLevelNote,
-    duplicateNote
+    duplicateSubtree
 };
