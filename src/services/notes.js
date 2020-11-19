@@ -726,21 +726,16 @@ function replaceByMap(str, mapObj) {
     return str.replace(re, matched => mapObj[matched]);
 }
 
-function duplicateSubtree(noteId, newParentNoteId) {
-    if (noteId === 'root') {
+function duplicateSubtree(origNoteId, newParentNoteId) {
+    if (origNoteId === 'root') {
         throw new Error('Duplicating root is not possible');
     }
 
-    const origNote = repository.getNote(noteId);
+    const origNote = repository.getNote(origNoteId);
     // might be null if orig note is not in the target newParentNoteId
     const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === newParentNoteId);
 
-    const noteIdMapping = {};
-
-    // pregenerate new noteIds since we'll need to fix relation references even for not yet created notes
-    for (const origNoteId of origNote.getDescendantNoteIds()) {
-        noteIdMapping[origNoteId] = utils.newEntityId();
-    }
+    const noteIdMapping = getNoteIdMapping(origNote);
 
     const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
 
@@ -748,6 +743,19 @@ function duplicateSubtree(noteId, newParentNoteId) {
     res.note.save();
 
     return res;
+}
+
+function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
+    if (origNoteId === 'root') {
+        throw new Error('Duplicating root is not possible');
+    }
+
+    const origNote = repository.getNote(origNoteId);
+    const noteIdMapping = getNoteIdMapping(origNote);
+
+    for (const childBranch of origNote.getChildBranches()) {
+        duplicateSubtreeInner(childBranch.getNote(), childBranch, newNoteId, noteIdMapping);
+    }
 }
 
 function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping) {
@@ -802,6 +810,16 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     };
 }
 
+function getNoteIdMapping(origNote) {
+    const noteIdMapping = {};
+
+    // pregenerate new noteIds since we'll need to fix relation references even for not yet created notes
+    for (const origNoteId of origNote.getDescendantNoteIds()) {
+        noteIdMapping[origNoteId] = utils.newEntityId();
+    }
+    return noteIdMapping;
+}
+
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
     setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
@@ -818,6 +836,7 @@ module.exports = {
     protectNoteRecursively,
     scanForLinks,
     duplicateSubtree,
+    duplicateSubtreeWithoutRoot,
     getUndeletedParentBranches,
     triggerNoteTitleChanged
 };

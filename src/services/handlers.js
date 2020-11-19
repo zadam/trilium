@@ -1,7 +1,7 @@
 const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
-const log = require('./log');
+const noteService = require('./notes');
 const repository = require('./repository');
 const Attribute = require('../entities/attribute');
 
@@ -58,17 +58,21 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 return;
             }
 
-            const targetNote = repository.getNote(entity.value);
+            const templateNote = repository.getNote(entity.value);
 
-            if (!targetNote || !targetNote.isStringNote()) {
+            if (!templateNote) {
                 return;
             }
 
-            const targetNoteContent = targetNote.getContent();
+            if (templateNote.isStringNote()) {
+                const templateNoteContent = templateNote.getContent();
 
-            if (targetNoteContent) {
-                note.setContent(targetNoteContent);
+                if (templateNoteContent) {
+                    note.setContent(templateNoteContent);
+                }
             }
+
+            noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
             treeService.sortNotesAlphabetically(entity.noteId);
