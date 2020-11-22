@@ -307,6 +307,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Cuts the selection from the current note and creates subnote with the selected text",
         scope: "text-detail"
     },
+    {
+        actionName: "addIncludeNoteToText",
+        defaultShortcuts: [],
+        description: "Opens the dialog to include a note",
+        scope: "text-detail"
+    },
 
     {
         separator: "Attributes (labels & relations)"
