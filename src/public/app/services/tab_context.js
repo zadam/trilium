@@ -11,10 +11,11 @@ class TabContext extends Component {
     /**
      * @param {string|null} tabId
      */
-    constructor(tabId = null) {
+    constructor(tabId = null, hoistedNoteId = 'root') {
         super();
 
         this.tabId = tabId || utils.randomString(4);
+        this.hoistedNoteId = hoistedNoteId;
     }
 
     setEmpty() {
@@ -123,8 +124,22 @@ class TabContext extends Component {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
+            hoistedNoteId: this.hoistedNoteId,
             active: this.isActive()
         }
+    }
+
+    async unhoist() {
+        await this.setHoistedNoteId('root');
+    }
+
+    async setHoistedNoteId(noteIdToHoist) {
+        this.hoistedNoteId = noteIdToHoist;
+
+        await this.triggerEvent('hoistedNoteChanged', {
+            noteId: noteIdToHoist,
+            tabId: this.tabId
+        });
     }
 
     async entitiesReloadedEvent({loadResults}) {

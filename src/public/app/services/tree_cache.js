@@ -254,8 +254,7 @@ class TreeCache {
                 console.trace(`Can't find note "${noteId}"`);
 
                 return null;
-            }
-            else {
+            } else {
                 return this.notes[noteId];
             }
         }).filter(note => !!note);

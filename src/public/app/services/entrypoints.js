@@ -80,14 +80,13 @@ export default class Entrypoints extends Component {
     }
 
     async toggleNoteHoistingCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
+        const tabContext = appContext.tabManager.getActiveTabContext();
 
-        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-        if (note.noteId === hoistedNoteId) {
-            hoistedNoteService.unhoist();
+        if (tabContext.note.noteId === tabContext.hoistedNoteId) {
+            await tabContext.unhoist();
         }
-        else if (note.type !== 'search') {
-            hoistedNoteService.setHoistedNoteId(note.noteId);
+        else if (tabContext.note.type !== 'search') {
+            await tabContext.setHoistedNoteId(tabContext.note.noteId);
         }
     }
 

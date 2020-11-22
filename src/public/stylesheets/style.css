@@ -81,6 +81,16 @@ span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
 span.fancytree-node.bold .fancytree-title { font-weight: bold; }
 span.fancytree-node.muted { opacity: 0.6; }
 
+/** following will hide ancestors of hoisted (filtered) note */
+.fancytree-submatch:not(.fancytree-match) {
+    display: none !important;
+}
+
+/** resets indent of hoisted note */
+.fancytree-submatch:not(.fancytree-match) + ul {
+    padding: 0 !important;
+}
+
 .note-title[readonly] {
     background: inherit;
 }

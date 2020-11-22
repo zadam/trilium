@@ -263,8 +263,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         });
     }
 
-    hoistedNoteChangedEvent() {
-        this.refresh();
+    hoistedNoteChangedEvent({tabId}) {
+        if (this.isTab(tabId)) {
+            this.refresh();
+        }
     }
 
     async entitiesReloadedEvent({loadResults}) {

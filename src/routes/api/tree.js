@@ -52,7 +52,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 }
 
 function getTree(req) {
-    const subTreeNoteId = req.query.subTreeNoteId || optionService.getOption('hoistedNoteId');
+    const subTreeNoteId = req.query.subTreeNoteId || 'root';
 
     // FIXME: this query does not return ascendants of template notes
     const noteIds = sql.getColumn(`

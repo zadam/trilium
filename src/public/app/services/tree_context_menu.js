@@ -1,10 +1,9 @@
 import treeService from './tree.js';
 import treeCache from "./tree_cache.js";
-import hoistedNoteService from './hoisted_note.js';
 import clipboard from './clipboard.js';
-import protectedSessionHolder from "./protected_session_holder.js";
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
+import appContext from "./app_context.js";
 
 class TreeContextMenu {
     /**
@@ -40,7 +39,7 @@ class TreeContextMenu {
         const note = await treeCache.getNote(this.node.data.noteId);
         const branch = treeCache.getBranch(this.node.data.branchId);
         const isNotRoot = note.noteId !== 'root';
-        const isHoisted = note.noteId === hoistedNoteService.getHoistedNoteId();
+        const isHoisted = note.noteId === appContext.tabManager.getActiveTabContext().hoistedNoteId;
         const parentNote = isNotRoot ? await treeCache.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected
@@ -69,7 +68,7 @@ class TreeContextMenu {
             { title: 'Search in subtree <kbd data-command="searchInSubtree"></kbd>', command: "searchInSubtree", uiIcon: "search",
                 enabled: notSearch && noSelectedNotes },
             isHoisted ? null : { title: 'Hoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
-            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="ToggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "arrow-from-bottom" },
+            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "arrow-from-bottom" },
             { title: 'Edit branch prefix <kbd data-command="editBranchPrefix"></kbd>', command: "editBranchPrefix", uiIcon: "empty",
                 enabled: isNotRoot && parentNotSearch && noSelectedNotes},
             { title: "Advanced", uiIcon: "empty", enabled: true, items: [

@@ -93,7 +93,7 @@ export default class TabManager extends Component {
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
-                await this.openTabWithNote(tab.notePath, tab.active, tab.tabId);
+                await this.openTabWithNote(tab.notePath, tab.active, tab.tabId, tab.hoistedNoteId);
             }
         });
     }
@@ -184,8 +184,8 @@ export default class TabManager extends Component {
         await tabContext.setEmpty();
     }
 
-    async openEmptyTab(tabId) {
-        const tabContext = new TabContext(tabId);
+    async openEmptyTab(tabId, hoistedNoteId) {
+        const tabContext = new TabContext(tabId, hoistedNoteId);
         this.child(tabContext);
 
         await this.triggerEvent('newTabOpened', {tabContext});
@@ -193,7 +193,7 @@ export default class TabManager extends Component {
         return tabContext;
     }
 
-    async openTabWithNote(notePath, activate, tabId = null) {
+    async openTabWithNote(notePath, activate, tabId = null, hoistedNoteId = 'root') {
         const tabContext = await this.openEmptyTab(tabId);
 
         if (notePath) {
@@ -335,17 +335,5 @@ export default class TabManager extends Component {
         this.removeTab(tabId);
 
         this.triggerCommand('openInWindow', {notePath});
-    }
-
-    async hoistedNoteChangedEvent({hoistedNoteId}) {
-        if (hoistedNoteId === 'root') {
-            return;
-        }
-
-        for (const tc of this.tabContexts.splice()) {
-            if (tc.notePath && !tc.notePath.split("/").includes(hoistedNoteId)) {
-                await this.removeTab(tc.tabId);
-            }
-        }
     }
 }

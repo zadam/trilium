@@ -290,7 +290,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$tree.fancytree({
             titlesTabbable: true,
             keyboard: true,
-            extensions: ["dnd5", "clones"],
+            extensions: ["dnd5", "clones", "filter"],
             source: treeData,
             scrollOfs: {
                 top: 100,
@@ -341,6 +341,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),
+            filter: {
+                counter: false,
+                mode: "hide",
+                autoExpand: true
+            },
             dnd5: {
                 autoExpandMS: 600,
                 dragStart: (node, data) => {
@@ -446,21 +451,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const node = data.node;
                 const $span = $(node.span);
 
-                if (node.data.noteId !== 'root'
-                    && node.data.noteId === hoistedNoteService.getHoistedNoteId()
-                    && $span.find('.unhoist-button').length === 0) {
-
-                    const action = await keyboardActionsService.getAction('unhoist');
-                    let shortcuts = action.effectiveShortcuts.join(',');
-                    shortcuts = shortcuts ? `(${shortcuts})` : '';
-
-                    const unhoistButton = $(`<span class="unhoist-button-wrapper" title="Unhoist current note to show the whole note tree ${shortcuts}">[<a class="unhoist-button">unhoist</a>]</span>`);
-
-                    // prepending since appending could push out (when note title is too long)
-                    // the button too much to the right so that it's not visible
-                    $span.prepend(unhoistButton);
-                }
-
                 const note = await treeCache.getNote(node.data.noteId);
 
                 if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
@@ -512,17 +502,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     prepareRootNode() {
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
-        let hoistedBranch;
-
-        if (hoistedNoteId === 'root') {
-            hoistedBranch = treeCache.getBranch('root');
-        }
-        else {
-            const hoistedNote = treeCache.getNoteFromCache(hoistedNoteId);
-            hoistedBranch = hoistedNote.getBranches()[0];
-        }
-
-        return this.prepareNode(hoistedBranch);
+        return this.prepareNode(treeCache.getBranch('root'));
     }
 
     /**
@@ -897,6 +877,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 newActiveNode.makeVisible({scrollIntoView: true});
             }
         }
+
+        this.filterHoistedBranch();
     }
 
     async refreshSearch() {
@@ -1156,8 +1138,16 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    hoistedNoteChangedEvent() {
-        this.reloadTreeFromCache();
+    async hoistedNoteChangedEvent({tabId}) {
+        if (this.isTab(tabId)) {
+            this.filterHoistedBranch();
+        }
+    }
+
+    filterHoistedBranch() {
+        if (this.tabContext) {
+            this.tree.filterBranches(node => node.data.noteId === this.tabContext.hoistedNoteId);
+        }
     }
 
     treeCacheReloadedEvent() {

@@ -60,7 +60,7 @@ export default class BookTypeWidget extends TypeWidget {
                 .append(' if you want to add some text.'));
         }
 
-        const noteListRenderer = new NoteListRenderer(note, await note.getChildNotes());
+        const noteListRenderer = new NoteListRenderer(note, note.getChildNoteIds());
 
         this.$content.append(await noteListRenderer.renderList());
     }
