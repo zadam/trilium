@@ -10,7 +10,6 @@ const FileStore = require('session-file-store')(session);
 const sessionSecret = require('./services/session_secret');
 const dataDir = require('./services/data_dir');
 require('./services/handlers');
-require('./services/hoisted_note_loader');
 require('./services/note_cache/note_cache_loader');
 
 const app = express();

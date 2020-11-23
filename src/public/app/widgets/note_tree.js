@@ -500,8 +500,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     prepareRootNode() {
-        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-
         return this.prepareNode(treeCache.getBranch('root'));
     }
 
@@ -532,16 +530,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return noteList;
     }
 
-    getIcon(note, isFolder) {
-        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-
-        if (note.noteId !== 'root' && note.noteId === hoistedNoteId) {
-            return "bx bxs-arrow-from-bottom";
-        }
-
-        return note.getIcon(isFolder);
-    }
-
     updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
@@ -552,7 +540,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
         node.folder = isFolder;
-        node.icon = this.getIcon(note, isFolder);
+        node.icon = note.getIcon(isFolder);
         node.extraClasses = this.getExtraClasses(note);
         node.title = utils.escapeHtml(title);
 
@@ -574,7 +562,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
         const isFolder = this.isFolder(note);
 
@@ -586,11 +573,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteType: note.type,
             title: utils.escapeHtml(title),
             extraClasses: this.getExtraClasses(note),
-            icon: this.getIcon(note, isFolder),
+            icon: note.getIcon(isFolder),
             refKey: note.noteId,
             lazy: true,
             folder: isFolder,
-            expanded: (branch.isExpanded || hoistedNoteId === note.noteId) && note.type !== 'search',
+            expanded: branch.isExpanded && note.type !== 'search',
             key: utils.randomString(12) // this should prevent some "duplicate key" errors
         };
 

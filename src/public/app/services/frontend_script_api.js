@@ -379,13 +379,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getYearNote = dateNotesService.getYearNote;
 
     /**
-     * Hoist note. See https://github.com/zadam/trilium/wiki/Note-hoisting
+     * Hoist note in the current tab. See https://github.com/zadam/trilium/wiki/Note-hoisting
      *
      * @method
      * @param {string} noteId - set hoisted note. 'root' will effectively unhoist
      * @return {Promise}
      */
-    this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
+    this.setHoistedNoteId = (noteId) => {
+        const activeTabContext = appContext.tabManager.getActiveTabContext();
+
+        if (activeTabContext) {
+            activeTabContext.setHoistedNoteId(noteId);
+        }
+    };
 
     /**
      * @method

@@ -24,6 +24,10 @@ function set(key, value) {
     namespace.set(key, value);
 }
 
+function getHoistedNoteId() {
+    return namespace.get('hoistedNoteId');
+}
+
 function getSourceId() {
     return namespace.get('sourceId');
 }
@@ -74,6 +78,7 @@ module.exports = {
     get,
     set,
     namespace,
+    getHoistedNoteId,
     getSourceId,
     getLocalNowDateTime,
     disableEntityEvents,

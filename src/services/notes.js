@@ -7,10 +7,8 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
-const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
-const hoistedNoteService = require('../services/hoisted_note');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
@@ -524,7 +522,7 @@ function deleteBranch(branch, deleteId, taskContext) {
 
     if (branch.branchId === 'root'
         || branch.noteId === 'root'
-        || branch.noteId === hoistedNoteService.getHoistedNoteId()) {
+        || branch.noteId === cls.getHoistedNoteId()) {
 
         throw new Error("Can't delete root branch/note");
     }

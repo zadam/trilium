@@ -1,7 +1,7 @@
 "use strict";
 
 const noteCache = require('./note_cache');
-const hoistedNoteService = require('../hoisted_note');
+const cls = require('../cls');
 const protectedSessionService = require('../protected_session');
 const log = require('../log');
 
@@ -88,10 +88,6 @@ function getNoteTitle(childNoteId, parentNoteId) {
 function getNoteTitleArrayForPath(notePathArray) {
     const titles = [];
 
-    if (notePathArray[0] === hoistedNoteService.getHoistedNoteId() && notePathArray.length === 1) {
-        return [ getNoteTitle(hoistedNoteService.getHoistedNoteId()) ];
-    }
-
     let parentNoteId = 'root';
     let hoistedNotePassed = false;
 
@@ -103,7 +99,7 @@ function getNoteTitleArrayForPath(notePathArray) {
             titles.push(title);
         }
 
-        if (noteId === hoistedNoteService.getHoistedNoteId()) {
+        if (noteId === cls.getHoistedNoteId()) {
             hoistedNotePassed = true;
         }
 
@@ -130,7 +126,7 @@ function getSomePath(note, path = []) {
         path.push(note.noteId);
         path.reverse();
 
-        if (!path.includes(hoistedNoteService.getHoistedNoteId())) {
+        if (!path.includes(cls.getHoistedNoteId())) {
             return false;
         }
 

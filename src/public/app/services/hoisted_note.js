@@ -1,23 +1,18 @@
-import options from './options.js';
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 
 function getHoistedNoteId() {
-    return options.get('hoistedNoteId');
-}
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
 
-async function setHoistedNoteId(noteId) {
-    if (getHoistedNoteId() === noteId) {
-        return;
-    }
-
-    await options.save('hoistedNoteId', noteId);
-
-    appContext.triggerEvent('hoistedNoteChanged', {noteId});
+    return activeTabContext ? activeTabContext.hoistedNoteId : 'root';
 }
 
 async function unhoist() {
-    await setHoistedNoteId('root');
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
+
+    if (activeTabContext) {
+        await activeTabContext.unhoist();
+    }
 }
 
 function isTopLevelNode(node) {
@@ -58,7 +53,6 @@ async function checkNoteAccess(notePath) {
 
 export default {
     getHoistedNoteId,
-    setHoistedNoteId,
     unhoist,
     isTopLevelNode,
     isRootNode,

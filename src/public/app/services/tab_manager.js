@@ -193,8 +193,8 @@ export default class TabManager extends Component {
         return tabContext;
     }
 
-    async openTabWithNote(notePath, activate, tabId = null, hoistedNoteId = 'root') {
-        const tabContext = await this.openEmptyTab(tabId);
+    async openTabWithNote(notePath, activate, tabId, hoistedNoteId) {
+        const tabContext = await this.openEmptyTab(tabId, hoistedNoteId);
 
         if (notePath) {
             await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event

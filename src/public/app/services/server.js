@@ -2,13 +2,16 @@ import utils from './utils.js';
 
 const REQUEST_LOGGING_ENABLED = false;
 
-function getHeaders(headers) {
+async function getHeaders(headers) {
+    const appContext = (await import('./app_context.js')).default;
+    const activeTabContext = appContext.tabManager ? appContext.tabManager.getActiveTabContext() : null;
+
     // headers need to be lowercase because node.js automatically converts them to lower case
-    // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     const allHeaders = {
         'trilium-source-id': glob.sourceId,
         'trilium-local-now-datetime': utils.localNowDateTime(),
+        'trilium-hoisted-note-id': activeTabContext ? activeTabContext.hoistedNoteId : null,
         'x-csrf-token': glob.csrfToken
     };
 
@@ -52,6 +55,8 @@ async function call(method, url, data, headers = {}) {
 
     const start = Date.now();
 
+    headers = await getHeaders(headers);
+
     if (utils.isElectron()) {
         const ipc = utils.dynamicRequire('electron').ipcRenderer;
         const requestId = i++;
@@ -65,7 +70,7 @@ async function call(method, url, data, headers = {}) {
 
             ipc.send('server-request', {
                 requestId: requestId,
-                headers: getHeaders(headers),
+                headers: headers,
                 method: method,
                 url: "/" + baseApiUrl + url,
                 data: data
@@ -96,7 +101,7 @@ function ajax(url, method, data, headers) {
         const options = {
             url: baseApiUrl + url,
             type: method,
-            headers: getHeaders(headers),
+            headers: headers,
             timeout: 60000,
             success: (body, textStatus, jqXhr) => {
                 const respHeaders = {};
