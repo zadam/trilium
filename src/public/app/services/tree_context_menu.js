@@ -95,7 +95,7 @@ class TreeContextMenu {
                 enabled: !clipboard.isClipboardEmpty() && notSearch && noSelectedNotes },
             { title: 'Paste after', command: "pasteNotesAfterFromClipboard", uiIcon: "paste",
                 enabled: !clipboard.isClipboardEmpty() && isNotRoot && !isHoisted && parentNotSearch && noSelectedNotes },
-            { title: "Duplicate subtree(s) here", command: "duplicateSubtree", uiIcon: "empty",
+            { title: `Duplicate subtree <kbd data-command="duplicateSubtree">`, command: "duplicateSubtree", uiIcon: "empty",
                 enabled: parentNotSearch && isNotRoot && !isHoisted },
             { title: "----" },
             { title: "Export", command: "exportNote", uiIcon: "empty",
