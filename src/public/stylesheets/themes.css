@@ -143,6 +143,11 @@ body {
     --ck-color-dropdown-panel-background: var(--accented-background-color);
     --ck-color-dropdown-panel-border: var(--main-border-color);
 
+    /* -- Overrides the default .ck-splitbutton class colors. ----------------------------------- */
+
+    --ck-color-split-button-hover-background: var(--ck-color-button-default-hover-background);
+    --ck-color-split-button-hover-border: var(--main-border-color);
+
     /* -- Overrides the default .ck-input class colors. ----------------------------------------- */
 
     --ck-color-input-background: var(--accented-background-color);
@@ -199,6 +204,9 @@ body {
     --ck-color-engine-placeholder-text: var(--muted-text-color);
 
     --ck-z-modal: 10000;
+
+    --ck-color-widget-type-around-button: var(--main-border-color);
+    --ck-color-widget-type-around-button-hover: var(--main-border-color);
 }
 
 body {
