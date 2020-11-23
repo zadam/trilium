@@ -84,7 +84,7 @@ function getTree(req) {
             )
         SELECT noteId FROM treeWithDescendantsAscendantsAndTemplates`, [subTreeNoteId, subTreeNoteId]);
 
-    noteIds.push(subTreeNoteId);console.log("noteIds", noteIds);
+    noteIds.push(subTreeNoteId);
 
     return getNotesAndBranchesAndAttributes(noteIds);
 }

@@ -86,6 +86,10 @@ function getNoteTitle(childNoteId, parentNoteId) {
 }
 
 function getNoteTitleArrayForPath(notePathArray) {
+    if (notePathArray.length === 1 && notePathArray[0] === cls.getHoistedNoteId()) {
+        return [getNoteTitle(cls.getHoistedNoteId())];
+    }
+
     const titles = [];
 
     let parentNoteId = 'root';

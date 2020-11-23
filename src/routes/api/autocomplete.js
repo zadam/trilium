@@ -5,7 +5,7 @@ const searchService = require('../../services/search/services/search.js');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
-const optionService = require('../../services/options');
+const cls = require('../../services/cls');
 
 function getAutocomplete(req) {
     const query = req.query.query.trim();
@@ -35,7 +35,7 @@ function getRecentNotes(activeNoteId) {
     let extraCondition = '';
     const params = [activeNoteId];
 
-    const hoistedNoteId = optionService.getOption('hoistedNoteId');
+    const hoistedNoteId = cls.getHoistedNoteId();
     if (hoistedNoteId !== 'root') {
         extraCondition = `AND recent_notes.notePath LIKE ?`;
         params.push(hoistedNoteId + '%');
