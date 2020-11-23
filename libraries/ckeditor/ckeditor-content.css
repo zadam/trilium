@@ -1,6 +1,6 @@
 /* !!!!!! TRILIUM CUSTOM CHANGES !!!!!! */
 
-.ck-widget__selection-handle, .ck-widget__type-around { /* gets rid of triangles: https://github.com/zadam/trilium/issues/1129 */
+.printed-content .ck-widget__selection-handle, .printed-content .ck-widget__type-around { /* gets rid of triangles: https://github.com/zadam/trilium/issues/1129 */
     display: none;
 }
 

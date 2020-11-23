@@ -739,7 +739,10 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
 
     const res = duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping);
 
-    res.note.title += " (dup)";
+    if (!res.note.title.endsWith('(dup)')) {
+        res.note.title += " (dup)";
+    }
+
     res.note.save();
 
     return res;

@@ -184,6 +184,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Add note above to the selection",
         scope: "note-tree"
     },
+    {
+        actionName: "duplicateSubtree",
+        defaultShortcuts: [],
+        description: "Duplicate subtree",
+        scope: "note-tree"
+    },
 
 
     {
