@@ -3,15 +3,33 @@
 const sql = require('../../services/sql');
 
 function getRelations(noteIds) {
-    return (sql.getManyRows(`
-        SELECT noteId, name, value AS targetNoteId
-        FROM attributes
-        WHERE (noteId IN (???) OR value IN (???))
-          AND type = 'relation'
-          AND isDeleted = 0
-          AND noteId != ''
-          AND value != ''
-    `, Array.from(noteIds)));
+    noteIds = Array.from(noteIds);
+
+    return [
+        // first read all non-image relations
+        ...sql.getManyRows(`
+            SELECT noteId, name, value AS targetNoteId
+            FROM attributes
+            WHERE (noteId IN (???) OR value IN (???))
+              AND type = 'relation'
+              AND name != 'imageLink'
+              AND isDeleted = 0
+              AND noteId != ''
+              AND value != ''`, noteIds),
+        // ... then read only imageLink relations which are not connecting parent and child
+        // this is done to not show image links in the trivial case where they are direct children of the note to which they are included. Same heuristic as in note tree
+        ...sql.getManyRows(`
+            SELECT rel.noteId, rel.name, rel.value AS targetNoteId
+            FROM attributes AS rel
+            LEFT JOIN branches ON branches.parentNoteId = rel.noteId AND branches.noteId = rel.value AND branches.isDeleted = 0 
+            WHERE (rel.noteId IN (???) OR rel.value IN (???))
+              AND rel.type = 'relation'
+              AND rel.name = 'imageLink'
+              AND rel.isDeleted = 0
+              AND rel.noteId != ''
+              AND rel.value != ''
+              AND branches.branchId IS NULL`, noteIds)
+    ];
 }
 
 function getLinkMap(req) {
