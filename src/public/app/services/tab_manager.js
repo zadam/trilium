@@ -336,4 +336,8 @@ export default class TabManager extends Component {
 
         this.triggerCommand('openInWindow', {notePath});
     }
+
+    hoistedNoteChangedEvent() {
+        this.tabsUpdate.scheduleUpdate();
+    }
 }

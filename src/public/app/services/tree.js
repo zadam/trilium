@@ -37,8 +37,6 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
         path.push('root');
     }
 
-    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-
     const effectivePath = [];
     let childNoteId = null;
     let i = 0;
@@ -91,10 +89,6 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
 
         effectivePath.push(parentNoteId);
         childNoteId = parentNoteId;
-
-        if (parentNoteId === hoistedNoteId) {
-            break;
-        }
     }
 
     return effectivePath.reverse();
