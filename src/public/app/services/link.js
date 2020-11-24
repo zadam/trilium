@@ -130,7 +130,7 @@ function linkContextMenu(e) {
                 appContext.tabManager.openTabWithNote(notePath);
             }
             else if (command === 'openNoteInNewWindow') {
-                appContext.openInNewWindow(notePath);
+                appContext.triggerCommand('openInWindow', {notePath});
             }
         }
     });
