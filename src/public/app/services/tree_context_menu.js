@@ -2,9 +2,9 @@ import treeService from './tree.js';
 import treeCache from "./tree_cache.js";
 import hoistedNoteService from './hoisted_note.js';
 import clipboard from './clipboard.js';
-import protectedSessionHolder from "./protected_session_holder.js";
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
+import appContext from "./app_context.js";
 
 class TreeContextMenu {
     /**
@@ -110,14 +110,7 @@ class TreeContextMenu {
         const notePath = treeService.getNotePath(this.node);
 
         if (command === 'openInTab') {
-
-            const start = Date.now();
-
-            await this.node.load(true);
-
-            console.log("Reload took", Date.now() - start, "ms");
-
-//            appContext.tabManager.openTabWithNote(notePath);
+            appContext.tabManager.openTabWithNote(notePath);
         }
         else if (command === "insertNoteAfter") {
             const parentNoteId = this.node.data.parentNoteId;
