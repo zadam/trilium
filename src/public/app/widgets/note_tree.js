@@ -181,7 +181,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const notePath = treeService.getNotePath(node);
 
                 if (notePath) {
-                    appContext.tabManager.openTabWithNote(notePath);
+                    appContext.tabManager.openTabWithNoteWithHoisting(notePath);
                 }
 
                 e.stopPropagation();
@@ -311,7 +311,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                     else if (event.ctrlKey) {
                         const notePath = treeService.getNotePath(node);
-                        appContext.tabManager.openTabWithNote(notePath);
+                        appContext.tabManager.openTabWithNoteWithHoisting(notePath);
                     }
                     else if (data.node.isActive()) {
                         // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note

@@ -546,6 +546,11 @@ class NoteShort {
         const labels = this.getLabels('cssClass');
         return labels.map(l => l.value).join(' ');
     }
+
+    getHoistedCssClass() {
+        const labels = this.getLabels('hoistedCssClass');
+        return labels.map(l => l.value).join(' ');
+    }
 }
 
 export default NoteShort;

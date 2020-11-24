@@ -78,7 +78,7 @@ function goToLink(e) {
 
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
-            appContext.tabManager.openTabWithNote(notePath);
+            appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
             const activeTabContext = appContext.tabManager.getActiveTabContext();
@@ -127,7 +127,7 @@ function linkContextMenu(e) {
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
-                appContext.tabManager.openTabWithNote(notePath);
+                appContext.tabManager.openTabWithNoteWithHoisting(notePath);
             }
             else if (command === 'openNoteInNewWindow') {
                 appContext.triggerCommand('openInWindow', {notePath});

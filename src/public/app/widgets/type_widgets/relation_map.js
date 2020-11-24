@@ -190,7 +190,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
         if (command === "openInNewTab") {
-            appContext.tabManager.openTabWithNote(noteId);
+            appContext.tabManager.openTabWithNoteWithHoisting(noteId);
         }
         else if (command === "remove") {
             const confirmDialog = await import('../../dialogs/confirm.js');

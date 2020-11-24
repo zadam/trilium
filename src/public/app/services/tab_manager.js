@@ -193,6 +193,24 @@ export default class TabManager extends Component {
         return tabContext;
     }
 
+    /**
+     * If the requested notePath is within current note hoisting scope then keep the note hoisting also for the new tab.
+     */
+    async openTabWithNoteWithHoisting(notePath) {
+        const tabContext = this.getActiveTabContext();
+        let hoistedNoteId = 'root';
+
+        if (tabContext) {
+            const resolvedNotePath = await treeService.resolveNotePath(notePath);
+
+            if (resolvedNotePath.includes(tabContext.hoistedNoteId)) {
+                hoistedNoteId = tabContext.hoistedNoteId;
+            }
+        }
+
+        return this.openTabWithNote(notePath, false, null, hoistedNoteId);
+    }
+
     async openTabWithNote(notePath, activate, tabId, hoistedNoteId) {
         const tabContext = await this.openEmptyTab(tabId, hoistedNoteId);
 

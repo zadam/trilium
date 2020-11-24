@@ -18,6 +18,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'hidePromotedAttributes' },
     { type: 'label', name: 'readOnly' },
     { type: 'label', name: 'autoReadOnlyDisabled' },
+    { type: 'label', name: 'hoistedCssClass' },
     { type: 'label', name: 'cssClass' },
     { type: 'label', name: 'iconClass' },
     { type: 'label', name: 'keyboardShortcut' },

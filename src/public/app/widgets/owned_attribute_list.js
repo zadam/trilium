@@ -32,9 +32,9 @@ export default class OwnedAttributeListWidget extends TabAwareWidget {
     }
 
     renderTitle(note) {
-        const ownedNotes = note.getAttributes().filter(attr => attr.noteId === this.noteId)
+        const ownedAttrs = note.getAttributes().filter(attr => attr.noteId === this.noteId && !attr.isAutoLink)
 
-        this.$title.text(`Owned attrs (${ownedNotes.length})`);
+        this.$title.text(`Owned attrs (${ownedAttrs.length})`);
 
         return {
             show: true,
