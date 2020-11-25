@@ -28,6 +28,7 @@ const TAB_SIZE_MINI = 48;
 const TAB_TPL = `
 <div class="note-tab">
   <div class="note-tab-wrapper">
+    <div class="note-tab-icon"></div>
     <div class="note-tab-title"></div>
     <div class="note-tab-drag-handle"></div>
     <div class="note-tab-close" title="Close tab" data-trigger-command="closeActiveTab"><span>×</span></div>
@@ -158,6 +159,12 @@ const TAB_ROW_TPL = `
         overflow: hidden;
         white-space: nowrap;
         color: var(--muted-text-color);
+    }
+    
+    .note-tab-row .note-tab .note-tab-icon {
+        position: relative;
+        top: -1px;
+        padding-right: 3px;
     }
     
     .note-tab-row .note-tab[is-small] .note-tab-title {
@@ -624,7 +631,15 @@ export default class TabRowWidget extends BasicWidget {
             const hoistedNote = treeCache.getNoteFromCache(tabContext.hoistedNoteId);
 
             if (hoistedNote) {
-                $tab.addClass(hoistedNote.getHoistedCssClass());
+                $tab.find('.note-tab-icon')
+                    .removeClass()
+                    .addClass("note-tab-icon")
+                    .addClass(hoistedNote.getWorkspaceIconClass());
+
+                $tab.find('.note-tab-wrapper').css("background", hoistedNote.getWorkspaceTabBackgroundColor());
+            }
+            else {
+                $tab.find('.note-tab-wrapper').removeAttr("style");
             }
         }
 

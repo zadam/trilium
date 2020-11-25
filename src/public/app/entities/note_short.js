@@ -265,10 +265,14 @@ class NoteShort {
     }
 
     getIcon(isFolder = false) {
-        const iconCassLabels = this.getLabels('iconClass');
+        const iconClassLabels = this.getLabels('iconClass');
+        const workspaceIconClass = this.getWorkspaceIconClass();
 
-        if (iconCassLabels.length > 0) {
-            return iconCassLabels.map(l => l.value).join(' ');
+        if (iconClassLabels.length > 0) {
+            return iconClassLabels.map(l => l.value).join(' ');
+        }
+        else if (workspaceIconClass) {
+            return workspaceIconClass;
         }
         else if (this.noteId === 'root') {
             return "bx bx-chevrons-right";
@@ -547,9 +551,14 @@ class NoteShort {
         return labels.map(l => l.value).join(' ');
     }
 
-    getHoistedCssClass() {
-        const labels = this.getLabels('hoistedCssClass');
-        return labels.map(l => l.value).join(' ');
+    getWorkspaceIconClass() {
+        const labels = this.getLabels('workspaceIconClass');
+        return labels.length > 0 ? labels[0].value : "";
+    }
+
+    getWorkspaceTabBackgroundColor() {
+        const labels = this.getLabels('workspaceTabBackgroundColor');
+        return labels.length > 0 ? labels[0].value : "";
     }
 }
 
