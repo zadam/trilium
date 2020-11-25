@@ -27,6 +27,7 @@ import EditedNotesWidget from "../widgets/collapsible_widgets/edited_notes.js";
 import CollapsibleSectionContainer from "../widgets/collapsible_section_container.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import InheritedAttributesWidget from "../widgets/inherited_attribute_list.js";
+import NoteListWidget from "../widgets/note_list.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -164,6 +165,7 @@ export default class DesktopMainWindowLayout {
                         )
                     )
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
+                    .child(new TabCachingWidget(() => new NoteListWidget()))
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )

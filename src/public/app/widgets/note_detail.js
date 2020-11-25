@@ -25,8 +25,8 @@ const TPL = `
 <div class="note-detail">
     <style>
     .note-detail {
-        height: 100%;
         min-height: 0;
+        flex-grow: 1;
         font-family: var(--detail-font-family);
         font-size: var(--detail-font-size);
     }
@@ -75,6 +75,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$widget.on("dragover", e => e.preventDefault());
 
