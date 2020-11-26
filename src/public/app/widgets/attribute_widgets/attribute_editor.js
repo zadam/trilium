@@ -1,13 +1,13 @@
-import TabAwareWidget from "./tab_aware_widget.js";
-import noteAutocompleteService from "../services/note_autocomplete.js";
-import server from "../services/server.js";
-import contextMenuService from "../services/context_menu.js";
-import attributesParser from "../services/attribute_parser.js";
-import libraryLoader from "../services/library_loader.js";
-import treeCache from "../services/tree_cache.js";
-import attributeRenderer from "../services/attribute_renderer.js";
-import noteCreateService from "../services/note_create.js";
-import treeService from "../services/tree.js";
+import TabAwareWidget from "../tab_aware_widget.js";
+import noteAutocompleteService from "../../services/note_autocomplete.js";
+import server from "../../services/server.js";
+import contextMenuService from "../../services/context_menu.js";
+import attributesParser from "../../services/attribute_parser.js";
+import libraryLoader from "../../services/library_loader.js";
+import treeCache from "../../services/tree_cache.js";
+import attributeRenderer from "../../services/attribute_renderer.js";
+import noteCreateService from "../../services/note_create.js";
+import treeService from "../../services/tree.js";
 
 const HELP_TEXT = `
 <p>To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code></p> 

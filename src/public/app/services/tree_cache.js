@@ -2,6 +2,7 @@ import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import Attribute from "../entities/attribute.js";
 import server from "./server.js";
+import appContext from "./app_context.js";
 import NoteComplement from "../entities/note_complement.js";
 
 /**
@@ -192,8 +193,12 @@ class TreeCache {
         await this.loadParents(resp, true);
         this.addResp(resp);
 
+        const searchNoteIds = [];
+
         for (const note of resp.notes) {
             if (note.type === 'search') {
+                searchNoteIds.push(note.noteId);
+
                 const searchResultNoteIds = await server.get('search-note/' + note.noteId);
 
                 if (!Array.isArray(searchResultNoteIds)) {
@@ -226,6 +231,10 @@ class TreeCache {
                     attributes: []
                 });
             }
+        }
+
+        if (searchNoteIds.length > 0) {
+            appContext.triggerEvent('searchResultsUpdated', {searchNoteIds});
         }
     }
 

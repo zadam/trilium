@@ -55,6 +55,7 @@ class ImageTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$imageWrapper = this.$widget.find('.note-detail-image-wrapper');
         this.$imageView = this.$widget.find('.note-detail-image-view');
         this.$copyToClipboardButton = this.$widget.find(".image-copy-to-clipboard");

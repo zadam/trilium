@@ -9,7 +9,7 @@ import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
-import OwnedAttributeListWidget from "../widgets/owned_attribute_list.js";
+import OwnedAttributeListWidget from "../widgets/attribute_widgets/owned_attribute_list.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {

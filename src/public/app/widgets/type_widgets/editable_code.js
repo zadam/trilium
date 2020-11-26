@@ -74,6 +74,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$editor = this.$widget.find('.note-detail-code-editor');
         this.$sqlConsoleArea = this.$widget.find('.sql-console-area');
         this.$sqlConsoleTableSchemas = this.$widget.find('.sql-console-table-schemas');

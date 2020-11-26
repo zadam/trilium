@@ -9,7 +9,6 @@ import EditableTextTypeWidget from "./type_widgets/editable_text.js";
 import EditableCodeTypeWidget from "./type_widgets/editable_code.js";
 import FileTypeWidget from "./type_widgets/file.js";
 import ImageTypeWidget from "./type_widgets/image.js";
-import SearchTypeWidget from "./type_widgets/search.js";
 import RenderTypeWidget from "./type_widgets/render.js";
 import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
@@ -20,6 +19,7 @@ import noteCreateService from "../services/note_create.js";
 import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
+import NoneTypeWidget from "./type_widgets/none.js";
 
 const TPL = `
 <div class="note-detail">
@@ -43,7 +43,7 @@ const typeWidgetClasses = {
     'read-only-code': ReadOnlyCodeTypeWidget,
     'file': FileTypeWidget,
     'image': ImageTypeWidget,
-    'search': SearchTypeWidget,
+    'search': NoneTypeWidget,
     'render': RenderTypeWidget,
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,

@@ -46,27 +46,23 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not search note.`]
     }
 
-    const json = note.getJsonContent();
-
-    if (!json || !json.searchString) {
-        return [];
-    }
+    const searchString = note.getLabelValue('searchString');
 
     let searchResultNoteIds;
 
     try {
-        if (json.searchString.startsWith('=')) {
-            const relationName = json.searchString.substr(1).trim();
+        if (searchString.startsWith('=')) {
+            const relationName = searchString.substr(1).trim();
 
             searchResultNoteIds = await searchFromRelation(note, relationName);
         } else {
             const searchContext = new SearchContext({
-                includeNoteContent: true,
+                includeNoteContent: note.getLabelValue('includeNoteContent') === 'true',
                 excludeArchived: true,
                 fuzzyAttributeSearch: false
             });
 
-            searchResultNoteIds = searchService.findNotesWithQuery(json.searchString, searchContext)
+            searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
                 .map(sr => sr.noteId);
         }
     }

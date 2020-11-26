@@ -19,6 +19,7 @@ export default class EmptyTypeWidget extends TypeWidget {
         // FIXME: this might be optimized - cleaned up after use since it's always used only for new tab
 
         this.$widget = $(TPL);
+        this.contentSized();
         this.$autoComplete = this.$widget.find(".note-autocomplete");
 
         noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, { hideGoToSelectedNoteButton: true })

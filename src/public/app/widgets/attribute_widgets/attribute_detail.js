@@ -1,13 +1,13 @@
-import server from "../services/server.js";
-import treeCache from "../services/tree_cache.js";
-import treeService from "../services/tree.js";
-import linkService from "../services/link.js";
-import attributeAutocompleteService from "../services/attribute_autocomplete.js";
-import noteAutocompleteService from "../services/note_autocomplete.js";
-import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
-import TabAwareWidget from "./tab_aware_widget.js";
-import SpacedUpdate from "../services/spaced_update.js";
-import utils from "../services/utils.js";
+import server from "../../services/server.js";
+import treeCache from "../../services/tree_cache.js";
+import treeService from "../../services/tree.js";
+import linkService from "../../services/link.js";
+import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
+import noteAutocompleteService from "../../services/note_autocomplete.js";
+import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js';
+import TabAwareWidget from "../tab_aware_widget.js";
+import SpacedUpdate from "../../services/spaced_update.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="attr-detail">

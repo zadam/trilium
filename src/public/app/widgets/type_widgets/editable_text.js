@@ -61,7 +61,7 @@ const TPL = `
         border: 0 !important;
         box-shadow: none !important;
         /* This is because with empty content height of editor is 0 and it's impossible to click into it */
-        min-height: 500px;
+        min-height: 300px;
     }
     </style>
 
@@ -74,6 +74,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$editor = this.$widget.find('.note-detail-editable-text-editor');
 
         this.initialized = this.initEditor();
