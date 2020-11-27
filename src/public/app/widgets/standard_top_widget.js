@@ -15,7 +15,7 @@ const TPL = `
     
     .standard-top-widget button {
         padding: 1px 5px 1px 5px;
-        font-size: smaller;
+        font-size: 90%;
         margin-bottom: 2px;
         margin-top: 2px;
         margin-right: 8px;
@@ -24,7 +24,8 @@ const TPL = `
     
     .standard-top-widget button.btn-sm .bx {
         position: relative;
-        top: 1px;
+        top: 2px;
+        font-size: 120%;
     }
     
     .standard-top-widget button:hover {
@@ -39,7 +40,7 @@ const TPL = `
         </button>
     
         <button class="btn btn-sm jump-to-note-dialog-button" data-trigger-command="jumpToNote">
-            <span class="bx bx-crosshair"></span>
+            <span class="bx bx-send"></span>
             Jump to note
         </button>
     
