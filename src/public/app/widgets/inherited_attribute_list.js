@@ -5,6 +5,10 @@ import attributeRenderer from "../services/attribute_renderer.js";
 const TPL = `
 <div class="inherited-attributes-widget">
     <style>
+    .inherited-attributes-widget {
+        position: relative;
+    }
+    
     .inherited-attributes-container {
         color: var(--muted-text-color);
         max-height: 200px;
@@ -39,7 +43,7 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$container = this.$widget.find('.inherited-attributes-container');
         this.$widget.append(this.attributeDetailWidget.render());
@@ -64,7 +68,8 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
                         noteId: attribute.noteId,
                         type: attribute.type,
                         name: attribute.name,
-                        value: attribute.value
+                        value: attribute.value,
+                        isInheritable: attribute.isInheritable
                     },
                     isOwned: false,
                     x: e.pageX,

@@ -87,7 +87,7 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.overflowing();
 
         this.$titleContainer = this.$widget.find('.section-title-container');
         this.$bodyContainer = this.$widget.find('.section-body-container');
