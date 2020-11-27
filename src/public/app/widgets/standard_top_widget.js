@@ -33,12 +33,17 @@ const TPL = `
     </style>
 
     <div style="flex-grow: 100; display: flex;">
-        <button class="btn btn-sm jump-to-note-dialog-button" data-command="jumpToNote">
+        <button class="btn btn-sm search-button" data-trigger-command="searchNotes" data-command="searchNotes">
+            <span class="bx bx-search"></span>
+            Search
+        </button>
+    
+        <button class="btn btn-sm jump-to-note-dialog-button" data-trigger-command="jumpToNote">
             <span class="bx bx-crosshair"></span>
             Jump to note
         </button>
     
-        <button class="btn btn-sm recent-changes-button" data-command="showRecentChanges">
+        <button class="btn btn-sm recent-changes-button" data-trigger-command="showRecentChanges">
             <span class="bx bx-history"></span>
     
             Recent changes
@@ -72,9 +77,6 @@ export default class StandardTopWidget extends BasicWidget {
         this.child(historyNavigationWidget);
 
         this.$widget.prepend(historyNavigationWidget.render());
-
-        this.$widget.find(".jump-to-note-dialog-button").on('click', () => this.triggerCommand('jumpToNote'));
-        this.$widget.find(".recent-changes-button").on('click', () => this.triggerCommand('showRecentChanges'));
 
         this.$enterProtectedSessionButton = this.$widget.find(".enter-protected-session-button");
         this.$enterProtectedSessionButton.on('click', protectedSessionService.enterProtectedSession);

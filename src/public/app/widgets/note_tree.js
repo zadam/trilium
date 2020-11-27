@@ -49,10 +49,24 @@ const TPL = `
         border-color: var(--button-border-color);
     }
     
+    .collapse-tree-button {
+        position: absolute;
+        top: 10px;
+        right: 70px;
+        z-index: 100;
+    }
+    
+    .scroll-to-active-note-button {
+        position: absolute;
+        top: 10px;
+        right: 35px;
+        z-index: 100;
+    }
+    
     .tree-settings-button {
         position: absolute;
         top: 10px;
-        right: 10px;
+        right: 0px;
         z-index: 100;
     }
     
@@ -129,6 +143,10 @@ const TPL = `
         opacity: 0.6;
     }
     </style>
+    
+    <button class="btn btn-sm icon-button bx bx-layer-minus collapse-tree-button" title="Collapse note tree" data-trigger-command="collapseTree"></button>
+    
+    <button class="btn btn-sm icon-button bx bx-crosshair scroll-to-active-note-button" title="Scroll to active note" data-trigger-command="scrollToActiveNote"></button>
     
     <button class="btn btn-sm icon-button bx bx-cog tree-settings-button" title="Tree settings"></button>
     
@@ -697,6 +715,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.setExpandedStatusForSubtree(node, false);
     }
 
+    collapseTreeCommand() { this.collapseTree(); }
+
     /**
      * @return {FancytreeNode|null}
      */
@@ -719,7 +739,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async scrollToActiveNoteEvent() {
+    async scrollToActiveNoteCommand() {
         const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
@@ -828,9 +848,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const list = this.tree.getNodesByRef(noteId);
         return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
-
-    // must be event since it's triggered from outside the tree
-    collapseTreeEvent() { this.collapseTree(); }
 
     isEnabled() {
         return !!this.tabContext;

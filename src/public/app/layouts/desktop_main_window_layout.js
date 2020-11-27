@@ -4,9 +4,6 @@ import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import SidePaneContainer from "../widgets/side_pane_container.js";
-import GlobalButtonsWidget from "../widgets/global_buttons.js";
-import SearchBoxWidget from "../widgets/search_box.js";
-import SearchResultsWidget from "../widgets/search_results.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import NotePathsWidget from "../widgets/note_paths.js";
@@ -142,9 +139,6 @@ export default class DesktopMainWindowLayout {
                 .filling()
                 .child(new SidePaneContainer('left')
                     .hideInZenMode()
-                    .child(new GlobalButtonsWidget())
-                    .child(new SearchBoxWidget())
-                    .child(new SearchResultsWidget())
                     .child(new TabCachingWidget(() => new NotePathsWidget()))
                     .child(appContext.mainTreeWidget)
                     .child(...this.customWidgets.get('left-pane'))
