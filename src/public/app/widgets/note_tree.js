@@ -142,6 +142,22 @@ const TPL = `
     span.fancytree-node.archived {
         opacity: 0.6;
     }
+    
+    .add-note-button {
+        display: none;
+        font-size: 120%;
+        padding: 2px;
+        cursor: pointer;
+    }
+    
+    .add-note-button:hover {
+        border: 1px solid var(--main-border-color);
+        border-radius: 3px;
+    }
+    
+    span.fancytree-node:hover .add-note-button {
+        display: inline;
+    }
     </style>
     
     <button class="btn btn-sm icon-button bx bx-layer-minus collapse-tree-button" title="Collapse note tree" data-trigger-command="collapseTree"></button>
@@ -189,7 +205,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$tree = this.$widget.find('.tree');
 
         this.$tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
-        this.$tree.on("click", ".refresh-search-button", () => this.refreshSearch());
+        this.$tree.on("click", ".refresh-search-button", e => this.refreshSearch(e));
+        this.$tree.on("click", ".add-note-button", e => {
+            const node = $.ui.fancytree.getNode(e);
+
+            noteCreateService.createNote(node.data.noteId, {
+                isProtected: node.data.isProtected
+            });
+        });
 
         // fancytree doesn't support middle click so this is a way to support it
         this.$tree.on('mousedown', '.fancytree-title', e => {
@@ -469,12 +492,24 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const node = data.node;
                 const $span = $(node.span);
 
+                if (node.enhanced) {
+                    return;
+                }
+
+                node.enhanced = true;
+
                 const note = await treeCache.getNote(node.data.noteId);
 
-                if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
-                    const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
+                if (note.type === 'search') {
+                    const $refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
 
-                    $span.append(refreshSearchButton);
+                    $span.append($refreshSearchButton);
+                }
+
+                if (note.type !== 'search') {
+                    const $createChildNoteButton = $('<span>&nbsp; <span class="add-note-button bx bx-plus" title="Create child note"></span></span>');
+
+                    $span.append($createChildNoteButton);
                 }
             },
             // this is done to automatically lazy load all expanded notes after tree load
@@ -885,8 +920,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.filterHoistedBranch();
     }
 
-    async refreshSearch() {
-        const activeNode = this.getActiveNode();
+    async refreshSearch(e) {
+        const activeNode = $.ui.fancytree.getNode(e);
 
         activeNode.load(true);
         activeNode.setExpanded(true);
