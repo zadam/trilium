@@ -8,6 +8,7 @@ const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
 const BUILTIN_ATTRIBUTES = [
     // label names
+    { type: 'label', name: 'inbox' },
     { type: 'label', name: 'disableVersioning' },
     { type: 'label', name: 'calendarRoot' },
     { type: 'label', name: 'archived' },

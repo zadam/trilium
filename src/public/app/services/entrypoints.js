@@ -62,14 +62,14 @@ export default class Entrypoints extends Component {
         findInPage.openFindWindow();
     }
 
-    async createNoteIntoDayNoteCommand() {
-        const todayNote = await dateNoteService.getTodayNote();
+    async createNoteIntoInboxCommand() {
+        const inboxNote = await dateNoteService.getInboxNote();
 
-        const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
+        const {note} = await server.post(`notes/${inboxNote.noteId}/children?target=into`, {
             title: 'new note',
             content: '',
             type: 'text',
-            isProtected: todayNote.isProtected
+            isProtected: inboxNote.isProtected
         });
 
         await ws.waitForMaxKnownEntityChangeId();

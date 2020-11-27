@@ -4,6 +4,12 @@ const dateNoteService = require('../../services/date_notes');
 const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const noteService = require('../../services/notes');
+const attributeService = require('../../services/attributes');
+
+function getInboxNote(req) {
+    return attributeService.getNoteWithLabel('inbox')
+        || dateNoteService.getDateNote(req.params.date);
+}
 
 function getDateNote(req) {
     return dateNoteService.getDateNote(req.params.date);
@@ -68,6 +74,7 @@ function createSearchNote() {
 }
 
 module.exports = {
+    getInboxNote,
     getDateNote,
     getMonthNote,
     getYearNote,

@@ -2,6 +2,13 @@ import treeCache from "./tree_cache.js";
 import server from "./server.js";
 
 /** @return {NoteShort} */
+async function getInboxNote() {
+    const note = await server.get('date-notes/inbox/' + dayjs().format("YYYY-MM-DD"), "date-note");
+
+    return await treeCache.getNote(note.noteId);
+}
+
+/** @return {NoteShort} */
 async function getTodayNote() {
     return await getDateNote(dayjs().format("YYYY-MM-DD"));
 }
@@ -42,6 +49,7 @@ async function createSearchNote() {
 }
 
 export default {
+    getInboxNote,
     getTodayNote,
     getDateNote,
     getMonthNote,

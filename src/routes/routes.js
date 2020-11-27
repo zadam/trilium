@@ -186,6 +186,7 @@ function register(app) {
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
 
+    apiRoute(GET, '/api/date-notes/inbox/:date', dateNotesRoute.getInboxNote);
     apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
     apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
     apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);

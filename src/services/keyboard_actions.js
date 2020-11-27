@@ -85,9 +85,9 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "createNoteIntoDayNote",
+        actionName: "createNoteIntoInbox",
         defaultShortcuts: ["global:CommandOrControl+Alt+P"],
-        description: "Create and open subnote of a current day note",
+        description: "Create and open in the inbox (if defined) or day note",
         scope: "window"
     },
     {

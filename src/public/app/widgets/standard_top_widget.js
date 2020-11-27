@@ -34,17 +34,22 @@ const TPL = `
     </style>
 
     <div style="flex-grow: 100; display: flex;">
-        <button class="btn btn-sm search-button" data-trigger-command="searchNotes" data-command="searchNotes">
+        <button class="btn btn-sm" data-trigger-command="createNoteIntoInbox">
+            <span class="bx bx-file-blank"></span>
+            New note
+        </button>
+        
+        <button class="btn btn-sm" data-trigger-command="searchNotes">
             <span class="bx bx-search"></span>
             Search
         </button>
     
-        <button class="btn btn-sm jump-to-note-dialog-button" data-trigger-command="jumpToNote">
+        <button class="btn btn-sm" data-trigger-command="jumpToNote">
             <span class="bx bx-send"></span>
             Jump to note
         </button>
     
-        <button class="btn btn-sm recent-changes-button" data-trigger-command="showRecentChanges">
+        <button class="btn btn-sm" data-trigger-command="showRecentChanges">
             <span class="bx bx-history"></span>
     
             Recent changes
