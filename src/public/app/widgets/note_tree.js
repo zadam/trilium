@@ -52,21 +52,21 @@ const TPL = `
     .collapse-tree-button {
         position: absolute;
         bottom: 10px;
-        right: 70px;
+        right: 80px;
         z-index: 100;
     }
     
     .scroll-to-active-note-button {
         position: absolute;
         bottom: 10px;
-        right: 35px;
+        right: 45px;
         z-index: 100;
     }
     
     .tree-settings-button {
         position: absolute;
         bottom: 10px;
-        right: 0px;
+        right: 10px;
         z-index: 100;
     }
     
@@ -78,7 +78,7 @@ const TPL = `
         padding: 20px; 
         z-index: 1000;
         width: 320px; 
-        border-radius: 10px 0 10px 10px;
+        border-radius: 10px;
     }
     
     ul.fancytree-container {
@@ -223,7 +223,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             let top = this.$treeSettingsButton[0].offsetTop;
             let left = this.$treeSettingsButton[0].offsetLeft;
-            top -= this.$treeSettingsPopup.outerHeight();
+            top -= this.$treeSettingsPopup.outerHeight() + 10;
             left += this.$treeSettingsButton.outerWidth() - this.$treeSettingsPopup.outerWidth();
 
             if (left < 0) {
