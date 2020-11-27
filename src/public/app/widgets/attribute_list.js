@@ -214,7 +214,8 @@ export default class AttributeListWidget extends TabAwareWidget {
                         noteId: attribute.noteId,
                         type: attribute.type,
                         name: attribute.name,
-                        value: attribute.value
+                        value: attribute.value,
+                        isInheritable: attribute.isInheritable
                     },
                     isOwned: false,
                     x: e.pageX,
