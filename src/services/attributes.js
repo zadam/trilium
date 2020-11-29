@@ -33,6 +33,9 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'noteRevisionsWidgetDisabled' },
     { type: 'label', name: 'whatLinksHereWidgetDisabled' },
     { type: 'label', name: 'similarNotesWidgetDisabled' },
+    { type: 'label', name: 'workspace' },
+    { type: 'label', name: 'workspaceIconClass' },
+    { type: 'label', name: 'workspaceTabBackgroundColor' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

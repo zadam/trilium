@@ -16,7 +16,7 @@ export default class WhatLinksHereWidget extends CollapsibleWidget {
 
     get headerActions() {
         const $showFullButton = $("<a>")
-            .addClass("bx bx-map-alt")
+            .addClass("bx bx-network-chart")
             .addClass('widget-header-action')
             .attr('title', 'Show full link map');
 

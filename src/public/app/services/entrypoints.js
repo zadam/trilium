@@ -90,6 +90,14 @@ export default class Entrypoints extends Component {
         }
     }
 
+    async hoistNoteCommand({noteId}) {
+        const tabContext = appContext.tabManager.getActiveTabContext();
+
+        if (tabContext.hoistedNoteId !== noteId) {
+            await tabContext.setHoistedNoteId(noteId);
+        }
+    }
+
     async unhoistCommand() {
         const activeTabContext = appContext.tabManager.getActiveTabContext();
 

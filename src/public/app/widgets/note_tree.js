@@ -35,20 +35,7 @@ const TPL = `
         overflow: auto;
         padding-bottom: 35px;
     }
-    
-    .refresh-search-button {
-        cursor: pointer;
-        position: relative;
-        top: -1px;
-        border: 1px solid transparent;
-        padding: 2px;
-        border-radius: 2px;
-    }
-    
-    .refresh-search-button:hover {
-        border-color: var(--button-border-color);
-    }
-    
+        
     .collapse-tree-button {
         position: absolute;
         bottom: 10px;
@@ -142,17 +129,22 @@ const TPL = `
     span.fancytree-node.archived {
         opacity: 0.6;
     }
-    
-    .add-note-button {
-        display: none;
+
+    .tree-item-button {
         font-size: 120%;
         padding: 2px;
         cursor: pointer;
+        border-radius: 3px;
+        border: 1px solid var(--main-background-color);
+        margin-left: 5px;
     }
     
-    .add-note-button:hover {
-        border: 1px solid var(--main-border-color);
-        border-radius: 3px;
+    .tree-item-button:hover {
+        border-color: var(--main-border-color);
+    }
+    
+    .add-note-button {
+        display: none;
     }
     
     span.fancytree-node:hover .add-note-button {
@@ -212,6 +204,18 @@ export default class NoteTreeWidget extends TabAwareWidget {
             noteCreateService.createNote(node.data.noteId, {
                 isProtected: node.data.isProtected
             });
+        });
+
+        this.$tree.on("click", ".enter-workspace-button", e => {
+            const node = $.ui.fancytree.getNode(e);
+
+            this.triggerCommand('hoistNote', {noteId: node.data.noteId});
+        });
+
+        this.$tree.on("click", ".unhoist-button", e => {
+            const node = $.ui.fancytree.getNode(e);
+
+            this.triggerCommand('unhoist');
         });
 
         // fancytree doesn't support middle click so this is a way to support it
@@ -500,14 +504,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const note = await treeCache.getNote(node.data.noteId);
 
+                if (note.hasLabel('workspace')) {
+                    const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>');
+
+                    $span.append($enterWorkspaceButton);
+                }
+
                 if (note.type === 'search') {
-                    const $refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-refresh" title="Refresh saved search results"></span></span>');
+                    const $refreshSearchButton = $('<span class="tree-item-button refresh-search-button bx bx-refresh" title="Refresh saved search results"></span>');
 
                     $span.append($refreshSearchButton);
                 }
 
                 if (note.type !== 'search') {
-                    const $createChildNoteButton = $('<span>&nbsp; <span class="add-note-button bx bx-plus" title="Create child note"></span></span>');
+                    const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);
                 }
