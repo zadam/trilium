@@ -24,7 +24,7 @@
     "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
-    "async-mutex": "0.2.4",
+    "async-mutex": "0.2.6",
     "axios": "0.21.0",
     "better-sqlite3": "7.1.1",
     "body-parser": "1.19.0",

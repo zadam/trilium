@@ -1123,6 +1123,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 await newActiveNode.setFocus(true);
             }
         }
+
+        if (noteIdsToReload.size > 0 || noteIdsToUpdate.size > 0) {
+            // workaround for https://github.com/mar10/fancytree/issues/1054
+            this.filterHoistedBranch();
+        }
     }
 
     sortChildren(node) {
@@ -1185,7 +1190,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     filterHoistedBranch() {
         if (this.tabContext) {
-            this.tree.filterBranches(node => node.data.noteId === this.tabContext.hoistedNoteId);
+            if (this.tabContext.hoistedNoteId === 'root') {
+                this.tree.clearFilter();
+            }
+            else {
+                this.tree.filterBranches(node => node.data.noteId === this.tabContext.hoistedNoteId);
+            }
         }
     }
 
