@@ -32,15 +32,6 @@ export default class NoteListWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        // this.tabContext.autoBookDisabled;
-        //
-        // const noteComplement = await this.tabContext.getNoteComplement();
-        //
-        // if (utils.isHtmlEmpty(noteComplement.content)) {
-        //
-        // }
-        //
-
         const noteListRenderer = new NoteListRenderer(note, note.getChildNoteIds());
 
         this.$content.empty().append(await noteListRenderer.renderList());

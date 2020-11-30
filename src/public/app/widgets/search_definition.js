@@ -110,9 +110,8 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         await treeCache.reloadNotes([this.noteId]);
     }
 
-    async doRefresh(note) {
+    async refreshWithNote(note) {
         this.$component.show();
-
         this.$searchString.val(this.note.getLabelValue('searchString'));
         this.$searchWithinNoteContent.prop('checked', this.note.getLabelValue('includeNoteContent') === 'true');
         this.$limitSearchToSubtree.val(this.note.getLabelValue('subTreeNoteId'));

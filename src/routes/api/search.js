@@ -46,16 +46,16 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not search note.`]
     }
 
-    const searchString = note.getLabelValue('searchString');
-
     let searchResultNoteIds;
 
     try {
-        if (searchString.startsWith('=')) {
-            const relationName = searchString.substr(1).trim();
+        const searchScript = note.getRelationValue('searchScript');
+        const searchString = note.getLabelValue('searchString');
 
-            searchResultNoteIds = await searchFromRelation(note, relationName);
-        } else {
+        if (searchScript) {
+            searchResultNoteIds = await searchFromRelation(note, 'searchScript');
+        }
+        else if (searchString) {
             const searchContext = new SearchContext({
                 includeNoteContent: note.getLabelValue('includeNoteContent') === 'true',
                 excludeArchived: true,
@@ -64,6 +64,9 @@ async function searchFromNote(req) {
 
             searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
                 .map(sr => sr.noteId);
+        }
+        else {
+            searchResultNoteIds = [];
         }
     }
     catch (e) {

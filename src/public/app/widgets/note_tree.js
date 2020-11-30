@@ -131,8 +131,7 @@ const TPL = `
     }
 
     .tree-item-button {
-        font-size: 120%;
-        padding: 2px;
+        font-size: 130%;
         cursor: pointer;
         border-radius: 3px;
         border: 1px solid var(--main-background-color);

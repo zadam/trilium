@@ -152,7 +152,8 @@ class NoteListRenderer {
         this.viewType = parentNote.getLabelValue('viewType');
 
         if (!['list', 'grid'].includes(this.viewType)) {
-            this.viewType = 'list'; // default
+            // when not explicitly set decide based on note type
+            this.viewType = parentNote.type === 'search' ? 'list' : 'grid';
         }
 
         this.$noteList.addClass(this.viewType + '-view');
