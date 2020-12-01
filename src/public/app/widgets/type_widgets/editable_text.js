@@ -41,13 +41,17 @@ const TPL = `
     .note-detail-editable-text *:first-child {
         margin-top: 0 !important;
     }
-    
-    .note-detail-editable-text h1 { font-size: 2.0em; }
-    .note-detail-editable-text h2 { font-size: 1.8em; }
+         
+    .note-detail-editable-text h2 { font-size: 1.8em; } 
+    .note-detail-editable-text h2::before { content: "##\\00a0\\00a0"; color: var(--muted-text-color); }
     .note-detail-editable-text h3 { font-size: 1.6em; }
+    .note-detail-editable-text h3::before { content: "###\\00a0\\00a0"; color: var(--muted-text-color); }
     .note-detail-editable-text h4 { font-size: 1.4em; }
+    .note-detail-editable-text h4::before { content: "####\\00a0\\00a0"; color: var(--muted-text-color); }
     .note-detail-editable-text h5 { font-size: 1.2em; }
+    .note-detail-editable-text h5::before { content: "#####\\00a0\\00a0"; color: var(--muted-text-color); }
     .note-detail-editable-text h6 { font-size: 1.1em; }
+    .note-detail-editable-text h6::before { content: "######\\00a0\\00a0"; color: var(--muted-text-color); }
     
     .note-detail-editable-text {
         overflow: auto;
