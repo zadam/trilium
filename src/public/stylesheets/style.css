@@ -411,7 +411,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     box-shadow: 10px 10px 93px -25px #aaaaaa;
 }
 
-.tooltip-attributes {
+.rendered-note-attributes {
     color: var(--muted-text-color);
     margin-bottom: 7px;
 }

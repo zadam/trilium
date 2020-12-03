@@ -4,38 +4,42 @@ import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import libraryLoader from "./library_loader.js";
 import openService from "./open.js";
+import treeCache from "./tree_cache.js";
 
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
-        trim: false
+        trim: false,
+        tooltip: false
     }, options);
 
     const type = getRenderingType(note);
 
-    let $rendered;
+    const $renderedContent = $('<div class="rendered-note-content">');
 
     if (type === 'text') {
-        const fullNote = await server.get('notes/' + note.noteId);
+        const noteComplement = await treeCache.getNoteComplement(note.noteId);
 
-        $rendered = $('<div class="ck-content">').html(trim(fullNote.content, options.trim));
+        $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
 
-        if ($rendered.find('span.math-tex').length > 0) {
+        if ($renderedContent.find('span.math-tex').length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement($rendered[0], {});
+            renderMathInElement($renderedContent[0], {});
         }
     }
     else if (type === 'code') {
         const fullNote = await server.get('notes/' + note.noteId);
 
-        $rendered = $("<pre>").text(trim(fullNote.content, options.trim));
+        $renderedContent.append($("<pre>").text(trim(fullNote.content, options.trim)));
     }
     else if (type === 'image') {
-        $rendered = $("<img>")
-            .attr("src", `api/images/${note.noteId}/${note.title}`)
-            .css("max-width", "100%");
+        $renderedContent.append(
+            $("<img>")
+                .attr("src", `api/images/${note.noteId}/${note.title}`)
+                .css("max-width", "100%")
+        );
     }
-    else if (type === 'file' || type === 'pdf') {
+    else if (!options.tooltip && (type === 'file' || type === 'pdf')) {
         const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
         const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
@@ -45,44 +49,50 @@ async function getRenderedContent(note, options = {}) {
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
 
-        $rendered = $('<div style="display: flex; flex-direction: column; height: 100%;">');
+        const $content = $('<div style="display: flex; flex-direction: column; height: 100%;">');
 
         if (type === 'pdf') {
             const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; flex-grow: 100;"></iframe>');
             $pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"));
 
-            $rendered.append($pdfPreview);
+            $content.append($pdfPreview);
         }
 
-        $rendered.append(
+        $content.append(
             $("<div>")
                 .append($downloadButton)
                 .append(' &nbsp; ')
                 .append($openButton)
         );
+
+        $renderedContent.append($content);
     }
     else if (type === 'render') {
-        $rendered = $('<div>');
+        const $content = $('<div>');
 
-        await renderService.render(note, $rendered, this.ctx);
+        await renderService.render(note, $content, this.ctx);
+
+        $renderedContent.append($content);
     }
-    else if (type === 'protected-session') {
+    else if (!options.tooltip && type === 'protected-session') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
 
-        $rendered = $("<div>")
-            .append("<div>This note is protected and to access it you need to enter password.</div>")
-            .append("<br/>")
-            .append($button);
+        $renderedContent.append(
+            $("<div>")
+                .append("<div>This note is protected and to access it you need to enter password.</div>")
+                .append("<br/>")
+                .append($button)
+        );
     }
     else {
-        $rendered = $("<em>Content of this note cannot be displayed in the book format</em>");
+        $renderedContent.append($("<em>Content of this note cannot be displayed in the book format</em>"));
     }
 
-    $rendered.addClass(note.getCssClass());
+    $renderedContent.addClass(note.getCssClass());
 
     return {
-        renderedContent: $rendered,
+        $renderedContent,
         type
     };
 }

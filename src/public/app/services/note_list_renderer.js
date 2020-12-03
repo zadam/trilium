@@ -2,6 +2,7 @@ import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
 import treeCache from "./tree_cache.js";
 import attributeService from "./attributes.js";
+import attributeRenderer from "./attribute_renderer.js";
 
 const TPL = `
 <div class="note-list">
@@ -54,6 +55,14 @@ const TPL = `
     
     .note-book-title {
         margin-bottom: 0;
+    }
+    
+    .note-book-title .rendered-note-attributes {
+        font-size: medium;
+    }
+    
+    .note-book-title .rendered-note-attributes:before {
+        content: "\\00a0\\00a0";
     }
     
     .note-book-card .note-book-card {
@@ -244,9 +253,10 @@ class NoteListRenderer {
         }
     }
 
-    // TODO: we should also render (promoted) attributes
     async renderNote(note, expand = false) {
         const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
+
+        const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)
@@ -254,6 +264,7 @@ class NoteListRenderer {
                 $('<h5 class="note-book-title">')
                     .append($expander)
                     .append(await linkService.createNoteLink(note.noteId, {showTooltip: false}))
+                    .append($renderedAttributes)
             );
 
         $expander.on('click', () => this.toggleContent($card, note, !$card.hasClass("expanded")));
@@ -288,11 +299,11 @@ class NoteListRenderer {
         const $content = $('<div class="note-book-content">');
 
         try {
-            const {renderedContent, type} = await noteContentRenderer.getRenderedContent(note, {
+            const {$renderedContent, type} = await noteContentRenderer.getRenderedContent(note, {
                 trim: this.viewType === 'grid' // for grid only short content is needed
             });
 
-            $content.append(renderedContent);
+            $content.append($renderedContent);
             $content.addClass("type-" + type);
         } catch (e) {
             console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);

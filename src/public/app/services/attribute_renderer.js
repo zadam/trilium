@@ -63,7 +63,7 @@ async function createNoteLink(noteId) {
 }
 
 async function renderAttributes(attributes, renderIsInheritable) {
-    const $container = $("<span>");
+    const $container = $('<span class="rendered-note-attributes">');
 
     for (let i = 0; i < attributes.length; i++) {
         const attribute = attributes[i];
@@ -79,7 +79,19 @@ async function renderAttributes(attributes, renderIsInheritable) {
     return $container;
 }
 
+async function renderNormalAttributes(note) {
+    const attrs = note.getAttributes().filter(attr => !attr.isDefinition() && !attr.isAutoLink);
+
+    const $renderedAttributes = await renderAttributes(attrs, false);
+
+    return {
+        count: attrs.length,
+        $renderedAttributes
+    }
+}
+
 export default {
     renderAttribute,
-    renderAttributes
+    renderAttributes,
+    renderNormalAttributes
 }

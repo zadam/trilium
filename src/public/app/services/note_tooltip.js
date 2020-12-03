@@ -3,7 +3,7 @@ import linkService from "./link.js";
 import treeCache from "./tree_cache.js";
 import utils from "./utils.js";
 import attributeRenderer from "./attribute_renderer.js";
-import libraryLoader from "./library_loader.js";
+import noteContentRenderer from "./note_content_renderer.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -45,9 +45,7 @@ async function mouseEnterHandler() {
     const noteId = treeService.getNoteIdFromNotePath(notePath);
 
     const note = await treeCache.getNote(noteId);
-    const noteComplement = await treeCache.getNoteComplement(noteId);
-
-    const content = await renderTooltip(note, noteComplement);
+    const content = await renderTooltip(note);
 
     if (utils.isHtmlEmpty(content)) {
         return;
@@ -79,7 +77,7 @@ function mouseLeaveHandler() {
     $(this).tooltip('dispose');
 }
 
-async function renderTooltip(note, noteComplement) {
+async function renderTooltip(note) {
     if (note.isDeleted) {
         return '<div>Note has been deleted.</div>';
     }
@@ -92,37 +90,16 @@ async function renderTooltip(note, noteComplement) {
 
     let content = $("<h5>").text(await treeService.getNotePathTitle(someNotePath)).prop('outerHTML');
 
-    const attributes = note.getAttributes()
-        .filter(attr => !attr.isDefinition());
+    const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 
-    if (attributes.length > 0) {
-        content += '<div class="tooltip-attributes"><strong>Attributes: </strong> '
-                +  (await attributeRenderer.renderAttributes(attributes)).html()
-                + '</div>'
-    }
+    const {$renderedContent} = await noteContentRenderer.getRenderedContent(note, {
+        tooltip: true,
+        trim: true
+    });
 
-    if (note.type === 'text' && !utils.isHtmlEmpty(noteComplement.content)) {
-        const $content = $('<div class="ck-content">').append(noteComplement.content);
-
-        if ($content.find('span.math-tex').length > 0) {
-            await libraryLoader.requireLibrary(libraryLoader.KATEX);
-
-            renderMathInElement($content[0], {});
-        }
-
-        content += $content[0].outerHTML;
-    }
-    else if (note.type === 'code' && noteComplement.content && noteComplement.content.trim()) {
-        content += $("<pre>")
-            .text(noteComplement.content)
-            .prop('outerHTML');
-    }
-    else if (note.type === 'image') {
-        content += $("<img>")
-            .prop("src", `api/images/${note.noteId}/${note.title}`)
-            .prop('outerHTML');
-    }
-    // other types of notes don't have tooltip preview
+    content = content
+        + $renderedAttributes[0].outerHTML
+        + $renderedContent[0].outerHTML;
 
     return content;
 }
