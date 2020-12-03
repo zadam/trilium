@@ -91,7 +91,7 @@ export default class FileTypeWidget extends TypeWidget {
 
             const result = await $.ajax({
                 url: baseApiUrl + 'notes/' + this.noteId + '/file',
-                headers: server.getHeaders(),
+                headers: await server.getHeaders(),
                 data: formData,
                 type: 'PUT',
                 timeout: 60 * 60 * 1000,

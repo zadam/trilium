@@ -136,6 +136,7 @@ const TPL = `
         border-radius: 3px;
         border: 1px solid var(--main-background-color);
         margin-left: 5px;
+        margin-top: 2px;
     }
     
     .tree-item-button:hover {
@@ -147,7 +148,7 @@ const TPL = `
     }
     
     span.fancytree-node:hover .add-note-button {
-        display: inline;
+        display: inline-block;
     }
     </style>
     

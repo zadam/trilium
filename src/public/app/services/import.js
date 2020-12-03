@@ -27,7 +27,7 @@ export async function uploadFiles(parentNoteId, files, options) {
 
         ({noteId} = await $.ajax({
             url: baseApiUrl + 'notes/' + parentNoteId + '/import',
-            headers: server.getHeaders(),
+            headers: await server.getHeaders(),
             data: formData,
             dataType: 'json',
             type: 'POST',

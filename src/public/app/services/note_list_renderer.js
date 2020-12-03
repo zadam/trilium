@@ -245,10 +245,7 @@ class NoteListRenderer {
     }
 
     // TODO: we should also render (promoted) attributes
-    // FIXME: showing specific path might be necessary because of a match in the patch
     async renderNote(note, expand = false) {
-        const notePath = /*this.notePath + '/' + */ note.noteId;
-
         const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
 
         const $card = $('<div class="note-book-card">')
@@ -256,7 +253,7 @@ class NoteListRenderer {
             .append(
                 $('<h5 class="note-book-title">')
                     .append($expander)
-                    .append(await linkService.createNoteLink(notePath, {showTooltip: false}))
+                    .append(await linkService.createNoteLink(note.noteId, {showTooltip: false}))
             );
 
         $expander.on('click', () => this.toggleContent($card, note, !$card.hasClass("expanded")));

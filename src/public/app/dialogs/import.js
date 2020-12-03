@@ -13,6 +13,7 @@ const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
 const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
 const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 const $replaceUnderscoresWithSpacesCheckbox = $("#replace-underscores-with-spaces-checkbox");
+const $csrf = $("#import-csrf");
 
 let parentNoteId = null;
 

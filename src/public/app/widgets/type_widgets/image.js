@@ -102,7 +102,7 @@ class ImageTypeWidget extends TypeWidget {
 
             const result = await $.ajax({
                 url: baseApiUrl + 'images/' + this.noteId,
-                headers: server.getHeaders(),
+                headers: await server.getHeaders(),
                 data: formData,
                 type: 'PUT',
                 timeout: 60 * 60 * 1000,
