@@ -79,8 +79,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
         this.$component = this.$widget.find('.search-definition-widget');
 
-        this.$settingsArea = this.$widget.find('.search-settings');
-
         this.spacedUpdate = new SpacedUpdate(() => this.updateSearch(), 2000);
 
         this.$limitSearchToSubtree = this.$widget.find('.limit-search-to-subtree');
@@ -107,6 +105,16 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             subNoteId ? { type: 'label', name: 'subTreeNoteId', value: subNoteId } : undefined,
         ].filter(it => !!it));
 
+        if (this.note.title.startsWith('Search: ')) {
+            await server.put(`notes/${this.noteId}/change-title`, {
+                title: 'Search: ' + (searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`)
+            });
+        }
+
+        await this.refreshResults();
+    }
+
+    async refreshResults() {
         await treeCache.reloadNotes([this.noteId]);
     }
 
@@ -115,6 +123,12 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         this.$searchString.val(this.note.getLabelValue('searchString'));
         this.$searchWithinNoteContent.prop('checked', this.note.getLabelValue('includeNoteContent') === 'true');
         this.$limitSearchToSubtree.val(this.note.getLabelValue('subTreeNoteId'));
+
+        this.refreshResults(); // important specifically when this search note was not yet refreshed
+    }
+
+    focusOnSearchDefinitionEvent() {
+        this.$searchString.focus();
     }
 
     getContent() {

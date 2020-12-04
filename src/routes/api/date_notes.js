@@ -60,11 +60,13 @@ function createSqlConsole() {
 function createSearchNote() {
     const today = dateUtils.localNowDate();
 
-    const todayNote = dateNoteService.getDateNote(today);
+    const searchHome =
+        attributeService.getNoteWithLabel('searchHome')
+        || dateNoteService.getDateNote(today);
 
     const {note} = noteService.createNewNote({
-        parentNoteId: todayNote.noteId,
-        title: 'Search',
+        parentNoteId: searchHome.noteId,
+        title: 'Search: ',
         content: "",
         type: 'search',
         mime: 'application/json'

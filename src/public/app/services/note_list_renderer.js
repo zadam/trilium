@@ -51,6 +51,7 @@ const TPL = `
         display: block;
         min-height: 0;
         height: 100%;
+        padding-top: 10px;
     }
     
     .note-book-title {

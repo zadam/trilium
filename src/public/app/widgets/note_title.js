@@ -94,6 +94,10 @@ export default class NoteTitleWidget extends TabAwareWidget {
             // not updating the title specifically since the synced title might be older than what the user is currently typing
             this.setProtectedStatus(this.note);
         }
+
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+            this.refresh();
+        }
     }
 
     beforeUnloadEvent() {

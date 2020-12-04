@@ -72,8 +72,7 @@ export default class DialogCommandExecutor extends Component {
 
         const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
 
-        appContext.triggerCommand('focusOnDetail', {tabId: tabContext.tabId});
-
+        appContext.triggerCommand('focusOnSearchDefinition', {tabId: tabContext.tabId});
     }
 
     showBackendLogCommand() {
