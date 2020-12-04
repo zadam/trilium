@@ -158,7 +158,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             if (taskContext.data.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
-                attr.name = 'disabled-' + attr.name;
+                attr.name = 'disabled:' + attr.name;
             }
 
             attributes.push(attr);
