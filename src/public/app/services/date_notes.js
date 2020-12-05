@@ -43,20 +43,21 @@ async function createSqlConsole() {
 }
 
 /** @return {NoteShort} */
-async function createSearchNote(subTreeNoteId = null) {
+async function createSearchNote(opts = {}) {
     const note = await server.post('search-note');
 
-    if (subTreeNoteId) {
-        await server.put(`notes/${note.noteId}/attributes`, [
-            { type: 'label', name: 'subTreeNoteId', value: subTreeNoteId }
-        ]);
+    const attrsToUpdate = [
+        opts.subTreeNoteId ? { type: 'label', name: 'subTreeNoteId', value: opts.subTreeNoteId } : undefined,
+        opts.searchString ? { type: 'label', name: 'searchString', value: opts.searchString } : undefined
+    ].filter(attr => !!attr);
+
+    if (attrsToUpdate.length > 0) {
+        await server.put(`notes/${note.noteId}/attributes`, attrsToUpdate);
     }
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    const noteShort = await treeCache.getNote(note.noteId);
-
-    return noteShort;
+    return await treeCache.getNote(note.noteId);
 }
 
 export default {

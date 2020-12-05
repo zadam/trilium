@@ -47,10 +47,9 @@ function showInFullText(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const searchText = $autoComplete.val();
+    const searchString = $autoComplete.val();
 
-    appContext.triggerCommand('showSearch', {searchText});
-    appContext.triggerCommand('searchForResults', {searchText});
+    appContext.triggerCommand('searchNotes', {searchString});
 
     $dialog.modal('hide');
 }
