@@ -96,13 +96,13 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     async updateSearch() {
         const searchString = this.$searchString.val();
-        const subNoteId = this.$limitSearchToSubtree.getSelectedNoteId();
+        const subTreeNoteId = this.$limitSearchToSubtree.getSelectedNoteId();
         const includeNoteContent = this.$searchWithinNoteContent.is(":checked");
 
         await server.put(`notes/${this.noteId}/attributes`, [
             { type: 'label', name: 'searchString', value: searchString },
             { type: 'label', name: 'includeNoteContent', value: includeNoteContent ? 'true' : 'false' },
-            subNoteId ? { type: 'label', name: 'subTreeNoteId', value: subNoteId } : undefined,
+            subTreeNoteId ? { type: 'label', name: 'subTreeNoteId', value: subTreeNoteId } : undefined,
         ].filter(it => !!it));
 
         if (this.note.title.startsWith('Search: ')) {
@@ -122,7 +122,13 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         this.$component.show();
         this.$searchString.val(this.note.getLabelValue('searchString'));
         this.$searchWithinNoteContent.prop('checked', this.note.getLabelValue('includeNoteContent') === 'true');
-        this.$limitSearchToSubtree.val(this.note.getLabelValue('subTreeNoteId'));
+
+        const subTreeNoteId = this.note.getLabelValue('subTreeNoteId');
+        const subTreeNote = subTreeNoteId ? await treeCache.getNote(subTreeNoteId, true) : null;
+
+        this.$limitSearchToSubtree
+            .val(subTreeNote ? subTreeNote.title : "")
+            .setSelectedNotePath(subTreeNoteId);
 
         this.refreshResults(); // important specifically when this search note was not yet refreshed
     }

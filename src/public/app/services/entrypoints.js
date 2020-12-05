@@ -176,21 +176,6 @@ export default class Entrypoints extends Component {
         }
     }
 
-    async searchForResultsCommand({searchText}) {
-        const response = await server.get('search/' + encodeURIComponent(searchText) + '?includeNoteContent=true&excludeArchived=true&fuzzyAttributeSearch=false');
-
-        if (!response.success) {
-            toastService.showError("Search failed: " + response.message, 10000);
-            // even in this case we'll show the results
-        }
-
-        this.triggerEvent('searchResults', {results: response.results});
-
-        // have at least some feedback which is good especially in situations
-        // when the result list does not change with a query
-        toastService.showMessage("Search finished successfully.");
-    }
-
     async switchToDesktopVersionCommand() {
         utils.setCookie('trilium-device', 'desktop');
 

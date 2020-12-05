@@ -1,5 +1,6 @@
 import treeCache from "./tree_cache.js";
 import server from "./server.js";
+import ws from "./ws.js";
 
 /** @return {NoteShort} */
 async function getInboxNote() {
@@ -42,10 +43,20 @@ async function createSqlConsole() {
 }
 
 /** @return {NoteShort} */
-async function createSearchNote() {
+async function createSearchNote(subTreeNoteId = null) {
     const note = await server.post('search-note');
 
-    return await treeCache.getNote(note.noteId);
+    if (subTreeNoteId) {
+        await server.put(`notes/${note.noteId}/attributes`, [
+            { type: 'label', name: 'subTreeNoteId', value: subTreeNoteId }
+        ]);
+    }
+
+    await ws.waitForMaxKnownEntityChangeId();
+
+    const noteShort = await treeCache.getNote(note.noteId);
+
+    return noteShort;
 }
 
 export default {

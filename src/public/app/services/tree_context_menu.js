@@ -129,6 +129,8 @@ class TreeContextMenu {
             });
         }
         else {
+            console.log("Triggering", command, notePath);
+
             this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});
         }
     }

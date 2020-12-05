@@ -3,6 +3,7 @@
 class SearchContext {
     constructor(params = {}) {
         this.includeNoteContent = !!params.includeNoteContent;
+        this.subTreeNoteId = params.subTreeNoteId;
         this.excludeArchived = !!params.excludeArchived;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];

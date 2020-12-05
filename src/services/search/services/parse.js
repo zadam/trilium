@@ -15,6 +15,7 @@ const NoteCacheFulltextExp = require('../expressions/note_cache_flat_text.js');
 const NoteContentProtectedFulltextExp = require('../expressions/note_content_protected_fulltext.js');
 const NoteContentUnprotectedFulltextExp = require('../expressions/note_content_unprotected_fulltext.js');
 const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
+const SubTreeExp = require("../expressions/sub_tree.js");
 const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor.js');
 
@@ -409,6 +410,7 @@ function getExpression(tokens, searchContext, level = 0) {
 function parse({fulltextTokens, expressionTokens, searchContext}) {
     return AndExp.of([
         searchContext.excludeArchived ? new PropertyComparisonExp("isarchived", buildComparator("=", "false")) : null,
+        searchContext.subTreeNoteId ? new SubTreeExp(searchContext.subTreeNoteId) : null,
         getFulltext(fulltextTokens, searchContext),
         getExpression(expressionTokens, searchContext)
     ]);

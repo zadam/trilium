@@ -254,7 +254,6 @@ function register(app) {
     route(POST, '/api/sender/image', [auth.checkToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkToken], senderRoute.saveNote, apiResultHandler);
 
-    apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(GET, '/api/search-note/:noteId', searchRoute.searchFromNote);
     apiRoute(POST, '/api/search-related', searchRoute.getRelatedNotes);
 

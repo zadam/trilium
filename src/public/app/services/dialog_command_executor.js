@@ -1,7 +1,7 @@
 import Component from "../widgets/component.js";
 import appContext from "./app_context.js";
 import dateNoteService from "../services/date_notes.js";
-import noteCreateService from "../services/note_create.js";
+import treeService from "../services/tree.js";
 
 export default class DialogCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -69,6 +69,16 @@ export default class DialogCommandExecutor extends Component {
 
     async searchNotesCommand() {
         const searchNote = await dateNoteService.createSearchNote();
+
+        const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
+
+        appContext.triggerCommand('focusOnSearchDefinition', {tabId: tabContext.tabId});
+    }
+
+    async searchInSubtreeCommand({notePath}) {
+        const noteId = treeService.getNoteIdFromNotePath(notePath);
+
+        const searchNote = await dateNoteService.createSearchNote(noteId);
 
         const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
 

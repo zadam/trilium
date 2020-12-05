@@ -6,30 +6,6 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 
-function searchNotes(req) {
-    const searchContext = new SearchContext({
-        includeNoteContent: req.query.includeNoteContent === 'true',
-        excludeArchived: req.query.excludeArchived === 'true',
-        fuzzyAttributeSearch: req.query.fuzzyAttributeSearch === 'true'
-    });
-
-    const {count, results} = searchService.searchTrimmedNotes(req.params.searchString, searchContext);
-
-    try {
-        return {
-            success: !searchContext.hasError(),
-            message: searchContext.getError(),
-            count,
-            results
-        }
-    }
-    catch {
-        return {
-            success: false
-        }
-    }
-}
-
 async function searchFromNote(req) {
     const note = repository.getNote(req.params.noteId);
 
@@ -58,6 +34,7 @@ async function searchFromNote(req) {
         else if (searchString) {
             const searchContext = new SearchContext({
                 includeNoteContent: note.getLabelValue('includeNoteContent') === 'true',
+                subTreeNoteId: note.getLabelValue('subTreeNoteId'),
                 excludeArchived: true,
                 fuzzyAttributeSearch: false
             });
@@ -197,7 +174,6 @@ function formatValue(val) {
 }
 
 module.exports = {
-    searchNotes,
     searchFromNote,
     getRelatedNotes
 };
