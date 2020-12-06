@@ -668,8 +668,10 @@ function scanForLinks(note) {
     }
 }
 
-function eraseDeletedNotes() {
-    const eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+function eraseDeletedNotes(eraseNotesAfterTimeInSeconds = null) {
+    if (eraseNotesAfterTimeInSeconds === null) {
+        eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+    }
 
     const cutoffDate = new Date(Date.now() - eraseNotesAfterTimeInSeconds * 1000);
 
@@ -717,6 +719,10 @@ function eraseDeletedNotes() {
         WHERE noteId IN (???)`, noteIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
+}
+
+function eraseDeletedNotesNow() {
+    eraseDeletedNotes(0);
 }
 
 // do a replace in str - all keys should be replaced by the corresponding values
@@ -841,5 +847,6 @@ module.exports = {
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
     getUndeletedParentBranches,
-    triggerNoteTitleChanged
+    triggerNoteTitleChanged,
+    eraseDeletedNotesNow
 };

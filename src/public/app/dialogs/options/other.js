@@ -51,6 +51,12 @@ const TPL = `
         <label for="erase-notes-after-time-in-seconds">Erase notes after X seconds</label>
         <input class="form-control" id="erase-notes-after-time-in-seconds" type="number" min="0">
     </div>
+    
+    <p>You can also trigger erasing manually:</p>
+    
+    <button id="erase-deleted-notes-now-button" class="btn">Erase deleted notes now</button>
+    
+    <br/><br/>
 </div>
 
 <div>
@@ -115,6 +121,13 @@ export default class ProtectedSessionOptions {
             });
 
             return false;
+        });
+
+        this.$eraseDeletedNotesButton = $("#erase-deleted-notes-now-button");
+        this.$eraseDeletedNotesButton.on('click', () => {
+            server.post('notes/erase-deleted-notes-now').then(() => {
+                toastService.showMessage("Deleted notes have been erased.");
+            });
         });
 
         this.$protectedSessionTimeout = $("#protected-session-timeout-in-seconds");

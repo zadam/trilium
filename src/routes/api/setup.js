@@ -38,6 +38,8 @@ function saveSyncSeed(req) {
         }]
     }
 
+    log.info("Saved sync seed.");
+
     sqlInit.createDatabaseForSync(options);
 }
 
