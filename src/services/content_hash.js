@@ -34,23 +34,33 @@ function getSectorHashes(tableName, primaryKeyName, whereBranch) {
 function getEntityHashes() {
     const startTime = new Date();
 
-    const hashes = {
-        notes: getSectorHashes(Note.entityName, Note.primaryKeyName),
-        note_contents: getSectorHashes("note_contents", "noteId"),
-        branches: getSectorHashes(Branch.entityName, Branch.primaryKeyName),
-        note_revisions: getSectorHashes(NoteRevision.entityName, NoteRevision.primaryKeyName),
-        note_revision_contents: getSectorHashes("note_revision_contents", "noteRevisionId"),
-        recent_notes: getSectorHashes(RecentNote.entityName, RecentNote.primaryKeyName),
-        options: getSectorHashes(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
-        attributes: getSectorHashes(Attribute.entityName, Attribute.primaryKeyName),
-        api_tokens: getSectorHashes(ApiToken.entityName, ApiToken.primaryKeyName),
-    };
+    const hashRows = sql.getRows(`SELECT entityName, entityId, hash FROM entity_changes`);
+
+    // sorting is faster in memory
+    // sorting by entityId is enough, hashes will be segmented by entityName later on anyway
+    hashRows.sort((a, b) => a.entityId < b.entityId ? -1 : 1);
+
+    const hashMap = {};
+
+    for (const {entityName, entityId, hash} of hashRows) {
+        const entityHashMap = hashMap[entityName] = hashMap[entityName] || {};
+
+        const sector = entityId[0];
+
+        entityHashMap[sector] = (entityHashMap[sector] || "") + hash
+    }
+
+    for (const entityHashMap of Object.values(hashMap)) {
+        for (const key in entityHashMap) {
+            entityHashMap[key] = utils.hash(entityHashMap[key]);
+        }
+    }
 
     const elapsedTimeMs = Date.now() - startTime.getTime();
 
     log.info(`Content hash computation took ${elapsedTimeMs}ms`);
 
-    return hashes;
+    return hashMap;
 }
 
 function checkContentHashes(otherHashes) {

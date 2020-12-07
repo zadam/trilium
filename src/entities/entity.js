@@ -22,11 +22,6 @@ class Entity {
 
     beforeSaving() {
         this.generateIdIfNecessary();
-
-        const origHash = this.hash;
-
-        this.hash = this.generateHash();
-        this.isChanged = origHash !== this.hash;
     }
 
     generateIdIfNecessary() {

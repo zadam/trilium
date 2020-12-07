@@ -101,9 +101,6 @@ function updateEntity(entity) {
         entity.updatePojo(clone);
     }
 
-    // indicates whether entity actually changed
-    delete clone.isChanged;
-
     for (const key in clone) {
         // !isBuffer is for images and attachments
         if (clone[key] !== null && typeof clone[key] === 'object' && !Buffer.isBuffer(clone[key])) {
@@ -116,23 +113,21 @@ function updateEntity(entity) {
 
         const primaryKey = entity[primaryKeyName];
 
-        if (entity.isChanged) {
-            const isSynced = entityName !== 'options' || entity.isSynced;
+        const isSynced = entityName !== 'options' || entity.isSynced;
 
-            entityChangesService.addEntityChange(entityName, primaryKey, null, isSynced);
+        entityChangesService.addEntityChange(entityName, primaryKey, null, isSynced);
 
-            if (!cls.isEntityEventsDisabled()) {
-                const eventPayload = {
-                    entityName,
-                    entity
-                };
+        if (!cls.isEntityEventsDisabled()) {
+            const eventPayload = {
+                entityName,
+                entity
+            };
 
-                if (isNewEntity && !entity.isDeleted) {
-                    eventService.emit(eventService.ENTITY_CREATED, eventPayload);
-                }
-
-                eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
+            if (isNewEntity && !entity.isDeleted) {
+                eventService.emit(eventService.ENTITY_CREATED, eventPayload);
             }
+
+            eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
         }
     });
 }

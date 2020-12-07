@@ -86,32 +86,32 @@ function forceNoteSync(req) {
     const now = dateUtils.utcNowDateTime();
 
     sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    entityChangesService.addNoteEntityChange(noteId);
+    entityChangesService.moveEntityChangeToTop('notes', noteId);
 
     sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    entityChangesService.addNoteContentEntityChange(noteId);
+    entityChangesService.moveEntityChangeToTop('note_contents', noteId);
 
     for (const branchId of sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
 
-        entityChangesService.addBranchEntityChange(branchId);
+        entityChangesService.moveEntityChangeToTop('branches', branchId);
     }
 
     for (const attributeId of sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
 
-        entityChangesService.addAttributeEntityChange(attributeId);
+        entityChangesService.moveEntityChangeToTop('attributes', attributeId);
     }
 
     for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.addNoteRevisionEntityChange(noteRevisionId);
+        entityChangesService.moveEntityChangeToTop('note_revisions', noteRevisionId);
 
         sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.addNoteRevisionContentEntityChange(noteRevisionId);
+        entityChangesService.moveEntityChangeToTop('note_revision_contents', noteRevisionId);
     }
 
-    entityChangesService.addRecentNoteEntityChange(noteId);
+    entityChangesService.moveEntityChangeToTop('recent_changes', noteId);
 
     log.info("Forcing note sync for " + noteId);
 

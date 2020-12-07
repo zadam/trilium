@@ -143,8 +143,7 @@ class Note extends Entity {
             noteId: this.noteId,
             content: content,
             dateModified: dateUtils.localNowDateTime(),
-            utcDateModified: dateUtils.utcNowDateTime(),
-            hash: utils.hash(this.noteId + "|" + content.toString())
+            utcDateModified: dateUtils.utcNowDateTime()
         };
 
         if (this.isProtected) {
@@ -158,7 +157,9 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        entityChangesService.addNoteContentEntityChange(this.noteId);
+        const hash = utils.hash(this.noteId + "|" + content.toString());
+
+        entityChangesService.addEntityChange('note_contents', this.noteId, hash);
     }
 
     setJsonContent(content) {
@@ -904,10 +905,8 @@ class Note extends Entity {
 
         super.beforeSaving();
 
-        if (this.isChanged) {
-            this.dateModified = dateUtils.localNowDateTime();
-            this.utcDateModified = dateUtils.utcNowDateTime();
-        }
+        this.dateModified = dateUtils.localNowDateTime();
+        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
     // cannot be static!

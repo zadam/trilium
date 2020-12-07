@@ -1,4 +1,5 @@
 const sql = require('./sql');
+const repository = require('repository');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
@@ -6,10 +7,11 @@ const cls = require('./cls');
 
 let maxEntityChangeId = 0;
 
-function insertEntityChange(entityName, entityId, sourceId = null, isSynced = true) {
+function insertEntityChange(entityName, entityId, hash, sourceId = null, isSynced = true) {
     const entityChange = {
         entityName: entityName,
         entityId: entityId,
+        hash: hash,
         utcChangedDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
         isSynced: isSynced ? 1 : 0
@@ -22,10 +24,16 @@ function insertEntityChange(entityName, entityId, sourceId = null, isSynced = tr
     return entityChange;
 }
 
-function addEntityChange(entityName, entityId, sourceId, isSynced) {
-    const sync = insertEntityChange(entityName, entityId, sourceId, isSynced);
+function addEntityChange(entityName, entityId, hash, sourceId, isSynced) {
+    const sync = insertEntityChange(entityName, entityId, hash, sourceId, isSynced);
 
     cls.addSyncRow(sync);
+}
+
+function moveEntityChangeToTop(entityName, entityId) {
+    const entityChange = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
+
+    addEntityChange(entityName, entityId, entityChange.hash, null, entityChange.isSynced);
 }
 
 function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
@@ -35,15 +43,14 @@ function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
         const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
 
         for (const entityId of entityIds) {
-            if (entityName === 'options') {
-                const isSynced = sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
+            // retrieving entity one by one to avoid memory issues with note_contents
+            const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${entityPrimaryKey} = ?`, [entityId]);
 
-                if (!isSynced) {
-                    continue;
-                }
+            if (entityName === 'options' && !entity.isSynced) {
+                continue
             }
 
-            insertEntityChange(entityName, entityId, 'content-check', true);
+            insertEntityChange(entityName, entityId, entity.generateHash(), 'content-check', true);
         }
     });
 
@@ -112,16 +119,8 @@ function fillAllEntityChanges() {
 }
 
 module.exports = {
-    addNoteEntityChange: (noteId, sourceId) => addEntityChange("notes", noteId, sourceId),
-    addNoteContentEntityChange: (noteId, sourceId) => addEntityChange("note_contents", noteId, sourceId),
-    addBranchEntityChange: (branchId, sourceId) => addEntityChange("branches", branchId, sourceId),
     addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, sourceId),
-    addNoteRevisionEntityChange: (noteRevisionId, sourceId) => addEntityChange("note_revisions", noteRevisionId, sourceId),
-    addNoteRevisionContentEntityChange: (noteRevisionId, sourceId) => addEntityChange("note_revision_contents", noteRevisionId, sourceId),
-    addOptionEntityChange: (name, sourceId, isSynced) => addEntityChange("options", name, sourceId, isSynced),
-    addRecentNoteEntityChange: (noteId, sourceId) => addEntityChange("recent_notes", noteId, sourceId),
-    addAttributeEntityChange: (attributeId, sourceId) => addEntityChange("attributes", attributeId, sourceId),
-    addApiTokenEntityChange: (apiTokenId, sourceId) => addEntityChange("api_tokens", apiTokenId, sourceId),
+    moveEntityChangeToTop,
     addEntityChange,
     fillAllEntityChanges,
     addEntityChangesForSector,

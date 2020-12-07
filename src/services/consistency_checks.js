@@ -297,11 +297,10 @@ class ConsistencyChecks {
                         sql.upsert("note_contents", "noteId", {
                             noteId: noteId,
                             content: null,
-                            hash: "consistency_checks",
                             utcDateModified: dateUtils.utcNowDateTime()
                         });
 
-                        entityChangesService.addNoteContentEntityChange(noteId);
+                        entityChangesService.addEntityChange('note_contents', noteId, "consistency_checks");
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess
@@ -566,7 +565,9 @@ class ConsistencyChecks {
           entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             ({entityId}) => {
                 if (this.autoFix) {
-                    entityChangesService.addEntityChange(entityName, entityId);
+                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+
+                    entityChangesService.addEntityChange(entityName, entityId, entity.generateHash());
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {

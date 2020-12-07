@@ -9,38 +9,38 @@ function updateEntity(entityChange, entity, sourceId) {
         return false;
     }
 
-    const {entityName} = entityChange;
+    const {entityName, hash} = entityChange;
     let updated;
 
     if (entityName === 'notes') {
-        updated = updateNote(entity, sourceId);
+        updated = updateNote(entity, hash, sourceId);
     }
     else if (entityName === 'note_contents') {
-        updated = updateNoteContent(entity, sourceId);
+        updated = updateNoteContent(entity, hash, sourceId);
     }
     else if (entityName === 'branches') {
-        updated = updateBranch(entity, sourceId);
+        updated = updateBranch(entity, hash, sourceId);
     }
     else if (entityName === 'note_revisions') {
-        updated = updateNoteRevision(entity, sourceId);
+        updated = updateNoteRevision(entity, hash, sourceId);
     }
     else if (entityName === 'note_revision_contents') {
-        updated = updateNoteRevisionContent(entity, sourceId);
+        updated = updateNoteRevisionContent(entity, hash, sourceId);
     }
     else if (entityName === 'note_reordering') {
         updated = updateNoteReordering(entityChange.entityId, entity, sourceId);
     }
     else if (entityName === 'options') {
-        updated = updateOptions(entity, sourceId);
+        updated = updateOptions(entity, hash, sourceId);
     }
     else if (entityName === 'recent_notes') {
-        updated = updateRecentNotes(entity, sourceId);
+        updated = updateRecentNotes(entity, hash, sourceId);
     }
     else if (entityName === 'attributes') {
-        updated = updateAttribute(entity, sourceId);
+        updated = updateAttribute(entity, hash, sourceId);
     }
     else if (entityName === 'api_tokens') {
-        updated = updateApiToken(entity, sourceId);
+        updated = updateApiToken(entity, hash, sourceId);
     }
     else {
         throw new Error(`Unrecognized entity type ${entityName}`);
@@ -79,14 +79,14 @@ function shouldWeUpdateEntity(localEntity, remoteEntity) {
     return false;
 }
 
-function updateNote(remoteEntity, sourceId) {
+function updateNote(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [remoteEntity.noteId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
         sql.transactional(() => {
             sql.replace("notes", remoteEntity);
 
-            entityChangesService.addNoteEntityChange(remoteEntity.noteId, sourceId);
+            entityChangesService.addEntityChange('notes', remoteEntity.noteId, hash, sourceId);
         });
 
         return true;
@@ -95,7 +95,7 @@ function updateNote(remoteEntity, sourceId) {
     return false;
 }
 
-function updateNoteContent(remoteEntity, sourceId) {
+function updateNoteContent(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRow("SELECT * FROM note_contents WHERE noteId = ?", [remoteEntity.noteId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
@@ -111,7 +111,7 @@ function updateNoteContent(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace("note_contents", remoteEntity);
 
-            entityChangesService.addNoteContentEntityChange(remoteEntity.noteId, sourceId);
+            entityChangesService.addEntityChange("note_contents", remoteEntity.noteId, hash, sourceId);
         });
 
         return true;
@@ -120,7 +120,7 @@ function updateNoteContent(remoteEntity, sourceId) {
     return false;
 }
 
-function updateBranch(remoteEntity, sourceId) {
+function updateBranch(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [remoteEntity.branchId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
@@ -133,7 +133,7 @@ function updateBranch(remoteEntity, sourceId) {
 
             sql.replace('branches', remoteEntity);
 
-            entityChangesService.addBranchEntityChange(remoteEntity.branchId, sourceId);
+            entityChangesService.addEntityChange('branches', remoteEntity.branchId, hash, sourceId);
         });
 
         return true;
@@ -142,21 +142,21 @@ function updateBranch(remoteEntity, sourceId) {
     return false;
 }
 
-function updateNoteRevision(remoteEntity, sourceId) {
+function updateNoteRevision(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [remoteEntity.noteRevisionId]);
 
     sql.transactional(() => {
         if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
             sql.replace('note_revisions', remoteEntity);
 
-            entityChangesService.addNoteRevisionEntityChange(remoteEntity.noteRevisionId, sourceId);
+            entityChangesService.addEntityChange('note_revisions', remoteEntity.noteRevisionId, hash, sourceId);
 
             log.info("Update/sync note revision " + remoteEntity.noteRevisionId);
         }
     });
 }
 
-function updateNoteRevisionContent(remoteEntity, sourceId) {
+function updateNoteRevisionContent(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRowOrNull("SELECT * FROM note_revision_contents WHERE noteRevisionId = ?", [remoteEntity.noteRevisionId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
@@ -165,7 +165,7 @@ function updateNoteRevisionContent(remoteEntity, sourceId) {
 
             sql.replace('note_revision_contents', remoteEntity);
 
-            entityChangesService.addNoteRevisionContentEntityChange(remoteEntity.noteRevisionId, sourceId);
+            entityChangesService.addEntityChange('note_revision_contents', remoteEntity.noteRevisionId, hash, sourceId);
         });
 
         return true;
@@ -180,13 +180,13 @@ function updateNoteReordering(entityId, remote, sourceId) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [remote[key], key]);
         }
 
-        entityChangesService.addNoteReorderingEntityChange(entityId, sourceId);
+        entityChangesService.addEntityChange('note_reordering', entityId, 'none', sourceId);
     });
 
     return true;
 }
 
-function updateOptions(remoteEntity, sourceId) {
+function updateOptions(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRowOrNull("SELECT * FROM options WHERE name = ?", [remoteEntity.name]);
 
     if (localEntity && !localEntity.isSynced) {
@@ -197,7 +197,7 @@ function updateOptions(remoteEntity, sourceId) {
         sql.transactional(() => {
             sql.replace('options', remoteEntity);
 
-            entityChangesService.addOptionEntityChange(remoteEntity.name, sourceId, true);
+            entityChangesService.addEntityChange('options', remoteEntity.name, hash, sourceId, true);
         });
 
         return true;
@@ -206,14 +206,14 @@ function updateOptions(remoteEntity, sourceId) {
     return false;
 }
 
-function updateRecentNotes(remoteEntity, sourceId) {
+function updateRecentNotes(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRowOrNull("SELECT * FROM recent_notes WHERE noteId = ?", [remoteEntity.noteId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
         sql.transactional(() => {
             sql.replace('recent_notes', remoteEntity);
 
-            entityChangesService.addRecentNoteEntityChange(remoteEntity.noteId, sourceId);
+            entityChangesService.addEntityChange('recent_notes', remoteEntity.noteId, hash, sourceId);
         });
 
         return true;
@@ -222,14 +222,14 @@ function updateRecentNotes(remoteEntity, sourceId) {
     return false;
 }
 
-function updateAttribute(remoteEntity, sourceId) {
+function updateAttribute(remoteEntity, hash, sourceId) {
     const localEntity = sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [remoteEntity.attributeId]);
 
     if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
         sql.transactional(() => {
             sql.replace("attributes", remoteEntity);
 
-            entityChangesService.addAttributeEntityChange(remoteEntity.attributeId, sourceId);
+            entityChangesService.addEntityChange('attributes', remoteEntity.attributeId, hash, sourceId);
         });
 
         return true;
@@ -238,14 +238,14 @@ function updateAttribute(remoteEntity, sourceId) {
     return false;
 }
 
-function updateApiToken(entity, sourceId) {
+function updateApiToken(entity, hash, sourceId) {
     const apiTokenId = sql.getRow("SELECT * FROM api_tokens WHERE apiTokenId = ?", [entity.apiTokenId]);
 
     if (!apiTokenId) {
         sql.transactional(() => {
             sql.replace("api_tokens", entity);
 
-            entityChangesService.addApiTokenEntityChange(entity.apiTokenId, sourceId);
+            entityChangesService.addEntityChange('api_tokens',entity.apiTokenId, hash, sourceId);
         });
 
         return true;
