@@ -37,6 +37,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'workspaceIconClass' },
     { type: 'label', name: 'workspaceTabBackgroundColor' },
     { type: 'label', name: 'searchHome' },
+    { type: 'label', name: 'sqlConsoleHome' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

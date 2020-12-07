@@ -42,10 +42,12 @@ function getDateNotesForMonth(req) {
 function createSqlConsole() {
     const today = dateUtils.localNowDate();
 
-    const todayNote = dateNoteService.getDateNote(today);
+    const sqlConsoleHome =
+        attributeService.getNoteWithLabel('sqlConsoleHome')
+        || dateNoteService.getDateNote(today);
 
     const {note} = noteService.createNewNote({
-        parentNoteId: todayNote.noteId,
+        parentNoteId: sqlConsoleHome.noteId,
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
