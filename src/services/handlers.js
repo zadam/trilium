@@ -70,6 +70,10 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 if (templateNoteContent) {
                     note.setContent(templateNoteContent);
                 }
+
+                note.type = templateNote.type;
+                note.mime = templateNote.mime;
+                note.save();
             }
 
             noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
