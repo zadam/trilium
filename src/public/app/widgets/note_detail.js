@@ -248,13 +248,22 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         this.$widget.find('.note-detail-printable:visible').printThis({
             header: $("<h2>").text(this.note && this.note.title).prop('outerHTML'),
-            footer: "<script>document.body.className += ' ck-content printed-content';</script>",
+            footer: `
+<script src="libraries/katex/katex.min.js"></script>
+<script src="libraries/katex/auto-render.min.js"></script>
+<script>
+    document.body.className += ' ck-content printed-content';
+    
+    renderMathInElement(document.body, {});
+</script>
+`,
             importCSS: false,
             loadCSS: [
                 "libraries/codemirror/codemirror.css",
                 "libraries/ckeditor/ckeditor-content.css",
                 "libraries/ckeditor/ckeditor-content.css",
                 "libraries/bootstrap/css/bootstrap.min.css",
+                "libraries/katex/katex.min.css",
                 "stylesheets/print.css",
                 "stylesheets/relation_map.css",
                 "stylesheets/themes.css"
