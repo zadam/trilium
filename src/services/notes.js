@@ -185,18 +185,25 @@ function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
 }
 
 function protectNote(note, protect) {
-    if (protect !== note.isProtected) {
-        const content = note.getContent();
+    try {
+        if (protect !== note.isProtected) {
+            const content = note.getContent();
 
-        note.isProtected = protect;
+            note.isProtected = protect;
 
-        // this will force de/encryption
-        note.setContent(content);
+            // this will force de/encryption
+            note.setContent(content);
 
-        note.save();
+            note.save();
+        }
+
+        noteRevisionService.protectNoteRevisions(note);
     }
+    catch (e) {
+        log.error("Could not un/protect note ID = " + note.noteId);
 
-    noteRevisionService.protectNoteRevisions(note);
+        throw e;
+    }
 }
 
 function findImageLinks(content, foundLinks) {

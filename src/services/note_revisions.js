@@ -2,6 +2,7 @@
 
 const NoteRevision = require('../entities/note_revision');
 const dateUtils = require('../services/date_utils');
+const log = require('../services/log');
 
 /**
  * @param {Note} note
@@ -9,14 +10,21 @@ const dateUtils = require('../services/date_utils');
 function protectNoteRevisions(note) {
     for (const revision of note.getRevisions()) {
         if (note.isProtected !== revision.isProtected) {
-            const content = revision.getContent();
+            try {
+                const content = revision.getContent();
 
-            revision.isProtected = note.isProtected;
+                revision.isProtected = note.isProtected;
 
-            // this will force de/encryption
-            revision.setContent(content);
+                // this will force de/encryption
+                revision.setContent(content);
 
-            revision.save();
+                revision.save();
+            }
+            catch (e) {
+                log.error("Could not un/protect note revision ID = " + revision.noteRevisionId);
+
+                throw e;
+            }
         }
     }
 }

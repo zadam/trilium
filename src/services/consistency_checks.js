@@ -650,7 +650,7 @@ class ConsistencyChecks {
         // root branch should always be expanded
         sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
 
-        if (this.unrecoveredConsistencyErrors) {
+        if (!this.unrecoveredConsistencyErrors) {
             // we run this only if basic checks passed since this assumes basic data consistency
 
             this.checkTreeCycles();
