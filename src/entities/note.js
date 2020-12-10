@@ -776,7 +776,7 @@ class Note extends Entity {
      * @returns {NoteRevision[]}
      */
     getRevisions() {
-        return this.repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
+        return this.repository.getEntities("SELECT * FROM note_revisions WHERE isErased = 0 AND noteId = ?", [this.noteId]);
     }
 
     /**
@@ -806,7 +806,7 @@ class Note extends Entity {
      * @returns {boolean} - true if note has children
      */
     hasChildren() {
-        return (this.getChildNotes()).length > 0;
+        return this.getChildNotes().length > 0;
     }
 
     /**
