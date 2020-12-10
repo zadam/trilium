@@ -40,6 +40,8 @@ async function initDbConnection() {
 
     require('./options_init').initStartupOptions();
 
+    sql.execute('CREATE TEMP TABLE "param_list" (`paramId` TEXT NOT NULL PRIMARY KEY)');
+
     dbReady.resolve();
 }
 

@@ -183,18 +183,25 @@ function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
 }
 
 function protectNote(note, protect) {
-    if (protect !== note.isProtected) {
-        const content = note.getContent();
+    try {
+        if (protect !== note.isProtected) {
+            const content = note.getContent();
 
-        note.isProtected = protect;
+            note.isProtected = protect;
 
-        // this will force de/encryption
-        note.setContent(content);
+            // this will force de/encryption
+            note.setContent(content);
 
-        note.save();
+            note.save();
+        }
+
+        noteRevisionService.protectNoteRevisions(note);
     }
+    catch (e) {
+        log.error("Could not un/protect note ID = " + note.noteId);
 
-    noteRevisionService.protectNoteRevisions(note);
+        throw e;
+    }
 }
 
 function findImageLinks(content, foundLinks) {
@@ -459,7 +466,7 @@ function saveNoteRevision(note) {
     const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND isErased = 0 AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
@@ -666,8 +673,10 @@ function scanForLinks(note) {
     }
 }
 
-function eraseDeletedNotes() {
-    const eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+function eraseDeletedNotes(eraseNotesAfterTimeInSeconds = null) {
+    if (eraseNotesAfterTimeInSeconds === null) {
+        eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+    }
 
     const cutoffDate = new Date(Date.now() - eraseNotesAfterTimeInSeconds * 1000);
 
@@ -715,6 +724,10 @@ function eraseDeletedNotes() {
         WHERE noteId IN (???)`, noteIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
+}
+
+function eraseDeletedNotesNow() {
+    eraseDeletedNotes(0);
 }
 
 // do a replace in str - all keys should be replaced by the corresponding values
@@ -823,9 +836,9 @@ function getNoteIdMapping(origNote) {
 
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
+    setTimeout(cls.wrap(() => eraseDeletedNotes()), 5 * 60 * 1000);
 
-    setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
+    setInterval(cls.wrap(() => eraseDeletedNotes()), 4 * 3600 * 1000);
 });
 
 module.exports = {
@@ -839,5 +852,6 @@ module.exports = {
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
     getUndeletedParentBranches,
-    triggerNoteTitleChanged
+    triggerNoteTitleChanged,
+    eraseDeletedNotesNow
 };

@@ -23,7 +23,8 @@ function getRecentChanges(req) {
             note_revisions.dateCreated AS date
         FROM 
             note_revisions
-            JOIN notes USING(noteId)`);
+            JOIN notes USING(noteId)
+        WHERE note_revisions.isErased = 0`);
 
     for (const noteRevision of noteRevisions) {
         if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {

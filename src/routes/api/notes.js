@@ -193,6 +193,10 @@ function duplicateSubtree(req) {
     return noteService.duplicateSubtree(noteId, parentNoteId);
 }
 
+function eraseDeletedNotesNow() {
+    noteService.eraseDeletedNotesNow();
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -204,5 +208,6 @@ module.exports = {
     setNoteTypeMime,
     getRelationMap,
     changeTitle,
-    duplicateSubtree
+    duplicateSubtree,
+    eraseDeletedNotesNow
 };
