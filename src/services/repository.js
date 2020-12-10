@@ -115,7 +115,7 @@ function updateEntity(entity) {
 
         const isSynced = entityName !== 'options' || entity.isSynced;
 
-        entityChangesService.addEntityChange(entityName, primaryKey, null, isSynced);
+        entityChangesService.addEntityChange(entityName, primaryKey, entity.generateHash(), null, isSynced);
 
         if (!cls.isEntityEventsDisabled()) {
             const eventPayload = {

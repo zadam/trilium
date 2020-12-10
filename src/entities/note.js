@@ -70,9 +70,9 @@ class Note extends Entity {
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            const res = sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
+            const content = sql.getValue(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
 
-            if (!res) {
+            if (!content) {
                 if (silentNotFoundError) {
                     return undefined;
                 }
@@ -81,7 +81,7 @@ class Note extends Entity {
                 }
             }
 
-            this.content = res.content;
+            this.content = content;
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {

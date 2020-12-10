@@ -1,7 +1,6 @@
 const sql = require('./sql');
-const repository = require('repository');
+const repository = require('./repository');
 const sourceIdService = require('./source_id');
-const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
@@ -12,7 +11,6 @@ function insertEntityChange(entityName, entityId, hash, sourceId = null, isSynce
         entityName: entityName,
         entityId: entityId,
         hash: hash,
-        utcChangedDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
         isSynced: isSynced ? 1 : 0
     };
@@ -31,9 +29,9 @@ function addEntityChange(entityName, entityId, hash, sourceId, isSynced) {
 }
 
 function moveEntityChangeToTop(entityName, entityId) {
-    const entityChange = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
+    const [hash, isSynced] = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
 
-    addEntityChange(entityName, entityId, entityChange.hash, null, entityChange.isSynced);
+    addEntityChange(entityName, entityId, hash, null, isSynced);
 }
 
 function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
@@ -81,11 +79,10 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
             if (existingRows === 0) {
                 createdCount++;
 
-                sql.insert("sync", {
+                sql.insert("entity_changes", {
                     entityName: entityName,
                     entityId: entityId,
                     sourceId: "SYNC_FILL",
-                    utcChangedDate: dateUtils.utcNowDateTime(),
                     isSynced: 1
                 });
             }
