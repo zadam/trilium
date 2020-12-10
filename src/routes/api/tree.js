@@ -57,7 +57,7 @@ function getTree(req) {
     const noteIds = sql.getColumn(`
         WITH RECURSIVE
             treeWithDescendants(noteId, isExpanded) AS (
-                SELECT noteId, 1 FROM branches WHERE parentNoteId = ? AND isDeleted = 0
+                SELECT noteId, isExpanded FROM branches WHERE parentNoteId = ? AND isDeleted = 0
                 UNION
                 SELECT branches.noteId, branches.isExpanded FROM branches
                   JOIN treeWithDescendants ON branches.parentNoteId = treeWithDescendants.noteId

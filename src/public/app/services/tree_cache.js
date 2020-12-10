@@ -87,6 +87,8 @@ class TreeCache {
         const branchRows = resp.branches;
         const attributeRows = resp.attributes;
 
+        const noteIdsToSort = new Set();
+
         for (const noteRow of noteRows) {
             const {noteId} = noteRow;
 
@@ -153,7 +155,9 @@ class TreeCache {
             const parentNote = this.notes[branch.parentNoteId];
 
             if (parentNote) {
-                parentNote.addChild(branch.noteId, branch.branchId);
+                parentNote.addChild(branch.noteId, branch.branchId, false);
+
+                noteIdsToSort.add(parentNote.noteId);
             }
         }
 
@@ -177,6 +181,11 @@ class TreeCache {
                     }
                 }
             }
+        }
+
+        // sort all of them at once, this avoids repeated sorts (#1480)
+        for (const noteId of noteIdsToSort) {
+            this.notes[noteId].sortChildren();
         }
     }
 
