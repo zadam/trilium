@@ -5,14 +5,15 @@ const optionService = require('../../services/options');
 const treeService = require('../../services/tree');
 
 function getNotesAndBranchesAndAttributes(noteIds) {
-    noteIds = Array.from(new Set(noteIds));
-    const notes = treeService.getNotes(noteIds);
+    const notes = treeService.getNotesIncludingAscendants(noteIds);
 
-    noteIds = notes.map(note => note.noteId);
+    noteIds = new Set(notes.map(note => note.noteId));
+
+    sql.fillNoteIdList(noteIds);
 
     // joining child note to filter out not completely synchronised notes which would then cause errors later
     // cannot do that with parent because of root note's 'none' parent
-    const branches = sql.getManyRows(` 
+    const branches = sql.getRows(` 
         SELECT 
             branches.branchId,
             branches.noteId,
@@ -20,28 +21,45 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             branches.notePosition,
             branches.prefix,
             branches.isExpanded
-        FROM branches
+        FROM param_list
+        JOIN branches ON param_list.paramId = branches.noteId OR param_list.paramId = branches.parentNoteId
         JOIN notes AS child ON child.noteId = branches.noteId
-        WHERE branches.isDeleted = 0
-          AND (branches.noteId IN (???) OR parentNoteId IN (???))`, noteIds);
+        WHERE branches.isDeleted = 0`);
+
+    const attributes = sql.getRows(`
+        SELECT
+            attributes.attributeId,
+            attributes.noteId,
+            attributes.type,
+            attributes.name,
+            attributes.value,
+            attributes.position,
+            attributes.isInheritable
+        FROM param_list
+        JOIN attributes ON attributes.noteId = param_list.paramId 
+                        OR (attributes.type = 'relation' AND attributes.value = param_list.paramId)
+        WHERE attributes.isDeleted = 0`);
+
+    // we don't really care about the direction of the relation
+    const missingTemplateNoteIds = attributes
+        .filter(attr => attr.type === 'relation'
+                && attr.name === 'template'
+                && !noteIds.has(attr.value))
+        .map(attr => attr.value);
+
+    if (missingTemplateNoteIds.length > 0) {
+        const templateData = getNotesAndBranchesAndAttributes(missingTemplateNoteIds);
+
+        // there are going to be duplicates with simple concatenation, however:
+        // 1) shouldn't matter for the frontend which will update the entity twice
+        // 2) there shouldn't be many duplicates. There isn't that many templates
+        addArrays(notes, templateData.notes);
+        addArrays(branches, templateData.branches);
+        addArrays(attributes, templateData.attributes);
+    }
 
     // sorting in memory is faster
     branches.sort((a, b) => a.notePosition - b.notePosition < 0 ? -1 : 1);
-
-    const attributes = sql.getManyRows(`
-        SELECT
-            attributeId,
-            noteId,
-            type,
-            name,
-            value,
-            position,
-            isInheritable
-        FROM attributes
-        WHERE isDeleted = 0 
-          AND (noteId IN (???) OR (type = 'relation' AND value IN (???)))`, noteIds);
-
-    // sorting in memory is faster
     attributes.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
 
     return {
@@ -49,6 +67,16 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         notes,
         attributes
     };
+}
+
+// should be fast based on https://stackoverflow.com/a/64826145/944162
+// in this case it is assumed that target is potentially much larger than elementsToAdd
+function addArrays(target, elementsToAdd) {
+    while (elementsToAdd.length) {
+        target.push(elementsToAdd.shift());
+    }
+
+    return target;
 }
 
 function getTree(req) {
@@ -63,25 +91,8 @@ function getTree(req) {
                   JOIN treeWithDescendants ON branches.parentNoteId = treeWithDescendants.noteId
                 WHERE treeWithDescendants.isExpanded = 1 
                   AND branches.isDeleted = 0
-            ),
-            treeWithDescendantsAndAscendants AS (
-                SELECT noteId FROM treeWithDescendants
-                UNION
-                SELECT branches.parentNoteId FROM branches
-                  JOIN treeWithDescendantsAndAscendants ON branches.noteId = treeWithDescendantsAndAscendants.noteId
-                WHERE branches.isDeleted = 0
-                  AND branches.parentNoteId != ?
-            ),
-            treeWithDescendantsAscendantsAndTemplates AS (
-                SELECT noteId FROM treeWithDescendantsAndAscendants
-                UNION
-                SELECT attributes.value FROM attributes
-                   JOIN treeWithDescendantsAscendantsAndTemplates ON attributes.noteId = treeWithDescendantsAscendantsAndTemplates.noteId
-                WHERE attributes.isDeleted = 0
-                    AND attributes.type = 'relation'
-                    AND attributes.name = 'template'
             )
-        SELECT noteId FROM treeWithDescendantsAscendantsAndTemplates`, [subTreeNoteId, subTreeNoteId]);
+        SELECT noteId FROM treeWithDescendants`, [subTreeNoteId]);
 
     noteIds.push(subTreeNoteId);
 

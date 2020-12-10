@@ -20,9 +20,6 @@ class TreeCache {
     async loadInitialTree() {
         const resp = await server.get('tree');
 
-        // FIXME: we need to do this to cover for ascendants of template notes which are not loaded
-        await this.loadParents(resp, false);
-
         // clear the cache only directly before adding new content which is important for e.g. switching to protected session
 
         /** @type {Object.<string, NoteShort>} */
@@ -43,43 +40,9 @@ class TreeCache {
     async loadSubTree(subTreeNoteId) {
         const resp = await server.get('tree?subTreeNoteId=' + subTreeNoteId);
 
-        await this.loadParents(resp, true);
-
         this.addResp(resp);
 
         return this.notes[subTreeNoteId];
-    }
-
-    async loadParents(resp, additiveLoad) {
-        const noteIds = new Set(resp.notes.map(note => note.noteId));
-        const missingNoteIds = [];
-        const existingNotes = additiveLoad ? this.notes : {};
-
-        for (const branch of resp.branches) {
-            if (!(branch.parentNoteId in existingNotes) && !noteIds.has(branch.parentNoteId) && branch.parentNoteId !== 'none') {
-                missingNoteIds.push(branch.parentNoteId);
-            }
-        }
-
-        for (const attr of resp.attributes) {
-            if (attr.type === 'relation' && attr.name === 'template' && !(attr.value in existingNotes) && !noteIds.has(attr.value)) {
-                missingNoteIds.push(attr.value);
-            }
-
-            if (!(attr.noteId in existingNotes) && !noteIds.has(attr.noteId)) {
-                missingNoteIds.push(attr.noteId);
-            }
-        }
-
-        if (missingNoteIds.length > 0) {
-            const newResp = await server.post('tree/load', { noteIds: missingNoteIds });
-
-            resp.notes = resp.notes.concat(newResp.notes);
-            resp.branches = resp.branches.concat(newResp.branches);
-            resp.attributes = resp.attributes.concat(newResp.attributes);
-
-            await this.loadParents(resp, additiveLoad);
-        }
     }
 
     addResp(resp) {
@@ -198,7 +161,6 @@ class TreeCache {
 
         const resp = await server.post('tree/load', { noteIds });
 
-        await this.loadParents(resp, true);
         this.addResp(resp);
 
         for (const note of resp.notes) {

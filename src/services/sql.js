@@ -236,6 +236,29 @@ function transactional(func) {
     return ret;
 }
 
+function fillNoteIdList(noteIds, truncate = true) {
+    if (noteIds.length === 0) {
+        return;
+    }
+
+    if (truncate) {
+        execute("DELETE FROM param_list");
+    }
+
+    noteIds = Array.from(new Set(noteIds));
+
+    if (noteIds.length > 30000) {
+        fillNoteIdList(noteIds.slice(30000), false);
+
+        noteIds = noteIds.slice(0, 30000);
+    }
+
+    // doing it manually to avoid this showing up on the sloq query list
+    const s = stmt(`INSERT INTO param_list VALUES ` + noteIds.map(noteId => `(?)`).join(','), noteIds);
+
+    s.run(noteIds);
+}
+
 module.exports = {
     dbConnection,
     insert,
@@ -253,5 +276,6 @@ module.exports = {
     executeMany,
     executeScript,
     transactional,
-    upsert
+    upsert,
+    fillNoteIdList
 };
