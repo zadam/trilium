@@ -14,6 +14,10 @@ class Branch {
         this.parentNoteId = row.parentNoteId;
         /** @param {string} */
         this.prefix = row.prefix;
+        /** @param {int} */
+        this.notePosition = row.notePosition;
+        /** @param {boolean} */
+        this.isExpanded = row.isExpanded;
 
         if (this.branchId === 'root') {
             return;

@@ -9,15 +9,15 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
 INSERT INTO mig_entity_changes (entityName, entityId, hash, sourceId, isSynced)
     SELECT entityName, entityId, '', sourceId, isSynced FROM entity_changes;
 
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM api_tokens WHERE apiTokenId = entityId) WHERE entityName = 'api_tokens';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM attributes WHERE attributeId = entityId) WHERE entityName = 'attributes';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM branches WHERE branchId = entityId) WHERE entityName = 'branches';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM notes WHERE noteId = entityId) WHERE entityName = 'notes';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM note_contents WHERE noteId = entityId) WHERE entityName = 'note_contents';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM note_revisions WHERE noteRevisionId = entityId) WHERE entityName = 'note_revisions';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM note_revision_contents WHERE noteRevisionId = entityId) WHERE entityName = 'note_revision_contents';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM options WHERE name = entityId) WHERE entityName = 'options';
-UPDATE mig_entity_changes SET hash = (SELECT hash FROM recent_notes WHERE noteId = entityId) WHERE entityName = 'recent_notes';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM api_tokens WHERE apiTokenId = entityId), '') WHERE entityName = 'api_tokens';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM attributes WHERE attributeId = entityId), '') WHERE entityName = 'attributes';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM branches WHERE branchId = entityId), '') WHERE entityName = 'branches';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM notes WHERE noteId = entityId), '') WHERE entityName = 'notes';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM note_contents WHERE noteId = entityId), '') WHERE entityName = 'note_contents';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM note_revisions WHERE noteRevisionId = entityId), '') WHERE entityName = 'note_revisions';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM note_revision_contents WHERE noteRevisionId = entityId), '') WHERE entityName = 'note_revision_contents';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM options WHERE name = entityId), '') WHERE entityName = 'options';
+UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM recent_notes WHERE noteId = entityId), '') WHERE entityName = 'recent_notes';
 
 DROP TABLE entity_changes;
 ALTER TABLE mig_entity_changes RENAME TO entity_changes;

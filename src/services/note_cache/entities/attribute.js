@@ -14,6 +14,8 @@ class Attribute {
         this.type = row.type;
         /** @param {string} */
         this.name = row.name.toLowerCase();
+        /** @param {int} */
+        this.position = row.position;
 
         if (typeof row.value !== 'string') {
             row.value = JSON.stringify(row.value);

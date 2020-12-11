@@ -6,41 +6,6 @@ const Branch = require('../entities/branch');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
 
-function getNotesIncludingAscendants(noteIds) {
-    noteIds = Array.from(new Set(noteIds));
-
-    sql.fillNoteIdList(noteIds);
-
-    // we return also deleted notes which have been specifically asked for
-
-    const notes = sql.getRows(`
-        WITH RECURSIVE
-            treeWithAscendants AS (
-                SELECT paramId AS noteId FROM param_list
-                UNION
-                SELECT branches.parentNoteId FROM branches
-                  JOIN treeWithAscendants ON branches.noteId = treeWithAscendants.noteId
-                WHERE branches.isDeleted = 0
-            )
-        SELECT 
-          noteId,
-          title,
-          isProtected,
-          type,
-          mime,
-          isDeleted
-        FROM notes
-        JOIN treeWithAscendants USING(noteId)`);
-
-    protectedSessionService.decryptNotes(notes);
-
-    notes.forEach(note => {
-        note.isProtected = !!note.isProtected
-    });
-
-    return notes;
-}
-
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
     const notes = sql.getManyRows(`
@@ -225,7 +190,6 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 
 module.exports = {
     getNotes,
-    getNotesIncludingAscendants,
     validateParentChild,
     sortNotesAlphabetically,
     setNoteToParent
