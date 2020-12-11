@@ -22,7 +22,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             branches.prefix,
             branches.isExpanded
         FROM param_list
-        JOIN branches ON param_list.paramId = branches.noteId OR param_list.paramId = branches.parentNoteId
+        JOIN branches ON param_list.paramId = branches.parentNoteId
         JOIN notes AS child ON child.noteId = branches.noteId
         WHERE branches.isDeleted = 0`);
 

@@ -219,7 +219,7 @@ function wrap(query, func) {
             log.info(`Slow recursive query took ${milliseconds}ms.`);
         }
         else {
-            log.info(`Slow query took ${milliseconds}ms: ${query}`);
+            log.info(`Slow query took ${milliseconds}ms: ${query.trim().replace(/\s+/g, " ")}`);
         }
     }
 

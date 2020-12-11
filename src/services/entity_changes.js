@@ -116,7 +116,7 @@ function fillAllEntityChanges() {
 }
 
 module.exports = {
-    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, sourceId),
+    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, '', sourceId),
     moveEntityChangeToTop,
     addEntityChange,
     fillAllEntityChanges,
