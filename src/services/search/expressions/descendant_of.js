@@ -11,9 +11,9 @@ class DescendantOfExp extends Expression {
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         const subInputNoteSet = new NoteSet(Object.values(noteCache.notes));
-        const subResNoteSet = this.subExpression.execute(subInputNoteSet, searchContext);
+        const subResNoteSet = this.subExpression.execute(subInputNoteSet, executionContext);
 
         const subTreeNoteSet = new NoteSet();
 

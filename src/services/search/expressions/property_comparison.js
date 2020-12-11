@@ -37,7 +37,7 @@ class PropertyComparisonExp extends Expression {
         this.comparator = comparator;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         const resNoteSet = new NoteSet();
 
         for (const note of inputNoteSet.notes) {

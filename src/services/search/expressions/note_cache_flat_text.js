@@ -11,7 +11,7 @@ class NoteCacheFlatTextExp extends Expression {
         this.tokens = tokens;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
         const noteCacheService = require('../../note_cache/note_cache_service');
         const resultNoteSet = new NoteSet();
@@ -22,7 +22,7 @@ class NoteCacheFlatTextExp extends Expression {
 
                 if (retPath) {
                     const noteId = retPath[retPath.length - 1];
-                    searchContext.noteIdToNotePath[noteId] = retPath;
+                    executionContext.noteIdToNotePath[noteId] = retPath;
 
                     resultNoteSet.add(noteCache.notes[noteId]);
                 }

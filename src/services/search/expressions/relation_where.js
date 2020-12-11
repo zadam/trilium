@@ -12,7 +12,7 @@ class RelationWhereExp extends Expression {
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         const candidateNoteSet = new NoteSet();
 
         for (const attr of noteCache.findAttributes('relation', this.relationName)) {
@@ -20,7 +20,7 @@ class RelationWhereExp extends Expression {
 
             if (inputNoteSet.hasNoteId(note.noteId)) {
                 const subInputNoteSet = new NoteSet([attr.targetNote]);
-                const subResNoteSet = this.subExpression.execute(subInputNoteSet, searchContext);
+                const subResNoteSet = this.subExpression.execute(subInputNoteSet, executionContext);
 
                 if (subResNoteSet.hasNote(attr.targetNote)) {
                     if (attr.isInheritable) {

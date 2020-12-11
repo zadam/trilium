@@ -10,14 +10,14 @@ class ParentOfExp extends Expression {
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         const subInputNoteSet = new NoteSet();
 
         for (const note of inputNoteSet.notes) {
             subInputNoteSet.addAll(note.children);
         }
 
-        const subResNoteSet = this.subExpression.execute(subInputNoteSet, searchContext);
+        const subResNoteSet = this.subExpression.execute(subInputNoteSet, executionContext);
 
         const resNoteSet = new NoteSet();
 

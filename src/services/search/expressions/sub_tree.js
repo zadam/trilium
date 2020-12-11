@@ -12,7 +12,7 @@ class SubTreeExp extends Expression {
         this.subTreeNoteId = subTreeNoteId;
     }
 
-    execute(inputNoteSet, searchContext) {
+    execute(inputNoteSet, executionContext) {
         const subTreeNote = noteCache.notes[this.subTreeNoteId];
 
         if (!subTreeNote) {

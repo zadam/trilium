@@ -13,9 +13,10 @@ const cls = require('../../cls.js');
 
 /**
  * @param {Expression} expression
+ * @param {SearchContext} searchContext
  * @return {SearchResult[]}
  */
-function findNotesWithExpression(expression) {
+function findNotesWithExpression(expression, searchContext) {
     const hoistedNote = noteCache.notes[cls.getHoistedNoteId()];
     let allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
@@ -27,27 +28,39 @@ function findNotesWithExpression(expression) {
 
     const allNoteSet = new NoteSet(allNotes);
 
-    const searchContext = {
+    const executionContext = {
         noteIdToNotePath: {}
     };
 
-    const noteSet = expression.execute(allNoteSet, searchContext);
+    const noteSet = expression.execute(allNoteSet, executionContext);
 
     const searchResults = noteSet.notes
-        .map(note => searchContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
+        .map(note => executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
         .filter(notePathArray => notePathArray.includes(cls.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
 
+    for (const res of searchResults) {
+        res.computeScore(searchContext.highlightedTokens);
+    }
+
     if (!noteSet.sorted) {
-        // sort results by depth of the note. This is based on the assumption that more important results
-        // are closer to the note root.
         searchResults.sort((a, b) => {
+            if (a.score > b.score) {
+                return -1;
+            } else if (a.score < b.score) {
+                return 1;
+            }
+
+            // if score does not decide then sort results by depth of the note.
+            // This is based on the assumption that more important results are closer to the note root.
             if (a.notePathArray.length === b.notePathArray.length) {
                 return a.notePathTitle < b.notePathTitle ? -1 : 1;
             }
 
             return a.notePathArray.length < b.notePathArray.length ? -1 : 1;
         });
+
+
     }
 
     return searchResults;
@@ -86,7 +99,7 @@ function findNotesWithQuery(query, searchContext) {
             return [];
         }
 
-        return findNotesWithExpression(expression);
+        return findNotesWithExpression(expression, searchContext);
     }, 20);
 }
 
