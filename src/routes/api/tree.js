@@ -26,6 +26,17 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         JOIN notes AS child ON child.noteId = branches.noteId
         WHERE branches.isDeleted = 0`);
 
+    if (noteIds.has('root')) {
+        branches.push({
+            branchId: 'root',
+            noteId: 'root',
+            parentNoteId: 'none',
+            notePosition: 0,
+            prefix: '',
+            isExpanded: true
+        });
+    }
+
     const attributes = sql.getRows(`
         SELECT
             attributes.attributeId,
