@@ -14,7 +14,7 @@ class NoteCache {
         this.childParentToBranch = {};
         /** @type {Object.<String, Attribute>} */
         this.attributes = [];
-        /** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes them */
+        /** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes */
         this.attributeIndex = {};
 
         this.loaded = false;
@@ -22,7 +22,7 @@ class NoteCache {
 
     /** @return {Attribute[]} */
     findAttributes(type, name) {
-        return this.attributeIndex[`${type}-${name}`] || [];
+        return this.attributeIndex[`${type}-${name.toLowerCase()}`] || [];
     }
 
     /** @return {Attribute[]} */

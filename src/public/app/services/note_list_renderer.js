@@ -239,18 +239,29 @@ class NoteListRenderer {
 
         $pager.toggle(pageCount > 1);
 
+        let lastPrinted;
+
         for (let i = 1; i <= pageCount; i++) {
-            $pager.append(
-                i === this.page
-                    ? $('<span>').text(i).css('text-decoration', 'underline').css('font-weight', "bold")
-                    : $('<a href="javascript:">')
-                        .text(i)
-                        .on('click', () => {
-                            this.page = i;
-                            this.renderList();
-                        }),
-                " &nbsp; "
-            );
+            if (pageCount < 20 || i <= 5 || pageCount - i <= 5 || Math.abs(this.page - i) <= 2) {
+                lastPrinted = true;
+
+                $pager.append(
+                    i === this.page
+                        ? $('<span>').text(i).css('text-decoration', 'underline').css('font-weight', "bold")
+                        : $('<a href="javascript:">')
+                            .text(i)
+                            .on('click', () => {
+                                this.page = i;
+                                this.renderList();
+                            }),
+                    " &nbsp; "
+                );
+            }
+            else if (lastPrinted) {
+                $pager.append("... &nbsp; ");
+
+                lastPrinted = false;
+            }
         }
     }
 

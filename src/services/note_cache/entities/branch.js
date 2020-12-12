@@ -17,7 +17,7 @@ class Branch {
         /** @param {int} */
         this.notePosition = row.notePosition;
         /** @param {boolean} */
-        this.isExpanded = row.isExpanded;
+        this.isExpanded = !!row.isExpanded;
 
         if (this.branchId === 'root') {
             return;

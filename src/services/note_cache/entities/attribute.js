@@ -13,7 +13,7 @@ class Attribute {
         /** @param {string} */
         this.type = row.type;
         /** @param {string} */
-        this.name = row.name.toLowerCase();
+        this.name = row.name;
         /** @param {int} */
         this.position = row.position;
 

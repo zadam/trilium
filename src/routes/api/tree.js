@@ -97,9 +97,6 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         });
     }
 
-    branches.sort((a, b) => a.notePosition - b.notePosition < 0 ? -1 : 1);
-    attributes.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
-
     return {
         branches,
         notes,

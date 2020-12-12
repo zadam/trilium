@@ -14,6 +14,7 @@ sqlInit.dbReady.then(() => {
 });
 
 function load() {
+    const start = Date.now();
     noteCache.reset();
 
     for (const row of sql.iterateRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`, [])) {
@@ -29,6 +30,8 @@ function load() {
     }
 
     noteCache.loaded = true;
+
+    log.info(`Note cache load took ${Date.now() - start}ms`);
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
