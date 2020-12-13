@@ -47,7 +47,7 @@
     "http-proxy-agent": "4.0.1",
     "https-proxy-agent": "5.0.0",
     "image-type": "4.1.0",
-    "ini": "1.3.7",
+    "ini": "1.3.8",
     "is-svg": "4.2.1",
     "jimp": "0.16.1",
     "jsdom": "^16.4.0",
@@ -86,7 +86,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "2.3.0",
-    "webpack": "5.10.0",
+    "webpack": "5.10.1",
     "webpack-cli": "4.2.0"
   },
   "optionalDependencies": {
