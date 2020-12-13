@@ -1,6 +1,5 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
-import utils from "../services/utils.js";
 
 const TPL = `
 <div class="note-list-widget">
@@ -10,6 +9,10 @@ const TPL = `
         flex-shrink: 100000;
         min-height: 0;
         overflow: auto;
+    }
+    
+    .note-list-widget .note-list {
+        padding: 10px;
     }
     </style>
     

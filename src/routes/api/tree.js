@@ -21,6 +21,12 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             collectEntityIds(branch.parentNote);
         }
 
+        for (const childNote of note.children) {
+            const childBranch = noteCache.getBranch(childNote.noteId, note.noteId);
+
+            collectedBranchIds.add(childBranch.branchId);
+        }
+
         for (const attr of note.ownedAttributes) {
             collectedAttributeIds.add(attr.attributeId);
 
@@ -51,7 +57,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             isProtected: note.isProtected,
             type: note.type,
             mime: note.mime,
-            isDeleted: note.isDeleted
+            isDeleted: false // FIXME
         });
     }
 
@@ -106,16 +112,16 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
 function getTree(req) {
     const subTreeNoteId = req.query.subTreeNoteId || 'root';
-    const collectedNoteIds = new Set(['root']);
+    const collectedNoteIds = new Set([subTreeNoteId]);
 
     function collect(parentNote) {
-        for (const childNote of parentNote.children || []) {
+        for (const childNote of parentNote.children) {
             collectedNoteIds.add(childNote.noteId);
 
             const childBranch = noteCache.getBranch(childNote.noteId, parentNote.noteId);
 
             if (childBranch.isExpanded) {
-                collect(childBranch);
+                collect(childBranch.childNote);
             }
         }
     }

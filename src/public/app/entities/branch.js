@@ -20,8 +20,6 @@ class Branch {
         /** @param {boolean} */
         this.isExpanded = !!row.isExpanded;
         /** @param {boolean} */
-        this.isDeleted = !!row.isDeleted;
-        /** @param {boolean} */
         this.fromSearchNote = !!row.fromSearchNote;
     }
 
