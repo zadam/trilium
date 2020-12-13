@@ -262,6 +262,10 @@ class TreeCache {
     }
 
     getNoteFromCache(noteId) {
+        if (!noteId) {
+            throw new Error("Empty noteId");
+        }
+
         return this.notes[noteId];
     }
 

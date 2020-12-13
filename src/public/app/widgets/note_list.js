@@ -9,7 +9,7 @@ const TPL = `
         flex-grow: 100000;
         flex-shrink: 100000;
         min-height: 0;
-        padding: 0 10px 10px 10px;
+        overflow: auto;
     }
     </style>
     

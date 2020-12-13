@@ -155,8 +155,8 @@ class NoteListRenderer {
         this.page = 1;
         this.pageSize = parseInt(parentNote.getLabelValue('pageSize'));
 
-        if (!this.pageSize || this.pageSize < 1 || this.pageSize > 10000) {
-            this.pageSize = 10;
+        if (!this.pageSize || this.pageSize < 1) {
+            this.pageSize = 20;
         }
 
         this.viewType = parentNote.getLabelValue('viewType');
