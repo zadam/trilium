@@ -46,7 +46,8 @@ class NoteBuilder {
             branchId: id(),
             noteId: childNoteBuilder.note.noteId,
             parentNoteId: this.note.noteId,
-            prefix
+            prefix,
+            notePosition: 10
         });
 
         return this;

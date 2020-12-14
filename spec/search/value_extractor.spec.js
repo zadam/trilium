@@ -59,12 +59,12 @@ describe("Value extractor", () => {
         let valueExtractor = new ValueExtractor(["note", "relations", "neighbor", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
-        expect(valueExtractor.extract(austria.note)).toEqual("prague");
+        expect(valueExtractor.extract(austria.note)).toEqual("Prague");
 
         valueExtractor = new ValueExtractor(["~neighbor", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
-        expect(valueExtractor.extract(austria.note)).toEqual("prague");
+        expect(valueExtractor.extract(austria.note)).toEqual("Prague");
     });
 });
 

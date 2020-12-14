@@ -25,7 +25,7 @@ function set(key, value) {
 }
 
 function getHoistedNoteId() {
-    return namespace.get('hoistedNoteId');
+    return namespace.get('hoistedNoteId') || 'root';
 }
 
 function getSourceId() {

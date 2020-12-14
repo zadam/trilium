@@ -9,7 +9,7 @@ class LabelComparisonExp extends Expression {
         super();
 
         this.attributeType = attributeType;
-        this.attributeName = attributeName;
+        this.attributeName = attributeName.toLowerCase();
         this.comparator = comparator;
     }
 
@@ -19,8 +19,9 @@ class LabelComparisonExp extends Expression {
 
         for (const attr of attrs) {
             const note = attr.note;
+            const value = attr.value ? attr.value.toLowerCase() : attr.value;
 
-            if (inputNoteSet.hasNoteId(note.noteId) && this.comparator(attr.value)) {
+            if (inputNoteSet.hasNoteId(note.noteId) && this.comparator(value)) {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }

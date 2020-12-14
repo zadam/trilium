@@ -79,7 +79,6 @@ class NoteRevision extends Entity {
             }
 
             this.content = res.content;
-
             if (this.isProtected) {
                 if (protectedSessionService.isProtectedSessionAvailable()) {
                     this.content = protectedSessionService.decrypt(this.content);

@@ -13,7 +13,7 @@ describe("Search", () => {
         noteCache.reset();
 
         rootNote = new NoteBuilder(new Note(noteCache, {noteId: 'root', title: 'root'}));
-        new Branch(noteCache, {branchId: 'root', noteId: 'root', parentNoteId: 'none'});
+        new Branch(noteCache, {branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
     it("simple path match", () => {
