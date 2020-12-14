@@ -268,24 +268,12 @@ async function syncRequest(syncContext, method, requestPath, body) {
     return await utils.timeLimit(request.exec(opts), timeout);
 }
 
-const primaryKeys = {
-    "notes": "noteId",
-    "note_contents": "noteId",
-    "branches": "branchId",
-    "note_revisions": "noteRevisionId",
-    "note_revision_contents": "noteRevisionId",
-    "recent_notes": "noteId",
-    "api_tokens": "apiTokenId",
-    "options": "name",
-    "attributes": "attributeId"
-};
-
 function getEntityChangeRow(entityName, entityId) {
     if (entityName === 'note_reordering') {
         return sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [entityId]);
     }
     else {
-        const primaryKey = primaryKeys[entityName];
+        const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
         if (!primaryKey) {
             throw new Error("Unknown entity " + entityName);

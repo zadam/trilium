@@ -1,11 +1,12 @@
 const sql = require('./sql');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
+const entityConstructor = require('../entities/entity_constructor');
 
 function updateEntity(entityChange, entity, sourceId) {
     // can be undefined for options with isSynced=false
     if (!entity) {
-        return false;
+        return;
     }
 
     const updated = entityChange.entityName === 'note_reordering'
@@ -14,21 +15,31 @@ function updateEntity(entityChange, entity, sourceId) {
 
     // currently making exception for protected notes and note revisions because here
     // the title and content are not available decrypted as listeners would expect
-    if (updated && !entity.isProtected) {
+    if (updated && !entity.isProtected && !entityChange.isErased) {
         eventService.emit(eventService.ENTITY_SYNCED, {
             entityName: entityChange.entityName,
             entity
         });
     }
-
-    return updated;
 }
 
 function updateNormalEntity(entityChange, entity, sourceId) {
-    const {utcDateChanged, hash} = sql.getRow(`
-        SELECT utcDateChanged, hash 
+    const {utcDateChanged, hash, isErased} = sql.getRow(`
+        SELECT utcDateChanged, hash, isErased
         FROM entity_changes 
         WHERE entityName = ? AND entityId = ?`, [entityChange.entityName, entityChange.entityId]);
+
+    if (!isErased && entityChange.isErased) {
+        sql.transactional(() => {
+            const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
+
+            sql.execute(`DELETE FROM ${entityChange.entityName} WHERE ${primaryKey} = ?`, entityChange.entityId);
+
+            entityChangesService.addEntityChange(entityChange, sourceId);
+        });
+
+        return true;
+    }
 
     if (utcDateChanged < entityChange.utcDateChanged
         || hash !== entityChange.hash // sync error, we should still update
