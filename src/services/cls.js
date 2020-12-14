@@ -44,20 +44,20 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function getAndClearSyncRows() {
-    const syncRows = namespace.get('syncRows') || [];
+function getAndClearEntityChanges() {
+    const entityChanges = namespace.get('entityChanges') || [];
 
-    namespace.set('syncRows', []);
+    namespace.set('entityChanges', []);
 
-    return syncRows;
+    return entityChanges;
 }
 
-function addSyncRow(syncRow) {
-    const syncRows = namespace.get('syncRows') || [];
+function addEntityChange(entityChange) {
+    const entityChanges = namespace.get('entityChanges') || [];
 
-    syncRows.push(syncRow);
+    entityChanges.push(entityChange);
 
-    namespace.set('syncRows', syncRows);
+    namespace.set('entityChanges', entityChanges);
 }
 
 function reset() {
@@ -84,8 +84,8 @@ module.exports = {
     disableEntityEvents,
     isEntityEventsDisabled,
     reset,
-    getAndClearSyncRows,
-    addSyncRow,
+    getAndClearEntityChanges,
+    addEntityChange,
     getEntityFromCache,
     setEntityToCache
 };

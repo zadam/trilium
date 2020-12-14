@@ -111,11 +111,17 @@ function updateEntity(entity) {
     sql.transactional(() => {
         sql.upsert(entityName, primaryKeyName, clone);
 
-        const primaryKey = entity[primaryKeyName];
+        const entityId = entity[primaryKeyName];
 
         const isSynced = entityName !== 'options' || entity.isSynced;
 
-        entityChangesService.addEntityChange(entityName, primaryKey, entity.generateHash(), null, isSynced);
+        entityChangesService.addEntityChange({
+            entityName,
+            entityId,
+            hash: entity.generateHash(),
+            isErased: false,
+            utcDateChanged: entity.getUtcDateChanged()
+        }, null, isSynced);
 
         if (!cls.isEntityEventsDisabled()) {
             const eventPayload = {

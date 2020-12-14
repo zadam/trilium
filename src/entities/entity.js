@@ -40,6 +40,10 @@ class Entity {
         return utils.hash(contentToHash).substr(0, 10);
     }
 
+    getUtcDateChanged() {
+        return this.utcDateModified || this.utcDateCreated;
+    }
+
     get repository() {
         if (!repo) {
             repo = require('../services/repository');

@@ -18,7 +18,6 @@ const promotedAttributeDefinitionParser = require("../services/promoted_attribut
  * @property {boolean} isInheritable - immutable
  * @property {boolean} isDeleted
  * @property {string|null} deleteId - ID identifying delete transaction
- * @property {string} utcDateCreated
  * @property {string} utcDateModified
  *
  * @extends Entity
@@ -26,7 +25,7 @@ const promotedAttributeDefinitionParser = require("../services/promoted_attribut
 class Attribute extends Entity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
-    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "isDeleted", "utcDateCreated"]; }
+    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "isDeleted"]; }
 
     constructor(row) {
         super(row);
@@ -103,10 +102,6 @@ class Attribute extends Entity {
             this.isDeleted = false;
         }
 
-        if (!this.utcDateCreated) {
-            this.utcDateCreated = dateUtils.utcNowDateTime();
-        }
-
         super.beforeSaving();
 
         this.utcDateModified = dateUtils.utcNowDateTime();
@@ -121,7 +116,6 @@ class Attribute extends Entity {
             position: this.position,
             isInheritable: isInheritable,
             isDeleted: false,
-            utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified
         });
     }

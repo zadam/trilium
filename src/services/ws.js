@@ -95,8 +95,8 @@ function fillInAdditionalProperties(sync) {
     }
 }
 
-function sendPing(client, syncRows = []) {
-    for (const sync of syncRows) {
+function sendPing(client, entityChanges = []) {
+    for (const sync of entityChanges) {
         try {
             fillInAdditionalProperties(sync);
         }
@@ -110,16 +110,16 @@ function sendPing(client, syncRows = []) {
 
     sendMessage(client, {
         type: 'sync',
-        data: syncRows
+        data: entityChanges
     });
 }
 
 function sendTransactionSyncsToAllClients() {
     if (webSocketServer) {
-        const syncRows = cls.getAndClearSyncRows();
+        const entityChanges = cls.getAndClearEntityChanges();
 
         webSocketServer.clients.forEach(function each(client) {
-           sendPing(client, syncRows);
+           sendPing(client, entityChanges);
         });
     }
 }

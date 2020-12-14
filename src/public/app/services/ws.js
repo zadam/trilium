@@ -40,8 +40,8 @@ let consumeQueuePromise = null;
 // to make sure each change event is processed only once. Not clear if this is still necessary
 const processedEntityChangeIds = new Set();
 
-function logRows(syncRows) {
-    const filteredRows = syncRows.filter(row =>
+function logRows(entityChanges) {
+    const filteredRows = entityChanges.filter(row =>
         !processedEntityChangeIds.has(row.id)
         && row.entityName !== 'recent_notes'
         && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
@@ -59,16 +59,16 @@ async function handleMessage(event) {
     }
 
     if (message.type === 'sync') {
-        let syncRows = message.data;
+        let entityChanges = message.data;
         lastPingTs = Date.now();
 
-        if (syncRows.length > 0) {
-            logRows(syncRows);
+        if (entityChanges.length > 0) {
+            logRows(entityChanges);
 
-            syncDataQueue.push(...syncRows);
+            syncDataQueue.push(...entityChanges);
 
             // we set lastAcceptedEntityChangeId even before sync processing and send ping so that backend can start sending more updates
-            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, syncRows[syncRows.length - 1].id);
+            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
             sendPing();
 
             // first wait for all the preceding consumers to finish
@@ -141,13 +141,13 @@ async function runSafely(syncHandler, syncData) {
 
 async function consumeSyncData() {
     if (syncDataQueue.length > 0) {
-        const allSyncRows = syncDataQueue;
+        const allEntityChanges = syncDataQueue;
         syncDataQueue = [];
 
-        const nonProcessedSyncRows = allSyncRows.filter(sync => !processedEntityChangeIds.has(sync.id));
+        const nonProcessedEntityChanges = allEntityChanges.filter(sync => !processedEntityChangeIds.has(sync.id));
 
         try {
-            await utils.timeLimit(processSyncRows(nonProcessedSyncRows), 30000);
+            await utils.timeLimit(processEntityChanges(nonProcessedEntityChanges), 30000);
         }
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
@@ -158,17 +158,17 @@ async function consumeSyncData() {
                 utils.reloadApp();
             }
             else {
-                console.log("nonProcessedSyncRows causing the timeout", nonProcessedSyncRows);
+                console.log("nonProcessedEntityChanges causing the timeout", nonProcessedEntityChanges);
 
                 alert(`Encountered error "${e.message}", check out the console.`);
             }
         }
 
-        for (const syncRow of nonProcessedSyncRows) {
-            processedEntityChangeIds.add(syncRow.id);
+        for (const entityChange of nonProcessedEntityChanges) {
+            processedEntityChangeIds.add(entityChange.id);
         }
 
-        lastProcessedEntityChangeId = Math.max(lastProcessedEntityChangeId, allSyncRows[allSyncRows.length - 1].id);
+        lastProcessedEntityChangeId = Math.max(lastProcessedEntityChangeId, allEntityChanges[allEntityChanges.length - 1].id);
     }
 
     checkEntityChangeIdListeners();
@@ -229,10 +229,10 @@ subscribeToMessages(message => {
     }
 });
 
-async function processSyncRows(syncRows) {
+async function processEntityChanges(entityChanges) {
     const missingNoteIds = [];
 
-    for (const {entityName, entity} of syncRows) {
+    for (const {entityName, entity} of entityChanges) {
         if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
             missingNoteIds.push(entity.parentNoteId);
         }
@@ -251,7 +251,7 @@ async function processSyncRows(syncRows) {
 
     const loadResults = new LoadResults(treeCache);
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'notes')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'notes')) {
         const note = treeCache.notes[sync.entityId];
 
         if (note) {
@@ -260,7 +260,7 @@ async function processSyncRows(syncRows) {
         }
     }
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'branches')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'branches')) {
         let branch = treeCache.branches[sync.entityId];
         const childNote = treeCache.notes[sync.entity.noteId];
         const parentNote = treeCache.notes[sync.entity.parentNoteId];
@@ -308,7 +308,7 @@ async function processSyncRows(syncRows) {
         }
     }
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'note_reordering')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_reordering')) {
         const parentNoteIdsToSort = new Set();
 
         for (const branchId in sync.positions) {
@@ -333,7 +333,7 @@ async function processSyncRows(syncRows) {
     }
 
     // missing reloading the relation target note
-    for (const sync of syncRows.filter(sync => sync.entityName === 'attributes')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'attributes')) {
         let attribute = treeCache.attributes[sync.entityId];
         const sourceNote = treeCache.notes[sync.entity.noteId];
         const targetNote = sync.entity.type === 'relation' && treeCache.notes[sync.entity.value];
@@ -371,17 +371,17 @@ async function processSyncRows(syncRows) {
         }
     }
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'note_contents')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_contents')) {
         delete treeCache.noteComplementPromises[sync.entityId];
 
         loadResults.addNoteContent(sync.entityId, sync.sourceId);
     }
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'note_revisions')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_revisions')) {
         loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
     }
 
-    for (const sync of syncRows.filter(sync => sync.entityName === 'options')) {
+    for (const sync of entityChanges.filter(sync => sync.entityName === 'options')) {
         if (sync.entity.name === 'openTabs') {
             continue; // only noise
         }

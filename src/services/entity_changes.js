@@ -6,13 +6,15 @@ const cls = require('./cls');
 
 let maxEntityChangeId = 0;
 
-function insertEntityChange(entityName, entityId, hash, sourceId = null, isSynced = true) {
+function insertEntityChange(entityName, entityId, hash, isErased, utcDateChanged, sourceId = null, isSynced = true) {
     const entityChange = {
         entityName: entityName,
         entityId: entityId,
         hash: hash,
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
-        isSynced: isSynced ? 1 : 0
+        isSynced: isSynced ? 1 : 0,
+        isErased: isErased ? 1 : 0,
+        utcDateChanged: utcDateChanged
     };
 
     entityChange.id = sql.replace("entity_changes", entityChange);
@@ -23,9 +25,9 @@ function insertEntityChange(entityName, entityId, hash, sourceId = null, isSynce
 }
 
 function addEntityChange(entityChange, sourceId, isSynced) {
-    const sync = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, sourceId, isSynced);
+    const localEntityChange = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, entityChange.isErased, entityChange.utcDateChanged, sourceId, isSynced);
 
-    cls.addSyncRow(sync);
+    cls.addEntityChange(localEntityChange);
 }
 
 function moveEntityChangeToTop(entityName, entityId) {
@@ -48,14 +50,14 @@ function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
                 continue
             }
 
-            insertEntityChange(entityName, entityId, entity.generateHash(), 'content-check', true);
+            insertEntityChange(entityName, entityId, entity.generateHash(), false, entity.getUtcDateChanged(), 'content-check', true);
         }
     });
 
     log.info(`Added sector ${sector} of ${entityName} to sync queue in ${Date.now() - startTime}ms.`);
 }
 
-function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
+function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
     sql.execute(`
       DELETE 
       FROM entity_changes 
@@ -67,7 +69,7 @@ function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
 
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     try {
-        cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey);
+        cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
 
         const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
             + (condition ? ` WHERE ${condition}` : ''));

@@ -1,1 +1,1 @@
-UPDATE options SET name = 'eraseNotesAfterTimeInSeconds' WHERE name = 'eraseNotesAfterTimeInSeconds';
+UPDATE options SET name = 'eraseEntitiesAfterTimeInSeconds' WHERE name = 'eraseNotesAfterTimeInSeconds';
