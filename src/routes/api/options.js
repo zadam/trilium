@@ -7,7 +7,7 @@ const attributes = require('../../services/attributes');
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = new Set([
     'username', // not exposed for update (not harmful anyway), needed for reading
-    'eraseNotesAfterTimeInSeconds',
+    'eraseEntitiesAfterTimeInSeconds',
     'protectedSessionTimeout',
     'noteRevisionSnapshotTimeInterval',
     'zoomFactor',

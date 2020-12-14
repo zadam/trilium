@@ -673,61 +673,90 @@ function scanForLinks(note) {
     }
 }
 
-function eraseDeletedNotes(eraseNotesAfterTimeInSeconds = null) {
-    if (eraseNotesAfterTimeInSeconds === null) {
-        eraseNotesAfterTimeInSeconds = optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
-    }
-
-    const cutoffDate = new Date(Date.now() - eraseNotesAfterTimeInSeconds * 1000);
-
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
-
+function eraseNotes(noteIdsToErase) {
     if (noteIdsToErase.length === 0) {
         return;
     }
 
-    // it's better to not use repository for this because:
-    // - it would complain about saving protected notes out of protected session
-    // - we don't want these changes to be synced (since they are done on all instances anyway)
-    // - we don't want change the hash since this erasing happens on each instance separately
-    //   and changing the hash would fire up the sync errors temporarily
+    sql.executeMany(`DELETE FROM notes WHERE noteId IN (???)`, noteIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'notes' AND entityId IN (???)`, noteIdsToErase);
 
-    sql.executeMany(`
-        UPDATE notes 
-        SET title = '[erased]',
-            isProtected = 0,
-            isErased = 1
-        WHERE noteId IN (???)`, noteIdsToErase);
+    sql.executeMany(`DELETE FROM note_contents WHERE noteId IN (???)`, noteIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_contents' AND entityId IN (???)`, noteIdsToErase);
 
-    sql.executeMany(`
-        UPDATE note_contents 
-        SET content = NULL 
-        WHERE noteId IN (???)`, noteIdsToErase);
+    // we also need to erase all "dependent" entities of the erased notes
+    const branchIdsToErase = sql.getManyRows(`SELECT branchId FROM branches WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.branchId);
 
-    // deleting first contents since the WHERE relies on isErased = 0
-    sql.executeMany(`
-        UPDATE note_revision_contents
-        SET content = NULL
-        WHERE noteRevisionId IN 
-            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN (???))`, noteIdsToErase);
+    eraseBranches(branchIdsToErase);
 
-    sql.executeMany(`
-        UPDATE note_revisions 
-        SET isErased = 1,
-            title = NULL
-        WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
+    const attributeIdsToErase = sql.getManyRows(`SELECT attributeId FROM attributes WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.attributeId);
 
-    sql.executeMany(`
-        UPDATE attributes 
-        SET name = 'deleted',
-            value = ''
-        WHERE noteId IN (???)`, noteIdsToErase);
+    eraseAttributes(attributeIdsToErase);
+
+    const noteRevisionIdsToErase = sql.getManyRows(`SELECT noteRevisionId FROM note_revisions WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.noteRevisionId);
+
+    eraseNoteRevisions(noteRevisionIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
+function eraseBranches(branchIdsToErase) {
+    if (branchIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM branches WHERE branchId IN (???)`, branchIdsToErase);
+
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'branches' AND entityId IN (???)`, branchIdsToErase);
+}
+
+function eraseAttributes(attributeIdsToErase) {
+    if (attributeIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM attributes WHERE attributeId IN (???)`, attributeIdsToErase);
+
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase);
+}
+
+function eraseNoteRevisions(noteRevisionIdsToErase) {
+    if (noteRevisionIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM note_revisions WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revisions' AND entityId IN (???)`, noteRevisionIdsToErase);
+
+    sql.executeMany(`DELETE FROM note_revision_contents WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revision_contents' AND entityId IN (???)`, noteRevisionIdsToErase);
+}
+
+function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
+    if (eraseEntitiesAfterTimeInSeconds === null) {
+        eraseEntitiesAfterTimeInSeconds = optionService.getOptionInt('eraseEntitiesAfterTimeInSeconds');
+    }
+
+    const cutoffDate = new Date(Date.now() - eraseEntitiesAfterTimeInSeconds * 1000);
+
+    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+
+    eraseNotes(noteIdsToErase);
+
+    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+
+    eraseBranches(branchIdsToErase);
+
+    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+
+    eraseAttributes(attributeIdsToErase);
+}
+
 function eraseDeletedNotesNow() {
-    eraseDeletedNotes(0);
+    eraseDeletedEntities(0);
 }
 
 // do a replace in str - all keys should be replaced by the corresponding values
@@ -836,9 +865,9 @@ function getNoteIdMapping(origNote) {
 
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(() => eraseDeletedNotes()), 5 * 60 * 1000);
+    setTimeout(cls.wrap(() => eraseDeletedEntities()), 5 * 60 * 1000);
 
-    setInterval(cls.wrap(() => eraseDeletedNotes()), 4 * 3600 * 1000);
+    setInterval(cls.wrap(() => eraseDeletedEntities()), 4 * 3600 * 1000);
 });
 
 module.exports = {

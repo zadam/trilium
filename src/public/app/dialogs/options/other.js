@@ -42,14 +42,14 @@ const TPL = `
 <div>
     <h4>Note erasure timeout</h4>
 
-    <p>Deleted notes are at first only marked as deleted and it is possible to recover them 
+    <p>Deleted notes (and attributes, revisions...) are at first only marked as deleted and it is possible to recover them 
     from Recent Notes dialog. After a period of time, deleted notes are "erased" which means 
     their content is not recoverable anymore. This setting allows you to configure the length 
     of the period between deleting and erasing the note.</p>
 
     <div class="form-group">
-        <label for="erase-notes-after-time-in-seconds">Erase notes after X seconds</label>
-        <input class="form-control" id="erase-notes-after-time-in-seconds" type="number" min="0">
+        <label for="erase-entities-after-time-in-seconds">Erase notes after X seconds</label>
+        <input class="form-control" id="erase-entities-after-time-in-seconds" type="number" min="0">
     </div>
     
     <p>You can also trigger erasing manually:</p>
@@ -111,12 +111,12 @@ export default class ProtectedSessionOptions {
             this.$availableLanguageCodes.text(webContents.session.availableSpellCheckerLanguages.join(', '));
         }
 
-        this.$eraseNotesAfterTimeInSeconds = $("#erase-notes-after-time-in-seconds");
+        this.$eraseEntitiesAfterTimeInSeconds = $("#erase-entities-after-time-in-seconds");
 
-        this.$eraseNotesAfterTimeInSeconds.on('change', () => {
-            const eraseNotesAfterTimeInSeconds = this.$eraseNotesAfterTimeInSeconds.val();
+        this.$eraseEntitiesAfterTimeInSeconds.on('change', () => {
+            const eraseEntitiesAfterTimeInSeconds = this.$eraseEntitiesAfterTimeInSeconds.val();
 
-            server.put('options', { 'eraseNotesAfterTimeInSeconds': eraseNotesAfterTimeInSeconds }).then(() => {
+            server.put('options', { 'eraseEntitiesAfterTimeInSeconds': eraseEntitiesAfterTimeInSeconds }).then(() => {
                 toastService.showMessage("Options change have been saved.");
             });
 
@@ -173,7 +173,7 @@ export default class ProtectedSessionOptions {
         this.$spellCheckEnabled.prop("checked", options['spellCheckEnabled'] === 'true');
         this.$spellCheckLanguageCode.val(options['spellCheckLanguageCode']);
 
-        this.$eraseNotesAfterTimeInSeconds.val(options['eraseNotesAfterTimeInSeconds']);
+        this.$eraseEntitiesAfterTimeInSeconds.val(options['eraseEntitiesAfterTimeInSeconds']);
         this.$protectedSessionTimeout.val(options['protectedSessionTimeout']);
         this.$noteRevisionsTimeInterval.val(options['noteRevisionSnapshotTimeInterval']);
 

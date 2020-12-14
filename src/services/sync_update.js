@@ -1,5 +1,4 @@
 const sql = require('./sql');
-const log = require('./log');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 
@@ -9,22 +8,15 @@ function updateEntity(entityChange, entity, sourceId) {
         return false;
     }
 
-    const {entityName, hash} = entityChange;
-    let updated;
-
-    if (entityName === 'note_reordering') {
-        updated = updateNoteReordering(entityChange, entity, sourceId);
-    }
-    else {
-        updated = updateNormalEntity(entityChange, entity, sourceId);
-    }
+    const updated = entityChange.entityName === 'note_reordering'
+        ? updateNoteReordering(entityChange, entity, sourceId)
+        : updateNormalEntity(entityChange, entity, sourceId);
 
     // currently making exception for protected notes and note revisions because here
     // the title and content are not available decrypted as listeners would expect
-    if (updated &&
-        (!['notes', 'note_contents', 'note_revisions', 'note_revision_contents'].includes(entityName) || !entity.isProtected)) {
+    if (updated && !entity.isProtected) {
         eventService.emit(eventService.ENTITY_SYNCED, {
-            entityName,
+            entityName: entityChange.entityName,
             entity
         });
     }
@@ -42,14 +34,7 @@ function updateNormalEntity(entityChange, entity, sourceId) {
         || hash !== entityChange.hash // sync error, we should still update
     ) {
         if (['note_contents', 'note_revision_contents'].includes(entityChange.entityName)) {
-            // we always use Buffer object which is different from normal saving - there we use simple string type for "string notes"
-            // the problem is that in general it's not possible to whether a note_content is string note or note (syncs can arrive out of order)
-            entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
-
-            if (entity.content && entity.content.byteLength === 0) {
-                // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
-                entity.content = "";
-            }
+            entity.content = handleContent(entity.content);
         }
 
         sql.transactional(() => {
@@ -74,6 +59,19 @@ function updateNoteReordering(entityChange, entity, sourceId) {
     });
 
     return true;
+}
+
+function handleContent(content) {
+    // we always use Buffer object which is different from normal saving - there we use simple string type for "string notes"
+    // the problem is that in general it's not possible to whether a note_content is string note or note (syncs can arrive out of order)
+    content = content === null ? null : Buffer.from(content, 'base64');
+
+    if (content && content.byteLength === 0) {
+        // there seems to be a bug which causes empty buffer to be stored as NULL which is then picked up as inconsistency
+        content = "";
+    }
+
+    return content;
 }
 
 module.exports = {
