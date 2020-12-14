@@ -159,7 +159,13 @@ class Note extends Entity {
 
         const hash = utils.hash(this.noteId + "|" + content.toString());
 
-        entityChangesService.addEntityChange('note_contents', this.noteId, hash);
+        entityChangesService.addEntityChange({
+            entityName: 'note_contents',
+            entityId: this.noteId,
+            hash: hash,
+            isErased: false,
+            utcDateChanged: this.getUtcDateChanged()
+        }, null);
     }
 
     setJsonContent(content) {

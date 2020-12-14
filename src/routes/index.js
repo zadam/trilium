@@ -32,8 +32,7 @@ function index(req, res) {
 }
 
 function getAppCssNoteIds() {
-    return (attributeService.getNotesWithLabels(['appCss', 'appTheme']))
-        .map(note => note.noteId);
+    return attributeService.getNoteIdsWithLabels(['appCss', 'appTheme']);
 }
 
 module.exports = {

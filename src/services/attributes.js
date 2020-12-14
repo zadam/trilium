@@ -2,6 +2,7 @@
 
 const repository = require('./repository');
 const sql = require('./sql');
+const noteCache = require('./note_cache/note_cache');
 const Attribute = require('../entities/attribute');
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
@@ -64,11 +65,18 @@ function getNotesWithLabel(name, value) {
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 
-function getNotesWithLabels(names) {
-    const questionMarks = names.map(() => "?").join(", ");
+function getNoteIdsWithLabels(names) {
+    const noteIds = new Set();
 
-    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name IN (${questionMarks}) ORDER BY position`, names);
+    for (const name of names) {
+        for (const attr of noteCache.findAttributes('label', name)) {
+            noteIds.add(attr.noteId);
+        }
+    }
+
+    console.log(noteIds);
+
+    return Array.from(noteIds);
 }
 
 function getNoteWithLabel(name, value) {
@@ -168,7 +176,7 @@ function sanitizeAttributeName(origName) {
 
 module.exports = {
     getNotesWithLabel,
-    getNotesWithLabels,
+    getNoteIdsWithLabels,
     getNoteWithLabel,
     createLabel,
     createRelation,

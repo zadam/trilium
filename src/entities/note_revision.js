@@ -122,7 +122,13 @@ class NoteRevision extends Entity {
 
         const hash = utils.hash(this.noteRevisionId + "|" + content);
 
-        entityChangesService.addEntityChange('note_revision_contents', this.noteRevisionId, hash);
+        entityChangesService.addEntityChange({
+            entityName: 'note_revision_contents',
+            entityId: this.noteRevisionId,
+            hash: hash,
+            isErased: false,
+            utcDateChanged: this.getUtcDateChanged()
+        }, null);
     }
 
     beforeSaving() {

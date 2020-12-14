@@ -76,7 +76,7 @@ class NoteShort {
     }
 
     addChild(childNoteId, branchId, sort = true) {
-        if (!this.children.includes(childNoteId)) {
+        if (!(childNoteId in this.childToBranch)) {
             this.children.push(childNoteId);
         }
 

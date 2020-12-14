@@ -119,7 +119,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete noteCache.attributes[attributeId];
 
             if (attr) {
-                delete noteCache.attributeIndex[`${attr.type}-${attr.name}`];
+                delete noteCache.attributeIndex[`${attr.type}-${attr.name.toLowerCase()}`];
             }
         }
         else if (attributeId in noteCache.attributes) {
