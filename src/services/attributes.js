@@ -74,8 +74,6 @@ function getNoteIdsWithLabels(names) {
         }
     }
 
-    console.log(noteIds);
-
     return Array.from(noteIds);
 }
 

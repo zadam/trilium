@@ -56,8 +56,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
             title: note.title,
             isProtected: note.isProtected,
             type: note.type,
-            mime: note.mime,
-            isDeleted: false // FIXME
+            mime: note.mime
         });
     }
 
