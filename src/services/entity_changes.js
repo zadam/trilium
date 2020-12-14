@@ -22,8 +22,8 @@ function insertEntityChange(entityName, entityId, hash, sourceId = null, isSynce
     return entityChange;
 }
 
-function addEntityChange(entityName, entityId, hash, sourceId, isSynced) {
-    const sync = insertEntityChange(entityName, entityId, hash, sourceId, isSynced);
+function addEntityChange(entityChange, sourceId, isSynced) {
+    const sync = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, sourceId, isSynced);
 
     cls.addSyncRow(sync);
 }
@@ -59,7 +59,9 @@ function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
     sql.execute(`
       DELETE 
       FROM entity_changes 
-      WHERE sync.entityName = '${entityName}' 
+      WHERE
+        isErased = 0
+        AND sync.entityName = '${entityName}' 
         AND sync.entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
 }
 
@@ -101,7 +103,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
 
 function fillAllEntityChanges() {
     sql.transactional(() => {
-        sql.execute("DELETE FROM entity_changes");
+        sql.execute("DELETE FROM entity_changes WHERE isErased = 0");
 
         fillEntityChanges("notes", "noteId");
         fillEntityChanges("note_contents", "noteId");

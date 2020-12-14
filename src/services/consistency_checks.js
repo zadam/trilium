@@ -581,8 +581,9 @@ class ConsistencyChecks {
             FROM 
               entity_changes 
               LEFT JOIN ${entityName} ON entityId = ${key} 
-            WHERE 
-              entity_changes.entityName = '${entityName}' 
+            WHERE
+              entity_changes.isErased = 0
+              AND entity_changes.entityName = '${entityName}' 
               AND ${key} IS NULL`,
                 ({id, entityId}) => {
                     if (this.autoFix) {

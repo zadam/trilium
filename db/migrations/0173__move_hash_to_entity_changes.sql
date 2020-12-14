@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS "mig_api_tokens"
 INSERT INTO mig_api_tokens (apiTokenId, token, utcDateCreated, isDeleted)
 SELECT apiTokenId, token, utcDateCreated, isDeleted FROM api_tokens;
 
+DROP TABLE api_tokens;
+ALTER TABLE mig_api_tokens RENAME TO api_tokens;
+
 CREATE TABLE IF NOT EXISTS "mig_attributes"
 (
     attributeId      TEXT not null primary key,
