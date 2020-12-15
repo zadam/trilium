@@ -16,11 +16,6 @@ class Attribute {
         this.name = row.name;
         /** @param {int} */
         this.position = row.position;
-
-        if (typeof row.value !== 'string') {
-            row.value = JSON.stringify(row.value);
-        }
-
         /** @param {string} */
         this.value = row.value;
         /** @param {boolean} */
