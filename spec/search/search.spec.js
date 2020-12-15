@@ -113,6 +113,15 @@ describe("Search", () => {
         let searchResults = searchService.findNotesWithQuery('#capital=Vienna', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+
+        // case sensitivity:
+        searchResults = searchService.findNotesWithQuery('#CAPITAL=VIENNA', searchContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+
+        searchResults = searchService.findNotesWithQuery('#caPItal=vienNa', searchContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
     });
 
     it("label comparison with full syntax", () => {
@@ -473,13 +482,16 @@ describe("Search", () => {
         }
 
         test("type", "text", 7);
+        test("TYPE", "TEXT", 7);
         test("type", "code", 0);
 
         test("mime", "text/html", 6);
         test("mime", "application/json", 0);
 
         test("isProtected", "false", 7);
+        test("isProtected", "FALSE", 7);
         test("isProtected", "true", 0);
+        test("isProtected", "TRUE", 0);
 
         test("dateCreated", "'2020-05-14 12:11:42.001+0200'", 1);
         test("dateCreated", "wrong", 0);
