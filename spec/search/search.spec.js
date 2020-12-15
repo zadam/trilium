@@ -12,7 +12,7 @@ describe("Search", () => {
     beforeEach(() => {
         noteCache.reset();
 
-        rootNote = new NoteBuilder(new Note(noteCache, {noteId: 'root', title: 'root'}));
+        rootNote = new NoteBuilder(new Note(noteCache, {noteId: 'root', title: 'root', type: 'text'}));
         new Branch(noteCache, {branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
@@ -472,7 +472,7 @@ describe("Search", () => {
             expect(searchResults.length).toEqual(expectedResultCount);
         }
 
-        test("type", "text", 6);
+        test("type", "text", 7);
         test("type", "code", 0);
 
         test("mime", "text/html", 6);

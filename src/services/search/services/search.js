@@ -35,15 +35,7 @@ function findNotesWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext);
 
     const searchResults = noteSet.notes
-        .map(note => {
-            const zzz = executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note)
-
-            if (!zzz) {
-                console.log("missing path", note);
-            }
-
-            return zzz;
-        })
+        .map(note => executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
         .filter(notePathArray => notePathArray.includes(cls.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
 
@@ -67,8 +59,6 @@ function findNotesWithExpression(expression, searchContext) {
 
             return a.notePathArray.length < b.notePathArray.length ? -1 : 1;
         });
-
-
     }
 
     return searchResults;

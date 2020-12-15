@@ -24,12 +24,12 @@ describe("Value extractor", () => {
         let valueExtractor = new ValueExtractor(["note", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
-        expect(valueExtractor.extract(austria)).toEqual("vienna");
+        expect(valueExtractor.extract(austria)).toEqual("Vienna");
 
         valueExtractor = new ValueExtractor(["#capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
-        expect(valueExtractor.extract(austria)).toEqual("vienna");
+        expect(valueExtractor.extract(austria)).toEqual("Vienna");
     });
 
     it("parent/child property extraction", async () => {

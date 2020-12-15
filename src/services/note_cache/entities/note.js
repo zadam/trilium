@@ -133,6 +133,16 @@ class Note {
         return !!this.attributes.find(attr => attr.type === type && attr.name === name);
     }
 
+    getAttributeCaseInsensitive(type, name, value) {
+        name = name.toLowerCase();
+        value = value ? value.toLowerCase() : null;
+
+        return this.attributes.find(
+            attr => attr.type === type
+            && attr.name.toLowerCase() === name
+            && (!value || attr.value.toLowerCase() === value));
+    }
+
     getLabelValue(name) {
         const label = this.attributes.find(attr => attr.type === 'label' && attr.name === name);
 

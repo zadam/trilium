@@ -82,13 +82,17 @@ class ValueExtractor {
             if (cur() === 'labels') {
                 i++;
 
-                return cursor.getLabelValue(cur());
+                const attr = cursor.getAttributeCaseInsensitive('label', cur());
+
+                return attr ? attr.value : null;
             }
 
             if (cur() === 'relations') {
                 i++;
 
-                cursor = cursor.getRelationTarget(cur());
+                const attr = cursor.getAttributeCaseInsensitive('relation', cur());
+
+                cursor = attr ? attr.targetNote : null;
             }
             else if (cur() === 'parents') {
                 cursor = cursor.parents[0];
