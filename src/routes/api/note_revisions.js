@@ -80,8 +80,7 @@ function downloadNoteRevision(req, res) {
 }
 
 function eraseAllNoteRevisions(req) {
-    const noteRevisionIdsToErase = sql.getColumn(
-        'SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId = ?',
+    const noteRevisionIdsToErase = sql.getColumn('SELECT noteRevisionId FROM note_revisions WHERE noteId = ?',
         [req.params.noteId]);
 
     noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
@@ -94,7 +93,7 @@ function eraseNoteRevision(req) {
 function restoreNoteRevision(req) {
     const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
 
-    if (noteRevision && !noteRevision.isErased) {
+    if (noteRevision) {
         const note = noteRevision.getNote();
 
         noteRevisionService.createNoteRevision(note);

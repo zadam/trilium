@@ -12,6 +12,7 @@ const optionsService = require('./options');
 const Branch = require('../entities/branch');
 const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
+const noteRevisionService = require('./note_revisions');
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -304,7 +305,7 @@ class ConsistencyChecks {
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess
-                        note.setContent(note.isErased ? null : '');
+                        note.setContent('');
                     }
 
                     logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
@@ -333,53 +334,6 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteId
-                    FROM notes
-                      JOIN note_contents USING (noteId)
-                    WHERE isErased = 1
-                      AND content IS NOT NULL`,
-            ({noteId}) => {
-
-            // we always fix this issue because there does not seem to be a good way to prevent it.
-            // Scenario in which this can happen:
-            // 1. user on instance A deletes the note (sync for notes is created, but not for note_contents) and is later erased
-            // 2. instance B gets synced from instance A, note is updated because of entity change for notes,
-            //    but note_contents is not because erasion does not create entity change rows
-            // 3. therefore note.isErased = true, but note_contents.content remains not updated and not erased.
-            //
-            // Considered solutions:
-            // - don't sync erased notes - this might prevent syncing also of the isDeleted flag and note would continue
-            //   to exist on the other instance
-            // - create entity changes for erased event - this would be a problem for undeletion since erasion might happen
-            //   on one instance after undelete and thus would win even though there's no user action behind it
-            //
-            // So instead we just fix such cases afterwards here.
-
-            sql.execute(`UPDATE note_contents SET content = NULL WHERE noteId = ?`, [noteId]);
-
-            logFix(`Note ${noteId} content has been set to null since the note is erased`);
-        });
-
-        this.findAndFixIssues(`
-                    SELECT noteId, noteRevisionId
-                    FROM notes
-                      JOIN note_revisions USING (noteId)
-                    WHERE notes.isErased = 1
-                      AND note_revisions.isErased = 0`,
-            ({noteId, noteRevisionId}) => {
-                if (this.autoFix) {
-                    const noteRevision = repository.getNoteRevision(noteRevisionId);
-                    noteRevision.isErased = true;
-                    noteRevision.setContent(null);
-                    noteRevision.save();
-
-                    logFix(`Note revision ${noteRevisionId} has been erased since its note ${noteId} is also erased.`);
-                } else {
-                    logError(`Note revision ${noteRevisionId} is not erased even though note ${noteId} is erased.`);
-                }
-            });
-
-        this.findAndFixIssues(`
                     SELECT note_revisions.noteRevisionId
                     FROM note_revisions
                       LEFT JOIN note_revision_contents USING (noteRevisionId)
@@ -387,67 +341,11 @@ class ConsistencyChecks {
                       AND note_revisions.isProtected = 0`,
             ({noteRevisionId}) => {
                 if (this.autoFix) {
-                    const noteRevision = repository.getNoteRevision(noteRevisionId);
-                    noteRevision.setContent(null);
-                    noteRevision.isErased = true;
-                    noteRevision.save();
+                    noteRevisionService.eraseNoteRevisions([noteRevisionId]);
 
                     logFix(`Note revision content ${noteRevisionId} was created and set to erased since it did not exist.`);
                 } else {
                     logError(`Note revision content ${noteRevisionId} does not exist`);
-                }
-            });
-
-        this.findAndFixIssues(`
-                    SELECT noteRevisionId
-                    FROM note_revisions
-                      JOIN note_revision_contents USING (noteRevisionId)
-                    WHERE isErased = 0
-                      AND content IS NULL`,
-            ({noteRevisionId}) => {
-                if (this.autoFix) {
-                    const noteRevision = repository.getNoteRevision(noteRevisionId);
-                    noteRevision.isErased = true;
-                    noteRevision.save();
-
-                    logFix(`Note revision ${noteRevisionId} content was set to erased since it was null even though it was not erased`);
-                } else {
-                    logError(`Note revision ${noteRevisionId} content is null even though it is not erased`);
-                }
-            });
-
-        this.findAndFixIssues(`
-                    SELECT noteRevisionId
-                    FROM note_revisions
-                             JOIN note_revision_contents USING (noteRevisionId)
-                    WHERE isErased = 1
-                      AND content IS NOT NULL`,
-            ({noteRevisionId}) => {
-                if (this.autoFix) {
-                    sql.execute(`UPDATE note_revision_contents SET content = NULL WHERE noteRevisionId = ?`, [noteRevisionId]);
-
-                    logFix(`Note revision ${noteRevisionId} content was set to null since the note revision is erased`);
-                }
-                else {
-                    logError(`Note revision ${noteRevisionId} content is not null even though the note revision is erased`);
-                }
-            });
-
-        this.findAndFixIssues(`
-                    SELECT noteId
-                    FROM notes
-                    WHERE isErased = 1
-                      AND isDeleted = 0`,
-            ({noteId}) => {
-                if (this.autoFix) {
-                    const note = repository.getNote(noteId);
-                    note.isDeleted = true;
-                    note.save();
-
-                    logFix(`Note ${noteId} was set to deleted since it is erased`);
-                }
-                else {
-                    logError(`Note ${noteId} is not deleted even though it is erased`);
                 }
             });
 
@@ -661,36 +559,18 @@ class ConsistencyChecks {
         return !this.unrecoveredConsistencyErrors;
     }
 
-    showEntityStat(name, query) {
-        const map = sql.getMap(query);
-
-        map[0] = map[0] || 0;
-        map[1] = map[1] || 0;
-
-        log.info(`${name} deleted: ${map[1]}, not deleted ${map[0]}`);
-    }
-
     runDbDiagnostics() {
-        this.showEntityStat("Notes",
-                `SELECT isDeleted, count(1)
-                       FROM notes
-                       GROUP BY isDeleted`);
-        this.showEntityStat("Note revisions",
-                `SELECT isErased, count(1)
-                       FROM note_revisions
-                       GROUP BY isErased`);
-        this.showEntityStat("Branches",
-                `SELECT isDeleted, count(1)
-                       FROM branches
-                       GROUP BY isDeleted`);
-        this.showEntityStat("Attributes",
-                `SELECT isDeleted, count(1)
-                       FROM attributes
-                       GROUP BY isDeleted`);
-        this.showEntityStat("API tokens",
-                `SELECT isDeleted, count(1)
-                       FROM api_tokens
-                       GROUP BY isDeleted`);
+        function showEntityStat(tableName) {
+            const count = sql.getValue(`SELECT COUNT(1) FROM ${tableName}`);
+
+            log.info(`${tableName}: ${count}`);
+        }
+
+        showEntityStat("notes");
+        showEntityStat("note_revisions");
+        showEntityStat("branches");
+        showEntityStat("attributes");
+        showEntityStat("api_tokens");
     }
 
     async runChecks() {

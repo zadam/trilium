@@ -15,7 +15,6 @@ function getRecentChanges(req) {
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
             notes.deleteId AS current_deleteId,
-            notes.isErased AS current_isErased,
             notes.title AS current_title,
             notes.isProtected AS current_isProtected,
             note_revisions.title,
@@ -23,8 +22,7 @@ function getRecentChanges(req) {
             note_revisions.dateCreated AS date
         FROM 
             note_revisions
-            JOIN notes USING(noteId)
-        WHERE note_revisions.isErased = 0`);
+            JOIN notes USING(noteId)`);
 
     for (const noteRevision of noteRevisions) {
         if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
@@ -40,28 +38,24 @@ function getRecentChanges(req) {
                 notes.noteId,
                 notes.isDeleted AS current_isDeleted,
                 notes.deleteId AS current_deleteId,
-                notes.isErased AS current_isErased,
                 notes.title AS current_title,
                 notes.isProtected AS current_isProtected,
                 notes.title,
                 notes.utcDateCreated AS utcDate,
                 notes.dateCreated AS date
-            FROM
-                notes
+            FROM notes
         UNION ALL
             SELECT
                 notes.noteId,
                 notes.isDeleted AS current_isDeleted,
                 notes.deleteId AS current_deleteId,
-                notes.isErased AS current_isErased,
                 notes.title AS current_title,
                 notes.isProtected AS current_isProtected,
                 notes.title,
                 notes.utcDateModified AS utcDate,
                 notes.dateModified AS date
-            FROM
-                notes
-            WHERE notes.isDeleted = 1 AND notes.isErased = 0`);
+            FROM notes
+            WHERE notes.isDeleted = 1`);
 
     for (const note of notes) {
         if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
@@ -85,17 +79,12 @@ function getRecentChanges(req) {
         }
 
         if (change.current_isDeleted) {
-            if (change.current_isErased) {
-                change.canBeUndeleted = false;
-            }
-            else {
-                const deleteId = change.current_deleteId;
+            const deleteId = change.current_deleteId;
 
-                const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
+            const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
 
-                // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
-                change.canBeUndeleted = undeletedParentBranches.length > 0;
-            }
+            // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
+            change.canBeUndeleted = undeletedParentBranches.length > 0;
         }
     }
 

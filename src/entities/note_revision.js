@@ -15,7 +15,6 @@ const entityChangesService = require('../services/entity_changes.js');
  * @property {string} type
  * @property {string} mime
  * @property {string} title
- * @property {boolean} isErased
  * @property {boolean} isProtected
  * @property {string} dateLastEdited
  * @property {string} dateCreated
