@@ -465,7 +465,13 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
-                    entityChangesService.addEntityChange(entityName, entityId, entity.generateHash());
+                    entityChangesService.addEntityChange({
+                        entityName,
+                        entityId,
+                        hash: entity.generateHash(),
+                        isErased: false,
+                        utcDateChanged: entity.getUtcDateChanged()
+                    }, null);
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {

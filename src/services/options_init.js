@@ -58,7 +58,6 @@ function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
 const defaultOptions = [
     { name: 'noteRevisionSnapshotTimeInterval', value: '600', isSynced: true },
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
-    { name: 'hoistedNoteId', value: 'root', isSynced: false },
     { name: 'zoomFactor', value: '1.0', isSynced: false },
     { name: 'mainFontSize', value: '100', isSynced: false },
     { name: 'treeFontSize', value: '100', isSynced: false },

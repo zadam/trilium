@@ -62,7 +62,7 @@ async function migrate() {
                 }
 
                 // not using repository because of changed utcDateModified column in migration 129
-                sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion, "dbVersion"]);
+                sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");

@@ -210,6 +210,8 @@ function wrap(query, func) {
 
             return null
         }
+
+        throw e;
     }
 
     const milliseconds = Date.now() - startTimestamp;
