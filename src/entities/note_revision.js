@@ -28,12 +28,11 @@ const entityChangesService = require('../services/entity_changes.js');
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
 
-        this.isErased = !!this.isErased;
         this.isProtected = !!this.isProtected;
 
         if (this.isProtected) {

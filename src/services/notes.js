@@ -698,7 +698,7 @@ function eraseNotes(noteIdsToErase) {
     const noteRevisionIdsToErase = sql.getManyRows(`SELECT noteRevisionId FROM note_revisions WHERE noteId IN (???)`, noteIdsToErase)
         .map(row => row.noteRevisionId);
 
-    eraseNoteRevisions(noteRevisionIdsToErase);
+    noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
@@ -721,18 +721,6 @@ function eraseAttributes(attributeIdsToErase) {
     sql.executeMany(`DELETE FROM attributes WHERE attributeId IN (???)`, attributeIdsToErase);
 
     sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase);
-}
-
-function eraseNoteRevisions(noteRevisionIdsToErase) {
-    if (noteRevisionIdsToErase.length === 0) {
-        return;
-    }
-
-    sql.executeMany(`DELETE FROM note_revisions WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revisions' AND entityId IN (???)`, noteRevisionIdsToErase);
-
-    sql.executeMany(`DELETE FROM note_revision_contents WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revision_contents' AND entityId IN (???)`, noteRevisionIdsToErase);
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {

@@ -13,8 +13,7 @@ function getNoteRevisions(req) {
                LENGTH(note_revision_contents.content) AS contentLength
         FROM note_revisions
         JOIN note_revision_contents ON note_revisions.noteRevisionId = note_revision_contents.noteRevisionId 
-        WHERE noteId = ? 
-          AND isErased = 0
+        WHERE noteId = ?
         ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }
 
@@ -80,33 +79,16 @@ function downloadNoteRevision(req, res) {
     res.send(noteRevision.getContent());
 }
 
-/**
- * @param {NoteRevision} noteRevision
- */
-function eraseOneNoteRevision(noteRevision) {
-    noteRevision.isErased = true;
-    noteRevision.title = null;
-    noteRevision.save();
-
-    noteRevision.setContent(null);
-}
-
 function eraseAllNoteRevisions(req) {
-    const noteRevisionsToErase = repository.getEntities(
-        'SELECT * FROM note_revisions WHERE isErased = 0 AND noteId = ?',
+    const noteRevisionIdsToErase = sql.getColumn(
+        'SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId = ?',
         [req.params.noteId]);
 
-    for (const noteRevision of noteRevisionsToErase) {
-        eraseOneNoteRevision(noteRevision);
-    }
+    noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
 }
 
 function eraseNoteRevision(req) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
-
-    if (noteRevision && !noteRevision.isErased) {
-        eraseOneNoteRevision(noteRevision);
-    }
+    noteRevisionService.eraseNoteRevisions([req.params.noteRevisionId]);
 }
 
 function restoreNoteRevision(req) {

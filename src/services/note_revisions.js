@@ -1,8 +1,9 @@
 "use strict";
 
 const NoteRevision = require('../entities/note_revision');
-const dateUtils = require('../services/date_utils');
-const log = require('../services/log');
+const dateUtils = require('./date_utils');
+const log = require('./log');
+const sql = require('./sql');
 
 /**
  * @param {Note} note
@@ -69,7 +70,20 @@ function createNoteRevision(note) {
     return noteRevision;
 }
 
+function eraseNoteRevisions(noteRevisionIdsToErase) {
+    if (noteRevisionIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM note_revisions WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revisions' AND entityId IN (???)`, noteRevisionIdsToErase);
+
+    sql.executeMany(`DELETE FROM note_revision_contents WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revision_contents' AND entityId IN (???)`, noteRevisionIdsToErase);
+}
+
 module.exports = {
     protectNoteRevisions,
-    createNoteRevision
+    createNoteRevision,
+    eraseNoteRevisions
 };

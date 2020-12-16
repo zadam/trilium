@@ -114,6 +114,10 @@ function getTree(req) {
     const collectedNoteIds = new Set([subTreeNoteId]);
 
     function collect(parentNote) {
+        if (!parentNote) {
+            console.trace(parentNote);
+        }
+
         for (const childNote of parentNote.children) {
             collectedNoteIds.add(childNote.noteId);
 

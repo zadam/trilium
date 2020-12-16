@@ -21,7 +21,6 @@ const RELATION = 'relation';
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string|null} deleteId - ID identifying delete transaction
- * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
  * @property {string} utcDateCreated
@@ -70,9 +69,9 @@ class Note extends Entity {
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            const content = sql.getValue(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+            const row = sql.getRow(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
 
-            if (!content) {
+            if (!row) {
                 if (silentNotFoundError) {
                     return undefined;
                 }
@@ -81,7 +80,7 @@ class Note extends Entity {
                 }
             }
 
-            this.content = content;
+            this.content = row.content;
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
@@ -783,7 +782,7 @@ class Note extends Entity {
      * @returns {NoteRevision[]}
      */
     getRevisions() {
-        return this.repository.getEntities("SELECT * FROM note_revisions WHERE isErased = 0 AND noteId = ?", [this.noteId]);
+        return this.repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 
     /**
