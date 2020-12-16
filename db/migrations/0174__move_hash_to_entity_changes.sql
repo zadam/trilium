@@ -3,11 +3,12 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                 `entityName`	TEXT NOT NULL,
                                                 `entityId`	TEXT NOT NULL,
                                                 `hash`	TEXT NOT NULL,
+                                                `isErased` INT NOT NULL,
                                                 `sourceId` TEXT NOT NULL,
                                                 `isSynced` INTEGER NOT NULL);
 
-INSERT INTO mig_entity_changes (entityName, entityId, hash, sourceId, isSynced)
-    SELECT entityName, entityId, '', sourceId, isSynced FROM entity_changes;
+INSERT INTO mig_entity_changes (entityName, entityId, hash, sourceId, isSynced, isErased)
+    SELECT entityName, entityId, '', sourceId, isSynced, isErased FROM entity_changes;
 
 UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM api_tokens WHERE apiTokenId = entityId), '') WHERE entityName = 'api_tokens';
 UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM attributes WHERE attributeId = entityId), '') WHERE entityName = 'attributes';
@@ -97,15 +98,14 @@ CREATE TABLE IF NOT EXISTS "mig_notes" (
                                        `mime` TEXT NOT NULL DEFAULT 'text/html',
                                        `isDeleted`	INT NOT NULL DEFAULT 0,
                                        `deleteId`   TEXT DEFAULT NULL,
-                                       `isErased`	INT NOT NULL DEFAULT 0,
                                        `dateCreated`	TEXT NOT NULL,
                                        `dateModified`	TEXT NOT NULL,
                                        `utcDateCreated`	TEXT NOT NULL,
                                        `utcDateModified`	TEXT NOT NULL,
                                        PRIMARY KEY(`noteId`));
 
-INSERT INTO mig_notes (noteId, title, isProtected, type, mime, isDeleted, deleteId, isErased, dateCreated, dateModified, utcDateCreated, utcDateModified)
-SELECT noteId, title, isProtected, type, mime, isDeleted, deleteId, isErased, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes;
+INSERT INTO mig_notes (noteId, title, isProtected, type, mime, isDeleted, deleteId, dateCreated, dateModified, utcDateCreated, utcDateModified)
+SELECT noteId, title, isProtected, type, mime, isDeleted, deleteId, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes;
 
 DROP TABLE notes;
 ALTER TABLE mig_notes RENAME TO notes;
@@ -137,7 +137,6 @@ CREATE TABLE IF NOT EXISTS "mig_note_revisions" (`noteRevisionId`	TEXT NOT NULL 
                                              type TEXT DEFAULT '' NOT NULL,
                                              mime TEXT DEFAULT '' NOT NULL,
                                              `title`	TEXT,
-                                             `isErased`	INT NOT NULL DEFAULT 0,
                                              `isProtected`	INT NOT NULL DEFAULT 0,
                                              `utcDateLastEdited` TEXT NOT NULL,
                                              `utcDateCreated` TEXT NOT NULL,
@@ -145,8 +144,8 @@ CREATE TABLE IF NOT EXISTS "mig_note_revisions" (`noteRevisionId`	TEXT NOT NULL 
                                              `dateLastEdited` TEXT NOT NULL,
                                              `dateCreated` TEXT NOT NULL);
 
-INSERT INTO mig_note_revisions (noteRevisionId, noteId, type, mime, title, isErased, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated)
-SELECT noteRevisionId, noteId, type, mime, title, isErased, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated FROM note_revisions;
+INSERT INTO mig_note_revisions (noteRevisionId, noteId, type, mime, title, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated)
+SELECT noteRevisionId, noteId, type, mime, title, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated FROM note_revisions;
 
 DROP TABLE note_revisions;
 ALTER TABLE mig_note_revisions RENAME TO note_revisions;
