@@ -144,7 +144,7 @@ async function consumeSyncData() {
         const allEntityChanges = syncDataQueue;
         syncDataQueue = [];
 
-        const nonProcessedEntityChanges = allEntityChanges.filter(sync => !processedEntityChangeIds.has(sync.id));
+        const nonProcessedEntityChanges = allEntityChanges.filter(ec => !processedEntityChangeIds.has(ec.id));
 
         try {
             await utils.timeLimit(processEntityChanges(nonProcessedEntityChanges), 30000);
@@ -251,33 +251,33 @@ async function processEntityChanges(entityChanges) {
 
     const loadResults = new LoadResults(treeCache);
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'notes')) {
-        const note = treeCache.notes[sync.entityId];
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'notes')) {
+        const note = treeCache.notes[ec.entityId];
 
         if (note) {
-            note.update(sync.entity);
-            loadResults.addNote(sync.entityId, sync.sourceId);
+            note.update(ec.entity);
+            loadResults.addNote(ec.entityId, ec.sourceId);
         }
     }
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'branches')) {
-        let branch = treeCache.branches[sync.entityId];
-        const childNote = treeCache.notes[sync.entity.noteId];
-        const parentNote = treeCache.notes[sync.entity.parentNoteId];
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'branches')) {
+        let branch = treeCache.branches[ec.entityId];
+        const childNote = treeCache.notes[ec.entity.noteId];
+        const parentNote = treeCache.notes[ec.entity.parentNoteId];
 
         if (branch) {
-            branch.update(sync.entity);
-            loadResults.addBranch(sync.entityId, sync.sourceId);
+            branch.update(ec.entity);
+            loadResults.addBranch(ec.entityId, ec.sourceId);
 
-            if (sync.entity.isDeleted) {
+            if (ec.entity.isDeleted) {
                 if (childNote) {
-                    childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== sync.entity.parentNoteId);
-                    delete childNote.parentToBranch[sync.entity.parentNoteId];
+                    childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== ec.entity.parentNoteId);
+                    delete childNote.parentToBranch[ec.entity.parentNoteId];
                 }
 
                 if (parentNote) {
-                    parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== sync.entity.noteId);
-                    delete parentNote.childToBranch[sync.entity.noteId];
+                    parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== ec.entity.noteId);
+                    delete parentNote.childToBranch[ec.entity.noteId];
                 }
             }
             else {
@@ -290,12 +290,12 @@ async function processEntityChanges(entityChanges) {
                 }
             }
         }
-        else if (!sync.entity.isDeleted) {
+        else if (!ec.entity.isDeleted) {
             if (childNote || parentNote) {
-                branch = new Branch(treeCache, sync.entity);
+                branch = new Branch(treeCache, ec.entity);
                 treeCache.branches[branch.branchId] = branch;
 
-                loadResults.addBranch(sync.entityId, sync.sourceId);
+                loadResults.addBranch(ec.entityId, ec.sourceId);
 
                 if (childNote) {
                     childNote.addParent(branch.parentNoteId, branch.branchId);
@@ -308,14 +308,14 @@ async function processEntityChanges(entityChanges) {
         }
     }
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_reordering')) {
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_reordering')) {
         const parentNoteIdsToSort = new Set();
 
-        for (const branchId in sync.positions) {
+        for (const branchId in ec.positions) {
             const branch = treeCache.branches[branchId];
 
             if (branch) {
-                branch.notePosition = sync.positions[branchId];
+                branch.notePosition = ec.positions[branchId];
 
                 parentNoteIdsToSort.add(branch.parentNoteId);
             }
@@ -329,20 +329,20 @@ async function processEntityChanges(entityChanges) {
             }
         }
 
-        loadResults.addNoteReordering(sync.entityId, sync.sourceId);
+        loadResults.addNoteReordering(ec.entityId, ec.sourceId);
     }
 
     // missing reloading the relation target note
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'attributes')) {
-        let attribute = treeCache.attributes[sync.entityId];
-        const sourceNote = treeCache.notes[sync.entity.noteId];
-        const targetNote = sync.entity.type === 'relation' && treeCache.notes[sync.entity.value];
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'attributes')) {
+        let attribute = treeCache.attributes[ec.entityId];
+        const sourceNote = treeCache.notes[ec.entity.noteId];
+        const targetNote = ec.entity.type === 'relation' && treeCache.notes[ec.entity.value];
 
         if (attribute) {
-            attribute.update(sync.entity);
-            loadResults.addAttribute(sync.entityId, sync.sourceId);
+            attribute.update(ec.entity);
+            loadResults.addAttribute(ec.entityId, ec.sourceId);
 
-            if (sync.entity.isDeleted) {
+            if (ec.entity.isDeleted) {
                 if (sourceNote) {
                     sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
                 }
@@ -352,13 +352,13 @@ async function processEntityChanges(entityChanges) {
                 }
             }
         }
-        else if (!sync.entity.isDeleted) {
+        else if (!ec.entity.isDeleted) {
             if (sourceNote || targetNote) {
-                attribute = new Attribute(treeCache, sync.entity);
+                attribute = new Attribute(treeCache, ec.entity);
 
                 treeCache.attributes[attribute.attributeId] = attribute;
 
-                loadResults.addAttribute(sync.entityId, sync.sourceId);
+                loadResults.addAttribute(ec.entityId, ec.sourceId);
 
                 if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
                     sourceNote.attributes.push(attribute.attributeId);
@@ -371,24 +371,24 @@ async function processEntityChanges(entityChanges) {
         }
     }
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_contents')) {
-        delete treeCache.noteComplementPromises[sync.entityId];
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_contents')) {
+        delete treeCache.noteComplementPromises[ec.entityId];
 
-        loadResults.addNoteContent(sync.entityId, sync.sourceId);
+        loadResults.addNoteContent(ec.entityId, ec.sourceId);
     }
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'note_revisions')) {
-        loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_revisions')) {
+        loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.sourceId);
     }
 
-    for (const sync of entityChanges.filter(sync => sync.entityName === 'options')) {
-        if (sync.entity.name === 'openTabs') {
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'options')) {
+        if (ec.entity.name === 'openTabs') {
             continue; // only noise
         }
 
-        options.set(sync.entity.name, sync.entity.value);
+        options.set(ec.entity.name, ec.entity.value);
 
-        loadResults.addOption(sync.entity.name);
+        loadResults.addOption(ec.entity.name);
     }
 
     if (!loadResults.isEmpty()) {

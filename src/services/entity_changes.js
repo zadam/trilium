@@ -1,6 +1,7 @@
 const sql = require('./sql');
 const repository = require('./repository');
 const sourceIdService = require('./source_id');
+const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
@@ -63,8 +64,8 @@ function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
       FROM entity_changes 
       WHERE
         isErased = 0
-        AND sync.entityName = '${entityName}' 
-        AND sync.entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
+        AND entityName = '${entityName}' 
+        AND entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
 }
 
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
@@ -120,7 +121,13 @@ function fillAllEntityChanges() {
 }
 
 module.exports = {
-    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange("note_reordering", parentNoteId, '', sourceId),
+    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange({
+        entityName: "note_reordering",
+        entityId: parentNoteId,
+        hash: 'N/A',
+        isErased: false,
+        utcDateChanged: dateUtils.utcNowDateTime()
+    }, sourceId),
     moveEntityChangeToTop,
     addEntityChange,
     fillAllEntityChanges,

@@ -71,27 +71,27 @@ function sendMessageToAllClients(message) {
     }
 }
 
-function fillInAdditionalProperties(sync) {
+function fillInAdditionalProperties(entityChange) {
     // fill in some extra data needed by the frontend
-    if (sync.entityName === 'attributes') {
-        sync.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [sync.entityId]);
-    } else if (sync.entityName === 'branches') {
-        sync.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [sync.entityId]);
-    } else if (sync.entityName === 'notes') {
-        sync.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [sync.entityId]);
+    if (entityChange.entityName === 'attributes') {
+        entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
+    } else if (entityChange.entityName === 'branches') {
+        entityChange.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [entityChange.entityId]);
+    } else if (entityChange.entityName === 'notes') {
+        entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
 
-        if (sync.entity.isProtected) {
-            sync.entity.title = protectedSessionService.decryptString(sync.entity.title);
+        if (entityChange.entity.isProtected) {
+            entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
         }
-    } else if (sync.entityName === 'note_revisions') {
-        sync.noteId = sql.getValue(`SELECT noteId
+    } else if (entityChange.entityName === 'note_revisions') {
+        entityChange.noteId = sql.getValue(`SELECT noteId
                                           FROM note_revisions
-                                          WHERE noteRevisionId = ?`, [sync.entityId]);
-    } else if (sync.entityName === 'note_reordering') {
-        sync.positions = sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [sync.entityId]);
+                                          WHERE noteRevisionId = ?`, [entityChange.entityId]);
+    } else if (entityChange.entityName === 'note_reordering') {
+        entityChange.positions = sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [entityChange.entityId]);
     }
-    else if (sync.entityName === 'options') {
-        sync.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [sync.entityId]);
+    else if (entityChange.entityName === 'options') {
+        entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
     }
 }
 
