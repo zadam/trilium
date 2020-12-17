@@ -91,7 +91,9 @@ export default class NoteTypeWidget extends TabAwareWidget {
                 .on('click', e => {
                     const $link = $(e.target).closest('.dropdown-item');
 
-                    this.save('code', $link.attr('data-mime-type'))
+                    this.save('code', $link.attr('data-mime-type'));
+
+                    this.$noteTypeButton.dropdown('hide');
                 });
 
             if (this.note.type === 'code' && this.note.mime === mimeType.mime) {

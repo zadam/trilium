@@ -18,6 +18,8 @@ const TPL = `
     }
     
     .search-setting-table {
+        margin-top: 7px;
+        margin-bottom: 7px;
         width: 100%;
         border-collapse: separate;
         border-spacing: 10px;
