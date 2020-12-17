@@ -75,7 +75,7 @@ class TreeCache {
                     }
 
                     note.children = [];
-                    note.childToBranch = [];
+                    note.childToBranch = {};
                 }
 
                 // we want to remove all "real" branches (represented in the database) since those will be created
@@ -164,12 +164,8 @@ class TreeCache {
 
         this.addResp(resp);
 
-        const searchNoteIds = [];
-
         for (const note of resp.notes) {
             if (note.type === 'search') {
-                searchNoteIds.push(note.noteId);
-
                 const searchResultNoteIds = await server.get('search-note/' + note.noteId);
 
                 if (!Array.isArray(searchResultNoteIds)) {
@@ -182,13 +178,14 @@ class TreeCache {
                 // reset all the virtual branches from old search results
                 if (note.noteId in treeCache.notes) {
                     treeCache.notes[note.noteId].children = [];
+                    treeCache.notes[note.noteId].childToBranch = {};
                 }
 
                 const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
 
                 searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
                     // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
-                    branchId: "virt" + resultNoteId + '-' + note.noteId,
+                    branchId: "virt-" + note.noteId + '-' + resultNoteId,
                     noteId: resultNoteId,
                     parentNoteId: note.noteId,
                     notePosition: (index + 1) * 10,
@@ -204,9 +201,7 @@ class TreeCache {
             }
         }
 
-        if (searchNoteIds.length > 0) {
-            appContext.triggerEvent('searchResultsUpdated', {searchNoteIds});
-        }
+        appContext.triggerEvent('notesReloaded', {noteIds});
     }
 
     /** @return {NoteShort[]} */

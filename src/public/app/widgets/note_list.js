@@ -46,8 +46,8 @@ export default class NoteListWidget extends TabAwareWidget {
         }
     }
 
-    searchResultsUpdatedEvent({searchNoteIds}) {
-        if (searchNoteIds.includes(this.noteId)) {
+    notesReloadedEvent({noteIds}) {
+        if (noteIds.includes(this.noteId)) {
             this.refresh();
         }
     }

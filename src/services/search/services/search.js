@@ -90,15 +90,13 @@ function findNotesWithQuery(query, searchContext) {
 
     searchContext.originalQuery = query;
 
-    return utils.stopWatch(`Search with query "${query}"`, () => {
-        const expression = parseQueryToExpression(query, searchContext);
+    const expression = parseQueryToExpression(query, searchContext);
 
-        if (!expression) {
-            return [];
-        }
+    if (!expression) {
+        return [];
+    }
 
-        return findNotesWithExpression(expression, searchContext);
-    }, 20);
+    return findNotesWithExpression(expression, searchContext);
 }
 
 function searchTrimmedNotes(query, searchContext) {

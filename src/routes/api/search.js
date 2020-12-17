@@ -22,11 +22,12 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not search note.`]
     }
 
+    let searchString;
     let searchResultNoteIds;
 
     try {
         const searchScript = note.getRelationValue('searchScript');
-        const searchString = note.getLabelValue('searchString');
+        searchString = note.getLabelValue('searchString');
 
         if (searchScript) {
             searchResultNoteIds = await searchFromRelation(note, 'searchScript');
@@ -59,6 +60,8 @@ async function searchFromNote(req) {
     if (searchResultNoteIds.length > 200) {
         searchResultNoteIds = searchResultNoteIds.slice(0, 200);
     }
+
+    console.log(`Search with query "${searchString}" with results: ${searchResultNoteIds}`);
 
     return searchResultNoteIds;
 }
