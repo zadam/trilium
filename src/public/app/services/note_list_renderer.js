@@ -207,6 +207,13 @@ class NoteListRenderer {
     }
 
     async renderList() {
+        if (this.noteIds.length === 0) {
+            this.$noteList.hide();
+            return;
+        }
+
+        this.$noteList.show();
+
         const $container = this.$noteList.find('.note-list-container').empty();
 
         const imageLinks = this.parentNote ? this.parentNote.getRelations('imageLink') : [];
