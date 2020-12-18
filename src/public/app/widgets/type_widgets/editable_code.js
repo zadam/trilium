@@ -13,7 +13,6 @@ const TPL = `
         height: 100%;
         display: flex;
         flex-direction: column;
-        font-size: larger; /* monospace fonts are smaller for some reason so this compensates that */
     }
     
     .note-detail-code-editor {
