@@ -446,11 +446,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         if (!note) {
             title = '[missing]';
         }
-        else if (!note.isDeleted) {
-            title = note.title;
-        }
         else {
-            title = note.isErased ? '[erased]' : `${note.title} (deleted)`;
+            title = note.isDeleted ? `${note.title} (deleted)` : note.title;
         }
 
         $el.text(title);

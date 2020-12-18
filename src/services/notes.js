@@ -466,7 +466,7 @@ function saveNoteRevision(note) {
     const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND isErased = 0 AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
@@ -758,6 +758,8 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
     if (origNoteId === 'root') {
         throw new Error('Duplicating root is not possible');
     }
+
+    log.info(`Duplicating ${origNote} subtree into ${newParentNoteId}`);
 
     const origNote = repository.getNote(origNoteId);
     // might be null if orig note is not in the target newParentNoteId
