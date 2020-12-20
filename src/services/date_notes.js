@@ -141,6 +141,7 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
 
     return pattern
         .replace(/{dayInMonthPadded}/g, dayNumber)
+        .replace(/{isoDate}/g, dateUtils.localNowDate())
         .replace(/{weekDay}/g, weekDay)
         .replace(/{weekDay3}/g, weekDay.substr(0, 3))
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
