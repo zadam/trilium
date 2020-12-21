@@ -5,6 +5,7 @@ const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
 const repository = require('./repository');
 const sql = require('./sql');
+const protectedSessionService = require('./protected_session');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -14,14 +15,14 @@ const DATE_LABEL = 'dateNote';
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function createNote(parentNoteId, noteTitle) {
-    return (noteService.createNewNote({
-        parentNoteId: parentNoteId,
+function createNote(parentNote, noteTitle) {
+    return noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
         title: noteTitle,
         content: '',
-        isProtected: false,
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'text'
-    })).note;
+    }).note;
 }
 
 function getNoteStartingWith(parentNoteId, startsWith) {
@@ -70,7 +71,7 @@ function getYearNote(dateStr, rootNote) {
 
         if (!yearNote) {
             sql.transactional(() => {
-                yearNote = createNote(rootNote.noteId, yearStr);
+                yearNote = createNote(rootNote, yearStr);
 
                 attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
                 attributeService.createLabel(yearNote.noteId, 'sorted');
@@ -118,7 +119,7 @@ function getMonthNote(dateStr, rootNote) {
             const noteTitle = getMonthNoteTitle(rootNote, monthNumber, dateObj);
 
             sql.transactional(() => {
-                monthNote = createNote(yearNote.noteId, noteTitle);
+                monthNote = createNote(yearNote, noteTitle);
 
                 attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
                 attributeService.createLabel(monthNote.noteId, 'sorted');
@@ -166,7 +167,7 @@ function getDateNote(dateStr) {
             const noteTitle = getDateNoteTitle(rootNote, dayNumber, dateObj);
 
             sql.transactional(() => {
-                dateNote = createNote(monthNote.noteId, noteTitle);
+                dateNote = createNote(monthNote, noteTitle);
 
                 attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
 

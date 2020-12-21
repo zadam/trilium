@@ -1,6 +1,6 @@
 import utils from "./utils.js";
 import dateNoteService from "./date_notes.js";
-import hoistedNoteService from "./hoisted_note.js";
+import protectedSessionHolder from './protected_session_holder.js';
 import server from "./server.js";
 import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
@@ -69,7 +69,7 @@ export default class Entrypoints extends Component {
             title: 'new note',
             content: '',
             type: 'text',
-            isProtected: inboxNote.isProtected
+            isProtected: inboxNote.isProtected && protectedSessionHolder.isProtectedSessionAvailable()
         });
 
         await ws.waitForMaxKnownEntityChangeId();
