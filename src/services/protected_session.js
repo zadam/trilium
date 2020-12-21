@@ -49,10 +49,18 @@ function decryptNotes(notes) {
 }
 
 function encrypt(plainText) {
+    if (plainText === null) {
+        return null;
+    }
+
     return dataEncryptionService.encrypt(getDataKey(), plainText);
 }
 
 function decrypt(cipherText) {
+    if (cipherText === null) {
+        return null;
+    }
+
     return dataEncryptionService.decrypt(getDataKey(), cipherText);
 }
 
