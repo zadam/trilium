@@ -52,6 +52,10 @@ function encrypt(key, plainText, ivLength = 13) {
 }
 
 function decrypt(key, cipherText, ivLength = 13) {
+    if (cipherText === null) {
+        return null;
+    }
+
     if (!key) {
         return "[protected]";
     }
@@ -92,6 +96,10 @@ function decrypt(key, cipherText, ivLength = 13) {
 
 function decryptString(dataKey, cipherText) {
     const buffer = decrypt(dataKey, cipherText);
+
+    if (buffer === null) {
+        return null;
+    }
 
     const str = buffer.toString('utf-8');
 
