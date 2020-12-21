@@ -94,10 +94,10 @@ eventService.subscribe(eventService.CHILD_NOTE_CREATED, ({ parentNote, childNote
 function processInverseRelations(entityName, entity, handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
         const note = entity.getNote();
-        const attributes = (note.getOwnedAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
+        const relDefinitions = note.getLabels('relation:' + entity.name);
 
-        for (const attribute of attributes) {
-            const definition = attribute.value;
+        for (const relDefinition of relDefinitions) {
+            const definition = relDefinition.getDefinition();
 
             if (definition.inverseRelation && definition.inverseRelation.trim()) {
                 const targetNote = entity.getTargetNote();

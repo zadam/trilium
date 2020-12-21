@@ -9,7 +9,7 @@ async function syncNow() {
     }
     else {
         if (result.message.length > 200) {
-            result.message = result.message.substr(0, 200);
+            result.message = result.message.substr(0, 200) + "...";
         }
 
         toastService.showError("Sync failed: " + result.message);
