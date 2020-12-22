@@ -23,11 +23,7 @@ function exportBranch(req, res) {
 
     try {
         if (type === 'subtree' && (format === 'html' || format === 'markdown')) {
-            const start = Date.now();
-
             zipExportService.exportToZip(taskContext, branch, format, res);
-
-            console.log("Export took", Date.now() - start, "ms");
         }
         else if (type === 'single') {
             singleExportService.exportSingleNote(taskContext, branch, format, res);
