@@ -143,7 +143,7 @@ function exportToZip(taskContext, branch, format, res) {
         const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
 
         // if it's a leaf then we'll export it even if it's empty
-        if (available && ((note.getContent()).length > 0 || childBranches.length === 0)) {
+        if (available && (note.getContent().length > 0 || childBranches.length === 0)) {
             meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
         }
 
@@ -433,14 +433,13 @@ ${content}
     }
 
     const note = branch.getNote();
-    const zipFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".zip";
+    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.title + ".zip";
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');
 
-    zipFile.end();
-
     zipFile.outputStream.pipe(res);
+    zipFile.end();
 
     taskContext.taskSucceeded();
 }
