@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "async-mutex": "0.2.6",
-    "axios": "0.21.0",
+    "axios": "0.21.1",
     "better-sqlite3": "7.1.2",
     "body-parser": "1.19.0",
     "cls-hooked": "4.2.2",
@@ -34,7 +34,7 @@
     "csurf": "1.11.0",
     "dayjs": "1.9.7",
     "ejs": "3.1.5",
-    "electron-debug": "3.1.0",
+    "electron-debug": "3.2.0",
     "electron-dl": "3.0.2",
     "electron-find": "1.0.6",
     "electron-window-state": "5.0.3",

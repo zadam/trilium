@@ -9,7 +9,9 @@ const TPL = `
     .note-paths-widget {
         display: flex; 
         flex-direction: row;
-        padding: 12px 10px 5px 10px;
+        padding: 3px 0px 3px 10px;
+        margin-top: 8px;
+        border-bottom: 1px dashed var(--main-border-color);
     }
     
     .note-path-list a.current {
