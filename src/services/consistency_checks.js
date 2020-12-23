@@ -566,17 +566,15 @@ class ConsistencyChecks {
     }
 
     runDbDiagnostics() {
-        function showEntityStat(tableName) {
+        function getTableCount(tableName) {
             const count = sql.getValue(`SELECT COUNT(1) FROM ${tableName}`);
 
-            log.info(`${tableName}: ${count}`);
+            return `${tableName}: ${count}`;
         }
 
-        showEntityStat("notes");
-        showEntityStat("note_revisions");
-        showEntityStat("branches");
-        showEntityStat("attributes");
-        showEntityStat("api_tokens");
+        const tables = [ "notes", "note_revisions", "branches", "attributes", "api_tokens" ];
+
+        log.info("Table counts: " + tables.map(tableName => getTableCount(tableName)).join(", "));
     }
 
     async runChecks() {
