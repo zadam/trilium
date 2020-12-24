@@ -30,7 +30,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
 
             if (type === 'text'
                 && mime === 'text/html'
-                && content.length < 50000 // striptags is very slow for large notes
+                && content.length < 20000 // striptags is very slow for large notes
             ) {
                 content = striptags(content);
                 content = content.replace(/&nbsp;/g, ' ');
