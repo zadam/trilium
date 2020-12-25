@@ -29,7 +29,10 @@ class NoteContentUnprotectedFulltextExp extends Expression {
             content = content.toString().toLowerCase();
 
             if (type === 'text' && mime === 'text/html') {
-                content = striptags(content);
+                if (content.length < 20000) { // striptags is slow for very large notes
+                    content = striptags(content);
+                }
+
                 content = content.replace(/&nbsp;/g, ' ');
             }
 
