@@ -32,11 +32,15 @@ class NoteContentProtectedFulltextExp extends Expression {
                 FROM notes JOIN note_contents USING (noteId) 
                 WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 1`)) {
 
+            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in noteCache.notes)) {
+                continue;
+            }
+
             try {
                 content = protectedSessionService.decryptString(content);
             }
             catch (e) {
-                log.info('Cannot decrypt content of note', noteId);
+                log.info(`Cannot decrypt content of note ${noteId}`);
                 continue;
             }
 
@@ -50,11 +54,7 @@ class NoteContentProtectedFulltextExp extends Expression {
                 content = content.replace(/&nbsp;/g, ' ');
             }
 
-            if (this.tokens.find(token => !content.includes(token))) {
-                continue;
-            }
-
-            if (inputNoteSet.hasNoteId(noteId) && noteId in noteCache.notes) {
+            if (!this.tokens.find(token => !content.includes(token))) {
                 resultNoteSet.add(noteCache.notes[noteId]);
             }
         }
