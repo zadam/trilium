@@ -41,7 +41,9 @@ const TPL = `
 
 export default class SimilarNotesWidget extends TabAwareWidget {
     isEnabled() {
-        return super.isEnabled() && !this.note.hasLabel('similarNotesWidgetDisabled');
+        return super.isEnabled()
+            && this.note.type !== 'search'
+            && !this.note.hasLabel('similarNotesWidgetDisabled');
     }
 
     doRender() {

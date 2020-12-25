@@ -566,7 +566,7 @@ class ConsistencyChecks {
     }
 
     runDbDiagnostics() {
-        function getTableCount(tableName) {
+        function getTableRowCount(tableName) {
             const count = sql.getValue(`SELECT COUNT(1) FROM ${tableName}`);
 
             return `${tableName}: ${count}`;
@@ -574,7 +574,7 @@ class ConsistencyChecks {
 
         const tables = [ "notes", "note_revisions", "branches", "attributes", "api_tokens" ];
 
-        log.info("Table counts: " + tables.map(tableName => getTableCount(tableName)).join(", "));
+        log.info("Table counts: " + tables.map(tableName => getTableRowCount(tableName)).join(", "));
     }
 
     async runChecks() {
