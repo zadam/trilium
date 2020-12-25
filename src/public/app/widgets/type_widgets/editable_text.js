@@ -38,7 +38,7 @@ const TPL = `
         cursor: text !important;
     }
     
-    .note-detail-editable-text *:first-child {
+    .note-detail-editable-text *:not(figure):first-child {
         margin-top: 0 !important;
     }
     
