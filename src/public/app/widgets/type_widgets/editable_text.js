@@ -54,8 +54,6 @@ const TPL = `
     .note-detail-editable-text h6::before { content: "######\\00a0\\00a0"; color: var(--muted-text-color); }
     
     .note-detail-editable-text {
-        overflow: auto;
-        height: 100%;
         font-family: var(--detail-text-font-family);
         padding-left: 12px;
     }

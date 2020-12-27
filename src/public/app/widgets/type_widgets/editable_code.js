@@ -124,7 +124,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
     async doRefresh(note) {
         const noteComplement = await this.tabContext.getNoteComplement();
 
-        this.spacedUpdate.allowUpdateWithoutChange(() => {
+        await this.spacedUpdate.allowUpdateWithoutChange(() => {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
             this.codeEditor.setValue(noteComplement.content || "");

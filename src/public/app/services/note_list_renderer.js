@@ -148,8 +148,12 @@ class NoteListRenderer {
     /*
      * We're using noteIds so that it's not necessary to load all notes at once when paging
      */
-    constructor(parentNote, noteIds) {
+    constructor($parent, parentNote, noteIds) {
         this.$noteList = $(TPL);
+
+        // note list must be added to the DOM immediatelly, otherwise some functionality scripting (canvas) won't work
+        $parent.empty().append(this.$noteList);
+
         this.parentNote = parentNote;
         this.noteIds = noteIds;
         this.page = 1;

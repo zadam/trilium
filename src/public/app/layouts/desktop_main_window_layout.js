@@ -26,6 +26,7 @@ import PromotedAttributesWidget from "../widgets/attribute_widgets/promoted_attr
 import InheritedAttributesWidget from "../widgets/inherited_attribute_list.js";
 import NoteListWidget from "../widgets/note_list.js";
 import SearchDefinitionWidget from "../widgets/search_definition.js";
+import Container from "../widgets/container.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -160,8 +161,11 @@ export default class DesktopMainWindowLayout {
                             .child(new InheritedAttributesWidget())
                         )
                     )
-                    .child(new TabCachingWidget(() => new NoteDetailWidget()))
-                    .child(new TabCachingWidget(() => new NoteListWidget()))
+                    .child(new Container()
+                        .css('height: 100%; overflow: auto;')
+                        .child(new TabCachingWidget(() => new NoteDetailWidget()))
+                        .child(new TabCachingWidget(() => new NoteListWidget()))
+                    )
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))
                 )

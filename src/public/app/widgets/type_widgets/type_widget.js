@@ -22,6 +22,8 @@ export default class TypeWidget extends TabAwareWidget {
             this.toggleInt(true);
 
             await this.doRefresh(this.note);
+
+            this.triggerEvent('noteDetailRefreshed', {tabId: this.tabContext.tabId});
         }
     }
 

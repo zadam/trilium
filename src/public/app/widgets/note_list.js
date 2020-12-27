@@ -32,12 +32,46 @@ export default class NoteListWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.$content = this.$widget.find('.note-list-widget-content');
         this.contentSized();
+
+        const observer = new IntersectionObserver(entries => {
+            this.isIntersecting = entries[0].isIntersecting;
+
+            this.checkRenderStatus();
+        }, {
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+
+        observer.observe(this.$widget[0]);
     }
 
-    async refreshWithNote(note) {
-        const noteListRenderer = new NoteListRenderer(note, note.getChildNoteIds());
+    checkRenderStatus() {
+        console.log("this.isIntersecting", this.isIntersecting);
+        console.log("this.noteIdRefreshed === this.noteId", this.noteIdRefreshed === this.noteId);
+        console.log("this.shownNoteId !== this.noteId", this.shownNoteId !== this.noteId);
 
-        this.$content.empty().append(await noteListRenderer.renderList());
+        if (this.isIntersecting
+            && this.noteIdRefreshed === this.noteId
+            && this.shownNoteId !== this.noteId) {
+
+            this.shownNoteId = this.noteId;
+            this.renderNoteList(this.note);
+        }
+    }
+
+    async renderNoteList(note) {
+        const noteListRenderer = new NoteListRenderer(this.$content, note, note.getChildNoteIds());
+        await noteListRenderer.renderList();
+    }
+
+    noteDetailRefreshedEvent({tabId}) {
+        if (!this.isTab(tabId)) {
+            return;
+        }
+
+        this.noteIdRefreshed = this.noteId;
+
+        setTimeout(() => this.checkRenderStatus(), 100);
     }
 
     autoBookDisabledEvent({tabContext}) {
