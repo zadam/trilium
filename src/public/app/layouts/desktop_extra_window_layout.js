@@ -5,7 +5,6 @@ import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import NoteTitleWidget from "../widgets/note_title.js";
-import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
@@ -35,7 +34,6 @@ export default class DesktopExtraWindowLayout {
                         .overflowing()
                         .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
                         .child(new NoteTitleWidget())
-                        .child(new RunScriptButtonsWidget().hideInZenMode())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )

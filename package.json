@@ -41,7 +41,7 @@
     "express": "4.17.1",
     "express-session": "1.17.1",
     "fs-extra": "9.0.1",
-    "helmet": "4.2.0",
+    "helmet": "4.3.1",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.1",
@@ -86,7 +86,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.11.0",
+    "webpack": "5.11.1",
     "webpack-cli": "4.3.0"
   },
   "optionalDependencies": {

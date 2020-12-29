@@ -22,10 +22,12 @@ const TPL = `
 
 export default class NoteListWidget extends TabAwareWidget {
     isEnabled() {
-        return super.isEnabled() && (
-            ['book', 'search'].includes(this.note.type)
-            || (this.note.type === 'text' && this.note.hasChildren())
-        );
+        return super.isEnabled()
+            && this.note.mime !== 'text/x-sqlite;schema=trilium'
+            && (
+                ['book', 'search', 'code'].includes(this.note.type)
+                || (this.note.type === 'text' && this.note.hasChildren())
+            );
     }
 
     doRender() {
@@ -46,10 +48,6 @@ export default class NoteListWidget extends TabAwareWidget {
     }
 
     checkRenderStatus() {
-        console.log("this.isIntersecting", this.isIntersecting);
-        console.log("this.noteIdRefreshed === this.noteId", this.noteIdRefreshed === this.noteId);
-        console.log("this.shownNoteId !== this.noteId", this.shownNoteId !== this.noteId);
-
         if (this.isIntersecting
             && this.noteIdRefreshed === this.noteId
             && this.shownNoteId !== this.noteId) {

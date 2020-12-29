@@ -232,7 +232,7 @@ function register(app) {
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);
 
     apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
-    apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
+    apiRoute(POST, '/api/sql/execute/:noteId', sqlRoute.execute);
     route(POST, '/api/database/anonymize', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
 
     // backup requires execution outside of transaction

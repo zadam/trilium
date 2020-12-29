@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
+const repository = require('../../services/repository');
 
 function getSchema() {
     const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
@@ -17,7 +18,13 @@ function getSchema() {
 }
 
 function execute(req) {
-    const queries = req.body.query.split("\n---");
+    const note = repository.getNote(req.params.noteId);
+
+    if (!note) {
+        return [404, `Note ${req.params.noteId} was not found.`];
+    }
+
+    const queries = note.getContent().split("\n---");
 
     try {
         const results = [];

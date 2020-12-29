@@ -211,10 +211,12 @@ export default class Entrypoints extends Component {
 
         if (note.mime.endsWith("env=frontend")) {
             await bundleService.getAndExecuteBundle(note.noteId);
-        }
-
-        if (note.mime.endsWith("env=backend")) {
+        } else if (note.mime.endsWith("env=backend")) {
             await server.post('script/run/' + note.noteId);
+        } else if (note.mime === 'text/x-sqlite;schema=trilium') {
+            const result = await server.post("sql/execute/" + note.noteId);
+
+            this.triggerEvent('sqlQueryResults', {results: result.results});
         }
 
         toastService.showMessage("Note executed");

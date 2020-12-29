@@ -9,7 +9,6 @@ import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import NotePathsWidget from "../widgets/note_paths.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/attribute_widgets/owned_attribute_list.js";
-import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
@@ -27,6 +26,8 @@ import InheritedAttributesWidget from "../widgets/inherited_attribute_list.js";
 import NoteListWidget from "../widgets/note_list.js";
 import SearchDefinitionWidget from "../widgets/search_definition.js";
 import Container from "../widgets/container.js";
+import SqlResultWidget from "../widgets/sql_result.js";
+import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -149,7 +150,6 @@ export default class DesktopMainWindowLayout {
                         .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
                         .overflowing()
                         .child(new NoteTitleWidget())
-                        .child(new RunScriptButtonsWidget().hideInZenMode())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
@@ -163,8 +163,10 @@ export default class DesktopMainWindowLayout {
                     )
                     .child(new Container()
                         .css('height: 100%; overflow: auto;')
+                        .child(new TabCachingWidget(() => new SqlTableSchemasWidget()))
                         .child(new TabCachingWidget(() => new NoteDetailWidget()))
                         .child(new TabCachingWidget(() => new NoteListWidget()))
+                        .child(new TabCachingWidget(() => new SqlResultWidget()))
                     )
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))
