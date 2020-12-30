@@ -1,4 +1,3 @@
-import NoteListRenderer from "../../services/note_list_renderer.js";
 import TypeWidget from "./type_widget.js";
 
 const TPL = `

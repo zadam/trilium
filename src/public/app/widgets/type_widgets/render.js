@@ -3,12 +3,6 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `
 <div class="note-detail-render note-detail-printable">
-    <style>
-        .note-detail-render {
-            height: 100%;
-        }
-    </style>
-
     <div class="note-detail-render-help alert alert-warning" style="margin: 50px; padding: 20px;">
         <p><strong>This help note is shown because this note of type Render HTML doesn't have required relation to function properly.</strong></p>
 

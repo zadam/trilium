@@ -1,9 +1,6 @@
-import TypeWidget from "./type_widgets/type_widget.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
-import toastService from "../services/toast.js";
-import NoteListRenderer from "../services/note_list_renderer.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
 
@@ -42,6 +39,26 @@ const TPL = `
                 <td colspan="3">
                     <input type="text" class="form-control search-string">
                 </td>
+                <td>
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        ?
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-right p-4" style="width: 500px;">
+                        <strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
+                        <p>
+                        <ul>
+                            <li>Just enter any text for full text search</li>
+                            <li><code>#abc</code> - returns notes with label abc</li>
+                            <li><code>#year = 2019</code> - matches notes with label <code>year</code> having value <code>2019</code></li>
+                            <li><code>#rock #pop</code> - matches notes which have both <code>rock</code> and <code>pop</code> labels</li>
+                            <li><code>#rock or #pop</code> - only one of the labels must be present</li>
+                            <li><code>#year &lt;= 2000</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
+                            <li><code>note.dateCreated >= MONTH-1</code> - notes created in the last month</li>
+                        </ul>
+                        </p>
+                    </div>
+                </td>
             </tr>
             <tr>
                 <td>Limit search to subtree:</td>
@@ -76,6 +93,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
+        this.overflowing();
         this.$searchString = this.$widget.find(".search-string");
         this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
 

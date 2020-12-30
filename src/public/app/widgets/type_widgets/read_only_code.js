@@ -4,8 +4,6 @@ const TPL = `
 <div class="note-detail-read-only-code note-detail-printable">
     <style>
     .note-detail-read-only-code {
-        overflow: auto;
-        height: 100%;
         position: relative;
     }
     

@@ -1,9 +1,6 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import server from "../../services/server.js";
-import toastService from "../../services/toast.js";
-import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
