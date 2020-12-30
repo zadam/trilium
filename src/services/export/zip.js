@@ -234,7 +234,7 @@ function exportToZip(taskContext, branch, format, res) {
     <link rel="stylesheet" href="${cssUrl}">
     <base target="_parent">
 </head>
-<body>
+<body class="ck-content">
   <h1>${utils.escapeHtml(title)}</h1>
 ${content}
 </body>
