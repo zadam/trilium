@@ -228,7 +228,20 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     addLinkToTextCommand() {
-        import("../../dialogs/add_link.js").then(d => d.showDialog(this));
+        const selectedText = this.getSelectedText();
+
+        import("../../dialogs/add_link.js").then(d => d.showDialog(this, selectedText));
+    }
+
+    getSelectedText() {
+        const range = this.textEditor.model.document.selection.getFirstRange();
+        let text = '';
+
+        for (const item of range.getItems()) {
+            text += item.data;
+        }
+
+        return text;
     }
 
     addIncludeNoteToTextCommand() {

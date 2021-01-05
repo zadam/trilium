@@ -12,7 +12,7 @@ const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 /** @var TextTypeWidget */
 let textTypeWidget;
 
-export async function showDialog(widget) {
+export async function showDialog(widget, text = '') {
     textTypeWidget = widget;
 
     $addLinkTitleSettings.toggle(!textTypeWidget.hasSelection());
@@ -31,7 +31,7 @@ export async function showDialog(widget) {
 
     utils.openDialog($dialog);
 
-    $autoComplete.val('').trigger('focus');
+    $autoComplete.val('');
     $linkTitle.val('');
 
     async function setDefaultLinkTitle(noteId) {
@@ -62,7 +62,14 @@ export async function showDialog(widget) {
         }
     });
 
-    noteAutocompleteService.showRecentNotes($autoComplete);
+    if (text && text.trim()) {
+        noteAutocompleteService.setText($autoComplete, text);
+    }
+    else {
+        noteAutocompleteService.showRecentNotes($autoComplete);
+    }
+
+    $autoComplete.trigger('focus');
 }
 
 function getLinkType() {

@@ -55,6 +55,17 @@ function clearText($el) {
     $el.autocomplete("val", "").trigger('change');
 }
 
+function setText($el, text) {
+    if (utils.isMobile()) {
+        return;
+    }
+
+    $el.setSelectedNotePath("");
+    $el
+        .autocomplete("val", text.trim())
+        .autocomplete("open");
+}
+
 function showRecentNotes($el) {
     if (utils.isMobile()) {
         return;
@@ -200,5 +211,6 @@ export default {
     autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,
+    setText,
     init
 }
