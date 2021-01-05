@@ -238,7 +238,9 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         let text = '';
 
         for (const item of range.getItems()) {
-            text += item.data;
+            if (item.data) {
+                text += item.data;
+            }
         }
 
         return text;
