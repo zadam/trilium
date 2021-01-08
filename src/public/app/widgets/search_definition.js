@@ -36,12 +36,12 @@ const TPL = `
         <table class="search-setting-table">
             <tr>
                 <td>Search string:</td>
-                <td colspan="3">
+                <td>
                     <input type="text" class="form-control search-string">
                 </td>
                 <td>
                     <div class="dropdown">
-                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         ?
                       </button>
                       <div class="dropdown-menu dropdown-menu-right p-4" style="width: 500px;">
@@ -61,18 +61,124 @@ const TPL = `
                 </td>
             </tr>
             <tr>
-                <td>Limit search to subtree:</td>
-                <td>
-                    <div class="input-group">
-                        <input class="limit-search-to-subtree form-control" placeholder="search for note by its name">
+                <td>Add search option:</td>
+                <td colspan="2">
+                    <button type="button" class="btn btn-sm search-option-descendantOf">
+                        <span class="bx bx-filter-alt"></span> 
+                        descendant of
+                    </button>
+                    
+                    <button type="button" class="btn btn-sm search-option-fastSearch"
+                        title="Fast search option disables full text search of note contents which might speed up searching in large databases.">
+                        <span class="bx bx-run"></span>
+                        fast search
+                    </button>
+                    
+                    <button type="button" class="btn btn-sm search-option-includeArchivedNotes"
+                        title="Archived notes are by default excluded from search results, with this option they will be included.">
+                        <span class="bx bx-archive"></span>
+                        include archived
+                    </button>
+                    
+                    <button type="button" class="btn btn-sm search-option-orderBy">
+                        <span class="bx bx-arrow-from-top"></span>
+                        order by
+                    </button>
+                    
+                    <div class="dropdown" style="display: inline-block;">
+                      <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="bx bxs-zap"></span>
+                        action
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#">Delete note</a>
+                        <a class="dropdown-item" href="#">Delete attribute</a>
+                        <a class="dropdown-item" href="#">Rename attribute</a>
+                        <a class="dropdown-item" href="#">Change label value</a>
+                        <a class="dropdown-item" href="#">Change relation target</a>
+                        <a class="dropdown-item" href="#">Execute script</a>
+                      </div>
                     </div>
                 </td>
-                <td colspan="2" style="padding-top: 9px;">
-                    <label title="By choosing to take into acount also note content, search can be slightly slower">
-                        <input class="search-within-note-content" value="1" type="checkbox" checked>
+            </tr>
+            <tbody class="search-options">
+                <tr class="search-option-descendantOf">
+                    <td title="Matched notes must be within subtree of given note.">
+                        Descendant of: </td>
+                    <td>
+                        <div class="input-group">
+                            <input class="limit-search-to-subtree form-control" placeholder="search for note by its name">
+                        </div>
+                    </td>
+                    <td>
+                        <span class="bx bx-x icon-action"></span>
+                    </td>
+                </tr>
+                <tr class="search-option-fastSearch">
+                    <td colspan="2">
+                        <span class="bx bx-run"></span>
+                    
+                        Fast search
+                    </td>
+                    <td>
+                        <span class="bx bx-x icon-action"></span>
+                    </td>
+                </tr>
+                <tr class="search-option-includeArchivedNotes">
+                    <td colspan="2">
+                        <span class="bx bx-archive"></span>
+                    
+                        Include archived notes
+                    </td>
+                    <td>
+                        <span class="bx bx-x icon-action"></span>
+                    </td>
+                </tr>
+            </tbody>
+            <tr>
+                <td colspan="2">
+                    <span class="bx bx-trash"></span>
+                
+                    Delete matched note
+                </td>
+                <td>
+                    <span class="bx bx-x icon-action"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Rename attribute name:
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center">
+                        <div style="margin-right: 15px;">From:</div> 
+                        
+                        <input type="text" class="form-control" placeholder="old name"/>
+                        
+                        <div style="margin-right: 15px; margin-left: 15px;">To:</div> 
+                        
+                        <input type="text" class="form-control" placeholder="new name"/>
+                    </div>
+                </td>
+                <td>
+                    <span class="bx bx-x icon-action"></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <div style="display: flex; justify-content: space-evenly">
+                        <button type="button" class="btn btn-sm">
+                            <span class="bx bx-search"></span>
+                            Search
+                            
+                            <kbd>enter</kbd>
+                        </button>
     
-                        Search also within note content
-                    </label>
+                        <button type="button" class="btn btn-sm">
+                            <span class="bx bxs-zap"></span>
+                            Search & Execute actions
+                        </button>
+                    </div>
                 </td>
             </tr>
         </table>
@@ -158,8 +264,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
     }
 
     getContent() {
-        return JSON.stringify({
-            searchString: this.$searchString.val()
-        });
+        return '';
     }
 }
