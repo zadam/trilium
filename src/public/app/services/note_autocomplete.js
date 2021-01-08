@@ -7,6 +7,8 @@ import treeService from './tree.js';
 // this key needs to have this value so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
+const SELECTED_EXTERNAL_LINK_KEY = "data-external-link";
+
 async function autocompleteSourceForCKEditor(queryText) {
     return await new Promise((res, rej) => {
         autocompleteSource(queryText, rows => {
@@ -25,7 +27,7 @@ async function autocompleteSourceForCKEditor(queryText) {
     });
 }
 
-async function autocompleteSource(term, cb) {
+async function autocompleteSource(term, cb, options = {}) {
     const activeNoteId = appContext.tabManager.getActiveTabNoteId();
 
     let results = await server.get('autocomplete'
@@ -39,6 +41,16 @@ async function autocompleteSource(term, cb) {
                 noteTitle: term,
                 parentNoteId: activeNoteId || 'root',
                 highlightedNotePathTitle: `Create and link child note "${term}"`
+            }
+        ].concat(results);
+    }
+
+    if (term.match(/^[a-z]+:\/\/.+/i) && options.allowExternalLinks) {
+        results = [
+            {
+                action: 'external-link',
+                externalLink: term,
+                highlightedNotePathTitle: `Insert external link to "${term}"`
             }
         ].concat(results);
     }
@@ -130,7 +142,7 @@ function initNoteAutocomplete($el, options) {
         tabAutocomplete: false
     }, [
         {
-            source: autocompleteSource,
+            source: (term, cb) => autocompleteSource(term, cb, options),
             displayKey: 'notePathTitle',
             templates: {
                 suggestion: suggestion => suggestion.highlightedNotePathTitle
@@ -141,6 +153,19 @@ function initNoteAutocomplete($el, options) {
     ]);
 
     $el.on('autocomplete:selected', async (event, suggestion) => {
+        if (suggestion.action === 'external-link') {
+            $el.setSelectedNotePath(null);
+            $el.setSelectedExternalLink(suggestion.externalLink);
+
+            $el.autocomplete("val", suggestion.externalLink);
+
+            $el.autocomplete("close");
+
+            $el.trigger('autocomplete:externallinkselected', [suggestion]);
+
+            return;
+        }
+
         if (suggestion.action === 'create-note') {
             const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
                 title: suggestion.noteTitle,
@@ -151,6 +176,7 @@ function initNoteAutocomplete($el, options) {
         }
 
         $el.setSelectedNotePath(suggestion.notePath);
+        $el.setSelectedExternalLink(null);
 
         $el.autocomplete("val", suggestion.noteTitle);
 
@@ -204,6 +230,23 @@ function init() {
             .toggleClass("disabled", !notePath.trim())
             .attr(SELECTED_NOTE_PATH_KEY, notePath); // we also set attr here so tooltip can be displayed
     };
+
+    $.fn.getSelectedExternalLink = function () {
+        if (!$(this).val().trim()) {
+            return "";
+        } else {
+            return $(this).attr(SELECTED_EXTERNAL_LINK_KEY);
+        }
+    };
+
+    $.fn.setSelectedExternalLink = function (externalLink) {
+        $(this).attr(SELECTED_EXTERNAL_LINK_KEY, externalLink);
+
+        $(this)
+            .closest(".input-group")
+            .find(".go-to-selected-note-button")
+            .toggleClass("disabled", true);
+    }
 }
 
 export default {

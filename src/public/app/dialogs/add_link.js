@@ -7,6 +7,7 @@ const $form = $("#add-link-form");
 const $autoComplete = $("#add-link-note-autocomplete");
 const $linkTitle = $("#link-title");
 const $addLinkTitleSettings = $("#add-link-title-settings");
+const $addLinkTitleRadios = $(".add-link-title-radios");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
 /** @var TextTypeWidget */
@@ -17,7 +18,7 @@ export async function showDialog(widget, text = '') {
 
     $addLinkTitleSettings.toggle(!textTypeWidget.hasSelection());
 
-    $addLinkTitleSettings.find('input[type=radio]').on('change', updateTitleFormGroupVisibility);
+    $addLinkTitleSettings.find('input[type=radio]').on('change', updateTitleSettingsVisibility);
 
     // with selection hyper link is implied
     if (textTypeWidget.hasSelection()) {
@@ -27,7 +28,7 @@ export async function showDialog(widget, text = '') {
         $addLinkTitleSettings.find("input[value='reference-link']").prop("checked", true);
     }
 
-    updateTitleFormGroupVisibility();
+    updateTitleSettingsVisibility();
 
     utils.openDialog($dialog);
 
@@ -40,12 +41,14 @@ export async function showDialog(widget, text = '') {
         $linkTitle.val(noteTitle);
     }
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete);
+    noteAutocompleteService.initNoteAutocomplete($autoComplete, { allowExternalLinks: true });
 
-    $autoComplete.on('autocomplete:noteselected', function(event, suggestion, dataset) {
+    $autoComplete.on('autocomplete:noteselected', (event, suggestion, dataset) => {
         if (!suggestion.notePath) {
             return false;
         }
+
+        updateTitleSettingsVisibility();
 
         const noteId = treeService.getNoteIdFromNotePath(suggestion.notePath);
 
@@ -54,11 +57,26 @@ export async function showDialog(widget, text = '') {
         }
     });
 
-    $autoComplete.on('autocomplete:cursorchanged', function(event, suggestion, dataset) {
-        const noteId = treeService.getNoteIdFromNotePath(suggestion.notePath);
+    $autoComplete.on('autocomplete:externallinkselected', (event, suggestion, dataset) => {
+        if (!suggestion.externalLink) {
+            return false;
+        }
 
-        if (noteId) {
-            setDefaultLinkTitle(noteId);
+        updateTitleSettingsVisibility();
+
+        $linkTitle.val(suggestion.externalLink);
+    });
+
+    $autoComplete.on('autocomplete:cursorchanged',  function(event, suggestion, dataset) {
+        if (suggestion.externalLink) {
+            $linkTitle.val(suggestion.externalLink)
+        }
+        else {
+            const noteId = treeService.getNoteIdFromNotePath(suggestion.notePath);
+
+            if (noteId) {
+                setDefaultLinkTitle(noteId);
+            }
         }
     });
 
@@ -69,31 +87,41 @@ export async function showDialog(widget, text = '') {
         noteAutocompleteService.showRecentNotes($autoComplete);
     }
 
-    $autoComplete.trigger('focus');
+    $autoComplete
+        .trigger('focus')
+        .trigger('select'); // to be able to quickly remove entered text
 }
 
 function getLinkType() {
+    if ($autoComplete.getSelectedExternalLink()) {
+        return 'external-link';
+    }
+
     return $addLinkTitleSettings.find('input[type=radio]:checked').val();
 }
 
-function updateTitleFormGroupVisibility() {
-    const visible = getLinkType() === 'hyper-link';
+function updateTitleSettingsVisibility() {
+    const linkType = getLinkType();
 
-    $addLinkTitleFormGroup.toggle(visible);
+    $addLinkTitleFormGroup.toggle(linkType !== 'reference-link');
+    $addLinkTitleRadios.toggle(linkType !== 'external-link')
 }
 
 $form.on('submit', () => {
-    const notePath = $autoComplete.getSelectedNotePath();
-
-    if (notePath) {
+    if ($autoComplete.getSelectedNotePath()) {
         $dialog.modal('hide');
 
         const linkTitle = getLinkType() === 'reference-link' ? null : $linkTitle.val();
 
-        textTypeWidget.addLink(notePath, linkTitle);
+        textTypeWidget.addLink($autoComplete.getSelectedNotePath(), linkTitle);
+    }
+    else if ($autoComplete.getSelectedExternalLink()) {
+        $dialog.modal('hide');
+
+        textTypeWidget.addLink($autoComplete.getSelectedExternalLink(), $linkTitle.val());
     }
     else {
-        logError("No path to add link.");
+        logError("No link to add.");
     }
 
     return false;
