@@ -138,13 +138,53 @@ function getChanged(req) {
     return ret;
 }
 
+const partialRequests = {};
+
 function update(req) {
-    const {sourceId, entities} = req.body;
+    let {body} = req;
+
+    const pageCount = parseInt(req.get('pageCount'));
+    const pageIndex = parseInt(req.get('pageIndex'));
+
+    if (pageCount !== 1) {
+        const requestId = req.get('requestId');
+
+        if (pageIndex === 0) {
+            partialRequests[requestId] = {
+                createdAt: Date.now(),
+                payload: ''
+            };
+        }
+
+        if (!partialRequests[requestId]) {
+            throw new Error(`Partial request ${requestId}, index ${pageIndex} of ${pageCount} of pages does not have expected record.`);
+        }
+
+        partialRequests[requestId].payload += req.body;
+
+        if (pageIndex !== pageCount - 1) {
+            return;
+        }
+        else {
+            body = JSON.parse(partialRequests[requestId].payload);
+            delete partialRequests[requestId];
+        }
+    }
+
+    const {sourceId, entities} = body;
 
     for (const {entityChange, entity} of entities) {
         syncUpdateService.updateEntity(entityChange, entity, sourceId);
     }
 }
+
+setInterval(() => {
+    for (const key in partialRequests) {
+        if (partialRequests[key].createdAt - Date.now() > 5 * 60 * 1000) {
+            delete partialRequests[key];
+        }
+    }
+}, 60 * 1000);
 
 function syncFinished() {
     // after first sync finishes, the application is ready to be used

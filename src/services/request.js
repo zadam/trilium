@@ -16,15 +16,25 @@ function exec(opts) {
         opts.proxy = null;
     }
 
+    if (!opts.paging) {
+        opts.paging = {
+            pageCount: 1,
+            pageIndex: 0
+        };
+    }
+
     const proxyAgent = getProxyAgent(opts);
     const parsedTargetUrl = url.parse(opts.url);
 
     return new Promise((resolve, reject) => {
         try {
-            const headers = {
+            const headers = Object.assign({
                 Cookie: (opts.cookieJar && opts.cookieJar.header) || "",
-                'Content-Type': 'application/json'
-            };
+                'Content-Type': opts.paging.pageCount === 1 ? 'application/json' : 'text/plain',
+                pageCount: opts.pageCount,
+                pageIndex: opts.pageIndex,
+                requestId: opts.requestId
+            }, opts.headers || {});
 
             if (opts.auth) {
                 const token = Buffer.from(opts.auth.user + ":" + opts.auth.pass).toString('base64');

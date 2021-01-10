@@ -253,19 +253,33 @@ async function checkContentHash(syncContext) {
     return failedChecks.length > 0;
 }
 
-async function syncRequest(syncContext, method, requestPath, body) {
+async function syncRequest(syncContext, method, requestPath, body = '') {
     const timeout = syncOptions.getSyncTimeout();
 
-    const opts = {
-        method,
-        url: syncOptions.getSyncServerHost() + requestPath,
-        cookieJar: syncContext.cookieJar,
-        timeout: timeout,
-        body,
-        proxy: proxyToggle ? syncOptions.getSyncProxy() : null
-    };
+    let response;
 
-    return await utils.timeLimit(request.exec(opts), timeout);
+    const requestId = utils.randomString(10);
+    const pageCount = Math.ceil(body.length / 1000000);
+
+    for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+        const opts = {
+            method,
+            url: syncOptions.getSyncServerHost() + requestPath,
+            cookieJar: syncContext.cookieJar,
+            timeout: timeout,
+            paging: {
+                pageIndex,
+                pageCount,
+                requestId
+            },
+            body,
+            proxy: proxyToggle ? syncOptions.getSyncProxy() : null
+        };
+
+        response = await utils.timeLimit(request.exec(opts), timeout);
+    }
+
+
 }
 
 function getEntityChangeRow(entityName, entityId) {
