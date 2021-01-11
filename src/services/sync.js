@@ -253,13 +253,15 @@ async function checkContentHash(syncContext) {
     return failedChecks.length > 0;
 }
 
-async function syncRequest(syncContext, method, requestPath, body = '') {
+async function syncRequest(syncContext, method, requestPath, body) {
+    body = body ? JSON.stringify(body) : '';
+
     const timeout = syncOptions.getSyncTimeout();
 
     let response;
 
     const requestId = utils.randomString(10);
-    const pageCount = Math.ceil(body.length / 1000000);
+    const pageCount = Math.min(1, Math.ceil(body.length / 1000000));
 
     for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
         const opts = {
@@ -277,9 +279,11 @@ async function syncRequest(syncContext, method, requestPath, body = '') {
         };
 
         response = await utils.timeLimit(request.exec(opts), timeout);
+
+        console.log("response", response);
     }
 
-
+    return response;
 }
 
 function getEntityChangeRow(entityName, entityId) {

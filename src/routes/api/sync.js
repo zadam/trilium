@@ -162,6 +162,8 @@ function update(req) {
 
         partialRequests[requestId].payload += req.body;
 
+        log.info(`Receiving partial request ${requestId}, page index ${pageIndex} out of ${pageCount} pages.`);
+
         if (pageIndex !== pageCount - 1) {
             return;
         }
@@ -180,7 +182,9 @@ function update(req) {
 
 setInterval(() => {
     for (const key in partialRequests) {
-        if (partialRequests[key].createdAt - Date.now() > 5 * 60 * 1000) {
+        if (Date.now() - partialRequests[key].createdAt > 5 * 60 * 1000) {
+            log.info(`Cleaning up unfinished partial requests for ${key}`);
+
             delete partialRequests[key];
         }
     }

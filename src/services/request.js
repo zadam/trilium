@@ -19,7 +19,8 @@ function exec(opts) {
     if (!opts.paging) {
         opts.paging = {
             pageCount: 1,
-            pageIndex: 0
+            pageIndex: 0,
+            requestId: 'n/a'
         };
     }
 
@@ -28,13 +29,13 @@ function exec(opts) {
 
     return new Promise((resolve, reject) => {
         try {
-            const headers = Object.assign({
+            const headers = {
                 Cookie: (opts.cookieJar && opts.cookieJar.header) || "",
                 'Content-Type': opts.paging.pageCount === 1 ? 'application/json' : 'text/plain',
-                pageCount: opts.pageCount,
-                pageIndex: opts.pageIndex,
-                requestId: opts.requestId
-            }, opts.headers || {});
+                pageCount: opts.paging.pageCount,
+                pageIndex: opts.paging.pageIndex,
+                requestId: opts.paging.requestId
+            };
 
             if (opts.auth) {
                 const token = Buffer.from(opts.auth.user + ":" + opts.auth.pass).toString('base64');
@@ -85,7 +86,7 @@ function exec(opts) {
                 });
             });
 
-            request.end(opts.body ? JSON.stringify(opts.body) : undefined);
+            request.end(opts.body);
         }
         catch (e) {
             reject(generateError(opts, e.message));
