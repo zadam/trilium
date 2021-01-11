@@ -31,10 +31,7 @@ function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
     optionService.createOption('openTabs', JSON.stringify([
         {
             notePath: startNotePath,
-            active: true,
-            sidebar: {
-                widgets: []
-            }
+            active: true
         }
     ]), false);
 
@@ -101,6 +98,15 @@ function initStartupOptions() {
 
             log.info(`Created missing option "${name}" with default value "${value}"`);
         }
+    }
+
+    if (process.env.TRILIUM_START_NOTE_ID) {
+        optionService.setOption('openTabs', JSON.stringify([
+            {
+                notePath: process.env.TRILIUM_START_NOTE_ID,
+                active: true
+            }
+        ]));
     }
 }
 
