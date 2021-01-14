@@ -9,6 +9,7 @@ const Option = require('../entities/option');
 const TaskContext = require('./task_context.js');
 const migrationService = require('./migration');
 const cls = require('./cls');
+const config = require('./config');
 
 const dbReady = utils.deferred();
 
@@ -133,6 +134,12 @@ function setDbAsInitialized() {
 }
 
 dbReady.then(() => {
+    if (config.General && config.General.noBackup === true) {
+        log.info("Disabling scheduled backups.");
+
+        return;
+    }
+
     setInterval(() => require('./backup').regularBackup(), 4 * 60 * 60 * 1000);
 
     // kickoff first backup soon after start up
