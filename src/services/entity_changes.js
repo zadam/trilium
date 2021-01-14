@@ -1,5 +1,4 @@
 const sql = require('./sql');
-const repository = require('./repository');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
@@ -39,6 +38,7 @@ function moveEntityChangeToTop(entityName, entityId) {
 
 function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
     const startTime = Date.now();
+    const repository = require('./repository');
 
     sql.transactional(() => {
         const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);

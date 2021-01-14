@@ -23,6 +23,7 @@ app.use(helmet({
     contentSecurityPolicy: false
 }));
 
+app.use(bodyParser.text({limit: '500mb'}));
 app.use(bodyParser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());

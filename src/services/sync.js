@@ -253,6 +253,8 @@ async function checkContentHash(syncContext) {
     return failedChecks.length > 0;
 }
 
+const PAGE_SIZE = 1000000;
+
 async function syncRequest(syncContext, method, requestPath, body) {
     body = body ? JSON.stringify(body) : '';
 
@@ -261,7 +263,7 @@ async function syncRequest(syncContext, method, requestPath, body) {
     let response;
 
     const requestId = utils.randomString(10);
-    const pageCount = Math.min(1, Math.ceil(body.length / 1000000));
+    const pageCount = Math.max(1, Math.ceil(body.length / PAGE_SIZE));
 
     for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
         const opts = {
@@ -274,13 +276,11 @@ async function syncRequest(syncContext, method, requestPath, body) {
                 pageCount,
                 requestId
             },
-            body,
+            body: body.substr(pageIndex * PAGE_SIZE, Math.min(PAGE_SIZE, body.length - pageIndex * PAGE_SIZE)),
             proxy: proxyToggle ? syncOptions.getSyncProxy() : null
         };
 
         response = await utils.timeLimit(request.exec(opts), timeout);
-
-        console.log("response", response);
     }
 
     return response;

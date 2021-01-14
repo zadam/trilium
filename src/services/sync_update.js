@@ -23,35 +23,36 @@ function updateEntity(entityChange, entity, sourceId) {
     }
 }
 
-function updateNormalEntity(entityChange, entity, sourceId) {
-    const {utcDateChanged, hash, isErased} = sql.getRow(`
+function updateNormalEntity(remoteEntityChange, entity, sourceId) {
+    const localEntityChange = sql.getRow(`
         SELECT utcDateChanged, hash, isErased
         FROM entity_changes 
-        WHERE entityName = ? AND entityId = ?`, [entityChange.entityName, entityChange.entityId]);
+        WHERE entityName = ? AND entityId = ?`, [remoteEntityChange.entityName, remoteEntityChange.entityId]);
 
-    if (!isErased && entityChange.isErased) {
+    if (localEntityChange && !localEntityChange.isErased && remoteEntityChange.isErased) {
         sql.transactional(() => {
             const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
-            sql.execute(`DELETE FROM ${entityChange.entityName} WHERE ${primaryKey} = ?`, entityChange.entityId);
+            sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
-            entityChangesService.addEntityChange(entityChange, sourceId);
+            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
         });
 
         return true;
     }
 
-    if (utcDateChanged < entityChange.utcDateChanged
-        || hash !== entityChange.hash // sync error, we should still update
+    if (!localEntityChange
+        || localEntityChange.utcDateChanged < remoteEntityChange.utcDateChanged
+        || localEntityChange.hash !== remoteEntityChange.hash // sync error, we should still update
     ) {
-        if (['note_contents', 'note_revision_contents'].includes(entityChange.entityName)) {
+        if (['note_contents', 'note_revision_contents'].includes(remoteEntityChange.entityName)) {
             entity.content = handleContent(entity.content);
         }
 
         sql.transactional(() => {
-            sql.replace(entityChange.entityName, entity);
+            sql.replace(remoteEntityChange.entityName, entity);
 
-            entityChangesService.addEntityChange(entityChange, sourceId);
+            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
         });
 
         return true;
