@@ -30,14 +30,14 @@ function importEnex(taskContext, file, parentNote) {
         : file.originalname;
 
     // root note is new note into all ENEX/notebook's notes will be imported
-    const rootNote = (noteService.createNewNote({
+    const rootNote = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
         title: rootNoteTitle,
         content: "",
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
-    })).note;
+    }).note;
 
     function extractContent(content) {
         const openingNoteIndex = content.indexOf('<en-note>');

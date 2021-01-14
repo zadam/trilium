@@ -11,6 +11,7 @@ const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
 const Attribute = require('../../entities/attribute');
+const htmlSanitizer = require('../../services/html_sanitizer');
 
 function findClippingNote(todayNote, pageUrl) {
     const notes = todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
@@ -42,12 +43,12 @@ function addClipping(req) {
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
-        clippingNote = (noteService.createNewNote({
+        clippingNote = noteService.createNewNote({
             parentNoteId: clipperInbox.noteId,
             title: title,
             content: '',
             type: 'text'
-        })).note;
+        }).note;
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
@@ -70,6 +71,7 @@ function createNote(req) {
     if (!title || !title.trim()) {
         title = "Clipped note from " + pageUrl;
     }
+
     const clipperInbox = getClipperInboxNote();
 
     const {note} = noteService.createNewNote({
@@ -95,8 +97,8 @@ function createNote(req) {
 }
 
 function processContent(images, note, content) {
-    // H1 is not supported so convert it to H2
-    let rewrittenContent = content
+    let rewrittenContent = htmlSanitizer.sanitize(content)
+        // H1 is not supported so convert it to H2
         .replace(/<h1/ig, "<h2")
         .replace(/<\/h1/ig, "</h2");
 

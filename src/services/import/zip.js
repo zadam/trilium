@@ -9,7 +9,6 @@ const attributeService = require('../../services/attributes');
 const Branch = require('../../entities/branch');
 const path = require('path');
 const commonmark = require('commonmark');
-const TaskContext = require('../task_context.js');
 const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
 const treeService = require("../tree");
