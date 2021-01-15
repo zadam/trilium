@@ -101,10 +101,10 @@ function initStartupOptions() {
         }
     }
 
-    if (process.env.TRILIUM_START_NOTE_ID) {
+    if (process.env.TRILIUM_START_NOTE_ID || process.env.TRILIUM_SAFE_MODE) {
         optionService.setOption('openTabs', JSON.stringify([
             {
-                notePath: process.env.TRILIUM_START_NOTE_ID,
+                notePath: process.env.TRILIUM_START_NOTE_ID || 'root',
                 active: true
             }
         ]));
