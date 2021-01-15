@@ -54,11 +54,21 @@ function getBundlesWithLabel(label, value) {
 }
 
 function getStartupBundles() {
-    return getBundlesWithLabel("run", "frontendStartup");
+    if (!process.env.TRILIUM_SAFE_MODE) {
+        return getBundlesWithLabel("run", "frontendStartup");
+    }
+    else {
+        return [];
+    }
 }
 
 function getWidgetBundles() {
-    return getBundlesWithLabel("widget");
+    if (!process.env.TRILIUM_SAFE_MODE) {
+        return getBundlesWithLabel("widget");
+    }
+    else {
+        return [];
+    }
 }
 
 function getRelationBundles(req) {

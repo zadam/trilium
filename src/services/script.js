@@ -1,4 +1,3 @@
-const sql = require('./sql');
 const ScriptContext = require('./script_context');
 const repository = require('./repository');
 const cls = require('./cls');
