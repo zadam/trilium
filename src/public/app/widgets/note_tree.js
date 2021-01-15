@@ -381,7 +381,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 await activeTabContext.setNote(notePath);
 
                 if (utils.isMobile()) {
-                    this.triggerCommand('setActiveScreen', {screen:'detail'});
+                    this.triggerCommand('setActiveScreen', {screen: 'detail'});
                 }
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
@@ -496,11 +496,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const node = data.node;
                 const $span = $(node.span);
 
-                if (node.enhanced) {
-                    return;
-                }
-
-                node.enhanced = true;
+                $span.find('.tree-item-button').remove();
 
                 const note = await treeCache.getNote(node.data.noteId);
 
