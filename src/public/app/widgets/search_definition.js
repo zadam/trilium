@@ -3,6 +3,7 @@ import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
+import ws from "../services/ws.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -62,25 +63,25 @@ const TPL = `
             </tr>
             <tr>
                 <td>Add search option:</td>
-                <td colspan="2">
-                    <button type="button" class="btn btn-sm search-option-descendantOf">
+                <td colspan="2" class="add-search-option">
+                    <button type="button" class="btn btn-sm" data-search-option-add="descendantOf">
                         <span class="bx bx-filter-alt"></span> 
                         descendant of
                     </button>
                     
-                    <button type="button" class="btn btn-sm search-option-fastSearch"
+                    <button type="button" class="btn btn-sm" data-search-option-add="fastSearch"
                         title="Fast search option disables full text search of note contents which might speed up searching in large databases.">
                         <span class="bx bx-run"></span>
                         fast search
                     </button>
                     
-                    <button type="button" class="btn btn-sm search-option-includeArchivedNotes"
+                    <button type="button" class="btn btn-sm" data-search-option-add="includeArchivedNotes"
                         title="Archived notes are by default excluded from search results, with this option they will be included.">
                         <span class="bx bx-archive"></span>
                         include archived
                     </button>
                     
-                    <button type="button" class="btn btn-sm search-option-orderBy">
+                    <button type="button" class="btn btn-sm" data-search-option-add="orderBy">
                         <span class="bx bx-arrow-from-top"></span>
                         order by
                     </button>
@@ -102,36 +103,59 @@ const TPL = `
                 </td>
             </tr>
             <tbody class="search-options">
-                <tr class="search-option-descendantOf">
+                <tr data-search-option-conf="descendantOf">
                     <td title="Matched notes must be within subtree of given note.">
                         Descendant of: </td>
                     <td>
                         <div class="input-group">
-                            <input class="limit-search-to-subtree form-control" placeholder="search for note by its name">
+                            <input class="descendant-of form-control" placeholder="search for note by its name">
                         </div>
                     </td>
                     <td>
-                        <span class="bx bx-x icon-action"></span>
+                        <span class="bx bx-x icon-action" data-search-option-del="descendantOf"></span>
                     </td>
                 </tr>
-                <tr class="search-option-fastSearch">
+                <tr data-search-option-conf="fastSearch">
                     <td colspan="2">
                         <span class="bx bx-run"></span>
                     
                         Fast search
                     </td>
                     <td>
-                        <span class="bx bx-x icon-action"></span>
+                        <span class="bx bx-x icon-action" data-search-option-del="fastSearch"></span>
                     </td>
                 </tr>
-                <tr class="search-option-includeArchivedNotes">
+                <tr data-search-option-conf="includeArchivedNotes">
                     <td colspan="2">
                         <span class="bx bx-archive"></span>
                     
                         Include archived notes
                     </td>
                     <td>
-                        <span class="bx bx-x icon-action"></span>
+                        <span class="bx bx-x icon-action" data-search-option-del="includeArchivedNotes"></span>
+                    </td>
+                </tr>
+                <tr data-search-option-conf="orderBy">
+                    <td>
+                        <span class="bx bx-arrow-from-top"></span>
+                    
+                        Order by
+                    </td>
+                    <td>
+                        <select name="orderBy" class="form-control w-auto d-inline">
+                            <option value="relevancy">Relevancy (default)</option>
+                            <option value="title">Title</option>
+                            <option value="dateCreated">Date created</option>
+                            <option value="dateModified">Date of last modification</option>
+                        </select>
+                        
+                        <select name="orderDirection" class="form-control w-auto d-inline">
+                            <option value="asc">Ascending (default)</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span class="bx bx-x icon-action" data-search-option-del="orderBy"></span>
                     </td>
                 </tr>
             </tbody>
@@ -198,46 +222,100 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
-        this.overflowing();
-        this.$searchString = this.$widget.find(".search-string");
-        this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
-
         this.$component = this.$widget.find('.search-definition-widget');
 
-        this.spacedUpdate = new SpacedUpdate(() => this.updateSearch(), 2000);
+        this.contentSized();
+        this.overflowing();
 
-        this.$limitSearchToSubtree = this.$widget.find('.limit-search-to-subtree');
-        noteAutocompleteService.initNoteAutocomplete(this.$limitSearchToSubtree);
+        this.$searchString = this.$widget.find(".search-string");
+        this.$searchString.on('input', () => this.searchStringSU.scheduleUpdate());
 
-        this.$limitSearchToSubtree.on('autocomplete:closed', e => {
-            this.spacedUpdate.scheduleUpdate();
+        this.searchStringSU = new SpacedUpdate(async () => {
+            const searchString = this.$searchString.val();
+
+            await this.setAttribute('label', 'searchString', searchString);
+
+            if (this.note.title.startsWith('Search: ')) {
+                await server.put(`notes/${this.noteId}/change-title`, {
+                    title: 'Search: ' + (searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`)
+                });
+            }
+        }, 1000);
+
+        this.$descendantOf = this.$widget.find('.descendant-of');
+        noteAutocompleteService.initNoteAutocomplete(this.$descendantOf);
+
+        this.$descendantOf.on('autocomplete:closed', async () => {
+            const descendantOfNoteId = this.$descendantOf.getSelectedNoteId();
+
+            await this.setAttribute('relation', 'descendantOf', descendantOfNoteId);
         });
 
-        this.$searchWithinNoteContent = this.$widget.find('.search-within-note-content');
-        this.$searchWithinNoteContent.on('change', () => {
-            this.spacedUpdate.scheduleUpdate();
+        this.$widget.on('click', '[data-search-option-add]', async event => {
+            const searchOption = $(event.target).attr('data-search-option-add');
+
+            if (searchOption === 'fastSearch') {
+                await this.setAttribute('label', 'fastSearch');
+            }
+            else if (searchOption === 'orderBy') {
+                await this.setAttribute('label', 'orderBy', 'relevancy');
+                await this.setAttribute('label', 'orderDirection', 'asc');
+            }
+            else if (searchOption === 'includeArchivedNotes') {
+                await this.setAttribute('label', 'includeArchivedNotes');
+            }
+            else if (searchOption === 'descendantOf') {
+                await this.setAttribute('relation', 'descendantOf', 'root');
+            }
+
+            this.refresh();
+        });
+
+        this.$widget.on('click', '[data-search-option-del]', async event => {
+            async function deleteAttr(note, attrName) {
+                for (const attr of note.getOwnedAttributes()) {
+                    if (attr.name === attrName) {
+                        await server.remove(`notes/${note.noteId}/attributes/${attr.attributeId}`);
+                    }
+                }
+            }
+
+            const searchOption = $(event.target).attr('data-search-option-del');
+
+            await deleteAttr(this.note, searchOption);
+
+            if (searchOption === 'orderBy') {
+                await deleteAttr(this.note, 'orderDirection');
+            }
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            this.refresh();
+        });
+
+        this.$orderBy = this.$widget.find('select[name=orderBy]');
+        this.$orderBy.on('change', async () => {
+            const orderBy = this.$orderBy.val();
+
+            await this.setAttribute('label', 'orderBy', orderBy);
+        });
+
+        this.$orderDirection = this.$widget.find('select[name=orderDirection]');
+        this.$orderDirection.on('change', async () => {
+            const orderDirection = this.$orderDirection.val();
+
+            await this.setAttribute('label', 'orderDirection', orderDirection);
         });
     }
 
-    async updateSearch() {
-        const searchString = this.$searchString.val();
-        const subTreeNoteId = this.$limitSearchToSubtree.getSelectedNoteId();
-        const includeNoteContent = this.$searchWithinNoteContent.is(":checked");
+    async setAttribute(type, name, value = '') {
+        await server.put(`notes/${this.noteId}/set-attribute`, {
+            type,
+            name,
+            value
+        });
 
-        await server.put(`notes/${this.noteId}/attributes`, [
-            { type: 'label', name: 'searchString', value: searchString },
-            { type: 'label', name: 'includeNoteContent', value: includeNoteContent ? 'true' : 'false' },
-            subTreeNoteId ? { type: 'label', name: 'subTreeNoteId', value: subTreeNoteId } : undefined,
-        ].filter(it => !!it));
-
-        if (this.note.title.startsWith('Search: ')) {
-            await server.put(`notes/${this.noteId}/change-title`, {
-                title: 'Search: ' + (searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`)
-            });
-        }
-
-        await this.refreshResults();
+        await ws.waitForMaxKnownEntityChangeId();
     }
 
     async refreshResults() {
@@ -247,14 +325,26 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
     async refreshWithNote(note) {
         this.$component.show();
         this.$searchString.val(this.note.getLabelValue('searchString'));
-        this.$searchWithinNoteContent.prop('checked', this.note.getLabelValue('includeNoteContent') === 'true');
 
-        const subTreeNoteId = this.note.getLabelValue('subTreeNoteId');
-        const subTreeNote = subTreeNoteId ? await treeCache.getNote(subTreeNoteId, true) : null;
+        for (const attrName of ['includeArchivedNotes', 'descendantOf', 'fastSearch', 'orderBy']) {
+            const has = note.hasLabel(attrName) || note.hasRelation(attrName);
 
-        this.$limitSearchToSubtree
-            .val(subTreeNote ? subTreeNote.title : "")
-            .setSelectedNotePath(subTreeNoteId);
+            this.$widget.find(`[data-search-option-add='${attrName}'`).toggle(!has);
+            this.$widget.find(`[data-search-option-conf='${attrName}'`).toggle(has);
+        }
+
+        const descendantOfNoteId = this.note.getRelationValue('descendantOf');
+        const descendantOfNote = descendantOfNoteId ? await treeCache.getNote(descendantOfNoteId, true) : null;
+
+        this.$descendantOf
+            .val(descendantOfNote ? descendantOfNote.title : "")
+            .setSelectedNotePath(descendantOfNoteId);
+
+
+        if (note.hasLabel('orderBy')) {
+            this.$orderBy.val(note.getLabelValue('orderBy'));
+            this.$orderDirection.val(note.getLabelValue('orderDirection') || 'asc');
+        }
 
         this.refreshResults(); // important specifically when this search note was not yet refreshed
     }
