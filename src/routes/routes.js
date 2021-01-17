@@ -176,6 +176,7 @@ function register(app) {
     apiRoute(POST, '/api/notes/:noteId/saveToTmpDir', filesRoute.saveToTmpDir);
 
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getEffectiveNoteAttributes);
+    apiRoute(POST, '/api/notes/:noteId/attributes', attributesRoute.addNoteAttribute);
     apiRoute(PUT, '/api/notes/:noteId/attributes', attributesRoute.updateNoteAttributes);
     apiRoute(PUT, '/api/notes/:noteId/attribute', attributesRoute.updateNoteAttribute);
     apiRoute(PUT, '/api/notes/:noteId/set-attribute', attributesRoute.setNoteAttribute);

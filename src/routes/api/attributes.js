@@ -86,6 +86,16 @@ function setNoteAttribute(req) {
     attr.save();
 }
 
+function addNoteAttribute(req) {
+    const noteId = req.params.noteId;
+    const body = req.body;
+
+    const attr = new Attribute(body);
+    attr.noteId = noteId;
+
+    attr.save();
+}
+
 function deleteNoteAttribute(req) {
     const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
@@ -220,6 +230,7 @@ module.exports = {
     updateNoteAttributes,
     updateNoteAttribute,
     setNoteAttribute,
+    addNoteAttribute,
     deleteNoteAttribute,
     getAttributeNames,
     getValuesForAttribute,

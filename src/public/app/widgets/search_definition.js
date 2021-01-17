@@ -87,17 +87,23 @@ const TPL = `
                     </button>
                     
                     <div class="dropdown" style="display: inline-block;">
-                      <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <button class="btn btn-sm dropdown-toggle action-add-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="bx bxs-zap"></span>
                         action
                       </button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#">Delete note</a>
-                        <a class="dropdown-item" href="#">Delete attribute</a>
-                        <a class="dropdown-item" href="#">Rename attribute</a>
-                        <a class="dropdown-item" href="#">Change label value</a>
-                        <a class="dropdown-item" href="#">Change relation target</a>
-                        <a class="dropdown-item" href="#">Execute script</a>
+                      <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" data-action-add="deleteNote">
+                            Delete note</a>
+                        <a class="dropdown-item" href="#" data-action-add="deleteAttribute">
+                            Delete attribute</a>
+                        <a class="dropdown-item" href="#" data-action-add="renameAttribute">
+                            Rename attribute</a>
+                        <a class="dropdown-item" href="#" data-action-add="changeLabelValue">
+                            Change label value</a>
+                        <a class="dropdown-item" href="#" data-action-add="changeRelationTarget">
+                            Change relation target</a>
+                        <a class="dropdown-item" href="#" data-action-add="executeScript">
+                            Execute script</a>
                       </div>
                     </div>
                 </td>
@@ -159,55 +165,77 @@ const TPL = `
                     </td>
                 </tr>
             </tbody>
-            <tr>
-                <td colspan="2">
-                    <span class="bx bx-trash"></span>
-                
-                    Delete matched note
-                </td>
-                <td>
-                    <span class="bx bx-x icon-action"></span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    Rename attribute name:
-                </td>
-                <td>
-                    <div style="display: flex; align-items: center">
-                        <div style="margin-right: 15px;">From:</div> 
-                        
-                        <input type="text" class="form-control" placeholder="old name"/>
-                        
-                        <div style="margin-right: 15px; margin-left: 15px;">To:</div> 
-                        
-                        <input type="text" class="form-control" placeholder="new name"/>
-                    </div>
-                </td>
-                <td>
-                    <span class="bx bx-x icon-action"></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <div style="display: flex; justify-content: space-evenly">
-                        <button type="button" class="btn btn-sm">
-                            <span class="bx bx-search"></span>
-                            Search
+            <tbody class="action-options">
+                <tr>
+                    <td>
+                        Rename attribute name:
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center">
+                            <div style="margin-right: 15px;">From:</div> 
                             
-                            <kbd>enter</kbd>
-                        </button>
-    
-                        <button type="button" class="btn btn-sm">
-                            <span class="bx bxs-zap"></span>
-                            Search & Execute actions
-                        </button>
-                    </div>
-                </td>
-            </tr>
+                            <input type="text" class="form-control" placeholder="old name"/>
+                            
+                            <div style="margin-right: 15px; margin-left: 15px;">To:</div> 
+                            
+                            <input type="text" class="form-control" placeholder="new name"/>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="bx bx-x icon-action"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <div style="display: flex; justify-content: space-evenly">
+                            <button type="button" class="btn btn-sm">
+                                <span class="bx bx-search"></span>
+                                Search
+                                
+                                <kbd>enter</kbd>
+                            </button>
+        
+                            <button type="button" class="btn btn-sm">
+                                <span class="bx bxs-zap"></span>
+                                Search & Execute actions
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
 </div>`;
+
+const ACTION_TPLS = {
+    deleteNote: `
+<tr>
+    <td colspan="2">
+        <span class="bx bx-trash"></span>
+    
+        Delete matched note
+    </td>
+    <td>
+        <span class="bx bx-x icon-action" data-action-conf-del></span>
+    </td>
+</tr>`,
+    deleteAttribute: `
+<tr>
+    <td>
+        Delete attribute:
+    </td>
+    <td>
+        <div style="display: flex; align-items: center">
+            <div style="margin-right: 15px;">Attribute name:</div> 
+            
+            <input type="text" class="form-control"/>
+        </div>
+    </td>
+    <td>
+        <span class="bx bx-x icon-action"></span>
+    </td>
+</tr>`
+};
 
 export default class SearchDefinitionWidget extends TabAwareWidget {
     static getType() { return "search"; }
@@ -306,14 +334,40 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
             await this.setAttribute('label', 'orderDirection', orderDirection);
         });
+
+        this.$actionOptions = this.$widget.find('.action-options');
+
+        this.$widget.on('click', '[data-action-add]', async event => {
+            const actionName = $(event.target).attr('data-action-add');
+
+            await server.post(`notes/${this.noteId}/attributes`, {
+                type: 'label',
+                name: 'action',
+                value: JSON.stringify({
+                    name: actionName
+                })
+            });
+
+            this.$widget.find('.action-add-toggle').dropdown('toggle');
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            this.refresh();
+        });
+
+        this.$widget.on('click', '[data-action-conf-del]', async event => {
+            const attributeId = $(event.target).closest('[data-attribute-id]').attr('data-attribute-id');
+
+            await server.remove(`notes/${this.noteId}/attributes/${attributeId}`);
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            this.refresh();
+        });
     }
 
     async setAttribute(type, name, value = '') {
-        await server.put(`notes/${this.noteId}/set-attribute`, {
-            type,
-            name,
-            value
-        });
+        await server.put(`notes/${this.noteId}/set-attribute`, { type, name, value });
 
         await ws.waitForMaxKnownEntityChangeId();
     }
@@ -340,10 +394,28 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             .val(descendantOfNote ? descendantOfNote.title : "")
             .setSelectedNotePath(descendantOfNoteId);
 
-
         if (note.hasLabel('orderBy')) {
             this.$orderBy.val(note.getLabelValue('orderBy'));
             this.$orderDirection.val(note.getLabelValue('orderDirection') || 'asc');
+        }
+
+        this.$actionOptions.empty();
+
+        for (const actionAttr of this.note.getLabels('action')) {
+            let actionDef;
+
+            try {
+                actionDef = JSON.parse(actionAttr.value);
+            }
+            catch (e) {
+                console.log(`Parsing of attribute: '${actionAttr.value}' failed with error: ${e.message}`);
+                continue;
+            }
+
+            const $actionConf = $(ACTION_TPLS[actionDef.name]);
+            $actionConf.attr('data-attribute-id', actionAttr.attributeId);
+
+            this.$actionOptions.append($actionConf);
         }
 
         this.refreshResults(); // important specifically when this search note was not yet refreshed
