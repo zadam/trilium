@@ -36,7 +36,7 @@ let httpServer;
 
 async function startTrilium() {
     const usedPort = await port;
-    const usedHost = host;
+    const usedHost = await host;
 
     app.set('port', usedPort);
     app.set('host', usedHost);
