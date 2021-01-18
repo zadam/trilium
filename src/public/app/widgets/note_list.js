@@ -48,6 +48,10 @@ export default class NoteListWidget extends TabAwareWidget {
     }
 
     checkRenderStatus() {
+        // console.log("this.isIntersecting", this.isIntersecting);
+        // console.log(`${this.noteIdRefreshed} === ${this.noteId}`, this.noteIdRefreshed === this.noteId);
+        // console.log("this.shownNoteId !== this.noteId", this.shownNoteId !== this.noteId);
+
         if (this.isIntersecting
             && this.noteIdRefreshed === this.noteId
             && this.shownNoteId !== this.noteId) {
@@ -62,6 +66,11 @@ export default class NoteListWidget extends TabAwareWidget {
         await noteListRenderer.renderList();
     }
 
+    /**
+     * We have this event so that we evaluate intersection only after note detail is loaded.
+     * If it's evaluated before note detail then it's clearly intersected (visible) although after note detail load
+     * it is not intersected (visible) anymore.
+     */
     noteDetailRefreshedEvent({tabId}) {
         if (!this.isTab(tabId)) {
             return;
@@ -70,6 +79,17 @@ export default class NoteListWidget extends TabAwareWidget {
         this.noteIdRefreshed = this.noteId;
 
         setTimeout(() => this.checkRenderStatus(), 100);
+    }
+
+    searchRefreshedEvent({tabId}) {
+        if (!this.isTab(tabId)) {
+            return;
+        }
+
+        this.noteIdRefreshed = this.noteId;
+        this.shownNoteId = null;
+
+        this.checkRenderStatus();
     }
 
     autoBookDisabledEvent({tabContext}) {

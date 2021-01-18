@@ -67,8 +67,8 @@ export default class DialogCommandExecutor extends Component {
         appContext.triggerCommand('focusOnDetail', {tabId: tabContext.tabId});
     }
 
-    async searchNotesCommand({searchString, subTreeNoteId}) {
-        const searchNote = await dateNoteService.createSearchNote({searchString, subTreeNoteId});
+    async searchNotesCommand({searchString, ancestorNoteId}) {
+        const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
 
         const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
 
@@ -78,7 +78,7 @@ export default class DialogCommandExecutor extends Component {
     async searchInSubtreeCommand({notePath}) {
         const noteId = treeService.getNoteIdFromNotePath(notePath);
 
-        this.searchNotesCommand({subTreeNoteId: noteId});
+        this.searchNotesCommand({ancestorNoteId: noteId});
     }
 
     showBackendLogCommand() {

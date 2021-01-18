@@ -34,9 +34,11 @@ async function searchFromNote(req) {
         }
         else if (searchString) {
             const searchContext = new SearchContext({
-                includeNoteContent: note.getLabelValue('includeNoteContent') === 'true',
-                subTreeNoteId: note.getLabelValue('subTreeNoteId'),
-                excludeArchived: true,
+                fastSearch: note.hasLabel('fastSearch'),
+                ancestorNoteId: note.getRelationValue('ancestor'),
+                includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
+                orderBy: note.getLabelValue('orderBy'),
+                orderDirection: note.getLabelValue('orderDirection'),
                 fuzzyAttributeSearch: false
             });
 
@@ -107,8 +109,8 @@ function getRelatedNotes(req) {
     const attr = req.body;
 
     const searchSettings = {
-        includeNoteContent: false,
-        excludeArchived: true,
+        fastSearch: true,
+        includeArchivedNotes: false,
         fuzzyAttributeSearch: false
     };
 

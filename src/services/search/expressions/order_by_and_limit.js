@@ -44,7 +44,7 @@ class OrderByAndLimitExp extends Expression {
             return 0;
         });
 
-        if (this.limit >= 0) {
+        if (this.limit > 0) {
             notes = notes.slice(0, this.limit);
         }
 

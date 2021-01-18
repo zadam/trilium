@@ -15,7 +15,7 @@ const NoteCacheFlatTextExp = require('../expressions/note_cache_flat_text.js');
 const NoteContentProtectedFulltextExp = require('../expressions/note_content_protected_fulltext.js');
 const NoteContentUnprotectedFulltextExp = require('../expressions/note_content_unprotected_fulltext.js');
 const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
-const SubTreeExp = require("../expressions/sub_tree.js");
+const AncestorExp = require("../expressions/ancestor.js");
 const buildComparator = require('./build_comparator.js');
 const ValueExtractor = require('../value_extractor.js');
 
@@ -28,7 +28,7 @@ function getFulltext(tokens, searchContext) {
         return null;
     }
 
-    if (searchContext.includeNoteContent) {
+    if (!searchContext.fastSearch) {
         return new OrExp([
             new NoteCacheFlatTextExp(tokens),
             new NoteContentProtectedFulltextExp('*=*', tokens),
@@ -408,12 +408,25 @@ function getExpression(tokens, searchContext, level = 0) {
 }
 
 function parse({fulltextTokens, expressionTokens, searchContext}) {
-    return AndExp.of([
-        searchContext.excludeArchived ? new PropertyComparisonExp("isarchived", buildComparator("=", "false")) : null,
-        searchContext.subTreeNoteId ? new SubTreeExp(searchContext.subTreeNoteId) : null,
+    let exp = AndExp.of([
+        searchContext.includeArchivedNotes ? null : new PropertyComparisonExp("isarchived", buildComparator("=", "false")),
+        searchContext.ancestorNoteId ? new AncestorExp(searchContext.ancestorNoteId) : null,
         getFulltext(fulltextTokens, searchContext),
         getExpression(expressionTokens, searchContext)
     ]);
+
+    if (searchContext.orderBy && searchContext.orderBy !== 'relevancy') {
+        const filterExp = exp;
+
+        exp = new OrderByAndLimitExp([{
+            valueExtractor: new ValueExtractor(['note', searchContext.orderBy]),
+            direction: searchContext.orderDirection
+        }], 0);
+
+        exp.subExpression = filterExp;
+    }
+
+    return exp;
 }
 
 module.exports = parse;

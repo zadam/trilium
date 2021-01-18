@@ -23,6 +23,8 @@ async function autocompleteSourceForCKEditor(queryText) {
                     highlightedNotePathTitle: row.highlightedNotePathTitle
                 }
             }));
+        }, {
+            allowCreatingNotes: true
         });
     });
 }
@@ -34,7 +36,7 @@ async function autocompleteSource(term, cb, options = {}) {
             + '?query=' + encodeURIComponent(term)
             + '&activeNoteId=' + activeNoteId);
 
-    if (term.trim().length >= 1) {
+    if (term.trim().length >= 1 && options.allowCreatingNotes) {
         results = [
             {
                 action: 'create-note',

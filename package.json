@@ -41,7 +41,7 @@
     "express": "4.17.1",
     "express-session": "1.17.1",
     "fs-extra": "9.0.1",
-    "helmet": "4.3.1",
+    "helmet": "4.4.1",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.1",

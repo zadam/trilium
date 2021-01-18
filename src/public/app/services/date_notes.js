@@ -47,7 +47,7 @@ async function createSearchNote(opts = {}) {
     const note = await server.post('search-note');
 
     const attrsToUpdate = [
-        opts.subTreeNoteId ? { type: 'label', name: 'subTreeNoteId', value: opts.subTreeNoteId } : undefined,
+        opts.ancestor ? { type: 'relation', name: 'ancestor', value: opts.ancestorNoteId } : undefined,
         opts.searchString ? { type: 'label', name: 'searchString', value: opts.searchString } : undefined
     ].filter(attr => !!attr);
 

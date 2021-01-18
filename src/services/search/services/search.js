@@ -111,8 +111,8 @@ function searchTrimmedNotes(query, searchContext) {
 
 function searchNotesForAutocomplete(query) {
     const searchContext = new SearchContext({
-        includeNoteContent: false,
-        excludeArchived: true,
+        fastSearch: true,
+        includeArchivedNotes: false,
         fuzzyAttributeSearch: true
     });
 

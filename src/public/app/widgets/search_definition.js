@@ -4,6 +4,7 @@ import server from "../services/server.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
 import ws from "../services/ws.js";
+import utils from "../services/utils.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -64,9 +65,9 @@ const TPL = `
             <tr>
                 <td>Add search option:</td>
                 <td colspan="2" class="add-search-option">
-                    <button type="button" class="btn btn-sm" data-search-option-add="descendantOf">
+                    <button type="button" class="btn btn-sm" data-search-option-add="ancestor">
                         <span class="bx bx-filter-alt"></span> 
-                        descendant of
+                        ancestor
                     </button>
                     
                     <button type="button" class="btn btn-sm" data-search-option-add="fastSearch"
@@ -109,16 +110,16 @@ const TPL = `
                 </td>
             </tr>
             <tbody class="search-options">
-                <tr data-search-option-conf="descendantOf">
+                <tr data-search-option-conf="ancestor">
                     <td title="Matched notes must be within subtree of given note.">
-                        Descendant of: </td>
+                        Ancestor: </td>
                     <td>
                         <div class="input-group">
-                            <input class="descendant-of form-control" placeholder="search for note by its name">
+                            <input class="ancestor form-control" placeholder="search for note by its name">
                         </div>
                     </td>
                     <td>
-                        <span class="bx bx-x icon-action" data-search-option-del="descendantOf"></span>
+                        <span class="bx bx-x icon-action" data-search-option-del="ancestor"></span>
                     </td>
                 </tr>
                 <tr data-search-option-conf="fastSearch">
@@ -185,17 +186,19 @@ const TPL = `
                         <span class="bx bx-x icon-action"></span>
                     </td>
                 </tr>
+            </tbody>
+            <tbody>
                 <tr>
                     <td colspan="3">
                         <div style="display: flex; justify-content: space-evenly">
-                            <button type="button" class="btn btn-sm">
+                            <button type="button" class="btn btn-sm search-button">
                                 <span class="bx bx-search"></span>
                                 Search
                                 
                                 <kbd>enter</kbd>
                             </button>
         
-                            <button type="button" class="btn btn-sm">
+                            <button type="button" class="btn btn-sm search-and-execute-button">
                                 <span class="bx bxs-zap"></span>
                                 Search & Execute actions
                             </button>
@@ -257,6 +260,11 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
         this.$searchString = this.$widget.find(".search-string");
         this.$searchString.on('input', () => this.searchStringSU.scheduleUpdate());
+        utils.bindElShortcut(this.$searchString, 'return', async () => {
+            await this.searchStringSU.updateNowIfNecessary();
+
+            this.refreshResults();
+        });
 
         this.searchStringSU = new SpacedUpdate(async () => {
             const searchString = this.$searchString.val();
@@ -270,13 +278,13 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             }
         }, 1000);
 
-        this.$descendantOf = this.$widget.find('.descendant-of');
-        noteAutocompleteService.initNoteAutocomplete(this.$descendantOf);
+        this.$ancestor = this.$widget.find('.ancestor');
+        noteAutocompleteService.initNoteAutocomplete(this.$ancestor);
 
-        this.$descendantOf.on('autocomplete:closed', async () => {
-            const descendantOfNoteId = this.$descendantOf.getSelectedNoteId();
+        this.$ancestor.on('autocomplete:closed', async () => {
+            const ancestorOfNoteId = this.$ancestor.getSelectedNoteId();
 
-            await this.setAttribute('relation', 'descendantOf', descendantOfNoteId);
+            await this.setAttribute('relation', 'ancestor', ancestorOfNoteId);
         });
 
         this.$widget.on('click', '[data-search-option-add]', async event => {
@@ -292,8 +300,8 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             else if (searchOption === 'includeArchivedNotes') {
                 await this.setAttribute('label', 'includeArchivedNotes');
             }
-            else if (searchOption === 'descendantOf') {
-                await this.setAttribute('relation', 'descendantOf', 'root');
+            else if (searchOption === 'ancestor') {
+                await this.setAttribute('relation', 'ancestor', 'root');
             }
 
             this.refresh();
@@ -364,6 +372,11 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
             this.refresh();
         });
+
+        this.$searchButton = this.$widget.find('.search-button');
+        this.$searchButton.on('click', () => this.refreshResults());
+
+        this.$searchAndExecuteButton = this.$widget.find('.search-and-execute-button');
     }
 
     async setAttribute(type, name, value = '') {
@@ -374,25 +387,27 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     async refreshResults() {
         await treeCache.reloadNotes([this.noteId]);
+
+        this.triggerEvent('searchRefreshed', {tabId: this.tabContext.tabId});
     }
 
     async refreshWithNote(note) {
         this.$component.show();
         this.$searchString.val(this.note.getLabelValue('searchString'));
 
-        for (const attrName of ['includeArchivedNotes', 'descendantOf', 'fastSearch', 'orderBy']) {
+        for (const attrName of ['includeArchivedNotes', 'ancestor', 'fastSearch', 'orderBy']) {
             const has = note.hasLabel(attrName) || note.hasRelation(attrName);
 
             this.$widget.find(`[data-search-option-add='${attrName}'`).toggle(!has);
             this.$widget.find(`[data-search-option-conf='${attrName}'`).toggle(has);
         }
 
-        const descendantOfNoteId = this.note.getRelationValue('descendantOf');
-        const descendantOfNote = descendantOfNoteId ? await treeCache.getNote(descendantOfNoteId, true) : null;
+        const ancestorNoteId = this.note.getRelationValue('ancestor');
+        const ancestorNote = ancestorNoteId ? await treeCache.getNote(ancestorNoteId, true) : null;
 
-        this.$descendantOf
-            .val(descendantOfNote ? descendantOfNote.title : "")
-            .setSelectedNotePath(descendantOfNoteId);
+        this.$ancestor
+            .val(ancestorNote ? ancestorNote.title : "")
+            .setSelectedNotePath(ancestorNoteId);
 
         if (note.hasLabel('orderBy')) {
             this.$orderBy.val(note.getLabelValue('orderBy'));
@@ -401,7 +416,9 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
         this.$actionOptions.empty();
 
-        for (const actionAttr of this.note.getLabels('action')) {
+        const actionLabels = this.note.getLabels('action');
+
+        for (const actionAttr of actionLabels) {
             let actionDef;
 
             try {
@@ -418,7 +435,9 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.$actionOptions.append($actionConf);
         }
 
-        this.refreshResults(); // important specifically when this search note was not yet refreshed
+        this.$searchAndExecuteButton.css('visibility', actionLabels.length > 0 ? 'visible' : 'hidden');
+
+        //this.refreshResults(); // important specifically when this search note was not yet refreshed
     }
 
     focusOnSearchDefinitionEvent() {

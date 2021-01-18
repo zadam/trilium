@@ -2,9 +2,11 @@
 
 class SearchContext {
     constructor(params = {}) {
-        this.includeNoteContent = !!params.includeNoteContent;
-        this.subTreeNoteId = params.subTreeNoteId;
-        this.excludeArchived = !!params.excludeArchived;
+        this.fastSearch = !!params.fastSearch;
+        this.ancestorNoteId = params.ancestorNoteId;
+        this.includeArchivedNotes = !!params.includeArchivedNotes;
+        this.orderBy = params.orderBy;
+        this.orderDirection = params.orderDirection;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
         this.originalQuery = "";
