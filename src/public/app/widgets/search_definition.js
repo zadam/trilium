@@ -5,6 +5,12 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
 import ws from "../services/ws.js";
 import utils from "../services/utils.js";
+import DeleteNoteSearchAction from "./search_actions/delete_note.js";
+import DeleteLabelSearchAction from "./search_actions/delete_label.js";
+import DeleteRelationSearchAction from "./search_actions/delete_relation.js";
+import RenameLabelSearchAction from "./search_actions/rename_label.js";
+import SetLabelValueSearchAction from "./search_actions/set_label_value.js";
+import SetRelationTargetSearchAction from "./search_actions/set_relation_target.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -95,14 +101,18 @@ const TPL = `
                       <div class="dropdown-menu">
                         <a class="dropdown-item" href="#" data-action-add="deleteNote">
                             Delete note</a>
-                        <a class="dropdown-item" href="#" data-action-add="deleteAttribute">
-                            Delete attribute</a>
-                        <a class="dropdown-item" href="#" data-action-add="renameAttribute">
-                            Rename attribute</a>
-                        <a class="dropdown-item" href="#" data-action-add="changeLabelValue">
-                            Change label value</a>
-                        <a class="dropdown-item" href="#" data-action-add="changeRelationTarget">
-                            Change relation target</a>
+                        <a class="dropdown-item" href="#" data-action-add="deleteLabel">
+                            Delete label</a>
+                        <a class="dropdown-item" href="#" data-action-add="deleteRelation">
+                            Delete relation</a>
+                        <a class="dropdown-item" href="#" data-action-add="renameLabel">
+                            Rename label</a>
+                        <a class="dropdown-item" href="#" data-action-add="renameRelation">
+                            Rename relation</a>
+                        <a class="dropdown-item" href="#" data-action-add="setLabelValue">
+                            Set label value</a>
+                        <a class="dropdown-item" href="#" data-action-add="setRelationTarget">
+                            Set relation target</a>
                         <a class="dropdown-item" href="#" data-action-add="executeScript">
                             Execute script</a>
                       </div>
@@ -166,27 +176,7 @@ const TPL = `
                     </td>
                 </tr>
             </tbody>
-            <tbody class="action-options">
-                <tr>
-                    <td>
-                        Rename attribute name:
-                    </td>
-                    <td>
-                        <div style="display: flex; align-items: center">
-                            <div style="margin-right: 15px;">From:</div> 
-                            
-                            <input type="text" class="form-control" placeholder="old name"/>
-                            
-                            <div style="margin-right: 15px; margin-left: 15px;">To:</div> 
-                            
-                            <input type="text" class="form-control" placeholder="new name"/>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="bx bx-x icon-action"></span>
-                    </td>
-                </tr>
-            </tbody>
+            <tbody class="action-options"></tbody>
             <tbody>
                 <tr>
                     <td colspan="3">
@@ -210,35 +200,18 @@ const TPL = `
     </div>
 </div>`;
 
-const ACTION_TPLS = {
-    deleteNote: `
-<tr>
-    <td colspan="2">
-        <span class="bx bx-trash"></span>
-    
-        Delete matched note
-    </td>
-    <td>
-        <span class="bx bx-x icon-action" data-action-conf-del></span>
-    </td>
-</tr>`,
-    deleteAttribute: `
-<tr>
-    <td>
-        Delete attribute:
-    </td>
-    <td>
-        <div style="display: flex; align-items: center">
-            <div style="margin-right: 15px;">Attribute name:</div> 
-            
-            <input type="text" class="form-control"/>
-        </div>
-    </td>
-    <td>
-        <span class="bx bx-x icon-action"></span>
-    </td>
-</tr>`
-};
+const ACTION_CLASSES = {};
+
+for (const clazz of [
+    DeleteNoteSearchAction,
+    DeleteLabelSearchAction,
+    DeleteRelationSearchAction,
+    RenameLabelSearchAction,
+    SetLabelValueSearchAction,
+    SetRelationTargetSearchAction
+]) {
+    ACTION_CLASSES[clazz.actionName] = clazz;
+}
 
 export default class SearchDefinitionWidget extends TabAwareWidget {
     static getType() { return "search"; }
@@ -403,11 +376,8 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         }
 
         const ancestorNoteId = this.note.getRelationValue('ancestor');
-        const ancestorNote = ancestorNoteId ? await treeCache.getNote(ancestorNoteId, true) : null;
 
-        this.$ancestor
-            .val(ancestorNote ? ancestorNote.title : "")
-            .setSelectedNotePath(ancestorNoteId);
+        await this.$ancestor.setNote(ancestorNoteId);
 
         if (note.hasLabel('orderBy')) {
             this.$orderBy.val(note.getLabelValue('orderBy'));
@@ -425,14 +395,20 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
                 actionDef = JSON.parse(actionAttr.value);
             }
             catch (e) {
-                console.log(`Parsing of attribute: '${actionAttr.value}' failed with error: ${e.message}`);
+                logError(`Parsing of attribute: '${actionAttr.value}' failed with error: ${e.message}`);
                 continue;
             }
 
-            const $actionConf = $(ACTION_TPLS[actionDef.name]);
-            $actionConf.attr('data-attribute-id', actionAttr.attributeId);
+            const ActionClass = ACTION_CLASSES[actionDef.name];
 
-            this.$actionOptions.append($actionConf);
+            if (!ActionClass) {
+                logError(`No action class for '${actionDef.name}' found.`);
+                continue;
+            }
+
+            const action = new ActionClass(actionAttr, actionDef);
+
+            this.$actionOptions.append(action.render());
         }
 
         this.$searchAndExecuteButton.css('visibility', actionLabels.length > 0 ? 'visible' : 'hidden');

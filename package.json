@@ -40,7 +40,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.17.1",
-    "fs-extra": "9.0.1",
+    "fs-extra": "9.1.0",
     "helmet": "4.4.1",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
@@ -82,12 +82,12 @@
     "electron-packager": "15.2.0",
     "electron-rebuild": "2.3.4",
     "esm": "3.2.25",
-    "jasmine": "3.6.3",
+    "jasmine": "3.6.4",
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.15.0",
-    "webpack-cli": "4.3.1"
+    "webpack": "5.16.0",
+    "webpack-cli": "4.4.0"
   },
   "optionalDependencies": {
     "electron-installer-debian": "2.0.1"

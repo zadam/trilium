@@ -88,6 +88,13 @@ class Attribute {
     getDefinition() {
         return promotedAttributeDefinitionParser.parse(this.value);
     }
+
+    get dto() {
+        const dto = Object.assign({}, this);
+        delete dto.treeCache;
+
+        return dto;
+    }
 }
 
 export default Attribute;
