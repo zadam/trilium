@@ -12,6 +12,8 @@ import DeleteRelationSearchAction from "./search_actions/delete_relation.js";
 import RenameLabelSearchAction from "./search_actions/rename_label.js";
 import SetLabelValueSearchAction from "./search_actions/set_label_value.js";
 import SetRelationTargetSearchAction from "./search_actions/set_relation_target.js";
+import RenameRelationSearchAction from "./search_actions/rename_relation.js";
+import ExecuteScriptSearchAction from "./search_actions/execute_script.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -205,8 +207,10 @@ for (const clazz of [
     DeleteLabelSearchAction,
     DeleteRelationSearchAction,
     RenameLabelSearchAction,
+    RenameRelationSearchAction,
     SetLabelValueSearchAction,
-    SetRelationTargetSearchAction
+    SetRelationTargetSearchAction,
+    ExecuteScriptSearchAction
 ]) {
     ACTION_CLASSES[clazz.actionName] = clazz;
 }

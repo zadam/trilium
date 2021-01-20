@@ -71,14 +71,46 @@ const ACTION_HANDLERS = {
         note.isDeleted;
         note.save();
     },
+    deleteLabel: (action, note) => {
+        for (const label of note.getOwnedLabels(action.labelName)) {
+            label.isDeleted = true;
+            label.save();
+        }
+    },
+    deleteRelation: (action, note) => {
+        for (const relation of note.getOwnedRelations(action.relationName)) {
+            relation.isDeleted = true;
+            relation.save();
+        }
+    },
     renameLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.oldLabelName)) {
             label.name = action.newLabelName;
             label.save();
         }
     },
+    renameRelation: (action, note) => {
+        for (const relation of note.getOwnedRelations(action.oldRelationName)) {
+            relation.name = action.newRelationName;
+            relation.save();
+        }
+    },
     setLabelValue: (action, note) => {
         note.setLabel(action.labelName, action.labelValue);
+    },
+    setRelationTarget: (action, note) => {
+        note.setRelation(action.relationName, action.targetNoteId);
+    },
+    executeScript: (action, note) => {
+        if (!action.script || !action.script.trim()) {
+            log.info("Ignoring executeScript since the script is empty.")
+            return;
+        }
+
+        const scriptFunc = new Function("note", action.script);
+        scriptFunc(note);
+
+        note.save();
     }
 };
 
@@ -132,9 +164,14 @@ async function searchAndExecute(req) {
         }
 
         for (const action of actions) {
-            ACTION_HANDLERS[action.name](action, resultNote);
+            try {
+                log.info(`Applying action handler to note ${resultNote.noteId}: ${JSON.stringify(action)}`);
 
-            log.info(`Applying action handler to note ${resultNote.noteId}: ${JSON.stringify(action)}`);
+                ACTION_HANDLERS[action.name](action, resultNote);
+            }
+            catch (e) {
+                log.error(`ExecuteScript search action failed with ${e.message}`);
+            }
         }
     }
 }
