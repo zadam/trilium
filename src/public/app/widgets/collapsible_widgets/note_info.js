@@ -1,4 +1,5 @@
 import CollapsibleWidget from "../collapsible_widget.js";
+import server from "../../services/server.js";
 
 const TPL = `
 <table class="note-info-widget-table">
@@ -78,6 +79,14 @@ export default class NoteInfoWidget extends CollapsibleWidget {
         else {
             this.$mime.empty();
         }
+
+        let resp = await server.get(`stats/note-size/${note.noteId}`);
+
+        console.log(resp);
+
+        resp = await server.get(`stats/subtree-size/${note.noteId}`);
+
+        console.log(resp);
     }
 
     entitiesReloadedEvent({loadResults}) {
