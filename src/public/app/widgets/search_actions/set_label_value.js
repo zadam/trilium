@@ -11,7 +11,11 @@ const TPL = `
             <div style="display: flex; align-items: center">
                 <div style="margin-right: 15px;" class="text-nowrap">Set label</div> 
                 
-                <input type="text" class="form-control label-name" placeholder="label name"/>
+                <input type="text" 
+                    class="form-control label-name" 
+                    placeholder="label name"
+                    pattern="[\\p{L}\\p{N}_:]+"
+                    title="Alphanumeric characters, underscore and colon are allowed characters."/>
                 
                 <div style="margin-right: 15px; margin-left: 15px;" class="text-nowrap">to value</div>
                 

@@ -11,11 +11,19 @@ const TPL = `
             <div style="display: flex; align-items: center">
                 <div style="margin-right: 15px;">From:</div> 
                 
-                <input type="text" class="form-control old-label-name" placeholder="old name"/>
+                <input type="text" 
+                    class="form-control old-label-name" 
+                    placeholder="old name" 
+                    pattern="[\\p{L}\\p{N}_:]+"
+                    title="Alphanumeric characters, underscore and colon are allowed characters."/>
                 
                 <div style="margin-right: 15px; margin-left: 15px;">To:</div> 
                 
-                <input type="text" class="form-control new-label-name" placeholder="new name"/>
+                <input type="text" 
+                    class="form-control new-label-name" 
+                    placeholder="new name"
+                    pattern="[\\p{L}\\p{N}_:]+"
+                    title="Alphanumeric characters, underscore and colon are allowed characters."/>
             </div>
         </div>
     </td>

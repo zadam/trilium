@@ -10,7 +10,10 @@ const TPL = `
         <div style="display: flex; align-items: center">
             <div style="margin-right: 15px;" class="text-nowrap">Relation name:</div> 
             
-            <input type="text" class="form-control relation-name"/>
+            <input type="text" 
+                class="form-control relation-name"                    
+                pattern="[\\p{L}\\p{N}_:]+"
+                title="Alphanumeric characters, underscore and colon are allowed characters."/>
         </div>
     </td>
     <td>

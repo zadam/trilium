@@ -11,7 +11,11 @@ const TPL = `
         <div style="display: flex; align-items: center">
             <div style="margin-right: 15px;" class="text-nowrap">Set relation</div> 
             
-            <input type="text" class="form-control relation-name" placeholder="relation name"/>
+            <input type="text" 
+                class="form-control relation-name" 
+                placeholder="relation name"
+                pattern="[\\p{L}\\p{N}_:]+"
+                title="Alphanumeric characters, underscore and colon are allowed characters."/>
         </div>
         <div style="display: flex; align-items: center; margin-top: 10px;">
             <div style="margin-right: 15px;" class="text-nowrap">target to note</div>
@@ -25,7 +29,7 @@ const TPL = `
 </tr>`;
 
 export default class SetRelationTargetSearchAction extends AbstractAction {
-    static get actionName() { return "setLabelValue"; }
+    static get actionName() { return "setRelationTarget"; }
 
     doRender() {
         const $action = $(TPL);

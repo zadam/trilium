@@ -6,6 +6,41 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 
+async function search(note) {
+    let searchResultNoteIds;
+
+    try {
+        const searchScript = note.getRelationValue('searchScript');
+        const searchString = note.getLabelValue('searchString');
+
+        if (searchScript) {
+            searchResultNoteIds = await searchFromRelation(note, 'searchScript');
+        } else if (searchString) {
+            const searchContext = new SearchContext({
+                fastSearch: note.hasLabel('fastSearch'),
+                ancestorNoteId: note.getRelationValue('ancestor'),
+                includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
+                orderBy: note.getLabelValue('orderBy'),
+                orderDirection: note.getLabelValue('orderDirection'),
+                fuzzyAttributeSearch: false
+            });
+
+            searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
+                .map(sr => sr.noteId);
+        } else {
+            searchResultNoteIds = [];
+        }
+
+        // we won't return search note's own noteId
+        // also don't allow root since that would force infinite cycle
+        return searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
+    } catch (e) {
+        log.error(`Search failed for note ${note.noteId}: ` + e.message + ": " + e.stack);
+
+        throw new Error("Search failed, see logs for details.");
+    }
+}
+
 async function searchFromNote(req) {
     const note = repository.getNote(req.params.noteId);
 
@@ -19,53 +54,89 @@ async function searchFromNote(req) {
     }
 
     if (note.type !== 'search') {
-        return [400, `Note ${req.params.noteId} is not search note.`]
+        return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    let searchString;
-    let searchResultNoteIds;
-
-    try {
-        const searchScript = note.getRelationValue('searchScript');
-        searchString = note.getLabelValue('searchString');
-
-        if (searchScript) {
-            searchResultNoteIds = await searchFromRelation(note, 'searchScript');
-        }
-        else if (searchString) {
-            const searchContext = new SearchContext({
-                fastSearch: note.hasLabel('fastSearch'),
-                ancestorNoteId: note.getRelationValue('ancestor'),
-                includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
-                orderBy: note.getLabelValue('orderBy'),
-                orderDirection: note.getLabelValue('orderDirection'),
-                fuzzyAttributeSearch: false
-            });
-
-            searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
-                .map(sr => sr.noteId);
-        }
-        else {
-            searchResultNoteIds = [];
-        }
-    }
-    catch (e) {
-        log.error(`Search failed for note ${note.noteId}: ` + e.message + ": " + e.stack);
-
-        throw new Error("Search failed, see logs for details.");
-    }
-
-    // we won't return search note's own noteId
-    // also don't allow root since that would force infinite cycle
-    searchResultNoteIds = searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
+    let searchResultNoteIds = await search(note);
 
     if (searchResultNoteIds.length > 200) {
         searchResultNoteIds = searchResultNoteIds.slice(0, 200);
     }
 
-    console.log(`Search with query "${searchString}" with results: ${searchResultNoteIds}`);
-
     return searchResultNoteIds;
+}
+
+const ACTION_HANDLERS = {
+    deleteNote: (action, note) => {
+        note.isDeleted;
+        note.save();
+    },
+    renameLabel: (action, note) => {
+        for (const label of note.getOwnedLabels(action.oldLabelName)) {
+            label.name = action.newLabelName;
+            label.save();
+        }
+    },
+    setLabelValue: (action, note) => {
+        note.setLabel(action.labelName, action.labelValue);
+    }
+};
+
+function getActions(note) {
+    return note.getLabels('action')
+        .map(actionLabel => {
+            let action;
+
+            try {
+                action = JSON.parse(actionLabel.value);
+            } catch (e) {
+                log.error(`Cannot parse '${actionLabel.value}' into search action, skipping.`);
+                return null;
+            }
+
+            if (!(action.name in ACTION_HANDLERS)) {
+                log.error(`Cannot find '${action.name}' search action handler, skipping.`);
+                return null;
+            }
+
+            return action;
+        })
+        .filter(a => !!a);
+}
+
+async function searchAndExecute(req) {
+    const note = repository.getNote(req.params.noteId);
+
+    if (!note) {
+        return [404, `Note ${req.params.noteId} has not been found.`];
+    }
+
+    if (note.isDeleted) {
+        // this can be triggered from recent changes and it's harmless to return empty list rather than fail
+        return [];
+    }
+
+    if (note.type !== 'search') {
+        return [400, `Note ${req.params.noteId} is not a search note.`]
+    }
+
+    const searchResultNoteIds = await search(note);
+
+    const actions = getActions(note);
+
+    for (const resultNoteId of searchResultNoteIds) {
+        const resultNote = repository.getNote(resultNoteId);
+
+        if (!resultNote || resultNote.isDeleted) {
+            continue;
+        }
+
+        for (const action of actions) {
+            ACTION_HANDLERS[action.name](action, resultNote);
+
+            log.info(`Applying action handler to note ${resultNote.noteId}: ${JSON.stringify(action)}`);
+        }
+    }
 }
 
 async function searchFromRelation(note, relationName) {
@@ -180,5 +251,6 @@ function formatValue(val) {
 
 module.exports = {
     searchFromNote,
+    searchAndExecute,
     getRelatedNotes
 };

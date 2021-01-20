@@ -10,7 +10,10 @@ const TPL = `
         <div style="display: flex; align-items: center">
             <div style="margin-right: 15px;" class="text-nowrap">Label name:</div> 
             
-            <input type="text" class="form-control label-name"/>
+            <input type="text" 
+               class="form-control label-name"
+               pattern="[\\p{L}\\p{N}_:]+"
+               title="Alphanumeric characters, underscore and colon are allowed characters."/>
         </div>
     </td>
     <td>

@@ -257,6 +257,7 @@ function register(app) {
     route(POST, '/api/sender/note', [auth.checkToken], senderRoute.saveNote, apiResultHandler);
 
     apiRoute(GET, '/api/search-note/:noteId', searchRoute.searchFromNote);
+    apiRoute(POST, '/api/search-and-execute-note/:noteId', searchRoute.searchAndExecute);
     apiRoute(POST, '/api/search-related', searchRoute.getRelatedNotes);
 
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);

@@ -4,6 +4,7 @@ import server from "../services/server.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
 import ws from "../services/ws.js";
+import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 import DeleteNoteSearchAction from "./search_actions/delete_note.js";
 import DeleteLabelSearchAction from "./search_actions/delete_label.js";
@@ -14,14 +15,7 @@ import SetRelationTargetSearchAction from "./search_actions/set_relation_target.
 
 const TPL = `
 <div class="search-definition-widget">
-    <style>
-    .note-detail-search {
-        padding: 7px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
+    <style> 
     .search-setting-table {
         margin-top: 7px;
         margin-bottom: 7px;
@@ -37,6 +31,10 @@ const TPL = `
         top: 4px;
         margin-top: 5px;
         margin-bottom: 0;
+    }
+    
+    .search-definition-widget input:invalid {
+        border: 3px solid red;
     }
     </style>
 
@@ -350,6 +348,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         this.$searchButton.on('click', () => this.refreshResults());
 
         this.$searchAndExecuteButton = this.$widget.find('.search-and-execute-button');
+        this.$searchAndExecuteButton.on('click', () => this.searchAndExecute());
     }
 
     async setAttribute(type, name, value = '') {
@@ -422,5 +421,13 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     getContent() {
         return '';
+    }
+
+    async searchAndExecute() {
+        await server.post(`search-and-execute-note/${this.noteId}`);
+
+        this.refreshResults();
+
+        toastService.showMessage('Actions have been executed.', 3000);
     }
 }
