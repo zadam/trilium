@@ -1,3 +1,7 @@
+.type-relation-map {
+    height: 100%;
+}
+
 .note-detail-relation-map {
     height: 100%;
     overflow: hidden !important;
