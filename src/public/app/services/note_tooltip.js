@@ -88,7 +88,7 @@ async function renderTooltip(note) {
         return;
     }
 
-    let content = $("<h5>").text(await treeService.getNotePathTitle(someNotePath)).prop('outerHTML');
+    let content = '<h5 class="note-tooltip-title">' + (await treeService.getNoteTitleWithPathAsSuffix(someNotePath)).prop('outerHTML') + '</h5>';
 
     const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 
@@ -98,7 +98,7 @@ async function renderTooltip(note) {
     });
 
     content = content
-        + $renderedAttributes[0].outerHTML
+        + '<div class="note-tooltip-attributes">' + $renderedAttributes[0].outerHTML + '</div>'
         + $renderedContent[0].outerHTML;
 
     return content;

@@ -420,9 +420,27 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     margin-bottom: 7px;
 }
 
+.note-tooltip-title {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .note-tooltip-content {
     /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
     max-height: 300px;
+    overflow: hidden;
+}
+
+.note-tooltip-content .note-title-with-path .note-path {
+    font-size: small;
+}
+
+.note-tooltip-attributes {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 

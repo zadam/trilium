@@ -236,10 +236,8 @@ async function getNoteTitle(noteId, parentNoteId = null) {
     return title;
 }
 
-async function getNotePathTitle(notePath) {
-    utils.assertArguments(notePath);
-
-    const titlePath = [];
+async function getNotePathTitleComponents(notePath) {
+    const titleComponents = [];
 
     if (notePath.startsWith('root/')) {
         notePath = notePath.substr(5);
@@ -247,18 +245,49 @@ async function getNotePathTitle(notePath) {
 
     // special case when we want just root's title
     if (notePath === 'root') {
-        return await getNoteTitle(notePath);
+        titleComponents.push(await getNoteTitle(notePath));
+    } else {
+        let parentNoteId = 'root';
+
+        for (const noteId of notePath.split('/')) {
+            titleComponents.push(await getNoteTitle(noteId, parentNoteId));
+
+            parentNoteId = noteId;
+        }
     }
 
-    let parentNoteId = 'root';
+    return titleComponents;
+}
 
-    for (const noteId of notePath.split('/')) {
-        titlePath.push(await getNoteTitle(noteId, parentNoteId));
+async function getNotePathTitle(notePath) {
+    utils.assertArguments(notePath);
 
-        parentNoteId = noteId;
-    }
+    const titlePath = await getNotePathTitleComponents(notePath);
 
     return titlePath.join(' / ');
+}
+
+async function getNoteTitleWithPathAsSuffix(notePath) {
+    utils.assertArguments(notePath);
+
+    const titleComponents = await getNotePathTitleComponents(notePath);
+
+    if (!titleComponents || titleComponents.length === 0) {
+        return "";
+    }
+
+    const title = titleComponents[titleComponents.length - 1];
+    const path = titleComponents.slice(0, titleComponents.length - 1);
+
+    const $titleWithPath = $('<span class="note-title-with-path">')
+        .append($('<span class="note-title">').text(title));
+
+    if (path.length > 0) {
+        $titleWithPath
+            .append($('<span class="note-path">').text(' (' + path.join(' / ') + ')'));
+    }
+
+    return $titleWithPath;
 }
 
 function getHashValueFromAddress() {
@@ -289,6 +318,7 @@ export default {
     getBranchIdFromNotePath,
     getNoteTitle,
     getNotePathTitle,
+    getNoteTitleWithPathAsSuffix,
     getHashValueFromAddress,
     parseNotePath
 };
