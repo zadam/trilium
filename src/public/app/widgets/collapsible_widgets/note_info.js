@@ -39,6 +39,15 @@ const TPL = `
         <th>Modified:</th>
         <td class="note-info-date-modified"></td>
     </tr>
+    <tr title="Note size provides rough estimate of storage requirements for this note. It takes into account note's content and content of its note revisions.">
+        <th>Note size:</th>
+        
+        <td colspan="3">
+            <span class="note-size"></span>
+            
+            (subtree size: <span class="subtree-size"></span>)
+        </td>
+    </tr>
 </table>
 `;
 
@@ -57,6 +66,8 @@ export default class NoteInfoWidget extends CollapsibleWidget {
         this.$dateModified = this.$body.find(".note-info-date-modified");
         this.$type = this.$body.find(".note-info-type");
         this.$mime = this.$body.find(".note-info-mime");
+        this.$noteSize = this.$body.find(".note-size");
+        this.$subTreeSize = this.$body.find(".subtree-size");
     }
 
     async refreshWithNote(note) {
@@ -80,13 +91,28 @@ export default class NoteInfoWidget extends CollapsibleWidget {
             this.$mime.empty();
         }
 
-        let resp = await server.get(`stats/note-size/${note.noteId}`);
+        const resp = await server.get(`stats/note-size/${note.noteId}`);
+        this.$noteSize.text(this.formatSize(resp.noteSize));
 
-        console.log(resp);
+        const $calculateLink = $('<a href="javascript:">calculate</a>')
+            .on('click', async () => {
+                const resp = await server.get(`stats/subtree-size/${note.noteId}`);
 
-        resp = await server.get(`stats/subtree-size/${note.noteId}`);
+                this.$subTreeSize.text(this.formatSize(resp.subTreeSize));
+            })
 
-        console.log(resp);
+        this.$subTreeSize.empty().append($calculateLink);
+    }
+
+    formatSize(size) {
+        size = Math.max(Math.round(size / 1024), 1);
+
+        if (size < 1024) {
+            return `${size} KiB`;
+        }
+        else {
+            return `${Math.round(size / 102.4) / 10} MiB`;
+        }
     }
 
     entitiesReloadedEvent({loadResults}) {
