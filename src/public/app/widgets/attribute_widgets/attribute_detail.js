@@ -234,6 +234,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
 
         this.$inputName = this.$widget.find('.attr-input-name');
         this.$inputName.on('keyup', () => this.userEditedAttribute());
+        this.$inputName.on('change', () => this.userEditedAttribute());
+        this.$inputName.on('autocomplete:closed', () => this.userEditedAttribute());
 
         this.$inputName.on('focus', () => {
             attributeAutocompleteService.initAttributeNameAutocomplete({
