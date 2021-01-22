@@ -43,9 +43,15 @@ const TPL = `
         <th>Note size:</th>
         
         <td colspan="3">
-            <span class="note-size"></span>
+            <button class="btn btn-sm calculate-button" style="padding: 0px 10px 0px 10px;">
+                <span class="bx bx-calculator"></span> calculate
+            </button>
             
-            (subtree size: <span class="subtree-size"></span>)
+            <span class="note-sizes-wrapper">
+                <span class="note-size"></span>
+                
+                (subtree size: <span class="subtree-size"></span>)
+            </span>
         </td>
     </tr>
 </table>
@@ -66,8 +72,25 @@ export default class NoteInfoWidget extends CollapsibleWidget {
         this.$dateModified = this.$body.find(".note-info-date-modified");
         this.$type = this.$body.find(".note-info-type");
         this.$mime = this.$body.find(".note-info-mime");
+
+        this.$noteSizesWrapper = this.$body.find('.note-sizes-wrapper');
         this.$noteSize = this.$body.find(".note-size");
         this.$subTreeSize = this.$body.find(".subtree-size");
+
+        this.$calculateButton = this.$body.find(".calculate-button");
+        this.$calculateButton.on('click', async () => {
+            this.$noteSizesWrapper.show();
+            this.$calculateButton.hide();
+
+            this.$noteSize.empty().append($('<span class="bx bx-loader bx-spin"></span>'));
+            this.$subTreeSize.empty().append($('<span class="bx bx-loader bx-spin"></span>'));
+
+            const noteSizeResp = await server.get(`stats/note-size/${this.noteId}`);
+            this.$noteSize.text(this.formatSize(noteSizeResp.noteSize));
+
+            const subTreeSizeResp = await server.get(`stats/subtree-size/${this.noteId}`);
+            this.$subTreeSize.text(this.formatSize(subTreeSizeResp.subTreeSize));
+        });
     }
 
     async refreshWithNote(note) {
@@ -91,17 +114,8 @@ export default class NoteInfoWidget extends CollapsibleWidget {
             this.$mime.empty();
         }
 
-        const resp = await server.get(`stats/note-size/${note.noteId}`);
-        this.$noteSize.text(this.formatSize(resp.noteSize));
-
-        const $calculateLink = $('<a href="javascript:">calculate</a>')
-            .on('click', async () => {
-                const resp = await server.get(`stats/subtree-size/${note.noteId}`);
-
-                this.$subTreeSize.text(this.formatSize(resp.subTreeSize));
-            })
-
-        this.$subTreeSize.empty().append($calculateLink);
+        this.$calculateButton.show();
+        this.$noteSizesWrapper.hide();
     }
 
     formatSize(size) {

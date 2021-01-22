@@ -32,7 +32,7 @@
     "commonmark": "0.29.3",
     "cookie-parser": "1.4.5",
     "csurf": "1.11.0",
-    "dayjs": "1.10.3",
+    "dayjs": "1.10.4",
     "ejs": "3.1.5",
     "electron-debug": "3.2.0",
     "electron-dl": "3.0.2",
