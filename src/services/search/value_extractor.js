@@ -19,18 +19,25 @@ const PROP_MAPPING = {
     "childrencount": "childrenCount",
     "attributecount": "attributeCount",
     "labelcount": "labelCount",
-    "relationcount": "relationCount"
+    "relationcount": "relationCount",
+    "contentsize": "contentSize",
+    "notesize": "noteSize",
+    "revisioncount": "revisionCount"
 };
 
 class ValueExtractor {
-    constructor(propertyPath) {
+    constructor(searchContext, propertyPath) {
         this.propertyPath = propertyPath.map(pathEl => pathEl.toLowerCase());
 
         if (this.propertyPath[0].startsWith('#')) {
             this.propertyPath = ['note', 'labels', this.propertyPath[0].substr(1), ...this.propertyPath.slice( 1, this.propertyPath.length)];
         }
         else if (this.propertyPath[0].startsWith('~')) {
-            this.propertyPath = ['note', 'relations', this.propertyPath[0].substr(1), ...this.propertyPath.slice( 1, this.propertyPath.length)];
+            this.propertyPath = ['note', 'relations', this.propertyPath[0].substr(1), ...this.propertyPath.slice(1, this.propertyPath.length)];
+        }
+
+        if (['contentsize', 'notesize', 'revisioncount'].includes(this.propertyPath[this.propertyPath.length - 1])) {
+            searchContext.dbLoadNeeded = true;
         }
     }
 

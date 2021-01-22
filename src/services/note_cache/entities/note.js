@@ -30,6 +30,15 @@ class Note {
 
         /** @param {Note[]|null} */
         this.ancestorCache = null;
+
+        // following attributes are filled during searching from database
+
+        /** @param {int} size of the content in bytes */
+        this.contentSize = null;
+        /** @param {int} size of the content and note revision contents in bytes */
+        this.noteSize = null;
+        /** @param {int} number of note revisions for this note */
+        this.revisionCount = null;
     }
 
     update(row) {

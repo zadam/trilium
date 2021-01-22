@@ -10,6 +10,9 @@ class SearchContext {
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
         this.originalQuery = "";
+        // if true, note cache does not have (up-to-date) information needed to process the query
+        // and some extra data needs to be loaded before executing
+        this.dbLoadNeeded = false;
         this.error = null;
     }
 

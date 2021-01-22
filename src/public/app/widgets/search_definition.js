@@ -164,6 +164,9 @@ const TPL = `
                             <option value="title">Title</option>
                             <option value="dateCreated">Date created</option>
                             <option value="dateModified">Date of last modification</option>
+                            <option value="contentSize">Note content size</option>
+                            <option value="noteSize">Note content size including revisions</option>
+                            <option value="revisionCount">Number of revisions</option>
                         </select>
                         
                         <select name="orderDirection" class="form-control w-auto d-inline">

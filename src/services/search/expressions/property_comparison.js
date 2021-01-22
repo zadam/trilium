@@ -22,7 +22,10 @@ const PROP_MAPPING = {
     "childrencount": "childrenCount",
     "attributecount": "attributeCount",
     "labelcount": "labelCount",
-    "relationcount": "relationCount"
+    "relationcount": "relationCount",
+    "contentsize": "contentSize",
+    "notesize": "noteSize",
+    "revisioncount": "revisionCount"
 };
 
 class PropertyComparisonExp extends Expression {
@@ -30,11 +33,15 @@ class PropertyComparisonExp extends Expression {
         return name in PROP_MAPPING;
     }
 
-    constructor(propertyName, comparator) {
+    constructor(searchContext, propertyName, comparator) {
         super();
 
         this.propertyName = PROP_MAPPING[propertyName];
         this.comparator = comparator;
+
+        if (['contentsize', 'notesize', 'revisioncount'].includes(this.propertyName)) {
+            searchContext.dbLoadNeeded = true;
+        }
     }
 
     execute(inputNoteSet, executionContext) {

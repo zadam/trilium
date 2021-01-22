@@ -15,7 +15,7 @@ async function search(note) {
 
         if (searchScript) {
             searchResultNoteIds = await searchFromRelation(note, 'searchScript');
-        } else if (searchString) {
+        } else {
             const searchContext = new SearchContext({
                 fastSearch: note.hasLabel('fastSearch'),
                 ancestorNoteId: note.getRelationValue('ancestor'),
@@ -27,8 +27,6 @@ async function search(note) {
 
             searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
                 .map(sr => sr.noteId);
-        } else {
-            searchResultNoteIds = [];
         }
 
         // we won't return search note's own noteId

@@ -172,9 +172,6 @@ class TreeCache {
                     throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
                 }
 
-                // force to load all the notes at once instead of one by one
-                await this.getNotes(searchResultNoteIds);
-
                 // reset all the virtual branches from old search results
                 if (note.noteId in treeCache.notes) {
                     treeCache.notes[note.noteId].children = [];

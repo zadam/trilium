@@ -10,6 +10,54 @@ const noteCache = require('../../note_cache/note_cache.js');
 const noteCacheService = require('../../note_cache/note_cache_service.js');
 const utils = require('../../utils.js');
 const cls = require('../../cls.js');
+const log = require('../../log.js');
+
+function loadNeededInfoFromDatabase() {
+    const sql = require('../../sql.js');
+
+    for (const noteId in noteCache.notes) {
+        noteCache.notes[noteId].contentSize = 0;
+        noteCache.notes[noteId].noteSize = 0;
+        noteCache.notes[noteId].revisionCount = 0;
+    }
+
+    const noteContentLengths = sql.getRows(`
+        SELECT 
+            noteId, 
+            LENGTH(content) AS length 
+        FROM notes
+             JOIN note_contents USING(noteId) 
+        WHERE notes.isDeleted = 0`);
+
+    for (const {noteId, length} of noteContentLengths) {
+        if (!(noteId in noteCache.notes)) {
+            log.error(`Note ${noteId} not found in note cache.`);
+            continue;
+        }
+
+        noteCache.notes[noteId].contentSize = length;
+        noteCache.notes[noteId].noteSize = length;
+    }
+
+    const noteRevisionContentLengths = sql.getRows(`
+        SELECT 
+            noteId, 
+            LENGTH(content) AS length 
+        FROM notes
+             JOIN note_revisions USING(noteId) 
+             JOIN note_revision_contents USING(noteRevisionId) 
+        WHERE notes.isDeleted = 0`);
+
+    for (const {noteId, length} of noteRevisionContentLengths) {
+        if (!(noteId in noteCache.notes)) {
+            log.error(`Note ${noteId} not found in note cache.`);
+            continue;
+        }
+
+        noteCache.notes[noteId].noteSize += length;
+        noteCache.notes[noteId].revisionCount++;
+    }
+}
 
 /**
  * @param {Expression} expression
@@ -21,6 +69,10 @@ function findNotesWithExpression(expression, searchContext) {
     let allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
         ? hoistedNote.subtreeNotes
         : Object.values(noteCache.notes);
+
+    if (searchContext.dbLoadNeeded) {
+        loadNeededInfoFromDatabase();
+    }
 
     // in the process of loading data sometimes we create "skeleton" note instances which are expected to be filled later
     // in case of inconsistent data this might not work and search will then crash on these
@@ -84,10 +136,7 @@ function parseQueryToExpression(query, searchContext) {
  * @return {SearchResult[]}
  */
 function findNotesWithQuery(query, searchContext) {
-    if (!query.trim().length) {
-        return [];
-    }
-
+    query = query || "";
     searchContext.originalQuery = query;
 
     const expression = parseQueryToExpression(query, searchContext);

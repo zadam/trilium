@@ -192,7 +192,7 @@ function getExpression(tokens, searchContext, level = 0) {
             i += 2;
 
             return new OrExp([
-                new PropertyComparisonExp('title', buildComparator('*=*', tokens[i].token)),
+                new PropertyComparisonExp(searchContext, 'title', buildComparator('*=*', tokens[i].token)),
                 new NoteContentProtectedFulltextExp('*=*', [tokens[i].token]),
                 new NoteContentUnprotectedFulltextExp('*=*', [tokens[i].token])
             ]);
@@ -213,7 +213,7 @@ function getExpression(tokens, searchContext, level = 0) {
                 return;
             }
 
-            return new PropertyComparisonExp(propertyName, comparator);
+            return new PropertyComparisonExp(searchContext, propertyName, comparator);
         }
 
         searchContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
@@ -307,7 +307,7 @@ function getExpression(tokens, searchContext, level = 0) {
                     i++;
                 }
 
-                const valueExtractor = new ValueExtractor(propertyPath);
+                const valueExtractor = new ValueExtractor(searchContext, propertyPath);
 
                 if (valueExtractor.validate()) {
                     searchContext.addError(valueExtractor.validate());
@@ -409,7 +409,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
 function parse({fulltextTokens, expressionTokens, searchContext}) {
     let exp = AndExp.of([
-        searchContext.includeArchivedNotes ? null : new PropertyComparisonExp("isarchived", buildComparator("=", "false")),
+        searchContext.includeArchivedNotes ? null : new PropertyComparisonExp(searchContext, "isarchived", buildComparator("=", "false")),
         searchContext.ancestorNoteId ? new AncestorExp(searchContext.ancestorNoteId) : null,
         getFulltext(fulltextTokens, searchContext),
         getExpression(expressionTokens, searchContext)
@@ -419,7 +419,7 @@ function parse({fulltextTokens, expressionTokens, searchContext}) {
         const filterExp = exp;
 
         exp = new OrderByAndLimitExp([{
-            valueExtractor: new ValueExtractor(['note', searchContext.orderBy]),
+            valueExtractor: new ValueExtractor(searchContext, ['note', searchContext.orderBy]),
             direction: searchContext.orderDirection
         }], 0);
 
