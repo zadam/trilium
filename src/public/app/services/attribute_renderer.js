@@ -80,7 +80,19 @@ async function renderAttributes(attributes, renderIsInheritable) {
 }
 
 async function renderNormalAttributes(note) {
-    const attrs = note.getAttributes().filter(attr => !attr.isDefinition() && !attr.isAutoLink);
+    const promotedDefinitionAttributes = note.getPromotedDefinitionAttributes();
+    let attrs = note.getAttributes();
+
+    if (promotedDefinitionAttributes.length > 0) {
+        attrs = attrs.filter(attr => !!promotedDefinitionAttributes.find(promAttr => promAttr.isDefinitionFor(attr)));
+    }
+    else {
+        attrs = attrs.filter(
+            attr => !attr.isDefinition()
+                 && !attr.isAutoLink
+                 && attr.noteId === note.noteId
+        );
+    }
 
     const $renderedAttributes = await renderAttributes(attrs, false);
 

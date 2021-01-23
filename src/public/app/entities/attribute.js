@@ -89,6 +89,10 @@ class Attribute {
         return promotedAttributeDefinitionParser.parse(this.value);
     }
 
+    isDefinitionFor(attr) {
+        return this.type === 'label' && this.name === `${attr.type}:${attr.name}`;
+    }
+
     get dto() {
         const dto = Object.assign({}, this);
         delete dto.treeCache;

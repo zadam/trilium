@@ -479,6 +479,20 @@ class NoteShort {
         return relations.map(rel => this.treeCache.notes[rel.value]);
     }
 
+    getPromotedDefinitionAttributes() {
+        if (this.hasLabel('hidePromotedAttributes')) {
+            return [];
+        }
+
+        return this.getAttributes()
+            .filter(attr => attr.isDefinition())
+            .filter(attr => {
+                const def = attr.getDefinition();
+
+                return def && def.isPromoted;
+            });
+    }
+
     hasAncestor(ancestorNote) {
         if (this.noteId === ancestorNote.noteId) {
             return true;

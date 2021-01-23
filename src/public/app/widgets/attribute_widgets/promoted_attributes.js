@@ -44,7 +44,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     }
 
     renderTitle(note) {
-        const promotedDefAttrs = this.getPromotedDefinitionAttributes();
+        const promotedDefAttrs = note.getPromotedDefinitionAttributes();
 
         if (promotedDefAttrs.length === 0) {
             return { show: false };
@@ -62,7 +62,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     async refreshWithNote(note) {
         this.$container.empty();
 
-        const promotedDefAttrs = this.getPromotedDefinitionAttributes();
+        const promotedDefAttrs = note.getPromotedDefinitionAttributes();
         const ownedAttributes = note.getOwnedAttributes();
 
         if (promotedDefAttrs.length === 0) {
@@ -102,20 +102,6 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         // (previously we saw promoted attributes doubling)
         this.$container.empty().append(...$cells);
         this.toggleInt(true);
-    }
-
-    getPromotedDefinitionAttributes() {
-        if (this.note.hasLabel('hidePromotedAttributes')) {
-            return [];
-        }
-
-        return this.note.getAttributes()
-            .filter(attr => attr.isDefinition())
-            .filter(attr => {
-                const def = attr.getDefinition();
-
-                return def && def.isPromoted;
-            });
     }
 
     async createPromotedAttributeCell(definitionAttr, valueAttr, valueName) {
