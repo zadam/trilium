@@ -152,6 +152,14 @@ class Note {
             && (!value || attr.value.toLowerCase() === value));
     }
 
+    hasLabel(name) {
+        return this.hasAttribute('label', name);
+    }
+
+    hasRelation(name) {
+        return this.hasAttribute('relation', name);
+    }
+
     getLabelValue(name) {
         const label = this.attributes.find(attr => attr.type === 'label' && attr.name === name);
 
@@ -292,6 +300,11 @@ class Note {
         }
 
         return arr.flat();
+    }
+
+    /** @return {String[]} */
+    get subtreeNoteIds() {
+        return this.subtreeNotes.map(note => note.noteId);
     }
 
     get parentCount() {
