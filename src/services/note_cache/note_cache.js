@@ -1,9 +1,5 @@
 "use strict";
 
-const Note = require('./entities/note');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
-
 class NoteCache {
     constructor() {
         this.reset();

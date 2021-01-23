@@ -1198,7 +1198,25 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.clearSelectedNodes();
     }
 
+    canBeMovedUpOrDown(node) {
+        if (node.data.noteId === 'root') {
+            return false;
+        }
+
+        const parentNote = treeCache.getNoteFromCache(node.getParent().data.noteId);
+
+        if (parentNote && parentNote.hasLabel('sorted')) {
+            return false;
+        }
+
+        return true;
+    }
+
     moveNoteUpCommand({node}) {
+        if (!this.canBeMovedUpOrDown(node)) {
+            return;
+        }
+
         const beforeNode = node.getPrevSibling();
 
         if (beforeNode !== null) {
@@ -1207,7 +1225,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     moveNoteDownCommand({node}) {
+        if (!this.canBeMovedUpOrDown(node)) {
+            return;
+        }
+
         const afterNode = node.getNextSibling();
+
         if (afterNode !== null) {
             branchService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
         }
