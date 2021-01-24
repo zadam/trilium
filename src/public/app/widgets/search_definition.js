@@ -1,11 +1,10 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
-import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
 import ws from "../services/ws.js";
 import toastService from "../services/toast.js";
-import utils from "../services/utils.js";
+
 import DeleteNoteSearchAction from "./search_actions/delete_note.js";
 import DeleteLabelSearchAction from "./search_actions/delete_label.js";
 import DeleteRelationSearchAction from "./search_actions/delete_relation.js";
@@ -13,7 +12,12 @@ import RenameLabelSearchAction from "./search_actions/rename_label.js";
 import SetLabelValueSearchAction from "./search_actions/set_label_value.js";
 import SetRelationTargetSearchAction from "./search_actions/set_relation_target.js";
 import RenameRelationSearchAction from "./search_actions/rename_relation.js";
-import ExecuteScriptSearchAction from "./search_actions/execute_script.js";
+import ExecuteScriptSearchAction from "./search_actions/execute_script.js"
+import SearchString from "./search_options/search_string.js";
+import FastSearch from "./search_options/fast_search.js";
+import Ancestor from "./search_options/ancestor.js";
+import IncludeArchivedNotes from "./search_options/include_archived_notes.js";
+import OrderBy from "./search_options/order_by.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -43,34 +47,13 @@ const TPL = `
     <div class="search-settings">
         <table class="search-setting-table">
             <tr>
-                <td>Search string:</td>
-                <td>
-                    <input type="text" class="form-control search-string">
-                </td>
-                <td>
-                    <div class="dropdown">
-                      <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        ?
-                      </button>
-                      <div class="dropdown-menu dropdown-menu-right p-4" style="width: 500px;">
-                        <strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
-                        <p>
-                        <ul>
-                            <li>Just enter any text for full text search</li>
-                            <li><code>#abc</code> - returns notes with label abc</li>
-                            <li><code>#year = 2019</code> - matches notes with label <code>year</code> having value <code>2019</code></li>
-                            <li><code>#rock #pop</code> - matches notes which have both <code>rock</code> and <code>pop</code> labels</li>
-                            <li><code>#rock or #pop</code> - only one of the labels must be present</li>
-                            <li><code>#year &lt;= 2000</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
-                            <li><code>note.dateCreated >= MONTH-1</code> - notes created in the last month</li>
-                        </ul>
-                        </p>
-                    </div>
-                </td>
-            </tr>
-            <tr>
                 <td>Add search option:</td>
                 <td colspan="2" class="add-search-option">
+                    <button type="button" class="btn btn-sm" data-search-option-add="searchString">
+                        <span class="bx bx-text"></span> 
+                        search string
+                    </button>
+                    
                     <button type="button" class="btn btn-sm" data-search-option-add="ancestor">
                         <span class="bx bx-filter-alt"></span> 
                         ancestor
@@ -119,66 +102,7 @@ const TPL = `
                     </div>
                 </td>
             </tr>
-            <tbody class="search-options">
-                <tr data-search-option-conf="ancestor">
-                    <td title="Matched notes must be within subtree of given note.">
-                        Ancestor: </td>
-                    <td>
-                        <div class="input-group">
-                            <input class="ancestor form-control" placeholder="search for note by its name">
-                        </div>
-                    </td>
-                    <td>
-                        <span class="bx bx-x icon-action" data-search-option-del="ancestor"></span>
-                    </td>
-                </tr>
-                <tr data-search-option-conf="fastSearch">
-                    <td colspan="2">
-                        <span class="bx bx-run"></span>
-                    
-                        Fast search
-                    </td>
-                    <td>
-                        <span class="bx bx-x icon-action" data-search-option-del="fastSearch"></span>
-                    </td>
-                </tr>
-                <tr data-search-option-conf="includeArchivedNotes">
-                    <td colspan="2">
-                        <span class="bx bx-archive"></span>
-                    
-                        Include archived notes
-                    </td>
-                    <td>
-                        <span class="bx bx-x icon-action" data-search-option-del="includeArchivedNotes"></span>
-                    </td>
-                </tr>
-                <tr data-search-option-conf="orderBy">
-                    <td>
-                        <span class="bx bx-arrow-from-top"></span>
-                    
-                        Order by
-                    </td>
-                    <td>
-                        <select name="orderBy" class="form-control w-auto d-inline">
-                            <option value="relevancy">Relevancy (default)</option>
-                            <option value="title">Title</option>
-                            <option value="dateCreated">Date created</option>
-                            <option value="dateModified">Date of last modification</option>
-                            <option value="contentSize">Note content size</option>
-                            <option value="noteSize">Note content size including revisions</option>
-                            <option value="revisionCount">Number of revisions</option>
-                        </select>
-                        
-                        <select name="orderDirection" class="form-control w-auto d-inline">
-                            <option value="asc">Ascending (default)</option>
-                            <option value="desc">Descending</option>
-                        </select>
-                    </td>
-                    <td>
-                        <span class="bx bx-x icon-action" data-search-option-del="orderBy"></span>
-                    </td>
-                </tr>
-            </tbody>
+            <tbody class="search-options"></tbody>
             <tbody class="action-options"></tbody>
             <tbody>
                 <tr>
@@ -202,6 +126,14 @@ const TPL = `
         </table>
     </div>
 </div>`;
+
+const OPTION_CLASSES = [
+    SearchString,
+    Ancestor,
+    FastSearch,
+    IncludeArchivedNotes,
+    OrderBy
+];
 
 const ACTION_CLASSES = {};
 
@@ -236,50 +168,15 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         this.contentSized();
         this.overflowing();
 
-        this.$searchString = this.$widget.find(".search-string");
-        this.$searchString.on('input', () => this.searchStringSU.scheduleUpdate());
-        utils.bindElShortcut(this.$searchString, 'return', async () => {
-            await this.searchStringSU.updateNowIfNecessary();
-
-            this.refreshResults();
-        });
-
-        this.searchStringSU = new SpacedUpdate(async () => {
-            const searchString = this.$searchString.val();
-
-            await this.setAttribute('label', 'searchString', searchString);
-
-            if (this.note.title.startsWith('Search: ')) {
-                await server.put(`notes/${this.noteId}/change-title`, {
-                    title: 'Search: ' + (searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`)
-                });
-            }
-        }, 1000);
-
-        this.$ancestor = this.$widget.find('.ancestor');
-        noteAutocompleteService.initNoteAutocomplete(this.$ancestor);
-
-        this.$ancestor.on('autocomplete:closed', async () => {
-            const ancestorOfNoteId = this.$ancestor.getSelectedNoteId();
-
-            await this.setAttribute('relation', 'ancestor', ancestorOfNoteId);
-        });
-
         this.$widget.on('click', '[data-search-option-add]', async event => {
-            const searchOption = $(event.target).attr('data-search-option-add');
+            const searchOptionName = $(event.target).attr('data-search-option-add');
+            const clazz = OPTION_CLASSES.find(SearchOptionClass => SearchOptionClass.optionName === searchOptionName);
 
-            if (searchOption === 'fastSearch') {
-                await this.setAttribute('label', 'fastSearch');
+            if (clazz) {
+                await clazz.create(this.noteId);
             }
-            else if (searchOption === 'orderBy') {
-                await this.setAttribute('label', 'orderBy', 'relevancy');
-                await this.setAttribute('label', 'orderDirection', 'asc');
-            }
-            else if (searchOption === 'includeArchivedNotes') {
-                await this.setAttribute('label', 'includeArchivedNotes');
-            }
-            else if (searchOption === 'ancestor') {
-                await this.setAttribute('relation', 'ancestor', 'root');
+            else {
+                logError(`Unknown search option ${searchOptionName}`);
             }
 
             this.refresh();
@@ -307,19 +204,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
-        this.$orderBy = this.$widget.find('select[name=orderBy]');
-        this.$orderBy.on('change', async () => {
-            const orderBy = this.$orderBy.val();
-
-            await this.setAttribute('label', 'orderBy', orderBy);
-        });
-
-        this.$orderDirection = this.$widget.find('select[name=orderDirection]');
-        this.$orderDirection.on('change', async () => {
-            const orderDirection = this.$orderDirection.val();
-
-            await this.setAttribute('label', 'orderDirection', orderDirection);
-        });
+        this.$searchOptions = this.$widget.find('.search-options');
 
         this.$actionOptions = this.$widget.find('.action-options');
 
@@ -358,12 +243,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         this.$searchAndExecuteButton.on('click', () => this.searchAndExecute());
     }
 
-    async setAttribute(type, name, value = '') {
-        await server.put(`notes/${this.noteId}/set-attribute`, { type, name, value });
-
-        await ws.waitForMaxKnownEntityChangeId();
-    }
-
     async refreshResults() {
         await treeCache.reloadNotes([this.noteId]);
 
@@ -372,22 +251,21 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     async refreshWithNote(note) {
         this.$component.show();
-        this.$searchString.val(this.note.getLabelValue('searchString'));
 
-        for (const attrName of ['includeArchivedNotes', 'ancestor', 'fastSearch', 'orderBy']) {
-            const has = note.hasLabel(attrName) || note.hasRelation(attrName);
+        this.$searchOptions.empty();
 
-            this.$widget.find(`[data-search-option-add='${attrName}'`).toggle(!has);
-            this.$widget.find(`[data-search-option-conf='${attrName}'`).toggle(has);
-        }
+        for (const OptionClass of OPTION_CLASSES) {
+            const {attributeType, optionName} = OptionClass;
 
-        const ancestorNoteId = this.note.getRelationValue('ancestor');
+            const attr = this.note.getAttribute(attributeType, optionName);
 
-        await this.$ancestor.setNote(ancestorNoteId);
+            this.$widget.find(`[data-search-option-add='${optionName}'`).toggle(!attr);
+console.log(optionName, attr);
+            if (attr) {
+                const searchOption = new OptionClass(attr, this.note);
 
-        if (note.hasLabel('orderBy')) {
-            this.$orderBy.val(note.getLabelValue('orderBy'));
-            this.$orderDirection.val(note.getLabelValue('orderDirection') || 'asc');
+                this.$searchOptions.append(searchOption.render());
+            }
         }
 
         this.$actionOptions.empty();
@@ -418,11 +296,10 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         }
 
         this.$searchAndExecuteButton.css('visibility', actionLabels.length > 0 ? 'visible' : 'hidden');
-
-        //this.refreshResults(); // important specifically when this search note was not yet refreshed
     }
 
     focusOnSearchDefinitionEvent() {
+        // FIXME
         this.$searchString.focus();
     }
 
