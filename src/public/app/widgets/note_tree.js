@@ -185,6 +185,8 @@ const TPL = `
 </div>
 `;
 
+const MAX_SEARCH_RESULTS_IN_TREE = 100;
+
 export default class NoteTreeWidget extends TabAwareWidget {
     constructor(treeName) {
         super();
@@ -480,9 +482,19 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
 
                     data.result = treeCache.reloadNotes([noteId]).then(() => {
-                       const note = treeCache.getNoteFromCache(noteId);
+                        const note = treeCache.getNoteFromCache(noteId);
 
-                       return this.prepareChildren(note);
+                        let childNoteIds = note.getChildNoteIds();
+
+                        if (childNoteIds.length > MAX_SEARCH_RESULTS_IN_TREE) {
+                            childNoteIds = childNoteIds.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
+                        }
+
+                        return treeCache.getNotes(childNoteIds);
+                    }).then(() => {
+                        const note = treeCache.getNoteFromCache(noteId);
+
+                        return this.prepareChildren(note);
                     });
                 }
                 else {
@@ -494,6 +506,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             enhanceTitle: async function (event, data) {
                 const node = data.node;
+
+                if (!node.data.noteId) {
+                    // if there's "non-note" node, then don't enhance
+                    // this can happen for e.g. "Load error!" node
+                    return;
+                }
+
                 const $span = $(node.span);
 
                 $span.find('.tree-item-button').remove();
@@ -572,7 +591,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const hideArchivedNotes = this.hideArchivedNotes;
 
-        for (const branch of this.getChildBranches(parentNote)) {
+        let childBranches = this.getChildBranches(parentNote);
+
+        if (childBranches.length > MAX_SEARCH_RESULTS_IN_TREE) {
+            childBranches = childBranches.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
+        }
+
+        for (const branch of childBranches) {
             if (hideArchivedNotes) {
                 const note = branch.getNoteFromCache();
 

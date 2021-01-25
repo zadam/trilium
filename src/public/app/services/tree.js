@@ -104,7 +104,7 @@ function getSomeNotePath(note) {
     while (cur.noteId !== 'root') {
         path.push(cur.noteId);
 
-        const parents = cur.getParentNotes();
+        const parents = cur.getParentNotes().filter(note => note.type !== 'search');
 
         if (!parents.length) {
             logError(`Can't find parents for note ${cur.noteId}`);
