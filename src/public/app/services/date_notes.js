@@ -48,7 +48,7 @@ async function createSearchNote(opts = {}) {
 
     const attrsToUpdate = [
         opts.ancestor ? { type: 'relation', name: 'ancestor', value: opts.ancestorNoteId } : undefined,
-        opts.searchString ? { type: 'label', name: 'searchString', value: opts.searchString } : undefined
+        { type: 'label', name: 'searchString', value: opts.searchString }
     ].filter(attr => !!attr);
 
     if (attrsToUpdate.length > 0) {

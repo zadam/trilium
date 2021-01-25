@@ -1,8 +1,11 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
+import Component from "../component.js";
 
-export default class AbstractAction {
+export default class AbstractSearchAction extends Component {
     constructor(attribute, actionDef) {
+        super();
+
         this.attribute = attribute;
         this.actionDef = actionDef;
     }

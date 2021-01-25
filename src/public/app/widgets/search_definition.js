@@ -182,6 +182,24 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
+        this.$widget.on('click', '[data-action-add]', async event => {
+            const actionName = $(event.target).attr('data-action-add');
+
+            await server.post(`notes/${this.noteId}/attributes`, {
+                type: 'label',
+                name: 'action',
+                value: JSON.stringify({
+                    name: actionName
+                })
+            });
+
+            this.$widget.find('.action-add-toggle').dropdown('toggle');
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            this.refresh();
+        });
+
         this.$widget.on('click', '[data-search-option-del]', async event => {
             async function deleteAttr(note, attrName) {
                 for (const attr of note.getOwnedAttributes()) {
@@ -204,28 +222,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
-        this.$searchOptions = this.$widget.find('.search-options');
-
-        this.$actionOptions = this.$widget.find('.action-options');
-
-        this.$widget.on('click', '[data-action-add]', async event => {
-            const actionName = $(event.target).attr('data-action-add');
-
-            await server.post(`notes/${this.noteId}/attributes`, {
-                type: 'label',
-                name: 'action',
-                value: JSON.stringify({
-                    name: actionName
-                })
-            });
-
-            this.$widget.find('.action-add-toggle').dropdown('toggle');
-
-            await ws.waitForMaxKnownEntityChangeId();
-
-            this.refresh();
-        });
-
         this.$widget.on('click', '[data-action-conf-del]', async event => {
             const attributeId = $(event.target).closest('[data-attribute-id]').attr('data-attribute-id');
 
@@ -236,14 +232,17 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
+        this.$searchOptions = this.$widget.find('.search-options');
+        this.$actionOptions = this.$widget.find('.action-options');
+
         this.$searchButton = this.$widget.find('.search-button');
-        this.$searchButton.on('click', () => this.refreshResults());
+        this.$searchButton.on('click', () => this.triggerCommand('refreshResults'));
 
         this.$searchAndExecuteButton = this.$widget.find('.search-and-execute-button');
         this.$searchAndExecuteButton.on('click', () => this.searchAndExecute());
     }
 
-    async refreshResults() {
+    async refreshResultsCommand() {
         await treeCache.reloadNotes([this.noteId]);
 
         this.triggerEvent('searchRefreshed', {tabId: this.tabContext.tabId});
@@ -260,9 +259,10 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             const attr = this.note.getAttribute(attributeType, optionName);
 
             this.$widget.find(`[data-search-option-add='${optionName}'`).toggle(!attr);
-console.log(optionName, attr);
+
             if (attr) {
-                const searchOption = new OptionClass(attr, this.note);
+                const searchOption = new OptionClass(attr, this.note).setParent(this);
+                this.child(searchOption);
 
                 this.$searchOptions.append(searchOption.render());
             }
@@ -290,17 +290,13 @@ console.log(optionName, attr);
                 continue;
             }
 
-            const action = new ActionClass(actionAttr, actionDef);
+            const action = new ActionClass(actionAttr, actionDef).setParent(this);
+            this.child(action);
 
             this.$actionOptions.append(action.render());
         }
 
         this.$searchAndExecuteButton.css('visibility', actionLabels.length > 0 ? 'visible' : 'hidden');
-    }
-
-    focusOnSearchDefinitionEvent() {
-        // FIXME
-        this.$searchString.focus();
     }
 
     getContent() {
@@ -310,7 +306,7 @@ console.log(optionName, attr);
     async searchAndExecute() {
         await server.post(`search-and-execute-note/${this.noteId}`);
 
-        this.refreshResults();
+        this.triggerCommand('refreshResults');
 
         toastService.showMessage('Actions have been executed.', 3000);
     }

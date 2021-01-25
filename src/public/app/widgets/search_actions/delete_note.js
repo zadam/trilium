@@ -1,4 +1,4 @@
-import AbstractAction from "./abstract_action.js";
+import AbstractSearchAction from "./abstract_search_action.js";
 
 const TPL = `
 <tr>
@@ -12,7 +12,7 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class DeleteNoteSearchAction extends AbstractAction {
+export default class DeleteNoteSearchAction extends AbstractSearchAction {
     static get actionName() { return "deleteNote"; }
 
     doRender() {

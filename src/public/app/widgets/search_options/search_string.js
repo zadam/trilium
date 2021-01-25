@@ -41,17 +41,17 @@ export default class SearchString extends AbstractSearchOption {
 
     doRender() {
         const $option = $(TPL);
-        const $searchString = $option.find('.search-string');
-        $searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
+        this.$searchString = $option.find('.search-string');
+        this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
 
-        utils.bindElShortcut($searchString, 'return', async () => {
+        utils.bindElShortcut(this.$searchString, 'return', async () => {
             await this.spacedUpdate.updateNowIfNecessary();
 
-            this.refreshResults(); // FIXME!!!
+            this.triggerCommand('refreshResults');
         });
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const searchString = $searchString.val();
+            const searchString = this.$searchString.val();
 
             await this.setAttribute('label', 'searchString', searchString);
 
@@ -62,8 +62,12 @@ export default class SearchString extends AbstractSearchOption {
             }
         }, 1000);
 
-        $searchString.val(this.note.getLabelValue('searchString'));
+        this.$searchString.val(this.note.getLabelValue('searchString'));
 
         return $option;
+    }
+
+    focusOnSearchDefinitionEvent() {
+        this.$searchString.focus();
     }
 }

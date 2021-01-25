@@ -1,8 +1,11 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
+import Component from "../component.js";
 
-export default class AbstractSearchOption {
+export default class AbstractSearchOption extends Component {
     constructor(attribute, note) {
+        super();
+
         this.attribute = attribute;
         this.note = note;
     }
@@ -11,6 +14,10 @@ export default class AbstractSearchOption {
         await server.put(`notes/${noteId}/set-attribute`, { type, name, value });
 
         await ws.waitForMaxKnownEntityChangeId();
+    }
+
+    async setAttribute(type, name, value = '') {
+        await this.constructor.setAttribute(this.note.noteId, type, name, value);
     }
 
     render() {
