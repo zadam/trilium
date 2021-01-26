@@ -200,16 +200,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
-        this.$widget.on('click', '[data-action-conf-del]', async event => {
-            const attributeId = $(event.target).closest('[data-attribute-id]').attr('data-attribute-id');
-
-            await server.remove(`notes/${this.noteId}/attributes/${attributeId}`);
-
-            await ws.waitForMaxKnownEntityChangeId();
-
-            this.refresh();
-        });
-
         this.$searchOptions = this.$widget.find('.search-options');
         this.$actionOptions = this.$widget.find('.action-options');
 

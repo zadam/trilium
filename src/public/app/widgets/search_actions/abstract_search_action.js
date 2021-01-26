@@ -14,7 +14,7 @@ export default class AbstractSearchAction extends Component {
         try {
             const $rendered = this.doRender();
 
-            $rendered.attr('data-attribute-id', this.attribute.attributeId);
+            $rendered.find('.action-conf-del').on('click', () => this.deleteAction())
 
             return $rendered;
         }
@@ -38,5 +38,13 @@ export default class AbstractSearchAction extends Component {
         });
 
         await ws.waitForMaxKnownEntityChangeId();
+    }
+
+    async deleteAction() {
+        await server.remove(`notes/${this.attribute.noteId}/attributes/${this.attribute.attributeId}`);
+
+        await ws.waitForMaxKnownEntityChangeId();
+
+        await this.triggerCommand('refreshSearchDefinition');
     }
 }

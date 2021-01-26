@@ -24,7 +24,7 @@ const TPL = `
         </div>
     </td>
     <td>
-        <span class="bx bx-x icon-action" data-action-conf-del></span>
+        <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;
 
