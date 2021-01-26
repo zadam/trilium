@@ -30,14 +30,18 @@ export default class Ancestor extends AbstractSearchOption {
         noteAutocompleteService.initNoteAutocomplete($ancestor);
 
         $ancestor.on('autocomplete:closed', async () => {
-            const ancestorOfNoteId = $ancestor.getSelectedNoteId();
+            const ancestorNoteId = $ancestor.getSelectedNoteId();
 
-            await this.setAttribute('relation', 'ancestor', ancestorOfNoteId);
+            if (ancestorNoteId) {
+                await this.setAttribute('relation', 'ancestor', ancestorNoteId);
+            }
         });
 
         const ancestorNoteId = this.note.getRelationValue('ancestor');
 
-        $ancestor.setNote(ancestorNoteId);
+        if (ancestorNoteId !== 'root') {
+            $ancestor.setNote(ancestorNoteId);
+        }
 
         return $option;
     }

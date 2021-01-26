@@ -64,7 +64,7 @@ function error(message) {
 
 const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets" ];
 
-function request(req, timeMs) {
+function request(req, res, timeMs) {
     for (const bl of requestBlacklist) {
         if (req.url.startsWith(bl)) {
             return;
@@ -76,7 +76,7 @@ function request(req, timeMs) {
     }
 
     info((timeMs >= 10 ? "Slow " : "") +
-        req.method + " " + req.url + " took " + timeMs + "ms");
+        res.statusCode + " " + req.method + " " + req.url + " took " + timeMs + "ms");
 }
 
 function pad(num) {

@@ -7,7 +7,7 @@ const TPL = `
 <tr>
     <td class="title-column">Search string:</td>
     <td>
-        <input type="text" class="form-control search-string">
+        <input type="text" class="form-control search-string" placeholder="fulltext keywords, #tag = value ...">
     </td>
     <td class="button-column">
         <div class="dropdown help-dropdown">
@@ -63,8 +63,6 @@ export default class SearchString extends AbstractSearchOption {
         }, 1000);
 
         this.$searchString.val(this.note.getLabelValue('searchString'));
-
-        utils.initHelpDropdown($option);
 
         return $option;
     }

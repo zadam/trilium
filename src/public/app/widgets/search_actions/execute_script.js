@@ -21,6 +21,10 @@ const TPL = `
                 For example to append a string to a note's title, use this small script:
                 
                 <pre>note.title = note.title + ' - suffix';</pre>
+                
+                More complex example would be deleting all matched note's attributes:
+                
+                <pre>for (const attr of note.getOwnedAttributes) { attr.isDeleted = true; attr.save(); }</pre>
               </div>
             </div>
         

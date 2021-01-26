@@ -47,8 +47,8 @@ async function createSearchNote(opts = {}) {
     const note = await server.post('search-note');
 
     const attrsToUpdate = [
-        opts.ancestor ? { type: 'relation', name: 'ancestor', value: opts.ancestorNoteId } : undefined,
-        { type: 'label', name: 'searchString', value: opts.searchString }
+        opts.ancestorNoteId ? { type: 'relation', name: 'ancestor', value: opts.ancestorNoteId } : undefined,
+        { type: 'label', name: 'searchString', value: opts.searchStringe }
     ].filter(attr => !!attr);
 
     if (attrsToUpdate.length > 0) {

@@ -1,6 +1,7 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
 import Component from "../component.js";
+import utils from "../../services/utils.js";
 
 export default class AbstractSearchAction extends Component {
     constructor(attribute, actionDef) {
@@ -17,6 +18,8 @@ export default class AbstractSearchAction extends Component {
             $rendered.find('.action-conf-del')
                 .on('click', () => this.deleteAction())
                 .attr('title', 'Remove this search action');
+
+            utils.initHelpDropdown($rendered);
 
             return $rendered;
         }

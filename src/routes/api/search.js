@@ -9,34 +9,28 @@ const searchService = require('../../services/search/services/search');
 async function search(note) {
     let searchResultNoteIds;
 
-    try {
-        const searchScript = note.getRelationValue('searchScript');
-        const searchString = note.getLabelValue('searchString');
+    const searchScript = note.getRelationValue('searchScript');
+    const searchString = note.getLabelValue('searchString');
 
-        if (searchScript) {
-            searchResultNoteIds = await searchFromRelation(note, 'searchScript');
-        } else {
-            const searchContext = new SearchContext({
-                fastSearch: note.hasLabel('fastSearch'),
-                ancestorNoteId: note.getRelationValue('ancestor'),
-                includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
-                orderBy: note.getLabelValue('orderBy'),
-                orderDirection: note.getLabelValue('orderDirection'),
-                fuzzyAttributeSearch: false
-            });
+    if (searchScript) {
+        searchResultNoteIds = await searchFromRelation(note, 'searchScript');
+    } else {
+        const searchContext = new SearchContext({
+            fastSearch: note.hasLabel('fastSearch'),
+            ancestorNoteId: note.getRelationValue('ancestor'),
+            includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
+            orderBy: note.getLabelValue('orderBy'),
+            orderDirection: note.getLabelValue('orderDirection'),
+            fuzzyAttributeSearch: false
+        });
 
-            searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
-                .map(sr => sr.noteId);
-        }
-
-        // we won't return search note's own noteId
-        // also don't allow root since that would force infinite cycle
-        return searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
-    } catch (e) {
-        log.error(`Search failed for note ${note.noteId}: ` + e.message + ": " + e.stack);
-
-        throw new Error("Search failed, see logs for details.");
+        searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
+            .map(sr => sr.noteId);
     }
+
+    // we won't return search note's own noteId
+    // also don't allow root since that would force infinite cycle
+    return searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
 }
 
 async function searchFromNote(req) {
@@ -55,13 +49,7 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    let searchResultNoteIds = await search(note);
-
-    if (searchResultNoteIds.length > 200) {
-        searchResultNoteIds = searchResultNoteIds.slice(0, 200);
-    }
-
-    return searchResultNoteIds;
+    return await search(note);
 }
 
 const ACTION_HANDLERS = {

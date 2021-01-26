@@ -101,6 +101,11 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             if (resultHandler) {
                 if (result && result.then) {
                     result.then(actualResult => resultHandler(req, res, actualResult))
+                        .catch(e => {
+                            log.error(`${method} ${path} threw exception: ` + e.stack);
+
+                            res.status(500).send(e.message);
+                        });
                 }
                 else {
                     resultHandler(req, res, result);
@@ -110,10 +115,10 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
         catch (e) {
             log.error(`${method} ${path} threw exception: ` + e.stack);
 
-            res.sendStatus(500);
+            res.status(500).send(e.message);
         }
 
-        log.request(req, Date.now() - start);
+        log.request(req, res, Date.now() - start);
     });
 }
 

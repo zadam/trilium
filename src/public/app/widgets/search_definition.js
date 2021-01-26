@@ -1,4 +1,3 @@
-import noteAutocompleteService from "../services/note_autocomplete.js";
 import server from "../services/server.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeCache from "../services/tree_cache.js";
@@ -18,12 +17,13 @@ import FastSearch from "./search_options/fast_search.js";
 import Ancestor from "./search_options/ancestor.js";
 import IncludeArchivedNotes from "./search_options/include_archived_notes.js";
 import OrderBy from "./search_options/order_by.js";
+import SearchScript from "./search_options/search_script.js";
 
 const TPL = `
 <div class="search-definition-widget">
     <style> 
     .search-setting-table {
-        margin-top: 7px;
+        margin-top: 0;
         margin-bottom: 7px;
         width: 100%;
         border-collapse: separate;
@@ -63,6 +63,10 @@ const TPL = `
     .search-definition-widget input:invalid {
         border: 3px solid red;
     }
+
+    .add-search-option button {
+        margin-top: 5px; /* to give some spacing when buttons overflow on the next line */
+    }
     </style>
 
     <div class="search-settings">
@@ -73,6 +77,11 @@ const TPL = `
                     <button type="button" class="btn btn-sm" data-search-option-add="searchString">
                         <span class="bx bx-text"></span> 
                         search string
+                    </button>
+                    
+                    <button type="button" class="btn btn-sm" data-search-option-add="searchScript">
+                        <span class="bx bx-code"></span> 
+                        search script
                     </button>
                     
                     <button type="button" class="btn btn-sm" data-search-option-add="ancestor">
@@ -150,6 +159,7 @@ const TPL = `
 
 const OPTION_CLASSES = [
     SearchString,
+    SearchScript,
     Ancestor,
     FastSearch,
     IncludeArchivedNotes,
@@ -232,7 +242,12 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
     }
 
     async refreshResultsCommand() {
-        await treeCache.reloadNotes([this.noteId]);
+        try {
+            await treeCache.reloadNotes([this.noteId]);
+        }
+        catch (e) {
+            toastService.showError(e.message);
+        }
 
         this.triggerEvent('searchRefreshed', {tabId: this.tabContext.tabId});
     }

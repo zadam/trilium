@@ -1,6 +1,7 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
 import Component from "../component.js";
+import utils from "../../services/utils.js";
 
 export default class AbstractSearchOption extends Component {
     constructor(attribute, note) {
@@ -27,6 +28,8 @@ export default class AbstractSearchOption extends Component {
             $rendered.find('.search-option-del')
                 .on('click', () => this.deleteOption())
                 .attr('title', 'Remove this search option');
+
+            utils.initHelpDropdown($rendered);
 
             return $rendered;
         }
