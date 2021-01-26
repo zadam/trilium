@@ -24,7 +24,7 @@ export default class AbstractSearchOption extends Component {
         try {
             const $rendered = this.doRender();
 
-            $rendered.attr('data-attribute-id', this.attribute.attributeId);
+            $rendered.find('.search-option-del').on('click', () => this.deleteOption())
 
             return $rendered;
         }
@@ -36,4 +36,20 @@ export default class AbstractSearchOption extends Component {
 
     // to be overriden
     doRender() {}
+
+    async deleteOption() {
+        await this.deleteAttribute(this.constructor.attributeType, this.constructor.optionName);
+
+        await ws.waitForMaxKnownEntityChangeId();
+
+        await this.triggerCommand('refreshSearchDefinition');
+    }
+
+    async deleteAttribute(type, name) {
+        for (const attr of this.note.getOwnedAttributes()) {
+            if (attr.type === type && attr.name === name) {
+                await server.remove(`notes/${this.note.noteId}/attributes/${attr.attributeId}`);
+            }
+        }
+    }
 }

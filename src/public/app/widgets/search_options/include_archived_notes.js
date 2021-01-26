@@ -8,7 +8,7 @@ const TPL = `
         Include archived notes
     </td>
     <td>
-        <span class="bx bx-x icon-action" data-search-option-del="includeArchivedNotes"></span>
+        <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;
 

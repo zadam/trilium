@@ -24,7 +24,7 @@ const TPL = `
         </select>
     </td>
     <td>
-        <span class="bx bx-x icon-action" data-search-option-del="orderBy"></span>
+        <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;
 
@@ -57,5 +57,11 @@ export default class OrderBy extends AbstractSearchOption {
         $orderDirection.val(this.note.getLabelValue('orderDirection') || 'asc');
 
         return $option;
+    }
+
+    async deleteOption() {
+        await this.deleteAttribute('label', 'orderDirection');
+
+        await super.deleteOption();
     }
 }

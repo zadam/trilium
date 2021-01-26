@@ -200,28 +200,6 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             this.refresh();
         });
 
-        this.$widget.on('click', '[data-search-option-del]', async event => {
-            async function deleteAttr(note, attrName) {
-                for (const attr of note.getOwnedAttributes()) {
-                    if (attr.name === attrName) {
-                        await server.remove(`notes/${note.noteId}/attributes/${attr.attributeId}`);
-                    }
-                }
-            }
-
-            const searchOption = $(event.target).attr('data-search-option-del');
-
-            await deleteAttr(this.note, searchOption);
-
-            if (searchOption === 'orderBy') {
-                await deleteAttr(this.note, 'orderDirection');
-            }
-
-            await ws.waitForMaxKnownEntityChangeId();
-
-            this.refresh();
-        });
-
         this.$widget.on('click', '[data-action-conf-del]', async event => {
             const attributeId = $(event.target).closest('[data-attribute-id]').attr('data-attribute-id');
 
@@ -246,6 +224,10 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
         await treeCache.reloadNotes([this.noteId]);
 
         this.triggerEvent('searchRefreshed', {tabId: this.tabContext.tabId});
+    }
+
+    async refreshSearchDefinitionCommand() {
+        await this.refresh();
     }
 
     async refreshWithNote(note) {

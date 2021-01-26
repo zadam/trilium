@@ -28,6 +28,8 @@ const TPL = `
             </ul>
             </p>
         </div>
+        
+        <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;
 
