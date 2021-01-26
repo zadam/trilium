@@ -73,11 +73,7 @@ function setupGlobs() {
         libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`);
     }
 
-    const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";
-
-    $(document).on("click", "*[data-help-page]", e => {
-        window.open(wikiBaseUrl + $(e.target).attr("data-help-page"), '_blank');
-    });
+    utils.initHelpButtons($(window));
 
     $("body").on("click", "a.external", function () {
         window.open($(this).attr("href"), '_blank');

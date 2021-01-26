@@ -317,6 +317,23 @@ function timeLimit(promise, limitMs) {
     });
 }
 
+function initHelpDropdown($el) {
+    // stop inside clicks from closing the menu
+    const $dropdownMenu = $el.find('.help-dropdown .dropdown-menu');
+    $dropdownMenu.on('click', e => e.stopPropagation());
+
+    // previous propagation stop will also block help buttons from being opened so we need to re-init for this element
+    initHelpButtons($dropdownMenu);
+}
+
+const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/"
+
+function initHelpButtons($el) {
+    $el.on("click", "*[data-help-page]", e => {
+        window.open(wikiBaseUrl + $(e.target).attr("data-help-page"), '_blank');
+    });
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -355,5 +372,7 @@ export default {
     copySelectionToClipboard,
     isCKEditorInitialized,
     dynamicRequire,
-    timeLimit
+    timeLimit,
+    initHelpDropdown,
+    initHelpButtons
 };
