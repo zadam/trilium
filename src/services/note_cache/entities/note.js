@@ -368,6 +368,20 @@ class Note {
         return arr;
     }
 
+    getDistanceToAncestor(ancestorNoteId) {
+        if (this.noteId === ancestorNoteId) {
+            return 0;
+        }
+
+        let minDistance = 999_999;
+
+        for (const parent of this.parents) {
+            minDistance = Math.min(minDistance, parent.getDistanceToAncestor(ancestorNoteId) + 1);
+        }
+
+        return minDistance;
+    }
+
     decrypt() {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             this.title = protectedSessionService.decryptString(this.title);

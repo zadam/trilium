@@ -4,6 +4,7 @@ class SearchContext {
     constructor(params = {}) {
         this.fastSearch = !!params.fastSearch;
         this.ancestorNoteId = params.ancestorNoteId;
+        this.ancestorDepth = params.ancestorDepth;
         this.includeArchivedNotes = !!params.includeArchivedNotes;
         this.orderBy = params.orderBy;
         this.orderDirection = params.orderDirection;

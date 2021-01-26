@@ -6,10 +6,11 @@ const log = require('../../log');
 const noteCache = require('../../note_cache/note_cache');
 
 class AncestorExp extends Expression {
-    constructor(ancestorNoteId) {
+    constructor(ancestorNoteId, ancestorDepth) {
         super();
 
         this.ancestorNoteId = ancestorNoteId;
+        this.ancestorDepthComparator = this.getComparator(ancestorDepth);
     }
 
     execute(inputNoteSet, executionContext) {
@@ -21,7 +22,45 @@ class AncestorExp extends Expression {
             return new NoteSet([]);
         }
 
-        return new NoteSet(ancestorNote.subtreeNotes).intersection(inputNoteSet);
+        const subTreeNoteSet = new NoteSet(ancestorNote.subtreeNotes).intersection(inputNoteSet);
+
+        if (!this.ancestorDepthComparator) {
+            return subTreeNoteSet;
+        }
+
+        const depthConformingNoteSet = new NoteSet([]);
+
+        for (const note of subTreeNoteSet.notes) {
+            const distance = note.getDistanceToAncestor(ancestorNote.noteId);
+
+            if (this.ancestorDepthComparator(distance)) {
+                depthConformingNoteSet.add(note);
+            }
+        }
+
+        return depthConformingNoteSet;
+    }
+
+    getComparator(depthCondition) {
+        if (!depthCondition) {
+            return null;
+        }
+
+        const comparedDepth = parseInt(depthCondition.substr(2));
+
+        if (depthCondition.startsWith("eq")) {
+            return depth => depth === comparedDepth;
+        }
+        else if (depthCondition.startsWith("gt")) {
+            return depth => depth > comparedDepth;
+        }
+        else if (depthCondition.startsWith("lt")) {
+            return depth => depth < comparedDepth;
+        }
+        else {
+            log.error(`Unrecognized depth condition value ${depthCondition}`);
+            return null;
+        }
     }
 }
 

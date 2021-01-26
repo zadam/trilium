@@ -18,6 +18,7 @@ async function search(note) {
         const searchContext = new SearchContext({
             fastSearch: note.hasLabel('fastSearch'),
             ancestorNoteId: note.getRelationValue('ancestor'),
+            ancestorDepth: note.getLabelValue('ancestorDepth'),
             includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
             orderBy: note.getLabelValue('orderBy'),
             orderDirection: note.getLabelValue('orderDirection'),

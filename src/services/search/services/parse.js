@@ -410,7 +410,7 @@ function getExpression(tokens, searchContext, level = 0) {
 function parse({fulltextTokens, expressionTokens, searchContext}) {
     let exp = AndExp.of([
         searchContext.includeArchivedNotes ? null : new PropertyComparisonExp(searchContext, "isarchived", buildComparator("=", "false")),
-        searchContext.ancestorNoteId ? new AncestorExp(searchContext.ancestorNoteId) : null,
+        searchContext.ancestorNoteId ? new AncestorExp(searchContext.ancestorNoteId, searchContext.ancestorDepth) : null,
         getFulltext(fulltextTokens, searchContext),
         getExpression(expressionTokens, searchContext)
     ]);
