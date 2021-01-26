@@ -3,10 +3,7 @@ import AbstractSearchAction from "./abstract_search_action.js";
 
 const TPL = `
 <tr>
-    <td>
-        Set label value:
-    </td>
-    <td>
+    <td colspan="2">
         <div style="display: flex; align-items: center">
             <div style="display: flex; align-items: center">
                 <div style="margin-right: 15px;" class="text-nowrap">Set label</div> 
@@ -23,7 +20,7 @@ const TPL = `
             </div>
         </div>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

@@ -8,15 +8,14 @@ const TPL = `
     </td>
     <td>
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 15px;" class="text-nowrap">Relation name:</div> 
-            
             <input type="text" 
                 class="form-control relation-name"                    
                 pattern="[\\p{L}\\p{N}_:]+"
+                placeholder="relation name"
                 title="Alphanumeric characters, underscore and colon are allowed characters."/>
         </div>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

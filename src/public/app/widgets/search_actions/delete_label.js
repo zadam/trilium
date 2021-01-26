@@ -7,16 +7,13 @@ const TPL = `
         Delete label:
     </td>
     <td>
-        <div style="display: flex; align-items: center">
-            <div style="margin-right: 15px;" class="text-nowrap">Label name:</div> 
-            
-            <input type="text" 
-               class="form-control label-name"
-               pattern="[\\p{L}\\p{N}_:]+"
-               title="Alphanumeric characters, underscore and colon are allowed characters."/>
-        </div>
+        <input type="text" 
+           class="form-control label-name"
+           pattern="[\\p{L}\\p{N}_:]+"
+           title="Alphanumeric characters, underscore and colon are allowed characters."
+           placeholder="label name"/>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

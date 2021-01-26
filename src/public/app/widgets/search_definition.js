@@ -30,6 +30,23 @@ const TPL = `
         border-spacing: 10px;
     }
     
+    .search-setting-table .button-column {
+        /* minimal width so that table remains static sized and most space remains for middle column with settings */
+        width: 50px;
+        white-space: nowrap;
+        text-align: right;
+    }
+    
+    .search-setting-table .title-column {
+        /* minimal width so that table remains static sized and most space remains for middle column with settings */
+        width: 50px;
+        white-space: nowrap;    
+    }
+    
+    .search-setting-table .button-column .dropdown-menu {
+        white-space: normal;
+    }
+    
     .attribute-list hr {
         height: 1px;
         border-color: var(--main-border-color);
@@ -47,7 +64,7 @@ const TPL = `
     <div class="search-settings">
         <table class="search-setting-table">
             <tr>
-                <td>Add search option:</td>
+                <td class="title-column">Add search option:</td>
                 <td colspan="2" class="add-search-option">
                     <button type="button" class="btn btn-sm" data-search-option-add="searchString">
                         <span class="bx bx-text"></span> 

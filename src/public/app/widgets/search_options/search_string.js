@@ -5,15 +5,13 @@ import server from "../../services/server.js";
 
 const TPL = `
 <tr>
-    <td>Search string:</td>
+    <td class="title-column">Search string:</td>
     <td>
         <input type="text" class="form-control search-string">
     </td>
-    <td>
+    <td class="button-column">
         <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            ?
-          </button>
+          <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
           <div class="dropdown-menu dropdown-menu-right p-4" style="width: 500px;">
             <strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
             <p>

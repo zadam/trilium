@@ -7,15 +7,11 @@ const TPL = `
         Execute script:
     </td>
     <td>
-        <div style="display: flex; align-items: center">
-            <div style="margin-right: 15px;" class="text-nowrap">Script: </div> 
-            
-            <input type="text" 
-               class="form-control script"
-               placeholder="note.title = note.title + '- suffix';"/>
-        </div>
+        <input type="text" 
+           class="form-control script"
+           placeholder="note.title = note.title + '- suffix';"/>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

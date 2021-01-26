@@ -2,7 +2,7 @@ import AbstractSearchOption from "./abstract_search_option.js";
 
 const TPL = `
 <tr data-search-option-conf="orderBy">
-    <td>
+    <td class="title-column">
         <span class="bx bx-arrow-from-top"></span>
     
         Order by
@@ -23,7 +23,7 @@ const TPL = `
             <option value="desc">Descending</option>
         </select>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;

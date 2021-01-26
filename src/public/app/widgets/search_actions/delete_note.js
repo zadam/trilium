@@ -7,7 +7,7 @@ const TPL = `
     
         Delete matched note
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

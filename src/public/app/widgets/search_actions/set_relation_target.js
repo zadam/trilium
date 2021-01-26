@@ -4,10 +4,7 @@ import noteAutocompleteService from "../../services/note_autocomplete.js";
 
 const TPL = `
 <tr>
-    <td>
-        Set relation target note:
-    </td>
-    <td>        
+    <td colspan="2">
         <div style="display: flex; align-items: center">
             <div style="margin-right: 15px;" class="text-nowrap">Set relation</div> 
             
@@ -23,7 +20,7 @@ const TPL = `
             <input type="text" class="form-control target-note"/>
         </div>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

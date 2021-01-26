@@ -3,14 +3,15 @@ import noteAutocompleteService from "../../services/note_autocomplete.js";
 
 const TPL = `
 <tr>
-    <td title="Matched notes must be within subtree of given note.">
-        Ancestor: </td>
+    <td class="title-column" title="Matched notes must be within subtree of given note.">
+        Ancestor: 
+    </td>
     <td>
         <div class="input-group">
             <input class="ancestor form-control" placeholder="search for note by its name">
         </div>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;

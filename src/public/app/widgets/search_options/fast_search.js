@@ -7,7 +7,7 @@ const TPL = `
 
         Fast search
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action search-option-del"></span>
     </td>
 </tr>`;

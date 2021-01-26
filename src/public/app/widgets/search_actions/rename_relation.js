@@ -3,13 +3,10 @@ import AbstractSearchAction from "./abstract_search_action.js";
 
 const TPL = `
 <tr>
-    <td>
-        Rename relation:
-    </td>
-    <td>
+    <td colspan="2">
         <div style="display: flex; align-items: center">
             <div style="display: flex; align-items: center">
-                <div style="margin-right: 15px;">From:</div> 
+                <div style="margin-right: 15px;">Rename relation from:</div> 
                 
                 <input type="text" 
                     class="form-control old-relation-name" 
@@ -27,7 +24,7 @@ const TPL = `
             </div>
         </div>
     </td>
-    <td>
+    <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;
