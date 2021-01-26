@@ -30,6 +30,10 @@ const TPL = `
         border-spacing: 10px;
     }
     
+    .search-setting-table div {
+        white-space: nowrap;
+    }
+    
     .search-setting-table .button-column {
         /* minimal width so that table remains static sized and most space remains for middle column with settings */
         width: 50px;

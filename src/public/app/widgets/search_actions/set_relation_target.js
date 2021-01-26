@@ -6,18 +6,20 @@ const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 15px;" class="text-nowrap">Set relation</div> 
+            <div style="margin-right: 10px;" class="text-nowrap">Set relation</div> 
             
             <input type="text" 
                 class="form-control relation-name" 
                 placeholder="relation name"
                 pattern="[\\p{L}\\p{N}_:]+"
+                style="flex-shrink: 3"
                 title="Alphanumeric characters, underscore and colon are allowed characters."/>
-        </div>
-        <div style="display: flex; align-items: center; margin-top: 10px;">
-            <div style="margin-right: 15px;" class="text-nowrap">target to note</div>
+                
+            <div style="margin-right: 10px; margin-left: 10px;" class="text-nowrap">to</div>
             
-            <input type="text" class="form-control target-note"/>
+            <div class="input-group" style="flex-shrink: 2">
+                <input type="text" class="form-control target-note" placeholder="target note"/>
+            </div>
         </div>
     </td>
     <td class="button-column">

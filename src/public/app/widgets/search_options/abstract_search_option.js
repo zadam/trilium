@@ -24,7 +24,9 @@ export default class AbstractSearchOption extends Component {
         try {
             const $rendered = this.doRender();
 
-            $rendered.find('.search-option-del').on('click', () => this.deleteOption())
+            $rendered.find('.search-option-del')
+                .on('click', () => this.deleteOption())
+                .attr('title', 'Remove this search option');
 
             return $rendered;
         }

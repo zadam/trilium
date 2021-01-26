@@ -12,7 +12,7 @@ const TPL = `
     <td class="button-column">
         <div class="dropdown help-dropdown">
           <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
-          <div class="dropdown-menu dropdown-menu-right p-4" style="width: 500px;">
+          <div class="dropdown-menu dropdown-menu-right p-4">
             <strong>Search syntax</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search syntax</button>
             <p>
             <ul>

@@ -14,7 +14,9 @@ export default class AbstractSearchAction extends Component {
         try {
             const $rendered = this.doRender();
 
-            $rendered.find('.action-conf-del').on('click', () => this.deleteAction())
+            $rendered.find('.action-conf-del')
+                .on('click', () => this.deleteAction())
+                .attr('title', 'Remove this search action');
 
             return $rendered;
         }
