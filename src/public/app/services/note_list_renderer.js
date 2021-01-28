@@ -220,7 +220,9 @@ class NoteListRenderer {
 
         const $container = this.$noteList.find('.note-list-container').empty();
 
-        const imageLinks = this.parentNote ? this.parentNote.getRelations('imageLink') : [];
+        const includedLinks = this.parentNote
+            ? this.parentNote.getRelations().filter(rel => rel.name === 'imageLink' || rel.name === 'includeNoteLink')
+            : [];
 
         const startIdx = (this.page - 1) * this.pageSize;
         const endIdx = startIdx + this.pageSize;
@@ -229,8 +231,9 @@ class NoteListRenderer {
         const pageNotes = await treeCache.getNotes(pageNoteIds);
 
         for (const note of pageNotes) {
-            // image is already visible in the parent note so no need to display it separately in the book
-            if (imageLinks.find(rel => rel.value === note.noteId)) {
+            // note is already visible (either as image or included note) in the parent note
+            // so no need to display it separately in the book
+            if (includedLinks.find(rel => rel.value === note.noteId)) {
                 continue;
             }
 
