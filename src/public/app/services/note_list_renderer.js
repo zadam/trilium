@@ -152,10 +152,19 @@ class NoteListRenderer {
         this.$noteList = $(TPL);
 
         // note list must be added to the DOM immediatelly, otherwise some functionality scripting (canvas) won't work
-        $parent.empty().append(this.$noteList);
+        $parent.empty();
 
         this.parentNote = parentNote;
-        this.noteIds = noteIds;
+        const includedNoteIds = this.getIncludedNoteIds();
+
+        this.noteIds = noteIds.filter(noteId => !includedNoteIds.has(noteId));
+
+        if (this.noteIds.length === 0) {
+            return;
+        }
+
+        $parent.append(this.$noteList);
+
         this.page = 1;
         this.pageSize = parseInt(parentNote.getLabelValue('pageSize'));
 
@@ -193,6 +202,16 @@ class NoteListRenderer {
         });
     }
 
+    /** @return {Set<string>} list of noteIds included (images, included notes) into a parent note and which
+     *                        don't have to be shown in the note list. */
+    getIncludedNoteIds() {
+        const includedLinks = this.parentNote
+            ? this.parentNote.getRelations().filter(rel => rel.name === 'imageLink' || rel.name === 'includeNoteLink')
+            : [];
+
+        return new Set(includedLinks.map(rel => rel.value));
+    }
+
     async toggleViewType(type) {
         if (type !== 'list' && type !== 'grid') {
             throw new Error(`Invalid view type ${type}`);
@@ -220,10 +239,6 @@ class NoteListRenderer {
 
         const $container = this.$noteList.find('.note-list-container').empty();
 
-        const includedLinks = this.parentNote
-            ? this.parentNote.getRelations().filter(rel => rel.name === 'imageLink' || rel.name === 'includeNoteLink')
-            : [];
-
         const startIdx = (this.page - 1) * this.pageSize;
         const endIdx = startIdx + this.pageSize;
 
@@ -231,12 +246,6 @@ class NoteListRenderer {
         const pageNotes = await treeCache.getNotes(pageNoteIds);
 
         for (const note of pageNotes) {
-            // note is already visible (either as image or included note) in the parent note
-            // so no need to display it separately in the book
-            if (includedLinks.find(rel => rel.value === note.noteId)) {
-                continue;
-            }
-
             const $card = await this.renderNote(note, this.parentNote.hasLabel('expanded'));
 
             $container.append($card);
