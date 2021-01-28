@@ -395,6 +395,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             dnd5: {
                 autoExpandMS: 600,
+                preventLazyParents: false,
                 dragStart: (node, data) => {
                     // don't allow dragging root node
                     if (node.data.noteId === hoistedNoteService.getHoistedNoteId()

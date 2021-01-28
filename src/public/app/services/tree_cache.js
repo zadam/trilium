@@ -167,7 +167,7 @@ class TreeCache {
         for (const note of resp.notes) {
             if (note.type === 'search') {
                 const searchResultNoteIds = await server.get('search-note/' + note.noteId);
-console.log("searchResultNoteIds", searchResultNoteIds);
+
                 if (!Array.isArray(searchResultNoteIds)) {
                     throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
                 }
