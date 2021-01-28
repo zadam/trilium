@@ -45,12 +45,6 @@ export default class TypeWidget extends TabAwareWidget {
         this.$widget.scrollTop(0);
     }
 
-    autoBookDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
-        }
-    }
-
     textPreviewDisabledEvent({tabContext}) {
         if (this.isTab(tabContext.tabId)) {
             this.refresh();

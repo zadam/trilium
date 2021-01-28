@@ -11,7 +11,7 @@ const TPL = `
     }
     
     .note-detail-code-editor {
-        min-height: 300px;
+        min-height: 50px;
     }
     </style>
 

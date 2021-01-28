@@ -62,8 +62,7 @@ const TPL = `
         padding-top: 10px;
         border: 0 !important;
         box-shadow: none !important;
-        /* This is because with empty content height of editor is 0 and it's impossible to click into it */
-        min-height: 300px;
+        min-height: 50px;
     }
     </style>
 

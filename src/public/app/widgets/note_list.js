@@ -27,7 +27,8 @@ export default class NoteListWidget extends TabAwareWidget {
             && (
                 ['book', 'search', 'code'].includes(this.note.type)
                 || (this.note.type === 'text' && this.note.hasChildren())
-            );
+            )
+            && !this.note.hasLabel('hideChildrenOverview');
     }
 
     doRender() {
@@ -90,12 +91,6 @@ export default class NoteListWidget extends TabAwareWidget {
         this.shownNoteId = null;
 
         this.checkRenderStatus();
-    }
-
-    autoBookDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
-        }
     }
 
     notesReloadedEvent({noteIds}) {

@@ -60,7 +60,6 @@ class TabContext extends Component {
         this.notePath = resolvedNotePath;
         this.noteId = noteId;
 
-        this.autoBookDisabled = false;
         this.textPreviewDisabled = false;
         this.codePreviewDisabled = false;
 

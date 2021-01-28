@@ -169,17 +169,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !this.tabContext.autoBookDisabled
-            && note.hasChildren()
-            && utils.isDesktop()) {
-
-            const noteComplement = await this.tabContext.getNoteComplement();
-
-            if (utils.isHtmlEmpty(noteComplement.content)) {
-                type = 'book';
-            }
-        }
-
         if (type === 'text' && !this.tabContext.textPreviewDisabled) {
             const noteComplement = await this.tabContext.getNoteComplement();
 
@@ -306,12 +295,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     beforeUnloadEvent() {
         this.spacedUpdate.updateNowIfNecessary();
-    }
-
-    autoBookDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
-        }
     }
 
     textPreviewDisabledEvent({tabContext}) {
