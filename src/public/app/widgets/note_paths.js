@@ -60,6 +60,7 @@ export default class NotePathsWidget extends TabAwareWidget {
 
         this.$currentPath = this.$widget.find('.current-path');
         this.$dropdown = this.$widget.find(".dropdown");
+        this.$dropdownToggle = this.$widget.find('.dropdown-toggle');
 
         this.$notePathList = this.$dropdown.find(".note-path-list");
 
@@ -101,6 +102,8 @@ export default class NotePathsWidget extends TabAwareWidget {
 
             parentNoteId = noteId;
         }
+
+        this.$dropdownToggle.dropdown('hide');
     }
 
     async renderDropdown() {
@@ -142,20 +145,20 @@ export default class NotePathsWidget extends TabAwareWidget {
     async addPath(notePath, isCurrent) {
         const title = await treeService.getNotePathTitle(notePath);
 
-        const noteLink = await linkService.createNoteLink(notePath, {title});
+        const $noteLink = await linkService.createNoteLink(notePath, {title});
 
-        noteLink
+        $noteLink
             .addClass("dropdown-item");
 
-        noteLink
+        $noteLink
             .find('a')
             .addClass("no-tooltip-preview");
 
         if (isCurrent) {
-            noteLink.addClass("current");
+            $noteLink.addClass("current");
         }
 
-        this.$notePathList.append(noteLink);
+        this.$notePathList.append($noteLink);
     }
 
     entitiesReloadedEvent({loadResults}) {
