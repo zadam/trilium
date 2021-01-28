@@ -11,12 +11,17 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const noteRevisionService = require('./note_revisions.js');
 const isSvg = require('is-svg');
+const isAnimated = require('is-animated');
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const origImageFormat = getImageType(uploadBuffer);
 
     if (origImageFormat && ["webp", "svg", "gif"].includes(origImageFormat.ext)) {
         // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
+        shrinkImageSwitch = false;
+    }
+    else if (isAnimated(uploadBuffer)) {
+        // recompression of animated images will make them static
         shrinkImageSwitch = false;
     }
 
