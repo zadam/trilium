@@ -736,6 +736,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     padding: 10px;
     border-radius: 10px;
     background-color: var(--accented-background-color);
+    clear: both;
 }
 
 .include-note.ck-placeholder::before { /* remove placeholder in otherwise empty note */
