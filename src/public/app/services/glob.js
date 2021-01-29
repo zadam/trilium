@@ -58,7 +58,7 @@ function setupGlobs() {
                 'Line: ' + lineNo,
                 'Column: ' + columnNo,
                 'Error object: ' + JSON.stringify(error),
-                'Stack: ' + error && error.stack
+                'Stack: ' + (error && error.stack)
             ].join(', ');
         }
 

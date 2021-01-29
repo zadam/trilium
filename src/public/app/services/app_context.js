@@ -85,7 +85,7 @@ class AppContext extends Component {
     }
 
     /** @return {Promise} */
-    triggerCommand(name, data = {}) {
+    triggerCommand(name, data = {}) {console.log("CMD", name);
         for (const executor of this.executors) {
             const fun = executor[name + "Command"];
 

@@ -630,7 +630,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         node.title = utils.escapeHtml(title);
 
         if (node.isExpanded() !== branch.isExpanded) {
-            node.setExpanded(branch.isExpanded, {noEvents: true});
+            node.setExpanded(branch.isExpanded, {noEvents: true, noAnimation: true});
         }
 
         node.renderTitle();
@@ -769,7 +769,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             await node.load(true);
 
             if (node.data.noteId !== 'root') { // root is always expanded
-                await node.setExpanded(isExpanded, {noEvents: true});
+                await node.setExpanded(isExpanded, {noEvents: true, noAnimation: true});
             }
         });
     }
@@ -852,7 +852,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
 
                 if (expand) {
-                    await parentNode.setExpanded(true);
+                    await parentNode.setExpanded(true, {noAnimation: true});
 
                     // although previous line should set the expanded status, it seems to happen asynchronously
                     // so we need to make sure it is set properly before calling updateNode which uses this flag
@@ -956,7 +956,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const activeNode = $.ui.fancytree.getNode(e);
 
         activeNode.load(true);
-        activeNode.setExpanded(true);
+        activeNode.setExpanded(true, {noAnimation: true});
 
         toastService.showMessage("Saved search note refreshed.");
     }
