@@ -249,7 +249,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
             loadCSS: [
                 "libraries/codemirror/codemirror.css",
                 "libraries/ckeditor/ckeditor-content.css",
-                "libraries/ckeditor/ckeditor-content.css",
                 "libraries/bootstrap/css/bootstrap.min.css",
                 "libraries/katex/katex.min.css",
                 "stylesheets/print.css",

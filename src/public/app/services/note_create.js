@@ -56,10 +56,10 @@ async function createNote(parentNoteId, options = {}) {
         await activeTabContext.setNote(note.noteId);
 
         if (options.focus === 'title') {
-            appContext.triggerCommand('focusAndSelectTitle');
+            appContext.triggerEvent('focusAndSelectTitle');
         }
         else if (options.focus === 'content') {
-            appContext.triggerCommand('focusOnDetail', {tabId: activeTabContext.tabId});
+            appContext.triggerEvent('focusOnDetail', {tabId: activeTabContext.tabId});
         }
     }
 

@@ -485,7 +485,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 });
             }
             else {
-                this.triggerCommand('focusOnDetail', {tabId: this.tabContext.tabId});
+                this.triggerEvent('focusOnDetail', {tabId: this.tabContext.tabId});
             }
         }
     }
