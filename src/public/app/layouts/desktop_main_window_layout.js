@@ -46,7 +46,7 @@ const RIGHT_PANE_CSS = `
 
 #right-pane .card-header {
     background: inherit;
-    padding: 6px 10px 3px 10px;
+    padding: 6px 10px 3px 0;
     width: 99%; /* to give minimal right margin */
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);
@@ -91,13 +91,16 @@ const RIGHT_PANE_CSS = `
 #right-pane .widget-toggle-button {
     cursor: pointer;
     color: var(--main-text-color) !important;
-    position: relative;
-    top: 2px;
-    font-size: large;
 }
 
 #right-pane .widget-toggle-button:hover {
     text-decoration: none !important;
+}
+
+#right-pane .widget-toggle-icon {
+    position: relative;
+    top: 2px;
+    font-size: large;
 }
 
 #right-pane .body-wrapper {

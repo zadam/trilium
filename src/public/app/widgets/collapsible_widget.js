@@ -3,21 +3,24 @@ import options from "../services/options.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
-    <div class="card-header">
+    <div class="card-header">    
         <div>           
-            <span class="widget-title">
-                Collapsible Group Item
-            </span>
+            <a class="widget-toggle-button no-arrow" 
+                title="Minimize/maximize widget"
+                data-toggle="collapse" data-target="#[to be set]">
+                
+                <span class="widget-toggle-icon bx"></span>
+                
+                <span class="widget-title">
+                    Collapsible Group Item
+                </span>    
+            </a>
         
             <span class="widget-header-actions"></span>
         </div>
         
         <div>
             <a class="widget-help external no-arrow bx bx-info-circle"></a>
-            &nbsp;
-            <a class="widget-toggle-button no-arrow bx bx-minus" 
-                title="Minimize/maximize widget"
-                data-toggle="collapse" data-target="#[to be set]"></a>
         </div>
     </div>
 
@@ -45,13 +48,14 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.widgetName = this.widgetTitle.replace(/[^[a-zA-Z0-9]/g, "_");
 
         this.$toggleButton = this.$widget.find('.widget-toggle-button');
+        this.$toggleIcon = this.$widget.find('.widget-toggle-icon');
 
         const collapsed = options.is(this.widgetName + 'Collapsed');
         if (!collapsed) {
             this.$bodyWrapper.collapse("show");
         }
 
-        this.updateToggleButton(collapsed);
+        this.updateToggleIcon(collapsed);
 
         // using immediate variants of the event so that the previous collapse is not caught
         this.$bodyWrapper.on('hide.bs.collapse', () => this.toggleCollapsed(true));
@@ -85,23 +89,23 @@ export default class CollapsibleWidget extends TabAwareWidget {
     }
 
     toggleCollapsed(collapse) {
-        this.updateToggleButton(collapse);
+        this.updateToggleIcon(collapse);
 
         options.save(this.widgetName + 'Collapsed', collapse.toString());
 
         this.triggerEvent(`widgetCollapsedStateChanged`, {widgetName: this.widgetName, collapse});
     }
 
-    updateToggleButton(collapse) {
+    updateToggleIcon(collapse) {
         if (collapse) {
-            this.$toggleButton
-                .addClass("bx-chevron-down")
-                .removeClass("bx-minus")
+            this.$toggleIcon
+                .addClass("bx-chevron-right")
+                .removeClass("bx-chevron-down")
                 .attr("title", "Show");
         } else {
-            this.$toggleButton
-                .addClass("bx-minus")
-                .removeClass("bx-window")
+            this.$toggleIcon
+                .addClass("bx-chevron-down")
+                .removeClass("bx-chevron-right")
                 .attr("title", "Hide");
         }
     }
