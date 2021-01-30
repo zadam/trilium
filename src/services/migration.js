@@ -7,6 +7,28 @@ const utils = require('./utils');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 
+function executeMigration(mig) {
+    sql.transactional(() => {
+        if (mig.type === 'sql') {
+            const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
+
+            console.log("Migration with SQL script: " + migrationSql);
+
+            sql.executeScript(migrationSql);
+        } else if (mig.type === 'js') {
+            console.log("Migration with JS module");
+
+            const migrationModule = require(resourceDir.MIGRATIONS_DIR + "/" + mig.file);
+            migrationModule();
+        } else {
+            throw new Error("Unknown migration type " + mig.type);
+        }
+
+        // not using repository because of changed utcDateModified column in migration 129
+        sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
+    });
+}
+
 async function migrate() {
     const migrations = [];
 
@@ -43,27 +65,13 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion);
 
-            sql.transactional(() => {
-                if (mig.type === 'sql') {
-                    const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
-
-                    console.log("Migration with SQL script: " + migrationSql);
-
-                    sql.executeScript(migrationSql);
-                }
-                else if (mig.type === 'js') {
-                    console.log("Migration with JS module");
-
-                    const migrationModule = require(resourceDir.MIGRATIONS_DIR + "/" + mig.file);
-                    migrationModule();
-                }
-                else {
-                    throw new Error("Unknown migration type " + mig.type);
-                }
-
-                // not using repository because of changed utcDateModified column in migration 129
-                sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
-            });
+            if (mig.name === 'VACUUM') {
+                // special case since VACUUM can't be executed in a transaction
+                sql.execute('VACUUM');
+            }
+            else {
+                executeMigration(mig);
+            }
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
         }
