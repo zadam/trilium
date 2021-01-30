@@ -95,7 +95,7 @@ export default class CollapsibleWidget extends TabAwareWidget {
     updateToggleButton(collapse) {
         if (collapse) {
             this.$toggleButton
-                .addClass("bx-window")
+                .addClass("bx-chevron-down")
                 .removeClass("bx-minus")
                 .attr("title", "Show");
         } else {

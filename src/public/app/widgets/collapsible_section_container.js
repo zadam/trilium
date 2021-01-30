@@ -4,7 +4,7 @@ const TPL = `
 <div class="section-container">
     <style>
     .section-container {
-        margin-bottom: 10px;  
+        margin-bottom: 5px;  
     }
     
     .section-title-container {
