@@ -23,9 +23,6 @@ function executeMigration(mig) {
         } else {
             throw new Error("Unknown migration type " + mig.type);
         }
-
-        // not using repository because of changed utcDateModified column in migration 129
-        sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
     });
 }
 
@@ -72,6 +69,9 @@ async function migrate() {
             else {
                 executeMigration(mig);
             }
+
+            // not using repository because of changed utcDateModified column in migration 129
+            sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
         }
