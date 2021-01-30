@@ -25,6 +25,10 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
     if (!note.isRoot()) {
         const noteFromCache = noteCache.notes[note.noteId];
 
+        if (!noteFromCache) {
+            return;
+        }
+
         for (const parentNote of noteFromCache.parents) {
             if (parentNote.hasLabel("sorted")) {
                 treeService.sortNotesAlphabetically(parentNote.noteId);
