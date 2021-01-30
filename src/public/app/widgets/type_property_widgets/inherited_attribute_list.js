@@ -1,6 +1,6 @@
-import TabAwareWidget from "./tab_aware_widget.js";
-import AttributeDetailWidget from "./attribute_widgets/attribute_detail.js";
-import attributeRenderer from "../services/attribute_renderer.js";
+import TabAwareWidget from "../tab_aware_widget.js";
+import AttributeDetailWidget from "../attribute_widgets/attribute_detail.js";
+import attributeRenderer from "../../services/attribute_renderer.js";
 
 const TPL = `
 <div class="inherited-attributes-widget">

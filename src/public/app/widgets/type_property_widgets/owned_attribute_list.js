@@ -1,6 +1,6 @@
 import TabAwareWidget from "../tab_aware_widget.js";
-import AttributeDetailWidget from "./attribute_detail.js";
-import AttributeEditorWidget from "./attribute_editor.js";
+import AttributeDetailWidget from "../attribute_widgets/attribute_detail.js";
+import AttributeEditorWidget from "../attribute_widgets/attribute_editor.js";
 
 const TPL = `
 <div class="attribute-list">

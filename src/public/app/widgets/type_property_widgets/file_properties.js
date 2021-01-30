@@ -1,8 +1,8 @@
-import server from "../services/server.js";
-import TabAwareWidget from "./tab_aware_widget.js";
-import toastService from "../services/toast.js";
-import openService from "../services/open.js";
-import utils from "../services/utils.js";
+import server from "../../services/server.js";
+import TabAwareWidget from "../tab_aware_widget.js";
+import toastService from "../../services/toast.js";
+import openService from "../../services/open.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="file-properties-widget">

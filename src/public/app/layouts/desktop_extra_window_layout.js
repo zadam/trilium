@@ -8,16 +8,16 @@ import NoteTitleWidget from "../widgets/note_title.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
-import OwnedAttributeListWidget from "../widgets/attribute_widgets/owned_attribute_list.js";
+import OwnedAttributeListWidget from "../widgets/type_property_widgets/owned_attribute_list.js";
 import CollapsibleSectionContainer from "../widgets/collapsible_section_container.js";
-import SearchDefinitionWidget from "../widgets/search_definition.js";
-import PromotedAttributesWidget from "../widgets/attribute_widgets/promoted_attributes.js";
-import InheritedAttributesWidget from "../widgets/inherited_attribute_list.js";
+import SearchDefinitionWidget from "../widgets/type_property_widgets/search_definition.js";
+import PromotedAttributesWidget from "../widgets/type_property_widgets/promoted_attributes.js";
+import InheritedAttributesWidget from "../widgets/type_property_widgets/inherited_attribute_list.js";
 import Container from "../widgets/container.js";
 import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import NoteListWidget from "../widgets/note_list.js";
 import SqlResultWidget from "../widgets/sql_result.js";
-import FilePropertiesWidget from "../widgets/file_properties.js";
+import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
