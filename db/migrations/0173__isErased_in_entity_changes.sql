@@ -14,6 +14,8 @@ SELECT entityName, entityId, '', sourceId, isSynced, 'now', 0 FROM entity_change
 UPDATE mig_entity_changes SET isErased = (SELECT isErased FROM notes WHERE noteId = entityId) WHERE entityName = 'notes';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM notes WHERE noteId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'notes';
 
+UPDATE mig_entity_changes SET isErased = (SELECT isErased FROM notes WHERE noteId = entityId) WHERE entityName = 'note_contents';
+
 UPDATE mig_entity_changes SET isErased = (
     SELECT isErased
     FROM attributes
