@@ -735,7 +735,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     padding: 10px;
     border-radius: 10px;
     background-color: var(--accented-background-color);
-    clear: both;
+    display: flex; /* see https://github.com/zadam/trilium/issues/1590 */
 }
 
 .include-note.ck-placeholder::before { /* remove placeholder in otherwise empty note */
