@@ -7,6 +7,10 @@ import TypeWidget from "./type_widget.js";
 const TPL = `
 <div class="note-detail-file note-detail-printable">
     <style>
+        .type-file {
+            height: 100%;
+        }
+        
         .note-detail-file {
             padding: 10px;
             display: flex;
