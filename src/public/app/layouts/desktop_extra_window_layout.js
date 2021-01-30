@@ -17,6 +17,7 @@ import Container from "../widgets/container.js";
 import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import NoteListWidget from "../widgets/note_list.js";
 import SqlResultWidget from "../widgets/sql_result.js";
+import FilePropertiesWidget from "../widgets/file_properties.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -48,6 +49,7 @@ export default class DesktopExtraWindowLayout {
                     .child(
                         new TabCachingWidget(() => new CollapsibleSectionContainer()
                             .child(new SearchDefinitionWidget())
+                            .child(new FilePropertiesWidget())
                             .child(new PromotedAttributesWidget())
                             .child(new OwnedAttributeListWidget())
                             .child(new InheritedAttributesWidget())
