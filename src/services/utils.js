@@ -161,6 +161,8 @@ function getContentDisposition(filename) {
 const STRING_MIME_TYPES = [
     "application/javascript",
     "application/x-javascript",
+    "application/json",
+    "application/x-sql",
     "image/svg+xml"
 ];
 

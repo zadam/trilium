@@ -25,6 +25,10 @@ const TPL = `
     
     <pre class="file-preview-content"></pre>
     
+    <div class="file-preview-not-available alert alert-info">
+        File preview is not available for this file format.
+    </div>
+    
     <iframe class="pdf-preview" style="width: 100%; height: 100%; flex-grow: 100;"></iframe>
 </div>`;
 
@@ -35,6 +39,7 @@ export default class FileTypeWidget extends TypeWidget {
         this.$widget = $(TPL);
         this.contentSized();
         this.$previewContent = this.$widget.find(".file-preview-content");
+        this.$previewNotAvailable = this.$widget.find(".file-preview-not-available");
         this.$pdfPreview = this.$widget.find(".pdf-preview");
     }
 
@@ -50,12 +55,17 @@ export default class FileTypeWidget extends TypeWidget {
         this.$pdfPreview.attr('src', '').empty().hide();
 
         if (noteComplement.content) {
+            this.$previewNotAvailable.hide();
             this.$previewContent.show().scrollTop(0);
             this.$previewContent.text(noteComplement.content);
         }
         else if (note.mime === 'application/pdf') {
+            this.$previewNotAvailable.hide();
             this.$pdfPreview.show();
             this.$pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"));
+        }
+        else {
+            this.$previewNotAvailable.show();
         }
     }
 }
