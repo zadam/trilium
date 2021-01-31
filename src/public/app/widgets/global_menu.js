@@ -17,9 +17,17 @@ const TPL = `
     }
     
     .global-menu button {
-        margin-right: 10px;
+        margin-right: 5px;
+        margin-left: 5px;
         height: 34px;
         border: none;
+        font-size: 130%;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .global-menu button:hover {
+        background-color: var(--hover-item-background-color);
     }
     
     .global-menu .dropdown-menu {
@@ -28,10 +36,8 @@ const TPL = `
     </style>
 
     <div class="dropdown global-menu">
-        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
+        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm" title="Menu">
             <span class="bx bx-menu"></span>
-            Menu
-            <span class="caret"></span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item options-button" data-trigger-command="showOptions">
