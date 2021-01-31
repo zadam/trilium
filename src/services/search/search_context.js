@@ -1,9 +1,11 @@
 "use strict";
 
+const cls = require('../cls');
+
 class SearchContext {
     constructor(params = {}) {
         this.fastSearch = !!params.fastSearch;
-        this.ancestorNoteId = params.ancestorNoteId;
+        this.ancestorNoteId = params.ancestorNoteId || cls.getHoistedNoteId();
         this.ancestorDepth = params.ancestorDepth;
         this.includeArchivedNotes = !!params.includeArchivedNotes;
         this.orderBy = params.orderBy;

@@ -1,6 +1,7 @@
 import BasicWidget from "./basic_widget.js";
 import HistoryNavigationWidget from "./history_navigation.js";
 import protectedSessionService from "../services/protected_session.js";
+import QuickSearchWidget from "./quick_search.js";
 
 const TPL = `
 <div class="standard-top-widget">
@@ -13,7 +14,7 @@ const TPL = `
         height: 35px;
     }
     
-    .standard-top-widget button {
+    .standard-top-widget button:not(.search-button) {
         padding: 1px 5px 1px 5px;
         font-size: 90%;
         margin-bottom: 2px;
@@ -83,6 +84,11 @@ export default class StandardTopWidget extends BasicWidget {
         this.child(historyNavigationWidget);
 
         this.$widget.prepend(historyNavigationWidget.render());
+
+        const quickSearchWidget = new QuickSearchWidget();
+        this.child(quickSearchWidget);
+
+        this.$widget.append(quickSearchWidget.render());
 
         this.$enterProtectedSessionButton = this.$widget.find(".enter-protected-session-button");
         this.$enterProtectedSessionButton.on('click', protectedSessionService.enterProtectedSession);

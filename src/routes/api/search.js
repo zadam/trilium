@@ -200,6 +200,19 @@ async function searchFromRelation(note, relationName) {
     return typeof result[0] === 'string' ? result : result.map(item => item.noteId);
 }
 
+function quickSearch(req) {
+    const {searchString} = req.params;
+
+    const searchContext = new SearchContext({
+        fastSearch: false,
+        includeArchivedNotes: false,
+        fuzzyAttributeSearch: false
+    });
+
+    return searchService.findNotesWithQuery(searchString, searchContext)
+        .map(sr => sr.noteId);
+}
+
 function getRelatedNotes(req) {
     const attr = req.body;
 
@@ -276,5 +289,6 @@ function formatValue(val) {
 module.exports = {
     searchFromNote,
     searchAndExecute,
-    getRelatedNotes
+    getRelatedNotes,
+    quickSearch
 };
