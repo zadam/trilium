@@ -52,8 +52,7 @@ const TPL = `
             </td>
         </tr>
     </table>
-</div>\`;
-`;
+</div>`;
 
 export default class FilePropertiesWidget extends TabAwareWidget {
     static getType() { return "file"; }

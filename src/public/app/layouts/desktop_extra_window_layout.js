@@ -19,6 +19,7 @@ import NoteListWidget from "../widgets/note_list.js";
 import SqlResultWidget from "../widgets/sql_result.js";
 import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
+import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -50,6 +51,7 @@ export default class DesktopExtraWindowLayout {
                     .child(
                         new TabCachingWidget(() => new CollapsibleSectionContainer()
                             .child(new SearchDefinitionWidget())
+                            .child(new NotePropertiesWidget())
                             .child(new FilePropertiesWidget())
                             .child(new ImagePropertiesWidget())
                             .child(new PromotedAttributesWidget())

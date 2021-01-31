@@ -205,7 +205,9 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         }
 
         for (const attr of note.attributes) {
-            if (highlightedTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
+            if (highlightedTokens.find(token => attr.name.toLowerCase().includes(token)
+                || attr.value.toLowerCase().includes(token))) {
+
                 result.highlightedNotePathTitle += ` <${formatAttribute(attr)}>`;
             }
         }

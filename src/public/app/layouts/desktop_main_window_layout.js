@@ -30,6 +30,7 @@ import SqlResultWidget from "../widgets/sql_result.js";
 import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
+import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -161,6 +162,7 @@ export default class DesktopMainWindowLayout {
                     .child(
                         new TabCachingWidget(() => new CollapsibleSectionContainer()
                             .child(new SearchDefinitionWidget())
+                            .child(new NotePropertiesWidget())
                             .child(new FilePropertiesWidget())
                             .child(new ImagePropertiesWidget())
                             .child(new PromotedAttributesWidget())

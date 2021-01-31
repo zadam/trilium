@@ -90,7 +90,7 @@ function goToLink(e) {
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
         ) {
             const address = $link.attr('href');
-console.log("address", address);
+
             if (address) {
                 if (address.toLowerCase().startsWith('http')) {
                     window.open(address, '_blank');
