@@ -37,9 +37,13 @@ const TPL = `
 export default class ImagePropertiesWidget extends TabAwareWidget {
     static getType() { return "image"; }
 
+    isEnabled() {
+        return this.note && this.note.type === 'image';
+    }
+
     renderTitle(note) {
         return {
-            show: note.type === 'image',
+            show: this.isEnabled(),
             activate: true,
             $title: 'Image'
         };

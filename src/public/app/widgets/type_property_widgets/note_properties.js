@@ -15,9 +15,13 @@ const TPL = `
 export default class NotePropertiesWidget extends TabAwareWidget {
     static getType() { return "note-properties"; }
 
+    isEnabled() {
+        return this.note && !!this.note.getLabelValue('pageUrl');
+    }
+
     renderTitle(note) {
         return {
-            show: !!note.getLabelValue('pageUrl'),
+            show: this.isEnabled(),
             activate: true,
             $title: 'Info'
         };

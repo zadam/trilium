@@ -184,9 +184,13 @@ for (const clazz of [
 export default class SearchDefinitionWidget extends TabAwareWidget {
     static getType() { return "search"; }
 
+    isEnabled() {
+        return this.note && this.note.type === 'search';
+    }
+
     renderTitle(note) {
         return {
-            show: note.type === 'search',
+            show: this.isEnabled(),
             activate: true,
             $title: 'Search'
         };

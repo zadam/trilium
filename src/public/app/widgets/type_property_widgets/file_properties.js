@@ -57,9 +57,13 @@ const TPL = `
 export default class FilePropertiesWidget extends TabAwareWidget {
     static getType() { return "file"; }
 
+    isEnabled() {
+        return this.note && this.note.type === 'file';
+    }
+
     renderTitle(note) {
         return {
-            show: note.type === 'file',
+            show: this.isEnabled(),
             activate: true,
             $title: 'File'
         };
