@@ -3,6 +3,23 @@ import linkService from "../../services/link.js";
 import server from "../../services/server.js";
 import treeCache from "../../services/tree_cache.js";
 
+const TPL = `
+<div class="edited-notes-widget">
+    <style>
+        .edited-notes-widget ul {
+            padding-left: 10px !important;
+        }
+    
+        .edited-notes-widget ul li {
+            white-space: nowrap; 
+            list-style-position:inside; 
+            overflow-x: hidden; 
+            text-overflow: ellipsis;
+        }
+    </style>
+</div>
+`;
+
 export default class EditedNotesWidget extends CollapsibleWidget {
     get widgetTitle() { return "Edited notes on this day"; }
 
@@ -15,6 +32,11 @@ export default class EditedNotesWidget extends CollapsibleWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.hasOwnedLabel("dateNote");
+    }
+
+    async doRenderBody() {
+        this.$body.html(TPL);
+        this.$editedNotes = this.$body.find('.edited-notes-widget');
     }
 
     async refreshWithNote(note) {
@@ -36,10 +58,15 @@ export default class EditedNotesWidget extends CollapsibleWidget {
         const $list = $('<ul>');
 
         for (const editedNote of editedNotes) {
-            const $item = $("<li>");
+            const $item = $('<li>');
 
             if (editedNote.isDeleted) {
-                $item.append($("<i>").text(editedNote.title + " (deleted)"));
+                const title = editedNote.title + " (deleted)";
+                $item.append(
+                    $("<i>")
+                        .text(title)
+                        .attr("title", title)
+                );
             }
             else {
                 $item.append(editedNote.notePath ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true}) : editedNote.title);
@@ -48,6 +75,6 @@ export default class EditedNotesWidget extends CollapsibleWidget {
             $list.append($item);
         }
 
-        this.$body.empty().append($list);
+        this.$editedNotes.empty().append($list);
     }
 }
