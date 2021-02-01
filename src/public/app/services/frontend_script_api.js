@@ -89,7 +89,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
 
-        const button = $('<button>')
+        const button = $('<button class="noborder">')
             .addClass("btn btn-sm")
             .on('click', opts.action);
 

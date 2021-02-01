@@ -14,7 +14,7 @@ const TPL = `
         height: 35px;
     }
     
-    .standard-top-widget button:not(.search-button) {
+    .standard-top-widget button.noborder {
         padding: 1px 5px 1px 5px;
         font-size: 90%;
         margin-bottom: 2px;
@@ -35,35 +35,35 @@ const TPL = `
     </style>
 
     <div style="flex-grow: 100; display: flex;">
-        <button class="btn btn-sm" data-trigger-command="createNoteIntoInbox">
+        <button class="btn btn-sm noborder" data-trigger-command="createNoteIntoInbox">
             <span class="bx bx-file-blank"></span>
             New note
         </button>
         
-        <button class="btn btn-sm" data-trigger-command="searchNotes">
+        <button class="btn btn-sm noborder" data-trigger-command="searchNotes">
             <span class="bx bx-search"></span>
             Search
         </button>
     
-        <button class="btn btn-sm" data-trigger-command="jumpToNote">
+        <button class="btn btn-sm noborder" data-trigger-command="jumpToNote">
             <span class="bx bx-send"></span>
             Jump to note
         </button>
     
-        <button class="btn btn-sm" data-trigger-command="showRecentChanges">
+        <button class="btn btn-sm noborder" data-trigger-command="showRecentChanges">
             <span class="bx bx-history"></span>
     
             Recent changes
         </button>
     
-        <button class="btn btn-sm enter-protected-session-button"
+        <button class="btn btn-sm enter-protected-session-button noborder"
                 title="Enter protected session to be able to find and view protected notes">
             <span class="bx bx-log-in"></span>
     
             Enter protected session
         </button>
     
-        <button class="btn btn-sm leave-protected-session-button"
+        <button class="btn btn-sm leave-protected-session-button noborder"
                 title="Leave protected session so that protected notes are not accessible any more."
                 style="display: none;">
             <span class="bx bx-log-out"></span>

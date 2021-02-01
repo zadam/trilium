@@ -35,7 +35,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "searchNotes",
+        actionName: "quickSearch",
         defaultShortcuts: ["CommandOrControl+S"],
         scope: "window"
     },
