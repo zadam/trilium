@@ -9,7 +9,9 @@ const TPL = `
         }
     </style>
 
-    This note was originally taken from: <a class="page-url external"></a>
+    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+        This note was originally taken from: <a class="page-url external"></a>
+    </div>
 </div>`;
 
 export default class NotePropertiesWidget extends TabAwareWidget {
@@ -39,6 +41,7 @@ export default class NotePropertiesWidget extends TabAwareWidget {
 
         this.$pageUrl
             .attr('href', pageUrl)
+            .attr('title', pageUrl)
             .text(pageUrl);
     }
 }
