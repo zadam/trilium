@@ -5,14 +5,9 @@ import treeCache from "../../services/tree_cache.js";
 
 const TPL = `
 <div class="edited-notes-widget">
-    <style>
-        .edited-notes-widget ul {
-            padding-left: 10px !important;
-        }
-    
-        .edited-notes-widget ul li {
+    <style>    
+        .edited-notes-widget .edited-note-line {
             white-space: nowrap; 
-            list-style-position:inside; 
             overflow-x: hidden; 
             text-overflow: ellipsis;
         }
@@ -55,10 +50,10 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
         await treeCache.getNotes(noteIds, true); // preload all at once
 
-        const $list = $('<ul>');
+        const $list = $('<div>'); // not using <ul> because it's difficult to style correctly with text-overflow
 
         for (const editedNote of editedNotes) {
-            const $item = $('<li>');
+            const $item = $('<div class="edited-note-line">');
 
             if (editedNote.isDeleted) {
                 const title = editedNote.title + " (deleted)";

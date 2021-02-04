@@ -1175,7 +1175,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         });
     }
 
-    async setExpanded(branchId, isExpanded) {
+    setExpanded(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
         const branch = treeCache.getBranch(branchId, true);
@@ -1193,7 +1193,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         branch.isExpanded = isExpanded;
 
-        await server.put(`branches/${branchId}/expanded/${isExpanded ? 1 : 0}`);
+        server.put(`branches/${branchId}/expanded/${isExpanded ? 1 : 0}`);
     }
 
     async reloadTreeFromCache() {

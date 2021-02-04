@@ -54,6 +54,15 @@ class Branch {
 
         return this.noteCache.notes[this.parentNoteId];
     }
+
+    // for logging etc
+    get pojo() {
+        const pojo = {...this};
+
+        delete pojo.noteCache;
+
+        return pojo;
+    }
 }
 
 module.exports = Branch;

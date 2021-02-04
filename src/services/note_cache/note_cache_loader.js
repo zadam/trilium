@@ -80,8 +80,9 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete noteCache.branches[branchId];
         }
         else if (branchId in noteCache.branches) {
-            // only relevant thing which can change in a branch is prefix
+            // only relevant properties which can change in a branch are prefix and isExpanded
             noteCache.branches[branchId].prefix = entity.prefix;
+            noteCache.branches[branchId].isExpanded = entity.isExpanded;
 
             if (childNote) {
                 childNote.flatTextCache = null;
