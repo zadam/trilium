@@ -763,7 +763,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const {branchIds} = await server.put(`branches/${node.data.branchId}/expanded-subtree/${isExpanded ? 1 : 0}`);
 
-        treeCache.getBranches(branchIds, true).forEach(branch => branch.isExpanded = isExpanded);
+        treeCache.getBranches(branchIds, true)
+            .forEach(branch => branch.isExpanded = !!isExpanded);
 
         await this.batchUpdate(async () => {
             await node.load(true);

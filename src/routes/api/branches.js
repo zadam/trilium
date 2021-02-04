@@ -121,7 +121,8 @@ function moveBranchAfterNote(req) {
 }
 
 function setExpanded(req) {
-    const {branchId, expanded} = req.params;
+    const {branchId} = req.params;
+    const expanded = parseInt(req.params.expanded);
 
     if (branchId !== 'root') {
         sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
@@ -137,7 +138,8 @@ function setExpanded(req) {
 }
 
 function setExpandedForSubtree(req) {
-    const {branchId, expanded} = req.params;
+    const {branchId} = req.params;
+    const expanded = parseInt(req.params.expanded);
 
     let branchIds = sql.getColumn(`
         WITH RECURSIVE
