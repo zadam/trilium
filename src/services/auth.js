@@ -77,8 +77,8 @@ function reject(req, res, message) {
     res.status(401).send(message);
 }
 
-function checkBasicAuth(req, res, next) {
-    const header = req.headers.authorization || '';
+function checkCredentials(req, res, next) {
+    const header = req.headers['trilium-cred'] || '';
     const token = header.split(/\s+/).pop() || '';
     const auth = new Buffer.from(token, 'base64').toString();
     const [username, password] = auth.split(/:/);
@@ -100,5 +100,5 @@ module.exports = {
     checkAppNotInitialized,
     checkApiAuthOrElectron,
     checkToken,
-    checkBasicAuth
+    checkCredentials
 };
