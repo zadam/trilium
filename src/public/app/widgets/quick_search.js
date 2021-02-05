@@ -58,6 +58,10 @@ export default class QuickSearchWidget extends BasicWidget {
             this.$dropdownMenu.find('.dropdown-item:first').focus();
         });
 
+        utils.bindElShortcut(this.$searchString, 'esc', () => {
+            this.$dropdownToggle.dropdown('hide');
+        });
+
         return this.$widget;
     }
 
