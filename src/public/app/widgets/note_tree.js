@@ -198,9 +198,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.$tree = this.$widget.find('.tree');
 
-        this.$tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
-        this.$tree.on("click", ".refresh-search-button", e => this.refreshSearch(e));
-        this.$tree.on("click", ".add-note-button", e => {
+        this.$tree.on("mousedown", ".unhoist-button", () => hoistedNoteService.unhoist());
+        this.$tree.on("mousedown", ".refresh-search-button", e => this.refreshSearch(e));
+        this.$tree.on("mousedown", ".add-note-button", e => {
             const node = $.ui.fancytree.getNode(e);
 
             noteCreateService.createNote(node.data.noteId, {
@@ -208,16 +208,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
             });
         });
 
-        this.$tree.on("click", ".enter-workspace-button", e => {
+        this.$tree.on("mousedown", ".enter-workspace-button", e => {
             const node = $.ui.fancytree.getNode(e);
 
             this.triggerCommand('hoistNote', {noteId: node.data.noteId});
-        });
-
-        this.$tree.on("click", ".unhoist-button", e => {
-            const node = $.ui.fancytree.getNode(e);
-
-            this.triggerCommand('unhoist');
         });
 
         // fancytree doesn't support middle click so this is a way to support it
@@ -514,11 +508,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     return;
                 }
 
+                const note = await treeCache.getNote(node.data.noteId);
+                const activeTabContext = appContext.tabManager.getActiveTabContext();
+
                 const $span = $(node.span);
 
                 $span.find('.tree-item-button').remove();
 
-                const note = await treeCache.getNote(node.data.noteId);
+                if (activeTabContext && activeTabContext.hoistedNoteId === note.noteId && note.noteId !== 'root') {
+                    const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
+
+                    $unhoistButton.on('click', () => alert("bebe"));
+
+                    $span.append($unhoistButton);
+                }
 
                 if (note.hasLabel('workspace')) {
                     const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>');

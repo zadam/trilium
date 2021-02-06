@@ -576,17 +576,6 @@ div[data-notify="container"] {
     padding: 2px;
 }
 
-.unhoist-button-wrapper {
-    position: relative;
-    top: -4px;
-}
-
-.unhoist-button {
-    text-decoration: underline !important;
-    color: var(--link-color) !important;
-    cursor: pointer !important;
-}
-
 .ck-editor__is-empty.ck-content.ck-editor__editable::before {
     content: 'You can start writing note here ...';
     position: absolute;

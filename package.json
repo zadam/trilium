@@ -24,7 +24,7 @@
     "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
-    "async-mutex": "0.2.6",
+    "async-mutex": "0.3.0",
     "axios": "0.21.1",
     "better-sqlite3": "7.1.2",
     "body-parser": "1.19.0",
@@ -55,7 +55,7 @@
     "mime-types": "2.1.28",
     "multer": "1.4.2",
     "node-abi": "2.19.3",
-    "open": "7.3.1",
+    "open": "7.4.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
     "request": "^2.88.2",
@@ -72,23 +72,23 @@
     "turndown": "7.0.0",
     "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
-    "ws": "7.4.2",
+    "ws": "7.4.3",
     "yauzl": "2.10.0",
     "yazl": "2.5.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "9.4.2",
+    "electron": "9.4.3",
     "electron-builder": "22.9.1",
     "electron-packager": "15.2.0",
-    "electron-rebuild": "2.3.4",
+    "electron-rebuild": "2.3.5",
     "esm": "3.2.25",
     "jasmine": "3.6.4",
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.19.0",
-    "webpack-cli": "4.4.0"
+    "webpack": "5.21.1",
+    "webpack-cli": "4.5.0"
   },
   "optionalDependencies": {
     "electron-installer-debian": "2.0.1"
