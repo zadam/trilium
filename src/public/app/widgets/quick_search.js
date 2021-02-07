@@ -10,8 +10,8 @@ const TPL = `
 <div class="quick-search input-group input-group-sm" style="width: 250px;">
   <style>
     .quick-search {
-        margin-left: 10px;
-        margin-right: 10px;
+        margin-left: 5px;
+        margin-right: 5px;
     }
   
     .quick-search .dropdown-menu {

@@ -515,7 +515,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 $span.find('.tree-item-button').remove();
 
-                if (activeTabContext && activeTabContext.hoistedNoteId === note.noteId && note.noteId !== 'root') {
+                const isHoistedNote = activeTabContext && activeTabContext.hoistedNoteId === note.noteId && note.noteId !== 'root';
+
+                if (isHoistedNote) {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
 
                     $unhoistButton.on('click', () => alert("bebe"));
@@ -523,7 +525,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     $span.append($unhoistButton);
                 }
 
-                if (note.hasLabel('workspace')) {
+                if (note.hasLabel('workspace') && !isHoistedNote) {
                     const $enterWorkspaceButton = $('<span class="tree-item-button enter-workspace-button bx bx-door-open" title="Hoist this note (workspace)"></span>');
 
                     $span.append($enterWorkspaceButton);

@@ -657,7 +657,15 @@ export default class TabRowWidget extends BasicWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         for (const tabContext of appContext.tabManager.tabContexts) {
-            if (loadResults.isNoteReloaded(tabContext.noteId)) {
+            if (!tabContext.noteId) {
+                continue;
+            }
+
+            if (loadResults.isNoteReloaded(tabContext.noteId) ||
+                loadResults.getAttributes().find(attr =>
+                    ['workspace', 'workspaceIconClass', 'workspaceTabBackgroundColor'].includes(attr.name)
+                    && attr.isAffecting(tabContext.note))
+            ) {
                 const $tab = this.getTabById(tabContext.tabId);
 
                 this.updateTab($tab, tabContext.note);
