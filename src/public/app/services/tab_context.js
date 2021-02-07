@@ -145,6 +145,10 @@ class TabContext extends Component {
     }
 
     async setHoistedNoteId(noteIdToHoist) {
+        if (this.notePathArray && !this.notePathArray.includes(noteIdToHoist)) {
+            await this.setNote(noteIdToHoist);
+        }
+
         this.hoistedNoteId = noteIdToHoist;
 
         await this.triggerEvent('hoistedNoteChanged', {

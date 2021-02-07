@@ -58,7 +58,8 @@ export default class TabManager extends Component {
                 else {
                     tabsToOpen.push({
                         notePath: notePath,
-                        active: true
+                        active: true,
+                        hoistedNoteId: glob.extraHoistedNoteId || 'root'
                     });
                 }
             }
@@ -83,13 +84,16 @@ export default class TabManager extends Component {
         if (filteredTabs.length === 0) {
             filteredTabs.push({
                 notePath: this.isMainWindow ? 'root' : '',
-                active: true
+                active: true,
+                extraHoistedNoteId: glob.extraHoistedNoteId || 'root'
             });
         }
 
         if (!filteredTabs.find(tab => tab.active)) {
             filteredTabs[0].active = true;
         }
+
+        console.log("filteredTabs", filteredTabs);
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
@@ -348,11 +352,11 @@ export default class TabManager extends Component {
     }
 
     moveTabToNewWindowCommand({tabId}) {
-        const notePath = this.getTabContextById(tabId).notePath;
+        const {notePath, hoistedNoteId} = this.getTabContextById(tabId);
 
         this.removeTab(tabId);
 
-        this.triggerCommand('openInWindow', {notePath});
+        this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
     }
 
     hoistedNoteChangedEvent() {

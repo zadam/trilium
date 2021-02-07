@@ -680,4 +680,14 @@ export default class TabRowWidget extends BasicWidget {
             this.updateTab($tab, tabContext.note);
         }
     }
+
+    hoistedNoteChangedEvent({tabId}) {
+        const $tab = this.getTabById(tabId);
+
+        if ($tab) {
+            const tabContext = appContext.tabManager.getTabContextById(tabId);
+
+            this.updateTab($tab, tabContext.note);
+        }
+    }
 }

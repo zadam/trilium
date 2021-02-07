@@ -39,7 +39,7 @@ async function checkNoteAccess(notePath, tabContext) {
 
     if (hoistedNoteId !== 'root' && !resolvedNotePath.includes(hoistedNoteId)) {
         const confirmDialog = await import('../dialogs/confirm.js');
-console.trace("HI!", hoistedNoteId, notePath);
+
         if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?")) {
             return false;
         }

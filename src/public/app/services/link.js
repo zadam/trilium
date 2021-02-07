@@ -130,7 +130,7 @@ function linkContextMenu(e) {
                 appContext.tabManager.openTabWithNoteWithHoisting(notePath);
             }
             else if (command === 'openNoteInNewWindow') {
-                appContext.triggerCommand('openInWindow', {notePath});
+                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId: 'root'});
             }
         }
     });

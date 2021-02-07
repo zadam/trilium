@@ -27,7 +27,8 @@ function index(req, res) {
         instanceName: config.General ? config.General.instanceName : null,
         appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),
-        isMainWindow: !req.query.extra
+        isMainWindow: !req.query.extra,
+        extraHoistedNoteId: req.query.extraHoistedNoteId
     });
 }
 

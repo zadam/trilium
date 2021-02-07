@@ -15,7 +15,7 @@ let mainWindow;
 /** @type {Electron.BrowserWindow} */
 let setupWindow;
 
-async function createExtraWindow(notePath) {
+async function createExtraWindow(notePath, hoistedNoteId = 'root') {
     const {BrowserWindow} = require('electron');
     const win = new BrowserWindow({
         width: 1000,
@@ -31,11 +31,11 @@ async function createExtraWindow(notePath) {
     });
 
     win.setMenuBarVisibility(false);
-    win.loadURL('http://127.0.0.1:' + await port + '/?extra=1#' + notePath);
+    win.loadURL('http://127.0.0.1:' + await port + '/?extra=1&extraHoistedNoteId=' + hoistedNoteId + '#' + notePath);
 }
 
 ipcMain.on('create-extra-window', (event, arg) => {
-    createExtraWindow(arg.notePath);
+    createExtraWindow(arg.notePath, arg.hoistedNoteId);
 });
 
 async function createMainWindow() {
