@@ -38,9 +38,7 @@ function exec(opts) {
             };
 
             if (opts.auth) {
-                const token = Buffer.from(opts.auth.user + ":" + opts.auth.pass).toString('base64');
-
-                headers['Authorization'] = `Basic ${token}`;
+                headers['trilium-cred'] = Buffer.from(opts.auth.username + ":" + opts.auth.password).toString('base64');
             }
 
             const request = client.request({

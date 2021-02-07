@@ -70,9 +70,9 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
         const resp = await request.exec({
             method: 'get',
             url: syncServerHost + '/api/setup/sync-seed',
-            headers: {
-                // not using Authorization header because some proxy servers will filter it out
-                'trilium-cred': Buffer.from(username + ':' + password).toString('base64')
+            auth: {
+                username,
+                password
             },
             proxy: syncProxy,
             timeout: 30000 // seed request should not take long

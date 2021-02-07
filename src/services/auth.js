@@ -79,8 +79,7 @@ function reject(req, res, message) {
 
 function checkCredentials(req, res, next) {
     const header = req.headers['trilium-cred'] || '';
-    const token = header.split(/\s+/).pop() || '';
-    const auth = new Buffer.from(token, 'base64').toString();
+    const auth = new Buffer.from(header, 'base64').toString();console.log("auth", auth);
     const [username, password] = auth.split(/:/);
 
     const dbUsername = optionService.getOption('username');
