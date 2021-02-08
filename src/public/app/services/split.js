@@ -14,8 +14,17 @@ function setupSplit(left, right) {
         return;
     }
 
-    const leftPaneWidth = options.getInt('leftPaneWidth');
-    const rightPaneWidth = options.getInt('rightPaneWidth');
+    let leftPaneWidth = options.getInt('leftPaneWidth');
+    if (!leftPaneWidth || leftPaneWidth < 5) {
+        leftPaneWidth = 5;
+    }
+
+    let rightPaneWidth = options.getInt('rightPaneWidth');
+    if (!rightPaneWidth || rightPaneWidth < 5) {
+        rightPaneWidth = 5;
+    }
+
+    console.log(leftPaneWidth, rightPaneWidth);
 
     if (left && right) {
         instance = Split(['#left-pane', '#center-pane', '#right-pane'], {
