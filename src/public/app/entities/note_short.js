@@ -493,10 +493,19 @@ class NoteShort {
             });
     }
 
-    hasAncestor(ancestorNote) {
+    hasAncestor(ancestorNote, visitedNoteIds) {
         if (this.noteId === ancestorNote.noteId) {
             return true;
         }
+
+        if (!visitedNoteIds) {
+            visitedNoteIds = new Set();
+        } else if (visitedNoteIds.has(this.noteId)) {
+            // to avoid infinite cycle when template is descendent of the instance
+            return false;
+        }
+
+        visitedNoteIds.add(this.noteId);
 
         for (const templateNote of this.getTemplateNotes()) {
             if (templateNote.hasAncestor(ancestorNote)) {
