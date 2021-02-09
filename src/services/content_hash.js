@@ -34,7 +34,13 @@ function getSectorHashes(tableName, primaryKeyName, whereBranch) {
 function getEntityHashes() {
     const startTime = new Date();
 
-    const hashRows = sql.getRows(`SELECT entityName, entityId, hash FROM entity_changes WHERE isSynced = 1`);
+    const hashRows = sql.getRows(`
+        SELECT entityName, 
+               entityId, 
+               hash 
+        FROM entity_changes 
+        WHERE isSynced = 1
+          AND entityName != 'note_reordering'`);
 
     // sorting is faster in memory
     // sorting by entityId is enough, hashes will be segmented by entityName later on anyway
