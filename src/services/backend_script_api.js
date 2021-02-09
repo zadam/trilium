@@ -92,13 +92,15 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} query
-     * @param {SearchContext} [searchContext]
+     * @param {Object} [searchParams]
      * @returns {Note[]}
      */
-    this.searchForNotes = (query, searchContext) => {
-        searchContext = searchContext || new SearchContext();
+    this.searchForNotes = (query, searchParams = {}) => {
+        if (searchParams.includeArchivedNotes === undefined) {
+            searchParams.includeArchivedNotes = true;
+        }
 
-        const noteIds = searchService.findNotesWithQuery(query, searchContext)
+        const noteIds = searchService.findNotesWithQuery(query, new SearchContext(searchParams))
             .map(sr => sr.noteId);
 
         return repository.getNotes(noteIds);

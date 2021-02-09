@@ -24,8 +24,6 @@ function setupSplit(left, right) {
         rightPaneWidth = 5;
     }
 
-    console.log(leftPaneWidth, rightPaneWidth);
-
     if (left && right) {
         instance = Split(['#left-pane', '#center-pane', '#right-pane'], {
             sizes: [leftPaneWidth, 100 - leftPaneWidth - rightPaneWidth, rightPaneWidth],

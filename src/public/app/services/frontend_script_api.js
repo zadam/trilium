@@ -1,4 +1,3 @@
-import treeService from './tree.js';
 import server from './server.js';
 import utils from './utils.js';
 import toastService from './toast.js';
@@ -9,7 +8,6 @@ import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
-import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
 import TabAwareWidget from "../widgets/tab_aware_widget.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";

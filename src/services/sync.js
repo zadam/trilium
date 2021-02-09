@@ -320,6 +320,12 @@ function getEntityChangesRecords(entityChanges) {
     let length = 0;
 
     for (const entityChange of entityChanges) {
+        if (entityChange.isErased) {
+            records.push({entityChange});
+
+            continue;
+        }
+
         const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
 
         if (entityChange.entityName === 'options' && !entity.isSynced) {
