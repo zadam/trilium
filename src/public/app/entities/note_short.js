@@ -508,13 +508,13 @@ class NoteShort {
         visitedNoteIds.add(this.noteId);
 
         for (const templateNote of this.getTemplateNotes()) {
-            if (templateNote.hasAncestor(ancestorNote)) {
+            if (templateNote.hasAncestor(ancestorNote, visitedNoteIds)) {
                 return true;
             }
         }
 
         for (const parentNote of this.getParentNotes()) {
-            if (parentNote.hasAncestor(ancestorNote)) {
+            if (parentNote.hasAncestor(ancestorNote, visitedNoteIds)) {
                 return true;
             }
         }

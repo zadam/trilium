@@ -1030,7 +1030,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const noteIdsToReload = new Set();
 
         for (const attr of loadResults.getAttributes()) {
-            if (attr.type === 'label' && ['iconClass', 'cssClass'].includes(attr.name)) {
+            if (attr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived'].includes(attr.name)) {
                 if (attr.isInheritable) {
                     noteIdsToReload.add(attr.noteId);
                 }
