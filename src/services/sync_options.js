@@ -23,6 +23,6 @@ module.exports = {
         // and we need to override it with config from config.ini
         return !!syncServerHost && syncServerHost !== 'disabled';
     },
-    getSyncTimeout: () => parseInt(get('syncServerTimeout')) || 60000,
+    getSyncTimeout: () => parseInt(get('syncServerTimeout')) || 120000,
     getSyncProxy: () => get('syncProxy')
 };

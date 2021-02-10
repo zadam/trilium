@@ -333,14 +333,18 @@ async function findSimilarNotes(noteId) {
             let value = attr.value;
             let factor = 1;
 
-            if (value.startsWith('http')) {
+            if (!value) {
+                log.info(`Unexpected falsy value for attribute ${JSON.stringify(attr.pojo)}`);
+                continue;
+            }
+            else if (value.startsWith('http')) {
                 value = filterUrlValue(value);
 
                 // words in URLs are not that valuable
                 factor = 0.5;
             }
 
-            score += gatherRewards(attr.value, factor);
+            score += gatherRewards(value, factor);
         }
 
         if (candidateNote.type === baseNote.type) {

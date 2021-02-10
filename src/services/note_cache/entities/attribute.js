@@ -55,6 +55,15 @@ class Attribute {
             return this.noteCache.notes[this.value];
         }
     }
+
+    // for logging etc
+    get pojo() {
+        const pojo = {...this};
+
+        delete pojo.noteCache;
+
+        return pojo;
+    }
 }
 
 module.exports = Attribute;

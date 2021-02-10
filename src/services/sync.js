@@ -158,7 +158,9 @@ async function pullChanges(syncContext) {
             setLastSyncedPull(entityChanges[entityChanges.length - 1].entityChange.id);
         });
 
-        log.info(`Pulled ${entityChanges.length} changes starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
+        const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
+
+        log.info(`Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
     }
 
     if (atLeastOnePullApplied) {

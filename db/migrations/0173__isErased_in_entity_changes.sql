@@ -65,3 +65,5 @@ DELETE FROM note_revision_contents WHERE noteRevisionId IN (
 );
 DELETE FROM note_revisions WHERE isErased = 1;
 DELETE FROM notes WHERE isErased = 1;
+
+UPDATE entity_changes SET isErased = COALESCE((SELECT isErased FROM entity_changes AS sub WHERE sub.entityId = entity_changes.entityId AND sub.entityName = 'note_revisions'), 0) WHERE entityName = 'note_revision_contents';
