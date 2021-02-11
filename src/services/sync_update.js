@@ -1,4 +1,5 @@
 const sql = require('./sql');
+const log = require('./log');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 const entityConstructor = require('../entities/entity_constructor');
@@ -6,6 +7,18 @@ const entityConstructor = require('../entities/entity_constructor');
 function updateEntity(entityChange, entity, sourceId) {
     // can be undefined for options with isSynced=false
     if (!entity) {
+        if (entityChange.isSynced) {
+            if (entityChange.isErased) {
+                entityChangesService.addEntityChange(entityChange, sourceId);
+            }
+            else {
+                log.info(`Encountered synced non-erased entity change without entity: ${JSON.stringify(entityChange)}`);
+            }
+        }
+        else if (entityChange.entityName !== 'options') {
+            log.info(`Encountered unsynced non-option entity change without entity: ${JSON.stringify(entityChange)}`);
+        }
+
         return;
     }
 
