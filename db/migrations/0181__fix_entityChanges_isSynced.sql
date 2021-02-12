@@ -1,5 +1,5 @@
-UPDATE entity_changes SET isSynced = (
+UPDATE entity_changes SET isSynced = COALESCE((
     SELECT options.isSynced
     FROM options
     WHERE options.name = entity_changes.entityId
-) WHERE entityName = 'options';
+), 0) WHERE entityName = 'options';
