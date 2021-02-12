@@ -1,4 +1,5 @@
 const noteCache = require('./note_cache');
+const log = require('../log');
 const noteCacheService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 const repository = require('../repository');
@@ -333,7 +334,7 @@ async function findSimilarNotes(noteId) {
             let value = attr.value;
             let factor = 1;
 
-            if (!value) {
+            if (!value.startsWith) {
                 log.info(`Unexpected falsy value for attribute ${JSON.stringify(attr.pojo)}`);
                 continue;
             }

@@ -111,6 +111,10 @@ function updateEntity(entity) {
     sql.transactional(() => {
         sql.upsert(entityName, primaryKeyName, clone);
 
+        if (entityName === 'recent_notes') {
+            return;
+        }
+
         const entityId = entity[primaryKeyName];
 
         const isSynced = entityName !== 'options' || entity.isSynced;

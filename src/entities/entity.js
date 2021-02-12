@@ -15,7 +15,7 @@ class Entity {
             }
         }
 
-        if ('isDeleted' in this) {
+        if ('isDeleted' in this && this.constructor.entityName !== 'recent_notes') {
             this.isDeleted = !!this.isDeleted;
         }
     }

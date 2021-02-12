@@ -505,7 +505,6 @@ class ConsistencyChecks {
         this.runEntityChangeChecks("note_contents", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
         this.runEntityChangeChecks("branches", "branchId");
-        this.runEntityChangeChecks("recent_notes", "noteId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("api_tokens", "apiTokenId");
         this.runEntityChangeChecks("options", "name");
