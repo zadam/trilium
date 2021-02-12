@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                 `utcDateChanged` TEXT NOT NULL
                                                 );
 
-INSERT INTO mig_entity_changes (entityName, entityId, hash, sourceId, isSynced, isErased, utcDateChanged)
-    SELECT entityName, entityId, '', sourceId, isSynced, isErased, utcDateChanged FROM entity_changes;
+INSERT INTO mig_entity_changes (id, entityName, entityId, hash, sourceId, isSynced, isErased, utcDateChanged)
+    SELECT id, entityName, entityId, '', sourceId, isSynced, isErased, utcDateChanged FROM entity_changes;
 
 UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM api_tokens WHERE apiTokenId = entityId), '') WHERE entityName = 'api_tokens';
 UPDATE mig_entity_changes SET hash = COALESCE((SELECT hash FROM attributes WHERE attributeId = entityId), '') WHERE entityName = 'attributes';

@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                     `utcDateChanged` TEXT NOT NULL,
                                                     `isSynced` INTEGER NOT NULL);
 
-INSERT INTO mig_entity_changes (entityName, entityId, hash, sourceId, isSynced, utcDateChanged, isErased)
-SELECT entityName, entityId, '', sourceId, isSynced, 'now', 0 FROM entity_changes;
+INSERT INTO mig_entity_changes (id, entityName, entityId, hash, sourceId, isSynced, utcDateChanged, isErased)
+SELECT id, entityName, entityId, '', sourceId, isSynced, utcChangedDate, 0 FROM entity_changes;
 
 UPDATE mig_entity_changes SET isErased = (SELECT isErased FROM notes WHERE noteId = entityId) WHERE entityName = 'notes';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM notes WHERE noteId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'notes';

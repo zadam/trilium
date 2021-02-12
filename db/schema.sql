@@ -68,13 +68,6 @@ CREATE TABLE IF NOT EXISTS "options"
     utcDateCreated TEXT not null,
     utcDateModified TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS "recent_notes"
-(
-    noteId TEXT not null primary key,
-    notePath TEXT not null,
-    utcDateCreated TEXT not null,
-    isDeleted INT NOT NULL DEFAULT 0
-);
 CREATE TABLE IF NOT EXISTS "attributes"
 (
     attributeId      TEXT not null primary key,
@@ -110,3 +103,9 @@ CREATE INDEX IDX_attributes_noteId_index
     on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
     on attributes (value);
+CREATE TABLE IF NOT EXISTS "recent_notes"
+(
+    noteId TEXT not null primary key,
+    notePath TEXT not null,
+    utcDateCreated TEXT not null
+);
