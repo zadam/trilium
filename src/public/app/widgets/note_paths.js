@@ -4,38 +4,14 @@ import linkService from "../services/link.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 
 const TPL = `
-<div class="note-paths-widget">
+<div class="dropdown note-paths-widget">
     <style>
-    .note-paths-widget {
-        display: flex; 
-        flex-direction: row;
-        padding: 3px 0px 3px 10px;
-        margin-top: 8px;
-        border-bottom: 1px dashed var(--main-border-color);
-    }
-    
-    .note-path-list a.current {
-        font-weight: bold;
-    }
-    
     .note-path-list-button {
-        padding: 0;
-        width: 24px;
-        height: 24px;
-        margin-left: 5px;
-        position: relative;
-        top: -2px;
+        font-size: 120% !important;
     }
     
     .note-path-list-button::after {
         display: none !important; // disabling the standard caret
-    }
-    
-    .current-path {
-        flex-grow: 1;
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis;
     }
     
     .note-path-list {
@@ -43,14 +19,10 @@ const TPL = `
         overflow-y: auto;
     }
     </style>
-
-    <div class="current-path"></div>
-
-    <div class="dropdown hide-in-zen-mode">
-        <button class="btn btn-sm dropdown-toggle note-path-list-button bx bx-caret-down" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-        <ul class="note-path-list dropdown-menu dropdown-menu-right" aria-labelledby="note-path-list-button">
-        </ul>
-    </div>
+    
+    <button class="btn dropdown-toggle note-path-list-button bx bx-collection" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Note paths"></button>
+    <ul class="note-path-list dropdown-menu dropdown-menu-right" aria-labelledby="note-path-list-button">
+    </ul>
 </div>`;
 
 export default class NotePathsWidget extends TabAwareWidget {
@@ -58,52 +30,8 @@ export default class NotePathsWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.overflowing();
 
-        this.$currentPath = this.$widget.find('.current-path');
-        this.$dropdown = this.$widget.find(".dropdown");
-        this.$dropdownToggle = this.$widget.find('.dropdown-toggle');
-
-        this.$notePathList = this.$dropdown.find(".note-path-list");
-
-        this.$dropdown.on('show.bs.dropdown', () => this.renderDropdown());
-    }
-
-    async refreshWithNote(note) {
-        const noteIdsPath = treeService.parseNotePath(this.notePath);
-
-        this.$currentPath.empty();
-
-        let parentNoteId = 'root';
-        let curPath = '';
-
-        let passedHoistedNote = false;
-
-        for (let i = 0; i < noteIdsPath.length; i++) {
-            const noteId = noteIdsPath[i];
-
-            curPath += (curPath ? '/' : '') + noteId;
-
-            if (noteId === hoistedNoteService.getHoistedNoteId()) {
-                passedHoistedNote = true;
-            }
-
-            if (passedHoistedNote && (noteId !== hoistedNoteService.getHoistedNoteId() || noteIdsPath.length - i < 3)) {
-                this.$currentPath.append(
-                    $("<a>")
-                        .attr('href', '#' + curPath)
-                        .attr('data-note-path', curPath)
-                        .addClass('no-tooltip-preview')
-                        .text(await treeService.getNoteTitle(noteId, parentNoteId))
-                );
-
-                if (i !== noteIdsPath.length - 1) {
-                    this.$currentPath.append(' / ');
-                }
-            }
-
-            parentNoteId = noteId;
-        }
-
-        this.$dropdownToggle.dropdown('hide');
+        this.$notePathList = this.$widget.find(".note-path-list");
+        this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
     }
 
     async renderDropdown() {

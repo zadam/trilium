@@ -21,6 +21,7 @@ import FilePropertiesWidget from "../widgets/type_property_widgets/file_properti
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 import NoteIconWidget from "../widgets/note_icon.js";
+import NotePathsWidget from "../widgets/note_paths.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -48,6 +49,7 @@ export default class DesktopExtraWindowLayout {
                         .overflowing()
                         .child(new NoteIconWidget())
                         .child(new NoteTitleWidget())
+                        .child(new NotePathsWidget().hideInZenMode())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())
                     )
