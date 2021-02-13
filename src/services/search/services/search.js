@@ -139,16 +139,16 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
 
         if (highlightedTokens.find(token => note.type.includes(token))) {
-            result.highlightedNotePathTitle += ` <type: ${note.type}>`;
+            result.highlightedNotePathTitle += ` "type: ${note.type}'`;
         }
 
         if (highlightedTokens.find(token => note.mime.includes(token))) {
-            result.highlightedNotePathTitle += ` <mime: ${note.mime}>`;
+            result.highlightedNotePathTitle += ` "mime: ${note.mime}'`;
         }
 
         for (const attr of note.attributes) {
             if (highlightedTokens.find(token => attr.name.includes(token) || attr.value.includes(token))) {
-                result.highlightedNotePathTitle += ` <${formatAttribute(attr)}>`;
+                result.highlightedNotePathTitle += ` "${formatAttribute(attr)}'`;
             }
         }
     }
@@ -163,8 +163,8 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
     for (const result of searchResults) {
         result.highlightedNotePathTitle = result.highlightedNotePathTitle
-            .replace(/</g, "<small>")
-            .replace(/>/g, "</small>")
+            .replace(/"/g, "<small>")
+            .replace(/'/g, "</small>")
             .replace(/{/g, "<b>")
             .replace(/}/g, "</b>");
     }
