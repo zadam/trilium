@@ -10,6 +10,7 @@ class SearchContext {
         this.includeArchivedNotes = !!params.includeArchivedNotes;
         this.orderBy = params.orderBy;
         this.orderDirection = params.orderDirection;
+        this.limit = params.limit;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
         this.originalQuery = "";

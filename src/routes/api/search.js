@@ -22,6 +22,7 @@ async function search(note) {
             includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
             orderBy: note.getLabelValue('orderBy'),
             orderDirection: note.getLabelValue('orderDirection'),
+            limit: note.getLabelValue('limit'),
             fuzzyAttributeSearch: false
         });
 

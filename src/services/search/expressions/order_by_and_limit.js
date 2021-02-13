@@ -14,7 +14,7 @@ class OrderByAndLimitExp extends Expression {
             od.larger = od.direction === "asc" ? 1 : -1;
         }
 
-        this.limit = limit;
+        this.limit = limit || 0;
 
         /** @type {Expression} */
         this.subExpression = null; // it's expected to be set after construction

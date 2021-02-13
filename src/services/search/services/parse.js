@@ -421,7 +421,7 @@ function parse({fulltextTokens, expressionTokens, searchContext}) {
         exp = new OrderByAndLimitExp([{
             valueExtractor: new ValueExtractor(searchContext, ['note', searchContext.orderBy]),
             direction: searchContext.orderDirection
-        }], 0);
+        }], searchContext.limit);
 
         exp.subExpression = filterExp;
     }

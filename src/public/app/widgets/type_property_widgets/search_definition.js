@@ -18,6 +18,7 @@ import Ancestor from "../search_options/ancestor.js";
 import IncludeArchivedNotes from "../search_options/include_archived_notes.js";
 import OrderBy from "../search_options/order_by.js";
 import SearchScript from "../search_options/search_script.js";
+import Limit from "../search_options/limit.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -106,6 +107,11 @@ const TPL = `
                         order by
                     </button>
                     
+                    <button type="button" class="btn btn-sm" data-search-option-add="limit" title="Limit number of results">
+                        <span class="bx bx-stop"></span>
+                        limit
+                    </button>
+                    
                     <div class="dropdown" style="display: inline-block;">
                       <button class="btn btn-sm dropdown-toggle action-add-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="bx bxs-zap"></span>
@@ -163,7 +169,8 @@ const OPTION_CLASSES = [
     Ancestor,
     FastSearch,
     IncludeArchivedNotes,
-    OrderBy
+    OrderBy,
+    Limit
 ];
 
 const ACTION_CLASSES = {};
