@@ -128,6 +128,6 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".open-dev-tools-button").toggle(utils.isElectron());
 
         this.$widget.on('click', '.dropdown-item',
-            () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
+            () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
     }
 }

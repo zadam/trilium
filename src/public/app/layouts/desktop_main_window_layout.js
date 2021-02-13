@@ -103,6 +103,7 @@ const RIGHT_PANE_CSS = `
     position: relative;
     top: 2px;
     font-size: large;
+    padding-left: 5px;
 }
 
 #right-pane .body-wrapper {

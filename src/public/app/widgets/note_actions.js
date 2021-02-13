@@ -59,7 +59,7 @@ const TPL = `
     </style>
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-        Note actions
+        Actions
         <span class="caret"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-right">

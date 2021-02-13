@@ -14,7 +14,7 @@ const TPL = `
     }
     
     .note-icon-container span {
-        font-size: 200%;
+        font-size: 180%;
     }
     </style>
 

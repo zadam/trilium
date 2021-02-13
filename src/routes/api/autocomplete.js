@@ -48,8 +48,7 @@ function getRecentNotes(activeNoteId) {
         recent_notes
         JOIN notes USING(noteId)
       WHERE
-        recent_notes.isDeleted = 0
-        AND notes.isDeleted = 0
+        notes.isDeleted = 0
         AND notes.noteId != ?
         ${extraCondition}
       ORDER BY 
