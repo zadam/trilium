@@ -31,6 +31,7 @@ import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
+import NoteIconWidget from "../widgets/note_icon.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -153,8 +154,10 @@ export default class DesktopMainWindowLayout {
                 )
                 .child(new FlexContainer('column').id('center-pane')
                     .child(new FlexContainer('row').class('title-row')
-                        .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
+                        .css('align-items: center;')
+                        .cssBlock('.title-row > * { margin: 5px; }')
                         .overflowing()
+                        .child(new NoteIconWidget())
                         .child(new NoteTitleWidget())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())

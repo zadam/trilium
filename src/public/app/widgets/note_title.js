@@ -9,11 +9,10 @@ const TPL = `
     <style>
     .note-title-container {
         flex-grow: 100;
-        height: 34px;
     }
     
     .note-title-container input.note-title {
-        font-size: 150%;
+        font-size: 180%;
         border: 0;
         min-width: 5em;
         width: 100%;
@@ -42,6 +41,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$noteTitle = this.$widget.find(".note-title");
 
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());

@@ -597,7 +597,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const hideArchivedNotes = this.hideArchivedNotes;
 
-        let childBranches = this.getChildBranches(parentNote);
+        let childBranches = parentNote.getFilteredChildBranches();
 
         if (childBranches.length > MAX_SEARCH_RESULTS_IN_TREE) {
             childBranches = childBranches.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
@@ -623,14 +623,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
     updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
-
-        const isFolder = this.isFolder(note);
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
-        node.folder = isFolder;
-        node.icon = note.getIcon(isFolder);
+        node.folder = note.isFolder();
+        node.icon = note.getIcon();
         node.extraClasses = this.getExtraClasses(note);
         node.title = utils.escapeHtml(title);
 
@@ -653,7 +651,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
 
-        const isFolder = this.isFolder(note);
+        const isFolder = note.isFolder();
 
         const node = {
             noteId: note.noteId,
@@ -676,34 +674,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         return node;
-    }
-
-    isFolder(note) {
-        return note.type === 'search'
-            || this.getChildBranches(note).length > 0;
-    }
-
-    getChildBranches(parentNote) {
-        let childBranches = parentNote.getChildBranches();
-
-        if (!childBranches) {
-            ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
-            return;
-        }
-
-        if (this.hideIncludedImages) {
-            const imageLinks = parentNote.getRelations('imageLink');
-
-            // image is already visible in the parent note so no need to display it separately in the book
-            childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
-        }
-
-        // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
-        // which would seriously slow down everything.
-        // we check this flag only once user chooses to expand the parent. This has the negative consequence that
-        // note may appear as folder but not contain any children when all of them are archived
-
-        return childBranches;
     }
 
     getExtraClasses(note) {

@@ -20,6 +20,7 @@ import SqlResultWidget from "../widgets/sql_result.js";
 import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
+import NoteIconWidget from "../widgets/note_icon.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -42,8 +43,10 @@ export default class DesktopExtraWindowLayout {
                 .filling()
                 .child(new FlexContainer('column').id('center-pane').filling()
                     .child(new FlexContainer('row').class('title-row')
+                        .css('align-items: center;')
+                        .cssBlock('.title-row > * { margin: 5px; }')
                         .overflowing()
-                        .cssBlock('.title-row > * { margin: 5px 5px 0 5px; }')
+                        .child(new NoteIconWidget())
                         .child(new NoteTitleWidget())
                         .child(new NoteTypeWidget().hideInZenMode())
                         .child(new NoteActionsWidget().hideInZenMode())

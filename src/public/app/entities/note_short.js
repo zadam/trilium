@@ -1,6 +1,7 @@
 import server from '../services/server.js';
-import Attribute from './attribute.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
+import ws from "../services/ws.js";
+import options from "../services/options.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -266,7 +267,7 @@ class NoteShort {
         return this.getAttributes(LABEL, name);
     }
 
-    getIcon(isFolder = false) {
+    getIcon() {
         const iconClassLabels = this.getLabels('iconClass');
         const workspaceIconClass = this.getWorkspaceIconClass();
 
@@ -280,7 +281,7 @@ class NoteShort {
             return "bx bx-chevrons-right";
         }
         else if (this.type === 'text') {
-            if (isFolder) {
+            if (this.isFolder()) {
                 return "bx bx-folder";
             }
             else {
@@ -293,6 +294,34 @@ class NoteShort {
         else {
             return NOTE_TYPE_ICONS[this.type];
         }
+    }
+
+    isFolder() {
+        return this.type === 'search'
+            || this.getFilteredChildBranches().length > 0;
+    }
+
+    getFilteredChildBranches() {
+        let childBranches = this.getChildBranches();
+
+        if (!childBranches) {
+            ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
+            return;
+        }
+
+        if (options.is("hideIncludedImages_main")) {
+            const imageLinks = this.getRelations('imageLink');
+
+            // image is already visible in the parent note so no need to display it separately in the book
+            childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
+        }
+
+        // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
+        // which would seriously slow down everything.
+        // we check this flag only once user chooses to expand the parent. This has the negative consequence that
+        // note may appear as folder but not contain any children when all of them are archived
+
+        return childBranches;
     }
 
     /**
