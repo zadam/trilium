@@ -34,6 +34,7 @@ const TPL = `
         height: 100%;
         overflow: auto;
         padding-bottom: 35px;
+        padding-top: 5px;
     }
         
     .collapse-tree-button {

@@ -30,6 +30,10 @@ const TPL = `
     </div>
     
     <iframe class="pdf-preview" style="width: 100%; height: 100%; flex-grow: 100;"></iframe>
+    
+    <video class="video-preview" controls></video>
+    
+    <audio class="audio-preview" controls></audio>
 </div>`;
 
 export default class FileTypeWidget extends TypeWidget {
@@ -41,6 +45,8 @@ export default class FileTypeWidget extends TypeWidget {
         this.$previewContent = this.$widget.find(".file-preview-content");
         this.$previewNotAvailable = this.$widget.find(".file-preview-not-available");
         this.$pdfPreview = this.$widget.find(".pdf-preview");
+        this.$videoPreview = this.$widget.find(".video-preview");
+        this.$audioPreview = this.$widget.find(".audio-preview");
     }
 
     async doRefresh(note) {
@@ -53,16 +59,30 @@ export default class FileTypeWidget extends TypeWidget {
 
         this.$previewContent.empty().hide();
         this.$pdfPreview.attr('src', '').empty().hide();
+        this.$previewNotAvailable.hide();
+        this.$videoPreview.hide();
+        this.$audioPreview.hide();
 
         if (noteComplement.content) {
-            this.$previewNotAvailable.hide();
             this.$previewContent.show().scrollTop(0);
             this.$previewContent.text(noteComplement.content);
         }
         else if (note.mime === 'application/pdf') {
-            this.$previewNotAvailable.hide();
-            this.$pdfPreview.show();
-            this.$pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"));
+            this.$pdfPreview.show().attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"));
+        }
+        else if (note.mime.startsWith('video/')) {
+            this.$videoPreview
+                .show()
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("type", this.note.mime)
+                .css("width", this.$widget.width());
+        }
+        else if (note.mime.startsWith('audio/')) {
+            this.$audioPreview
+                .show()
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("type", this.note.mime)
+                .css("width", this.$widget.width());
         }
         else {
             this.$previewNotAvailable.show();

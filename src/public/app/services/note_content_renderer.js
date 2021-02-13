@@ -59,9 +59,8 @@ async function getRenderedContent(note, options = {}) {
         }
 
         $content.append(
-            $("<div>")
+            $('<div style="display: flex; justify-content: space-evenly; margin-top: 5px;">')
                 .append($downloadButton)
-                .append(' &nbsp; ')
                 .append($openButton)
         );
 
