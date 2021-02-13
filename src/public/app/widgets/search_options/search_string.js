@@ -25,6 +25,7 @@ const TPL = `
                 <li><code>note.dateCreated >= MONTH-1</code> - notes created in the last month</li>
             </ul>
             </p>
+          </div>
         </div>
         
         <span class="bx bx-x icon-action search-option-del"></span>

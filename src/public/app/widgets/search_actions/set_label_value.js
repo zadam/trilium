@@ -19,6 +19,20 @@ const TPL = `
         </div>
     </td>
     <td class="button-column">
+        <div class="dropdown help-dropdown">
+            <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
+            <div class="dropdown-menu dropdown-menu-right p-4">
+                <p>On all matched notes:</p>
+                
+                <ul>
+                    <li>create given label if note doesn't have one yet</li>
+                    <li>or change value of the existing label</li>
+                </ul>
+                
+                <p>You can also call this method without value, in such case label will be assigned to the note without value.</p>
+            </div> 
+        </div>
+    
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

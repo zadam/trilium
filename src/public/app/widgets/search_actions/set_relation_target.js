@@ -23,6 +23,18 @@ const TPL = `
         </div>
     </td>
     <td class="button-column">
+        <div class="dropdown help-dropdown">
+            <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
+            <div class="dropdown-menu dropdown-menu-right p-4">
+                <p>On all matched notes:</p>
+                
+                <ul>
+                    <li>create given relation if note doesn't have one yet</li>
+                    <li>or change target note of the existing relation</li>
+                </ul>
+            </div> 
+        </div>
+    
         <span class="bx bx-x icon-action action-conf-del"></span>
     </td>
 </tr>`;

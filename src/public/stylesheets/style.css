@@ -919,6 +919,10 @@ ul.fancytree-container li {
     color: var(--main-text-color);
 }
 
+.help-dropdown {
+    display: inline-block;
+}
+
 .help-dropdown .dropdown-menu {
     border-radius: 10px;
     border-width: 2px;

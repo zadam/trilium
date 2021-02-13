@@ -33,6 +33,7 @@ return matchedNotes;</pre>
 
             <p>Note that search script and search string can't be combined with each other.</p>
           </div>
+        </div>
         
         <span class="bx bx-x icon-action search-option-del"></span>
     </td>
