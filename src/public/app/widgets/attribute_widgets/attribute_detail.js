@@ -248,6 +248,8 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$rowValue = this.$widget.find('.attr-row-value');
         this.$inputValue = this.$widget.find('.attr-input-value');
         this.$inputValue.on('keyup', () => this.userEditedAttribute());
+        this.$inputValue.on('change', () => this.userEditedAttribute());
+        this.$inputValue.on('autocomplete:closed', () => this.userEditedAttribute());
         this.$inputValue.on('focus', () => {
             attributeAutocompleteService.initLabelValueAutocomplete({
                 $el: this.$inputValue,
