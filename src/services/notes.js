@@ -796,8 +796,28 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
         throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available. Enter protected session and try again.`);
     }
 
+    const newNoteId = noteIdMapping[origNote.noteId];
+
+    const newBranch = new Branch({
+        noteId: newNoteId,
+        parentNoteId: newParentNoteId,
+        // here increasing just by 1 to make sure it's directly after original
+        notePosition: origBranch ? origBranch.notePosition + 1 : null
+    }).save();
+
+    const existingNote = repository.getNote(newNoteId);
+
+    if (existingNote) {
+        // note has multiple clones and was already created from another placement in the tree
+        // so a branch is all we need for this clone
+        return {
+            note: existingNote,
+            branch: newBranch
+        }
+    }
+
     const newNote = new Note(origNote);
-    newNote.noteId = noteIdMapping[origNote.noteId];
+    newNote.noteId = newNoteId;
     newNote.dateCreated = dateUtils.localNowDateTime();
     newNote.utcDateCreated = dateUtils.utcNowDateTime();
     newNote.save();
@@ -810,13 +830,6 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     }
 
     newNote.setContent(content);
-
-    const newBranch = new Branch({
-        noteId: newNote.noteId,
-        parentNoteId: newParentNoteId,
-        // here increasing just by 1 to make sure it's directly after original
-        notePosition: origBranch ? origBranch.notePosition + 1 : null
-    }).save();
 
     for (const attribute of origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
@@ -849,6 +862,7 @@ function getNoteIdMapping(origNote) {
     for (const origNoteId of origNote.getDescendantNoteIds()) {
         noteIdMapping[origNoteId] = utils.newEntityId();
     }
+
     return noteIdMapping;
 }
 
