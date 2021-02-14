@@ -75,6 +75,8 @@ function eraseNoteRevisions(noteRevisionIdsToErase) {
         return;
     }
 
+    log.info(`Removing note revisions: ${JSON.stringify(noteRevisionIdsToErase)}`);
+
     sql.executeMany(`DELETE FROM note_revisions WHERE noteRevisionId IN (???)`, noteRevisionIdsToErase);
     sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_revisions' AND entityId IN (???)`, noteRevisionIdsToErase);
 

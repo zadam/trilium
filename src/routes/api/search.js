@@ -5,6 +5,7 @@ const SearchContext = require('../../services/search/search_context.js');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
+const noteRevisionService = require("../../services/note_revisions.js");
 
 async function search(note) {
     let searchResultNoteIds;
@@ -56,8 +57,11 @@ async function searchFromNote(req) {
 
 const ACTION_HANDLERS = {
     deleteNote: (action, note) => {
-        note.isDeleted;
+        note.isDeleted = true;
         note.save();
+    },
+    deleteNoteRevisions: (action, note) => {
+        noteRevisionService.eraseNoteRevisions(note.getRevisions().map(rev => rev.noteRevisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {

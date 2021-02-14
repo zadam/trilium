@@ -19,6 +19,7 @@ import IncludeArchivedNotes from "../search_options/include_archived_notes.js";
 import OrderBy from "../search_options/order_by.js";
 import SearchScript from "../search_options/search_script.js";
 import Limit from "../search_options/limit.js";
+import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -120,6 +121,8 @@ const TPL = `
                       <div class="dropdown-menu">
                         <a class="dropdown-item" href="#" data-action-add="deleteNote">
                             Delete note</a>
+                        <a class="dropdown-item" href="#" data-action-add="deleteNoteRevisions">
+                            Delete note revisions</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteLabel">
                             Delete label</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteRelation">
@@ -177,6 +180,7 @@ const ACTION_CLASSES = {};
 
 for (const clazz of [
     DeleteNoteSearchAction,
+    DeleteNoteRevisionsSearchAction,
     DeleteLabelSearchAction,
     DeleteRelationSearchAction,
     RenameLabelSearchAction,
