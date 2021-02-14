@@ -8,7 +8,7 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 
 class NoteContentProtectedFulltextExp extends Expression {
-    constructor(operator, tokens) {
+    constructor(operator, tokens, raw) {
         super();
 
         if (operator !== '*=*') {
@@ -16,6 +16,7 @@ class NoteContentProtectedFulltextExp extends Expression {
         }
 
         this.tokens = tokens;
+        this.raw = !!raw;
     }
 
     execute(inputNoteSet) {
@@ -47,7 +48,7 @@ class NoteContentProtectedFulltextExp extends Expression {
             content = content.toLowerCase();
 
             if (type === 'text' && mime === 'text/html') {
-                if (content.length < 20000) { // striptags is slow for very large notes
+                if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
                     content = striptags(content);
                 }
 

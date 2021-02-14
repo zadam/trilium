@@ -6,7 +6,7 @@ const noteCache = require('../../note_cache/note_cache');
 const striptags = require('striptags');
 
 class NoteContentUnprotectedFulltextExp extends Expression {
-    constructor(operator, tokens) {
+    constructor(operator, tokens, raw) {
         super();
 
         if (operator !== '*=*') {
@@ -14,6 +14,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
         }
 
         this.tokens = tokens;
+        this.raw = !!raw;
     }
 
     execute(inputNoteSet) {
@@ -33,7 +34,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
             content = content.toString().toLowerCase();
 
             if (type === 'text' && mime === 'text/html') {
-                if (content.length < 20000) { // striptags is slow for very large notes
+                if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
                     content = striptags(content);
                 }
 

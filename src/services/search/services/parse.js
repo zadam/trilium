@@ -125,7 +125,9 @@ function getExpression(tokens, searchContext, level = 0) {
 
         i++;
 
-        if (tokens[i].token === 'content') {
+        if (['content', 'rawcontent'].includes(tokens[i].token)) {
+            const raw = tokens[i].token === 'rawcontent';
+
             i += 1;
 
             const operator = tokens[i].token;
@@ -138,8 +140,8 @@ function getExpression(tokens, searchContext, level = 0) {
             i++;
 
             return new OrExp([
-                new NoteContentUnprotectedFulltextExp(operator, [tokens[i].token]),
-                new NoteContentProtectedFulltextExp(operator, [tokens[i].token])
+                new NoteContentUnprotectedFulltextExp(operator, [tokens[i].token], raw),
+                new NoteContentProtectedFulltextExp(operator, [tokens[i].token], raw)
             ]);
         }
 
