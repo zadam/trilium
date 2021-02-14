@@ -26,6 +26,8 @@ function init(app) {
             },
             send: obj => {
                 event.sender.send('server-response', {
+                    url: arg.url,
+                    method: arg.method,
                     requestId: arg.requestId,
                     statusCode: res.statusCode,
                     headers: respHeaders,

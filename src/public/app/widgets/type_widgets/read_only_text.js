@@ -26,7 +26,8 @@ const TPL = `
     .note-detail-readonly-text h6::before { content: "######\\2004"; color: var(--muted-text-color); }
     
     .note-detail-readonly-text {
-        padding: 10px;
+        padding-left: 22px;
+        padding-top: 10px;
         font-family: var(--detail-text-font-family);
         position: relative;
     }

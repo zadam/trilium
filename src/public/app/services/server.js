@@ -47,6 +47,7 @@ async function remove(url, sourceId) {
 
 let i = 1;
 const reqResolves = {};
+const reqRejects = {};
 
 let maxKnownEntityChangeId = 0;
 
@@ -63,6 +64,7 @@ async function call(method, url, data, headers = {}) {
 
         resp = await new Promise((resolve, reject) => {
             reqResolves[requestId] = resolve;
+            reqRejects[requestId] = reject;
 
             if (REQUEST_LOGGING_ENABLED) {
                 console.log(utils.now(), "Request #" + requestId + " to " + method + " " + url);
@@ -96,6 +98,14 @@ async function call(method, url, data, headers = {}) {
     return resp.body;
 }
 
+async function reportError(method, url, status, error) {
+    const message = "Error when calling " + method + " " + url + ": " + status + " - " + error;
+
+    const toastService = (await import("./toast.js")).default;
+    toastService.showError(message);
+    toastService.throwError(message);
+}
+
 function ajax(url, method, data, headers) {
     return new Promise((res, rej) => {
         const options = {
@@ -117,11 +127,8 @@ function ajax(url, method, data, headers) {
                     headers: respHeaders
                 });
             },
-            error: async (jqXhr, textStatus, error) => {
-                const message = "Error when calling " + method + " " + url + ": " + textStatus + " - " + error;
-                const toastService = (await import("./toast.js")).default;
-                toastService.showError(message);
-                toastService.throwError(message);
+            error: async (jqXhr, status, error) => {
+                await reportError(method, url, status, error);
 
                 rej(error);
             }
@@ -143,17 +150,25 @@ function ajax(url, method, data, headers) {
 if (utils.isElectron()) {
     const ipc = utils.dynamicRequire('electron').ipcRenderer;
 
-    ipc.on('server-response', (event, arg) => {
+    ipc.on('server-response', async (event, arg) => {
         if (REQUEST_LOGGING_ENABLED) {
             console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
         }
 
-        reqResolves[arg.requestId]({
-            body: arg.body,
-            headers: arg.headers
-        });
+        if (arg.statusCode >= 200 && arg.statusCode < 300) {
+            reqResolves[arg.requestId]({
+                body: arg.body,
+                headers: arg.headers
+            });
+        }
+        else {
+            await reportError(arg.method, arg.url, arg.statusCode, arg.body);
+
+            reqRejects[arg.requestId]();
+        }
 
         delete reqResolves[arg.requestId];
+        delete reqRejects[arg.requestId];
     });
 }
 

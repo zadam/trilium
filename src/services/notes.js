@@ -759,7 +759,7 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
         throw new Error('Duplicating root is not possible');
     }
 
-    log.info(`Duplicating ${origNote} subtree into ${newParentNoteId}`);
+    log.info(`Duplicating ${origNoteId} subtree into ${newParentNoteId}`);
 
     const origNote = repository.getNote(origNoteId);
     // might be null if orig note is not in the target newParentNoteId
@@ -793,7 +793,7 @@ function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
 
 function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
-        throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available`);
+        throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available. Enter protected session and try again.`);
     }
 
     const newNote = new Note(origNote);
@@ -821,7 +821,6 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     for (const attribute of origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
-        attr.utcDateCreated = dateUtils.utcNowDateTime();
         attr.noteId = newNote.noteId;
 
         // if relation points to within the duplicated tree then replace the target to the duplicated note

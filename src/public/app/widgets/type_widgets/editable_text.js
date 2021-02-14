@@ -30,6 +30,12 @@ const mentionSetup = {
 const TPL = `
 <div class="note-detail-editable-text note-detail-printable">
     <style>
+    .note-detail-editable-text {
+        font-family: var(--detail-text-font-family);
+        padding-left: 12px;
+        padding-top: 10px;
+    }
+    
     .note-detail-editable-text a:hover {
         cursor: pointer;
     }
@@ -52,11 +58,6 @@ const TPL = `
     .note-detail-editable-text h5::before { content: "#####\\2004"; color: var(--muted-text-color); }
     .note-detail-editable-text h6 { font-size: 1.1em; }
     .note-detail-editable-text h6::before { content: "######\\2004"; color: var(--muted-text-color); }
-    
-    .note-detail-editable-text {
-        font-family: var(--detail-text-font-family);
-        padding-left: 12px;
-    }
     
     .note-detail-editable-text-editor {
         padding-top: 10px;
