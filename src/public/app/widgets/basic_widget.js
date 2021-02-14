@@ -31,7 +31,7 @@ class BasicWidget extends Component {
     }
 
     overflowing() {
-        this.css('contain', 'none');
+        this.css('contain', 'none !important');
         return this;
     }
 
