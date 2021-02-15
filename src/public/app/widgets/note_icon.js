@@ -22,6 +22,28 @@ const TPL = `
         border: 1px solid var(--main-border-color);
     }
     
+    .note-icon-container .dropdown-menu {
+        border-radius: 10px;
+        border-width: 2px;
+        box-shadow: 10px 10px 93px -25px black;
+        padding: 10px 15px 10px 15px !important;
+    }
+    
+    .note-icon-container .filter-row {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-right: 20px;
+        display: flex; 
+        align-items: baseline;
+    }
+    
+    .note-icon-container .filter-row span {
+        display: block;
+        padding-left: 15px;
+        padding-right: 15px;
+        font-weight: bold;
+    }
+    
     .note-icon-container .icon-list {
         height: 500px;
         overflow: auto;
@@ -41,14 +63,19 @@ const TPL = `
     </style>
     
     <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Change note icon"></button>
-    <div class="dropdown-menu" aria-labelledby="note-path-list-button" style="width: 600px;">
-        Choose your icon:
+    <div class="dropdown-menu" aria-labelledby="note-path-list-button" style="width: 610px;">
+        <div class="filter-row">
+            <span>Category:</span> <select name="icon-category" class="form-control"></select>
+            
+            <span>Search:</span> <input type="text" name="icon-search" class="form-control" />
+        </div>
         
         <div class="icon-list"></div>
     </div>
 </div>`;
 
 let icons = [];
+let categories = [];
 
 export default class NoteIconWidget extends TabAwareWidget {
     doRender() {
@@ -59,15 +86,39 @@ export default class NoteIconWidget extends TabAwareWidget {
         this.$iconList.on('click', 'span', async e => {
             const clazz = $(e.target).attr('class');
 
-            await attributeService.setLabel(this.noteId, 'iconClass', clazz);
+            await attributeService.setLabel(this.noteId,
+                this.note.hasOwnedLabel('workspace') ? 'workspaceIconClass' : 'iconClass',
+                clazz
+            );
         });
 
+        this.$iconCategory = this.$widget.find("select[name='icon-category']");
+        this.$iconCategory.on('change', () => this.renderFilteredDropdown());
+        this.$iconCategory.on('click', e => e.stopPropagation());
+
+        this.$iconSearch = this.$widget.find("input[name='icon-search']");
+        this.$iconSearch.on('input', () => this.renderFilteredDropdown());
+
         this.$notePathList = this.$widget.find(".note-path-list");
-        this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
+        this.$widget.on('show.bs.dropdown', () => {
+            this.$iconCategory.empty();
+
+            for (const category of categories) {
+                this.$iconCategory.append(
+                    $("<option>")
+                        .text(category.name)
+                        .attr("value", category.id)
+                );
+            }
+
+            this.$iconSearch.val('');
+
+            this.renderDropdown();
+        });
     }
 
     async refreshWithNote(note) {
-        this.$icon.removeClass().addClass(note.getIcon())
+        this.$icon.removeClass().addClass(note.getIcon());
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -82,11 +133,30 @@ export default class NoteIconWidget extends TabAwareWidget {
         }
     }
 
-    renderDropdown() {
+    renderFilteredDropdown() {
+        const categoryId = parseInt(this.$iconCategory.find('option:selected').val());
+        const search = this.$iconSearch.val();
+
+        this.renderDropdown(categoryId, search);
+    }
+
+    renderDropdown(categoryId, search) {
         this.$iconList.empty();
 
         for (const icon of icons) {
-            this.$iconList.append($('<span>').addClass(this.getIconClass(icon)));
+            if (categoryId && icon.category_id !== categoryId) {
+                continue;
+            }
+
+            if (search && search.trim() && !icon.name.includes(search.trim().toLowerCase())) {
+                continue;
+            }
+
+            this.$iconList.append(
+                $('<span>')
+                    .addClass(this.getIconClass(icon))
+                    .attr("title", icon.name)
+            );
         }
     }
 
@@ -102,6 +172,67 @@ export default class NoteIconWidget extends TabAwareWidget {
         }
     }
 }
+
+categories = [
+    {"name": "All categories", "id": 0},
+    {"name": "Accessibility", "id": 94},
+    {"name": "Alert", "id": 95},
+    {
+        "name": "Arrow",
+        "id": 96
+    },
+    {"name": "Brands", "id": 97},
+    {"name": "Building", "id": 98},
+    {"name": "Business", "id": 99},
+    {
+        "name": "Code",
+        "id": 100
+    },
+    {"name": "Communication", "id": 101},
+    {"name": "Design", "id": 102},
+    {
+        "name": "Device",
+        "id": 103
+    },
+    {"name": "E-Commerce", "id": 104},
+    {"name": "Emoji", "id": 105},
+    {
+        "name": "Files & Folders",
+        "id": 106
+    },
+    {"name": "Finance", "id": 107},
+    {"name": "Food & Beverage", "id": 108},
+    {
+        "name": "Health",
+        "id": 109
+    },
+    {"name": "Interface", "id": 110},
+    {"name": "Layout", "id": 111},
+    {"name": "Loader", "id": 112},
+    {
+        "name": "Misc",
+        "id": 113
+    },
+    {"name": "Music", "id": 114},
+    {"name": "Network", "id": 115},
+    {
+        "name": "Object",
+        "id": 116
+    },
+    {"name": "Photo & Video", "id": 117},
+    {"name": "Shape", "id": 118},
+    {
+        "name": "Sports & Games",
+        "id": 119
+    },
+    {"name": "Time", "id": 120},
+    {"name": "Travel", "id": 121},
+    {"name": "User", "id": 122},
+    {
+        "name": "Weather",
+        "id": 123
+    },
+    {"name": "Writing", "id": 124}];
 
 icons = [
     {
