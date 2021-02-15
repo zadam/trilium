@@ -5,23 +5,19 @@ import keyboardActionService from "../../services/keyboard_actions.js";
 const TPL = `
 <div class="note-detail-code note-detail-printable">
     <style>
-    .note-detail-code {
-        display: flex;
-        flex-direction: column;
-    }
-    
     .note-detail-code-editor {
         min-height: 50px;
     }
     </style>
 
-    <button data-trigger-command="runActiveNote"
-            class="no-print execute-button btn btn-sm"
-            style="position: absolute; top: 0px; right: 10px; z-index: 1000;">
-        Execute
-    </button>
-
     <div class="note-detail-code-editor"></div>
+
+    <div style="text-align: center">    
+        <button data-trigger-command="runActiveNote"
+                class="no-print execute-button btn btn-sm">
+            Execute <kbd data-command="runActiveNote"></kbd>
+        </button>
+    </div>
 </div>`;
 
 export default class EditableCodeTypeWidget extends TypeWidget {

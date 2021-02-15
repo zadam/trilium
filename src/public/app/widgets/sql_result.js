@@ -1,9 +1,4 @@
 import TabAwareWidget from "./tab_aware_widget.js";
-import treeService from "../services/tree.js";
-import linkService from "../services/link.js";
-import hoistedNoteService from "../services/hoisted_note.js";
-import server from "../services/server.js";
-import toastService from "../services/toast.js";
 
 const TPL = `
 <div class="sql-result-widget">
@@ -30,11 +25,15 @@ export default class SqlResultWidget extends TabAwareWidget {
         this.$sqlConsoleResultContainer = this.$widget.find('.sql-console-result-container');
     }
 
-    async sqlQueryResultsEvent({results}) {
+    async sqlQueryResultsEvent({tabId, results}) {
+        if (!this.isTab(tabId)) {
+            return;
+        }
+
         this.$sqlConsoleResultContainer.empty();
 
         for (const rows of results) {
-            if (rows.length === 0) {
+            if (!rows.length) {
                 continue;
             }
 

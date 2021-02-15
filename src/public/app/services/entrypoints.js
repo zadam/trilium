@@ -206,7 +206,8 @@ export default class Entrypoints extends Component {
     }
 
     async runActiveNoteCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
+        const tabContext = appContext.tabManager.getActiveTabContext();
+        const note = tabContext.note;
 
         // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
         if (!note || note.type !== 'code') {
@@ -220,7 +221,7 @@ export default class Entrypoints extends Component {
         } else if (note.mime === 'text/x-sqlite;schema=trilium') {
             const result = await server.post("sql/execute/" + note.noteId);
 
-            this.triggerEvent('sqlQueryResults', {results: result.results});
+            this.triggerEvent('sqlQueryResults', {tabId: tabContext.tabId, results: result.results});
         }
 
         toastService.showMessage("Note executed");
