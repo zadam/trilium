@@ -53,6 +53,12 @@ const TPL = `
     <button id="zoom-100" class="btn btn-info">Zoom 100%</button>
     <button id="clear-canvas" class="btn btn-info">Clear</button>
   </div>
+  
+    <style>
+        .note-detail {
+            height: 100%;
+        }
+    </style>
 `;
 
 export default class CanvasNoteTypeWidget extends TypeWidget {
