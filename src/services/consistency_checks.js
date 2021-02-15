@@ -538,6 +538,26 @@ class ConsistencyChecks {
         }
     }
 
+    findSyncIssues() {
+        const lastSyncedPush = parseInt(sql.getValue("SELECT value FROM options WHERE name = 'lastSyncedPush'"));
+        const maxEntityChangeId = sql.getValue("SELECT MAX(id) FROM entity_changes");
+
+        if (lastSyncedPush > maxEntityChangeId) {
+            if (this.autoFix) {
+                sql.execute("UPDATE options SET value = ? WHERE name = 'lastSyncedPush'", [maxEntityChangeId]);
+
+                this.fixedIssues = true;
+
+                logFix(`Fixed incorrect lastSyncedPush - was ${lastSyncedPush}, needs to be at maximum ${maxEntityChangeId}`);
+            }
+            else {
+                this.unrecoveredConsistencyErrors = true;
+
+                logFix(`Incorrect lastSyncedPush - is ${lastSyncedPush}, needs to be at maximum ${maxEntityChangeId}`);
+            }
+        }
+    }
+
     runAllChecksAndFixers() {
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
@@ -551,6 +571,8 @@ class ConsistencyChecks {
         this.findEntityChangeIssues();
 
         this.findWronglyNamedAttributes();
+
+        this.findSyncIssues();
 
         // root branch should always be expanded
         sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
