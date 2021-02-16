@@ -355,7 +355,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 mime,
                 prefix: noteMeta ? noteMeta.prefix : '',
                 isExpanded: noteMeta ? noteMeta.isExpanded : false,
-                notePosition: noteMeta ? noteMeta.notePosition : false,
+                // root notePosition should be ignored since it relates to original document
+                // now import root should be placed after existing notes into new parent
+                notePosition: (noteMeta && firstNote) ? noteMeta.notePosition : undefined,
                 isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
             }));
 
