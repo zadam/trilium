@@ -53,6 +53,10 @@ function getAndClearEntityChanges() {
 }
 
 function addEntityChange(entityChange) {
+    if (namespace.get('ignoreEntityChanges')) {
+        return;
+    }
+
     const entityChanges = namespace.get('entityChanges') || [];
 
     entityChanges.push(entityChange);
@@ -69,7 +73,11 @@ function getEntityFromCache(entityName, entityId) {
 }
 
 function setEntityToCache(entityName, entityId, entity) {
-    return namespace.set(entityName + '-' + entityId, entity);
+    namespace.set(entityName + '-' + entityId, entity);
+}
+
+function ignoreEntityChanges() {
+    namespace.set('ignoreEntityChanges', true);
 }
 
 module.exports = {
@@ -87,5 +95,6 @@ module.exports = {
     getAndClearEntityChanges,
     addEntityChange,
     getEntityFromCache,
-    setEntityToCache
+    setEntityToCache,
+    ignoreEntityChanges
 };

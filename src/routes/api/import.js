@@ -42,6 +42,9 @@ async function importToBranch(req) {
     // and may produce unintended consequences
     cls.disableEntityEvents();
 
+    // eliminate flickering during import
+    cls.ignoreEntityChanges();
+
     let note; // typically root of the import - client can show it after finishing the import
 
     const taskContext = TaskContext.getInstance(taskId, 'import', options);
