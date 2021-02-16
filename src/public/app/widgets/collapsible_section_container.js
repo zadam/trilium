@@ -122,7 +122,7 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
         });
     }
 
-    async refreshWithNote(note) {
+    async refreshWithNote(note, noExplicitActivation = false) {
         let $sectionToActivate, $lastActiveSection;
 
         this.$titleContainer.empty().append('<div class="section-title section-title-empty">');
@@ -141,7 +141,7 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
             this.$titleContainer.append($sectionTitle);
             this.$titleContainer.append('<div class="section-title section-title-empty">');
 
-            if (ret.activate && !$sectionToActivate) {
+            if (ret.activate && !$sectionToActivate && !noExplicitActivation) {
                 $sectionToActivate = $sectionTitle;
             }
 
@@ -160,5 +160,9 @@ export default class CollapsibleSectionContainer extends TabAwareWidget {
         else {
             this.$bodyContainer.find('.section-body').removeClass("active");
         }
+    }
+
+    refreshSectionContainerCommand() {
+        this.refreshWithNote(this.note, true);
     }
 }

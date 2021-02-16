@@ -293,6 +293,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             this.refresh();
 
             this.renderTitle(this.note);
+            this.triggerCommand('refreshSectionContainer');
         }
     }
 }
