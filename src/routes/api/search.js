@@ -232,7 +232,9 @@ function getRelatedNotes(req) {
 
     const results = [];
 
-    for (const record of matchingNameAndValue.concat(matchingName)) {
+    const allResults = matchingNameAndValue.concat(matchingName);
+
+    for (const record of allResults) {
         if (results.length >= 20) {
             break;
         }
@@ -245,7 +247,7 @@ function getRelatedNotes(req) {
     }
 
     return {
-        count: matchingName.length,
+        count: allResults.length,
         results
     };
 }
@@ -266,6 +268,10 @@ function formatAttrForSearch(attr, searchWithValue) {
     searchStr += attr.name;
 
     if (searchWithValue && attr.value) {
+        if (attr.type === 'relation') {
+            searchStr += ".noteId";
+        }
+
         searchStr += '=';
         searchStr += formatValue(attr.value);
     }
