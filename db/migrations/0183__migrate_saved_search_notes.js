@@ -15,6 +15,8 @@ module.exports = () => {
 
             note.mime = 'text/plain';
             note.save();
+
+            console.log(`Migrated search note ${note.noteId}`);
         }
         catch (e) {
             console.log(`Changing note content for note ${note.noteId} failed with: ${e.message} ${e.stack}`);
