@@ -759,7 +759,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.setExpandedStatusForSubtree(node, false);
     }
 
-    collapseTreeCommand() { this.collapseTree(); }
+    collapseTreeEvent() { this.collapseTree(); }
 
     /**
      * @return {FancytreeNode|null}
@@ -783,7 +783,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async scrollToActiveNoteCommand() {
+    async scrollToActiveNoteEvent() {
         const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {

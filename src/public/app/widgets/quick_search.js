@@ -110,15 +110,19 @@ export default class QuickSearchWidget extends BasicWidget {
 
         this.$dropdownMenu.append($showInFullButton);
 
-        utils.bindElShortcut($showInFullButton, 'return', async () => {
-            const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
+        $showInFullButton.on('click', () => this.showInFullSearch());
 
-            await appContext.tabManager.getActiveTabContext().setNote(searchNote.noteId);
-        });
+        utils.bindElShortcut($showInFullButton, 'return', () => this.showInFullSearch());
 
         utils.bindElShortcut(this.$dropdownMenu.find('.dropdown-item:first'), 'up', () => this.$searchString.focus());
 
         this.$dropdownToggle.dropdown('update');
+    }
+
+    async showInFullSearch() {
+        const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
+
+        await appContext.tabManager.getActiveTabContext().setNote(searchNote.noteId);
     }
 
     quickSearchEvent() {
