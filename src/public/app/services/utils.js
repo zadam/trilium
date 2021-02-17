@@ -334,6 +334,16 @@ function initHelpButtons($el) {
     });
 }
 
+function filterAttributeName(name) {
+    return name.replace(/[^\p{L}\p{N}_:]/ug, "");
+}
+
+const ATTR_NAME_MATCHER = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
+
+function isValidAttributeName(name) {
+    return ATTR_NAME_MATCHER.test(name);
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -374,5 +384,7 @@ export default {
     dynamicRequire,
     timeLimit,
     initHelpDropdown,
-    initHelpButtons
+    initHelpButtons,
+    filterAttributeName,
+    isValidAttributeName
 };

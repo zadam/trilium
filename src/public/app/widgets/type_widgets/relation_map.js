@@ -471,14 +471,22 @@ export default class RelationMapTypeWidget extends TypeWidget {
         }
 
         const promptDialog = await import("../../dialogs/prompt.js");
-        const name = await promptDialog.ask({
-            message: "Specify new relation name:",
-            shown: ({ $answer }) =>
+        let name = await promptDialog.ask({
+            message: "Specify new relation name (allowed characters: alphanumeric, colon and underscore):",
+            shown: ({ $answer }) => {
+                $answer.on('keyup', () => {
+                    // invalid characters are simply ignored (from user perspective they are not even entered)
+                    const attrName = utils.filterAttributeName($answer.val());
+
+                    $answer.val(attrName);
+                });
+
                 attributeAutocompleteService.initAttributeNameAutocomplete({
                     $el: $answer,
                     attributeType: "relation",
                     open: true
-                })
+                });
+            }
         });
 
         if (!name || !name.trim()) {
@@ -486,6 +494,8 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             return;
         }
+
+        name = utils.filterAttributeName(name);
 
         const targetNoteId = this.idToNoteId(connection.target.id);
         const sourceNoteId = this.idToNoteId(connection.source.id);

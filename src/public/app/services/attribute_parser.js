@@ -1,3 +1,5 @@
+import utils from "./utils.js";
+
 function lex(str) {
     str = str.trim();
 
@@ -105,14 +107,12 @@ function lex(str) {
     return tokens;
 }
 
-const attrNameMatcher = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
-
 function checkAttributeName(attrName) {
     if (attrName.length === 0) {
         throw new Error("Attribute name is empty, please fill the name.");
     }
 
-    if (!attrNameMatcher.test(attrName)) {
+    if (!utils.isValidAttributeName(attrName)) {
         throw new Error(`Attribute name "${attrName}" contains disallowed characters, only alphanumeric characters, colon and underscore are allowed.`);
     }
 }

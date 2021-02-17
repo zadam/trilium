@@ -172,8 +172,6 @@ const ATTR_TITLES = {
     "relation-definition": "Relation definition detail"
 };
 
-const ATTR_NAME_MATCHER = new RegExp("^[\\p{L}\\p{N}_:]+$", "u");
-
 const ATTR_HELP = {
     "label": {
         "disableVersioning": "disables auto-versioning. Useful for e.g. large, but unimportant notes - e.g. large JS libraries used for scripting",
@@ -573,9 +571,9 @@ export default class AttributeDetailWidget extends TabAwareWidget {
     updateAttributeInEditor() {
         let attrName = this.$inputName.val();
 
-        if (!ATTR_NAME_MATCHER.test(attrName)) {
+        if (!utils.isValidAttributeName(attrName)) {
             // invalid characters are simply ignored (from user perspective they are not even entered)
-            attrName = attrName.replace(/[^\p{L}\p{N}_:]/ug, "");
+            attrName = utils.filterAttributeName(attrName);
 
             this.$inputName.val(attrName);
         }
