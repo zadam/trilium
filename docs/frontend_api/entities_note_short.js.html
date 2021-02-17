@@ -27,11 +27,22 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import server from '../services/server.js';
-import Attribute from './attribute.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
+import ws from "../services/ws.js";
+import options from "../services/options.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
+
+const NOTE_TYPE_ICONS = {
+    "file": "bx bx-file",
+    "image": "bx bx-image",
+    "code": "bx bx-code",
+    "render": "bx bx-extension",
+    "search": "bx bx-file-find",
+    "relation-map": "bx bx-map-alt",
+    "book": "bx bx-book"
+};
 
 /**
  * FIXME: since there's no "full note" anymore we can rename this to Note
@@ -78,7 +89,7 @@ class NoteShort {
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
         /** @param {boolean} */
-        this.isDeleted = row.isDeleted;
+        this.isDeleted = !!row.isDeleted;
     }
 
     addParent(parentNoteId, branchId) {
@@ -93,14 +104,16 @@ class NoteShort {
         this.parentToBranch[parentNoteId] = branchId;
     }
 
-    addChild(childNoteId, branchId) {
-        if (!this.children.includes(childNoteId)) {
+    addChild(childNoteId, branchId, sort = true) {
+        if (!(childNoteId in this.childToBranch)) {
             this.children.push(childNoteId);
         }
 
         this.childToBranch[childNoteId] = branchId;
 
-        this.sortChildren();
+        if (sort) {
+            this.sortChildren();
+        }
     }
 
     sortChildren() {
@@ -280,6 +293,63 @@ class NoteShort {
      */
     getLabels(name) {
         return this.getAttributes(LABEL, name);
+    }
+
+    getIcon() {
+        const iconClassLabels = this.getLabels('iconClass');
+        const workspaceIconClass = this.getWorkspaceIconClass();
+
+        if (iconClassLabels.length > 0) {
+            return iconClassLabels.map(l => l.value).join(' ');
+        }
+        else if (workspaceIconClass) {
+            return workspaceIconClass;
+        }
+        else if (this.noteId === 'root') {
+            return "bx bx-chevrons-right";
+        }
+        else if (this.type === 'text') {
+            if (this.isFolder()) {
+                return "bx bx-folder";
+            }
+            else {
+                return "bx bx-note";
+            }
+        }
+        else if (this.type === 'code' &amp;&amp; this.mime.startsWith('text/x-sql')) {
+            return "bx bx-data";
+        }
+        else {
+            return NOTE_TYPE_ICONS[this.type];
+        }
+    }
+
+    isFolder() {
+        return this.type === 'search'
+            || this.getFilteredChildBranches().length > 0;
+    }
+
+    getFilteredChildBranches() {
+        let childBranches = this.getChildBranches();
+
+        if (!childBranches) {
+            ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
+            return;
+        }
+
+        if (options.is("hideIncludedImages_main")) {
+            const imageLinks = this.getRelations('imageLink');
+
+            // image is already visible in the parent note so no need to display it separately in the book
+            childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
+        }
+
+        // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
+        // which would seriously slow down everything.
+        // we check this flag only once user chooses to expand the parent. This has the negative consequence that
+        // note may appear as folder but not contain any children when all of them are archived
+
+        return childBranches;
     }
 
     /**
@@ -466,19 +536,42 @@ class NoteShort {
         return relations.map(rel => this.treeCache.notes[rel.value]);
     }
 
-    hasAncestor(ancestorNote) {
+    getPromotedDefinitionAttributes() {
+        if (this.hasLabel('hidePromotedAttributes')) {
+            return [];
+        }
+
+        return this.getAttributes()
+            .filter(attr => attr.isDefinition())
+            .filter(attr => {
+                const def = attr.getDefinition();
+
+                return def &amp;&amp; def.isPromoted;
+            });
+    }
+
+    hasAncestor(ancestorNote, visitedNoteIds) {
         if (this.noteId === ancestorNote.noteId) {
             return true;
         }
 
+        if (!visitedNoteIds) {
+            visitedNoteIds = new Set();
+        } else if (visitedNoteIds.has(this.noteId)) {
+            // to avoid infinite cycle when template is descendent of the instance
+            return false;
+        }
+
+        visitedNoteIds.add(this.noteId);
+
         for (const templateNote of this.getTemplateNotes()) {
-            if (templateNote.hasAncestor(ancestorNote)) {
+            if (templateNote.hasAncestor(ancestorNote, visitedNoteIds)) {
                 return true;
             }
         }
 
         for (const parentNote of this.getParentNotes()) {
-            if (parentNote.hasAncestor(ancestorNote)) {
+            if (parentNote.hasAncestor(ancestorNote, visitedNoteIds)) {
                 return true;
             }
         }
@@ -538,6 +631,16 @@ class NoteShort {
     getCssClass() {
         const labels = this.getLabels('cssClass');
         return labels.map(l => l.value).join(' ');
+    }
+
+    getWorkspaceIconClass() {
+        const labels = this.getLabels('workspaceIconClass');
+        return labels.length > 0 ? labels[0].value : "";
+    }
+
+    getWorkspaceTabBackgroundColor() {
+        const labels = this.getLabels('workspaceTabBackgroundColor');
+        return labels.length > 0 ? labels[0].value : "";
     }
 }
 

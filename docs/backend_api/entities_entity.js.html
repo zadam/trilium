@@ -43,18 +43,13 @@ class Entity {
             }
         }
 
-        if ('isDeleted' in this) {
+        if ('isDeleted' in this &amp;&amp; this.constructor.entityName !== 'recent_notes') {
             this.isDeleted = !!this.isDeleted;
         }
     }
 
     beforeSaving() {
         this.generateIdIfNecessary();
-
-        const origHash = this.hash;
-
-        this.hash = this.generateHash();
-        this.isChanged = origHash !== this.hash;
     }
 
     generateIdIfNecessary() {
@@ -71,6 +66,10 @@ class Entity {
         }
 
         return utils.hash(contentToHash).substr(0, 10);
+    }
+
+    getUtcDateChanged() {
+        return this.utcDateModified;
     }
 
     get repository() {

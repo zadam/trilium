@@ -43,7 +43,6 @@ const entityChangesService = require('../services/entity_changes.js');
  * @property {string} type
  * @property {string} mime
  * @property {string} title
- * @property {boolean} isErased
  * @property {boolean} isProtected
  * @property {string} dateLastEdited
  * @property {string} dateCreated
@@ -56,12 +55,11 @@ const entityChangesService = require('../services/entity_changes.js');
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
 
-        this.isErased = !!this.isErased;
         this.isProtected = !!this.isProtected;
 
         if (this.isProtected) {
@@ -95,7 +93,7 @@ class NoteRevision extends Entity {
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            const res = sql.getRow(`SELECT content, hash FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
+            const res = sql.getRow(`SELECT content FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
 
             if (!res) {
                 if (silentNotFoundError) {
@@ -107,7 +105,6 @@ class NoteRevision extends Entity {
             }
 
             this.content = res.content;
-
             if (this.isProtected) {
                 if (protectedSessionService.isProtectedSessionAvailable()) {
                     this.content = protectedSessionService.decrypt(this.content);
@@ -134,8 +131,7 @@ class NoteRevision extends Entity {
         const pojo = {
             noteRevisionId: this.noteRevisionId,
             content: content,
-            utcDateModified: dateUtils.utcNowDateTime(),
-            hash: utils.hash(this.noteRevisionId + "|" + content)
+            utcDateModified: dateUtils.utcNowDateTime()
         };
 
         if (this.isProtected) {
@@ -149,15 +145,21 @@ class NoteRevision extends Entity {
 
         sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        entityChangesService.addNoteRevisionContentEntityChange(this.noteRevisionId);
+        const hash = utils.hash(this.noteRevisionId + "|" + content);
+
+        entityChangesService.addEntityChange({
+            entityName: 'note_revision_contents',
+            entityId: this.noteRevisionId,
+            hash: hash,
+            isErased: false,
+            utcDateChanged: this.getUtcDateChanged()
+        }, null);
     }
 
     beforeSaving() {
         super.beforeSaving();
 
-        if (this.isChanged) {
-            this.utcDateModified = dateUtils.utcNowDateTime();
-        }
+        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
     // cannot be static!

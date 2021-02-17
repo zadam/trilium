@@ -49,7 +49,6 @@ const RELATION = 'relation';
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string|null} deleteId - ID identifying delete transaction
- * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
  * @property {string} utcDateCreated
@@ -98,9 +97,9 @@ class Note extends Entity {
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            const res = sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
+            const row = sql.getRow(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
 
-            if (!res) {
+            if (!row) {
                 if (silentNotFoundError) {
                     return undefined;
                 }
@@ -109,7 +108,7 @@ class Note extends Entity {
                 }
             }
 
-            this.content = res.content;
+            this.content = row.content;
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
@@ -171,8 +170,7 @@ class Note extends Entity {
             noteId: this.noteId,
             content: content,
             dateModified: dateUtils.localNowDateTime(),
-            utcDateModified: dateUtils.utcNowDateTime(),
-            hash: utils.hash(this.noteId + "|" + content.toString())
+            utcDateModified: dateUtils.utcNowDateTime()
         };
 
         if (this.isProtected) {
@@ -186,7 +184,15 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        entityChangesService.addNoteContentEntityChange(this.noteId);
+        const hash = utils.hash(this.noteId + "|" + content.toString());
+
+        entityChangesService.addEntityChange({
+            entityName: 'note_contents',
+            entityId: this.noteId,
+            hash: hash,
+            isErased: false,
+            utcDateChanged: this.getUtcDateChanged()
+        }, null);
     }
 
     setJsonContent(content) {
@@ -834,7 +840,7 @@ class Note extends Entity {
      * @returns {boolean} - true if note has children
      */
     hasChildren() {
-        return (this.getChildNotes()).length > 0;
+        return this.getChildNotes().length > 0;
     }
 
     /**
@@ -932,10 +938,8 @@ class Note extends Entity {
 
         super.beforeSaving();
 
-        if (this.isChanged) {
-            this.dateModified = dateUtils.localNowDateTime();
-            this.utcDateModified = dateUtils.utcNowDateTime();
-        }
+        this.dateModified = dateUtils.localNowDateTime();
+        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
     // cannot be static!

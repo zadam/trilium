@@ -50,6 +50,8 @@ class Attribute {
         this.position = row.position;
         /** @param {boolean} isInheritable */
         this.isInheritable = !!row.isInheritable;
+        /** @param {boolean} */
+        this.isDeleted = !!row.isDeleted;
     }
 
     /** @returns {NoteShort} */
@@ -113,6 +115,17 @@ class Attribute {
 
     getDefinition() {
         return promotedAttributeDefinitionParser.parse(this.value);
+    }
+
+    isDefinitionFor(attr) {
+        return this.type === 'label' &amp;&amp; this.name === `${attr.type}:${attr.name}`;
+    }
+
+    get dto() {
+        const dto = Object.assign({}, this);
+        delete dto.treeCache;
+
+        return dto;
     }
 }
 

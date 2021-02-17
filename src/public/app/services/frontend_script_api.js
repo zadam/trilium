@@ -72,6 +72,23 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
+     * Open a note in a new tab.
+     *
+     * @param {string} notePath (or noteId)
+     * @param {boolean} activate - set to true to activate the new tab, false to stay on the current tab
+     * @return {Promise<void>}
+     */
+    this.openTabWithNote = async (notePath, activate) => {
+        await ws.waitForMaxKnownEntityChangeId();
+
+        await appContext.tabManager.openTabWithNote(notePath, activate);
+
+        if (activate) {
+            appContext.triggerEvent('focusAndSelectTitle');
+        }
+    };
+
+    /**
      * @typedef {Object} ToolbarButtonOptions
      * @property {string} title
      * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)

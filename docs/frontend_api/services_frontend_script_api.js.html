@@ -26,8 +26,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import treeService from './tree.js';
-import server from './server.js';
+            <pre class="prettyprint source linenums"><code>import server from './server.js';
 import utils from './utils.js';
 import toastService from './toast.js';
 import linkService from './link.js';
@@ -37,7 +36,6 @@ import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
-import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
 import TabAwareWidget from "../widgets/tab_aware_widget.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
@@ -102,6 +100,20 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
+     * Open a note in a new tab.
+     *
+     * @param {string} notePath (or noteId)
+     * @param {boolean} activate - set to true to activate the new tab, false to stay on the current tab
+     * @return {Promise&lt;void>}
+     */
+    this.openTabWithNote = async (notePath, activate) => {
+        await ws.waitForMaxKnownEntityChangeId();
+
+        await appContext.tabManager.openTabWithNote(notePath, activate);
+        appContext.triggerEvent('focusAndSelectTitle');
+    };
+
+    /**
      * @typedef {Object} ToolbarButtonOptions
      * @property {string} title
      * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
@@ -117,7 +129,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
 
-        const button = $('&lt;button>')
+        const button = $('&lt;button class="noborder">')
             .addClass("btn btn-sm")
             .on('click', opts.action);
 
@@ -302,7 +314,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} notePath (or noteId)
-     * @param {string} [noteTitle] - if not present we'll use note title
+     * @param {object} [params]
+     * @param {boolean} [params.showTooltip=true] - enable/disable tooltip on the link
+     * @param {boolean} [params.showNotePath=false] - show also whole note's path as part of the link
+     * @param {string} [title=] - custom link tile with note's title as default
      */
     this.createNoteLink = linkService.createNoteLink;
 
@@ -404,13 +419,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getYearNote = dateNotesService.getYearNote;
 
     /**
-     * Hoist note. See https://github.com/zadam/trilium/wiki/Note-hoisting
+     * Hoist note in the current tab. See https://github.com/zadam/trilium/wiki/Note-hoisting
      *
      * @method
      * @param {string} noteId - set hoisted note. 'root' will effectively unhoist
      * @return {Promise}
      */
-    this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
+    this.setHoistedNoteId = (noteId) => {
+        const activeTabContext = appContext.tabManager.getActiveTabContext();
+
+        if (activeTabContext) {
+            activeTabContext.setHoistedNoteId(noteId);
+        }
+    };
 
     /**
      * @method
