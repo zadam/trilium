@@ -1252,7 +1252,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async deleteNotesCommand({node}) {
-        const branchIds = this.getSelectedOrActiveBranchIds(node);
+        const branchIds = this.getSelectedOrActiveBranchIds(node)
+            .filter(branchId => !branchId.startsWith('virt-')); // search results can't be deleted
+
+        if (!branchIds.length) {
+            return;
+        }
 
         await branchService.deleteNotes(branchIds);
 
