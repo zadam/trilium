@@ -148,19 +148,15 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
         // if one inverse attribute is deleted then the other should be deleted as well
         const relations = targetNote.getOwnedRelations(definition.inverseRelation);
-        let deletedSomething = false;
 
         for (const relation of relations) {
             if (relation.value === note.noteId) {
+                note.invalidateAttributeCache();
+                targetNote.invalidateAttributeCache();
+
                 relation.isDeleted = true;
                 relation.save();
-
-                deletedSomething = true;
             }
-        }
-
-        if (deletedSomething) {
-            targetNote.invalidateAttributeCache();
         }
     });
 });

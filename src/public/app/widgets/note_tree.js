@@ -624,6 +624,17 @@ export default class NoteTreeWidget extends TabAwareWidget {
     updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
+
+        if (!note) {
+            console.log(`Node update not possible because note ${node.data.noteId} was not found.`);
+            return;
+        }
+
+        if (!branch) {
+            console.log(`Node update not possible because branch ${node.data.branchId} was not found.`);
+            return;
+        }
+
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
 
         node.data.isProtected = note.isProtected;
