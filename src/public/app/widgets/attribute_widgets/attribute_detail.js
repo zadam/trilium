@@ -279,7 +279,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
         this.$inputTargetNote = this.$widget.find('.attr-input-target-note');
 
-        noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote)
+        noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote, {allowCreatingNotes: true})
             .on('autocomplete:noteselected', (event, suggestion, dataset) => {
                 if (!suggestion.notePath) {
                     return false;

@@ -50,7 +50,7 @@ export default class SearchScript extends AbstractSearchOption {
     doRender() {
         const $option = $(TPL);
         const $searchScript = $option.find('.search-script');
-        noteAutocompleteService.initNoteAutocomplete($searchScript);
+        noteAutocompleteService.initNoteAutocomplete($searchScript, {allowCreatingNotes: true});
 
         $searchScript.on('autocomplete:closed', async () => {
             const searchScriptNoteId = $searchScript.getSelectedNoteId();

@@ -41,7 +41,10 @@ export async function showDialog(widget, text = '') {
         $linkTitle.val(noteTitle);
     }
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete, { allowExternalLinks: true });
+    noteAutocompleteService.initNoteAutocomplete($autoComplete, {
+        allowExternalLinks: true,
+        allowCreatingNotes: true
+    });
 
     $autoComplete.on('autocomplete:noteselected', (event, suggestion, dataset) => {
         if (!suggestion.notePath) {

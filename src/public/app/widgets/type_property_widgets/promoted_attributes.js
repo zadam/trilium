@@ -210,7 +210,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             }
 
             // no need to wait for this
-            noteAutocompleteService.initNoteAutocomplete($input);
+            noteAutocompleteService.initNoteAutocomplete($input, {allowCreatingNotes: true});
 
             $input.on('autocomplete:noteselected', (event, suggestion, dataset) => {
                 this.promotedAttributeChanged(event);

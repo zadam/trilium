@@ -17,7 +17,10 @@ export async function showDialog(widget) {
 
     utils.openDialog($dialog);
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true });
+    noteAutocompleteService.initNoteAutocomplete($autoComplete, {
+        hideGoToSelectedNoteButton: true,
+        allowCreatingNotes: true
+    });
     noteAutocompleteService.showRecentNotes($autoComplete);
 }
 
