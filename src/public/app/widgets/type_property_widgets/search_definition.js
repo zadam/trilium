@@ -20,6 +20,7 @@ import OrderBy from "../search_options/order_by.js";
 import SearchScript from "../search_options/search_script.js";
 import Limit from "../search_options/limit.js";
 import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
+import Debug from "../search_options/debug.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -113,6 +114,11 @@ const TPL = `
                         limit
                     </button>
                     
+                    <button type="button" class="btn btn-sm" data-search-option-add="debug" title="Debug will print extra debugging information into the console to aid in debugging complex queries">
+                        <span class="bx bx-bug"></span>
+                        debug
+                    </button>
+                    
                     <div class="dropdown" style="display: inline-block;">
                       <button class="btn btn-sm dropdown-toggle action-add-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="bx bxs-zap"></span>
@@ -173,7 +179,8 @@ const OPTION_CLASSES = [
     FastSearch,
     IncludeArchivedNotes,
     OrderBy,
-    Limit
+    Limit,
+    Debug
 ];
 
 const ACTION_CLASSES = {};

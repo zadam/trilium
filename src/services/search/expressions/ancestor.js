@@ -10,6 +10,7 @@ class AncestorExp extends Expression {
         super();
 
         this.ancestorNoteId = ancestorNoteId;
+        this.ancestorDepth = ancestorDepth; // for DEBUG mode
         this.ancestorDepthComparator = this.getComparator(ancestorDepth);
     }
 

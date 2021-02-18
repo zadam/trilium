@@ -24,6 +24,7 @@ async function search(note) {
             orderBy: note.getLabelValue('orderBy'),
             orderDirection: note.getLabelValue('orderDirection'),
             limit: note.getLabelValue('limit'),
+            debug: note.hasLabel('debug'),
             fuzzyAttributeSearch: false
         });
 

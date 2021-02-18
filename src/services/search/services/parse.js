@@ -194,7 +194,7 @@ function getExpression(tokens, searchContext, level = 0) {
             i += 2;
 
             return new OrExp([
-                new PropertyComparisonExp(searchContext, 'title', buildComparator('*=*', tokens[i].token)),
+                new PropertyComparisonExp(searchContext, 'title', '*=*', tokens[i].token),
                 new NoteContentProtectedFulltextExp('*=*', [tokens[i].token]),
                 new NoteContentUnprotectedFulltextExp('*=*', [tokens[i].token])
             ]);
@@ -208,14 +208,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
             const comparedValue = resolveConstantOperand();
 
-            const comparator = buildComparator(operator, comparedValue);
-
-            if (!comparator) {
-                searchContext.addError(`Can't find operator '${operator}' in ${context(i - 2)}`);
-                return;
-            }
-
-            return new PropertyComparisonExp(searchContext, propertyName, comparator);
+            return new PropertyComparisonExp(searchContext, propertyName, operator, comparedValue);
         }
 
         searchContext.addError(`Unrecognized note property "${tokens[i].token}" in ${context(i)}`);
@@ -411,8 +404,8 @@ function getExpression(tokens, searchContext, level = 0) {
 
 function parse({fulltextTokens, expressionTokens, searchContext}) {
     let exp = AndExp.of([
-        searchContext.includeArchivedNotes ? null : new PropertyComparisonExp(searchContext, "isarchived", buildComparator("=", "false")),
-        searchContext.ancestorNoteId ? new AncestorExp(searchContext.ancestorNoteId, searchContext.ancestorDepth) : null,
+        searchContext.includeArchivedNotes ? null : new PropertyComparisonExp(searchContext, "isarchived", "=", "false"),
+        (searchContext.ancestorNoteId && searchContext.ancestorNoteId !== 'root') ? new AncestorExp(searchContext.ancestorNoteId, searchContext.ancestorDepth) : null,
         getFulltext(fulltextTokens, searchContext),
         getExpression(expressionTokens, searchContext)
     ]);

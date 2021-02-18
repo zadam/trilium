@@ -127,6 +127,12 @@ function parseQueryToExpression(query, searchContext) {
         originalQuery: query
     });
 
+    if (searchContext.debug) {
+        log.info(`Fulltext tokens: ` + JSON.stringify(fulltextTokens));
+        log.info(`Expression tokens: ` + JSON.stringify(structuredExpressionTokens, null, 4));
+        log.info("Expression tree: " + JSON.stringify(expression, null, 4));
+    }
+
     return expression;
 }
 

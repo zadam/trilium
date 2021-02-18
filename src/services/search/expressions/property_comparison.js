@@ -2,6 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
+const buildComparator = require("../services/build_comparator.js");
 
 /**
  * Search string is lower cased for case insensitive comparison. But when retrieving properties
@@ -33,11 +34,13 @@ class PropertyComparisonExp extends Expression {
         return name in PROP_MAPPING;
     }
 
-    constructor(searchContext, propertyName, comparator) {
+    constructor(searchContext, propertyName, operator, comparedValue) {
         super();
 
         this.propertyName = PROP_MAPPING[propertyName];
-        this.comparator = comparator;
+        this.operator = operator; // for DEBUG mode
+        this.comparedValue = comparedValue; // for DEBUG mode
+        this.comparator = buildComparator(operator, comparedValue);
 
         if (['contentsize', 'notesize', 'revisioncount'].includes(this.propertyName)) {
             searchContext.dbLoadNeeded = true;
