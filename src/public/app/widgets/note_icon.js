@@ -1,5 +1,4 @@
 import TabAwareWidget from "./tab_aware_widget.js";
-import server from "../services/server.js";
 import attributeService from "../services/attributes.js";
 
 const TPL = `
@@ -11,14 +10,15 @@ const TPL = `
         margin-right: 0;
     }
     
-    .note-icon-container button {
+    .note-icon-container button.note-icon {
         font-size: 180%;
         background: transparent;
         border: 1px solid transparent;
         cursor: pointer;
+        padding: 6px;
     }
     
-    .note-icon-container button:hover {
+    .note-icon-container button.note-icon:hover {
         border: 1px solid var(--main-border-color);
     }
     
@@ -47,7 +47,6 @@ const TPL = `
     .note-icon-container .icon-list {
         height: 500px;
         overflow: auto;
-        font-size: 180%;
     }
     
     .note-icon-container .icon-list span {
@@ -55,6 +54,7 @@ const TPL = `
         padding: 10px;
         cursor: pointer;
         border: 1px solid transparent;
+        font-size: 180%;
     }
     
     .note-icon-container .icon-list span:hover {
@@ -62,7 +62,7 @@ const TPL = `
     }
     </style>
     
-    <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Change note icon"></button>
+    <button class="btn dropdown-toggle note-icon" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Change note icon"></button>
     <div class="dropdown-menu" aria-labelledby="note-path-list-button" style="width: 610px;">
         <div class="filter-row">
             <span>Category:</span> <select name="icon-category" class="form-control"></select>
@@ -74,14 +74,11 @@ const TPL = `
     </div>
 </div>`;
 
-let icons = [];
-let categories = [];
-
 export default class NoteIconWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();
-        this.$icon = this.$widget.find('button');
+        this.$icon = this.$widget.find('button.note-icon');
         this.$iconList = this.$widget.find('.icon-list');
         this.$iconList.on('click', 'span', async e => {
             const clazz = $(e.target).attr('class');
@@ -120,7 +117,7 @@ export default class NoteIconWidget extends TabAwareWidget {
     }
 
     async refreshWithNote(note) {
-        this.$icon.removeClass().addClass(note.getIcon());
+        this.$icon.removeClass().addClass(note.getIcon() + " note-icon");
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -144,6 +141,18 @@ export default class NoteIconWidget extends TabAwareWidget {
 
     async renderDropdown(categoryId, search) {
         this.$iconList.empty();
+
+        this.$iconList.append(
+            $(`<div style="text-align: center">`)
+                .append(
+                    $('<button class="btn btn-sm">Reset to default icon</button>')
+                        .on('click', () =>
+                            this.note.getOwnedLabels()
+                                .filter(label => ['workspaceIconClass', 'iconClass'].includes(label.name))
+                                .forEach(label => attributeService.removeAttributeById(this.noteId, label.attributeId))
+                        )
+                )
+        );
 
         const {icons} = (await import('./icon_list.js')).default;
 
