@@ -54,9 +54,17 @@ function moveBranchBeforeNote(req) {
     const {branchId, beforeBranchId} = req.params;
 
     const branchToMove = repository.getBranch(branchId);
-    const beforeNote = repository.getBranch(beforeBranchId);
+    const beforeBranch = repository.getBranch(beforeBranchId);
 
-    const validationResult = treeService.validateParentChild(beforeNote.parentNoteId, branchToMove.noteId, branchId);
+    if (!branchToMove) {
+        return [404, `Can't find branch ${branchId}`];
+    }
+
+    if (!beforeBranch) {
+        return [404, `Can't find branch ${beforeBranchId}`];
+    }
+
+    const validationResult = treeService.validateParentChild(beforeBranch.parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -65,16 +73,16 @@ function moveBranchBeforeNote(req) {
     // we don't change utcDateModified so other changes are prioritized in case of conflict
     // also we would have to sync all those modified branches otherwise hash checks would fail
     sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
-        [beforeNote.parentNoteId, beforeNote.notePosition]);
+        [beforeBranch.parentNoteId, beforeBranch.notePosition]);
 
-    entityChangesService.addNoteReorderingEntityChange(beforeNote.parentNoteId);
+    entityChangesService.addNoteReorderingEntityChange(beforeBranch.parentNoteId);
 
-    if (branchToMove.parentNoteId === beforeNote.parentNoteId) {
-        branchToMove.notePosition = beforeNote.notePosition;
+    if (branchToMove.parentNoteId === beforeBranch.parentNoteId) {
+        branchToMove.notePosition = beforeBranch.notePosition;
         branchToMove.save();
     }
     else {
-        const newBranch = branchToMove.createClone(beforeNote.parentNoteId, beforeNote.notePosition);
+        const newBranch = branchToMove.createClone(beforeBranch.parentNoteId, beforeBranch.notePosition);
         newBranch.save();
 
         branchToMove.isDeleted = true;

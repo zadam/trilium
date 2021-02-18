@@ -392,12 +392,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
-                    // don't allow dragging root node
-                    if (node.data.noteId === hoistedNoteService.getHoistedNoteId()
-                        || node.getParent().data.noteType === 'search') {
-                        return false;
-                    }
-
                     const notes = this.getSelectedOrActiveNodes(node).map(node => ({
                         noteId: node.data.noteId,
                         branchId: node.data.branchId,

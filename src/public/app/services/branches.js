@@ -7,6 +7,7 @@ import ws from "./ws.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
+    branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
     if (beforeBranchId === 'root') {
         alert('Cannot move notes before root note.');
@@ -25,6 +26,7 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
 
 async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
+    branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
     const afterNote = await treeCache.getBranch(afterBranchId).getNote();
 
@@ -140,6 +142,10 @@ async function moveNodeUpInHierarchy(node) {
         node.getParent().folder = false;
         node.getParent().renderTitle();
     }
+}
+
+function filterSearchBranches(branchIds) {
+    return branchIds.filter(branchId => !branchId.startsWith('virt-'));
 }
 
 function filterRootNote(branchIds) {

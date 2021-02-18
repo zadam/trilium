@@ -5,7 +5,7 @@
 .note-detail-relation-map {
     height: 100%;
     overflow: hidden !important;
-    padding-top: 10px;
+    padding: 10px;
     position: relative;
 }
 
