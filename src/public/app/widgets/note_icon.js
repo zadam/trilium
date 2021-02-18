@@ -142,17 +142,17 @@ export default class NoteIconWidget extends TabAwareWidget {
     async renderDropdown(categoryId, search) {
         this.$iconList.empty();
 
-        this.$iconList.append(
-            $(`<div style="text-align: center">`)
-                .append(
-                    $('<button class="btn btn-sm">Reset to default icon</button>')
-                        .on('click', () =>
-                            this.note.getOwnedLabels()
-                                .filter(label => ['workspaceIconClass', 'iconClass'].includes(label.name))
+        if (this.getIconLabels().length > 0) {
+            this.$iconList.append(
+                $(`<div style="text-align: center">`)
+                    .append(
+                        $('<button class="btn btn-sm">Reset to default icon</button>')
+                            .on('click', () => this.getIconLabels()
                                 .forEach(label => attributeService.removeAttributeById(this.noteId, label.attributeId))
-                        )
-                )
-        );
+                            )
+                    )
+            );
+        }
 
         const {icons} = (await import('./icon_list.js')).default;
 
@@ -171,6 +171,11 @@ export default class NoteIconWidget extends TabAwareWidget {
                     .attr("title", icon.name)
             );
         }
+    }
+
+    getIconLabels() {
+        return this.note.getOwnedLabels()
+            .filter(label => ['workspaceIconClass', 'iconClass'].includes(label.name));
     }
 
     getIconClass(icon) {
