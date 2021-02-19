@@ -46,6 +46,10 @@ class Attribute {
             || (this.type === 'relation' && this.name === 'template');
     }
 
+    isAutoLink() {
+        return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
+    }
+
     get note() {
         return this.noteCache.notes[this.noteId];
     }

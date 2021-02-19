@@ -23,7 +23,13 @@ const PROP_MAPPING = {
     "childrencount": "childrenCount",
     "attributecount": "attributeCount",
     "labelcount": "labelCount",
+    "ownedlabelcount": "ownedLabelCount",
     "relationcount": "relationCount",
+    "ownedrelationcount": "ownedRelationCount",
+    "relationcountincludinglinks": "relationCountIncludingLinks",
+    "ownedrelationcountincludinglinks": "ownedRelationCountIncludingLinks",
+    "targetrelationcount": "targetRelationCount",
+    "targetrelationcountincludinglinks": "targetRelationCountIncludingLinks",
     "contentsize": "contentSize",
     "notesize": "noteSize",
     "revisioncount": "revisionCount"

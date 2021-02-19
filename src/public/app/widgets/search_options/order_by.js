@@ -16,6 +16,11 @@ const TPL = `
             <option value="contentSize">Note content size</option>
             <option value="noteSize">Note content size including revisions</option>
             <option value="revisionCount">Number of revisions</option>
+            <option value="childrenCount">Number of children notes</option>
+            <option value="parentCount">Number of clones</option>
+            <option value="ownedLabelCount">Number of labels</option>
+            <option value="ownedRelationCount">Number of relations</option>
+            <option value="targetRelationCount">Number of relations targeting the note</option>
         </select>
         
         <select name="orderDirection" class="form-control w-auto d-inline">

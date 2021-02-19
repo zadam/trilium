@@ -319,11 +319,39 @@ class Note {
         return this.attributes.filter(attr => attr.type === 'label').length;
     }
 
+    get ownedLabelCount() {
+        return this.ownedAttributes.filter(attr => attr.type === 'label').length;
+    }
+
     get relationCount() {
+        return this.attributes.filter(attr => attr.type === 'relation' && !attr.isAutoLink()).length;
+    }
+
+    get relationCountIncludingLinks() {
         return this.attributes.filter(attr => attr.type === 'relation').length;
     }
 
+    get ownedRelationCount() {
+        return this.ownedAttributes.filter(attr => attr.type === 'relation' && !attr.isAutoLink()).length;
+    }
+
+    get ownedRelationCountIncludingLinks() {
+        return this.ownedAttributes.filter(attr => attr.type === 'relation').length;
+    }
+
+    get targetRelationCount() {
+        return this.targetRelations.filter(attr => !attr.isAutoLink()).length;
+    }
+
+    get targetRelationCountIncludingLinks() {
+        return this.targetRelations.length;
+    }
+
     get attributeCount() {
+        return this.attributes.length;
+    }
+
+    get ownedAttributeCount() {
         return this.attributes.length;
     }
 
