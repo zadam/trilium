@@ -22,6 +22,7 @@ import ImagePropertiesWidget from "../widgets/type_property_widgets/image_proper
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 import NoteIconWidget from "../widgets/note_icon.js";
 import NotePathsWidget from "../widgets/note_paths.js";
+import SearchResultWidget from "../widgets/search_result.js";
 
 export default class DesktopExtraWindowLayout {
     constructor(customWidgets) {
@@ -69,6 +70,7 @@ export default class DesktopExtraWindowLayout {
                         .child(new TabCachingWidget(() => new SqlTableSchemasWidget()))
                         .child(new TabCachingWidget(() => new NoteDetailWidget()))
                         .child(new TabCachingWidget(() => new NoteListWidget()))
+                        .child(new TabCachingWidget(() => new SearchResultWidget()))
                         .child(new TabCachingWidget(() => new SqlResultWidget()))
                     )
                     .child(...this.customWidgets.get('center-pane'))

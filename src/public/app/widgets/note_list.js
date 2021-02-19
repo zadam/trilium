@@ -23,11 +23,9 @@ const TPL = `
 export default class NoteListWidget extends TabAwareWidget {
     isEnabled() {
         return super.isEnabled()
+            && ['book', 'text', 'code'].includes(this.note.type)
             && this.note.mime !== 'text/x-sqlite;schema=trilium'
-            && (
-                ['book', 'search', 'code'].includes(this.note.type)
-                || (this.note.type === 'text' && this.note.hasChildren())
-            )
+            && this.note.hasChildren()
             && !this.note.hasLabel('hideChildrenOverview');
     }
 
@@ -87,17 +85,6 @@ export default class NoteListWidget extends TabAwareWidget {
         this.noteIdRefreshed = this.noteId;
 
         setTimeout(() => this.checkRenderStatus(), 100);
-    }
-
-    searchRefreshedEvent({tabId}) {
-        if (!this.isTab(tabId)) {
-            return;
-        }
-
-        this.noteIdRefreshed = this.noteId;
-        this.shownNoteId = null;
-
-        this.checkRenderStatus();
     }
 
     notesReloadedEvent({noteIds}) {

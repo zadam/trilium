@@ -195,6 +195,8 @@ class TreeCache {
                     branches,
                     attributes: []
                 });
+
+                treeCache.notes[note.noteId].searchResultsLoaded = true;
             }
         }
 

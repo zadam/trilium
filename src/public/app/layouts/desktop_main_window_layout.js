@@ -32,6 +32,7 @@ import FilePropertiesWidget from "../widgets/type_property_widgets/file_properti
 import ImagePropertiesWidget from "../widgets/type_property_widgets/image_properties.js";
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 import NoteIconWidget from "../widgets/note_icon.js";
+import SearchResultWidget from "../widgets/search_result.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -179,6 +180,7 @@ export default class DesktopMainWindowLayout {
                         .child(new TabCachingWidget(() => new SqlTableSchemasWidget()))
                         .child(new TabCachingWidget(() => new NoteDetailWidget()))
                         .child(new TabCachingWidget(() => new NoteListWidget()))
+                        .child(new TabCachingWidget(() => new SearchResultWidget()))
                         .child(new TabCachingWidget(() => new SqlResultWidget()))
                     )
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
