@@ -1,6 +1,7 @@
 "use strict";
 
 const noteCache = require('../../services/note_cache/note_cache');
+const log = require('../../services/log');
 
 function getNotesAndBranchesAndAttributes(noteIds) {
     noteIds = new Set(noteIds);
@@ -75,6 +76,11 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
     for (const branchId of collectedBranchIds) {
         const branch = noteCache.branches[branchId];
+
+        if (!branch) {
+            log.error(`Could not find branch for branchId=${branchId}`);
+            continue;
+        }
 
         branches.push({
             branchId: branch.branchId,

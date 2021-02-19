@@ -152,12 +152,11 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
 function getDateNote(dateStr) {
     const rootNote = getRootCalendarNote();
 
-    const dayNumber = dateStr.substr(8, 2);
-
     let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
     if (!dateNote) {
         const monthNote = getMonthNote(dateStr, rootNote);
+        const dayNumber = dateStr.substr(8, 2);
 
         dateNote = getNoteStartingWith(monthNote.noteId, dayNumber);
 

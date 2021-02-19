@@ -88,7 +88,7 @@ function findNotesWithExpression(expression, searchContext) {
 
     const searchResults = noteSet.notes
         .map(note => executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
-        .filter(notePathArray => notePathArray.includes(cls.getHoistedNoteId()))
+        .filter(notePathArray => notePathArray && notePathArray.includes(cls.getHoistedNoteId()))
         .map(notePathArray => new SearchResult(notePathArray));
 
     for (const res of searchResults) {
