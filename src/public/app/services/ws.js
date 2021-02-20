@@ -43,7 +43,6 @@ const processedEntityChangeIds = new Set();
 function logRows(entityChanges) {
     const filteredRows = entityChanges.filter(row =>
         !processedEntityChangeIds.has(row.id)
-        && row.entityName !== 'recent_notes'
         && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
 
     if (filteredRows.length > 0) {
@@ -103,7 +102,7 @@ function waitForEntityChangeId(desiredEntityChangeId) {
         return Promise.resolve();
     }
 
-    console.debug("Waiting for", desiredEntityChangeId, 'current is', lastProcessedEntityChangeId);
+    console.debug(`Waiting for ${desiredEntityChangeId}, last processed is ${lastProcessedEntityChangeId}, last accepted ${lastAcceptedEntityChangeId}`);
 
     return new Promise((res, rej) => {
         entityChangeIdReachedListeners.push({
@@ -127,7 +126,7 @@ function checkEntityChangeIdListeners() {
         .filter(l => l.desiredEntityChangeId > lastProcessedEntityChangeId);
 
     entityChangeIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for entityChangeId ${l.desiredEntityChangeId} while current is ${lastProcessedEntityChangeId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
+        .forEach(l => console.log(`Waiting for entityChangeId ${l.desiredEntityChangeId} while last processed is ${lastProcessedEntityChangeId} (last accepted ${lastAcceptedEntityChangeId}) for ${Math.floor((Date.now() - l.start) / 1000)}s`));
 }
 
 async function runSafely(syncHandler, syncData) {
@@ -230,25 +229,6 @@ subscribeToMessages(message => {
 });
 
 async function processEntityChanges(entityChanges) {
-    const missingNoteIds = [];
-
-    for (const {entityName, entity} of entityChanges) {
-        if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
-            missingNoteIds.push(entity.parentNoteId);
-        }
-        else if (entityName === 'attributes'
-              && entity.type === 'relation'
-              && entity.name === 'template'
-              && !(entity.noteId in treeCache.notes)) {
-
-            missingNoteIds.push(entity.value);
-        }
-    }
-
-    if (missingNoteIds.length > 0) {
-        await treeCache.reloadNotes(missingNoteIds);
-    }
-
     const loadResults = new LoadResults(treeCache);
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'notes')) {
@@ -389,6 +369,25 @@ async function processEntityChanges(entityChanges) {
         options.set(ec.entity.name, ec.entity.value);
 
         loadResults.addOption(ec.entity.name);
+    }
+
+    const missingNoteIds = [];
+
+    for (const {entityName, entity} of entityChanges) {
+        if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
+            missingNoteIds.push(entity.parentNoteId);
+        }
+        else if (entityName === 'attributes'
+            && entity.type === 'relation'
+            && entity.name === 'template'
+            && !(entity.value in treeCache.notes)) {
+
+            missingNoteIds.push(entity.value);
+        }
+    }
+
+    if (missingNoteIds.length > 0) {
+        await treeCache.reloadNotes(missingNoteIds);
     }
 
     if (!loadResults.isEmpty()) {

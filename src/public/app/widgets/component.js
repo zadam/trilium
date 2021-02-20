@@ -91,7 +91,7 @@ export default class Component {
             console.log(`Call to ${fun.name} in ${this.componentId} took ${took}ms`);
         }
 
-        await promise;
+        await utils.timeLimit(promise, 25000, `Time limit failed on ${this.constructor.name} with ${fun.name}`);
 
         return true;
     }

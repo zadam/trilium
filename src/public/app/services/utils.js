@@ -296,9 +296,13 @@ function dynamicRequire(moduleName) {
     }
 }
 
-function timeLimit(promise, limitMs) {
+function timeLimit(promise, limitMs, errorMessage) {
+    if (!promise || !promise.then) { // it's not actually a promise
+        return promise;
+    }
+
     // better stack trace if created outside of promise
-    const error = new Error('Process exceeded time limit ' + limitMs);
+    const error = new Error(errorMessage || `Process exceeded time limit ${limitMs}`);
 
     return new Promise((res, rej) => {
         let resolved = false;

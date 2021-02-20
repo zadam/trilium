@@ -1126,6 +1126,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 node = await this.expandToNote(nextNotePath, false);
 
                 if (node) {
+                    // FIXME: this is conceptually wrong
+                    //        here note tree is responsible for updating global state of the application
+                    //        this should be done by tabcontext / tabmanager and note tree should only listen to
+                    //        changes in active note and just set the "active" state
                     await appContext.tabManager.getActiveTabContext().setNote(nextNotePath);
                 }
             }
