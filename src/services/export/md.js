@@ -1,7 +1,7 @@
 "use strict";
 
 const TurndownService = require('turndown');
-const turndownPluginGfm = require('turndown-plugin-gfm');
+const turndownPluginGfm = require('joplin-turndown-plugin-gfm');
 
 let instance = null;
 

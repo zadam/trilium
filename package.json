@@ -70,7 +70,7 @@
     "striptags": "3.1.1",
     "tmp": "^0.2.1",
     "turndown": "7.0.0",
-    "turndown-plugin-gfm": "1.0.2",
+    "joplin-turndown-plugin-gfm": "1.0.12",
     "unescape": "1.0.1",
     "ws": "7.4.3",
     "yauzl": "2.10.0",

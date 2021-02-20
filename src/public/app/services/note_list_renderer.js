@@ -56,6 +56,14 @@ const TPL = `
     
     .note-book-title {
         margin-bottom: 0;
+        word-break: break-all;
+    }
+    
+    /* not-expanded title is limited to one line only */
+    .note-book-card:not(.expanded) .note-book-title {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
     
     .note-book-title .rendered-note-attributes {
@@ -148,7 +156,7 @@ class NoteListRenderer {
     /*
      * We're using noteIds so that it's not necessary to load all notes at once when paging
      */
-    constructor($parent, parentNote, noteIds) {
+    constructor($parent, parentNote, noteIds, showNotePath = false) {
         this.$noteList = $(TPL);
 
         // note list must be added to the DOM immediatelly, otherwise some functionality scripting (canvas) won't work
@@ -200,6 +208,8 @@ class NoteListRenderer {
 
             await this.renderList();
         });
+
+        this.showNotePath = showNotePath;
     }
 
     /** @return {Set<string>} list of noteIds included (images, included notes) into a parent note and which
@@ -298,7 +308,7 @@ class NoteListRenderer {
             .append(
                 $('<h5 class="note-book-title">')
                     .append($expander)
-                    .append(await linkService.createNoteLink(note.noteId, {showTooltip: false}))
+                    .append(await linkService.createNoteLink(note.noteId, {showTooltip: false, showNotePath: this.showNotePath}))
                     .append($renderedAttributes)
             );
 

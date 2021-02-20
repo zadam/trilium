@@ -52,7 +52,7 @@ export default class SearchResultWidget extends TabAwareWidget {
         this.$noResults.toggle(note.getChildNoteIds().length === 0 && !!note.searchResultsLoaded);
         this.$notExecutedYet.toggle(!note.searchResultsLoaded);
 
-        const noteListRenderer = new NoteListRenderer(this.$content, note, note.getChildNoteIds());
+        const noteListRenderer = new NoteListRenderer(this.$content, note, note.getChildNoteIds(), true);
         await noteListRenderer.renderList();
     }
 
