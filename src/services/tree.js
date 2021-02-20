@@ -5,6 +5,7 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
+const noteCache = require('./note_cache/note_cache');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
@@ -133,6 +134,8 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
         for (const note of notes) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, note.branchId]);
+
+            noteCache.branches[note.branchId].notePosition = position;
 
             position += 10;
         }

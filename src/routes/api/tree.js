@@ -135,6 +135,10 @@ function getTree(req) {
         }
     }
 
+    if (!(subTreeNoteId in noteCache.notes)) {
+        return [404, `Note ${subTreeNoteId} not found in the cache`];
+    }
+
     collect(noteCache.notes[subTreeNoteId]);
 
     return getNotesAndBranchesAndAttributes(collectedNoteIds);
