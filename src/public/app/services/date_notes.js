@@ -18,12 +18,16 @@ async function getTodayNote() {
 async function getDateNote(date) {
     const note = await server.get('date-notes/date/' + date, "date-note");
 
+    await ws.waitForMaxKnownEntityChangeId();
+
     return await treeCache.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
 async function getMonthNote(month) {
     const note = await server.get('date-notes/month/' + month, "date-note");
+
+    await ws.waitForMaxKnownEntityChangeId();
 
     return await treeCache.getNote(note.noteId);
 }
@@ -32,12 +36,16 @@ async function getMonthNote(month) {
 async function getYearNote(year) {
     const note = await server.get('date-notes/year/' + year, "date-note");
 
+    await ws.waitForMaxKnownEntityChangeId();
+
     return await treeCache.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
 async function createSqlConsole() {
     const note = await server.post('sql-console');
+
+    await ws.waitForMaxKnownEntityChangeId();
 
     return await treeCache.getNote(note.noteId);
 }
