@@ -12,6 +12,10 @@ const TPL = `
             text-overflow: ellipsis;
         }
     </style>
+    
+    <div class="no-edited-notes-found">No edited notes on this day yet ...</div>
+    
+    <div class="edited-notes-list"></div>
 </div>
 `;
 
@@ -31,26 +35,26 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
     async doRenderBody() {
         this.$body.html(TPL);
-        this.$editedNotes = this.$body.find('.edited-notes-widget');
+        this.$list = this.$body.find('.edited-notes-list');
+        this.$noneFound = this.$body.find('.no-edited-notes-found');
     }
 
     async refreshWithNote(note) {
-        // remember which title was when we found the similar notes
-        this.title = note.title;
         let editedNotes = await server.get('edited-notes/' + note.getLabelValue("dateNote"));
 
         editedNotes = editedNotes.filter(n => n.noteId !== note.noteId);
 
+        this.$list.empty();
+        this.$noneFound.hide();
+
         if (editedNotes.length === 0) {
-            this.$body.text("No edited notes on this day yet ...");
+            this.$noneFound.show();
             return;
         }
 
         const noteIds = editedNotes.flatMap(n => n.noteId);
 
         await treeCache.getNotes(noteIds, true); // preload all at once
-
-        const $list = $('<div>'); // not using <ul> because it's difficult to style correctly with text-overflow
 
         for (const editedNote of editedNotes) {
             const $item = $('<div class="edited-note-line">');
@@ -67,9 +71,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
                 $item.append(editedNote.notePath ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true}) : editedNote.title);
             }
 
-            $list.append($item);
+            this.$list.append($item);
         }
-
-        this.$editedNotes.empty().append($list);
     }
 }

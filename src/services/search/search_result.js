@@ -19,6 +19,8 @@ class SearchResult {
     computeScore(tokens) {
         this.score = 0;
 
+        // matches in attributes don't get extra points and thus are implicitly valued less than note path matches
+
         const chunks = this.notePathTitle.toLowerCase().split(" ");
 
         for (const chunk of chunks) {

@@ -101,7 +101,7 @@ async function doLogin() {
     });
 
     if (sourceIdService.isLocalSourceId(resp.sourceId)) {
-        throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. Your sync setup is probably trying to connect to itself.`);
+        throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
     }
 
     syncContext.sourceId = resp.sourceId;
