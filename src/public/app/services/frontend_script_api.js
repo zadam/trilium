@@ -166,8 +166,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         }, "script");
 
         if (ret.success) {
-            // wait until all the changes done in the script has been synced to frontend before continuing
-            await ws.waitForEntityChangeId(ret.maxEntityChangeId);
+            // we used to wait for max entity change here returned from the response
+            // but it's too easy to end up in infinite cycle when this is triggered as a consequence of
+            // sync event (typically from custom widget)
 
             return ret.executionResult;
         }
