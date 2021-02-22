@@ -238,7 +238,15 @@ async function findSimilarNotes(noteId) {
         return [];
     }
 
-    const dateLimits = buildDateLimits(baseNote);
+    let dateLimits;
+
+    try {
+        dateLimits = buildDateLimits(baseNote);
+    }
+    catch (e) {
+        throw new Error(`Date limits failed with ${e.message}, entity: ${JSON.stringify(baseNote.pojo)}`);
+    }
+
     const rewardMap = buildRewardMap(baseNote);
     let ancestorRewardCache = {};
     const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));

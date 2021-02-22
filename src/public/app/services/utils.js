@@ -193,6 +193,10 @@ function getNoteTypeClass(type) {
 }
 
 function getMimeTypeClass(mime) {
+    if (!mime) {
+        return "";
+    }
+
     const semicolonIdx = mime.indexOf(';');
 
     if (semicolonIdx !== -1) {
