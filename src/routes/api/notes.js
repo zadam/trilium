@@ -117,7 +117,8 @@ function setNoteTypeMime(req) {
 }
 
 function getRelationMap(req) {
-    const noteIds = req.body.noteIds;
+    const {relationMapNoteId, noteIds} = req.body;
+
     const resp = {
         // noteId => title
         noteTitles: {},
@@ -134,12 +135,23 @@ function getRelationMap(req) {
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
+    const relationMapNote = repository.getNote(relationMapNoteId);
+
+    const displayRelationsVal = relationMapNote.getLabelValue('displayRelations');
+    const displayRelations = !displayRelationsVal ? [] : displayRelationsVal
+        .split(",")
+        .map(token => token.trim());
+
+    console.log("displayRelations", displayRelations);
+
     const notes = repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
 
     for (const note of notes) {
         resp.noteTitles[note.noteId] = note.title;
 
         resp.relations = resp.relations.concat(note.getRelations()
+            .filter(relation => !relation.isAutoLink() || displayRelations.includes(relation.name))
+            .filter(relation => displayRelations.length === 0 || displayRelations.includes(relation.name))
             .filter(relation => noteIds.includes(relation.value))
             .map(relation => ({
                 attributeId: relation.attributeId,
