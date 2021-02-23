@@ -129,7 +129,7 @@ ws.subscribeToMessages(async message => {
         toastService.showPersistent(makeToast(message.taskId, "Export in progress: " + message.progressCount));
     }
     else if (message.type === 'task-succeeded') {
-        const toast = makeToast(message.taskId, "Import finished successfully.");
+        const toast = makeToast(message.taskId, "Export finished successfully.");
         toast.closeAfter = 5000;
 
         toastService.showPersistent(toast);

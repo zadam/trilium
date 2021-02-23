@@ -29,7 +29,7 @@ const TPL = `
         </div>
     </div>
 
-    <p>Zooming can be controlled with CTRL-+ and CTRL-= shortcuts as well.</p>
+    <p>Zooming can be controlled with CTRL+- and CTRL+= shortcuts as well.</p>
 
     <h4>Font sizes</h4>
 
