@@ -476,7 +476,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                         let childNoteIds = note.getChildNoteIds();
 
-                        if (childNoteIds.length > MAX_SEARCH_RESULTS_IN_TREE) {
+                        if (note.type === 'search' && childNoteIds.length > MAX_SEARCH_RESULTS_IN_TREE) {
                             childNoteIds = childNoteIds.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
                         }
 
