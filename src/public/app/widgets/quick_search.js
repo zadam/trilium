@@ -90,12 +90,18 @@ export default class QuickSearchWidget extends BasicWidget {
             const $link = await linkService.createNoteLink(note.noteId, {showNotePath: true});
             $link.addClass('dropdown-item');
             $link.attr("tabIndex", "0");
-            $link.on('click', () => this.$dropdownToggle.dropdown("hide"));
+            $link.on('click', e => {
+                this.$dropdownToggle.dropdown("hide");
+
+                if (!e.target || e.target.nodeName !== 'A') {
+                    // click on the link is handled by link handling but we want the whole item clickable
+                    appContext.tabManager.getActiveTabContext().setNote(note.noteId);
+                }
+            });
             utils.bindElShortcut($link, 'return', () => {
-                $link.find('a').trigger({
-                    type: 'click',
-                    which: 1 // left click
-                });
+                this.$dropdownToggle.dropdown("hide");
+
+                appContext.tabManager.getActiveTabContext().setNote(note.noteId);
             });
 
             this.$dropdownMenu.append($link);
