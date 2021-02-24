@@ -797,7 +797,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             const node = await this.expandToNote(activeContext.notePath);
 
             await node.makeVisible({scrollIntoView: true});
-            node.setFocus(true);
+            node.setActive(true, {noEvents: true, noFocus: false});
         }
     }
 
