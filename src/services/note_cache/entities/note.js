@@ -180,10 +180,14 @@ class Note {
         return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
     }
 
-    // will sort the parents so that non-archived are first and archived at the end
-    // this is done so that non-archived paths are always explored as first when searching for note path
+    // will sort the parents so that non-search & non-archived are first and archived at the end
+    // this is done so that non-search & non-archived paths are always explored as first when looking for note path
     resortParents() {
-        this.parents.sort((a, b) => a.hasInheritableOwnedArchivedLabel ? 1 : -1);
+        this.parentBranches.sort((a, b) =>
+            a.branchId.startsWith('virt-')
+            || a.parentNote.hasInheritableOwnedArchivedLabel ? 1 : -1);
+
+        this.parents = this.parentBranches.map(branch => branch.parentNote);
     }
 
     /**

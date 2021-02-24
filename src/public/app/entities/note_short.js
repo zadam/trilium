@@ -158,6 +158,26 @@ class NoteShort {
         return this.treeCache.getNotesFromCache(this.parents);
     }
 
+    // will sort the parents so that non-search & non-archived are first and archived at the end
+    // this is done so that non-search & non-archived paths are always explored as first when looking for note path
+    resortParents() {
+        this.parents.sort((aNoteId, bNoteId) => {
+            const aBranchId = this.parentToBranch[aNoteId];
+
+            if (aBranchId && aBranchId.startsWith('virt-')) {
+                return 1;
+            }
+
+            const aNote = this.treeCache.getNoteFromCache([aNoteId]);
+
+            if (aNote.hasLabel('archived')) {
+                return 1;
+            }
+
+            return -1;
+        });
+    }
+
     /** @returns {string[]} */
     getChildNoteIds() {
         return this.children;

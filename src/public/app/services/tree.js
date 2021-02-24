@@ -56,6 +56,8 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
                 return;
             }
 
+            child.resortParents();
+
             const parents = child.getParentNotes();
 
             if (!parents.length) {
