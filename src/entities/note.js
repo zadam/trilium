@@ -681,7 +681,7 @@ class Note extends Entity {
      * Update's given relation's value or creates it if it doesn't exist
      *
      * @param {string} name - relation name
-     * @param {string} [value] - relation value (noteId)
+     * @param {string} value - relation value (noteId)
      */
     setRelation(name, value) { return this.setAttribute(RELATION, name, value); }
 

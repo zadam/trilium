@@ -59,7 +59,10 @@ function createSqlConsole() {
     return note;
 }
 
-function createSearchNote() {
+function createSearchNote(req) {
+    const params = req.body;
+    const searchString = params.searchString || "";
+
     const today = dateUtils.localNowDate();
 
     const searchHome =
@@ -68,11 +71,17 @@ function createSearchNote() {
 
     const {note} = noteService.createNewNote({
         parentNoteId: searchHome.noteId,
-        title: 'Search: ',
+        title: 'Search: ' + searchString,
         content: "",
         type: 'search',
         mime: 'application/json'
     });
+
+    note.setLabel('searchString', searchString);
+
+    if (params.ancestorNoteId) {
+        note.setRelation('ancestor', params.ancestorNoteId);
+    }
 
     return note;
 }

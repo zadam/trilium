@@ -52,16 +52,7 @@ async function createSqlConsole() {
 
 /** @return {NoteShort} */
 async function createSearchNote(opts = {}) {
-    const note = await server.post('search-note');
-
-    const attrsToUpdate = [
-        opts.ancestorNoteId ? { type: 'relation', name: 'ancestor', value: opts.ancestorNoteId } : undefined,
-        { type: 'label', name: 'searchString', value: opts.searchString }
-    ].filter(attr => !!attr);
-
-    if (attrsToUpdate.length > 0) {
-        await server.put(`notes/${note.noteId}/attributes`, attrsToUpdate);
-    }
+    const note = await server.post('search-note', opts);
 
     await ws.waitForMaxKnownEntityChangeId();
 
