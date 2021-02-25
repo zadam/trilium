@@ -1030,6 +1030,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         for (const branch of loadResults.getBranches()) {
+            // adding noteId itself to update all potential clones
+            noteIdsToUpdate.add(branch.noteId);
+
             for (const node of this.getNodesByBranchId(branch.branchId)) {
                 if (branch.isDeleted) {
                     if (node.isActive()) {
@@ -1047,9 +1050,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
 
                     noteIdsToUpdate.add(branch.parentNoteId);
-                }
-                else {
-                    noteIdsToUpdate.add(branch.noteId);
                 }
             }
 

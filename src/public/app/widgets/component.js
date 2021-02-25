@@ -92,7 +92,7 @@ export default class Component {
         }
 
         if (glob.isDev) {
-            await utils.timeLimit(promise, 3000, `Time limit failed on ${this.constructor.name} with ${fun.name}`);
+            await utils.timeLimit(promise, 20000, `Time limit failed on ${this.constructor.name} with ${fun.name}`);
         }
         else {
             // cheaper and in non-dev the extra reporting is lost anyway through reload
