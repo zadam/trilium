@@ -53,7 +53,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         if (entity.type === 'relation' && entity.name === 'template') {
             const note = repository.getNote(entity.noteId);
 
-            if (!note.isStringNote()) {
+            if (!["text", "code"].includes(note.type)) {
                 return;
             }
 
