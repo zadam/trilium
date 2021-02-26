@@ -5,6 +5,8 @@ const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
+const cls = require('../../services/cls');
+const repository = require('../../services/repository');
 
 function getInboxNote(req) {
     return attributeService.getNoteWithLabel('inbox')
@@ -62,12 +64,26 @@ function createSqlConsole() {
 function createSearchNote(req) {
     const params = req.body;
     const searchString = params.searchString || "";
+    let ancestorNoteId = params.ancestorNoteId;
 
     const today = dateUtils.localNowDate();
 
-    const searchHome =
+    let searchHome =
         attributeService.getNoteWithLabel('searchHome')
         || dateNoteService.getDateNote(today);
+
+    if (cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root') {
+        const hoistedNote = repository.getNote(cls.getHoistedNoteId());
+
+        if (!hoistedNote.getDescendantNoteIds().includes(searchHome.noteId)) {
+            // otherwise the note would be saved outside of the hoisted context which is weird
+            searchHome = hoistedNote;
+        }
+
+        if (!ancestorNoteId) {
+            ancestorNoteId = cls.getHoistedNoteId();
+        }
+    }
 
     const {note} = noteService.createNewNote({
         parentNoteId: searchHome.noteId,
@@ -79,8 +95,8 @@ function createSearchNote(req) {
 
     note.setLabel('searchString', searchString);
 
-    if (params.ancestorNoteId) {
-        note.setRelation('ancestor', params.ancestorNoteId);
+    if (ancestorNoteId) {
+        note.setRelation('ancestor', ancestorNoteId);
     }
 
     return note;
