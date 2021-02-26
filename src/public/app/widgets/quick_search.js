@@ -49,7 +49,11 @@ export default class QuickSearchWidget extends BasicWidget {
         this.$widget.find('.input-group-append').on('shown.bs.dropdown', () => this.search());
 
         utils.bindElShortcut(this.$searchString, 'return', () => {
-            this.$dropdownToggle.dropdown('show');
+            if (this.$dropdownMenu.is(":visible")) {
+                this.search(); // just update already visible dropdown
+            } else {
+                this.$dropdownToggle.dropdown('show');
+            }
 
             this.$searchString.focus();
         });
