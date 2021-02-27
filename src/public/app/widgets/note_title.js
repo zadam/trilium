@@ -3,6 +3,7 @@ import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="note-title-container">
@@ -37,6 +38,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
             await server.put(`notes/${this.noteId}/change-title`, {title});
         });
+
+        appContext.addBeforeUnloadListener(this);
     }
 
     doRender() {
@@ -101,6 +104,6 @@ export default class NoteTitleWidget extends TabAwareWidget {
     }
 
     beforeUnloadEvent() {
-        this.spacedUpdate.updateNowIfNecessary();
+        return this.spacedUpdate.isAllSavedAndTriggerUpdate();
     }
 }

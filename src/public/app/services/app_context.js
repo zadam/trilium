@@ -12,6 +12,7 @@ import keyboardActionsService from "./keyboard_actions.js";
 import MobileScreenSwitcherExecutor from "../widgets/mobile_widgets/mobile_screen_switcher.js";
 import MainTreeExecutors from "./main_tree_executors.js";
 import protectedSessionHolder from "./protected_session_holder.js";
+import toast from "./toast.js";
 
 class AppContext extends Component {
     constructor(isMainWindow) {
@@ -19,6 +20,7 @@ class AppContext extends Component {
 
         this.isMainWindow = isMainWindow;
         this.executors = [];
+        this.beforeUnloadListeners = [];
     }
 
     setLayout(layout) {
@@ -104,6 +106,15 @@ class AppContext extends Component {
     getComponentByEl(el) {
         return $(el).closest(".component").prop('component');
     }
+
+    addBeforeUnloadListener(obj) {
+        if (typeof WeakRef !== "function") {
+            // older browsers don't support WeakRef
+            return;
+        }
+
+        this.beforeUnloadListeners.push(new WeakRef(obj));
+    }
 }
 
 const appContext = new AppContext(window.glob.isMainWindow);
@@ -112,7 +123,29 @@ const appContext = new AppContext(window.glob.isMainWindow);
 $(window).on('beforeunload', () => {
     protectedSessionHolder.resetSessionCookie();
 
-    appContext.triggerEvent('beforeUnload');
+    let allSaved = true;
+
+    appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter(wr => !!wr.deref());
+
+    for (const weakRef of appContext.beforeUnloadListeners) {
+        const component = weakRef.deref();
+
+        if (!component) {
+            continue;
+        }
+
+        if (!component.beforeUnloadEvent()) {
+            console.log(`Component ${component.componentId} is not finished saving its state.`);
+
+            toast.showMessage("Please wait for a couple of seconds for the save to finish, then you can try again.", 10000);
+
+            allSaved = false;
+        }
+    }
+
+    if (!allSaved) {
+        return "some string";
+    }
 });
 
 function isNotePathInAddress() {

@@ -15,9 +15,25 @@ export default class SpacedUpdate {
 
     async updateNowIfNecessary() {
         if (this.changed) {
-            this.changed = false;
-            await this.updater();
+            this.changed = false; // optimistic...k
+
+            try {
+                await this.updater();
+            }
+            catch (e) {
+                this.changed = true;
+
+                throw e;
+            }
         }
+    }
+
+    isAllSavedAndTriggerUpdate() {
+        const allSaved = !this.changed;
+
+        this.updateNowIfNecessary();
+
+        return allSaved;
     }
 
     triggerUpdate() {

@@ -27,6 +27,8 @@ export default class TabManager extends Component {
                 openTabs: JSON.stringify(openTabs)
             });
         });
+
+        appContext.addBeforeUnloadListener(this);
     }
 
     /** @type {TabContext[]} */
@@ -329,6 +331,8 @@ export default class TabManager extends Component {
 
     beforeUnloadEvent() {
         this.tabsUpdate.updateNowIfNecessary();
+
+        return true; // don't block closing the tab, this metadata is not that important
     }
 
     openNewTabCommand() {
