@@ -66,14 +66,22 @@ function createSearchNote(req) {
     const searchString = params.searchString || "";
     let ancestorNoteId = params.ancestorNoteId;
 
-    const today = dateUtils.localNowDate();
+    const hoistedNote = cls.getHoistedNoteId() ? repository.getNote(cls.getHoistedNoteId()) : null;
 
-    let searchHome =
-        attributeService.getNoteWithLabel('searchHome')
-        || dateNoteService.getDateNote(today);
+    let searchHome;
 
-    if (cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root') {
-        const hoistedNote = repository.getNote(cls.getHoistedNoteId());
+    if (hoistedNote) {
+        ([searchHome] = hoistedNote.getDescendantNotesWithLabel('hoistedSearchHome'));
+    }
+
+    if (!searchHome) {
+        const today = dateUtils.localNowDate();
+
+        searchHome = attributeService.getNoteWithLabel('searchHome')
+                  || dateNoteService.getDateNote(today);
+    }
+
+    if (hoistedNote && hoistedNote.noteId !== 'root') {
 
         if (!hoistedNote.getDescendantNoteIds().includes(searchHome.noteId)) {
             // otherwise the note would be saved outside of the hoisted context which is weird
@@ -81,7 +89,7 @@ function createSearchNote(req) {
         }
 
         if (!ancestorNoteId) {
-            ancestorNoteId = cls.getHoistedNoteId();
+            ancestorNoteId = hoistedNote.noteId;
         }
     }
 
