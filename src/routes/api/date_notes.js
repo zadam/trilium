@@ -66,7 +66,9 @@ function createSearchNote(req) {
     const searchString = params.searchString || "";
     let ancestorNoteId = params.ancestorNoteId;
 
-    const hoistedNote = cls.getHoistedNoteId() ? repository.getNote(cls.getHoistedNoteId()) : null;
+    const hoistedNote = cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root'
+        ? repository.getNote(cls.getHoistedNoteId())
+        : null;
 
     let searchHome;
 
@@ -81,7 +83,7 @@ function createSearchNote(req) {
                   || dateNoteService.getDateNote(today);
     }
 
-    if (hoistedNote && hoistedNote.noteId !== 'root') {
+    if (hoistedNote) {
 
         if (!hoistedNote.getDescendantNoteIds().includes(searchHome.noteId)) {
             // otherwise the note would be saved outside of the hoisted context which is weird
