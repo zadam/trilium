@@ -31,7 +31,7 @@ function insert(tableName, rec, replace = false) {
 
     const res = execute(query, Object.values(rec));
 
-    return res.lastInsertRowid;
+    return res ? res.lastInsertRowid : null;
 }
 
 function replace(tableName, rec) {
