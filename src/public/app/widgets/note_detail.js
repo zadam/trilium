@@ -54,6 +54,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         this.typeWidgets = {};
 
+        const updateInterval = utils.isDesktop() ? 1000 : 5000;
+
         this.spacedUpdate = new SpacedUpdate(async () => {
             const {note} = this.tabContext;
             const {noteId} = note;
@@ -64,7 +66,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             protectedSessionHolder.touchProtectedSessionIfNecessary(note);
 
             await server.put('notes/' + noteId, dto, this.componentId);
-        });
+        }, updateInterval);
     }
 
     isEnabled() {
