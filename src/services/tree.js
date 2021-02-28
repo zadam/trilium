@@ -106,7 +106,7 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
+function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
     sql.transactional(() => {
         const notes = sql.getRows(
             `SELECT branches.branchId, notes.noteId, title, isProtected, 
@@ -120,7 +120,7 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
         protectedSessionService.decryptNotes(notes);
 
         notes.sort((a, b) => {
-            if (directoriesFirst && ((a.hasChildren && !b.hasChildren) || (!a.hasChildren && b.hasChildren))) {
+            if (foldersFirst && ((a.hasChildren && !b.hasChildren) || (!a.hasChildren && b.hasChildren))) {
                 // exactly one note of the two is a directory so the sorting will be done based on this status
                 return a.hasChildren ? -1 : 1;
             }
@@ -129,6 +129,10 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
             }
         });
 
+        if (reverse) {
+            notes.reverse();
+        }
+
         let position = 10;
 
         for (const note of notes) {
@@ -136,6 +140,33 @@ function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
                 [position, note.branchId]);
 
             noteCache.branches[note.branchId].notePosition = position;
+
+            position += 10;
+        }
+
+        entityChangesService.addNoteReorderingEntityChange(parentNoteId);
+    });
+}
+
+function sortNotes(parentNoteId, sortBy, reverse = false) {
+    sql.transactional(() => {
+        const notes = repository.getNote(parentNoteId).getChildNotes();
+
+        notes.sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1);
+
+        if (reverse) {
+            notes.reverse();
+        }
+
+        let position = 10;
+
+        for (const note of notes) {
+            const branch = note.getBranches().find(b => b.parentNoteId === parentNoteId);
+
+            sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
+                [position, branch.branchId]);
+
+            noteCache.branches[branch.branchId].notePosition = position;
 
             position += 10;
         }
@@ -194,6 +225,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 module.exports = {
     getNotes,
     validateParentChild,
-    sortNotesAlphabetically,
+    sortNotesByTitle,
+    sortNotes,
     setNoteToParent
 };
