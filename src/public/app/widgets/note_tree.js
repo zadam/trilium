@@ -804,12 +804,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
     /** @return {FancytreeNode} */
     async getNodeFromPath(notePath, expand = false, logErrors = true) {
         utils.assertArguments(notePath);
+        /** @let {FancytreeNode} */
+        let parentNode = this.getNodesByNoteId('root')[0];
 
-        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-        /** @const {FancytreeNode} */
-        let parentNode = null;
-
-        const resolvedNotePathSegments = await treeService.resolveNotePathToSegments(notePath, logErrors);
+        const resolvedNotePathSegments = (await treeService.resolveNotePathToSegments(notePath, logErrors))
+            .slice(1);
 
         if (!resolvedNotePathSegments) {
             if (logErrors) {
@@ -820,13 +819,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         for (const childNoteId of resolvedNotePathSegments) {
-            if (childNoteId === hoistedNoteId) {
-                // there must be exactly one node with given hoistedNoteId
-                parentNode = this.getNodesByNoteId(childNoteId)[0];
-
-                continue;
-            }
-
             // we expand only after hoisted note since before then nodes are not actually present in the tree
             if (parentNode) {
                 if (!parentNode.isLoaded()) {
@@ -857,7 +849,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             // these are real notes with real notePath, user can display them in a detail
                             // but they don't have a node in the tree
 
-                            ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                            ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteService.getHoistedNoteId()}, requested path is ${notePath}`);
                         }
 
                         return;
@@ -1207,8 +1199,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    filterHoistedBranch() {
+    async filterHoistedBranch() {
         if (this.tabContext) {
+            // make sure the hoisted node is loaded (can be unloaded e.g. after tree collapse in another tab)
+            const hoistedNotePath = await treeService.resolveNotePath(this.tabContext.hoistedNoteId);
+            await this.getNodeFromPath(hoistedNotePath);
+
             if (this.tabContext.hoistedNoteId === 'root') {
                 this.tree.clearFilter();
             }

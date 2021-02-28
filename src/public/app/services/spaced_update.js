@@ -15,7 +15,7 @@ export default class SpacedUpdate {
 
     async updateNowIfNecessary() {
         if (this.changed) {
-            this.changed = false; // optimistic...k
+            this.changed = false; // optimistic...
 
             try {
                 await this.updater();
