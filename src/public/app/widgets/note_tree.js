@@ -1370,7 +1370,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     sortChildNotesCommand({node}) {
-        import("../dialogs/sort_child_notes.js").then(d => d.showDialog(node));
+        import("../dialogs/sort_child_notes.js").then(d => d.showDialog(node.data.noteId));
     }
 
     async recentChangesInSubtreeCommand({node}) {

@@ -31,7 +31,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
 
         for (const parentNote of noteFromCache.parents) {
             if (parentNote.hasLabel("sorted")) {
-                treeService.sortNotesAlphabetically(parentNote.noteId);
+                treeService.sortNotesByTitle(parentNote.noteId);
             }
         }
     }
@@ -84,14 +84,14 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
-            treeService.sortNotesAlphabetically(entity.noteId);
+            treeService.sortNotesByTitle(entity.noteId);
 
             if (entity.isInheritable) {
                 const note = noteCache.notes[entity.noteId];
 
                 if (note) {
                     for (const noteId of note.subtreeNoteIds) {
-                        treeService.sortNotesAlphabetically(noteId);
+                        treeService.sortNotesByTitle(noteId);
                     }
                 }
             }

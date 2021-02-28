@@ -4,6 +4,7 @@ const noteService = require('../../services/notes');
 const treeService = require('../../services/tree');
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
+const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 
 function getNote(req) {
@@ -85,10 +86,20 @@ function undeleteNote(req) {
     taskContext.taskSucceeded();
 }
 
-function sortNotes(req) {
+function sortChildNotes(req) {
     const noteId = req.params.noteId;
+    const {sortBy, sortDirection} = req.body;
 
-    treeService.sortNotesAlphabetically(noteId);
+    log.info(`Sorting ${noteId} children with ${sortBy} ${sortDirection}`);
+
+    const reverse = sortDirection === 'desc';
+
+    if (sortBy === 'title') {
+        treeService.sortNotesByTitle(noteId, false, reverse);
+    }
+    else {
+        treeService.sortNotes(noteId, sortBy, reverse);
+    }
 }
 
 function protectNote(req) {
@@ -215,7 +226,7 @@ module.exports = {
     deleteNote,
     undeleteNote,
     createNote,
-    sortNotes,
+    sortChildNotes,
     protectNote,
     setNoteTypeMime,
     getRelationMap,
