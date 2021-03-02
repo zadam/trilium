@@ -41,7 +41,7 @@ class Entity {
     }
 
     getUtcDateChanged() {
-        return this.utcDateModified;
+        return this.utcDateModified || this.utcDateCreated;
     }
 
     get repository() {
