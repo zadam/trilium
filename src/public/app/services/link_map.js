@@ -117,7 +117,8 @@ export default class LinkMap {
 
             const $noteBox = $("<div>")
                 .addClass("note-box")
-                .prop("id", noteBoxId);
+                .prop("id", noteBoxId)
+                .addClass(note.getCssClass());
 
             const $link = $linkTitles[noteId];
 

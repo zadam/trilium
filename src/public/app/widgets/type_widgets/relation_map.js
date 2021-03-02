@@ -7,6 +7,7 @@ import attributeAutocompleteService from "../../services/attribute_autocomplete.
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
+import treeCache from "../../services/tree_cache.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -531,8 +532,11 @@ export default class RelationMapTypeWidget extends TypeWidget {
             linkService.goToLink(e);
         });
 
+        const note = await treeCache.getNote(noteId);
+
         const $noteBox = $("<div>")
             .addClass("note-box")
+            .addClass(note.getCssClass())
             .prop("id", this.noteIdToId(noteId))
             .append($("<span>").addClass("title").append($link))
             .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
