@@ -120,7 +120,11 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete noteCache.attributes[attributeId];
 
             if (attr) {
-                delete noteCache.attributeIndex[`${attr.type}-${attr.name.toLowerCase()}`];
+                const key = `${attr.type}-${attr.name.toLowerCase()}`;
+
+                if (key in noteCache.attributeIndex) {
+                    noteCache.attributeIndex[key] = noteCache.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
+                }
             }
         }
         else if (attributeId in noteCache.attributes) {
