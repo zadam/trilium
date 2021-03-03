@@ -13,7 +13,7 @@ const WIDGET_TPL = `
     }
     </style>
 
-    <a data-trigger-command="createTopLevelNote" title="Create new top level note" class="icon-action bx bx-folder-plus"></a>
+    <a data-trigger-command="createNoteIntoInbox" title="New note" class="icon-action bx bx-folder-plus"></a>
 
     <a data-trigger-command="collapseTree" title="Collapse note tree" class="icon-action bx bx-layer-minus"></a>
 

@@ -182,8 +182,6 @@ export default class Entrypoints extends Component {
         utils.reloadApp();
     }
 
-    createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
-
     async openInWindowCommand({notePath, hoistedNoteId}) {
         if (!hoistedNoteId) {
             hoistedNoteId = 'root';

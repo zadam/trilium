@@ -7,12 +7,6 @@ import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import toastService from "./toast.js";
 
-async function createNewTopLevelNote() {
-    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
-
-    await createNote(hoistedNoteId);
-}
-
 async function createNote(parentNoteId, options = {}) {
     options = Object.assign({
         activate: true,
@@ -101,6 +95,5 @@ async function duplicateSubtree(noteId, parentNoteId) {
 
 export default {
     createNote,
-    createNewTopLevelNote,
     duplicateSubtree
 };
