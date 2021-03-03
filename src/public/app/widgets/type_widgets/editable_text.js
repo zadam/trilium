@@ -274,7 +274,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async createNoteForReferenceLink(title) {
-        const {note} = await noteCreateService.createNote(this.noteId, {
+        const {note} = await noteCreateService.createNote(this.notePath, {
             activate: false,
             title: title
         });

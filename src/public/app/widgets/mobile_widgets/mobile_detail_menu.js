@@ -26,7 +26,7 @@ class MobileDetailMenuWidget extends BasicWidget {
                 ],
                 selectMenuItemHandler: async ({command}) => {
                     if (command === "insertChildNote") {
-                        noteCreateService.createNote(note.noteId);
+                        noteCreateService.createNote(appContext.tabManager.getActiveTabNotePath());
                     }
                     else if (command === "delete") {
                         const notePath = appContext.tabManager.getActiveTabNotePath();

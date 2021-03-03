@@ -1,13 +1,13 @@
-import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
 import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
+import treeService from "./tree.js";
 import toastService from "./toast.js";
 
-async function createNote(parentNoteId, options = {}) {
+async function createNote(parentNotePath, options = {}) {
     options = Object.assign({
         activate: true,
         focus: 'title',
@@ -30,6 +30,8 @@ async function createNote(parentNoteId, options = {}) {
 
     const newNoteName = options.title || "new note";
 
+    const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
+
     const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${options.target}&targetBranchId=${options.targetBranchId}`, {
         title: newNoteName,
         content: options.content || "",
@@ -47,7 +49,7 @@ async function createNote(parentNoteId, options = {}) {
 
     if (options.activate) {
         const activeTabContext = appContext.tabManager.getActiveTabContext();
-        await activeTabContext.setNote(note.noteId);
+        await activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
             appContext.triggerEvent('focusAndSelectTitle');
@@ -82,12 +84,13 @@ function parseSelectedHtml(selectedHtml) {
     }
 }
 
-async function duplicateSubtree(noteId, parentNoteId) {
+async function duplicateSubtree(noteId, parentNotePath) {
+    const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    await appContext.tabManager.activateOrOpenNote(note.noteId);
+    await appContext.tabManager.activateOrOpenNote(`${parentNotePath}/${note.noteId}`);
 
     const origNote = await treeCache.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);

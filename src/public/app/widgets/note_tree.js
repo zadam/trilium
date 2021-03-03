@@ -203,8 +203,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$tree.on("mousedown", ".refresh-search-button", e => this.refreshSearch(e));
         this.$tree.on("mousedown", ".add-note-button", e => {
             const node = $.ui.fancytree.getNode(e);
+            const parentNotePath = treeService.getNotePath(node);
 
-            noteCreateService.createNote(node.data.noteId, {
+            noteCreateService.createNote(parentNotePath, {
                 isProtected: node.data.isProtected
             });
         });

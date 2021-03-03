@@ -112,10 +112,10 @@ class TreeContextMenu {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (command === "insertNoteAfter") {
-            const parentNoteId = this.node.data.parentNoteId;
+            const parentNotePath = treeService.getNotePath(this.node.getParent());
             const isProtected = await treeService.getParentProtectedStatus(this.node);
 
-            noteCreateService.createNote(parentNoteId, {
+            noteCreateService.createNote(parentNotePath, {
                 target: 'after',
                 targetBranchId: this.node.data.branchId,
                 type: type,
@@ -123,14 +123,14 @@ class TreeContextMenu {
             });
         }
         else if (command === "insertChildNote") {
-            noteCreateService.createNote(noteId, {
+            const parentNotePath = treeService.getNotePath(this.node);
+
+            noteCreateService.createNote(parentNotePath, {
                 type: type,
                 isProtected: this.node.data.isProtected
             });
         }
         else {
-            console.log("Triggering", command, notePath);
-
             this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});
         }
     }

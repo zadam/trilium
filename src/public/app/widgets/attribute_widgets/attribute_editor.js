@@ -491,7 +491,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     async createNoteForReferenceLink(title) {
-        const {note} = await noteCreateService.createNote(this.noteId, {
+        const {note} = await noteCreateService.createNote(this.notePath, {
             activate: false,
             title: title
         });
