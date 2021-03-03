@@ -807,7 +807,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         /** @let {FancytreeNode} */
         let parentNode = this.getNodesByNoteId('root')[0];
 
-        const resolvedNotePathSegments = (await treeService.resolveNotePathToSegments(notePath, logErrors))
+        const resolvedNotePathSegments = (await treeService.resolveNotePathToSegments(notePath, this.hoistedNoteId, logErrors))
             .slice(1);
 
         if (!resolvedNotePathSegments) {

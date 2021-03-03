@@ -205,7 +205,7 @@ export default class TabManager extends Component {
         let hoistedNoteId = 'root';
 
         if (tabContext) {
-            const resolvedNotePath = await treeService.resolveNotePath(notePath);
+            const resolvedNotePath = await treeService.resolveNotePath(notePath, tabContext.hoistedNoteId);
 
             if (resolvedNotePath.includes(tabContext.hoistedNoteId)) {
                 hoistedNoteId = tabContext.hoistedNoteId;

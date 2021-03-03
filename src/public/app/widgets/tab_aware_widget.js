@@ -22,6 +22,10 @@ export default class TabAwareWidget extends BasicWidget {
         return this.tabContext && this.tabContext.notePath;
     }
 
+    get hoistedNoteId() {
+        return this.tabContext && this.tabContext.hoistedNoteId;
+    }
+
     isEnabled() {
         return !!this.note;
     }

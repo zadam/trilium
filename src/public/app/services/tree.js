@@ -8,8 +8,8 @@ import appContext from "./app_context.js";
 /**
  * @return {string|null}
  */
-async function resolveNotePath(notePath) {
-    const runPath = await resolveNotePathToSegments(notePath);
+async function resolveNotePath(notePath, hoistedNoteId = 'root') {
+    const runPath = await resolveNotePathToSegments(notePath, hoistedNoteId);
 
     return runPath ? runPath.join("/") : null;
 }
@@ -21,7 +21,7 @@ async function resolveNotePath(notePath) {
  *
  * @return {string[]}
  */
-async function resolveNotePathToSegments(notePath, logErrors = true) {
+async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logErrors = true) {
     utils.assertArguments(notePath);
 
     // we might get notePath with the tabId suffix, remove it if present
@@ -75,7 +75,11 @@ async function resolveNotePathToSegments(notePath, logErrors = true) {
                     console.log(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}`);
                 }
 
-                const someNotePath = getSomeNotePath(parents[0]);
+                const hoistedNote = await treeCache.getNote(hoistedNoteId);
+
+                const chosenParent = parents.find(parent => parent.hasAncestor(hoistedNote))
+                    || parents[0]; // if no parent is in hoisted subtree then it just doesn't matter and pick any
+                const someNotePath = getSomeNotePath(chosenParent);
 
                 if (someNotePath) { // in case it's root the path may be empty
                     const pathToRoot = someNotePath.split("/").reverse();

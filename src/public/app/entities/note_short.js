@@ -542,7 +542,7 @@ class NoteShort {
             });
     }
 
-    hasAncestor(ancestorNote, visitedNoteIds) {
+    hasAncestor(ancestorNote, visitedNoteIds = null) {
         if (this.noteId === ancestorNote.noteId) {
             return true;
         }
