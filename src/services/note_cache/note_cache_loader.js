@@ -153,6 +153,19 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             }
         }
     }
+    else if (entityName === 'note_reordering') {
+        const parentNoteIds = new Set();
+
+        for (const branchId in entity) {
+            const branch = noteCache.branches[branchId];
+
+            if (branch) {
+                branch.notePosition = entity[branchId];
+
+                parentNoteIds.add(branch.parentNoteId);
+            }
+        }
+    }
 });
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {

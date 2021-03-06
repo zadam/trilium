@@ -30,6 +30,23 @@ function addEntityChange(entityChange, sourceId, isSynced) {
     cls.addEntityChange(localEntityChange);
 }
 
+function addNoteReorderingEntityChange(parentNoteId, sourceId) {
+    addEntityChange({
+        entityName: "note_reordering",
+        entityId: parentNoteId,
+        hash: 'N/A',
+        isErased: false,
+        utcDateChanged: dateUtils.utcNowDateTime()
+    }, sourceId);
+
+    const eventService = require('./events');
+
+    eventService.emit(eventService.ENTITY_CHANGED, {
+        entityName: 'note_reordering',
+        entity: sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [parentNoteId])
+    });
+}
+
 function moveEntityChangeToTop(entityName, entityId) {
     const [hash, isSynced] = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
 
@@ -121,13 +138,7 @@ function fillAllEntityChanges() {
 }
 
 module.exports = {
-    addNoteReorderingEntityChange: (parentNoteId, sourceId) => addEntityChange({
-        entityName: "note_reordering",
-        entityId: parentNoteId,
-        hash: 'N/A',
-        isErased: false,
-        utcDateChanged: dateUtils.utcNowDateTime()
-    }, sourceId),
+    addNoteReorderingEntityChange,
     moveEntityChangeToTop,
     addEntityChange,
     fillAllEntityChanges,
