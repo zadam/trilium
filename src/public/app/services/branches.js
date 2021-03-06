@@ -125,7 +125,7 @@ async function deleteNotes(branchIdsToDelete) {
 }
 
 async function moveNodeUpInHierarchy(node) {
-    if (hoistedNoteService.isRootNode(node)
+    if (hoistedNoteService.isHoistedNode(node)
         || hoistedNoteService.isTopLevelNode(node)
         || node.getParent().data.noteType === 'search') {
         return;

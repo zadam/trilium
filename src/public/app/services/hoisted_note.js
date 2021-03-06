@@ -16,10 +16,10 @@ async function unhoist() {
 }
 
 function isTopLevelNode(node) {
-    return isRootNode(node.getParent());
+    return isHoistedNode(node.getParent());
 }
 
-function isRootNode(node) {
+function isHoistedNode(node) {
     // even though check for 'root' should not be necessary, we keep it just in case
     return node.data.noteId === "root"
         || node.data.noteId === getHoistedNoteId();
@@ -55,6 +55,6 @@ export default {
     getHoistedNoteId,
     unhoist,
     isTopLevelNode,
-    isRootNode,
+    isHoistedNode,
     checkNoteAccess
 }

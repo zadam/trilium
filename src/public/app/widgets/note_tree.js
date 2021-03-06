@@ -1210,18 +1210,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 this.tree.clearFilter();
             }
             else {
-                let found = false;console.log(this.tabContext.notePath, this.tabContext.hoistedNoteId, "ZZZ");
-
                 // hack when hoisted note is cloned then it could be filtered multiple times while we want only 1
-                this.tree.filterBranches(node => {
-                    if (found) {
-                        return false;
-                    }
-
-                    found = node.data.noteId === this.tabContext.hoistedNoteId;
-
-                    return found;
-                });
+                this.tree.filterBranches(node =>
+                    node.data.noteId === this.tabContext.hoistedNoteId // optimization to not having always resolve the node path
+                    && treeService.getNotePath(node) === hoistedNotePath);
             }
         }
     }

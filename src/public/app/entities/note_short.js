@@ -253,6 +253,32 @@ class NoteShort {
         return noteAttributeCache.attributes[this.noteId];
     }
 
+    getAllNotePaths() {
+        if (this.noteId === 'root') {
+            return [['root']];
+        }
+
+        const parentNotes = this.getParentNotes();
+        let paths;
+
+        if (parentNotes.length === 1) { // optimization for the most common case
+            paths = parentNotes[0].getAllNotePaths();
+        }
+        else {
+            paths = [];
+
+            for (const parentNote of parentNotes) {
+                paths.push(...parentNote.getAllNotePaths());
+            }
+        }
+
+        for (const path of paths) {
+            path.push(this.noteId);
+        }
+
+        return paths;
+    }
+
     __filterAttrs(attributes, type, name) {
         if (!type && !name) {
             return attributes;

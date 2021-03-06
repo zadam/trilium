@@ -75,14 +75,10 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                     console.log(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}`);
                 }
 
-                const hoistedNote = await treeCache.getNote(hoistedNoteId);
-
-                const chosenParent = parents.find(parent => parent.hasAncestor(hoistedNote))
-                    || parents[0]; // if no parent is in hoisted subtree then it just doesn't matter and pick any
-                const someNotePath = getSomeNotePath(chosenParent);
+                const someNotePath = getSomeNotePath(child, hoistedNoteId);
 
                 if (someNotePath) { // in case it's root the path may be empty
-                    const pathToRoot = someNotePath.split("/").reverse();
+                    const pathToRoot = someNotePath.split("/").reverse().slice(1);
 
                     for (const noteId of pathToRoot) {
                         effectivePath.push(noteId);
@@ -100,29 +96,35 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
     return effectivePath.reverse();
 }
 
-function getSomeNotePath(note) {
+function getSomeNotePathSegments(note, hoistedNotePath = 'root') {
     utils.assertArguments(note);
 
-    const path = [];
+    const notePaths = note.getAllNotePaths().map(path => ({
+        notePath: path,
+        isInHoistedSubTree: path.includes(hoistedNotePath),
+        isArchived: path.find(noteId => treeCache.notes[noteId].hasLabel('archived')),
+        isSearch: path.find(noteId => treeCache.notes[noteId].type === 'search')
+    }));
 
-    let cur = note;
-
-    while (cur.noteId !== 'root') {
-        path.push(cur.noteId);
-
-        const parents = cur.getParentNotes().filter(note => note.type !== 'search');
-
-        if (!parents.length) {
-            logError(`Can't find parents for note ${cur.noteId}`);
-            return;
+    notePaths.sort((a, b) => {
+        if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
+            return a.isInHoistedSubTree ? -1 : 1;
+        } else if (a.isSearch !== b.isSearch) {
+            return a.isSearch ? 1 : -1;
+        } else if (a.isArchived !== b.isArchived) {
+            return a.isArchived ? 1 : -1;
+        } else {
+            return a.notePath.length - b.notePath.length;
         }
+    });
 
-        cur = parents[0];
-    }
+    return notePaths[0].notePath;
+}
 
-    path.push('root');
+function getSomeNotePath(note, hoistedNotePath = 'root') {
+    const notePath = getSomeNotePathSegments(note, hoistedNotePath);
 
-    return path.reverse().join('/');
+    return notePath.join('/');
 }
 
 async function sortAlphabetically(noteId) {
@@ -142,7 +144,7 @@ ws.subscribeToMessages(message => {
 });
 
 function getParentProtectedStatus(node) {
-    return hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
+    return hoistedNoteService.isHoistedNode(node) ? 0 : node.getParent().data.isProtected;
 }
 
 function getNoteIdFromNotePath(notePath) {
@@ -202,16 +204,12 @@ function getNotePath(node) {
 
     const path = [];
 
-    while (node && !hoistedNoteService.isRootNode(node)) {
+    while (node) {
         if (node.data.noteId) {
             path.push(node.data.noteId);
         }
 
         node = node.getParent();
-    }
-
-    if (node) { // null node can happen directly after unhoisting when tree is still hoisted but option has been changed already
-        path.push(node.data.noteId); // root or hoisted noteId
     }
 
     return path.reverse().join("/");
@@ -317,6 +315,7 @@ export default {
     resolveNotePath,
     resolveNotePathToSegments,
     getSomeNotePath,
+    getSomeNotePathSegments,
     getParentProtectedStatus,
     getNotePath,
     getNoteIdFromNotePath,
