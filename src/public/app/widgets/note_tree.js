@@ -595,7 +595,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         let childBranches = parentNote.getFilteredChildBranches();
 
-        if (childBranches.length > MAX_SEARCH_RESULTS_IN_TREE) {
+        if (parentNote.type === 'search' && childBranches.length > MAX_SEARCH_RESULTS_IN_TREE) {
             childBranches = childBranches.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
         }
 
@@ -808,8 +808,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         /** @let {FancytreeNode} */
         let parentNode = this.getNodesByNoteId('root')[0];
 
-        const resolvedNotePathSegments = (await treeService.resolveNotePathToSegments(notePath, this.hoistedNoteId, logErrors))
-            .slice(1);
+        let resolvedNotePathSegments = await treeService.resolveNotePathToSegments(notePath, this.hoistedNoteId, logErrors);
 
         if (!resolvedNotePathSegments) {
             if (logErrors) {
@@ -818,6 +817,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             return;
         }
+
+        resolvedNotePathSegments = resolvedNotePathSegments.slice(1);
 
         for (const childNoteId of resolvedNotePathSegments) {
             // we expand only after hoisted note since before then nodes are not actually present in the tree
