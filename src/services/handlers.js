@@ -53,23 +53,19 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         if (entity.type === 'relation' && entity.name === 'template') {
             const note = repository.getNote(entity.noteId);
 
-            if (!["text", "code"].includes(note.type)) {
-                return;
-            }
-
-            const content = note.getContent();
-
-            if (content && content.trim().length > 0) {
-                return;
-            }
-
             const templateNote = repository.getNote(entity.value);
 
             if (!templateNote) {
                 return;
             }
 
-            if (templateNote.isStringNote()) {
+            const content = note.getContent();
+
+            if (!["text", "code"].includes(note.type)
+                // if the note has already content we're not going to overwrite it with template's one
+                && (!content || content.trim().length === 0)
+                && templateNote.isStringNote()) {
+
                 const templateNoteContent = templateNote.getContent();
 
                 if (templateNoteContent) {
@@ -81,7 +77,11 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 note.save();
             }
 
-            noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
+            // we'll copy the children notes only if there's none so far
+            // this protects against e.g. multiple assignment of template relation resulting in having multiple copies of the subtree
+            if (note.getChildNotes().length === 0 && !note.isDescendantOfNote(templateNote.noteId)) {
+                noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
+            }
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
             treeService.sortNotesByTitle(entity.noteId);
