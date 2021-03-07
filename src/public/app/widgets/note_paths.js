@@ -18,6 +18,10 @@ const TPL = `
         max-height: 600px;
         overflow-y: auto;
     }
+    
+    .note-path-list .current {
+        text-decoration: underline;
+    }
     </style>
     
     <button class="btn dropdown-toggle note-path-list-button bx bx-collection" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Note paths"></button>
