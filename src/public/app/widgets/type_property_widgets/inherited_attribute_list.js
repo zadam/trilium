@@ -83,4 +83,10 @@ export default class InheritedAttributesWidget extends TabAwareWidget {
     getInheritedAttributes(note) {
         return note.getAttributes().filter(attr => attr.noteId !== this.noteId);
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+            this.refresh();
+        }
+    }
 }
