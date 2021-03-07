@@ -2,6 +2,7 @@ import server from '../services/server.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
+import treeCache from "../services/tree_cache.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -277,6 +278,29 @@ class NoteShort {
         }
 
         return paths;
+    }
+
+    getSortedNotePaths(hoistedNotePath = 'root') {
+        const notePaths = this.getAllNotePaths().map(path => ({
+            notePath: path,
+            isInHoistedSubTree: path.includes(hoistedNotePath),
+            isArchived: path.find(noteId => treeCache.notes[noteId].hasLabel('archived')),
+            isSearch: path.find(noteId => treeCache.notes[noteId].type === 'search')
+        }));
+
+        notePaths.sort((a, b) => {
+            if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
+                return a.isInHoistedSubTree ? -1 : 1;
+            } else if (a.isSearch !== b.isSearch) {
+                return a.isSearch ? 1 : -1;
+            } else if (a.isArchived !== b.isArchived) {
+                return a.isArchived ? 1 : -1;
+            } else {
+                return a.notePath.length - b.notePath.length;
+            }
+        });
+
+        return notePaths.map(rec => rec.notePath);
     }
 
     __filterAttrs(attributes, type, name) {

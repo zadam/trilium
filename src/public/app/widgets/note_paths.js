@@ -47,16 +47,10 @@ export default class NotePathsWidget extends TabAwareWidget {
             return;
         }
 
-        const pathSegments = treeService.parseNotePath(this.notePath);
-        const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
-
-        for (const parentNote of this.note.getParentNotes()) {
-            const parentNotePath = treeService.getSomeNotePath(parentNote);
-            // this is to avoid having root notes leading '/'
-            const notePath = parentNotePath ? (parentNotePath + '/' + this.noteId) : this.noteId;
-            const isCurrent = activeNoteParentNoteId === parentNote.noteId;
-
-            await this.addPath(notePath, isCurrent);
+        for (const notePath of this.note.getSortedNotePaths(this.hoistedNoteId)) {
+            const notePathStr = notePath.join('/');
+console.log(notePathStr, this.notePath, notePathStr === this.notePath);
+            await this.addPath(notePathStr, notePathStr === this.notePath);
         }
 
         const cloneLink = $("<div>")
@@ -95,5 +89,11 @@ export default class NotePathsWidget extends TabAwareWidget {
 
             this.refresh();
         }
+    }
+
+    async refresh() {
+        await super.refresh();
+
+        this.$widget.find('.dropdown-toggle').dropdown('hide');
     }
 }
