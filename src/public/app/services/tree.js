@@ -101,7 +101,7 @@ function getSomeNotePathSegments(note, hoistedNotePath = 'root') {
 
     const notePaths = note.getSortedNotePaths(hoistedNotePath);
 
-    return notePaths[0].notePath;
+    return notePaths[0];
 }
 
 function getSomeNotePath(note, hoistedNotePath = 'root') {
