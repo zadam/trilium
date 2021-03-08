@@ -300,7 +300,7 @@ class NoteShort {
             }
         });
 
-        return notePaths.map(rec => rec.notePath);
+        return notePaths;
     }
 
     __filterAttrs(attributes, type, name) {

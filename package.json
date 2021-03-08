@@ -51,7 +51,7 @@
     "is-animated": "^2.0.1",
     "is-svg": "4.2.1",
     "jimp": "0.16.1",
-    "jsdom": "^16.4.0",
+    "jsdom": "16.5.0",
     "mime-types": "2.1.29",
     "multer": "1.4.2",
     "node-abi": "2.21.0",
@@ -87,7 +87,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.24.3",
+    "webpack": "5.24.4",
     "webpack-cli": "4.5.0"
   },
   "optionalDependencies": {

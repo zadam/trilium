@@ -15,12 +15,20 @@ const TPL = `
     }
     
     .note-path-list {
-        max-height: 600px;
+        max-height: 700px;
         overflow-y: auto;
     }
     
-    .note-path-list .current {
-        text-decoration: underline;
+    .note-path-list .path-current {
+        font-weight: bold;
+    }
+    
+    .note-path-list .path-archived {
+        color: var(--muted-text-color) !important;
+    }
+    
+    .note-path-list .path-search {
+        font-style: italic;
     }
     </style>
     
@@ -47,14 +55,12 @@ export default class NotePathsWidget extends TabAwareWidget {
         );
 
         if (this.noteId === 'root') {
-            await this.addPath('root', true);
+            await this.addPath('root');
             return;
         }
 
-        for (const notePath of this.note.getSortedNotePaths(this.hoistedNoteId)) {
-            const notePathStr = notePath.join('/');
-console.log(notePathStr, this.notePath, notePathStr === this.notePath);
-            await this.addPath(notePathStr, notePathStr === this.notePath);
+        for (const notePathRecord of this.note.getSortedNotePaths(this.hoistedNoteId)) {
+            await this.addPath(notePathRecord);
         }
 
         const cloneLink = $("<div>")
@@ -68,7 +74,9 @@ console.log(notePathStr, this.notePath, notePathStr === this.notePath);
         this.$notePathList.append(cloneLink);
     }
 
-    async addPath(notePath, isCurrent) {
+    async addPath(notePathRecord) {
+        const notePath = notePathRecord.notePath.join('/');
+
         const title = await treeService.getNotePathTitle(notePath);
 
         const $noteLink = await linkService.createNoteLink(notePath, {title});
@@ -80,8 +88,33 @@ console.log(notePathStr, this.notePath, notePathStr === this.notePath);
             .find('a')
             .addClass("no-tooltip-preview");
 
-        if (isCurrent) {
-            $noteLink.addClass("current");
+        const comments = [];
+
+        if (this.notePath === notePath) {
+            $noteLink.addClass("path-current");
+        }
+
+        if (notePathRecord.isInHoistedSubTree) {
+            $noteLink.addClass("path-in-hoisted-subtree");
+        }
+        else {
+            comments.push("outside of hoisting");
+        }
+
+        if (notePathRecord.isArchived) {
+            $noteLink.addClass("path-archived");
+
+            comments.push("archived");
+        }
+
+        if (notePathRecord.isSearch) {
+            $noteLink.addClass("path-search");
+
+            comments.push("search");
+        }
+
+        if (comments.length > 0) {
+            $noteLink.append(` (${comments.join(', ')})`);
         }
 
         this.$notePathList.append($noteLink);
