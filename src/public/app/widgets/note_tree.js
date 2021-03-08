@@ -993,6 +993,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const activeNodeFocused = activeNode && activeNode.hasFocus();
         const nextNode = activeNode ? (activeNode.getNextSibling() || activeNode.getPrevSibling() || activeNode.getParent()) : null;
         const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
+
+        console.log(activeNotePath, activeNodeFocused);
+
         const nextNotePath = nextNode ? treeService.getNotePath(nextNode) : null;
         const activeNoteId = activeNode ? activeNode.data.noteId : null;
 
@@ -1113,7 +1116,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
 
             if (node) {
-                node.setActive(true, {noEvents: true, noFocus: true});
+                node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
             }
             else {
                 // this is used when original note has been deleted and we want to move the focus to the note above/below
@@ -1125,15 +1128,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     //        this should be done by tabcontext / tabmanager and note tree should only listen to
                     //        changes in active note and just set the "active" state
                     // We don't await since that can bring up infinite cycles when e.g. custom widget does some backend requests which wait for max sync ID processed
-                    appContext.tabManager.getActiveTabContext().setNote(nextNotePath);
+                    appContext.tabManager.getActiveTabContext().setNote(nextNotePath).then(() => {
+                        const newActiveNode = this.getActiveNode();
+
+                        // return focus if the previously active node was also focused
+                        if (newActiveNode && activeNodeFocused) {console.log("FOCUSING!!!");
+                            newActiveNode.setFocus(true);
+                        }
+                    });
                 }
-            }
-
-            const newActiveNode = this.getActiveNode();
-
-            // return focus if the previously active node was also focused
-            if (newActiveNode && activeNodeFocused) {
-                await newActiveNode.setFocus(true);
             }
         }
 
