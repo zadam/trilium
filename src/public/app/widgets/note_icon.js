@@ -16,6 +16,7 @@ const TPL = `
         border: 1px solid transparent;
         cursor: pointer;
         padding: 6px;
+        color: var(--main-text-color);
     }
     
     .note-icon-container button.note-icon:hover {
