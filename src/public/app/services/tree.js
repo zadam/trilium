@@ -37,7 +37,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
         path.push('root');
     }
 
-    const effectivePath = [];
+    const effectivePathSegments = [];
     let childNoteId = null;
     let i = 0;
 
@@ -81,7 +81,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                     const pathToRoot = someNotePath.split("/").reverse().slice(1);
 
                     for (const noteId of pathToRoot) {
-                        effectivePath.push(noteId);
+                        effectivePathSegments.push(noteId);
                     }
                 }
 
@@ -89,11 +89,23 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
             }
         }
 
-        effectivePath.push(parentNoteId);
+        effectivePathSegments.push(parentNoteId);
         childNoteId = parentNoteId;
     }
 
-    return effectivePath.reverse();
+    effectivePathSegments.reverse();
+
+    if (effectivePathSegments.includes(hoistedNoteId)) {
+        return effectivePathSegments;
+    }
+    else {
+        const note = await treeCache.getNote(getNoteIdFromNotePath(notePath));
+
+        const someNotePathSegments = getSomeNotePathSegments(note, hoistedNoteId);
+
+        // if there isn't actually any note path with hoisted note then return the original resolved note path
+        return someNotePathSegments.includes(hoistedNoteId) ? someNotePathSegments : effectivePathSegments;
+    }
 }
 
 function getSomeNotePathSegments(note, hoistedNotePath = 'root') {
