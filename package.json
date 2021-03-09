@@ -55,7 +55,7 @@
     "mime-types": "2.1.29",
     "multer": "1.4.2",
     "node-abi": "2.21.0",
-    "open": "7.4.2",
+    "open": "8.0.2",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
     "request": "^2.88.2",
@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "9.4.4",
+    "electron": "12.0.0",
     "electron-builder": "22.10.5",
     "electron-packager": "15.2.0",
     "electron-rebuild": "2.3.5",

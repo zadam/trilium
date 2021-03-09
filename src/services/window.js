@@ -59,6 +59,7 @@ async function createMainWindow() {
         webPreferences: {
             enableRemoteModule: true,
             nodeIntegration: true,
+            contextIsolation: false,
             spellcheck: spellcheckEnabled
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
