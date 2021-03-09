@@ -84,7 +84,8 @@ const defaultOptions = [
     { name: 'attributeListExpanded', value: 'false', isSynced: false },
     { name: 'promotedAttributesExpanded', value: 'true', isSynced: true },
     { name: 'similarNotesExpanded', value: 'true', isSynced: true },
-    { name: 'debugModeEnabled', value: 'false', isSynced: false }
+    { name: 'debugModeEnabled', value: 'false', isSynced: false },
+    { name: 'headingStyle', value: 'markdown', isSynced: true },
 ];
 
 function initStartupOptions() {

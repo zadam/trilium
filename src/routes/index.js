@@ -19,6 +19,7 @@ function index(req, res) {
     res.render(view, {
         csrfToken: csrfToken,
         theme: options.theme,
+        headingStyle: options.headingStyle,
         mainFontSize: parseInt(options.mainFontSize),
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),

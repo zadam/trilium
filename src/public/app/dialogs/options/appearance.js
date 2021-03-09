@@ -28,6 +28,16 @@ const TPL = `
             </select>
         </div>
     </div>
+    
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="heading-style">Heading style</label>
+            <select class="form-control" id="heading-style">
+                <option value="plain">Plain</option>
+                <option value="markdown">Markdown-style</option>
+            </select>
+        </div>
+    </div>
 
     <p>Zooming can be controlled with CTRL+- and CTRL+= shortcuts as well.</p>
 
@@ -78,6 +88,7 @@ export default class ApperanceOptions {
         this.$themeSelect = $("#theme-select");
         this.$zoomFactorSelect = $("#zoom-factor-select");
         this.$nativeTitleBarSelect = $("#native-title-bar-select");
+        this.$headingStyle = $("#heading-style");
         this.$mainFontSize = $("#main-font-size");
         this.$treeFontSize = $("#tree-font-size");
         this.$detailFontSize = $("#detail-font-size");
@@ -86,11 +97,7 @@ export default class ApperanceOptions {
         this.$themeSelect.on('change', () => {
             const newTheme = this.$themeSelect.val();
 
-            for (const clazz of Array.from(this.$body[0].classList)) { // create copy to safely iterate over while removing classes
-                if (clazz.startsWith("theme-")) {
-                    this.$body.removeClass(clazz);
-                }
-            }
+            this.toggleBodyClass("theme-", newTheme);
 
             const noteId = $(this).find(":selected").attr("data-note-id");
 
@@ -99,8 +106,6 @@ export default class ApperanceOptions {
                 // if the CSS has been loaded and then updated then the changes won't take effect though
                 libraryLoader.requireCss(`api/notes/download/${noteId}`);
             }
-
-            this.$body.addClass("theme-" + newTheme);
 
             server.put('options/theme/' + newTheme);
         });
@@ -111,6 +116,14 @@ export default class ApperanceOptions {
             const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';
 
             server.put('options/nativeTitleBarVisible/' + nativeTitleBarVisible);
+        });
+
+        this.$headingStyle.on('change', () => {
+            const newHeadingStyle = this.$headingStyle.val();
+
+            this.toggleBodyClass("heading-style-", newHeadingStyle);
+
+            server.put('options/headingStyle/' + newHeadingStyle);
         });
 
         this.$mainFontSize.on('change', async () => {
@@ -130,6 +143,16 @@ export default class ApperanceOptions {
 
             this.applyFontSizes();
         });
+    }
+
+    toggleBodyClass(prefix, value) {
+        for (const clazz of Array.from(this.$body[0].classList)) { // create copy to safely iterate over while removing classes
+            if (clazz.startsWith(prefix)) {
+                this.$body.removeClass(clazz);
+            }
+        }
+
+        this.$body.addClass(prefix + value);
     }
 
     async optionsLoaded(options) {
@@ -158,6 +181,8 @@ export default class ApperanceOptions {
         }
 
         this.$nativeTitleBarSelect.val(options.nativeTitleBarVisible === 'true' ? 'show' : 'hide');
+
+        this.$headingStyle.val(options.headingStyle);
 
         this.$mainFontSize.val(options.mainFontSize);
         this.$treeFontSize.val(options.treeFontSize);
