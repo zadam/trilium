@@ -24,6 +24,7 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
         webPreferences: {
             enableRemoteModule: true,
             nodeIntegration: true,
+            contextIsolation: false,
             spellcheck: optionService.getOptionBool('spellCheckEnabled')
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
