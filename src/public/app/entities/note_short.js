@@ -254,22 +254,39 @@ class NoteShort {
         return noteAttributeCache.attributes[this.noteId];
     }
 
-    getAllNotePaths() {
+    getAllNotePaths(encounteredNoteIds = null) {
         if (this.noteId === 'root') {
             return [['root']];
         }
+
+        if (!encounteredNoteIds) {
+            encounteredNoteIds = new Set();
+        }
+
+        encounteredNoteIds.add(this.noteId);
 
         const parentNotes = this.getParentNotes();
         let paths;
 
         if (parentNotes.length === 1) { // optimization for the most common case
-            paths = parentNotes[0].getAllNotePaths();
+            if (encounteredNoteIds.has(parentNotes[0].noteId)) {
+                return [];
+            }
+            else {
+                paths = parentNotes[0].getAllNotePaths(encounteredNoteIds);
+            }
         }
         else {
             paths = [];
 
             for (const parentNote of parentNotes) {
-                paths.push(...parentNote.getAllNotePaths());
+                if (encounteredNoteIds.has(parentNote.noteId)) {
+                    continue;
+                }
+
+                const newSet = new Set(encounteredNoteIds);
+
+                paths.push(...parentNote.getAllNotePaths(newSet));
             }
         }
 
