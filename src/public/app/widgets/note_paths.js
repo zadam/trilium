@@ -88,7 +88,7 @@ export default class NotePathsWidget extends TabAwareWidget {
             .find('a')
             .addClass("no-tooltip-preview");
 
-        const comments = [];
+        const icons = [];
 
         if (this.notePath === notePath) {
             $noteLink.addClass("path-current");
@@ -98,23 +98,23 @@ export default class NotePathsWidget extends TabAwareWidget {
             $noteLink.addClass("path-in-hoisted-subtree");
         }
         else {
-            comments.push("outside of hoisting");
+            icons.push(`<span class="bx bx-trending-up" title="This path is outside of hoisted note and you would have to unhoist."></span>`);
         }
 
         if (notePathRecord.isArchived) {
             $noteLink.addClass("path-archived");
 
-            comments.push("archived");
+            icons.push(`<span class="bx bx-archive" title="Archived"></span>`);
         }
 
         if (notePathRecord.isSearch) {
             $noteLink.addClass("path-search");
 
-            comments.push("search");
+            icons.push(`<span class="bx bx-search" title="Search"></span>`);
         }
 
-        if (comments.length > 0) {
-            $noteLink.append(` (${comments.join(', ')})`);
+        if (icons.length > 0) {
+            $noteLink.append(` ${icons.join(' ')}`);
         }
 
         this.$notePathList.append($noteLink);
