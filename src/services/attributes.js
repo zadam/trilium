@@ -27,7 +27,6 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'run', isDangerous: true },
     { type: 'label', name: 'customRequestHandler', isDangerous: true },
     { type: 'label', name: 'customResourceProvider', isDangerous: true },
-    { type: 'label', name: 'bookZoomLevel', isDangerous: false },
     { type: 'label', name: 'widget', isDangerous: true },
     { type: 'label', name: 'noteInfoWidgetDisabled' },
     { type: 'label', name: 'linkMapWidgetDisabled' },
@@ -41,6 +40,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'hoistedSearchHome' },
     { type: 'label', name: 'sqlConsoleHome' },
     { type: 'label', name: 'datePattern' },
+    { type: 'label', name: 'pageSize' },
+    { type: 'label', name: 'viewType' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

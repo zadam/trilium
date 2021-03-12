@@ -278,7 +278,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             const label = attrs.find(attr =>
                 attr.type === 'label'
-                && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'bookZoomLevel', 'displayRelations'].includes(attr.name)
+                && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'displayRelations'].includes(attr.name)
                 && attr.isAffecting(this.note));
 
             const relation = attrs.find(attr =>

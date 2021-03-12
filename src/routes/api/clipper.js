@@ -106,7 +106,7 @@ function processContent(images, note, content) {
         for (const {src, dataUrl, imageId} of images) {
             const filename = path.basename(src);
 
-            if (!dataUrl.startsWith("data:image")) {
+            if (!dataUrl || !dataUrl.startsWith("data:image")) {
                 log.info("Image could not be recognized as data URL:", dataUrl.substr(0, Math.min(100, dataUrl.length)));
                 continue;
             }

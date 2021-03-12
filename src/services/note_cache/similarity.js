@@ -23,7 +23,6 @@ const IGNORED_ATTR_NAMES = [
     "archived",
     "hidepromotedattributes",
     "keyboardshortcut",
-    "bookzoomlevel",
     "noteinfowidgetdisabled",
     "linkmapwidgetdisabled",
     "noterevisionswidgetdisabled",

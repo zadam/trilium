@@ -194,7 +194,7 @@ const ATTR_HELP = {
         "appTheme": "marks CSS notes which are full Trilium themes and are thus available in Trilium options.",
         "cssClass": "value of this label is then added as CSS class to the node representing given note in the tree. This can be useful for advanced theming. Can be used in template notes.",
         "iconClass": "value of this label is added as a CSS class to the icon on the tree which can help visually distinguish the notes in the tree. Example might be bx bx-home - icons are taken from boxicons. Can be used in template notes.",
-        "bookZoomLevel": 'applies only to book note and sets the "zoom level" (how many notes fit on 1 row)',
+        "pageSize": "number of items per page in note listing",
         "customRequestHandler": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>',
         "customResourceProvider": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>'
     },
