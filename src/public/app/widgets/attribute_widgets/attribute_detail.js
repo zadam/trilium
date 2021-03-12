@@ -196,7 +196,16 @@ const ATTR_HELP = {
         "iconClass": "value of this label is added as a CSS class to the icon on the tree which can help visually distinguish the notes in the tree. Example might be bx bx-home - icons are taken from boxicons. Can be used in template notes.",
         "pageSize": "number of items per page in note listing",
         "customRequestHandler": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>',
-        "customResourceProvider": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>'
+        "customResourceProvider": 'see <a href="javascript:" data-help-page="Custom request handler">Custom request handler</a>',
+        "widget": "marks this note as a custom widget which will be added to the Trilium component tree",
+        "workspace": "marks this note as a workspace which allows easy hoisting",
+        "workspaceIconClass": "defines box icon CSS class which will be used in tab when hoisted to this note",
+        "workspaceTabBackgroundColor": "CSS color used in the note tab when hoisted to this note",
+        "searchHome": "new search notes will be created as children of this note",
+        "hoistedSearchHome": "new search notes will be created as children of this note when hoisted to some ancestor of this note",
+        "inbox": "default inbox location for new notes",
+        "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
+        "sqlConsoleHome": "default location of SQL console notes",
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",

@@ -9,8 +9,27 @@ const cls = require('../../services/cls');
 const repository = require('../../services/repository');
 
 function getInboxNote(req) {
-    return attributeService.getNoteWithLabel('inbox')
-        || dateNoteService.getDateNote(req.params.date);
+    const hoistedNote = getHoistedNote();
+
+    let inbox;
+
+    if (hoistedNote) {
+        ([inbox] = hoistedNote.getDescendantNotesWithLabel('hoistedInbox'));
+
+        if (!inbox) {
+            ([inbox] = hoistedNote.getDescendantNotesWithLabel('inbox'));
+        }
+
+        if (!inbox) {
+            inbox = hoistedNote;
+        }
+    }
+    else {
+        inbox = attributeService.getNoteWithLabel('inbox')
+            || dateNoteService.getDateNote(req.params.date);
+    }
+
+    return inbox;
 }
 
 function getDateNote(req) {
@@ -66,33 +85,30 @@ function createSearchNote(req) {
     const searchString = params.searchString || "";
     let ancestorNoteId = params.ancestorNoteId;
 
-    const hoistedNote = cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root'
-        ? repository.getNote(cls.getHoistedNoteId())
-        : null;
+    const hoistedNote = getHoistedNote();
 
     let searchHome;
 
     if (hoistedNote) {
         ([searchHome] = hoistedNote.getDescendantNotesWithLabel('hoistedSearchHome'));
-    }
 
-    if (!searchHome) {
-        const today = dateUtils.localNowDate();
+        if (!searchHome) {
+            ([searchHome] = hoistedNote.getDescendantNotesWithLabel('searchHome'));
+        }
 
-        searchHome = attributeService.getNoteWithLabel('searchHome')
-                  || dateNoteService.getDateNote(today);
-    }
-
-    if (hoistedNote) {
-
-        if (!hoistedNote.getDescendantNoteIds().includes(searchHome.noteId)) {
-            // otherwise the note would be saved outside of the hoisted context which is weird
+        if (!searchHome) {
             searchHome = hoistedNote;
         }
 
         if (!ancestorNoteId) {
             ancestorNoteId = hoistedNote.noteId;
         }
+    }
+    else {
+        const today = dateUtils.localNowDate();
+
+        searchHome = attributeService.getNoteWithLabel('searchHome')
+                  || dateNoteService.getDateNote(today);
     }
 
     const {note} = noteService.createNewNote({
@@ -110,6 +126,12 @@ function createSearchNote(req) {
     }
 
     return note;
+}
+
+function getHoistedNote() {
+    return cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root'
+        ? repository.getNote(cls.getHoistedNoteId())
+        : null;
 }
 
 module.exports = {

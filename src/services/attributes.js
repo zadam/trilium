@@ -37,6 +37,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'workspaceIconClass' },
     { type: 'label', name: 'workspaceTabBackgroundColor' },
     { type: 'label', name: 'searchHome' },
+    { type: 'label', name: 'hoistedInbox' },
     { type: 'label', name: 'hoistedSearchHome' },
     { type: 'label', name: 'sqlConsoleHome' },
     { type: 'label', name: 'datePattern' },
