@@ -106,8 +106,6 @@ function sendPing(client, entityChanges = []) {
         }
     }
 
-    const stats = require('./sync').stats;
-
     sendMessage(client, {
         type: 'sync',
         data: entityChanges
@@ -118,9 +116,7 @@ function sendTransactionSyncsToAllClients() {
     if (webSocketServer) {
         const entityChanges = cls.getAndClearEntityChanges();
 
-        webSocketServer.clients.forEach(function each(client) {
-           sendPing(client, entityChanges);
-        });
+        webSocketServer.clients.forEach(client => sendPing(client, entityChanges));
     }
 }
 

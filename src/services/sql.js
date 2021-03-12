@@ -3,6 +3,7 @@
 const log = require('./log');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir');
+const cls = require('./cls');
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
@@ -229,13 +230,20 @@ function wrap(query, func) {
 }
 
 function transactional(func) {
-    const ret = dbConnection.transaction(func).deferred();
+    try {
+        const ret = dbConnection.transaction(func).deferred();
 
-    if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
-        require('./ws.js').sendTransactionSyncsToAllClients();
+        if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
+            require('./ws.js').sendTransactionSyncsToAllClients();
+        }
+
+        return ret;
     }
+    catch (e) {
+        cls.clearEntityChanges();
 
-    return ret;
+        throw e;
+    }
 }
 
 function fillNoteIdList(noteIds, truncate = true) {
