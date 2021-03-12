@@ -74,7 +74,11 @@ export default class Entrypoints extends Component {
 
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.openTabWithNote(note.noteId, true);
+        const hoistedNoteId = appContext.tabManager.getActiveTabContext()
+            ? appContext.tabManager.getActiveTabContext().hoistedNoteId
+            : 'root';
+
+        await appContext.tabManager.openTabWithNote(note.noteId, true, null, hoistedNoteId);
 
         appContext.triggerEvent('focusAndSelectTitle');
     }
