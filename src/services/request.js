@@ -84,7 +84,15 @@ function exec(opts) {
                 });
             });
 
-            request.end(opts.body);
+            let payload;
+
+            if (opts.body) {
+                payload = typeof opts.body === 'object'
+                    ? JSON.stringify(opts.body)
+                    : opts.body;
+            }
+
+            request.end(payload);
         }
         catch (e) {
             reject(generateError(opts, e.message));
