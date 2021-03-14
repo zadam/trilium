@@ -79,6 +79,15 @@ async function renderAttributes(attributes, renderIsInheritable) {
     return $container;
 }
 
+const HIDDEN_ATTRIBUTES = [
+    'originalFileName',
+    'template',
+    'cssClass',
+    'iconClass',
+    'pageSize',
+    'viewType'
+];
+
 async function renderNormalAttributes(note) {
     const promotedDefinitionAttributes = note.getPromotedDefinitionAttributes();
     let attrs = note.getAttributes();
@@ -90,6 +99,7 @@ async function renderNormalAttributes(note) {
         attrs = attrs.filter(
             attr => !attr.isDefinition()
                  && !attr.isAutoLink
+                 && !HIDDEN_ATTRIBUTES.includes(attr.name)
                  && attr.noteId === note.noteId
         );
     }
