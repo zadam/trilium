@@ -3,6 +3,7 @@
 const noteService = require('../../services/notes');
 const treeService = require('../../services/tree');
 const repository = require('../../services/repository');
+const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
@@ -220,6 +221,58 @@ function eraseDeletedNotesNow() {
     noteService.eraseDeletedNotesNow();
 }
 
+function getDeleteNotesPreview(req) {
+    const {branchIdsToDelete} = req.body;
+
+    const noteIdsToBeDeleted = new Set();
+    const branchCountToDelete = {}; // noteId => count (integer)
+
+    function branchPreviewDeletion(branch) {
+        branchCountToDelete[branch.branchId] = branchCountToDelete[branch.branchId] || 0;
+        branchCountToDelete[branch.branchId]++;
+
+        const note = branch.getNote();
+
+        if (note.getBranches().length <= branchCountToDelete[branch.branchId]) {
+            noteIdsToBeDeleted.add(note.noteId);
+
+            for (const childBranch of note.getChildBranches()) {
+                branchPreviewDeletion(childBranch);
+            }
+        }
+    }
+
+    for (const branchId of branchIdsToDelete) {
+        const branch = repository.getBranch(branchId);
+
+        if (!branch) {
+            log.error(`Branch ${branchId} was not found and delete preview can't be calculated for this note.`);
+
+            continue;
+        }
+
+        branchPreviewDeletion(branch);
+    }
+
+    let brokenRelations = [];
+
+    if (noteIdsToBeDeleted.length > 0) {
+        sql.fillParamList(noteIdsToBeDeleted);
+
+        brokenRelations = sql.getRows(`
+            SELECT attr.noteId, attr.name, attr.value
+            FROM attributes attr
+                     JOIN param_list ON param_list.paramId = attr.value
+            WHERE attr.isDeleted = 0
+              AND attr.type = 'relation'`).filter(attr => !noteIdsToBeDeleted.has(attr.noteId));
+    }
+
+    return {
+        noteIdsToBeDeleted: Array.from(noteIdsToBeDeleted),
+        brokenRelations
+    };
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -232,5 +285,6 @@ module.exports = {
     getRelationMap,
     changeTitle,
     duplicateSubtree,
-    eraseDeletedNotesNow
+    eraseDeletedNotesNow,
+    getDeleteNotesPreview
 };

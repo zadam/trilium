@@ -290,6 +290,8 @@ function register(app) {
     apiRoute(GET, '/api/stats/note-size/:noteId', statsRoute.getNoteSize);
     apiRoute(GET, '/api/stats/subtree-size/:noteId', statsRoute.getSubtreeSize);
 
+    apiRoute(POST, '/api/delete-notes-preview', notesApiRoute.getDeleteNotesPreview);
+
     app.use('', router);
 }
 

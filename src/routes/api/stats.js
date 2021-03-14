@@ -31,7 +31,7 @@ function getSubtreeSize(req) {
 
     const subTreeNoteIds = note.subtreeNotes.map(note => note.noteId);
 
-    sql.fillNoteIdList(subTreeNoteIds);
+    sql.fillParamList(subTreeNoteIds);
 
     const subTreeSize = sql.getValue(`
         SELECT

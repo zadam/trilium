@@ -1,5 +1,5 @@
 <div id="delete-notes-dialog" class="modal mx-auto" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title mr-auto">Delete notes</h5>
@@ -9,7 +9,23 @@
                 </button>
             </div>
             <div class="modal-body">
-                ... delete
+                <div id="delete-notes-list-wrapper">
+                    <h5>Following notes will be deleted (<span id="deleted-notes-count"></span>)</h5>
+
+                    <ul id="delete-notes-list" style="max-height: 400px; overflow: auto;"></ul>
+                </div>
+
+                <div id="no-note-to-delete-wrapper">
+                    <strong>No note will be deleted (only clones).</strong>
+                </div>
+
+                <div id="broken-relations-wrapper">
+                    <h5>Broken relations</h5>
+
+                    Below can be seen relations which will be broken after notes mentioned above are deleted.
+
+                    <ul id="broken-relations-list" style="max-height: 400px; overflow: auto;"></ul>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-sm" id="delete-notes-dialog-cancel-button">Cancel</button>

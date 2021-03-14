@@ -246,8 +246,8 @@ function transactional(func) {
     }
 }
 
-function fillNoteIdList(noteIds, truncate = true) {
-    if (noteIds.length === 0) {
+function fillParamList(paramIds, truncate = true) {
+    if (paramIds.length === 0) {
         return;
     }
 
@@ -255,18 +255,18 @@ function fillNoteIdList(noteIds, truncate = true) {
         execute("DELETE FROM param_list");
     }
 
-    noteIds = Array.from(new Set(noteIds));
+    paramIds = Array.from(new Set(paramIds));
 
-    if (noteIds.length > 30000) {
-        fillNoteIdList(noteIds.slice(30000), false);
+    if (paramIds.length > 30000) {
+        fillParamList(paramIds.slice(30000), false);
 
-        noteIds = noteIds.slice(0, 30000);
+        paramIds = paramIds.slice(0, 30000);
     }
 
     // doing it manually to avoid this showing up on the sloq query list
-    const s = stmt(`INSERT INTO param_list VALUES ` + noteIds.map(noteId => `(?)`).join(','), noteIds);
+    const s = stmt(`INSERT INTO param_list VALUES ` + paramIds.map(paramId => `(?)`).join(','), paramIds);
 
-    s.run(noteIds);
+    s.run(paramIds);
 }
 
 module.exports = {
@@ -287,5 +287,5 @@ module.exports = {
     executeScript,
     transactional,
     upsert,
-    fillNoteIdList
+    fillParamList
 };

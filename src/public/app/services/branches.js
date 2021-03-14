@@ -75,7 +75,7 @@ async function deleteNotes(branchIdsToDelete) {
     }
 
     const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-    deleteNotesDialog.showDialog();
+    deleteNotesDialog.showDialog(branchIdsToDelete);
 
     const $deleteClonesCheckbox = $('<div class="form-check">')
         .append($('<input type="checkbox" class="form-check-input" id="delete-clones-checkbox">'))
