@@ -1,1 +1,0 @@
-CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);

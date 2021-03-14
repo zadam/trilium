@@ -1,1 +1,0 @@
-ALTER TABLE attributes ADD COLUMN isDeleted INT NOT NULL DEFAULT 0;

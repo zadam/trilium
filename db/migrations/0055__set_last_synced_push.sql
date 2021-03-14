@@ -1,1 +1,0 @@
-UPDATE options SET opt_value = (SELECT MAX(id) FROM sync) WHERE opt_name = 'last_synced_push';

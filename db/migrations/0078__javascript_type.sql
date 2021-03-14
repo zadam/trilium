@@ -1,1 +1,0 @@
-UPDATE notes SET mime = 'application/javascript;env=frontend' WHERE type = 'code' AND mime = 'application/javascript';

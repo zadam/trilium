@@ -1,1 +1,0 @@
-INSERT INTO options (opt_name, opt_value) VALUES ('document_secret', '');

@@ -1,1 +1,0 @@
-ALTER TABLE notes ADD COLUMN mime TEXT NOT NULL DEFAULT 'text/html';

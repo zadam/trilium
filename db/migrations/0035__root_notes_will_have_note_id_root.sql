@@ -1,1 +1,0 @@
-UPDATE notes_tree SET note_pid = 'root' WHERE note_pid = ''

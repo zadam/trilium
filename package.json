@@ -35,7 +35,7 @@
     "dayjs": "1.10.4",
     "ejs": "3.1.6",
     "electron-debug": "3.2.0",
-    "electron-dl": "3.2.0",
+    "electron-dl": "3.2.1",
     "electron-find": "1.0.6",
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
@@ -49,9 +49,9 @@
     "image-type": "4.1.0",
     "ini": "2.0.0",
     "is-animated": "^2.0.1",
-    "is-svg": "4.2.1",
+    "is-svg": "4.2.2",
     "jimp": "0.16.1",
-    "jsdom": "16.5.0",
+    "jsdom": "16.5.1",
     "mime-types": "2.1.29",
     "multer": "1.4.2",
     "node-abi": "2.21.0",
@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "12.0.0",
+    "electron": "12.0.1",
     "electron-builder": "22.10.5",
     "electron-packager": "15.2.0",
     "electron-rebuild": "2.3.5",
@@ -87,7 +87,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.24.4",
+    "webpack": "5.25.0",
     "webpack-cli": "4.5.0"
   },
   "optionalDependencies": {

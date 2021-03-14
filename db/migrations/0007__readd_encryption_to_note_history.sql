@@ -1,1 +1,0 @@
-ALTER TABLE notes_history ADD COLUMN encryption INTEGER DEFAULT 0

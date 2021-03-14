@@ -1,1 +1,0 @@
-ALTER TABLE recent_notes ADD COLUMN is_deleted INT;
