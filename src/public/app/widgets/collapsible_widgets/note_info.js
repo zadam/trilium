@@ -50,7 +50,7 @@ const TPL = `
             <span class="note-sizes-wrapper">
                 <span class="note-size"></span>
                 
-                (subtree size: <span class="subtree-size"></span>)
+                <span class="subtree-size"></span>
             </span>
         </td>
     </tr>
@@ -88,8 +88,14 @@ export default class NoteInfoWidget extends CollapsibleWidget {
             const noteSizeResp = await server.get(`stats/note-size/${this.noteId}`);
             this.$noteSize.text(this.formatSize(noteSizeResp.noteSize));
 
-            const subTreeSizeResp = await server.get(`stats/subtree-size/${this.noteId}`);
-            this.$subTreeSize.text(this.formatSize(subTreeSizeResp.subTreeSize));
+            const subTreeResp = await server.get(`stats/subtree-size/${this.noteId}`);
+
+            if (subTreeResp.subTreeNoteCount > 1) {
+                this.$subTreeSize.text("(subtree size: " + this.formatSize(subTreeResp.subTreeSize) + ` in ${subTreeResp.subTreeNoteCount} notes)`);
+            }
+            else {
+                this.$subTreeSize.text("");
+            }
         });
     }
 

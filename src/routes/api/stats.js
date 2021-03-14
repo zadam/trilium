@@ -50,7 +50,8 @@ function getSubtreeSize(req) {
             )`);
 
     return {
-        subTreeSize
+        subTreeSize,
+        subTreeNoteCount: subTreeNoteIds.length
     };
 }
 
