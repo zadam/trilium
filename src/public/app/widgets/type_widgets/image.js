@@ -1,6 +1,7 @@
 import utils from "../../services/utils.js";
 import toastService from "../../services/toast.js";
 import TypeWidget from "./type_widget.js";
+import libraryLoader from "../../services/library_loader.js";
 
 const TPL = `
 <div class="note-detail-image note-detail-printable">
@@ -10,13 +11,25 @@ const TPL = `
         }
     
         .note-detail-image {
-            text-align: center;
+            height: 100%; 
+        }
+        
+        .note-detail-image-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
             height: 100%;
-            overflow: auto;
+            overflow: hidden;
+            justify-content: center;
         }
         
         .note-detail-image-view {
-            max-width: 100%;
+            display: block;
+            width: auto;
+            height: auto;
+            align-self: center;
+            flex-shrink: 0;
         }
     </style>
 
@@ -32,7 +45,15 @@ class ImageTypeWidget extends TypeWidget {
         this.$widget = $(TPL);
         this.contentSized();
         this.$imageWrapper = this.$widget.find('.note-detail-image-wrapper');
-        this.$imageView = this.$widget.find('.note-detail-image-view');
+        this.$imageView = this.$widget.find('.note-detail-image-view')
+            .attr("id", "image-view-" + utils.randomString(10));
+
+        libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM).then(() => {
+            WZoom.create('#' + this.$imageView.attr("id"), {
+                maxScale: 10,
+                zoomOnClick: false
+            });
+        });
     }
 
     async doRefresh(note) {

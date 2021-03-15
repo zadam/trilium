@@ -53,6 +53,10 @@ const KATEX = {
     css: [ "libraries/katex/katex.min.css" ]
 };
 
+const WHEEL_ZOOM = {
+    js: [ "libraries/wheel-zoom.min.js"]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -101,5 +105,6 @@ export default {
     LINK_MAP,
     PRINT_THIS,
     CALENDAR_WIDGET,
-    KATEX
+    KATEX,
+    WHEEL_ZOOM
 }
