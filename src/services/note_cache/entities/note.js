@@ -405,7 +405,7 @@ class Note {
             return 0;
         }
 
-        let minDistance = 999_999;
+        let minDistance = 999999;
 
         for (const parent of this.parents) {
             minDistance = Math.min(minDistance, parent.getDistanceToAncestor(ancestorNoteId) + 1);
