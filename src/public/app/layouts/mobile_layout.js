@@ -24,6 +24,7 @@ kbd {
     font-size: 1.5em;
     padding-left: 0.5em;
     padding-right: 0.5em;
+    color: var(--main-text-color);
 }
 </style>`;
 
