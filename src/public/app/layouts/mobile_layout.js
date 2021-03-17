@@ -86,7 +86,6 @@ export default class MobileLayout {
             .setParent(appContext)
             .id('root-widget')
             .css('height', '100vh')
-            .css('display', 'block')
             .child(new ScreenContainer("tree", 'column')
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4")
                 .css("max-height", "100%")
