@@ -25,6 +25,7 @@ const TPL = `
         padding-top: 10px;
         font-family: var(--detail-text-font-family);
         position: relative;
+        min-height: 50px;
     }
         
     .note-detail-readonly-text p:first-child, .note-detail-readonly-text::before {
