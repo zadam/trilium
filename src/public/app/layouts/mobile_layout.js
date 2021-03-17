@@ -71,19 +71,25 @@ export default class MobileLayout {
             .setParent(appContext)
             .id('root-widget')
             .css('height', '100vh')
+            .css('display', 'block')
             .child(new ScreenContainer("tree", 'column')
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4")
                 .child(new MobileGlobalButtonsWidget())
                 .child(new NoteTreeWidget("main").cssBlock(FANCYTREE_CSS)))
             .child(new ScreenContainer("detail", "column")
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
+                .css('max-height', '100%')
                 .child(new FlexContainer('row').overflowing()
                     .css('font-size', 'larger')
                     .css('align-items', 'center')
+                    .css('position', 'fixed')
+                    .css('top', 0)
                     .child(new MobileDetailMenuWidget())
                     .child(new NoteTitleWidget())
                     .child(new CloseDetailButtonWidget()))
                 .child(new NoteDetailWidget()
-                    .css('padding', '5px 20px 10px 0')));
+                    .css('padding', '5px 20px 10px 0')
+                    .css('margin-top', '55px')
+                    .css('overflow-y', 'auto')));
     }
 }
