@@ -34,6 +34,7 @@ const FANCYTREE_CSS = `
     max-height: 100%;
     margin-top: 55px;
     overflow-y: auto;
+    contain: content;
 }
 
 .fancytree-custom-icon {
@@ -75,6 +76,7 @@ span.fancytree-expander {
 .tree-wrapper .tree-settings-button {    
     position: fixed;
     margin-right: 16px;
+    display: none;
 }
 </style>`;
 
@@ -89,6 +91,7 @@ export default class MobileLayout {
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4")
                 .css("max-height", "100%")
                 .css('padding-left', 0)
+                .css('contain', 'content')
                 .child(new MobileGlobalButtonsWidget())
                 .child(new NoteTreeWidget("main")
                     .cssBlock(FANCYTREE_CSS)))
@@ -106,6 +109,7 @@ export default class MobileLayout {
                 .child(new NoteDetailWidget()
                     .css('padding', '5px 20px 10px 0')
                     .css('margin-top', '55px')
-                    .css('overflow-y', 'auto')));
+                    .css('overflow-y', 'auto')
+                    .css('contain', 'content')));
     }
 }

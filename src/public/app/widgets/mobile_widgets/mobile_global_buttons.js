@@ -9,7 +9,7 @@ const WIDGET_TPL = `
         justify-content: space-around;
         padding: 0px 0 3px 0;
         font-size: larger;
-        position: fixed;
+        position: absolute;
         top: 8px;
         width: 100%;
     }
