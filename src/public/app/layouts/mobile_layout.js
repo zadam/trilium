@@ -30,6 +30,12 @@ kbd {
 
 const FANCYTREE_CSS = `
 <style>
+.tree-wrapper {
+    max-height: 100%;
+    margin-top: 55px;
+    overflow-y: auto;
+}
+
 .fancytree-custom-icon {
     font-size: 2em;
 }
@@ -63,6 +69,13 @@ span.fancytree-expander {
     border-width: 2px;
     border-style: solid;
 }
+
+.tree-wrapper .collapse-tree-button, 
+.tree-wrapper .scroll-to-active-note-button, 
+.tree-wrapper .tree-settings-button {    
+    position: fixed;
+    margin-right: 16px;
+}
 </style>`;
 
 export default class MobileLayout {
@@ -74,8 +87,11 @@ export default class MobileLayout {
             .css('display', 'block')
             .child(new ScreenContainer("tree", 'column')
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4")
+                .css("max-height", "100%")
+                .css('padding-left', 0)
                 .child(new MobileGlobalButtonsWidget())
-                .child(new NoteTreeWidget("main").cssBlock(FANCYTREE_CSS)))
+                .child(new NoteTreeWidget("main")
+                    .cssBlock(FANCYTREE_CSS)))
             .child(new ScreenContainer("detail", "column")
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
                 .css('max-height', '100%')
