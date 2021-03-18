@@ -104,9 +104,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
 
-        const button = $('<button class="noborder">')
-            .addClass("btn btn-sm")
-            .on('click', opts.action);
+        let button;
+        if (utils.isMobile()) {
+            $('#plugin-buttons-placeholder').remove();
+            button = $('<a class="dropdown-item" href="#">')
+                .on('click', () => {
+                    setTimeout(() => $pluginButtons.dropdown('hide'), 0);
+                });
+        } else {
+            button = $('<button class="noborder">')
+                .addClass("btn btn-sm");
+        }
+        button = button.on('click', opts.action);
 
         if (opts.icon) {
             button.append($("<span>").addClass("bx bx-" + opts.icon))

@@ -2,6 +2,7 @@ import ScriptContext from "./script_context.js";
 import server from "./server.js";
 import toastService from "./toast.js";
 import treeCache from "./tree_cache.js";
+import utils from "./utils.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
@@ -25,7 +26,8 @@ async function executeBundle(bundle, originEntity, $container) {
 }
 
 async function executeStartupBundles() {
-    const scriptBundles = await server.get("script/startup");
+    const isMobile = utils.isMobile();
+    const scriptBundles = await server.get("script/startup" + (isMobile ? "?mobile=true" : ""));
 
     for (const bundle of scriptBundles) {
         await executeBundle(bundle);

@@ -13,6 +13,11 @@ const WIDGET_TPL = `
         top: 8px;
         width: 100%;
     }
+
+    #plugin-buttons-placeholder {
+        font-size: smaller;
+        padding: 5px;
+    }
     </style>
 
     <a data-trigger-command="createNoteIntoInbox" title="New note" class="icon-action bx bx-folder-plus"></a>
@@ -20,6 +25,14 @@ const WIDGET_TPL = `
     <a data-trigger-command="collapseTree" title="Collapse note tree" class="icon-action bx bx-layer-minus"></a>
 
     <a data-trigger-command="scrollToActiveNote" title="Scroll to active note" class="icon-action bx bx-crosshair"></a>
+
+    <div class="dropdown">
+        <a title="Plugin buttons" class="icon-action bx bx-extension dropdown-toggle" data-toggle="dropdown"></a>
+
+        <div id="plugin-buttons" class="dropdown-menu dropdown-menu-right">
+            <p id="plugin-buttons-placeholder">No plugin buttons loaded yet.</p>
+        </div>
+    </div> 
 
     <div class="dropdown">
         <a title="Global actions" class="icon-action bx bx-cog dropdown-toggle" data-toggle="dropdown"></a>
