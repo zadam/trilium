@@ -27,7 +27,7 @@ const WIDGET_TPL = `
     <a data-trigger-command="scrollToActiveNote" title="Scroll to active note" class="icon-action bx bx-crosshair"></a>
 
     <div class="dropdown">
-        <a title="Plugin buttons" class="icon-action bx bx-chip dropdown-toggle" data-toggle="dropdown"></a>
+        <a title="Plugin buttons" class="icon-action bx bx-extension dropdown-toggle" data-toggle="dropdown"></a>
 
         <div id="plugin-buttons" class="dropdown-menu dropdown-menu-right">
             <p id="plugin-buttons-placeholder">No plugin buttons loaded yet.</p>

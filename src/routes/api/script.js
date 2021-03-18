@@ -58,7 +58,9 @@ function getStartupBundles(req) {
         if (req.query.mobile === "true") {
             return getBundlesWithLabel("run", "mobileStartup");
         }
-        return getBundlesWithLabel("run", "frontendStartup");
+        else {
+            return getBundlesWithLabel("run", "frontendStartup");
+        }
     }
     else {
         return [];
