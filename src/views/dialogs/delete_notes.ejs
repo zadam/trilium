@@ -2,17 +2,25 @@
     <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mr-auto">Delete notes</h5>
+                <h4 class="modal-title mr-auto">Delete notes preview</h4>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div id="delete-notes-list-wrapper">
-                    <h5>Following notes will be deleted (<span id="deleted-notes-count"></span>)</h5>
+                <div class="checkbox">
+                    <label>
+                        <input id="delete-all-clones" value="1" type="checkbox">
 
-                    <ul id="delete-notes-list" style="max-height: 300px; overflow: auto;"></ul>
+                        delete also all clones
+                    </label>
+                </div>
+
+                <div id="delete-notes-list-wrapper">
+                    <h4>Following notes will be deleted (<span id="deleted-notes-count"></span>)</h4>
+
+                    <ul id="delete-notes-list" style="max-height: 200px; overflow: auto;"></ul>
                 </div>
 
                 <div id="no-note-to-delete-wrapper" class="alert alert-info">
@@ -21,9 +29,9 @@
 
                 <div id="broken-relations-wrapper">
                     <div class="alert alert-danger">
-                        <h5>Following relations will be broken and deleted (<span id="broke-relations-count"></span>)</h5>
+                        <h4>Following relations will be broken and deleted (<span id="broke-relations-count"></span>)</h4>
 
-                        <ul id="broken-relations-list" style="max-height: 300px; overflow: auto;"></ul>
+                        <ul id="broken-relations-list" style="max-height: 200px; overflow: auto;"></ul>
                     </div>
                 </div>
             </div>

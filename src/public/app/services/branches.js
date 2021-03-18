@@ -75,7 +75,7 @@ async function deleteNotes(branchIdsToDelete) {
     }
 
     const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-    const {proceed, deleteClones} = await deleteNotesDialog.showDialog(branchIdsToDelete);
+    const {proceed, deleteAllClones} = await deleteNotesDialog.showDialog(branchIdsToDelete);
 
     if (!proceed) {
         return false;
@@ -93,7 +93,7 @@ async function deleteNotes(branchIdsToDelete) {
 
         const branch = treeCache.getBranch(branchIdToDelete);
 
-        if (deleteClones) {
+        if (deleteAllClones) {
             await server.remove(`notes/${branch.noteId}` + query);
         }
         else {

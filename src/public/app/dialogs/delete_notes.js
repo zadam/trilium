@@ -13,20 +13,16 @@ const $noNoteToDeleteWrapper = $("#no-note-to-delete-wrapper");
 const $deleteNotesListWrapper = $("#delete-notes-list-wrapper");
 const $brokenRelationsListWrapper = $("#broken-relations-wrapper");
 const $brokenRelationsCount = $("#broke-relations-count");
-
-const DELETE_NOTE_BUTTON_ID = "delete-notes-dialog-delete-note";
-
-let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
+const $deleteAllClones = $("#delete-all-clones");
 
 let branchIds = null;
 let resolve = null;
 
-export async function showDialog(branchIdsToDelete) {
-    branchIds = branchIdsToDelete;
-
-    $originallyFocused = $(':focus');
-
-    const response = await server.post('delete-notes-preview', {branchIdsToDelete});
+async function renderDeletePreview() {
+    const response = await server.post('delete-notes-preview', {
+        branchIdsToDelete: branchIds,
+        deleteAllClones: isDeleteAllClonesChecked()
+    });
 
     $deleteNotesList.empty();
     $brokenRelationsList.empty();
@@ -58,14 +54,20 @@ export async function showDialog(branchIdsToDelete) {
                 .append(await linkService.createNoteLink(attr.noteId))
         );
     }
+}
+
+export async function showDialog(branchIdsToDelete) {
+    branchIds = branchIdsToDelete;
+
+    await renderDeletePreview();
 
     utils.openDialog($dialog);
 
     return new Promise((res, rej) => resolve = res);
 }
 
-export function isDeleteNoteChecked() {
-    return $("#" + DELETE_NOTE_BUTTON_ID + ":checked").length > 0;
+export function isDeleteAllClonesChecked() {
+    return $deleteAllClones.is(":checked");
 }
 
 $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
@@ -81,6 +83,8 @@ $okButton.on('click', () => {
 
     resolve({
         proceed: true,
-        deleteClones: false
+        deleteAllClones: isDeleteAllClonesChecked()
     });
 });
+
+$deleteAllClones.on('click', () => renderDeletePreview());

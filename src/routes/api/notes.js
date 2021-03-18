@@ -222,7 +222,7 @@ function eraseDeletedNotesNow() {
 }
 
 function getDeleteNotesPreview(req) {
-    const {branchIdsToDelete} = req.body;
+    const {branchIdsToDelete, deleteAllClones} = req.body;
 
     const noteIdsToBeDeleted = new Set();
     const branchCountToDelete = {}; // noteId => count (integer)
@@ -233,7 +233,7 @@ function getDeleteNotesPreview(req) {
 
         const note = branch.getNote();
 
-        if (note.getBranches().length <= branchCountToDelete[branch.branchId]) {
+        if (deleteAllClones || note.getBranches().length <= branchCountToDelete[branch.branchId]) {
             noteIdsToBeDeleted.add(note.noteId);
 
             for (const childBranch of note.getChildBranches()) {
