@@ -27,8 +27,11 @@ cp images/app-icons/png/128x128.png $BUILD_DIR/icon.png
 # removing software WebGL binaries because they are pretty huge and not necessary
 rm -r $BUILD_DIR/swiftshader
 
-cp bin/tpl/portable-trilium.sh $BUILD_DIR/
-chmod 755 $BUILD_DIR/portable-trilium.sh
+cp bin/tpl/trilium-portable.sh $BUILD_DIR/
+chmod 755 $BUILD_DIR/trilium-portable.sh
+
+cp bin/tpl/trilium-no-cert-check.sh $BUILD_DIR/
+chmod 755 $BUILD_DIR/trilium-no-cert-check.sh
 
 echo "Packaging linux x64 electron distribution..."
 VERSION=`jq -r ".version" package.json`
