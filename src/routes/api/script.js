@@ -53,9 +53,14 @@ function getBundlesWithLabel(label, value) {
     return bundles;
 }
 
-function getStartupBundles() {
+function getStartupBundles(req) {
     if (!process.env.TRILIUM_SAFE_MODE) {
-        return getBundlesWithLabel("run", "frontendStartup");
+        if (req.query.mobile === "true") {
+            return getBundlesWithLabel("run", "mobileStartup");
+        }
+        else {
+            return getBundlesWithLabel("run", "frontendStartup");
+        }
     }
     else {
         return [];

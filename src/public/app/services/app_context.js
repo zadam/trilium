@@ -34,9 +34,7 @@ class AppContext extends Component {
 
         this.tabManager.loadTabs();
 
-        if (utils.isDesktop()) {
-            setTimeout(() => bundleService.executeStartupBundles(), 2000);
-        }
+        setTimeout(() => bundleService.executeStartupBundles(), 2000);
     }
 
     showWidgets() {
