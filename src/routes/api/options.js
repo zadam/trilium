@@ -41,7 +41,8 @@ const ALLOWED_OPTIONS = new Set([
     'attributeListExpanded',
     'promotedAttributesExpanded',
     'similarNotesExpanded',
-    'headingStyle'
+    'headingStyle',
+    'autoCollapseNoteTree'
 ]);
 
 function getOptions() {

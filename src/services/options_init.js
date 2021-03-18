@@ -86,6 +86,7 @@ const defaultOptions = [
     { name: 'similarNotesExpanded', value: 'true', isSynced: true },
     { name: 'debugModeEnabled', value: 'false', isSynced: false },
     { name: 'headingStyle', value: 'markdown', isSynced: true },
+    { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
 ];
 
 function initStartupOptions() {
