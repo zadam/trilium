@@ -40,7 +40,6 @@ const WIDGET_TPL = `
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item" data-trigger-command="switchToDesktopVersion"><span class="bx bx-laptop"></span> Switch to desktop version</a>
             <a class="dropdown-item" data-trigger-command="logout"><span class="bx bx-log-out"></span> Logout</a>
-            <a class="dropdown-item" ><span class="bx bx-log-out"></span> test</a>
         </div>
     </div>
 </div>
