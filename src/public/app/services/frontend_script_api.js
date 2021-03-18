@@ -108,7 +108,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         if (utils.isMobile()) {
             $('#plugin-buttons-placeholder').remove();
             button = $('<a class="dropdown-item" href="#">')
-                .on('click', (...args) => {
+                .on('click', () => {
                     setTimeout(() => $pluginButtons.dropdown('hide'), 0);
                 });
         } else {
