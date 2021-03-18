@@ -256,7 +256,7 @@ function getDeleteNotesPreview(req) {
 
     let brokenRelations = [];
 
-    if (noteIdsToBeDeleted.length > 0) {
+    if (noteIdsToBeDeleted.size > 0) {
         sql.fillParamList(noteIdsToBeDeleted);
 
         brokenRelations = sql.getRows(`

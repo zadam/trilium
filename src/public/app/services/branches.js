@@ -75,30 +75,11 @@ async function deleteNotes(branchIdsToDelete) {
     }
 
     const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-    deleteNotesDialog.showDialog(branchIdsToDelete);
+    const {proceed, deleteClones} = await deleteNotesDialog.showDialog(branchIdsToDelete);
 
-    const $deleteClonesCheckbox = $('<div class="form-check">')
-        .append($('<input type="checkbox" class="form-check-input" id="delete-clones-checkbox">'))
-        .append($('<label for="delete-clones-checkbox">')
-                    .text("Also delete all note clones")
-                    .attr("title", "all clones of selected notes will be deleted and as such the whole note will be deleted."));
-
-    const $nodeTitles = $("<ul>");
-
-    for (const branchId of branchIdsToDelete) {
-        const note = await treeCache.getBranch(branchId).getNote();
-
-        $nodeTitles.append($("<li>").text(note.title));
+    if (!proceed) {
+        return false;
     }
-
-    const $confirmText = $("<div>")
-        .append($("<p>").text('This will delete the following notes and their sub-notes: '))
-        .append($nodeTitles)
-        .append($deleteClonesCheckbox);
-
-    return false;
-
-    const deleteClones = $deleteClonesCheckbox.find("input").is(":checked");
 
     const taskId = utils.randomString(10);
 

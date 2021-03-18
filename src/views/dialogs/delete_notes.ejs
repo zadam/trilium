@@ -12,19 +12,19 @@
                 <div id="delete-notes-list-wrapper">
                     <h5>Following notes will be deleted (<span id="deleted-notes-count"></span>)</h5>
 
-                    <ul id="delete-notes-list" style="max-height: 400px; overflow: auto;"></ul>
+                    <ul id="delete-notes-list" style="max-height: 300px; overflow: auto;"></ul>
                 </div>
 
-                <div id="no-note-to-delete-wrapper">
-                    <strong>No note will be deleted (only clones).</strong>
+                <div id="no-note-to-delete-wrapper" class="alert alert-info">
+                    No note will be deleted (only clones).
                 </div>
 
                 <div id="broken-relations-wrapper">
-                    <h5>Broken relations</h5>
+                    <div class="alert alert-danger">
+                        <h5>Following relations will be broken and deleted (<span id="broke-relations-count"></span>)</h5>
 
-                    Below can be seen relations which will be broken after notes mentioned above are deleted.
-
-                    <ul id="broken-relations-list" style="max-height: 400px; overflow: auto;"></ul>
+                        <ul id="broken-relations-list" style="max-height: 300px; overflow: auto;"></ul>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

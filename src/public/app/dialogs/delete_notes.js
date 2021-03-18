@@ -1,29 +1,30 @@
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import linkService from "../services/link.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#delete-notes-dialog");
-const $confirmContent = $("#delete-notes-dialog-content");
 const $okButton = $("#delete-notes-dialog-ok-button");
 const $cancelButton = $("#delete-notes-dialog-cancel-button");
-const $custom = $("#delete-notes-dialog-custom");
 const $deleteNotesList = $("#delete-notes-list");
 const $brokenRelationsList = $("#broken-relations-list");
 const $deletedNotesCount = $("#deleted-notes-count");
 const $noNoteToDeleteWrapper = $("#no-note-to-delete-wrapper");
 const $deleteNotesListWrapper = $("#delete-notes-list-wrapper");
 const $brokenRelationsListWrapper = $("#broken-relations-wrapper");
+const $brokenRelationsCount = $("#broke-relations-count");
 
 const DELETE_NOTE_BUTTON_ID = "delete-notes-dialog-delete-note";
 
 let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
 
+let branchIds = null;
+let resolve = null;
+
 export async function showDialog(branchIdsToDelete) {
+    branchIds = branchIdsToDelete;
+
     $originallyFocused = $(':focus');
-
-    $custom.hide();
-
-    glob.activeDialog = $dialog;
 
     const response = await server.post('delete-notes-preview', {branchIdsToDelete});
 
@@ -44,6 +45,7 @@ export async function showDialog(branchIdsToDelete) {
     $deletedNotesCount.text(response.noteIdsToBeDeleted.length);
 
     $brokenRelationsListWrapper.toggle(response.brokenRelations.length > 0);
+    $brokenRelationsCount.text(response.brokenRelations.length);
 
     await treeCache.getNotes(response.brokenRelations.map(br => br.noteId));
 
@@ -57,9 +59,9 @@ export async function showDialog(branchIdsToDelete) {
         );
     }
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
-    return new Promise((res, rej) => { resolve = res; });
+    return new Promise((res, rej) => resolve = res);
 }
 
 export function isDeleteNoteChecked() {
@@ -68,23 +70,17 @@ export function isDeleteNoteChecked() {
 
 $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
 
-$dialog.on("hidden.bs.modal", () => {
-    if (resolve) {
-        resolve(false);
-    }
+$cancelButton.on('click', () => {
+    utils.closeActiveDialog();
 
-    if ($originallyFocused) {
-        $originallyFocused.trigger('focus');
-        $originallyFocused = null;
-    }
+    resolve({proceed: false});
 });
 
-function doResolve(ret) {
-    resolve(ret);
-    resolve = null;
+$okButton.on('click', () => {
+    utils.closeActiveDialog();
 
-    $dialog.modal("hide");
-}
-
-$cancelButton.on('click', () => doResolve(false));
-$okButton.on('click', () => doResolve(true));
+    resolve({
+        proceed: true,
+        deleteClones: false
+    });
+});
