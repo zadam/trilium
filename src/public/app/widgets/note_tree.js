@@ -472,7 +472,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         return;
                     }
 
-                    data.result = treeCache.reloadNotes([noteId]).then(() => {
+                    data.result = treeCache.loadSearchNote(noteId).then(() => {
                         const note = treeCache.getNoteFromCache(noteId);
 
                         let childNoteIds = note.getChildNoteIds();

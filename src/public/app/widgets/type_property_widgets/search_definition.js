@@ -265,7 +265,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     async refreshResultsCommand() {
         try {
-            await treeCache.reloadNotes([this.noteId]);
+            await treeCache.loadSearchNote(this.noteId);
         }
         catch (e) {
             toastService.showError(e.message);

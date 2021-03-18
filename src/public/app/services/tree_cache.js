@@ -164,43 +164,47 @@ class TreeCache {
 
         this.addResp(resp);
 
-        for (const note of resp.notes) {
-            if (note.type === 'search') {
-                const searchResultNoteIds = await server.get('search-note/' + note.noteId);
+        appContext.triggerEvent('notesReloaded', {noteIds});
+    }
 
-                if (!Array.isArray(searchResultNoteIds)) {
-                    throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
-                }
+    async loadSearchNote(noteId) {
+        const note = await this.getNote(noteId);
 
-                // reset all the virtual branches from old search results
-                if (note.noteId in treeCache.notes) {
-                    treeCache.notes[note.noteId].children = [];
-                    treeCache.notes[note.noteId].childToBranch = {};
-                }
-
-                const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
-
-                searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
-                    // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
-                    branchId: "virt-" + note.noteId + '-' + resultNoteId,
-                    noteId: resultNoteId,
-                    parentNoteId: note.noteId,
-                    notePosition: (index + 1) * 10,
-                    fromSearchNote: true
-                }));
-
-                // update this note with standard (parent) branches + virtual (children) branches
-                this.addResp({
-                    notes: [note],
-                    branches,
-                    attributes: []
-                });
-
-                treeCache.notes[note.noteId].searchResultsLoaded = true;
-            }
+        if (!note || note.type !== 'search') {
+            return;
         }
 
-        appContext.triggerEvent('notesReloaded', {noteIds});
+        const searchResultNoteIds = await server.get('search-note/' + note.noteId);
+
+        if (!Array.isArray(searchResultNoteIds)) {
+            throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
+        }
+
+        // reset all the virtual branches from old search results
+        if (note.noteId in treeCache.notes) {
+            treeCache.notes[note.noteId].children = [];
+            treeCache.notes[note.noteId].childToBranch = {};
+        }
+
+        const branches = [...note.getBranches(), ...note.getChildBranches()];
+
+        searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
+            // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
+            branchId: "virt-" + note.noteId + '-' + resultNoteId,
+            noteId: resultNoteId,
+            parentNoteId: note.noteId,
+            notePosition: (index + 1) * 10,
+            fromSearchNote: true
+        }));
+
+        // update this note with standard (parent) branches + virtual (children) branches
+        this.addResp({
+            notes: [note],
+            branches,
+            attributes: []
+        });
+
+        treeCache.notes[note.noteId].searchResultsLoaded = true;
     }
 
     /** @return {NoteShort[]} */
