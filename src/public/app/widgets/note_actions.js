@@ -63,6 +63,7 @@ const TPL = `
         <span class="caret"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-right">
+        <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button">Re-render note</a>
         <div class="dropdown-item protect-button">
             Protect the note
         
@@ -96,6 +97,7 @@ export default class NoteActionsWidget extends TabAwareWidget {
         this.overflowing();
 
         this.$showSourceButton = this.$widget.find('.show-source-button');
+        this.$renderNoteButton = this.$widget.find('.render-note-button');
 
         this.$exportNoteButton = this.$widget.find('.export-note-button');
         this.$exportNoteButton.on("click", () => {
@@ -120,14 +122,20 @@ export default class NoteActionsWidget extends TabAwareWidget {
     }
 
     refreshWithNote(note) {
-        if (['text', 'relation-map', 'search', 'code'].includes(note.type)) {
-            this.$showSourceButton.removeAttr('disabled');
-        } else {
-            this.$showSourceButton.attr('disabled', 'disabled');
-        }
+        this.toggleDisabled(this.$showSourceButton, ['text', 'relation-map', 'search', 'code'].includes(note.type));
+
+        this.$renderNoteButton.toggle(note.type === 'render');
 
         this.$protectButton.toggle(!note.isProtected);
         this.$unprotectButton.toggle(!!note.isProtected);
+    }
+
+    toggleDisabled($el, enable) {
+        if (enable) {
+            $el.removeAttr('disabled');
+        } else {
+            $el.attr('disabled', 'disabled');
+        }
     }
 
     entitiesReloadedEvent({loadResults}) {

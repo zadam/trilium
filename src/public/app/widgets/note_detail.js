@@ -328,4 +328,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
     async saveNoteDetailNowCommand() {
         await this.spacedUpdate.updateNowIfNecessary();
     }
+
+    renderActiveNoteEvent() {
+        if (this.tabContext.isActive()) {
+            this.refresh();
+        }
+    }
 }

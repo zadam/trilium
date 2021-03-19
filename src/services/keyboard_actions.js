@@ -353,6 +353,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "renderActiveNote",
+        defaultShortcuts: [],
+        description: "Render (re-render) active note",
+        scope: "window"
+    },
+    {
         actionName: "runActiveNote",
         defaultShortcuts: ["CommandOrControl+Enter"],
         description: "Run active JavaScript (frontend/backend) code note",
