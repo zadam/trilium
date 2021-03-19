@@ -33,6 +33,7 @@ import ImagePropertiesWidget from "../widgets/type_property_widgets/image_proper
 import NotePropertiesWidget from "../widgets/type_property_widgets/note_properties.js";
 import NoteIconWidget from "../widgets/note_icon.js";
 import SearchResultWidget from "../widgets/search_result.js";
+import SyncStatusWidget from "../widgets/sync_status.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -141,6 +142,7 @@ export default class DesktopMainWindowLayout {
             .child(new FlexContainer('row').overflowing()
                 .css('height', '36px')
                 .child(new GlobalMenuWidget())
+                .child(new SyncStatusWidget())
                 .child(new TabRowWidget())
                 .child(new TitleBarButtonsWidget()))
             .child(new StandardTopWidget()

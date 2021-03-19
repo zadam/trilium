@@ -63,7 +63,7 @@ const TPL = `
         <span class="caret"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-right">
-        <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button">Re-render note</a>
+        <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button"><kbd data-command="renderActiveNote"></kbd> Re-render note</a>
         <div class="dropdown-item protect-button">
             Protect the note
         
