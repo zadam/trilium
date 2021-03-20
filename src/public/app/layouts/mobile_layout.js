@@ -83,6 +83,9 @@ export default class MobileLayout {
                     .child(new NoteTitleWidget())
                     .child(new CloseDetailButtonWidget()))
                 .child(new NoteDetailWidget()
-                    .css('padding', '5px 20px 10px 0')));
+                    .css('padding', '5px 20px 10px 0')
+                    .css('overflow', 'auto')
+                    .css('height', '100%')
+                ));
     }
 }
