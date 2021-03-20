@@ -124,14 +124,24 @@ function syncPullInProgress() {
     sendMessageToAllClients({ type: 'sync-pull-in-progress' });
 }
 
-function syncPullFinished() {
-    sendMessageToAllClients({ type: 'sync-pull-finished' });
+function syncPushInProgress() {
+    sendMessageToAllClients({ type: 'sync-push-in-progress' });
+}
+
+function syncFinished() {
+    sendMessageToAllClients({ type: 'sync-finished' });
+}
+
+function syncFailed() {
+    sendMessageToAllClients({ type: 'sync-failed' });
 }
 
 module.exports = {
     init,
     sendMessageToAllClients,
+    syncPushInProgress,
     syncPullInProgress,
-    syncPullFinished,
+    syncFinished,
+    syncFailed,
     sendTransactionSyncsToAllClients
 };

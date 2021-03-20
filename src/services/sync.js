@@ -46,6 +46,8 @@ async function sync() {
             }
             while (continueSync);
 
+            ws.syncFinished();
+
             return {
                 success: true
             };
@@ -59,6 +61,8 @@ async function sync() {
                  e.message.includes('ERR_CONNECTION_REFUSED') ||
                  e.message.includes('Bad Gateway'))) {
 
+            ws.syncFailed();
+
             log.info("No connection to sync server.");
 
             return {
@@ -68,6 +72,8 @@ async function sync() {
         }
         else {
             log.info("sync failed: " + e.message + "\nstack: " + e.stack);
+
+            ws.syncFailed();
 
             return {
                 success: false,
@@ -143,7 +149,7 @@ async function pullChanges(syncContext) {
         sql.transactional(() => {
             for (const {entityChange, entity} of entityChanges) {
                 if (!sourceIdService.isLocalSourceId(entityChange.sourceId)) {
-                    if (!atLeastOnePullApplied && entityChange.entity !== 'recent_notes') { // send only for first
+                    if (!atLeastOnePullApplied) { // send only for first
                         ws.syncPullInProgress();
 
                         atLeastOnePullApplied = true;
@@ -161,10 +167,6 @@ async function pullChanges(syncContext) {
         const sizeInKb = Math.round(JSON.stringify(resp).length / 1024);
 
         log.info(`Pulled ${entityChanges.length} changes in ${sizeInKb} KB, starting at entityChangeId=${lastSyncedPull} in ${pulledDate - startDate}ms and applied them in ${Date.now() - pulledDate}ms, ${outstandingPullCount} outstanding pulls`);
-    }
-
-    if (atLeastOnePullApplied) {
-        ws.syncPullFinished();
     }
 
     log.info("Finished pull");
@@ -211,6 +213,8 @@ async function pushChanges(syncContext) {
             sourceId: sourceIdService.getCurrentSourceId(),
             entities: entityChangesRecords
         });
+
+        ws.syncPushInProgress();
 
         log.info(`Pushing ${entityChangesRecords.length} sync changes in ` + (Date.now() - startDate.getTime()) + "ms");
 

@@ -213,7 +213,9 @@ setTimeout(() => {
     setInterval(sendPing, 1000);
 }, 0);
 
-subscribeToMessages(message => {
+subscribeToMessages(async message => {
+    const appContext = (await import("./app_context.js")).default;
+
     if (message.type === 'sync-pull-in-progress') {
         toastService.showPersistent({
             id: 'sync',
@@ -221,10 +223,17 @@ subscribeToMessages(message => {
             message: "Sync update in progress",
             icon: "refresh"
         });
+
+        appContext.triggerEvent('syncInProgress');
     }
-    else if (message.type === 'sync-pull-finished') {
+    else if (message.type === 'sync-finished') {
         // this gives user a chance to see the toast in case of fast sync finish
         setTimeout(() => toastService.closePersistent('sync'), 1000);
+
+        appContext.triggerEvent('syncFinished');
+    }
+    else if (message.type === 'sync-failed') {
+        appContext.triggerEvent('syncFailed');
     }
 });
 
