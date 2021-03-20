@@ -34,6 +34,7 @@ import NotePropertiesWidget from "../widgets/type_property_widgets/note_properti
 import NoteIconWidget from "../widgets/note_icon.js";
 import SearchResultWidget from "../widgets/search_result.js";
 import SyncStatusWidget from "../widgets/sync_status.js";
+import ScrollingContainer from "../widgets/scrolling_container.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -177,13 +178,14 @@ export default class DesktopMainWindowLayout {
                             .child(new InheritedAttributesWidget())
                         )
                     )
-                    .child(new Container()
-                        .css('height: 100%; overflow: auto;')
-                        .child(new TabCachingWidget(() => new SqlTableSchemasWidget()))
-                        .child(new TabCachingWidget(() => new NoteDetailWidget()))
-                        .child(new TabCachingWidget(() => new NoteListWidget()))
-                        .child(new TabCachingWidget(() => new SearchResultWidget()))
-                        .child(new TabCachingWidget(() => new SqlResultWidget()))
+                    .child(
+                        new TabCachingWidget(() => new ScrollingContainer()
+                            .child(new SqlTableSchemasWidget())
+                            .child(new NoteDetailWidget())
+                            .child(new NoteListWidget())
+                            .child(new SearchResultWidget())
+                            .child(new SqlResultWidget())
+                        )
                     )
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(...this.customWidgets.get('center-pane'))

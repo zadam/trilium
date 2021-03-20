@@ -6,6 +6,7 @@ import MobileGlobalButtonsWidget from "../widgets/mobile_widgets/mobile_global_b
 import CloseDetailButtonWidget from "../widgets/mobile_widgets/close_detail_button.js";
 import MobileDetailMenuWidget from "../widgets/mobile_widgets/mobile_detail_menu.js";
 import ScreenContainer from "../widgets/mobile_widgets/screen_container.js";
+import ScrollingContainer from "../widgets/scrolling_container.js";
 
 const MOBILE_CSS = `
 <style>
@@ -105,10 +106,15 @@ export default class MobileLayout {
                     .child(new MobileDetailMenuWidget())
                     .child(new NoteTitleWidget())
                     .child(new CloseDetailButtonWidget()))
-                .child(new NoteDetailWidget()
-                    .css('padding', '5px 20px 10px 0')
-                    .css('margin-top', '55px')
-                    .css('overflow-y', 'auto')
-                    .css('contain', 'content')));
+                .child(
+                    new ScrollingContainer()
+                        .child(
+                            new NoteDetailWidget()
+                                .css('padding', '5px 20px 10px 0')
+                                .css('margin-top', '55px')
+                                .css('contain', 'content')
+                        )
+                )
+            );
     }
 }

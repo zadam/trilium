@@ -27,12 +27,6 @@ export default class TypeWidget extends TabAwareWidget {
         }
     }
 
-    async noteSwitched() {
-        this.scrollToTop();
-
-        await super.noteSwitched();
-    }
-
     isActive() {
         return this.$widget.is(":visible");
     }
@@ -40,10 +34,6 @@ export default class TypeWidget extends TabAwareWidget {
     getContent() {}
 
     focus() {}
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
-    }
 
     textPreviewDisabledEvent({tabContext}) {
         if (this.isTab(tabContext.tabId)) {
