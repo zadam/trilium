@@ -128,7 +128,7 @@ const RIGHT_PANE_CSS = `
 }
 </style>`;
 
-export default class DesktopMainWindowLayout {
+export default class DesktopLayout {
     constructor(customWidgets) {
         this.customWidgets = customWidgets;
     }
