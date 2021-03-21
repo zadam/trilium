@@ -25,6 +25,7 @@ function index(req, res) {
         detailFontSize: parseInt(options.detailFontSize),
         sourceId: sourceIdService.generateSourceId(),
         maxEntityChangeIdAtLoad: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes"),
+        maxEntityChangeSyncIdAtLoad: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1"),
         instanceName: config.General ? config.General.instanceName : null,
         appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),

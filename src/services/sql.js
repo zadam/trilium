@@ -234,7 +234,7 @@ function transactional(func) {
         const ret = dbConnection.transaction(func).deferred();
 
         if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
-            require('./ws.js').sendTransactionSyncsToAllClients();
+            require('./ws.js').sendTransactionEntityChangesToAllClients();
         }
 
         return ret;

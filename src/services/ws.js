@@ -8,6 +8,7 @@ const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
 
 let webSocketServer;
+let lastSyncedPush = null;
 
 function init(httpServer, sessionParser) {
     webSocketServer = new WebSocket.Server({
@@ -61,7 +62,9 @@ function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
     if (webSocketServer) {
-        log.info("Sending message to all clients: " + jsonStr);
+        if (message.type !== 'sync-failed') {
+            log.info("Sending message to all clients: " + jsonStr);
+        }
 
         webSocketServer.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
@@ -96,23 +99,26 @@ function fillInAdditionalProperties(entityChange) {
 }
 
 function sendPing(client, entityChanges = []) {
-    for (const sync of entityChanges) {
+    for (const entityChange of entityChanges) {
         try {
-            fillInAdditionalProperties(sync);
+            fillInAdditionalProperties(entityChange);
         }
         catch (e) {
-            log.error("Could not fill additional properties for sync " + JSON.stringify(sync)
+            log.error("Could not fill additional properties for entity change " + JSON.stringify(entityChange)
                 + " because of error: " + e.message + ": " + e.stack);
         }
     }
 
     sendMessage(client, {
-        type: 'sync',
-        data: entityChanges
+        type: 'frontend-update',
+        data: {
+            lastSyncedPush,
+            entityChanges
+        }
     });
 }
 
-function sendTransactionSyncsToAllClients() {
+function sendTransactionEntityChangesToAllClients() {
     if (webSocketServer) {
         const entityChanges = cls.getAndClearEntityChanges();
 
@@ -136,6 +142,10 @@ function syncFailed() {
     sendMessageToAllClients({ type: 'sync-failed' });
 }
 
+function setLastSyncedPush(entityChangeId) {
+    lastSyncedPush = entityChangeId;
+}
+
 module.exports = {
     init,
     sendMessageToAllClients,
@@ -143,5 +153,6 @@ module.exports = {
     syncPullInProgress,
     syncFinished,
     syncFailed,
-    sendTransactionSyncsToAllClients
+    sendTransactionEntityChangesToAllClients,
+    setLastSyncedPush
 };

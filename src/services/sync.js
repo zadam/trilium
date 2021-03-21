@@ -363,10 +363,16 @@ function setLastSyncedPull(entityChangeId) {
 }
 
 function getLastSyncedPush() {
-    return parseInt(optionService.getOption('lastSyncedPush'));
+    const lastSyncedPush = parseInt(optionService.getOption('lastSyncedPush'));
+
+    ws.setLastSyncedPush(lastSyncedPush);
+
+    return lastSyncedPush;
 }
 
 function setLastSyncedPush(entityChangeId) {
+    ws.setLastSyncedPush(entityChangeId);
+
     optionService.setOption('lastSyncedPush', entityChangeId);
 }
 
@@ -382,8 +388,11 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately
-    setTimeout(cls.wrap(sync), 3000);
+    setTimeout(cls.wrap(sync), 5000);
 });
+
+// called just so ws.setLastSyncedPush() is called
+getLastSyncedPush();
 
 module.exports = {
     sync,

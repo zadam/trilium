@@ -1,6 +1,5 @@
 import BasicWidget from "./basic_widget.js";
 import utils from "../services/utils.js";
-import syncService from "../services/sync.js";
 
 const TPL = `
 <div class="global-menu-wrapper">
@@ -43,11 +42,6 @@ const TPL = `
             <a class="dropdown-item options-button" data-trigger-command="showOptions">
                 <span class="bx bx-slider"></span>
                 Options
-            </a>
-
-            <a class="dropdown-item sync-now-button" title="Trigger sync">
-                <span class="bx bx-refresh"></span>
-                Sync now
             </a>
 
             <a class="dropdown-item" data-trigger-command="openNewWindow">
@@ -120,8 +114,6 @@ export default class GlobalMenuWidget extends BasicWidget {
 
         this.$widget.find(".show-about-dialog-button").on('click',
             () => import("../dialogs/about.js").then(d => d.showDialog()));
-
-        this.$widget.find(".sync-now-button").on('click', () => syncService.syncNow());
 
         this.$widget.find(".logout-button").toggle(!utils.isElectron());
 
