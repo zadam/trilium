@@ -55,7 +55,7 @@
     "mime-types": "2.1.29",
     "multer": "1.4.2",
     "node-abi": "2.21.0",
-    "open": "8.0.3",
+    "open": "8.0.4",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
     "request": "^2.88.2",
@@ -87,7 +87,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.27.0",
+    "webpack": "5.27.1",
     "webpack-cli": "4.5.0"
   },
   "optionalDependencies": {

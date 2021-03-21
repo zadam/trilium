@@ -27,6 +27,13 @@ const TPL = `
         padding-right: 10px;
     }
     
+    .sync-status .sync-status-sub-icon {
+        font-size: 40%; 
+        position: absolute; 
+        left: 7px; 
+        top: 20px;
+    }
+    
     .sync-status .sync-status-icon span {
         border: none !important;
     }
@@ -40,7 +47,7 @@ const TPL = `
     <div class="sync-status">
         <span class="sync-status-icon sync-status-connected-with-changes" title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
             <span class="bx bx-wifi"></span>
-            <span class="bx bxs-star" style="font-size: 40%; position: absolute; left: -3px; top: 20px;"></span>
+            <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
         <span class="sync-status-icon sync-status-connected-no-changes" 
               data-toggle="tooltip" 
@@ -51,7 +58,7 @@ const TPL = `
               data-toggle="tooltip" 
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
             <span class="bx bx-wifi-off"></span>
-            <span class="bx bxs-star" style="font-size: 40%; position: absolute; left: -3px; top: 20px;"></span>
+            <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
         <span class="sync-status-icon sync-status-disconnected-no-changes" 
               data-toggle="tooltip"
