@@ -16,13 +16,13 @@ const TPL = `
     }
     
     .global-menu button {
-        margin-right: 5px;
-        margin-left: 5px;
         height: 34px;
         border: none;
-        font-size: 130%;
+        font-size: 150%;
         padding-left: 10px;
         padding-right: 10px;
+        position: relative;
+        top: -2px;
     }
     
     .global-menu button:hover {

@@ -16,8 +16,6 @@ const TPL = `
     .sync-status {
         height: 34px;
         box-sizing: border-box;
-        padding-left: 10px;
-        padding-right: 10px;
     }
     
     .sync-status .sync-status-icon {
@@ -25,6 +23,8 @@ const TPL = `
         font-size: 180%;
         display: inline-block;
         position: relative;
+        padding-left: 10px;
+        padding-right: 10px;
     }
     
     .sync-status .sync-status-icon span {
