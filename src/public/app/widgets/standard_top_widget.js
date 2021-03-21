@@ -15,7 +15,7 @@ const TPL = `
     }
     
     .standard-top-widget > div {
-        flex-shrink: 0;
+        flex-shrink: 0; /* fixes https://github.com/zadam/trilium/issues/1745 */
     }
     
     .standard-top-widget button.noborder {
