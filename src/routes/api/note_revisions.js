@@ -5,6 +5,7 @@ const noteCacheService = require('../../services/note_cache/note_cache_service')
 const protectedSessionService = require('../../services/protected_session');
 const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
+const sql = require('../../services/sql');
 const path = require('path');
 
 function getNoteRevisions(req) {
