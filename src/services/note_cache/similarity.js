@@ -233,7 +233,7 @@ async function findSimilarNotes(noteId) {
 
     const baseNote = noteCache.notes[noteId];
 
-    if (!baseNote) {
+    if (!baseNote || !baseNote.utcDateCreated) {
         return [];
     }
 
