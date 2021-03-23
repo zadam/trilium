@@ -156,14 +156,14 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        const hash = utils.hash(this.noteId + "|" + content.toString());
+        const hash = utils.hash(this.noteId + "|" + pojo.content.toString());
 
         entityChangesService.addEntityChange({
             entityName: 'note_contents',
             entityId: this.noteId,
             hash: hash,
             isErased: false,
-            utcDateChanged: this.getUtcDateChanged()
+            utcDateChanged: pojo.utcDateModified
         }, null);
     }
 

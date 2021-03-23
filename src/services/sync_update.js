@@ -26,9 +26,7 @@ function updateEntity(entityChange, entity, sourceId) {
         ? updateNoteReordering(entityChange, entity, sourceId)
         : updateNormalEntity(entityChange, entity, sourceId);
 
-    // currently making exception for protected notes and note revisions because here
-    // the title and content are not available decrypted as listeners would expect
-    if (updated && !entity.isProtected && !entityChange.isErased) {
+    if (updated && !entityChange.isErased) {
         eventService.emit(eventService.ENTITY_SYNCED, {
             entityName: entityChange.entityName,
             entity
@@ -44,7 +42,7 @@ function updateNormalEntity(remoteEntityChange, entity, sourceId) {
 
     if (localEntityChange && !localEntityChange.isErased && remoteEntityChange.isErased) {
         sql.transactional(() => {
-            const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
+            const primaryKey = entityConstructor.getEntityFromEntityName(remoteEntityChange.entityName).primaryKeyName;
 
             sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
