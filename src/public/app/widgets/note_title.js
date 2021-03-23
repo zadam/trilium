@@ -36,7 +36,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
             protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
-            await server.put(`notes/${this.noteId}/change-title`, {title});
+            await server.put(`notes/${this.noteId}/change-title`, {title}, this.componentId);
         });
 
         appContext.addBeforeUnloadListener(this);
