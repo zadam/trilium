@@ -359,7 +359,7 @@ class NoteShort {
         const workspaceIconClass = this.getWorkspaceIconClass();
 
         if (iconClassLabels.length > 0) {
-            return iconClassLabels.map(l => l.value).join(' ');
+            return iconClassLabels[0].value;
         }
         else if (workspaceIconClass) {
             return workspaceIconClass;
