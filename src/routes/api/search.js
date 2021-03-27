@@ -219,6 +219,19 @@ function quickSearch(req) {
         .map(sr => sr.noteId);
 }
 
+function search(req) {
+    const {searchString} = req.params;
+
+    const searchContext = new SearchContext({
+        fastSearch: false,
+        includeArchivedNotes: true,
+        fuzzyAttributeSearch: false
+    });
+
+    return searchService.findNotesWithQuery(searchString, searchContext)
+        .map(sr => sr.noteId);
+}
+
 function getRelatedNotes(req) {
     const attr = req.body;
 
@@ -302,5 +315,6 @@ module.exports = {
     searchFromNote,
     searchAndExecute,
     getRelatedNotes,
-    quickSearch
+    quickSearch,
+    search
 };

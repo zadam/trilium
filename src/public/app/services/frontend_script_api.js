@@ -6,6 +6,7 @@ import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
+import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import appContext from "./app_context.js";
@@ -199,11 +200,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<NoteShort[]>}
      */
     this.searchForNotes = async searchString => {
-        const noteIds = await this.runOnBackend(
-            searchString => api.searchForNotes(searchString).map(note => note.noteId),
-            [searchString]);
-
-        return await treeCache.getNotes(noteIds);
+        return await searchService.searchForNotes(searchString);
     };
 
     /**

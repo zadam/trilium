@@ -391,8 +391,7 @@ sqlInit.dbReady.then(() => {
     setTimeout(cls.wrap(sync), 5000);
 });
 
-if (sqlInit.isDbInitialized())
-{
+if (sqlInit.isDbInitialized()) {
     // called just so ws.setLastSyncedPush() is called
     getLastSyncedPush();
 }
