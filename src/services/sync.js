@@ -391,8 +391,11 @@ sqlInit.dbReady.then(() => {
     setTimeout(cls.wrap(sync), 5000);
 });
 
-// called just so ws.setLastSyncedPush() is called
-getLastSyncedPush();
+if (sqlInit.isDbInitialized())
+{
+    // called just so ws.setLastSyncedPush() is called
+    getLastSyncedPush();
+}
 
 module.exports = {
     sync,
