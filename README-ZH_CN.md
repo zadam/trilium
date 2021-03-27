@@ -1,5 +1,7 @@
 # Trilium注意事项
 
+[English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md)
+
 [![Join the chat at https://gitter.im/trilium-notes/Lobby](https://badges.gitter.im/trilium-notes/Lobby.svg)](https://gitter.im/trilium-notes/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Trilium Notes是一个分层的笔记应用程序，专注于建立大型个人知识库。请参阅[屏幕截图](https://github.com/zadam/trilium/wiki/Screenshot-tour)以快速了解：
 
