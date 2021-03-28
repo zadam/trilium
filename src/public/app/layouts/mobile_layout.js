@@ -1,4 +1,4 @@
-import FlexContainer from "../widgets/flex_container.js";
+import FlexContainer from "../widgets/containers/flex_container.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
@@ -6,7 +6,7 @@ import MobileGlobalButtonsWidget from "../widgets/mobile_widgets/mobile_global_b
 import CloseDetailButtonWidget from "../widgets/mobile_widgets/close_detail_button.js";
 import MobileDetailMenuWidget from "../widgets/mobile_widgets/mobile_detail_menu.js";
 import ScreenContainer from "../widgets/mobile_widgets/screen_container.js";
-import ScrollingContainer from "../widgets/scrolling_container.js";
+import ScrollingContainer from "../widgets/containers/scrolling_container.js";
 
 const MOBILE_CSS = `
 <style>

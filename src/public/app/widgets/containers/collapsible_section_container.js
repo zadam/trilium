@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 
 const TPL = `
 <div class="section-container">

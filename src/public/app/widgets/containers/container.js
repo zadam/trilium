@@ -1,4 +1,4 @@
-import BasicWidget from "./basic_widget.js";
+import BasicWidget from "../basic_widget.js";
 
 export default class Container extends BasicWidget {
     constructor() {

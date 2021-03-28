@@ -52,7 +52,7 @@
     "is-svg": "4.3.1",
     "jimp": "0.16.1",
     "joplin-turndown-plugin-gfm": "1.0.12",
-    "jsdom": "16.5.1",
+    "jsdom": "16.5.2",
     "mime-types": "2.1.29",
     "multer": "1.4.2",
     "node-abi": "2.21.0",

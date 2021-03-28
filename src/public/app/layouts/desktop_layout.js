@@ -1,9 +1,9 @@
-import FlexContainer from "../widgets/flex_container.js";
+import FlexContainer from "../widgets/containers/flex_container.js";
 import GlobalMenuWidget from "../widgets/global_menu.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
-import SidePaneContainer from "../widgets/side_pane_container.js";
+import SidePaneContainer from "../widgets/containers/side_pane_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import NotePathsWidget from "../widgets/note_paths.js";
@@ -20,12 +20,12 @@ import SimilarNotesWidget from "../widgets/similar_notes.js";
 import WhatLinksHereWidget from "../widgets/collapsible_widgets/what_links_here.js";
 import SidePaneToggles from "../widgets/side_pane_toggles.js";
 import EditedNotesWidget from "../widgets/collapsible_widgets/edited_notes.js";
-import CollapsibleSectionContainer from "../widgets/collapsible_section_container.js";
+import CollapsibleSectionContainer from "../widgets/containers/collapsible_section_container.js";
 import PromotedAttributesWidget from "../widgets/type_property_widgets/promoted_attributes.js";
 import InheritedAttributesWidget from "../widgets/type_property_widgets/inherited_attribute_list.js";
 import NoteListWidget from "../widgets/note_list.js";
 import SearchDefinitionWidget from "../widgets/type_property_widgets/search_definition.js";
-import Container from "../widgets/container.js";
+import Container from "../widgets/containers/container.js";
 import SqlResultWidget from "../widgets/sql_result.js";
 import SqlTableSchemasWidget from "../widgets/sql_table_schemas.js";
 import FilePropertiesWidget from "../widgets/type_property_widgets/file_properties.js";
@@ -34,7 +34,8 @@ import NotePropertiesWidget from "../widgets/type_property_widgets/note_properti
 import NoteIconWidget from "../widgets/note_icon.js";
 import SearchResultWidget from "../widgets/search_result.js";
 import SyncStatusWidget from "../widgets/sync_status.js";
-import ScrollingContainer from "../widgets/scrolling_container.js";
+import ScrollingContainer from "../widgets/containers/scrolling_container.js";
+import RootContainer from "../widgets/containers/root_container.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -136,10 +137,8 @@ export default class DesktopLayout {
     getRootWidget(appContext) {
         appContext.mainTreeWidget = new NoteTreeWidget("main");
 
-        return new FlexContainer('column')
+        return new RootContainer()
             .setParent(appContext)
-            .id('root-widget')
-            .css('height', '100vh')
             .child(new FlexContainer('row').overflowing()
                 .css('height', '36px')
                 .child(new GlobalMenuWidget())

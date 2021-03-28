@@ -1,4 +1,4 @@
-import options from "../services/options.js";
+import options from "../../services/options.js";
 import FlexContainer from "./flex_container.js";
 
 export default class SidePaneContainer extends FlexContainer {

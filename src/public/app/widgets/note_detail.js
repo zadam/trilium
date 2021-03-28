@@ -129,27 +129,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             this.child(typeWidget);
         }
-
-        this.setupClasses();
-    }
-
-    setupClasses() {
-        for (const clazz of Array.from(this.$widget[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz !== 'note-detail' && !clazz.startsWith('hidden-')) {
-                this.$widget.removeClass(clazz);
-            }
-        }
-
-        const note = this.note;
-
-        if (note) {
-            this.$widget.addClass(note.getCssClass());
-
-            this.$widget.addClass(utils.getNoteTypeClass(note.type));
-            this.$widget.addClass(utils.getMimeTypeClass(note.mime));
-
-            this.$widget.toggleClass("protected", note.isProtected);
-        }
     }
 
     getTypeWidget() {
