@@ -25,10 +25,14 @@ const TPL = `
         box-shadow: none !important;
         padding: 0 0 0 5px !important;
         margin: 0 !important;
-        color: var(--muted-text-color);
         max-height: 100px;
         overflow: auto;
         transition: opacity .1s linear;
+    }
+    
+    .attribute-list-editor.ck-content .mention {
+        color: var(--muted-text-color) !important;
+        background: transparent !important;
     }
         
     .save-attributes-button {
@@ -165,7 +169,18 @@ const editorConfig = {
         'CutToNote',
         'Mathematics',
         'indentBlockShortcutPlugin',
-        'removeFormatLinksPlugin'
+        'removeFormatLinksPlugin',
+        'WidgetTypeAround',
+        'Widget',
+        'DragDrop',
+        'Clipboard',
+        'ListEditing',
+        'ListStyleEditing',
+        'ListStyle',
+        'HorizontalLine',
+        'xy',
+        '',
+        'Math'
     ],
     toolbar: {
         items: []
