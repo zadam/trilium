@@ -106,6 +106,8 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
                 if (attr.isAffectingSubtree || note.isTemplate) {
                     note.invalidateSubtreeCaches();
+                } else {
+                    note.invalidateThisCache();
                 }
 
                 note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
@@ -137,7 +139,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 note.invalidateSubtreeFlatText();
             }
             else {
-                note.flatTextCache = null;
+                note.invalidateThisCache();
             }
         }
         else {

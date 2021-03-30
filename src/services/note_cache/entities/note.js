@@ -234,11 +234,19 @@ class Note {
         this.ancestorCache = null;
     }
 
-    invalidateSubtreeCaches() {
+    invalidateSubtreeCaches(path = []) {
+        if (path.includes(this.noteId)) {
+            return;
+        }
+
         this.invalidateThisCache();
 
+        if (this.children.length || this.targetRelations.length) {
+            path = [...path, this.noteId];
+        }
+
         for (const childNote of this.children) {
-            childNote.invalidateSubtreeCaches();
+            childNote.invalidateSubtreeCaches(path);
         }
 
         for (const targetRelation of this.targetRelations) {
@@ -246,7 +254,7 @@ class Note {
                 const note = targetRelation.note;
 
                 if (note) {
-                    note.invalidateSubtreeCaches();
+                    note.invalidateSubtreeCaches(path);
                 }
             }
         }

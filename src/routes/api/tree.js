@@ -31,7 +31,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         for (const attr of note.ownedAttributes) {
             collectedAttributeIds.add(attr.attributeId);
 
-            if (attr.type === 'relation' && attr.name === 'template') {
+            if (attr.type === 'relation' && attr.name === 'template' && attr.targetNote) {
                 collectEntityIds(attr.targetNote);
             }
         }

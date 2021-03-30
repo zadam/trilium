@@ -18,7 +18,7 @@ class RelationWhereExp extends Expression {
         for (const attr of noteCache.findAttributes('relation', this.relationName)) {
             const note = attr.note;
 
-            if (inputNoteSet.hasNoteId(note.noteId)) {
+            if (inputNoteSet.hasNoteId(note.noteId) && attr.targetNote) {
                 const subInputNoteSet = new NoteSet([attr.targetNote]);
                 const subResNoteSet = this.subExpression.execute(subInputNoteSet, executionContext);
 
