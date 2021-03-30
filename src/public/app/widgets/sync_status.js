@@ -45,7 +45,9 @@ const TPL = `
     </style>
 
     <div class="sync-status">
-        <span class="sync-status-icon sync-status-connected-with-changes" title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
+        <span class="sync-status-icon sync-status-connected-with-changes"
+              data-toggle="tooltip" 
+              title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
             <span class="bx bx-wifi"></span>
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
