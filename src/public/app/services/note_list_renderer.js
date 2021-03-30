@@ -74,6 +74,15 @@ const TPL = `
         content: "\\00a0\\00a0";
     }
     
+    .note-book-title .note-icon {
+        font-size: 120%;
+        display: inline-block;
+        padding-right: 5px;
+        padding-left: 5px;
+        position: relative;
+        top: 3px;
+    }
+    
     .note-book-card .note-book-card {
         border: 1px solid var(--main-border-color);
     }
@@ -110,7 +119,6 @@ const TPL = `
         font-size: x-large;
         position: relative;
         top: 3px;
-        padding-right: 3px;
         cursor: pointer;
     }
     
@@ -308,6 +316,7 @@ class NoteListRenderer {
             .append(
                 $('<h5 class="note-book-title">')
                     .append($expander)
+                    .append($('<span class="note-icon">').addClass(note.getIcon()))
                     .append(await linkService.createNoteLink(note.noteId, {showTooltip: false, showNotePath: this.showNotePath}))
                     .append($renderedAttributes)
             );
