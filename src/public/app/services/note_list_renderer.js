@@ -20,6 +20,7 @@ const TPL = `
     
     .note-list.grid-view .note-book-card {
         flex-basis: 300px;
+        border: 1px solid transparent;
     }
     
     .note-list.grid-view .note-expander {
@@ -28,6 +29,12 @@ const TPL = `
     
     .note-list.grid-view .note-book-card {
         max-height: 300px;
+    }
+    
+    .note-list.grid-view .note-book-card:hover {
+        cursor: pointer;
+        border: 1px solid var(--main-border-color);
+        background: var(--more-accented-background-color);
     }
     
     .note-book-card {
@@ -310,6 +317,7 @@ class NoteListRenderer {
         const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
 
         const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
+        const notePath = this.parentNote.noteId + '/' + note.noteId;
 
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)
@@ -317,9 +325,19 @@ class NoteListRenderer {
                 $('<h5 class="note-book-title">')
                     .append($expander)
                     .append($('<span class="note-icon">').addClass(note.getIcon()))
-                    .append(await linkService.createNoteLink(note.noteId, {showTooltip: false, showNotePath: this.showNotePath}))
+                    .append(this.viewType === 'grid'
+                        ? note.title
+                        : await linkService.createNoteLink(notePath, {showTooltip: false, showNotePath: this.showNotePath})
+                    )
                     .append($renderedAttributes)
             );
+
+        if (this.viewType === 'grid') {
+            $card
+                .addClass("block-link")
+                .attr("data-note-path", notePath)
+                .on('click', e => linkService.goToLink(e));
+        }
 
         $expander.on('click', () => this.toggleContent($card, note, !$card.hasClass("expanded")));
 

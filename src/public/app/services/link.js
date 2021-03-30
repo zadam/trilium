@@ -72,7 +72,7 @@ function goToLink(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const $link = $(e.target).closest("a");
+    const $link = $(e.target).closest("a,.block-link");
 
     const notePath = getNotePathFromLink($link);
 
