@@ -3,6 +3,7 @@ import toastService from "../services/toast.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import syncService from "../services/sync.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="sync-status-widget">
@@ -82,7 +83,8 @@ export default class SyncStatusWidget extends BasicWidget {
 
         ws.subscribeToMessages(message => this.processMessage(message));
 
-        this.syncState = 'disconnected';
+        // extra window doesn't know the status of the sync so it's better to hide it
+        this.syncState = appContext.isMainWindow ? 'disconnected' : 'unknown';
         this.allChangesPushed = false;
     }
 
@@ -144,7 +146,7 @@ export default class SyncStatusWidget extends BasicWidget {
 
         if (this.syncState === 'in-progress') {
             this.showIcon('in-progress');
-        } else {
+        } else if (this.syncState !== 'unknown') {
             this.showIcon(this.syncState + '-' + (this.allChangesPushed ? 'no-changes' : 'with-changes'));
         }
     }
