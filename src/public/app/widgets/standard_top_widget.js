@@ -14,6 +14,10 @@ const TPL = `
         height: 35px;
     }
     
+    .standard-top-widget > div {
+        flex-shrink: 0; /* fixes https://github.com/zadam/trilium/issues/1745 */
+    }
+    
     .standard-top-widget button.noborder {
         padding: 1px 5px 1px 5px;
         font-size: 90%;
