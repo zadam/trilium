@@ -78,6 +78,12 @@ function loginToProtectedSession(req) {
     };
 }
 
+function logoutFromProtectedSession() {
+    protectedSessionService.resetDataKey();
+
+    eventService.emit(eventService.LEAVE_PROTECTED_SESSION);
+}
+
 function token(req) {
     const username = req.body.username;
     const password = req.body.password;
@@ -101,5 +107,6 @@ function token(req) {
 module.exports = {
     loginSync,
     loginToProtectedSession,
+    logoutFromProtectedSession,
     token
 };
