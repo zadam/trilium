@@ -6,13 +6,14 @@ function getRelations(noteIds) {
     noteIds = Array.from(noteIds);
 
     return [
-        // first read all non-image relations
+        // first read all relations
+        // some "system" relations are not included since they are rarely useful to see (#1820)
         ...sql.getManyRows(`
             SELECT noteId, name, value AS targetNoteId
             FROM attributes
             WHERE (noteId IN (???) OR value IN (???))
               AND type = 'relation'
-              AND name != 'imageLink'
+              AND name NOT IN ('imageLink', 'relationMapLink', 'template')
               AND isDeleted = 0
               AND noteId != ''
               AND value != ''`, noteIds),
@@ -24,7 +25,7 @@ function getRelations(noteIds) {
             LEFT JOIN branches ON branches.parentNoteId = rel.noteId AND branches.noteId = rel.value AND branches.isDeleted = 0 
             WHERE (rel.noteId IN (???) OR rel.value IN (???))
               AND rel.type = 'relation'
-              AND rel.name = 'imageLink'
+              AND name NOT IN ('imageLink', 'relationMapLink', 'template')
               AND rel.isDeleted = 0
               AND rel.noteId != ''
               AND rel.value != ''
