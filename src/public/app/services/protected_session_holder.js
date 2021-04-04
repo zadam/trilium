@@ -1,5 +1,6 @@
 import utils from "./utils.js";
 import options from './options.js';
+import server from "./server.js";
 
 const PROTECTED_SESSION_ID_KEY = 'protectedSessionId';
 
@@ -23,11 +24,11 @@ function resetSessionCookie() {
     utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, null);
 }
 
-function resetProtectedSession() {
+async function resetProtectedSession() {
     resetSessionCookie();
 
-    // most secure solution - guarantees nothing remained in memory
-    // since this expires because user doesn't use the app, it shouldn't be disruptive
+    await server.post("logout/protected");
+
     utils.reloadApp();
 }
 

@@ -179,6 +179,10 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     }
 });
 
+eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, () => {
+    load();
+});
+
 module.exports = {
     load
 };

@@ -5,7 +5,7 @@ const log = require('./log');
 const dataEncryptionService = require('./data_encryption');
 const cls = require('./cls');
 
-const dataKeyMap = {};
+let dataKeyMap = {};
 
 function setDataKey(decryptedDataKey) {
     const protectedSessionId = utils.randomSecureToken(32);
@@ -27,6 +27,10 @@ function getDataKey() {
     const protectedSessionId = getProtectedSessionId();
 
     return dataKeyMap[protectedSessionId];
+}
+
+function resetDataKey() {
+    dataKeyMap = {};
 }
 
 function isProtectedSessionAvailable() {
@@ -71,6 +75,7 @@ function decryptString(cipherText) {
 module.exports = {
     setDataKey,
     getDataKey,
+    resetDataKey,
     isProtectedSessionAvailable,
     encrypt,
     decrypt,

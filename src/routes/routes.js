@@ -271,6 +271,8 @@ function register(app) {
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
+    apiRoute(POST, '/api/logout/protected', loginApiRoute.logoutFromProtectedSession);
+
     route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
 
     // in case of local electron, local calls are allowed unauthenticated, for server they need auth

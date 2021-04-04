@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
+const log = require('./log');
 const repository = require('./repository');
 const Branch = require('../entities/branch');
 const entityChangesService = require('./entity_changes.js');
@@ -139,7 +140,12 @@ function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, note.branchId]);
 
-            noteCache.branches[note.branchId].notePosition = position;
+            if (note.branchId in noteCache.branches) {
+                noteCache.branches[note.branchId].notePosition = position;
+            }
+            else {
+                log.info(`Branch "${note.branchId}" was not found in note cache.`);
+            }
 
             position += 10;
         }

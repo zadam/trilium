@@ -53,22 +53,14 @@ function moveEntityChangeToTop(entityName, entityId) {
     addEntityChange(entityName, entityId, hash, null, isSynced);
 }
 
-function addEntityChangesForSector(entityName, entityPrimaryKey, sector) {
+function addEntityChangesForSector(entityName, sector) {
     const startTime = Date.now();
-    const repository = require('./repository');
+
+    const entityChanges = sql.getRows(`SELECT * FROM entity_changes WHERE entityName = ? AND SUBSTR(entityId, 1, 1) = ?`, [entityName, sector]);
 
     sql.transactional(() => {
-        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
-
-        for (const entityId of entityIds) {
-            // retrieving entity one by one to avoid memory issues with note_contents
-            const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${entityPrimaryKey} = ?`, [entityId]);
-
-            if (entityName === 'options' && !entity.isSynced) {
-                continue
-            }
-
-            insertEntityChange(entityName, entityId, entity.generateHash(), false, entity.getUtcDateChanged(), 'content-check', true);
+        for (const ec of entityChanges) {
+            insertEntityChange(entityName, ec.entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
         }
     });
 

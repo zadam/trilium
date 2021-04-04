@@ -1,6 +1,7 @@
 "use strict";
 
 const protectedSessionService = require('../../protected_session');
+const log = require('../../log');
 
 class Note {
     constructor(noteCache, row) {
@@ -424,9 +425,14 @@ class Note {
 
     decrypt() {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
-            this.title = protectedSessionService.decryptString(this.title);
+            try {
+                this.title = protectedSessionService.decryptString(this.title);
 
-            this.isDecrypted = true;
+                this.isDecrypted = true;
+            }
+            catch (e) {
+                log.error(`Could not decrypt note ${this.noteId}: ${e.message} ${e.stack}`);
+            }
         }
     }
 

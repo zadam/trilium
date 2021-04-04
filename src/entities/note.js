@@ -49,7 +49,12 @@ class Note extends Entity {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
             if (this.isContentAvailable) {
-                this.title = protectedSessionService.decryptString(this.title);
+                try {
+                    this.title = protectedSessionService.decryptString(this.title);
+                }
+                catch (e) {
+                    throw new Error(`Could not decrypt title of note ${this.noteId}: ${e.message} ${e.stack}`)
+                }
             }
             else {
                 this.title = "[protected]";
