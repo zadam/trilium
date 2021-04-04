@@ -1,6 +1,9 @@
 const {note} = require('./note_cache_mocking.js');
 const ValueExtractor = require('../../src/services/search/value_extractor.js');
 const noteCache = require('../../src/services/note_cache/note_cache.js');
+const SearchContext = require("../../src/services/search/search_context.js");
+
+const dsc = new SearchContext();
 
 describe("Value extractor", () => {
     beforeEach(() => {
@@ -10,7 +13,7 @@ describe("Value extractor", () => {
     it("simple title extraction", async () => {
         const europe = note("Europe").note;
 
-        const valueExtractor = new ValueExtractor(["note", "title"]);
+        const valueExtractor = new ValueExtractor(dsc, ["note", "title"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(europe)).toEqual("Europe");
@@ -21,12 +24,12 @@ describe("Value extractor", () => {
             .label("Capital", "Vienna")
             .note;
 
-        let valueExtractor = new ValueExtractor(["note", "labels", "capital"]);
+        let valueExtractor = new ValueExtractor(dsc, ["note", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(austria)).toEqual("Vienna");
 
-        valueExtractor = new ValueExtractor(["#capital"]);
+        valueExtractor = new ValueExtractor(dsc, ["#capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(austria)).toEqual("Vienna");
@@ -38,12 +41,12 @@ describe("Value extractor", () => {
             .child(note("Austria")
                 .child(vienna));
 
-        let valueExtractor = new ValueExtractor(["note", "children", "children", "title"]);
+        let valueExtractor = new ValueExtractor(dsc, ["note", "children", "children", "title"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(europe.note)).toEqual("Vienna");
 
-        valueExtractor = new ValueExtractor(["note", "parents", "parents", "title"]);
+        valueExtractor = new ValueExtractor(dsc, ["note", "parents", "parents", "title"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(vienna.note)).toEqual("Europe");
@@ -56,12 +59,12 @@ describe("Value extractor", () => {
                 .relation('neighbor', czechRepublic.note)
                 .relation('neighbor', slovakia.note);
 
-        let valueExtractor = new ValueExtractor(["note", "relations", "neighbor", "labels", "capital"]);
+        let valueExtractor = new ValueExtractor(dsc, ["note", "relations", "neighbor", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(austria.note)).toEqual("Prague");
 
-        valueExtractor = new ValueExtractor(["~neighbor", "labels", "capital"]);
+        valueExtractor = new ValueExtractor(dsc, ["~neighbor", "labels", "capital"]);
 
         expect(valueExtractor.validate()).toBeFalsy();
         expect(valueExtractor.extract(austria.note)).toEqual("Prague");
@@ -70,17 +73,17 @@ describe("Value extractor", () => {
 
 describe("Invalid value extractor property path", () => {
     it('each path must start with "note" (or label/relation)',
-        () => expect(new ValueExtractor(["neighbor"]).validate()).toBeTruthy());
+        () => expect(new ValueExtractor(dsc, ["neighbor"]).validate()).toBeTruthy());
 
     it("extra path element after terminal label",
-        () => expect(new ValueExtractor(["~neighbor", "labels", "capital", "noteId"]).validate()).toBeTruthy());
+        () => expect(new ValueExtractor(dsc, ["~neighbor", "labels", "capital", "noteId"]).validate()).toBeTruthy());
 
     it("extra path element after terminal title",
-        () => expect(new ValueExtractor(["note", "title", "isProtected"]).validate()).toBeTruthy());
+        () => expect(new ValueExtractor(dsc, ["note", "title", "isProtected"]).validate()).toBeTruthy());
 
     it("relation name and note property is missing",
-        () => expect(new ValueExtractor(["note", "relations"]).validate()).toBeTruthy());
+        () => expect(new ValueExtractor(dsc, ["note", "relations"]).validate()).toBeTruthy());
 
     it("relation is specified but target note property is not specified",
-        () => expect(new ValueExtractor(["note", "relations", "myrel"]).validate()).toBeTruthy());
+        () => expect(new ValueExtractor(dsc, ["note", "relations", "myrel"]).validate()).toBeTruthy());
 });
