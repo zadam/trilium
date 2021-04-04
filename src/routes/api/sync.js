@@ -200,9 +200,7 @@ function queueSector(req) {
     const entityName = utils.sanitizeSqlIdentifier(req.params.entityName);
     const sector = utils.sanitizeSqlIdentifier(req.params.sector);
 
-    const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
-
-    entityChangesService.addEntityChangesForSector(entityName, entityPrimaryKey, sector);
+    entityChangesService.addEntityChangesForSector(entityName, sector);
 }
 
 module.exports = {

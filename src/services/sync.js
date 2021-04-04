@@ -245,9 +245,7 @@ async function checkContentHash(syncContext) {
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
     for (const {entityName, sector} of failedChecks) {
-        const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
-
-        entityChangesService.addEntityChangesForSector(entityName, entityPrimaryKey, sector);
+        entityChangesService.addEntityChangesForSector(entityName, sector);
 
         await syncRequest(syncContext, 'POST', `/api/sync/queue-sector/${entityName}/${sector}`);
     }
