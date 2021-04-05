@@ -9,6 +9,7 @@ const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
 const dayjs = require('dayjs');
+const xml2js = require('xml2js');
 const cloningService = require('./cloning');
 const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
@@ -34,6 +35,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     this.axios = axios;
     this.dayjs = dayjs;
+    this.xml2js = xml2js;
 
     this.utils = {
         unescapeHtml: utils.unescapeHtml
