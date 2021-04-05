@@ -87,19 +87,31 @@ describe("Lexer expression", () => {
             .toEqual(["#label", "*=*", "text"]);
     });
 
-    it("simple label operator with in quotes and without", () => {
+    it("simple label operator with in quotes", () => {
         expect(lex("#label*=*'text'").expressionTokens)
             .toEqual([
                 {token: "#label", inQuotes: false, startIndex: 0, endIndex: 5},
                 {token: "*=*", inQuotes: false, startIndex: 6, endIndex: 8},
                 {token: "text", inQuotes: true, startIndex: 10, endIndex: 13}
             ]);
+    });
 
+    it("simple label operator with param without quotes", () => {
         expect(lex("#label*=*text").expressionTokens)
             .toEqual([
                 {token: "#label", inQuotes: false, startIndex: 0, endIndex: 5},
                 {token: "*=*", inQuotes: false, startIndex: 6, endIndex: 8},
                 {token: "text", inQuotes: false, startIndex: 9, endIndex: 12}
+            ]);
+    });
+
+    it("simple label operator with empty string param", () => {
+        expect(lex("#label = ''").expressionTokens)
+            .toEqual([
+                {token: "#label", inQuotes: false, startIndex: 0, endIndex: 5},
+                {token: "=", inQuotes: false, startIndex: 7, endIndex: 7},
+                // weird case for empty strings which ends up with endIndex < startIndex :-(
+                {token: "", inQuotes: true, startIndex: 10, endIndex: 9}
             ]);
     });
 

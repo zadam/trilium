@@ -21,8 +21,8 @@ function lex(str) {
         }
     }
 
-    function finishWord(endIndex) {
-        if (currentWord === '') {
+    function finishWord(endIndex, createAlsoForEmptyWords = false) {
+        if (currentWord === '' && !createAlsoForEmptyWords) {
             return;
         }
 
@@ -71,7 +71,7 @@ function lex(str) {
                 }
             }
             else if (quotes === chr) {
-                finishWord(i - 1);
+                finishWord(i - 1, true);
 
                 quotes = false;
             }

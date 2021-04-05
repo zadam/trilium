@@ -562,8 +562,8 @@ describe("Search", () => {
         expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
         expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
 
-        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 0', searchContext);
-        expect(searchResults.length).toEqual(0);
+        searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1', searchContext);
+        expect(searchResults.length).toEqual(1);
 
         searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1000', searchContext);
         expect(searchResults.length).toEqual(4);

@@ -19,6 +19,13 @@ function tokens(toks, cur = 0) {
     });
 }
 
+function assertIsArchived(exp) {
+    expect(exp.constructor.name).toEqual("PropertyComparisonExp");
+    expect(exp.propertyName).toEqual("isArchived");
+    expect(exp.operator).toEqual("=");
+    expect(exp.comparedValue).toEqual("false");
+}
+
 describe("Parser", () => {
     it("fulltext parser without content", () => {
         const rootExp = parse({
@@ -29,8 +36,9 @@ describe("Parser", () => {
 
         expect(rootExp.constructor.name).toEqual("AndExp");
         expect(rootExp.subExpressions[0].constructor.name).toEqual("PropertyComparisonExp");
-        expect(rootExp.subExpressions[1].constructor.name).toEqual("NoteCacheFlatTextExp");
-        expect(rootExp.subExpressions[1].tokens).toEqual(["hello", "hi"]);
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("OrExp");
+        expect(rootExp.subExpressions[1].subExpressions[0].constructor.name).toEqual("NoteCacheFlatTextExp");
+        expect(rootExp.subExpressions[1].subExpressions[0].tokens).toEqual(["hello", "hi"]);
     });
 
     it("fulltext parser with content", () => {
@@ -40,9 +48,12 @@ describe("Parser", () => {
             searchContext: new SearchContext({includeNoteContent: true})
         });
 
-        expect(rootExp.constructor.name).toEqual("OrExp");
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
 
-        const subs = rootExp.subExpressions;
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("OrExp");
+
+        const subs = rootExp.subExpressions[1].subExpressions;
 
         expect(subs[0].constructor.name).toEqual("NoteCacheFlatTextExp");
         expect(subs[0].tokens).toEqual(["hello", "hi"]);
@@ -61,10 +72,12 @@ describe("Parser", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("LabelComparisonExp");
-        expect(rootExp.attributeType).toEqual("label");
-        expect(rootExp.attributeName).toEqual("mylabel");
-        expect(rootExp.comparator).toBeTruthy();
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("LabelComparisonExp");
+        expect(rootExp.subExpressions[1].attributeType).toEqual("label");
+        expect(rootExp.subExpressions[1].attributeName).toEqual("mylabel");
+        expect(rootExp.subExpressions[1].comparator).toBeTruthy();
     });
 
     it("simple attribute negation", () => {
@@ -74,10 +87,12 @@ describe("Parser", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("NotExp");
-        expect(rootExp.subExpression.constructor.name).toEqual("AttributeExistsExp");
-        expect(rootExp.subExpression.attributeType).toEqual("label");
-        expect(rootExp.subExpression.attributeName).toEqual("mylabel");
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("NotExp");
+        expect(rootExp.subExpressions[1].subExpression.constructor.name).toEqual("AttributeExistsExp");
+        expect(rootExp.subExpressions[1].subExpression.attributeType).toEqual("label");
+        expect(rootExp.subExpressions[1].subExpression.attributeName).toEqual("mylabel");
 
         rootExp = parse({
             fulltextTokens: [],
@@ -85,10 +100,12 @@ describe("Parser", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("NotExp");
-        expect(rootExp.subExpression.constructor.name).toEqual("AttributeExistsExp");
-        expect(rootExp.subExpression.attributeType).toEqual("relation");
-        expect(rootExp.subExpression.attributeName).toEqual("myrelation");
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("NotExp");
+        expect(rootExp.subExpressions[1].subExpression.constructor.name).toEqual("AttributeExistsExp");
+        expect(rootExp.subExpressions[1].subExpression.attributeType).toEqual("relation");
+        expect(rootExp.subExpressions[1].subExpression.attributeName).toEqual("myrelation");
     });
 
     it("simple label AND", () => {
@@ -99,7 +116,10 @@ describe("Parser", () => {
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        assertIsArchived(rootExp.subExpressions[0]);
+
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("AndExp");
+        const [firstSub, secondSub] = rootExp.subExpressions[1].subExpressions;
 
         expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
@@ -116,7 +136,10 @@ describe("Parser", () => {
         });
 
         expect(rootExp.constructor.name).toEqual("AndExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        assertIsArchived(rootExp.subExpressions[0]);
+
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("AndExp");
+        const [firstSub, secondSub] = rootExp.subExpressions[1].subExpressions;
 
         expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
@@ -132,8 +155,11 @@ describe("Parser", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("OrExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("OrExp");
+        const [firstSub, secondSub] = rootExp.subExpressions[1].subExpressions;
 
         expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
@@ -155,8 +181,9 @@ describe("Parser", () => {
         expect(firstSub.constructor.name).toEqual("PropertyComparisonExp");
         expect(firstSub.propertyName).toEqual('isArchived');
 
-        expect(secondSub.constructor.name).toEqual("NoteCacheFlatTextExp");
-        expect(secondSub.tokens).toEqual(["hello"]);
+        expect(secondSub.constructor.name).toEqual("OrExp");
+        expect(secondSub.subExpressions[0].constructor.name).toEqual("NoteCacheFlatTextExp");
+        expect(secondSub.subExpressions[0].tokens).toEqual(["hello"]);
 
         expect(thirdSub.constructor.name).toEqual("LabelComparisonExp");
         expect(thirdSub.attributeName).toEqual("mylabel");
@@ -169,8 +196,11 @@ describe("Parser", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("OrExp");
-        const [firstSub, secondSub] = rootExp.subExpressions;
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("OrExp");
+        const [firstSub, secondSub] = rootExp.subExpressions[1].subExpressions;
 
         expect(firstSub.constructor.name).toEqual("LabelComparisonExp");
         expect(firstSub.attributeName).toEqual("first");
@@ -232,10 +262,12 @@ describe("Invalid expressions", () => {
             searchContext: new SearchContext()
         });
 
-        expect(rootExp.constructor.name).toEqual("LabelComparisonExp");
-        expect(rootExp.attributeType).toEqual("label");
-        expect(rootExp.attributeName).toEqual("first");
-        expect(rootExp.comparator).toBeTruthy();
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("LabelComparisonExp");
+        expect(rootExp.subExpressions[1].attributeType).toEqual("label");
+        expect(rootExp.subExpressions[1].attributeName).toEqual("first");
+        expect(rootExp.subExpressions[1].comparator).toBeTruthy();
     });
 
     it("searching by relation without note property", () => {
