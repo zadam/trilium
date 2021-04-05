@@ -370,7 +370,6 @@ class Note extends Entity {
                 WHERE attributes.isDeleted = 0
                   AND attributes.type = 'relation'
                   AND attributes.name = 'template'
-                  AND (treeWithAttrs.level = 0 OR attributes.isInheritable = 1)
                 )
             SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
             WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR treeWithAttrs.level = 0)
