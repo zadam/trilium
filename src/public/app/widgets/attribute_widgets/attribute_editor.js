@@ -124,8 +124,6 @@ const mentionSetup = {
 
 const editorConfig = {
     removePlugins: [
-        'Enter',
-        'ShiftEnter',
         'Heading',
         'Link',
         'Autoformat',
@@ -169,18 +167,7 @@ const editorConfig = {
         'CutToNote',
         'Mathematics',
         'indentBlockShortcutPlugin',
-        'removeFormatLinksPlugin',
-        'WidgetTypeAround',
-        'Widget',
-        'DragDrop',
-        'Clipboard',
-        'ListEditing',
-        'ListStyleEditing',
-        'ListStyle',
-        'HorizontalLine',
-        'xy',
-        '',
-        'Math'
+        'removeFormatLinksPlugin'
     ],
     toolbar: {
         items: []
