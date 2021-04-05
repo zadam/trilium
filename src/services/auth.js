@@ -26,7 +26,7 @@ function checkAuth(req, res, next) {
 // currently we're doing that for file upload because handling form data seems to be difficult
 function checkApiAuthOrElectron(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
-        reject(req, res, "Not authorized");
+        reject(req, res, "Logged in session not found");
     }
     else {
         next();
@@ -35,7 +35,7 @@ function checkApiAuthOrElectron(req, res, next) {
 
 function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn && !noAuthentication) {
-        reject(req, res, "Not authorized");
+        reject(req, res, "Logged in session not found");
     }
     else {
         next();
@@ -64,7 +64,7 @@ function checkToken(req, res, next) {
     const token = req.headers.authorization;
 
     if (sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
-        reject(req, res, "Not authorized");
+        reject(req, res, "Token not found");
     }
     else {
         next();
