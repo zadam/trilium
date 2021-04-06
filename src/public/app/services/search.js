@@ -6,7 +6,7 @@ async function searchForNoteIds(searchString) {
 }
 
 async function searchForNotes(searchString) {
-    const noteIds = await server.get('search/' + encodeURIComponent(searchString));
+    const noteIds = await searchForNoteIds(searchString);
 
     return await treeCache.getNotes(noteIds);
 }

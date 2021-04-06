@@ -225,7 +225,8 @@ function search(req) {
     const searchContext = new SearchContext({
         fastSearch: false,
         includeArchivedNotes: true,
-        fuzzyAttributeSearch: false
+        fuzzyAttributeSearch: false,
+        ignoreHoistedNote: true
     });
 
     return searchService.findNotesWithQuery(searchString, searchContext)

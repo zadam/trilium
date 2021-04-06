@@ -1,7 +1,6 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
-import hoistedNoteService from "../services/hoisted_note.js";
 
 const TPL = `
 <div class="dropdown note-paths-widget">

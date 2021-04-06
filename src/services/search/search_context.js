@@ -5,9 +5,15 @@ const cls = require('../cls');
 class SearchContext {
     constructor(params = {}) {
         this.fastSearch = !!params.fastSearch;
-        this.ancestorNoteId = params.ancestorNoteId || cls.getHoistedNoteId();
-        this.ancestorDepth = params.ancestorDepth;
         this.includeArchivedNotes = !!params.includeArchivedNotes;
+        this.ignoreHoistedNote = !!params.ignoreHoistedNote;
+        this.ancestorNoteId = params.ancestorNoteId;
+
+        if (!this.ancestorNoteId && !this.ignoreHoistedNote) {
+            this.ancestorNoteId = cls.getHoistedNoteId();
+        }
+
+        this.ancestorDepth = params.ancestorDepth;
         this.orderBy = params.orderBy;
         this.orderDirection = params.orderDirection;
         this.limit = params.limit;

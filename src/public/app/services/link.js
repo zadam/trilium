@@ -74,11 +74,7 @@ function goToLink(e) {
 
     const $link = $(e.target).closest("a,.block-link");
 
-    console.log("zzzzz", $link);
-
     const notePath = getNotePathFromLink($link);
-
-    console.log()
 
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
@@ -95,8 +91,6 @@ function goToLink(e) {
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {
             const address = $link.attr('href');
-
-            console.log("address", address);
 
             if (address) {
                 if (address.toLowerCase().startsWith('http')) {

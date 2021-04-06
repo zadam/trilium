@@ -9,7 +9,6 @@ const SearchContext = require("../search_context.js");
 const noteCache = require('../../note_cache/note_cache.js');
 const noteCacheService = require('../../note_cache/note_cache_service.js');
 const utils = require('../../utils.js');
-const cls = require('../../cls.js');
 const log = require('../../log.js');
 
 function loadNeededInfoFromDatabase() {
@@ -65,10 +64,7 @@ function loadNeededInfoFromDatabase() {
  * @return {SearchResult[]}
  */
 function findNotesWithExpression(expression, searchContext) {
-    const hoistedNote = noteCache.notes[cls.getHoistedNoteId()];
-    let allNotes = (hoistedNote && hoistedNote.noteId !== 'root')
-        ? hoistedNote.subtreeNotes
-        : Object.values(noteCache.notes);
+    let allNotes = Object.values(noteCache.notes);
 
     if (searchContext.dbLoadNeeded) {
         loadNeededInfoFromDatabase();
@@ -87,9 +83,9 @@ function findNotesWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext);
 
     const searchResults = noteSet.notes
-        .map(note => executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note))
-        .filter(notePathArray => notePathArray && notePathArray.includes(cls.getHoistedNoteId()))
-        .map(notePathArray => new SearchResult(notePathArray));
+        .map(note => new SearchResult(
+            executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note)
+        ));
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);

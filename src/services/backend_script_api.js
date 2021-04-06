@@ -102,6 +102,10 @@ function BackendScriptApi(currentNote, apiParams) {
             searchParams.includeArchivedNotes = true;
         }
 
+        if (searchParams.ignoreHoistedNote === undefined) {
+            searchParams.ignoreHoistedNote = true;
+        }
+
         const noteIds = searchService.findNotesWithQuery(query, new SearchContext(searchParams))
             .map(sr => sr.noteId);
 
