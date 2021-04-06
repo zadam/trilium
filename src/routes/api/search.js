@@ -7,7 +7,7 @@ const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const noteRevisionService = require("../../services/note_revisions.js");
 
-async function search(note) {
+async function searchFromNoteInt(note) {
     let searchResultNoteIds;
 
     const searchScript = note.getRelationValue('searchScript');
@@ -53,7 +53,7 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    return await search(note);
+    return await searchFromNoteInt(note);
 }
 
 const ACTION_HANDLERS = {
@@ -145,7 +145,7 @@ async function searchAndExecute(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    const searchResultNoteIds = await search(note);
+    const searchResultNoteIds = await searchFromNoteInt(note);
 
     const actions = getActions(note);
 
