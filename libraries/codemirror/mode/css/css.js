@@ -29,7 +29,8 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       valueKeywords = parserConfig.valueKeywords || {},
       allowNested = parserConfig.allowNested,
       lineComment = parserConfig.lineComment,
-      supportsAtComponent = parserConfig.supportsAtComponent === true;
+      supportsAtComponent = parserConfig.supportsAtComponent === true,
+      highlightNonStandardPropertyKeywords = config.highlightNonStandardPropertyKeywords !== false;
 
   var type, override;
   function ret(style, tp) { type = tp; return style; }
@@ -77,8 +78,8 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       return ret("qualifier", "qualifier");
     } else if (/[:;{}\[\]\(\)]/.test(ch)) {
       return ret(null, ch);
-    } else if (stream.match(/[\w-.]+(?=\()/)) {
-      if (/^(url(-prefix)?|domain|regexp)$/.test(stream.current().toLowerCase())) {
+    } else if (stream.match(/^[\w-.]+(?=\()/)) {
+      if (/^(url(-prefix)?|domain|regexp)$/i.test(stream.current())) {
         state.tokenize = tokenParenthesized;
       }
       return ret("variable callee", "variable");
@@ -107,7 +108,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
 
   function tokenParenthesized(stream, state) {
     stream.next(); // Must be '('
-    if (!stream.match(/\s*[\"\')]/, false))
+    if (!stream.match(/^\s*[\"\')]/, false))
       state.tokenize = tokenString(")");
     else
       state.tokenize = null;
@@ -197,7 +198,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
         override = "property";
         return "maybeprop";
       } else if (nonStandardPropertyKeywords.hasOwnProperty(word)) {
-        override = "string-2";
+        override = highlightNonStandardPropertyKeywords ? "string-2" : "property";
         return "maybeprop";
       } else if (allowNested) {
         override = stream.match(/^\s*:(?:\s|$)/, false) ? "property" : "tag";
@@ -291,7 +292,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       else if (propertyKeywords.hasOwnProperty(word))
         override = "property";
       else if (nonStandardPropertyKeywords.hasOwnProperty(word))
-        override = "string-2";
+        override = highlightNonStandardPropertyKeywords ? "string-2" : "property";
       else if (valueKeywords.hasOwnProperty(word))
         override = "atom";
       else if (colorKeywords.hasOwnProperty(word))
@@ -780,7 +781,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
         }
       },
       ":": function(stream) {
-        if (stream.match(/\s*\{/, false))
+        if (stream.match(/^\s*\{/, false))
           return [null, null]
         return false;
       },

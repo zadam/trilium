@@ -231,7 +231,7 @@ CodeMirror.defineMode("sass", function(config) {
       }
 
       if(ch === "@"){
-        if(stream.match(/@extend/)){
+        if(stream.match('@extend')){
           if(!stream.match(/\s*[\w]/))
             dedent(state);
         }
@@ -445,7 +445,12 @@ CodeMirror.defineMode("sass", function(config) {
 
     indent: function(state) {
       return state.scopes[0].offset;
-    }
+    },
+
+    blockCommentStart: "/*",
+    blockCommentEnd: "*/",
+    lineComment: "//",
+    fold: "indent"
   };
 }, "css");
 

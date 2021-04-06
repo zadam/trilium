@@ -16,6 +16,8 @@
     "alias": { noEndTag: true },
     "delpackage": { noEndTag: true },
     "namespace": { noEndTag: true, soyState: "namespace-def" },
+    "@attribute": paramData,
+    "@attribute?": paramData,
     "@param": paramData,
     "@param?": paramData,
     "@inject": paramData,
@@ -53,7 +55,7 @@
   CodeMirror.defineMode("soy", function(config) {
     var textMode = CodeMirror.getMode(config, "text/plain");
     var modes = {
-      html: CodeMirror.getMode(config, {name: "text/html", multilineTagIndentFactor: 2, multilineTagIndentPastTag: false}),
+      html: CodeMirror.getMode(config, {name: "text/html", multilineTagIndentFactor: 2, multilineTagIndentPastTag: false, allowMissingTagName: true}),
       attributes: textMode,
       text: textMode,
       uri: textMode,
@@ -274,6 +276,11 @@
             return null;
 
           case "param-def":
+            if (match = stream.match(/^\*/)) {
+              state.soyState.pop();
+              state.soyState.push("param-type");
+              return "type";
+            }
             if (match = stream.match(/^\w+/)) {
               state.variables = prepend(state.variables, match[0]);
               state.soyState.pop();
@@ -404,7 +411,7 @@
             return null;
 
           case "list-literal":
-            if (stream.match(/\]/)) {
+            if (stream.match(']')) {
               state.soyState.pop();
               state.lookupVariables = true;
               popcontext(state);
@@ -456,8 +463,15 @@
             return null;
 
           case "tag":
-            var endTag = state.tag[0] == "/";
-            var tagName = endTag ? state.tag.substring(1) : state.tag;
+            var endTag;
+            var tagName;
+            if (state.tag === undefined) {
+              endTag = true;
+              tagName = '';
+            } else {
+              endTag = state.tag[0] == "/";
+              tagName = endTag ? state.tag.substring(1) : state.tag;
+            }
             var tag = tags[tagName];
             if (stream.match(/^\/?}/)) {
               var selfClosed = stream.current() == "/}";
@@ -491,15 +505,26 @@
             }
             return expression(stream, state);
 
+          case "template-call-expression":
+            if (stream.match(/^([\w-?]+)(?==)/)) {
+              return "attribute";
+            } else if (stream.eat('>')) {
+              state.soyState.pop();
+              return "keyword";
+            } else if (stream.eat('/>')) {
+              state.soyState.pop();
+              return "keyword";
+            }
+            return expression(stream, state);
           case "literal":
-            if (stream.match(/^(?=\{\/literal})/)) {
+            if (stream.match('{/literal}', false)) {
               state.soyState.pop();
               return this.token(stream, state);
             }
             return tokenUntil(stream, state, /\{\/literal}/);
         }
 
-        if (stream.match(/^\{literal}/)) {
+        if (stream.match('{literal}')) {
           state.indent += config.indentUnit;
           state.soyState.push("literal");
           state.context = new Context(state.context, "literal", state.variables);
@@ -555,6 +580,14 @@
         } else if (!state.context && stream.match(/\bimport\b/)) {
           state.soyState.push("import");
           state.indent += 2 * config.indentUnit;
+          return "keyword";
+        } else if (match = stream.match('<{')) {
+          state.soyState.push("template-call-expression");
+          state.indent += 2 * config.indentUnit;
+          state.soyState.push("tag");
+          return "keyword";
+        } else if (match = stream.match('</>')) {
+          state.indent -= 1 * config.indentUnit;
           return "keyword";
         }
 

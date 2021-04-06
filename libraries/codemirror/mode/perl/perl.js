@@ -347,7 +347,7 @@ CodeMirror.defineMode("perl",function(){
                 lc                              :1,     // - return lower-case version of a string
                 lcfirst                         :1,     // - return a string with just the next letter in lower case
                 length                          :1,     // - return the number of bytes in a string
-                'link'                          :1,     // - create a hard link in the filesytem
+                'link'                          :1,     // - create a hard link in the filesystem
                 listen                          :1,     // - register your socket as a server
                 local                           : 2,    // - create a temporary value for a global variable (dynamic scoping)
                 localtime                       :1,     // - convert UNIX time into record or string using local time
@@ -441,7 +441,7 @@ CodeMirror.defineMode("perl",function(){
                 state                           :1,     // - declare and assign a state variable (persistent lexical scoping)
                 study                           :1,     // - optimize input data for repeated searches
                 'sub'                           :1,     // - declare a subroutine, possibly anonymously
-                'substr'                        :1,     // - get or alter a portion of a stirng
+                'substr'                        :1,     // - get or alter a portion of a string
                 symlink                         :1,     // - create a symbolic link to a file
                 syscall                         :1,     // - execute an arbitrary system call
                 sysopen                         :1,     // - open a file, pipe, or descriptor
@@ -516,7 +516,7 @@ CodeMirror.defineMode("perl",function(){
                 if(stream.match(/^\-?[\d\.]/,false))
                         if(stream.match(/^(\-?(\d*\.\d+(e[+-]?\d+)?|\d+\.\d*)|0x[\da-fA-F]+|0b[01]+|\d+(e[+-]?\d+)?)/))
                                 return 'number';
-                if(stream.match(/^<<(?=\w)/)){                  // NOTE: <<SOMETHING\n...\nSOMETHING\n
+                if(stream.match(/^<<(?=[_a-zA-Z])/)){                  // NOTE: <<SOMETHING\n...\nSOMETHING\n
                         stream.eatWhile(/\w/);
                         return tokenSOMETHING(stream,state,stream.current().substr(2));}
                 if(stream.sol()&&stream.match(/^\=item(?!\w)/)){// NOTE: \n=item...\n=cut\n
@@ -697,7 +697,7 @@ CodeMirror.defineMode("perl",function(){
                                         return "variable-2";}
                         stream.pos=p;}
                 if(/[$@%&]/.test(ch)){
-                        if(stream.eatWhile(/[\w$\[\]]/)||stream.eat("{")&&stream.eatWhile(/[\w$\[\]]/)&&stream.eat("}")){
+                        if(stream.eatWhile(/[\w$]/)||stream.eat("{")&&stream.eatWhile(/[\w$]/)&&stream.eat("}")){
                                 var c=stream.current();
                                 if(PERL[c])
                                         return "variable-2";

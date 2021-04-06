@@ -83,10 +83,10 @@
 
   function makeMarker(cm, labels, severity, multiple, tooltips) {
     var marker = document.createElement("div"), inner = marker;
-    marker.className = "CodeMirror-lint-marker-" + severity;
+    marker.className = "CodeMirror-lint-marker CodeMirror-lint-marker-" + severity;
     if (multiple) {
       inner = marker.appendChild(document.createElement("div"));
-      inner.className = "CodeMirror-lint-marker-multiple";
+      inner.className = "CodeMirror-lint-marker CodeMirror-lint-marker-multiple";
     }
 
     if (tooltips != false) CodeMirror.on(inner, "mouseover", function(e) {
@@ -114,7 +114,7 @@
     var severity = ann.severity;
     if (!severity) severity = "error";
     var tip = document.createElement("div");
-    tip.className = "CodeMirror-lint-message-" + severity;
+    tip.className = "CodeMirror-lint-message CodeMirror-lint-message-" + severity;
     if (typeof ann.messageHTML != 'undefined') {
       tip.innerHTML = ann.messageHTML;
     } else {
@@ -170,6 +170,10 @@
       var anns = annotations[line];
       if (!anns) continue;
 
+      // filter out duplicate messages
+      var message = [];
+      anns = anns.filter(function(item) { return message.indexOf(item.message) > -1 ? false : message.push(item.message) });
+
       var maxSeverity = null;
       var tipLabel = state.hasGutter && document.createDocumentFragment();
 
@@ -183,13 +187,13 @@
         if (state.hasGutter) tipLabel.appendChild(annotationTooltip(ann));
 
         if (ann.to) state.marked.push(cm.markText(ann.from, ann.to, {
-          className: "CodeMirror-lint-mark-" + severity,
+          className: "CodeMirror-lint-mark CodeMirror-lint-mark-" + severity,
           __annotation: ann
         }));
       }
-
+      // use original annotations[line] to show multiple messages
       if (state.hasGutter)
-        cm.setGutterMarker(line, GUTTER_ID, makeMarker(cm, tipLabel, maxSeverity, anns.length > 1,
+        cm.setGutterMarker(line, GUTTER_ID, makeMarker(cm, tipLabel, maxSeverity, annotations[line].length > 1,
                                                        state.options.tooltips));
     }
     if (options.onUpdateLinting) options.onUpdateLinting(annotationsNotSorted, annotations, cm);

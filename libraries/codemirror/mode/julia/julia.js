@@ -80,7 +80,7 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
   // tokenizers
   function tokenBase(stream, state) {
     // Handle multiline comments
-    if (stream.match(/^#=/, false)) {
+    if (stream.match('#=', false)) {
       state.tokenize = tokenComment;
       return state.tokenize(stream, state);
     }
@@ -141,10 +141,10 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     }
 
     if (inArray(state)) {
-      if (state.lastToken == "end" && stream.match(/^:/)) {
+      if (state.lastToken == "end" && stream.match(':')) {
         return "operator";
       }
-      if (stream.match(/^end/)) {
+      if (stream.match('end')) {
         return "number";
       }
     }
@@ -201,7 +201,7 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     }
 
     // Handle Chars
-    if (stream.match(/^'/)) {
+    if (stream.match('\'')) {
       state.tokenize = tokenChar;
       return state.tokenize(stream, state);
     }
@@ -241,10 +241,6 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
         state.isDefinition = false;
         return "def";
       }
-      if (stream.match(/^({[^}]*})*\(/, false)) {
-        state.tokenize = tokenCallOrDef;
-        return state.tokenize(stream, state);
-      }
       state.leavingExpr = true;
       return "variable";
     }
@@ -254,49 +250,11 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     return "error";
   }
 
-  function tokenCallOrDef(stream, state) {
-    var match = stream.match(/^(\(\s*)/);
-    if (match) {
-      if (state.firstParenPos < 0)
-        state.firstParenPos = state.scopes.length;
-      state.scopes.push('(');
-      state.charsAdvanced += match[1].length;
-    }
-    if (currentScope(state) == '(' && stream.match(/^\)/)) {
-      state.scopes.pop();
-      state.charsAdvanced += 1;
-      if (state.scopes.length <= state.firstParenPos) {
-        var isDefinition = stream.match(/^(\s*where\s+[^\s=]+)*\s*?=(?!=)/, false);
-        stream.backUp(state.charsAdvanced);
-        state.firstParenPos = -1;
-        state.charsAdvanced = 0;
-        state.tokenize = tokenBase;
-        if (isDefinition)
-          return "def";
-        return "builtin";
-      }
-    }
-    // Unfortunately javascript does not support multiline strings, so we have
-    // to undo anything done upto here if a function call or definition splits
-    // over two or more lines.
-    if (stream.match(/^$/g, false)) {
-      stream.backUp(state.charsAdvanced);
-      while (state.scopes.length > state.firstParenPos)
-        state.scopes.pop();
-      state.firstParenPos = -1;
-      state.charsAdvanced = 0;
-      state.tokenize = tokenBase;
-      return "builtin";
-    }
-    state.charsAdvanced += stream.match(/^([^()]*)/)[1].length;
-    return state.tokenize(stream, state);
-  }
-
   function tokenAnnotation(stream, state) {
-    stream.match(/.*?(?=,|;|{|}|\(|\)|=|$|\s)/);
-    if (stream.match(/^{/)) {
+    stream.match(/.*?(?=[,;{}()=\s]|$)/);
+    if (stream.match('{')) {
       state.nestedParameters++;
-    } else if (stream.match(/^}/) && state.nestedParameters > 0) {
+    } else if (stream.match('}') && state.nestedParameters > 0) {
       state.nestedParameters--;
     }
     if (state.nestedParameters > 0) {
@@ -308,13 +266,13 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
   }
 
   function tokenComment(stream, state) {
-    if (stream.match(/^#=/)) {
+    if (stream.match('#=')) {
       state.nestedComments++;
     }
     if (!stream.match(/.*?(?=(#=|=#))/)) {
       stream.skipToEnd();
     }
-    if (stream.match(/^=#/)) {
+    if (stream.match('=#')) {
       state.nestedComments--;
       if (state.nestedComments == 0)
         state.tokenize = tokenBase;
@@ -345,7 +303,7 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
       return "string";
     }
     if (!stream.match(/^[^']+(?=')/)) { stream.skipToEnd(); }
-    if (stream.match(/^'/)) { state.tokenize = tokenBase; }
+    if (stream.match('\'')) { state.tokenize = tokenBase; }
     return "error";
   }
 
@@ -383,7 +341,6 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
         nestedComments: 0,
         nestedGenerators: 0,
         nestedParameters: 0,
-        charsAdvanced: 0,
         firstParenPos: -1
       };
     },
