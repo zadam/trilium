@@ -55,19 +55,23 @@ function importEnex(taskContext, file, parentNote) {
         content = content.trim();
 
         // workaround for https://github.com/ckeditor/ckeditor5-list/issues/116
-        content = content.replace(/<li>\s+<div>/g, "<li>");
-        content = content.replace(/<\/div>\s+<\/li>/g, "</li>");
+        content = content.replace(/<li>\s*<div>/g, "<li>");
+        content = content.replace(/<\/div>\s*<\/li>/g, "</li>");
 
         // workaround for https://github.com/ckeditor/ckeditor5-list/issues/115
-        content = content.replace(/<ul>\s+<ul>/g, "<ul><li><ul>");
-        content = content.replace(/<\/li>\s+<ul>/g, "<ul>");
-        content = content.replace(/<\/ul>\s+<\/ul>/g, "</ul></li></ul>");
-        content = content.replace(/<\/ul>\s+<li>/g, "</ul></li><li>");
+        content = content.replace(/<ul>\s*<ul>/g, "<ul><li><ul>");
+        content = content.replace(/<\/li>\s*<ul>/g, "<ul>");
+        content = content.replace(/<\/ul>\s*<\/ul>/g, "</ul></li></ul>");
+        content = content.replace(/<\/ul>\s*<li>/g, "</ul></li><li>");
 
-        content = content.replace(/<ol>\s+<ol>/g, "<ol><li><ol>");
-        content = content.replace(/<\/li>\s+<ol>/g, "<ol>");
-        content = content.replace(/<\/ol>\s+<\/ol>/g, "</ol></li></ol>");
-        content = content.replace(/<\/ol>\s+<li>/g, "</ol></li><li>");
+        content = content.replace(/<ol>\s*<ol>/g, "<ol><li><ol>");
+        content = content.replace(/<\/li>\s*<ol>/g, "<ol>");
+        content = content.replace(/<\/ol>\s*<\/ol>/g, "</ol></li></ol>");
+        content = content.replace(/<\/ol>\s*<li>/g, "</ol></li><li>");
+
+        // Replace en-todo with unicode ballot box
+        content = content.replace(/<en-todo\s+checked="true"\/>/g, "\u2611 ");
+        content = content.replace(/<en-todo(\s+checked="false")?\/>/g, "\u2610 ");
 
         content = htmlSanitizer.sanitize(content);
 
