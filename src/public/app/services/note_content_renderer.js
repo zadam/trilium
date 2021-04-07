@@ -85,7 +85,7 @@ async function getRenderedContent(note, options = {}) {
         );
     }
     else {
-        $renderedContent.append($("<em>Content of this note cannot be displayed in the book format</em>"));
+        $renderedContent.append($("<p><em>Content of this note cannot be displayed in the book format</em></p>"));
     }
 
     $renderedContent.addClass(note.getCssClass());

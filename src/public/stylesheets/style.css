@@ -405,7 +405,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .tooltip-inner {
-    padding: 15px 15px 0 15px;
+    padding: 15px;
     background-color: var(--tooltip-background-color) !important;
     border: 1px solid var(--main-border-color);
     border-radius: 5px;
@@ -413,6 +413,10 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     color: var(--main-text-color) !important;
     max-width: 500px;
     box-shadow: 10px 10px 93px -25px #aaaaaa;
+}
+
+.tooltip-inner p:last-of-type {
+    margin-bottom: 0;
 }
 
 .rendered-note-attributes {
