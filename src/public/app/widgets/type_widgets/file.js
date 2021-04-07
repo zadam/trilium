@@ -5,7 +5,7 @@ import TypeWidget from "./type_widget.js";
 const TPL = `
 <div class="note-detail-file note-detail-printable">
     <style>
-        .type-file {
+        .type-file .note-detail {
             height: 100%;
         }
         
@@ -13,7 +13,7 @@ const TPL = `
             padding: 10px;
             height: 100%;
         }
-                
+
         .file-preview-content {
             background-color: var(--accented-background-color);
             padding: 15px;
