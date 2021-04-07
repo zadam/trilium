@@ -125,10 +125,10 @@ function getNoteTitleForPath(notePathArray) {
  * - this means that archived paths is returned only if there's no non-archived path
  * - you can check whether returned path is archived using isArchived()
  */
-function getSomePath(note) {
+function getSomePath(note, path = []) {
     // first try to find note within hoisted note, otherwise take any existing note path
-    return getSomePathInner(note, [], true)
-        || getSomePathInner(note, [], false);
+    return getSomePathInner(note, path, true)
+        || getSomePathInner(note, path, false);
 }
 
 function getSomePathInner(note, path, respectHoistng) {
