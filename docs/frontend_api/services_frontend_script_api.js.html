@@ -34,6 +34,7 @@ import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
+import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import appContext from "./app_context.js";
@@ -110,7 +111,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         await ws.waitForMaxKnownEntityChangeId();
 
         await appContext.tabManager.openTabWithNote(notePath, activate);
-        appContext.triggerEvent('focusAndSelectTitle');
+
+        if (activate) {
+            appContext.triggerEvent('focusAndSelectTitle');
+        }
     };
 
     /**
@@ -129,9 +133,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
 
-        const button = $('&lt;button class="noborder">')
-            .addClass("btn btn-sm")
-            .on('click', opts.action);
+        let button;
+        if (utils.isMobile()) {
+            $('#plugin-buttons-placeholder').remove();
+            button = $('&lt;a class="dropdown-item" href="#">')
+                .on('click', () => {
+                    setTimeout(() => $pluginButtons.dropdown('hide'), 0);
+                });
+        } else {
+            button = $('&lt;button class="noborder">')
+                .addClass("btn btn-sm");
+        }
+        button = button.on('click', opts.action);
 
         if (opts.icon) {
             button.append($("&lt;span>").addClass("bx bx-" + opts.icon))
@@ -191,8 +204,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         }, "script");
 
         if (ret.success) {
-            // wait until all the changes done in the script has been synced to frontend before continuing
-            await ws.waitForEntityChangeId(ret.maxEntityChangeId);
+            await ws.waitForMaxKnownEntityChangeId();
 
             return ret.executionResult;
         }
@@ -216,11 +228,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise&lt;NoteShort[]>}
      */
     this.searchForNotes = async searchString => {
-        const noteIds = await this.runOnBackend(
-            searchString => api.searchForNotes(searchString).map(note => note.noteId),
-            [searchString]);
-
-        return await treeCache.getNotes(noteIds);
+        return await searchService.searchForNotes(searchString);
     };
 
     /**
@@ -457,6 +465,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param includedNoteId - noteId of the included note
      */
     this.refreshIncludedNote = includedNoteId => appContext.triggerEvent('refreshIncludedNote', {noteId: includedNoteId});
+
+    /**
+     * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
+     *
+     * @method
+     * @param {number} length of the string
+     * @returns {string} random string
+     */
+    this.randomString = utils.randomString;
 }
 
 export default FrontendScriptApi;

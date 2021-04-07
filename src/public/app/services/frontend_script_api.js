@@ -437,6 +437,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param includedNoteId - noteId of the included note
      */
     this.refreshIncludedNote = includedNoteId => appContext.triggerEvent('refreshIncludedNote', {noteId: includedNoteId});
+
+    /**
+     * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
+     *
+     * @method
+     * @param {number} length of the string
+     * @returns {string} random string
+     */
+    this.randomString = utils.randomString;
 }
 
 export default FrontendScriptApi;

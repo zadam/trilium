@@ -15,7 +15,7 @@
   "scripts": {
     "start-server": "cross-env TRILIUM_ENV=dev node ./src/www",
     "start-electron": "cross-env TRILIUM_ENV=dev electron --inspect=5858 .",
-    "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
+    "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js src/services/sql.js",
     "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
@@ -87,7 +87,7 @@
     "jsdoc": "3.6.6",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
-    "webpack": "5.30.0",
+    "webpack": "5.31.0",
     "webpack-cli": "4.6.0"
   },
   "optionalDependencies": {

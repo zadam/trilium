@@ -33,10 +33,14 @@ function BackendScriptApi(currentNote, apiParams) {
         this[key] = apiParams[key];
     }
 
+    /** @property {axios} Axios library for HTTP requests. See https://axios-http.com/ for documentation */
     this.axios = axios;
+    /** @property {dayjs} day.js library for date manipulation. See https://day.js.org/ for documentation */
     this.dayjs = dayjs;
+    /** @property {axios} xml2js library for XML parsing. See https://github.com/Leonidas-from-XIV/node-xml2js for documentation */
     this.xml2js = xml2js;
 
+    // DEPRECATED - use direct api.unescapeHtml
     this.utils = {
         unescapeHtml: utils.unescapeHtml
     };
@@ -192,7 +196,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId
      * @param {string} title
      * @param {string} content
-     * @return {{note: Note, branch: Branch}}
+     * @return {{note: Note, branch: Branch}} - object having "note" and "branch" keys representing respective objects
      */
     this.createTextNote = (parentNoteId, title, content = '') => noteService.createNewNote({
         parentNoteId,
@@ -208,7 +212,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId
      * @param {string} title
      * @param {object} content
-     * @return {{note: Note, branch: Branch}}
+     * @return {{note: Note, branch: Branch}} object having "note" and "branch" keys representing respective objects
      */
     this.createDataNote = (parentNoteId, title, content = {}) => noteService.createNewNote({
         parentNoteId,
@@ -391,6 +395,32 @@ function BackendScriptApi(currentNote, apiParams) {
      */
     this.transactional = sql.transactional;
 
+    /**
+     * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
+     *
+     * @method
+     * @param {number} length of the string
+     * @returns {string} random string
+     */
+    this.randomString = utils.randomString;
+
+    /**
+     * @method
+     * @param {string} string to escape
+     * @returns {string} escaped string
+     */
+    this.escapeHtml = utils.escapeHtml;
+
+    /**
+     * @method
+     * @param {string} string to unescape
+     * @returns {string} unescaped string
+     */
+    this.unescapeHtml = utils.unescapeHtml;
+
+    /**
+     * @property {module:sql} sql
+     */
     this.sql = sql;
 
     /**

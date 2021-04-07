@@ -77,7 +77,12 @@ class Note extends Entity {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
             if (this.isContentAvailable) {
-                this.title = protectedSessionService.decryptString(this.title);
+                try {
+                    this.title = protectedSessionService.decryptString(this.title);
+                }
+                catch (e) {
+                    throw new Error(`Could not decrypt title of note ${this.noteId}: ${e.message} ${e.stack}`)
+                }
             }
             else {
                 this.title = "[protected]";
@@ -184,14 +189,14 @@ class Note extends Entity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        const hash = utils.hash(this.noteId + "|" + content.toString());
+        const hash = utils.hash(this.noteId + "|" + pojo.content.toString());
 
         entityChangesService.addEntityChange({
             entityName: 'note_contents',
             entityId: this.noteId,
             hash: hash,
             isErased: false,
-            utcDateChanged: this.getUtcDateChanged()
+            utcDateChanged: pojo.utcDateModified
         }, null);
     }
 
@@ -393,7 +398,6 @@ class Note extends Entity {
                 WHERE attributes.isDeleted = 0
                   AND attributes.type = 'relation'
                   AND attributes.name = 'template'
-                  AND (treeWithAttrs.level = 0 OR attributes.isInheritable = 1)
                 )
             SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
             WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR treeWithAttrs.level = 0)
@@ -709,7 +713,7 @@ class Note extends Entity {
      * Update's given relation's value or creates it if it doesn't exist
      *
      * @param {string} name - relation name
-     * @param {string} [value] - relation value (noteId)
+     * @param {string} value - relation value (noteId)
      */
     setRelation(name, value) { return this.setAttribute(RELATION, name, value); }
 
@@ -974,7 +978,7 @@ module.exports = Note;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
