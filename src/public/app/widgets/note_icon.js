@@ -12,7 +12,7 @@ const TPL = `
     
     .note-icon-container button.note-icon {
         font-size: 180%;
-        background: transparent;
+        background-color: transparent;
         border: 1px solid transparent;
         cursor: pointer;
         padding: 6px;
