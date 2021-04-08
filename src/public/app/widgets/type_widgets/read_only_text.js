@@ -36,16 +36,17 @@ const TPL = `
         max-width: 100%;
     }
     
-    .edit-text-note-container {
+    .edit-text-note-button {
         position: absolute; 
-        top: 5px; 
+        top: 5px;
         right: 10px;
+        font-size: 130%;
+        cursor: pointer;
     }
     </style>
 
-    <div class="alert alert-warning no-print edit-text-note-container">
-         <a href="#" class="edit-note">Edit</a> <a href="#" class="external" data-help-page="Read-only-note" title="Help on Read only notes">?</a>
-    </div>
+    <div class="alert alert-warning no-print edit-text-note-button bx bx-edit-alt"
+         title="Edit this note"></div>
 
     <div class="note-detail-readonly-text-content ck-content"></div>
 </div>
@@ -60,7 +61,7 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
         this.$content = this.$widget.find('.note-detail-readonly-text-content');
 
-        this.$widget.find('a.edit-note').on('click', () => {
+        this.$widget.find('.edit-text-note-button').on('click', () => {
             this.tabContext.textPreviewDisabled = true;
 
             this.triggerEvent('textPreviewDisabled', {tabContext: this.tabContext});
