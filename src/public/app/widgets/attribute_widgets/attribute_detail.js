@@ -182,9 +182,11 @@ const ATTR_HELP = {
                 <ul>
                     <li>frontendStartup - when Trilium frontend starts up (or is refreshed).</li>
                     <li>backendStartup - when Trilium backend starts up</li>
-                    <li>hourly - run once an hour</li>
+                    <li>hourly - run once an hour. You can use additional label <code>runAtHours</code> to specify at which hour.</li>
                     <li>daily - run once a day</li>
                 </ul>`,
+        "runOnInstance": "Define which trilium instance should run this on. Default to all instances.",
+        "runAtHour": "On which hour should this run. Should be used together with <code>#run=hourly</code>",
         "disableInclusion": "scripts with this label won't be included into parent script execution.",
         "sorted": "keeps child notes sorted by title alphabetically",
         "hidePromotedAttributes": "Hide promoted attributes on this note",

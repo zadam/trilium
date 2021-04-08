@@ -305,10 +305,26 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - label name to filter
+     * @returns {string[]} all note's label values, including inherited ones
+     */
+    getLabelValues(name) {
+        return this.getLabels(name).map(l => l.value);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
      * @returns {Attribute[]} all note's labels (attributes with type label), excluding inherited ones
      */
     getOwnedLabels(name) {
         return this.getOwnedAttributes(LABEL, name);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {string[]} all note's label values, excluding inherited ones
+     */
+    getOwnedLabelValues(name) {
+        return this.getOwnedAttributes(LABEL, name).map(l => l.value);
     }
 
     /**
