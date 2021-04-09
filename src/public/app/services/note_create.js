@@ -90,7 +90,8 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    await appContext.tabManager.activateOrOpenNote(`${parentNotePath}/${note.noteId}`);
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
+    activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
 
     const origNote = await treeCache.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
