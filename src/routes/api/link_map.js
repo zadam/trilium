@@ -25,7 +25,7 @@ function getRelations(noteIds) {
             LEFT JOIN branches ON branches.parentNoteId = rel.noteId AND branches.noteId = rel.value AND branches.isDeleted = 0 
             WHERE (rel.noteId IN (???) OR rel.value IN (???))
               AND rel.type = 'relation'
-              AND rel.name NOT IN ('imageLink', 'relationMapLink', 'template')
+              AND rel.name = 'imageLink'
               AND rel.isDeleted = 0
               AND rel.noteId != ''
               AND rel.value != ''
