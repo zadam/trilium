@@ -26,7 +26,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'keyboardShortcut' },
     { type: 'label', name: 'run', isDangerous: true },
     { type: 'label', name: 'runOnInstance', isDangerous: false },
-    { type: 'label', name: 'runAtHours', isDangerous: false },
+    { type: 'label', name: 'runAtHour', isDangerous: false },
     { type: 'label', name: 'customRequestHandler', isDangerous: true },
     { type: 'label', name: 'customResourceProvider', isDangerous: true },
     { type: 'label', name: 'widget', isDangerous: true },
