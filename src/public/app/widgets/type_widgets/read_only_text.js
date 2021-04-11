@@ -34,6 +34,7 @@ const TPL = `
     
     .note-detail-readonly-text img {
         max-width: 100%;
+        cursor: pointer;
     }
     
     .edit-text-note-container {
@@ -65,6 +66,8 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
             this.triggerEvent('textPreviewDisabled', {tabContext: this.tabContext});
         });
+
+        this.setupImageOpening(true);
 
         super.doRender();
     }
