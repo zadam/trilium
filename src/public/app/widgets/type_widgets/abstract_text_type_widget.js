@@ -5,22 +5,45 @@ import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
 
 export default class AbstractTextTypeWidget extends TypeWidget {
-    doRender() {
-        this.$widget.on("dblclick", "img", e => {
-            const $img = $(e.target);
-            const src = $img.prop("src");
+    setupImageOpening(singleClickOpens) {
+        this.$widget.on("dblclick", "img", e => this.openImageInCurrentTab($(e.target)));
 
-            const match = src.match(/\/api\/images\/([A-Za-z0-9]+)\//);
-
-            if (match) {
-                const noteId = match[1];
-
-                appContext.tabManager.getActiveTabContext().setNote(noteId);
+        this.$widget.on("click", "img", e => {
+            if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
+                this.openImageInNewTab($(e.target));
             }
-            else {
-                window.open(src, '_blank');
+            else if (e.which === 1 && singleClickOpens) {
+                this.openImageInCurrentTab($(e.target));
             }
         });
+    }
+
+    openImageInCurrentTab($img) {
+        const imgSrc = $img.prop("src");
+        const noteId = this.getNoteIdFromImage(imgSrc);
+
+        if (noteId) {
+            appContext.tabManager.getActiveTabContext().setNote(noteId);
+        } else {
+            window.open(imgSrc, '_blank');
+        }
+    }
+
+    openImageInNewTab($img) {
+        const imgSrc = $img.prop("src");
+        const noteId = this.getNoteIdFromImage(imgSrc);
+
+        if (noteId) {
+            appContext.tabManager.openTabWithNoteWithHoisting(noteId);
+        } else {
+            window.open(imgSrc, '_blank');
+        }
+    }
+
+    getNoteIdFromImage(imgSrc) {
+        const match = imgSrc.match(/\/api\/images\/([A-Za-z0-9]+)\//);
+
+        return match ? match[1] : null;
     }
 
     async loadIncludedNote(noteId, $el) {
