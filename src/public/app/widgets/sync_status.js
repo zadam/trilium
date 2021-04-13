@@ -46,6 +46,11 @@ const TPL = `
     </style>
 
     <div class="sync-status">
+        <span class="sync-status-icon sync-status-unknown" 
+              data-toggle="tooltip" 
+              title="<p>Sync status will be known once the next sync attempt starts.</p><p>Click to trigger sync now.</p>">
+            <span class="bx bx-time"></span>
+        </span>
         <span class="sync-status-icon sync-status-connected-with-changes"
               data-toggle="tooltip" 
               title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
@@ -83,8 +88,7 @@ export default class SyncStatusWidget extends BasicWidget {
 
         ws.subscribeToMessages(message => this.processMessage(message));
 
-        // extra window doesn't know the status of the sync so it's better to hide it
-        this.syncState = appContext.isMainWindow ? 'disconnected' : 'unknown';
+        this.syncState = 'unknown';
         this.allChangesPushed = false;
     }
 
@@ -144,9 +148,9 @@ export default class SyncStatusWidget extends BasicWidget {
             this.allChangesPushed = lastSyncedPush === ws.getMaxKnownEntityChangeSyncId();
         }
 
-        if (this.syncState === 'in-progress') {
-            this.showIcon('in-progress');
-        } else if (this.syncState !== 'unknown') {
+        if (this.syncState === 'unknown') {
+            this.showIcon('unknown');
+        } else {
             this.showIcon(this.syncState + '-' + (this.allChangesPushed ? 'no-changes' : 'with-changes'));
         }
     }
