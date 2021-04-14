@@ -238,13 +238,19 @@ function transactional(func) {
         const ret = dbConnection.transaction(func).deferred();
 
         if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
-            require('./ws.js').sendTransactionEntityChangesToAllClients();
+            require('./ws').sendTransactionEntityChangesToAllClients();
         }
 
         return ret;
     }
     catch (e) {
-        cls.clearEntityChanges();
+        const entityChanges = cls.getAndClearEntityChanges();
+
+        if (entityChanges.length > 0) {
+            log.info("Transaction rollback dirtied the note cache, forcing reload.");
+
+            require('./note_cache/note_cache_loader').load();
+        }
 
         throw e;
     }
