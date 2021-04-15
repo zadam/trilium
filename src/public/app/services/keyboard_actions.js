@@ -89,7 +89,11 @@ function updateDisplayedShortcuts($container) {
 		const action = await getAction(actionName, true);
 
 		if (action) {
-			$(el).text(action.effectiveShortcuts.join(', '));
+			const keyboardActions = action.effectiveShortcuts.join(', ');
+
+			if (keyboardActions || $(el).text() !== "not set") {
+				$(el).text(keyboardActions);
+			}
 		}
 	});
 
