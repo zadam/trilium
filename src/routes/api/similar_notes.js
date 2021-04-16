@@ -1,6 +1,6 @@
 "use strict";
 
-const similarityService = require('../../services/note_cache/similarity.js');
+const similarityService = require('../../services/becca/similarity.js');
 const repository = require('../../services/repository');
 
 async function getSimilarNotes(req) {

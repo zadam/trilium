@@ -3,7 +3,7 @@ import contextMenu from "../services/context_menu.js";
 import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import appContext from "../services/app_context.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 
 /*!
  * Draggabilly v2.3.0

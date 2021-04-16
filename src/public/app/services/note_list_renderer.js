@@ -1,6 +1,6 @@
 import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import attributeService from "./attributes.js";
 import attributeRenderer from "./attribute_renderer.js";
 

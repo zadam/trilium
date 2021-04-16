@@ -4,7 +4,7 @@ import server from "../../services/server.js";
 import contextMenuService from "../../services/context_menu.js";
 import attributesParser from "../../services/attribute_parser.js";
 import libraryLoader from "../../services/library_loader.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import attributeRenderer from "../../services/attribute_renderer.js";
 import noteCreateService from "../../services/note_create.js";
 import treeService from "../../services/tree.js";

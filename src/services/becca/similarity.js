@@ -1,6 +1,6 @@
-const becca = require('./note_cache');
+const becca = require('./becca.js');
 const log = require('../log');
-const beccaService = require('./note_cache_service.js');
+const beccaService = require('./becca_service.js');
 const dateUtils = require('../date_utils');
 const repository = require('../repository');
 const { JSDOM } = require("jsdom");

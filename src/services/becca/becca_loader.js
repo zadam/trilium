@@ -2,7 +2,7 @@
 
 const sql = require('../sql.js');
 const eventService = require('../events.js');
-const becca = require('./note_cache');
+const becca = require('./becca.js');
 const sqlInit = require('../sql_init');
 const log = require('../log');
 const Note = require('./entities/note');

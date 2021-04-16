@@ -3,7 +3,7 @@ const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const repository = require('./repository');
-const becca = require('./note_cache/note_cache');
+const becca = require('./becca/becca.js');
 const Attribute = require('../entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {

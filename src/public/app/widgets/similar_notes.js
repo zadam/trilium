@@ -1,6 +1,6 @@
 import linkService from "../services/link.js";
 import server from "../services/server.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import options from "../services/options.js";
 

@@ -1,7 +1,7 @@
 import CollapsibleWidget from "../collapsible_widget.js";
 import linkService from "../../services/link.js";
 import server from "../../services/server.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 
 const TPL = `
 <div class="edited-notes-widget">

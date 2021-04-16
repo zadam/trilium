@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import treeService from "./tree.js";
 import toastService from "./toast.js";
 

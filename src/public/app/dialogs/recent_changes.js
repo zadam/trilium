@@ -2,7 +2,7 @@ import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 import treeService from "../services/tree.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import appContext from "../services/app_context.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 

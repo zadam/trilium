@@ -1,7 +1,7 @@
 import branchService from "./branches.js";
 import toastService from "./toast.js";
 import hoistedNoteService from "./hoisted_note.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 
 let clipboardBranchIds = [];
 let clipboardMode = null;

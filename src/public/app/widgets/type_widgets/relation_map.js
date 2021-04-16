@@ -7,7 +7,7 @@ import attributeAutocompleteService from "../../services/attribute_autocomplete.
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {

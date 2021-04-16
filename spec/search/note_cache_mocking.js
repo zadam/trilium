@@ -1,7 +1,7 @@
-const Note = require('../../src/services/note_cache/entities/note.js');
-const Branch = require('../../src/services/note_cache/entities/branch.js');
-const Attribute = require('../../src/services/note_cache/entities/attribute.js');
-const becca = require('../../src/services/note_cache/note_cache.js');
+const Note = require('../../src/services/becca/entities/note.js');
+const Branch = require('../../src/services/becca/entities/branch.js');
+const Attribute = require('../../src/services/becca/entities/attribute.js');
+const becca = require('../../src/services/becca/becca.js');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
 /** @return {Note} */

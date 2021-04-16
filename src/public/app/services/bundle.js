@@ -1,7 +1,7 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
 import toastService from "./toast.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import utils from "./utils.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {

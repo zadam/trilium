@@ -4,7 +4,7 @@ import utils from "./utils.js";
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 
 class TabContext extends Component {

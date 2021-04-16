@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../../services/note_cache/note_cache');
+const becca = require('../../services/becca/becca.js');
 const log = require('../../services/log');
 
 function getNotesAndBranchesAndAttributes(noteIds) {

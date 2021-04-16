@@ -2,7 +2,7 @@ import hoistedNoteService from "../services/hoisted_note.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import contextMenu from "../services/context_menu.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";

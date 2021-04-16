@@ -1,7 +1,7 @@
 import utils from './utils.js';
 import server from './server.js';
 import toastService from "./toast.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
 

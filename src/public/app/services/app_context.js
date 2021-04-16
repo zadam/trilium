@@ -1,4 +1,4 @@
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import bundleService from "./bundle.js";
 import DialogCommandExecutor from "./dialog_command_executor.js";
 import Entrypoints from "./entrypoints.js";

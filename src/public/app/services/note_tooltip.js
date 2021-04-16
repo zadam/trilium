@@ -1,6 +1,6 @@
 import treeService from "./tree.js";
 import linkService from "./link.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import utils from "./utils.js";
 import attributeRenderer from "./attribute_renderer.js";
 import noteContentRenderer from "./note_content_renderer.js";

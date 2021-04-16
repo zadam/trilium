@@ -1,7 +1,7 @@
 import ws from './ws.js';
 import utils from './utils.js';
 import server from './server.js';
-import froca from './tree_cache.js';
+import froca from './froca.js';
 import hoistedNoteService from '../services/hoisted_note.js';
 import appContext from "./app_context.js";
 

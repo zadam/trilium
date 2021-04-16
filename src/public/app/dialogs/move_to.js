@@ -1,7 +1,7 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
 import toastService from "../services/toast.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import treeService from "../services/tree.js";
 

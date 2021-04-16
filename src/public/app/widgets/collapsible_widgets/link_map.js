@@ -1,5 +1,5 @@
 import CollapsibleWidget from "../collapsible_widget.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 
 let linkMapContainerIdCtr = 1;
 

@@ -4,7 +4,7 @@ import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";
 import protectedSessionHolder from "./protected_session_holder.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 
 function setupGlobs() {
     window.glob.PROFILING_LOG = false;

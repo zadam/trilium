@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const becca = require('../../note_cache/note_cache');
+const becca = require('../../becca/becca.js');
 
 class LabelComparisonExp extends Expression {
     constructor(attributeType, attributeName, comparator) {

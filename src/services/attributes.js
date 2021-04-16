@@ -2,7 +2,7 @@
 
 const repository = require('./repository');
 const sql = require('./sql');
-const becca = require('./note_cache/note_cache');
+const becca = require('./becca/becca.js');
 const Attribute = require('../entities/attribute');
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];

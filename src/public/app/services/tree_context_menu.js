@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import clipboard from './clipboard.js';
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";

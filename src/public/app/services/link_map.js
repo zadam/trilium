@@ -1,6 +1,6 @@
 import libraryLoader from "./library_loader.js";
 import server from "./server.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import linkService from "./link.js";
 
 const linkOverlays = [

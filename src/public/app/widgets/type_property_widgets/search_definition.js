@@ -1,6 +1,6 @@
 import server from "../../services/server.js";
 import TabAwareWidget from "../tab_aware_widget.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import ws from "../../services/ws.js";
 import toastService from "../../services/toast.js";
 

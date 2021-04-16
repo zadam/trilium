@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {

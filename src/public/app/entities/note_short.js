@@ -2,7 +2,7 @@ import server from '../services/server.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';

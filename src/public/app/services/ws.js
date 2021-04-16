@@ -5,7 +5,7 @@ import LoadResults from "./load_results.js";
 import Branch from "../entities/branch.js";
 import Attribute from "../entities/attribute.js";
 import options from "./options.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 
 const messageHandlers = [];

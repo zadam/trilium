@@ -2,7 +2,7 @@ import Component from "../widgets/component.js";
 import SpacedUpdate from "./spaced_update.js";
 import server from "./server.js";
 import options from "./options.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
 import TabContext from "./tab_context.js";

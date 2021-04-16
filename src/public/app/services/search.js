@@ -1,5 +1,5 @@
 import server from "./server.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 
 async function searchForNoteIds(searchString) {
     return await server.get('search/' + encodeURIComponent(searchString));

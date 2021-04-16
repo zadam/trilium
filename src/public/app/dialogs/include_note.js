@@ -1,7 +1,7 @@
 import treeService from '../services/tree.js';
 import noteAutocompleteService from '../services/note_autocomplete.js';
 import utils from "../services/utils.js";
-import froca from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 
 const $dialog = $("#include-note-dialog");
 const $form = $("#include-note-form");

@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import froca from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import treeService from "../../services/tree.js";
 import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";

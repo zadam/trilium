@@ -1,5 +1,5 @@
 import ws from "./ws.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 
 async function renderAttribute(attribute, renderIsInheritable) {
     const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';

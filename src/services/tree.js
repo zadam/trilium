@@ -6,7 +6,7 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
-const becca = require('./note_cache/note_cache');
+const becca = require('./becca/becca.js');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for

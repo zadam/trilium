@@ -7,7 +7,7 @@ const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
-const beccaLoader = require('../../services/note_cache/note_cache_loader.js');
+const beccaLoader = require('../../services/becca/becca_loader.js');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
 

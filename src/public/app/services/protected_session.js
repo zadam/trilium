@@ -4,7 +4,7 @@ import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
-import froca from "./tree_cache.js";
+import froca from "./froca.js";
 
 let protectedSessionDeferred = null;
 
