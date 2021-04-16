@@ -1,6 +1,6 @@
 import linkService from "../services/link.js";
 import server from "../services/server.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import options from "../services/options.js";
 
@@ -109,12 +109,12 @@ export default class SimilarNotesWidget extends TabAwareWidget {
 
         const noteIds = similarNotes.flatMap(note => note.notePath);
 
-        await treeCache.getNotes(noteIds, true); // preload all at once
+        await froca.getNotes(noteIds, true); // preload all at once
 
         const $list = $('<div>');
 
         for (const similarNote of similarNotes) {
-            const note = await treeCache.getNote(similarNote.noteId, true);
+            const note = await froca.getNote(similarNote.noteId, true);
 
             if (!note) {
                 continue;

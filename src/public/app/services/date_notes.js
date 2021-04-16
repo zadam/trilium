@@ -1,4 +1,4 @@
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import server from "./server.js";
 import ws from "./ws.js";
 
@@ -6,7 +6,7 @@ import ws from "./ws.js";
 async function getInboxNote() {
     const note = await server.get('date-notes/inbox/' + dayjs().format("YYYY-MM-DD"), "date-note");
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
@@ -20,7 +20,7 @@ async function getDateNote(date) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
@@ -29,7 +29,7 @@ async function getMonthNote(month) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
@@ -38,7 +38,7 @@ async function getYearNote(year) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
@@ -47,7 +47,7 @@ async function createSqlConsole() {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
@@ -56,7 +56,7 @@ async function createSearchNote(opts = {}) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    return await treeCache.getNote(note.noteId);
+    return await froca.getNote(note.noteId);
 }
 
 export default {

@@ -2,7 +2,7 @@ import BasicWidget from "./basic_widget.js";
 import server from "../services/server.js";
 import linkService from "../services/link.js";
 import dateNotesService from "../services/date_notes.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 import utils from "../services/utils.js";
 import appContext from "../services/app_context.js";
 
@@ -90,7 +90,7 @@ export default class QuickSearchWidget extends BasicWidget {
             this.$dropdownMenu.append('<span class="dropdown-item disabled">No results found</span>');
         }
 
-        for (const note of await treeCache.getNotes(displayedNoteIds)) {
+        for (const note of await froca.getNotes(displayedNoteIds)) {
             const $link = await linkService.createNoteLink(note.noteId, {showNotePath: true});
             $link.addClass('dropdown-item');
             $link.attr("tabIndex", "0");

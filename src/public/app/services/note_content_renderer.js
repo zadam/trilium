@@ -4,7 +4,7 @@ import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import libraryLoader from "./library_loader.js";
 import openService from "./open.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
@@ -17,7 +17,7 @@ async function getRenderedContent(note, options = {}) {
     const $renderedContent = $('<div class="rendered-note-content">');
 
     if (type === 'text') {
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
         $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
 

@@ -5,7 +5,7 @@ import LoadResults from "./load_results.js";
 import Branch from "../entities/branch.js";
 import Attribute from "../entities/attribute.js";
 import options from "./options.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 
 const messageHandlers = [];
@@ -213,10 +213,10 @@ setTimeout(() => {
 }, 0);
 
 async function processEntityChanges(entityChanges) {
-    const loadResults = new LoadResults(treeCache);
+    const loadResults = new LoadResults(froca);
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'notes')) {
-        const note = treeCache.notes[ec.entityId];
+        const note = froca.notes[ec.entityId];
 
         if (note) {
             note.update(ec.entity);
@@ -225,9 +225,9 @@ async function processEntityChanges(entityChanges) {
     }
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'branches')) {
-        let branch = treeCache.branches[ec.entityId];
-        const childNote = treeCache.notes[ec.entity.noteId];
-        const parentNote = treeCache.notes[ec.entity.parentNoteId];
+        let branch = froca.branches[ec.entityId];
+        const childNote = froca.notes[ec.entity.noteId];
+        const parentNote = froca.notes[ec.entity.parentNoteId];
 
         if (branch) {
             branch.update(ec.entity);
@@ -256,8 +256,8 @@ async function processEntityChanges(entityChanges) {
         }
         else if (!ec.entity.isDeleted) {
             if (childNote || parentNote) {
-                branch = new Branch(treeCache, ec.entity);
-                treeCache.branches[branch.branchId] = branch;
+                branch = new Branch(froca, ec.entity);
+                froca.branches[branch.branchId] = branch;
 
                 loadResults.addBranch(ec.entityId, ec.sourceId);
 
@@ -276,7 +276,7 @@ async function processEntityChanges(entityChanges) {
         const parentNoteIdsToSort = new Set();
 
         for (const branchId in ec.positions) {
-            const branch = treeCache.branches[branchId];
+            const branch = froca.branches[branchId];
 
             if (branch) {
                 branch.notePosition = ec.positions[branchId];
@@ -286,7 +286,7 @@ async function processEntityChanges(entityChanges) {
         }
 
         for (const parentNoteId of parentNoteIdsToSort) {
-            const parentNote = treeCache.notes[parentNoteId];
+            const parentNote = froca.notes[parentNoteId];
 
             if (parentNote) {
                 parentNote.sortChildren();
@@ -298,9 +298,9 @@ async function processEntityChanges(entityChanges) {
 
     // missing reloading the relation target note
     for (const ec of entityChanges.filter(ec => ec.entityName === 'attributes')) {
-        let attribute = treeCache.attributes[ec.entityId];
-        const sourceNote = treeCache.notes[ec.entity.noteId];
-        const targetNote = ec.entity.type === 'relation' && treeCache.notes[ec.entity.value];
+        let attribute = froca.attributes[ec.entityId];
+        const sourceNote = froca.notes[ec.entity.noteId];
+        const targetNote = ec.entity.type === 'relation' && froca.notes[ec.entity.value];
 
         if (attribute) {
             attribute.update(ec.entity);
@@ -318,9 +318,9 @@ async function processEntityChanges(entityChanges) {
         }
         else if (!ec.entity.isDeleted) {
             if (sourceNote || targetNote) {
-                attribute = new Attribute(treeCache, ec.entity);
+                attribute = new Attribute(froca, ec.entity);
 
-                treeCache.attributes[attribute.attributeId] = attribute;
+                froca.attributes[attribute.attributeId] = attribute;
 
                 loadResults.addAttribute(ec.entityId, ec.sourceId);
 
@@ -336,7 +336,7 @@ async function processEntityChanges(entityChanges) {
     }
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'note_contents')) {
-        delete treeCache.noteComplementPromises[ec.entityId];
+        delete froca.noteComplementPromises[ec.entityId];
 
         loadResults.addNoteContent(ec.entityId, ec.sourceId);
     }
@@ -358,20 +358,20 @@ async function processEntityChanges(entityChanges) {
     const missingNoteIds = [];
 
     for (const {entityName, entity} of entityChanges) {
-        if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
+        if (entityName === 'branches' && !(entity.parentNoteId in froca.notes)) {
             missingNoteIds.push(entity.parentNoteId);
         }
         else if (entityName === 'attributes'
             && entity.type === 'relation'
             && entity.name === 'template'
-            && !(entity.value in treeCache.notes)) {
+            && !(entity.value in froca.notes)) {
 
             missingNoteIds.push(entity.value);
         }
     }
 
     if (missingNoteIds.length > 0) {
-        await treeCache.reloadNotes(missingNoteIds);
+        await froca.reloadNotes(missingNoteIds);
     }
 
     if (!loadResults.isEmpty()) {

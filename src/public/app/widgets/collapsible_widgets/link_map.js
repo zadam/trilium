@@ -1,5 +1,5 @@
 import CollapsibleWidget from "../collapsible_widget.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -105,7 +105,7 @@ export default class LinkMapWidget extends CollapsibleWidget {
             const $linkMapContainer = this.$body.find('.link-map-container');
 
             for (const noteId of changedNoteIds) {
-                const note = treeCache.notes[noteId];
+                const note = froca.notes[noteId];
 
                 if (note) {
                     $linkMapContainer.find(`a[data-note-path="${noteId}"]`).text(note.title);

@@ -3,7 +3,7 @@ import contextMenu from "../services/context_menu.js";
 import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import appContext from "../services/app_context.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 
 /*!
  * Draggabilly v2.3.0
@@ -635,7 +635,7 @@ export default class TabRowWidget extends BasicWidget {
         const tabContext = appContext.tabManager.getTabContextById(this.getTabId($tab));
 
         if (tabContext) {
-            const hoistedNote = treeCache.getNoteFromCache(tabContext.hoistedNoteId);
+            const hoistedNote = froca.getNoteFromCache(tabContext.hoistedNoteId);
 
             if (hoistedNote) {
                 $tab.find('.note-tab-icon')
@@ -680,7 +680,7 @@ export default class TabRowWidget extends BasicWidget {
         }
     }
 
-    treeCacheReloadedEvent() {
+    frocaReloadedEvent() {
         for (const tabContext of appContext.tabManager.tabContexts) {
             const $tab = this.getTabById(tabContext.tabId);
 

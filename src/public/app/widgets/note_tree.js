@@ -2,7 +2,7 @@ import hoistedNoteService from "../services/hoisted_note.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import contextMenu from "../services/context_menu.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";
@@ -492,8 +492,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         return;
                     }
 
-                    data.result = treeCache.loadSearchNote(noteId).then(() => {
-                        const note = treeCache.getNoteFromCache(noteId);
+                    data.result = froca.loadSearchNote(noteId).then(() => {
+                        const note = froca.getNoteFromCache(noteId);
 
                         let childNoteIds = note.getChildNoteIds();
 
@@ -501,15 +501,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             childNoteIds = childNoteIds.slice(0, MAX_SEARCH_RESULTS_IN_TREE);
                         }
 
-                        return treeCache.getNotes(childNoteIds);
+                        return froca.getNotes(childNoteIds);
                     }).then(() => {
-                        const note = treeCache.getNoteFromCache(noteId);
+                        const note = froca.getNoteFromCache(noteId);
 
                         return this.prepareChildren(note);
                     });
                 }
                 else {
-                    data.result = treeCache.loadSubTree(noteId).then(note => this.prepareChildren(note));
+                    data.result = froca.loadSubTree(noteId).then(note => this.prepareChildren(note));
                 }
             },
             clones: {
@@ -524,7 +524,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     return;
                 }
 
-                const note = await treeCache.getNote(node.data.noteId);
+                const note = await froca.getNote(node.data.noteId);
                 const activeTabContext = appContext.tabManager.getActiveTabContext();
 
                 const $span = $(node.span);
@@ -600,7 +600,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     prepareRootNode() {
-        return this.prepareNode(treeCache.getBranch('root'));
+        return this.prepareNode(froca.getBranch('root'));
     }
 
     /**
@@ -637,8 +637,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     updateNode(node) {
-        const note = treeCache.getNoteFromCache(node.data.noteId);
-        const branch = treeCache.getBranch(node.data.branchId);
+        const note = froca.getNoteFromCache(node.data.noteId);
+        const branch = froca.getBranch(node.data.branchId);
 
         if (!note) {
             console.log(`Node update not possible because note ${node.data.noteId} was not found.`);
@@ -765,7 +765,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const {branchIds} = await server.put(`branches/${node.data.branchId}/expanded-subtree/${isExpanded ? 1 : 0}`);
 
-        treeCache.getBranches(branchIds, true)
+        froca.getBranches(branchIds, true)
             .forEach(branch => branch.isExpanded = !!isExpanded);
 
         await this.batchUpdate(async () => {
@@ -854,7 +854,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                     // although previous line should set the expanded status, it seems to happen asynchronously
                     // so we need to make sure it is set properly before calling updateNode which uses this flag
-                    const branch = treeCache.getBranch(parentNode.data.branchId);
+                    const branch = froca.getBranch(parentNode.data.branchId);
                     branch.isExpanded = true;
                 }
 
@@ -873,7 +873,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             // these are real notes with real notePath, user can display them in a detail
                             // but they don't have a node in the tree
 
-                            const childNote = await treeCache.getNote(childNoteId);
+                            const childNote = await froca.getNote(childNoteId);
 
                             if (!childNote || childNote.type !== 'image') {
                                 ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteService.getHoistedNoteId()}, requested path is ${notePath}`);
@@ -905,7 +905,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     getNodesByBranchId(branchId) {
         utils.assertArguments(branchId);
 
-        const branch = treeCache.getBranch(branchId);
+        const branch = froca.getBranch(branchId);
 
         return this.getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
     }
@@ -1044,7 +1044,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 noteIdsToReload.add(attr.noteId);
             }
             else if (attr.type === 'relation' && attr.name === 'imageLink') {
-                const note = treeCache.getNoteFromCache(attr.noteId);
+                const note = froca.getNoteFromCache(attr.noteId);
 
                 if (note && note.getChildNoteIds().includes(attr.value)) {
                     // there's new/deleted imageLink betwen note and its image child - which can show/hide
@@ -1088,9 +1088,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                     if (!found) {
                         // make sure it's loaded
-                        await treeCache.getNote(branch.noteId);
+                        await froca.getNote(branch.noteId);
 
-                        // we're forcing lazy since it's not clear if the whole required subtree is in tree cache
+                        // we're forcing lazy since it's not clear if the whole required subtree is in froca
                         parentNode.addChildren([this.prepareNode(branch, true)]);
 
                         this.sortChildren(parentNode);
@@ -1180,8 +1180,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     sortChildren(node) {
         node.sortChildren((nodeA, nodeB) => {
-            const branchA = treeCache.branches[nodeA.data.branchId];
-            const branchB = treeCache.branches[nodeB.data.branchId];
+            const branchA = froca.branches[nodeA.data.branchId];
+            const branchB = froca.branches[nodeB.data.branchId];
 
             if (!branchA || !branchB) {
                 return 0;
@@ -1194,7 +1194,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     setExpanded(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
-        const branch = treeCache.getBranch(branchId, true);
+        const branch = froca.getBranch(branchId, true);
 
         if (!branch) {
             if (branchId && branchId.startsWith('virt')) {
@@ -1254,7 +1254,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    treeCacheReloadedEvent() {
+    frocaReloadedEvent() {
         this.reloadTreeFromCache();
     }
 
@@ -1304,7 +1304,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return false;
         }
 
-        const parentNote = treeCache.getNoteFromCache(node.getParent().data.noteId);
+        const parentNote = froca.getNoteFromCache(node.getParent().data.noteId);
 
         if (parentNote && parentNote.hasLabel('sorted')) {
             return false;
@@ -1469,13 +1469,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const nodesToDuplicate = this.getSelectedOrActiveNodes(node);
 
         for (const nodeToDuplicate of nodesToDuplicate) {
-            const note = treeCache.getNoteFromCache(nodeToDuplicate.data.noteId);
+            const note = froca.getNoteFromCache(nodeToDuplicate.data.noteId);
 
             if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
                 continue;
             }
 
-            const branch = treeCache.getBranch(nodeToDuplicate.data.branchId);
+            const branch = froca.getBranch(nodeToDuplicate.data.branchId);
 
             noteCreateService.duplicateSubtree(nodeToDuplicate.data.noteId, branch.parentNoteId);
         }

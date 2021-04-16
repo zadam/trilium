@@ -1,7 +1,7 @@
 import CollapsibleWidget from "../collapsible_widget.js";
 import linkService from "../../services/link.js";
 import server from "../../services/server.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 
 const TPL = `
 <div class="edited-notes-widget">
@@ -54,7 +54,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
         const noteIds = editedNotes.flatMap(n => n.noteId);
 
-        await treeCache.getNotes(noteIds, true); // preload all at once
+        await froca.getNotes(noteIds, true); // preload all at once
 
         for (const editedNote of editedNotes) {
             const $item = $('<div class="edited-note-line">');

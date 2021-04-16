@@ -4,7 +4,7 @@ import utils from "./utils.js";
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import hoistedNoteService from "./hoisted_note.js";
 
 class TabContext extends Component {
@@ -74,7 +74,7 @@ class TabContext extends Component {
     async getResolvedNotePath(inputNotePath) {
         const noteId = treeService.getNoteIdFromNotePath(inputNotePath);
 
-        if ((await treeCache.getNote(noteId)).isDeleted) {
+        if ((await froca.getNote(noteId)).isDeleted) {
             // no point in trying to resolve canonical notePath
             return inputNotePath;
         }
@@ -95,18 +95,18 @@ class TabContext extends Component {
         }
 
         // if user choise to unhoist, cache was reloaded, but might not contain this note (since it's on unexpanded path)
-        await treeCache.getNote(noteId);
+        await froca.getNote(noteId);
 
         return resolvedNotePath;
     }
 
     /** @property {NoteShort} */
     get note() {
-        if (this.noteId && !(this.noteId in treeCache.notes)) {
+        if (this.noteId && !(this.noteId in froca.notes)) {
             logError(`Cannot find tabContext's note id='${this.noteId}'`);
         }
 
-        return treeCache.notes[this.noteId];
+        return froca.notes[this.noteId];
     }
 
     /** @property {string[]} */
@@ -120,7 +120,7 @@ class TabContext extends Component {
             return null;
         }
 
-        return await treeCache.getNoteComplement(this.noteId);
+        return await froca.getNoteComplement(this.noteId);
     }
 
     isActive() {
@@ -159,7 +159,7 @@ class TabContext extends Component {
 
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
-            const note = await treeCache.getNote(this.noteId);
+            const note = await froca.getNote(this.noteId);
 
             if (note.isDeleted) {
                 this.noteId = null;

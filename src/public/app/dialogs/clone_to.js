@@ -2,7 +2,7 @@ import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
 import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 import branchService from "../services/branches.js";
 
 const $dialog = $("#clone-to-dialog");
@@ -29,7 +29,7 @@ export async function showDialog(noteIds) {
     $noteList.empty();
 
     for (const noteId of clonedNoteIds) {
-        const note = await treeCache.getNote(noteId);
+        const note = await froca.getNote(noteId);
 
         $noteList.append($("<li>").text(note.title));
     }
@@ -40,13 +40,13 @@ export async function showDialog(noteIds) {
 
 async function cloneNotesTo(notePath) {
     const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
-    const targetBranchId = await treeCache.getBranchId(parentNoteId, noteId);
+    const targetBranchId = await froca.getBranchId(parentNoteId, noteId);
 
     for (const cloneNoteId of clonedNoteIds) {
         await branchService.cloneNoteTo(cloneNoteId, targetBranchId, $clonePrefix.val());
 
-        const clonedNote = await treeCache.getNote(cloneNoteId);
-        const targetNote = await treeCache.getBranch(targetBranchId).getNote();
+        const clonedNote = await froca.getNote(cloneNoteId);
+        const targetNote = await froca.getBranch(targetBranchId).getNote();
 
         toastService.showMessage(`Note "${clonedNote.title}" has been cloned into ${targetNote.title}`);
     }

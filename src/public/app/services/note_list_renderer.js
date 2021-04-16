@@ -1,6 +1,6 @@
 import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import attributeService from "./attributes.js";
 import attributeRenderer from "./attribute_renderer.js";
 
@@ -268,7 +268,7 @@ class NoteListRenderer {
         const endIdx = startIdx + this.pageSize;
 
         const pageNoteIds = this.noteIds.slice(startIdx, Math.min(endIdx, this.noteIds.length));
-        const pageNotes = await treeCache.getNotes(pageNoteIds);
+        const pageNotes = await froca.getNotes(pageNoteIds);
 
         for (const note of pageNotes) {
             const $card = await this.renderNote(note, this.parentNote.hasLabel('expanded'));

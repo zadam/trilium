@@ -1,4 +1,4 @@
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import treeService from "../../services/tree.js";
 import libraryLoader from "../../services/library_loader.js";
@@ -83,7 +83,7 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         // (see https://github.com/zadam/trilium/issues/1590 for example of such conflict)
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
         this.$content.html(noteComplement.content);
 

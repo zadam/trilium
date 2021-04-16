@@ -1,7 +1,7 @@
 import ws from './ws.js';
 import utils from './utils.js';
 import server from './server.js';
-import treeCache from './tree_cache.js';
+import froca from './tree_cache.js';
 import hoistedNoteService from '../services/hoisted_note.js';
 import appContext from "./app_context.js";
 
@@ -49,7 +49,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
         const parentNoteId = path[i++];
 
         if (childNoteId !== null) {
-            const child = await treeCache.getNote(childNoteId);
+            const child = await froca.getNote(childNoteId);
 
             if (!child) {
                 console.log(`Can't find note ${childNoteId}`);
@@ -70,7 +70,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
                 if (logErrors) {
-                    const parent = treeCache.getNoteFromCache(parentNoteId);
+                    const parent = froca.getNoteFromCache(parentNoteId);
 
                     console.log(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}`);
                 }
@@ -99,7 +99,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
         return effectivePathSegments;
     }
     else {
-        const note = await treeCache.getNote(getNoteIdFromNotePath(notePath));
+        const note = await froca.getNote(getNoteIdFromNotePath(notePath));
 
         const someNotePathSegments = getSomeNotePathSegments(note, hoistedNoteId);
 
@@ -158,7 +158,7 @@ function getNoteIdFromNotePath(notePath) {
 async function getBranchIdFromNotePath(notePath) {
     const {noteId, parentNoteId} = getNoteIdAndParentIdFromNotePath(notePath);
 
-    return await treeCache.getBranchId(parentNoteId, noteId);
+    return await froca.getBranchId(parentNoteId, noteId);
 }
 
 function getNoteIdAndParentIdFromNotePath(notePath) {
@@ -213,7 +213,7 @@ function getNotePath(node) {
 async function getNoteTitle(noteId, parentNoteId = null) {
     utils.assertArguments(noteId);
 
-    const note = await treeCache.getNote(noteId);
+    const note = await froca.getNote(noteId);
     if (!note) {
         return "[not found]";
     }
@@ -224,7 +224,7 @@ async function getNoteTitle(noteId, parentNoteId = null) {
         const branchId = note.parentToBranch[parentNoteId];
 
         if (branchId) {
-            const branch = treeCache.getBranch(branchId);
+            const branch = froca.getBranch(branchId);
 
             if (branch && branch.prefix) {
                 title = `${branch.prefix} - ${title}`;

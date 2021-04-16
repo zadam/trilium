@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 import treeService from "../../services/tree.js";
 import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
@@ -429,7 +429,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 .setSelectedNotePath("");
 
             if (attribute.value) {
-                const targetNote = await treeCache.getNote(attribute.value);
+                const targetNote = await froca.getNote(attribute.value);
 
                 if (targetNote) {
                     this.$inputTargetNote
@@ -542,7 +542,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.$relatedNotesList.empty();
 
             const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
+            const displayedNotes = await froca.getNotes(displayedResults.map(res => res.noteId));
 
             for (const note of displayedNotes) {
                 const notePath = treeService.getSomeNotePath(note);

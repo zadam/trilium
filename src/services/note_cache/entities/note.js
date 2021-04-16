@@ -235,7 +235,7 @@ class Note {
         this.ancestorCache = null;
     }
 
-    invalidateSubtreeCaches(path = []) {
+    invalidateSubfrocas(path = []) {
         if (path.includes(this.noteId)) {
             return;
         }
@@ -247,7 +247,7 @@ class Note {
         }
 
         for (const childNote of this.children) {
-            childNote.invalidateSubtreeCaches(path);
+            childNote.invalidateSubfrocas(path);
         }
 
         for (const targetRelation of this.targetRelations) {
@@ -255,7 +255,7 @@ class Note {
                 const note = targetRelation.note;
 
                 if (note) {
-                    note.invalidateSubtreeCaches(path);
+                    note.invalidateSubfrocas(path);
                 }
             }
         }

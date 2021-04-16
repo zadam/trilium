@@ -1,5 +1,5 @@
 import server from "../services/server.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/tree_cache.js";
 import linkService from "../services/link.js";
 import utils from "../services/utils.js";
 
@@ -30,7 +30,7 @@ async function renderDeletePreview() {
     $deleteNotesListWrapper.toggle(response.noteIdsToBeDeleted.length > 0);
     $noNoteToDeleteWrapper.toggle(response.noteIdsToBeDeleted.length === 0);
 
-    for (const note of await treeCache.getNotes(response.noteIdsToBeDeleted)) {
+    for (const note of await froca.getNotes(response.noteIdsToBeDeleted)) {
         $deleteNotesList.append(
             $("<li>").append(
                 await linkService.createNoteLink(note.noteId, {showNotePath: true})
@@ -43,7 +43,7 @@ async function renderDeletePreview() {
     $brokenRelationsListWrapper.toggle(response.brokenRelations.length > 0);
     $brokenRelationsCount.text(response.brokenRelations.length);
 
-    await treeCache.getNotes(response.brokenRelations.map(br => br.noteId));
+    await froca.getNotes(response.brokenRelations.map(br => br.noteId));
 
     for (const attr of response.brokenRelations) {
         $brokenRelationsList.append(

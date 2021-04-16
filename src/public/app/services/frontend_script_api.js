@@ -2,7 +2,7 @@ import server from './server.js';
 import utils from './utils.js';
 import toastService from './toast.js';
 import linkService from './link.js';
-import treeCache from './tree_cache.js';
+import froca from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
@@ -223,7 +223,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string} noteId
      * @return {Promise<NoteShort>}
      */
-    this.getNote = async noteId => await treeCache.getNote(noteId);
+    this.getNote = async noteId => await froca.getNote(noteId);
 
     /**
      * Returns list of notes. If note is missing from cache, it's loaded.
@@ -235,7 +235,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {boolean} [silentNotFoundError] - don't report error if the note is not found
      * @return {Promise<NoteShort[]>}
      */
-    this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
+    this.getNotes = async (noteIds, silentNotFoundError = false) => await froca.getNotes(noteIds, silentNotFoundError);
 
     /**
      * Update frontend tree (note) cache from the backend.
@@ -243,7 +243,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string[]} noteIds
      * @method
      */
-    this.reloadNotes = async noteIds => await treeCache.reloadNotes(noteIds);
+    this.reloadNotes = async noteIds => await froca.reloadNotes(noteIds);
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts

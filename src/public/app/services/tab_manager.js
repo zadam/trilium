@@ -2,7 +2,7 @@ import Component from "../widgets/component.js";
 import SpacedUpdate from "./spaced_update.js";
 import server from "./server.js";
 import options from "./options.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
 import TabContext from "./tab_context.js";
@@ -47,7 +47,7 @@ export default class TabManager extends Component {
             const notePath = window.location.hash.substr(1);
             const noteId = treeService.getNoteIdFromNotePath(notePath);
 
-            if (noteId && await treeCache.noteExists(noteId)) {
+            if (noteId && await froca.noteExists(noteId)) {
                 for (const tab of tabsToOpen) {
                     tab.active = false;
                 }
@@ -72,7 +72,7 @@ export default class TabManager extends Component {
         for (const openTab of tabsToOpen) {
             const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
 
-            if (await treeCache.noteExists(noteId)) {
+            if (await froca.noteExists(noteId)) {
                 // note doesn't exist so don't try to open tab for it
                 filteredTabs.push(openTab);
             }

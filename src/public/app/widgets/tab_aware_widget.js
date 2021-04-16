@@ -92,7 +92,7 @@ export default class TabAwareWidget extends BasicWidget {
         }
     }
 
-    async treeCacheReloadedEvent() {
+    async frocaReloadedEvent() {
         await this.refresh();
     }
 

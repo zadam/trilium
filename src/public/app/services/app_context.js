@@ -1,4 +1,4 @@
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import bundleService from "./bundle.js";
 import DialogCommandExecutor from "./dialog_command_executor.js";
 import Entrypoints from "./entrypoints.js";
@@ -28,7 +28,7 @@ class AppContext extends Component {
     }
 
     async start() {
-        await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
+        await Promise.all([froca.initializedPromise, options.initializedPromise]);
 
         this.showWidgets();
 

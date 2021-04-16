@@ -27,12 +27,12 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * This note's representation is used in note tree and is kept in TreeCache.
+ * This note's representation is used in note tree and is kept in Froca.
  * Its notable omission is the note content.
  */
 class NoteShort {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */
@@ -55,48 +55,48 @@ class NoteShort {
 
     /** @returns {Promise&lt;Array.&lt;Branch>>} */
     async getBranches() {
-        const branchIds = this.treeCache.parents[this.noteId].map(
-            parentNoteId => this.treeCache.getBranchIdByChildParent(this.noteId, parentNoteId));
+        const branchIds = this.froca.parents[this.noteId].map(
+            parentNoteId => this.froca.getBranchIdByChildParent(this.noteId, parentNoteId));
 
-        return this.treeCache.getBranches(branchIds);
+        return this.froca.getBranches(branchIds);
     }
 
     /** @returns {boolean} */
     hasChildren() {
-        return this.treeCache.children[this.noteId]
-            &amp;&amp; this.treeCache.children[this.noteId].length > 0;
+        return this.froca.children[this.noteId]
+            &amp;&amp; this.froca.children[this.noteId].length > 0;
     }
 
     /** @returns {Promise&lt;Array.&lt;Branch>>} */
     async getChildBranches() {
-        if (!this.treeCache.children[this.noteId]) {
+        if (!this.froca.children[this.noteId]) {
             return [];
         }
 
-        const branchIds = this.treeCache.children[this.noteId].map(
-            childNoteId => this.treeCache.getBranchIdByChildParent(childNoteId, this.noteId));
+        const branchIds = this.froca.children[this.noteId].map(
+            childNoteId => this.froca.getBranchIdByChildParent(childNoteId, this.noteId));
 
-        return await this.treeCache.getBranches(branchIds);
+        return await this.froca.getBranches(branchIds);
     }
 
     /** @returns {Array.&lt;string>} */
     getParentNoteIds() {
-        return this.treeCache.parents[this.noteId] || [];
+        return this.froca.parents[this.noteId] || [];
     }
 
     /** @returns {Promise&lt;Array.&lt;NoteShort>>} */
     async getParentNotes() {
-        return await this.treeCache.getNotes(this.getParentNoteIds());
+        return await this.froca.getNotes(this.getParentNoteIds());
     }
 
     /** @returns {Array.&lt;string>} */
     getChildNoteIds() {
-        return this.treeCache.children[this.noteId] || [];
+        return this.froca.children[this.noteId] || [];
     }
 
     /** @returns {Promise&lt;Array.&lt;NoteShort>>} */
     async getChildNotes() {
-        return await this.treeCache.getNotes(this.getChildNoteIds());
+        return await this.froca.getNotes(this.getChildNoteIds());
     }
 
     get toString() {
@@ -105,7 +105,7 @@ class NoteShort {
 
     get dto() {
         const dto = Object.assign({}, this);
-        delete dto.treeCache;
+        delete dto.froca;
         delete dto.archived;
 
         return dto;

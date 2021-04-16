@@ -1,8 +1,8 @@
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
 class Attribute {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
 
         this.update(row);
     }
@@ -28,7 +28,7 @@ class Attribute {
 
     /** @returns {NoteShort} */
     getNote() {
-        return this.treeCache.notes[this.noteId];
+        return this.froca.notes[this.noteId];
     }
 
     get targetNoteId() { // alias
@@ -95,7 +95,7 @@ class Attribute {
 
     get dto() {
         const dto = Object.assign({}, this);
-        delete dto.treeCache;
+        delete dto.froca;
 
         return dto;
     }

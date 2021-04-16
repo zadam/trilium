@@ -1,6 +1,6 @@
 import server from "../../services/server.js";
 import TabAwareWidget from "../tab_aware_widget.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 import ws from "../../services/ws.js";
 import toastService from "../../services/toast.js";
 
@@ -265,7 +265,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
 
     async refreshResultsCommand() {
         try {
-            await treeCache.loadSearchNote(this.noteId);
+            await froca.loadSearchNote(this.noteId);
         }
         catch (e) {
             toastService.showError(e.message);

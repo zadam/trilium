@@ -4,7 +4,7 @@ import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";
 import protectedSessionHolder from "./protected_session_holder.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 
 function setupGlobs() {
     window.glob.PROFILING_LOG = false;
@@ -20,7 +20,7 @@ function setupGlobs() {
     window.glob.requireLibrary = libraryLoader.requireLibrary;
     window.glob.ESLINT = libraryLoader.ESLINT;
     window.glob.appContext = appContext; // for debugging
-    window.glob.treeCache = treeCache;
+    window.glob.froca = froca;
 
     // for CKEditor integration (button on block toolbar)
     window.glob.importMarkdownInline = async () => {

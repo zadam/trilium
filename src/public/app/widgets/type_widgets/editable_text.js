@@ -3,7 +3,7 @@ import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import utils from "../../services/utils.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/tree_cache.js";
 import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
@@ -129,7 +129,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async doRefresh(note) {
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             this.textEditor.setData(noteComplement.content || "");
@@ -265,7 +265,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async addImage(noteId) {
-        const note = await treeCache.getNote(noteId);
+        const note = await froca.getNote(noteId);
 
         this.textEditor.model.change( writer => {
             const src = `api/images/${note.noteId}/${note.title}`;

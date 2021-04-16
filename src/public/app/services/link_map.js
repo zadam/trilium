@@ -1,6 +1,6 @@
 import libraryLoader from "./library_loader.js";
 import server from "./server.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import linkService from "./link.js";
 
 const linkOverlays = [
@@ -63,14 +63,14 @@ export default class LinkMap {
             noteIds.add(this.note.noteId);
         }
 
-        await treeCache.getNotes(Array.from(noteIds));
+        await froca.getNotes(Array.from(noteIds));
 
         // pre-fetch the link titles, it's important to have hte construction afterwards synchronous
         // since jsPlumb caculates width of the element
         const $linkTitles = {};
 
         for (const noteId of noteIds) {
-            const note = await treeCache.getNote(noteId);
+            const note = await froca.getNote(noteId);
 
             $linkTitles[noteId] = await linkService.createNoteLink(noteId, {title: note.title});
 
@@ -85,7 +85,7 @@ export default class LinkMap {
         }
 
         // preload all notes
-        const notes = await treeCache.getNotes(Array.from(noteIds), true);
+        const notes = await froca.getNotes(Array.from(noteIds), true);
 
         const graph = new Springy.Graph();
         graph.addNodes(...noteIds);

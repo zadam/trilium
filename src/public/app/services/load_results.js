@@ -1,6 +1,6 @@
 export default class LoadResults {
-    constructor(treeCache) {
-        this.treeCache = treeCache;
+    constructor(froca) {
+        this.froca = froca;
 
         this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
@@ -38,7 +38,7 @@ export default class LoadResults {
 
     getBranches() {
         return this.branches
-            .map(row => this.treeCache.branches[row.branchId])
+            .map(row => this.froca.branches[row.branchId])
             .filter(branch => !!branch);
     }
 
@@ -58,7 +58,7 @@ export default class LoadResults {
     getAttributes(sourceId = 'none') {
         return this.attributes
             .filter(row => row.sourceId !== sourceId)
-            .map(row => this.treeCache.attributes[row.attributeId])
+            .map(row => this.froca.attributes[row.attributeId])
             .filter(attr => !!attr);
     }
 

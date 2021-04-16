@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
@@ -138,7 +138,7 @@ function linkContextMenu(e) {
 }
 
 async function loadReferenceLinkTitle(noteId, $el) {
-    const note = await treeCache.getNote(noteId, true);
+    const note = await froca.getNote(noteId, true);
 
     let title;
 

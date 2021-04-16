@@ -66,7 +66,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 childNote.parentBranches = childNote.parentBranches.filter(branch => branch.branchId !== branchId);
 
                 if (childNote.parents.length > 0) {
-                    childNote.invalidateSubtreeCaches();
+                    childNote.invalidateSubfrocas();
                 }
             }
 
@@ -105,7 +105,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             if (note && attr) {
                 // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
                 if (attr.isAffectingSubtree || note.isTemplate) {
-                    note.invalidateSubtreeCaches();
+                    note.invalidateSubfrocas();
                 } else {
                     note.invalidateThisCache();
                 }
@@ -147,7 +147,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
             if (note) {
                 if (attr.isAffectingSubtree || note.isTemplate) {
-                    note.invalidateSubtreeCaches();
+                    note.invalidateSubfrocas();
                 }
                 else {
                     note.invalidateThisCache();

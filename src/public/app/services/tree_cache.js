@@ -6,14 +6,14 @@ import appContext from "./app_context.js";
 import NoteComplement from "../entities/note_complement.js";
 
 /**
- * TreeCache keeps a read only cache of note tree structure in frontend's memory.
+ * Froca keeps a read only cache of note tree structure in frontend's memory.
  * - notes are loaded lazily when unknown noteId is requested
  * - when note is loaded, all its parent and child branches are loaded as well. For a branch to be used, it's not must be loaded before
  * - deleted notes are present in the cache as well, but they don't have any branches. As a result check for deleted branch is done by presence check - if the branch is not there even though the corresponding note has been loaded, we can infer it is deleted.
  *
  * Note and branch deletions are corner cases and usually not needed.
  */
-class TreeCache {
+class Froca {
     constructor() {
         this.initializedPromise = this.loadInitialTree();
     }
@@ -181,9 +181,9 @@ class TreeCache {
         }
 
         // reset all the virtual branches from old search results
-        if (note.noteId in treeCache.notes) {
-            treeCache.notes[note.noteId].children = [];
-            treeCache.notes[note.noteId].childToBranch = {};
+        if (note.noteId in froca.notes) {
+            froca.notes[note.noteId].children = [];
+            froca.notes[note.noteId].childToBranch = {};
         }
 
         const branches = [...note.getBranches(), ...note.getChildBranches()];
@@ -204,7 +204,7 @@ class TreeCache {
             attributes: []
         });
 
-        treeCache.notes[note.noteId].searchResultsLoaded = true;
+        froca.notes[note.noteId].searchResultsLoaded = true;
     }
 
     /** @return {NoteShort[]} */
@@ -320,6 +320,6 @@ class TreeCache {
     }
 }
 
-const treeCache = new TreeCache();
+const froca = new Froca();
 
-export default treeCache;
+export default froca;

@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import clipboard from './clipboard.js';
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
@@ -36,11 +36,11 @@ class TreeContextMenu {
     }
 
     async getMenuItems() {
-        const note = await treeCache.getNote(this.node.data.noteId);
-        const branch = treeCache.getBranch(this.node.data.branchId);
+        const note = await froca.getNote(this.node.data.noteId);
+        const branch = froca.getBranch(this.node.data.branchId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === appContext.tabManager.getActiveTabContext().hoistedNoteId;
-        const parentNote = isNotRoot ? await treeCache.getNote(branch.parentNoteId) : null;
+        const parentNote = isNotRoot ? await froca.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then

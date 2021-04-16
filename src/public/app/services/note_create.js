@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
-import treeCache from "./tree_cache.js";
+import froca from "./tree_cache.js";
 import treeService from "./tree.js";
 import toastService from "./toast.js";
 
@@ -59,8 +59,8 @@ async function createNote(parentNotePath, options = {}) {
         }
     }
 
-    const noteEntity = await treeCache.getNote(note.noteId);
-    const branchEntity = treeCache.getBranch(branch.branchId);
+    const noteEntity = await froca.getNote(note.noteId);
+    const branchEntity = froca.getBranch(branch.branchId);
 
     return {
         note: noteEntity,
@@ -93,7 +93,7 @@ async function duplicateSubtree(noteId, parentNotePath) {
     const activeTabContext = appContext.tabManager.getActiveTabContext();
     activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
 
-    const origNote = await treeCache.getNote(noteId);
+    const origNote = await froca.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 
