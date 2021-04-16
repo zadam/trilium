@@ -6,18 +6,18 @@ const parse = require('./parse.js');
 const NoteSet = require("../note_set.js");
 const SearchResult = require("../search_result.js");
 const SearchContext = require("../search_context.js");
-const noteCache = require('../../note_cache/note_cache.js');
-const noteCacheService = require('../../note_cache/note_cache_service.js');
+const becca = require('../../note_cache/note_cache.js');
+const beccaService = require('../../note_cache/note_cache_service.js');
 const utils = require('../../utils.js');
 const log = require('../../log.js');
 
 function loadNeededInfoFromDatabase() {
     const sql = require('../../sql.js');
 
-    for (const noteId in noteCache.notes) {
-        noteCache.notes[noteId].contentSize = 0;
-        noteCache.notes[noteId].noteSize = 0;
-        noteCache.notes[noteId].revisionCount = 0;
+    for (const noteId in becca.notes) {
+        becca.notes[noteId].contentSize = 0;
+        becca.notes[noteId].noteSize = 0;
+        becca.notes[noteId].revisionCount = 0;
     }
 
     const noteContentLengths = sql.getRows(`
@@ -29,13 +29,13 @@ function loadNeededInfoFromDatabase() {
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteContentLengths) {
-        if (!(noteId in noteCache.notes)) {
-            log.error(`Note ${noteId} not found in note cache.`);
+        if (!(noteId in becca.notes)) {
+            log.error(`Note ${noteId} not found in becca.`);
             continue;
         }
 
-        noteCache.notes[noteId].contentSize = length;
-        noteCache.notes[noteId].noteSize = length;
+        becca.notes[noteId].contentSize = length;
+        becca.notes[noteId].noteSize = length;
     }
 
     const noteRevisionContentLengths = sql.getRows(`
@@ -48,13 +48,13 @@ function loadNeededInfoFromDatabase() {
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteRevisionContentLengths) {
-        if (!(noteId in noteCache.notes)) {
-            log.error(`Note ${noteId} not found in note cache.`);
+        if (!(noteId in becca.notes)) {
+            log.error(`Note ${noteId} not found in becca.`);
             continue;
         }
 
-        noteCache.notes[noteId].noteSize += length;
-        noteCache.notes[noteId].revisionCount++;
+        becca.notes[noteId].noteSize += length;
+        becca.notes[noteId].revisionCount++;
     }
 }
 
@@ -64,7 +64,7 @@ function loadNeededInfoFromDatabase() {
  * @return {SearchResult[]}
  */
 function findNotesWithExpression(expression, searchContext) {
-    let allNotes = Object.values(noteCache.notes);
+    let allNotes = Object.values(becca.notes);
 
     if (searchContext.dbLoadNeeded) {
         loadNeededInfoFromDatabase();
@@ -84,7 +84,7 @@ function findNotesWithExpression(expression, searchContext) {
 
     const searchResults = noteSet.notes
         .map(note => new SearchResult(
-            executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note)
+            executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note)
         ));
 
     for (const res of searchResults) {
@@ -174,7 +174,7 @@ function searchNotesForAutocomplete(query) {
     return results.map(result => {
         return {
             notePath: result.notePath,
-            noteTitle: noteCacheService.getNoteTitle(result.noteId),
+            noteTitle: beccaService.getNoteTitle(result.noteId),
             notePathTitle: result.notePathTitle,
             highlightedNotePathTitle: result.highlightedNotePathTitle
         }
@@ -194,7 +194,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     highlightedTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of searchResults) {
-        const note = noteCache.notes[result.noteId];
+        const note = becca.notes[result.noteId];
 
         result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
 

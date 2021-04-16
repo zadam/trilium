@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../note_cache/note_cache');
 
 class RelationWhereExp extends Expression {
     constructor(relationName, subExpression) {
@@ -15,7 +15,7 @@ class RelationWhereExp extends Expression {
     execute(inputNoteSet, executionContext) {
         const candidateNoteSet = new NoteSet();
 
-        for (const attr of noteCache.findAttributes('relation', this.relationName)) {
+        for (const attr of becca.findAttributes('relation', this.relationName)) {
             const note = attr.note;
 
             if (inputNoteSet.hasNoteId(note.noteId) && attr.targetNote) {

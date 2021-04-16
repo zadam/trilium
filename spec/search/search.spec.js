@@ -3,17 +3,17 @@ const Note = require('../../src/services/note_cache/entities/note.js');
 const Branch = require('../../src/services/note_cache/entities/branch.js');
 const SearchContext = require('../../src/services/search/search_context.js');
 const dateUtils = require('../../src/services/date_utils.js');
-const noteCache = require('../../src/services/note_cache/note_cache.js');
+const becca = require('../../src/services/note_cache/note_cache.js');
 const {NoteBuilder, findNoteByTitle, note} = require('./note_cache_mocking.js');
 
 describe("Search", () => {
     let rootNote;
 
     beforeEach(() => {
-        noteCache.reset();
+        becca.reset();
 
-        rootNote = new NoteBuilder(new Note(noteCache, {noteId: 'root', title: 'root', type: 'text'}));
-        new Branch(noteCache, {branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
+        rootNote = new NoteBuilder(new Note(becca, {noteId: 'root', title: 'root', type: 'text'}));
+        new Branch(becca, {branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
     it("simple path match", () => {
@@ -538,29 +538,29 @@ describe("Search", () => {
 
         let searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.title', searchContext);
         expect(searchResults.length).toEqual(4);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
-        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
-        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Slovakia");
-        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Ukraine");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(becca.notes[searchResults[1].noteId].title).toEqual("Italy");
+        expect(becca.notes[searchResults[2].noteId].title).toEqual("Slovakia");
+        expect(becca.notes[searchResults[3].noteId].title).toEqual("Ukraine");
 
         searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital', searchContext);
         expect(searchResults.length).toEqual(4);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
-        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Ukraine");
-        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Italy");
-        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Austria");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Slovakia");
+        expect(becca.notes[searchResults[1].noteId].title).toEqual("Ukraine");
+        expect(becca.notes[searchResults[2].noteId].title).toEqual("Italy");
+        expect(becca.notes[searchResults[3].noteId].title).toEqual("Austria");
 
         searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC', searchContext);
         expect(searchResults.length).toEqual(4);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
-        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
-        expect(noteCache.notes[searchResults[2].noteId].title).toEqual("Ukraine");
-        expect(noteCache.notes[searchResults[3].noteId].title).toEqual("Slovakia");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(becca.notes[searchResults[1].noteId].title).toEqual("Italy");
+        expect(becca.notes[searchResults[2].noteId].title).toEqual("Ukraine");
+        expect(becca.notes[searchResults[3].noteId].title).toEqual("Slovakia");
 
         searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy note.labels.capital DESC limit 2', searchContext);
         expect(searchResults.length).toEqual(2);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Austria");
-        expect(noteCache.notes[searchResults[1].noteId].title).toEqual("Italy");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Austria");
+        expect(becca.notes[searchResults[1].noteId].title).toEqual("Italy");
 
         searchResults = searchService.findNotesWithQuery('# note.parents.title = Europe orderBy #capital DESC limit 1', searchContext);
         expect(searchResults.length).toEqual(1);
@@ -582,11 +582,11 @@ describe("Search", () => {
 
         let searchResults = searchService.findNotesWithQuery('# not(#capital) and note.noteId != root', searchContext);
         expect(searchResults.length).toEqual(1);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Europe");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Europe");
 
         searchResults = searchService.findNotesWithQuery('#!capital and note.noteId != root', searchContext);
         expect(searchResults.length).toEqual(1);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Europe");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Europe");
     });
 
     it("test note.text *=* something", () => {
@@ -602,7 +602,7 @@ describe("Search", () => {
 
         let searchResults = searchService.findNotesWithQuery('# note.text *=* vaki and note.noteId != root', searchContext);
         expect(searchResults.length).toEqual(1);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Slovakia");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Slovakia");
     });
 
     it("test that fulltext does not match archived notes", () => {
@@ -619,7 +619,7 @@ describe("Search", () => {
 
         let searchResults = searchService.findNotesWithQuery('reddit', searchContext);
         expect(searchResults.length).toEqual(1);
-        expect(noteCache.notes[searchResults[0].noteId].title).toEqual("Reddit is bad");
+        expect(becca.notes[searchResults[0].noteId].title).toEqual("Reddit is bad");
     });
 
     // FIXME: test what happens when we order without any filter criteria

@@ -1,7 +1,7 @@
 "use strict";
 
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../note_cache/note_cache');
 const Expression = require('./expression');
 
 class AttributeExistsExp extends Expression {
@@ -15,8 +15,8 @@ class AttributeExistsExp extends Expression {
 
     execute(inputNoteSet) {
         const attrs = this.prefixMatch
-            ? noteCache.findAttributesWithPrefix(this.attributeType, this.attributeName)
-            : noteCache.findAttributes(this.attributeType, this.attributeName);
+            ? becca.findAttributesWithPrefix(this.attributeType, this.attributeName)
+            : becca.findAttributes(this.attributeType, this.attributeName);
 
         const resultNoteSet = new NoteSet();
 

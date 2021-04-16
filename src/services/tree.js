@@ -6,7 +6,7 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
-const noteCache = require('./note_cache/note_cache');
+const becca = require('./note_cache/note_cache');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
@@ -140,11 +140,11 @@ function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, note.branchId]);
 
-            if (note.branchId in noteCache.branches) {
-                noteCache.branches[note.branchId].notePosition = position;
+            if (note.branchId in becca.branches) {
+                becca.branches[note.branchId].notePosition = position;
             }
             else {
-                log.info(`Branch "${note.branchId}" was not found in note cache.`);
+                log.info(`Branch "${note.branchId}" was not found in becca.`);
             }
 
             position += 10;
@@ -172,7 +172,7 @@ function sortNotes(parentNoteId, sortBy, reverse = false) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, branch.branchId]);
 
-            noteCache.branches[branch.branchId].notePosition = position;
+            becca.branches[branch.branchId].notePosition = position;
 
             position += 10;
         }

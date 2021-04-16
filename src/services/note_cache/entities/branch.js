@@ -3,9 +3,9 @@
 const Note = require('./note.js');
 
 class Branch {
-    constructor(noteCache, row) {
-        /** @param {NoteCache} */
-        this.noteCache = noteCache;
+    constructor(becca, row) {
+        /** @param {Becca} */
+        this.becca = becca;
         /** @param {string} */
         this.branchId = row.branchId;
         /** @param {string} */
@@ -31,35 +31,35 @@ class Branch {
 
         parentNote.children.push(childNote);
 
-        this.noteCache.branches[this.branchId] = this;
-        this.noteCache.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
+        this.becca.branches[this.branchId] = this;
+        this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @return {Note} */
     get childNote() {
-        if (!(this.noteId in this.noteCache.notes)) {
+        if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.noteCache.notes[this.noteId] = new Note(this.noteCache, {noteId: this.noteId});
+            this.becca.notes[this.noteId] = new Note(this.becca, {noteId: this.noteId});
         }
 
-        return this.noteCache.notes[this.noteId];
+        return this.becca.notes[this.noteId];
     }
 
     /** @return {Note} */
     get parentNote() {
-        if (!(this.parentNoteId in this.noteCache.notes)) {
+        if (!(this.parentNoteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.noteCache.notes[this.parentNoteId] = new Note(this.noteCache, {noteId: this.parentNoteId});
+            this.becca.notes[this.parentNoteId] = new Note(this.becca, {noteId: this.parentNoteId});
         }
 
-        return this.noteCache.notes[this.parentNoteId];
+        return this.becca.notes[this.parentNoteId];
     }
 
     // for logging etc
     get pojo() {
         const pojo = {...this};
 
-        delete pojo.noteCache;
+        delete pojo.becca;
 
         return pojo;
     }

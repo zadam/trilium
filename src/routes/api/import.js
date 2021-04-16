@@ -7,7 +7,7 @@ const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
-const noteCacheLoader = require('../../services/note_cache/note_cache_loader.js');
+const beccaLoader = require('../../services/note_cache/note_cache_loader.js');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context.js');
 
@@ -77,10 +77,10 @@ async function importToBranch(req) {
         }), 1000);
     }
 
-    // import has deactivated note events so note cache is not updated
+    // import has deactivated note events so becca is not updated
     // instead we force it to reload (can be async)
 
-    noteCacheLoader.load();
+    beccaLoader.load();
 
     return note;
 }

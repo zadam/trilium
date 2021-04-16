@@ -4,9 +4,9 @@ const protectedSessionService = require('../../protected_session');
 const log = require('../../log');
 
 class Note {
-    constructor(noteCache, row) {
-        /** @param {NoteCache} */
-        this.noteCache = noteCache;
+    constructor(becca, row) {
+        /** @param {Becca} */
+        this.becca = becca;
 
         this.update(row);
 
@@ -27,7 +27,7 @@ class Note {
         /** @param {Attribute[]} */
         this.targetRelations = [];
 
-        this.noteCache.notes[this.noteId] = this;
+        this.becca.notes[this.noteId] = this;
 
         /** @param {Note[]|null} */
         this.ancestorCache = null;
@@ -94,7 +94,7 @@ class Note {
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
                 if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
-                    const templateNote = this.noteCache.notes[ownedAttr.value];
+                    const templateNote = this.becca.notes[ownedAttr.value];
 
                     if (templateNote) {
                         templateAttributes.push(...templateNote.__getAttributes(newPath));
@@ -440,7 +440,7 @@ class Note {
     get pojo() {
         const pojo = {...this};
 
-        delete pojo.noteCache;
+        delete pojo.becca;
         delete pojo.ancestorCache;
         delete pojo.attributeCache;
         delete pojo.flatTextCache;

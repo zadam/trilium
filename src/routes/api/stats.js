@@ -1,5 +1,5 @@
 const sql = require('../../services/sql');
-const noteCache = require('../../services/note_cache/note_cache');
+const becca = require('../../services/note_cache/note_cache');
 
 function getNoteSize(req) {
     const {noteId} = req.params;
@@ -23,7 +23,7 @@ function getNoteSize(req) {
 
 function getSubtreeSize(req) {
     const {noteId} = req.params;
-    const note = noteCache.notes[noteId];
+    const note = becca.notes[noteId];
 
     if (!note) {
         return [404, `Note ${noteId} was not found.`];

@@ -5,7 +5,7 @@ const utils = require('../../services/utils');
 const entityChangesService = require('../../services/entity_changes.js');
 const treeService = require('../../services/tree');
 const noteService = require('../../services/notes');
-const noteCache = require('../../services/note_cache/note_cache');
+const becca = require('../../services/note_cache/note_cache');
 const repository = require('../../services/repository');
 const TaskContext = require('../../services/task_context');
 
@@ -137,7 +137,7 @@ function setExpanded(req) {
         // we don't sync expanded label
         // also this does not trigger updates to the frontend, this would trigger too many reloads
 
-        const branch = noteCache.branches[branchId];
+        const branch = becca.branches[branchId];
 
         if (branch) {
             branch.isExpanded = !!expanded;
@@ -166,7 +166,7 @@ function setExpandedForSubtree(req) {
     sql.executeMany(`UPDATE branches SET isExpanded = ${expanded} WHERE branchId IN (???)`, branchIds);
 
     for (const branchId of branchIds) {
-        const branch = noteCache.branches[branchId];
+        const branch = becca.branches[branchId];
 
         if (branch) {
             branch.isExpanded = !!expanded;

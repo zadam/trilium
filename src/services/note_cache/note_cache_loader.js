@@ -2,7 +2,7 @@
 
 const sql = require('../sql.js');
 const eventService = require('../events.js');
-const noteCache = require('./note_cache');
+const becca = require('./note_cache');
 const sqlInit = require('../sql_init');
 const log = require('../log');
 const Note = require('./entities/note');
@@ -15,29 +15,29 @@ sqlInit.dbReady.then(() => {
 
 function load() {
     const start = Date.now();
-    noteCache.reset();
+    becca.reset();
 
     for (const row of sql.iterateRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`, [])) {
-        new Note(noteCache, row);
+        new Note(becca, row);
     }
 
     for (const row of sql.iterateRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded FROM branches WHERE isDeleted = 0`, [])) {
-        const branch = new Branch(noteCache, row);
+        const branch = new Branch(becca, row);
     }
 
     for (const row of sql.iterateRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position FROM attributes WHERE isDeleted = 0`, [])) {
-        new Attribute(noteCache, row);
+        new Attribute(becca, row);
     }
 
-    noteCache.loaded = true;
+    becca.loaded = true;
 
-    log.info(`Note cache load took ${Date.now() - start}ms`);
+    log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
     // note that entity can also be just POJO without methods if coming from sync
 
-    if (!noteCache.loaded) {
+    if (!becca.loaded) {
         return;
     }
 
@@ -45,20 +45,20 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
         const {noteId} = entity;
 
         if (entity.isDeleted) {
-            delete noteCache.notes[noteId];
+            delete becca.notes[noteId];
         }
-        else if (noteId in noteCache.notes) {
-            noteCache.notes[noteId].update(entity);
+        else if (noteId in becca.notes) {
+            becca.notes[noteId].update(entity);
         }
         else {
-            const note = new Note(noteCache, entity);
+            const note = new Note(becca, entity);
 
             note.decrypt();
         }
     }
     else if (entityName === 'branches') {
         const {branchId, noteId, parentNoteId} = entity;
-        const childNote = noteCache.notes[noteId];
+        const childNote = becca.notes[noteId];
 
         if (entity.isDeleted) {
             if (childNote) {
@@ -70,26 +70,26 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 }
             }
 
-            const parentNote = noteCache.notes[parentNoteId];
+            const parentNote = becca.notes[parentNoteId];
 
             if (parentNote) {
                 parentNote.children = parentNote.children.filter(child => child.noteId !== noteId);
             }
 
-            delete noteCache.childParentToBranch[`${noteId}-${parentNoteId}`];
-            delete noteCache.branches[branchId];
+            delete becca.childParentToBranch[`${noteId}-${parentNoteId}`];
+            delete becca.branches[branchId];
         }
-        else if (branchId in noteCache.branches) {
+        else if (branchId in becca.branches) {
             // only relevant properties which can change in a branch are prefix and isExpanded
-            noteCache.branches[branchId].prefix = entity.prefix;
-            noteCache.branches[branchId].isExpanded = entity.isExpanded;
+            becca.branches[branchId].prefix = entity.prefix;
+            becca.branches[branchId].isExpanded = entity.isExpanded;
 
             if (childNote) {
                 childNote.flatTextCache = null;
             }
         }
         else {
-            noteCache.branches[branchId] = new Branch(noteCache, entity);
+            becca.branches[branchId] = new Branch(becca, entity);
 
             if (childNote) {
                 childNote.resortParents();
@@ -98,8 +98,8 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
     else if (entityName === 'attributes') {
         const {attributeId, noteId} = entity;
-        const note = noteCache.notes[noteId];
-        const attr = noteCache.attributes[attributeId];
+        const note = becca.notes[noteId];
+        const attr = becca.attributes[attributeId];
 
         if (entity.isDeleted) {
             if (note && attr) {
@@ -119,18 +119,18 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 }
             }
 
-            delete noteCache.attributes[attributeId];
+            delete becca.attributes[attributeId];
 
             if (attr) {
                 const key = `${attr.type}-${attr.name.toLowerCase()}`;
 
-                if (key in noteCache.attributeIndex) {
-                    noteCache.attributeIndex[key] = noteCache.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
+                if (key in becca.attributeIndex) {
+                    becca.attributeIndex[key] = becca.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
                 }
             }
         }
-        else if (attributeId in noteCache.attributes) {
-            const attr = noteCache.attributes[attributeId];
+        else if (attributeId in becca.attributes) {
+            const attr = becca.attributes[attributeId];
 
             // attr name and isInheritable are immutable
             attr.value = entity.value;
@@ -143,7 +143,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             }
         }
         else {
-            const attr = new Attribute(noteCache, entity);
+            const attr = new Attribute(becca, entity);
 
             if (note) {
                 if (attr.isAffectingSubtree || note.isTemplate) {
@@ -159,7 +159,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
         const parentNoteIds = new Set();
 
         for (const branchId in entity) {
-            const branch = noteCache.branches[branchId];
+            const branch = becca.branches[branchId];
 
             if (branch) {
                 branch.notePosition = entity[branchId];
@@ -172,7 +172,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     try {
-        noteCache.decryptProtectedNotes();
+        becca.decryptProtectedNotes();
     }
     catch (e) {
         log.error(`Could not decrypt protected notes: ${e.message} ${e.stack}`);

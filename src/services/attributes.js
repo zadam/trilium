@@ -2,7 +2,7 @@
 
 const repository = require('./repository');
 const sql = require('./sql');
-const noteCache = require('./note_cache/note_cache');
+const becca = require('./note_cache/note_cache');
 const Attribute = require('../entities/attribute');
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
@@ -75,7 +75,7 @@ function getNoteIdsWithLabels(names) {
     const noteIds = new Set();
 
     for (const name of names) {
-        for (const attr of noteCache.findAttributes('label', name)) {
+        for (const attr of becca.findAttributes('label', name)) {
             noteIds.add(attr.noteId);
         }
     }

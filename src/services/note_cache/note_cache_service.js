@@ -1,20 +1,20 @@
 "use strict";
 
-const noteCache = require('./note_cache');
+const becca = require('./note_cache');
 const cls = require('../cls');
 const protectedSessionService = require('../protected_session');
 const log = require('../log');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
-    const note = noteCache.notes[noteId];
+    const note = becca.notes[noteId];
 
     if (note.isArchived) {
         return true;
     }
 
     for (let i = 0; i < notePath.length - 1; i++) {
-        const note = noteCache.notes[notePath[i]];
+        const note = becca.notes[notePath[i]];
 
         // this is going through parents so archived must be inheritable
         if (note.hasInheritableOwnedArchivedLabel) {
@@ -47,7 +47,7 @@ function isInAncestor(noteId, ancestorNoteId) {
         return true;
     }
 
-    const note = noteCache.notes[noteId];
+    const note = becca.notes[noteId];
 
     if (!note) {
         return false;
@@ -63,8 +63,8 @@ function isInAncestor(noteId, ancestorNoteId) {
 }
 
 function getNoteTitle(childNoteId, parentNoteId) {
-    const childNote = noteCache.notes[childNoteId];
-    const parentNote = noteCache.notes[parentNoteId];
+    const childNote = becca.notes[childNoteId];
+    const parentNote = becca.notes[parentNoteId];
 
     if (!childNote) {
         log.info(`Cannot find note in cache for noteId ${childNoteId}`);
@@ -80,7 +80,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
         title = childNote.title;
     }
 
-    const branch = parentNote ? noteCache.getBranch(childNote.noteId, parentNote.noteId) : null;
+    const branch = parentNote ? becca.getBranch(childNote.noteId, parentNote.noteId) : null;
 
     return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
 }
@@ -160,7 +160,7 @@ function getSomePathInner(note, path, respectHoistng) {
 }
 
 function getNotePath(noteId) {
-    const note = noteCache.notes[noteId];
+    const note = becca.notes[noteId];
 
     if (!note) {
         console.trace(`Cannot find note ${noteId} in cache.`);
@@ -175,7 +175,7 @@ function getNotePath(noteId) {
 
         return {
             noteId: noteId,
-            branchId: noteCache.getBranch(noteId, parentNote.noteId).branchId,
+            branchId: becca.getBranch(noteId, parentNote.noteId).branchId,
             title: noteTitle,
             notePath: retPath,
             path: retPath.join('/')

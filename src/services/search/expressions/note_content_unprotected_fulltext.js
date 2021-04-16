@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../note_cache/note_cache');
 const striptags = require('striptags');
 
 class NoteContentUnprotectedFulltextExp extends Expression {
@@ -27,7 +27,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
                 FROM notes JOIN note_contents USING (noteId) 
                 WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 0`)) {
 
-            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in noteCache.notes)) {
+            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
             }
 
@@ -42,7 +42,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
             }
 
             if (!this.tokens.find(token => !content.includes(token))) {
-                resultNoteSet.add(noteCache.notes[noteId]);
+                resultNoteSet.add(becca.notes[noteId]);
             }
         }
 

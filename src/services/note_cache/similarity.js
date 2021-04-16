@@ -1,6 +1,6 @@
-const noteCache = require('./note_cache');
+const becca = require('./note_cache');
 const log = require('../log');
-const noteCacheService = require('./note_cache_service.js');
+const beccaService = require('./note_cache_service.js');
 const dateUtils = require('../date_utils');
 const repository = require('../repository');
 const { JSDOM } = require("jsdom");
@@ -231,7 +231,7 @@ async function findSimilarNotes(noteId) {
     const results = [];
     let i = 0;
 
-    const baseNote = noteCache.notes[noteId];
+    const baseNote = becca.notes[noteId];
 
     if (!baseNote || !baseNote.utcDateCreated) {
         return [];
@@ -394,7 +394,7 @@ async function findSimilarNotes(noteId) {
         return score;
     }
 
-    for (const candidateNote of Object.values(noteCache.notes)) {
+    for (const candidateNote of Object.values(becca.notes)) {
         if (candidateNote.noteId === baseNote.noteId
             || hasConnectingRelation(candidateNote, baseNote)
             || hasConnectingRelation(baseNote, candidateNote)) {
@@ -404,14 +404,14 @@ async function findSimilarNotes(noteId) {
         let score = computeScore(candidateNote);
 
         if (score >= 1.5) {
-            const notePath = noteCacheService.getSomePath(candidateNote);
+            const notePath = beccaService.getSomePath(candidateNote);
 
             // this takes care of note hoisting
             if (!notePath) {
                 return;
             }
 
-            if (noteCacheService.isNotePathArchived(notePath)) {
+            if (beccaService.isNotePathArchived(notePath)) {
                 score -= 0.5; // archived penalization
             }
 
@@ -432,7 +432,7 @@ async function findSimilarNotes(noteId) {
 
         if (results.length >= 1) {
             for (const {noteId} of results) {
-                const note = noteCache.notes[noteId];
+                const note = becca.notes[noteId];
 
                 console.log("NOTE", note.pojo);
 

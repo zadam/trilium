@@ -1,13 +1,13 @@
 const Note = require('../../src/services/note_cache/entities/note.js');
 const Branch = require('../../src/services/note_cache/entities/branch.js');
 const Attribute = require('../../src/services/note_cache/entities/attribute.js');
-const noteCache = require('../../src/services/note_cache/note_cache.js');
+const becca = require('../../src/services/note_cache/note_cache.js');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
 /** @return {Note} */
 function findNoteByTitle(searchResults, title) {
     return searchResults
-        .map(sr => noteCache.notes[sr.noteId])
+        .map(sr => becca.notes[sr.noteId])
         .find(note => note.title === title);
 }
 
@@ -17,7 +17,7 @@ class NoteBuilder {
     }
 
     label(name, value = '', isInheritable = false) {
-        new Attribute(noteCache, {
+        new Attribute(becca, {
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'label',
@@ -30,7 +30,7 @@ class NoteBuilder {
     }
 
     relation(name, targetNote) {
-        new Attribute(noteCache, {
+        new Attribute(becca, {
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'relation',
@@ -42,7 +42,7 @@ class NoteBuilder {
     }
 
     child(childNoteBuilder, prefix = "") {
-        new Branch(noteCache, {
+        new Branch(becca, {
             branchId: id(),
             noteId: childNoteBuilder.note.noteId,
             parentNoteId: this.note.noteId,
@@ -66,7 +66,7 @@ function note(title, extraParams = {}) {
         mime: 'text/html'
     }, extraParams);
 
-    const note = new Note(noteCache, row);
+    const note = new Note(becca, row);
 
     return new NoteBuilder(note);
 }

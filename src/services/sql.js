@@ -247,7 +247,7 @@ function transactional(func) {
         const entityChanges = cls.getAndClearEntityChanges();
 
         if (entityChanges.length > 0) {
-            log.info("Transaction rollback dirtied the note cache, forcing reload.");
+            log.info("Transaction rollback dirtied the becca, forcing reload.");
 
             require('./note_cache/note_cache_loader').load();
         }

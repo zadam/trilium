@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../note_cache/note_cache');
 
 class LabelComparisonExp extends Expression {
     constructor(attributeType, attributeName, comparator) {
@@ -14,7 +14,7 @@ class LabelComparisonExp extends Expression {
     }
 
     execute(inputNoteSet) {
-        const attrs = noteCache.findAttributes(this.attributeType, this.attributeName);
+        const attrs = becca.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 
         for (const attr of attrs) {

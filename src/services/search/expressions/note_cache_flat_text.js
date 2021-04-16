@@ -2,9 +2,9 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../note_cache/note_cache');
 
-class NoteCacheFlatTextExp extends Expression {
+class BeccaFlatTextExp extends Expression {
     constructor(tokens) {
         super();
 
@@ -13,18 +13,18 @@ class NoteCacheFlatTextExp extends Expression {
 
     execute(inputNoteSet, executionContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
-        const noteCacheService = require('../../note_cache/note_cache_service');
+        const beccaService = require('../../note_cache/note_cache_service');
         const resultNoteSet = new NoteSet();
 
         function searchDownThePath(note, tokens, path) {
             if (tokens.length === 0) {
-                const retPath = noteCacheService.getSomePath(note, path);
+                const retPath = beccaService.getSomePath(note, path);
 
                 if (retPath) {
                     const noteId = retPath[retPath.length - 1];
                     executionContext.noteIdToNotePath[noteId] = retPath;
 
-                    resultNoteSet.add(noteCache.notes[noteId]);
+                    resultNoteSet.add(becca.notes[noteId]);
                 }
 
                 return;
@@ -52,7 +52,7 @@ class NoteCacheFlatTextExp extends Expression {
             }
 
             for (const parentNote of note.parents) {
-                const title = noteCacheService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const title = beccaService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
                 const foundTokens = foundAttrTokens.slice();
 
                 for (const token of tokens) {
@@ -98,7 +98,7 @@ class NoteCacheFlatTextExp extends Expression {
             }
 
             for (const parentNote of note.parents) {
-                const title = noteCacheService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const title = beccaService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
                 const foundTokens = foundAttrTokens.slice();
 
                 for (const token of this.tokens) {
@@ -140,4 +140,4 @@ class NoteCacheFlatTextExp extends Expression {
     }
 }
 
-module.exports = NoteCacheFlatTextExp;
+module.exports = BeccaFlatTextExp;

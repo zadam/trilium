@@ -1,6 +1,6 @@
 "use strict";
 
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const beccaService = require('../../services/note_cache/note_cache_service');
 const searchService = require('../../services/search/services/search.js');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
@@ -58,8 +58,8 @@ function getRecentNotes(activeNoteId) {
     return recentNotes.map(rn => {
         const notePathArray = rn.notePath.split('/');
 
-        const noteTitle = noteCacheService.getNoteTitle(notePathArray[notePathArray.length - 1]);
-        const notePathTitle = noteCacheService.getNoteTitleForPath(notePathArray);
+        const noteTitle = beccaService.getNoteTitle(notePathArray[notePathArray.length - 1]);
+        const notePathTitle = beccaService.getNoteTitleForPath(notePathArray);
 
         return {
             notePath: rn.notePath,

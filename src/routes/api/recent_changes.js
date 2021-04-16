@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const beccaService = require('../../services/note_cache/note_cache_service');
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
@@ -25,7 +25,7 @@ function getRecentChanges(req) {
             JOIN notes USING(noteId)`);
 
     for (const noteRevision of noteRevisions) {
-        if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
+        if (beccaService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
             recentChanges.push(noteRevision);
         }
     }
@@ -58,7 +58,7 @@ function getRecentChanges(req) {
             WHERE notes.isDeleted = 1`);
 
     for (const note of notes) {
-        if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
+        if (beccaService.isInAncestor(note.noteId, ancestorNoteId)) {
             recentChanges.push(note);
         }
     }

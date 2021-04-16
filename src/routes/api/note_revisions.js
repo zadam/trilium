@@ -1,7 +1,7 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const beccaService = require('../../services/note_cache/note_cache_service');
 const protectedSessionService = require('../../services/protected_session');
 const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
@@ -121,7 +121,7 @@ function getEditedNotesOnDate(req) {
         LIMIT 50`, {date: req.params.date + '%'});
 
     for (const note of notes) {
-        const notePath = note.isDeleted ? null : noteCacheService.getNotePath(note.noteId);
+        const notePath = note.isDeleted ? null : beccaService.getNotePath(note.noteId);
 
         note.notePath = notePath ? notePath.notePath : null;
     }

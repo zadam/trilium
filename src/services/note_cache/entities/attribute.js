@@ -3,9 +3,9 @@
 const Note = require('./note.js');
 
 class Attribute {
-    constructor(noteCache, row) {
-        /** @param {NoteCache} */
-        this.noteCache = noteCache;
+    constructor(becca, row) {
+        /** @param {Becca} */
+        this.becca = becca;
         /** @param {string} */
         this.attributeId = row.attributeId;
         /** @param {string} */
@@ -21,18 +21,18 @@ class Attribute {
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 
-        this.noteCache.attributes[this.attributeId] = this;
+        this.becca.attributes[this.attributeId] = this;
 
-        if (!(this.noteId in this.noteCache.notes)) {
+        if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.noteCache.notes[this.noteId] = new Note(this.noteCache, {noteId: this.noteId});
+            this.becca.notes[this.noteId] = new Note(this.becca, {noteId: this.noteId});
         }
 
-        this.noteCache.notes[this.noteId].ownedAttributes.push(this);
+        this.becca.notes[this.noteId].ownedAttributes.push(this);
 
         const key = `${this.type}-${this.name.toLowerCase()}`;
-        this.noteCache.attributeIndex[key] = this.noteCache.attributeIndex[key] || [];
-        this.noteCache.attributeIndex[key].push(this);
+        this.becca.attributeIndex[key] = this.becca.attributeIndex[key] || [];
+        this.becca.attributeIndex[key].push(this);
 
         const targetNote = this.targetNote;
 
@@ -51,12 +51,12 @@ class Attribute {
     }
 
     get note() {
-        return this.noteCache.notes[this.noteId];
+        return this.becca.notes[this.noteId];
     }
 
     get targetNote() {
         if (this.type === 'relation') {
-            return this.noteCache.notes[this.value];
+            return this.becca.notes[this.value];
         }
     }
 
@@ -64,7 +64,7 @@ class Attribute {
     get pojo() {
         const pojo = {...this};
 
-        delete pojo.noteCache;
+        delete pojo.becca;
 
         return pojo;
     }

@@ -1,6 +1,6 @@
 "use strict";
 
-class NoteCache {
+class Becca {
     constructor() {
         this.reset();
     }
@@ -50,6 +50,6 @@ class NoteCache {
     }
 }
 
-const noteCache = new NoteCache();
+const becca = new Becca();
 
-module.exports = noteCache;
+module.exports = becca;

@@ -3,7 +3,7 @@ const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const repository = require('./repository');
-const noteCache = require('./note_cache/note_cache');
+const becca = require('./note_cache/note_cache');
 const Attribute = require('../entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
@@ -23,7 +23,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
     runAttachedRelations(note, 'runOnNoteTitleChange', note);
 
     if (!note.isRoot()) {
-        const noteFromCache = noteCache.notes[note.noteId];
+        const noteFromCache = becca.notes[note.noteId];
 
         if (!noteFromCache) {
             return;
@@ -87,7 +87,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             treeService.sortNotesByTitle(entity.noteId);
 
             if (entity.isInheritable) {
-                const note = noteCache.notes[entity.noteId];
+                const note = becca.notes[entity.noteId];
 
                 if (note) {
                     for (const noteId of note.subtreeNoteIds) {

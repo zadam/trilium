@@ -11,7 +11,7 @@ const RelationWhereExp = require('../expressions/relation_where.js');
 const PropertyComparisonExp = require('../expressions/property_comparison.js');
 const AttributeExistsExp = require('../expressions/attribute_exists.js');
 const LabelComparisonExp = require('../expressions/label_comparison.js');
-const NoteCacheFlatTextExp = require('../expressions/note_cache_flat_text.js');
+const BeccaFlatTextExp = require('../expressions/note_cache_flat_text.js');
 const NoteContentProtectedFulltextExp = require('../expressions/note_content_protected_fulltext.js');
 const NoteContentUnprotectedFulltextExp = require('../expressions/note_content_unprotected_fulltext.js');
 const OrderByAndLimitExp = require('../expressions/order_by_and_limit.js');
@@ -30,13 +30,13 @@ function getFulltext(tokens, searchContext) {
 
     if (!searchContext.fastSearch) {
         return new OrExp([
-            new NoteCacheFlatTextExp(tokens),
+            new BeccaFlatTextExp(tokens),
             new NoteContentProtectedFulltextExp('*=*', tokens),
             new NoteContentUnprotectedFulltextExp('*=*', tokens)
         ]);
     }
     else {
-        return new NoteCacheFlatTextExp(tokens);
+        return new BeccaFlatTextExp(tokens);
     }
 }
 
