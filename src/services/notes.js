@@ -17,15 +17,19 @@ const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
+const becca = require('../services/becca/becca');
 
 function getNewNotePosition(parentNoteId) {
-    const maxNotePos = sql.getValue(`
-            SELECT MAX(notePosition) 
-            FROM branches 
-            WHERE parentNoteId = ? 
-              AND isDeleted = 0`, [parentNoteId]);
+    const note = becca.notes[parentNoteId];
 
-    return maxNotePos === null ? 0 : maxNotePos + 10;
+    if (!note) {
+        throw new Error(`Can't find note ${parentNoteId}`);
+    }
+
+    const maxNotePos = note.getChildBranches()
+        .reduce((max, note) => Math.max(max, note.notePosition), 0);
+
+    return maxNotePos + 10;
 }
 
 function triggerChildNoteCreated(childNote, parentNote) {
@@ -151,7 +155,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
         return createNewNote(params);
     }
     else if (target === 'after') {
-        const afterNote = sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [targetBranchId]);
+        const afterNote = becca.branches[targetBranchId].notePosition;
 
         // not updating utcDateModified to avoig having to sync whole rows
         sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',

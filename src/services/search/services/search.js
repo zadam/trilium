@@ -63,7 +63,7 @@ function loadNeededInfoFromDatabase() {
  * @param {SearchContext} searchContext
  * @return {SearchResult[]}
  */
-function findNotesWithExpression(expression, searchContext) {
+function findResultsWithExpression(expression, searchContext) {
     let allNotes = Object.values(becca.notes);
 
     if (searchContext.dbLoadNeeded) {
@@ -134,10 +134,20 @@ function parseQueryToExpression(query, searchContext) {
 
 /**
  * @param {string} query
+ * @return {Note[]}
+ */
+function findNotes(query) {
+    const searchResults = findResultsWithQuery(query, new SearchContext());
+
+    return searchResults.map(sr => becca.notes[sr.noteId]);
+}
+
+/**
+ * @param {string} query
  * @param {SearchContext} searchContext
  * @return {SearchResult[]}
  */
-function findNotesWithQuery(query, searchContext) {
+function findResultsWithQuery(query, searchContext) {
     query = query || "";
     searchContext.originalQuery = query;
 
@@ -147,11 +157,11 @@ function findNotesWithQuery(query, searchContext) {
         return [];
     }
 
-    return findNotesWithExpression(expression, searchContext);
+    return findResultsWithExpression(expression, searchContext);
 }
 
 function searchTrimmedNotes(query, searchContext) {
-    const allSearchResults = findNotesWithQuery(query, searchContext);
+    const allSearchResults = findResultsWithQuery(query, searchContext);
     const trimmedSearchResults = allSearchResults.slice(0, 200);
 
     return {
@@ -252,5 +262,6 @@ function formatAttribute(attr) {
 module.exports = {
     searchTrimmedNotes,
     searchNotesForAutocomplete,
-    findNotesWithQuery
+    findResultsWithQuery,
+    findNotes
 };

@@ -3,6 +3,9 @@
 const protectedSessionService = require('../../protected_session');
 const log = require('../../log');
 
+const LABEL = 'label';
+const RELATION = 'relation';
+
 class Note {
     constructor(becca, row) {
         /** @param {Becca} */
@@ -153,24 +156,124 @@ class Note {
             && (!value || attr.value.toLowerCase() === value));
     }
 
-    hasLabel(name) {
-        return this.hasAttribute('label', name);
-    }
-
-    hasRelation(name) {
-        return this.hasAttribute('relation', name);
-    }
-
-    getLabelValue(name) {
-        const label = this.attributes.find(attr => attr.type === 'label' && attr.name === name);
-
-        return label ? label.value : null;
-    }
-
     getRelationTarget(name) {
         const relation = this.attributes.find(attr => attr.type === 'relation' && attr.name === name);
 
         return relation ? relation.targetNote : null;
+    }
+
+    /**
+     * @param {string} name - label name
+     * @returns {boolean} true if label exists (including inherited)
+     */
+    hasLabel(name) { return this.hasAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {boolean} true if label exists (excluding inherited)
+     */
+    hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {boolean} true if relation exists (including inherited)
+     */
+    hasRelation(name) { return this.hasAttribute(RELATION, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {boolean} true if relation exists (excluding inherited)
+     */
+    hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {Attribute|null} label if it exists, null otherwise
+     */
+    getLabel(name) { return this.getAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {Attribute|null} label if it exists, null otherwise
+     */
+    getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Attribute|null} relation if it exists, null otherwise
+     */
+    getRelation(name) { return this.getAttribute(RELATION, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Attribute|null} relation if it exists, null otherwise
+     */
+    getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {string|null} label value if label exists, null otherwise
+     */
+    getLabelValue(name) { return this.getAttributeValue(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {string|null} label value if label exists, null otherwise
+     */
+    getOwnedLabelValue(name) { return this.getOwnedAttributeValue(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {string|null} relation value if relation exists, null otherwise
+     */
+    getRelationValue(name) { return this.getAttributeValue(RELATION, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {string|null} relation value if relation exists, null otherwise
+     */
+    getOwnedRelationValue(name) { return this.getOwnedAttributeValue(RELATION, name); }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {boolean} true if note has an attribute with given type and name (excluding inherited)
+     */
+    hasOwnedAttribute(type, name) {
+        return !!this.getOwnedAttribute(type, name);
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     */
+    getAttribute(type, name) {
+        const attributes = this.getAttributes();
+
+        return attributes.find(attr => attr.type === type && attr.name === name);
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
+     */
+    getAttributeValue(type, name) {
+        const attr = this.getAttribute(type, name);
+
+        return attr ? attr.value : null;
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {string|null} attribute value of given type and name or null if no such attribute exists.
+     */
+    getOwnedAttributeValue(type, name) {
+        const attr = this.getOwnedAttribute(type, name);
+
+        return attr ? attr.value : null;
     }
 
     get isArchived() {
@@ -235,7 +338,7 @@ class Note {
         this.ancestorCache = null;
     }
 
-    invalidateSubfrocas(path = []) {
+    invalidateSubTree(path = []) {
         if (path.includes(this.noteId)) {
             return;
         }
@@ -247,7 +350,7 @@ class Note {
         }
 
         for (const childNote of this.children) {
-            childNote.invalidateSubfrocas(path);
+            childNote.invalidateSubTree(path);
         }
 
         for (const targetRelation of this.targetRelations) {
@@ -255,7 +358,7 @@ class Note {
                 const note = targetRelation.note;
 
                 if (note) {
-                    note.invalidateSubfrocas(path);
+                    note.invalidateSubTree(path);
                 }
             }
         }
@@ -421,6 +524,10 @@ class Note {
         }
 
         return minDistance;
+    }
+
+    getChildBranches() {
+        return this.children.map(childNote => this.becca.getBranch(childNote.noteId, this.noteId));
     }
 
     decrypt() {

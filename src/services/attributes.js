@@ -67,7 +67,7 @@ function getNotesWithLabel(name, value) {
         params.push(value);
     }
 
-    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId)
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 

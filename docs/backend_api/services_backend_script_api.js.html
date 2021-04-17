@@ -138,7 +138,7 @@ function BackendScriptApi(currentNote, apiParams) {
             searchParams.ignoreHoistedNote = true;
         }
 
-        const noteIds = searchService.findNotesWithQuery(query, new SearchContext(searchParams))
+        const noteIds = searchService.findResultsWithQuery(query, new SearchContext(searchParams))
             .map(sr => sr.noteId);
 
         return repository.getNotes(noteIds);

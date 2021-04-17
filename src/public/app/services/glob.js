@@ -21,6 +21,7 @@ function setupGlobs() {
     window.glob.ESLINT = libraryLoader.ESLINT;
     window.glob.appContext = appContext; // for debugging
     window.glob.froca = froca;
+    window.glob.treeCache = froca; // compatibility for CKEditor builds for a while
 
     // for CKEditor integration (button on block toolbar)
     window.glob.importMarkdownInline = async () => {

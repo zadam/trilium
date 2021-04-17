@@ -28,7 +28,7 @@ async function searchFromNoteInt(note) {
             fuzzyAttributeSearch: false
         });
 
-        searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
+        searchResultNoteIds = searchService.findResultsWithQuery(searchString, searchContext)
             .map(sr => sr.noteId);
     }
 
@@ -215,7 +215,7 @@ function quickSearch(req) {
         fuzzyAttributeSearch: false
     });
 
-    return searchService.findNotesWithQuery(searchString, searchContext)
+    return searchService.findResultsWithQuery(searchString, searchContext)
         .map(sr => sr.noteId);
 }
 
@@ -229,7 +229,7 @@ function search(req) {
         ignoreHoistedNote: true
     });
 
-    return searchService.findNotesWithQuery(searchString, searchContext)
+    return searchService.findResultsWithQuery(searchString, searchContext)
         .map(sr => sr.noteId);
 }
 
@@ -242,8 +242,8 @@ function getRelatedNotes(req) {
         fuzzyAttributeSearch: false
     };
 
-    const matchingNameAndValue = searchService.findNotesWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
-    const matchingName = searchService.findNotesWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
+    const matchingNameAndValue = searchService.findResultsWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
+    const matchingName = searchService.findResultsWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
 
     const results = [];
 

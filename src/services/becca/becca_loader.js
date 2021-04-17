@@ -22,7 +22,7 @@ function load() {
     }
 
     for (const row of sql.iterateRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded FROM branches WHERE isDeleted = 0`, [])) {
-        const branch = new Branch(becca, row);
+        new Branch(becca, row);
     }
 
     for (const row of sql.iterateRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position FROM attributes WHERE isDeleted = 0`, [])) {
@@ -66,7 +66,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 childNote.parentBranches = childNote.parentBranches.filter(branch => branch.branchId !== branchId);
 
                 if (childNote.parents.length > 0) {
-                    childNote.invalidateSubfrocas();
+                    childNote.invalidateSubTree();
                 }
             }
 
@@ -105,7 +105,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             if (note && attr) {
                 // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
                 if (attr.isAffectingSubtree || note.isTemplate) {
-                    note.invalidateSubfrocas();
+                    note.invalidateSubTree();
                 } else {
                     note.invalidateThisCache();
                 }
@@ -147,7 +147,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 
             if (note) {
                 if (attr.isAffectingSubtree || note.isTemplate) {
-                    note.invalidateSubfrocas();
+                    note.invalidateSubTree();
                 }
                 else {
                     note.invalidateThisCache();
