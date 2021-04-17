@@ -48,6 +48,8 @@ const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
 const entityChangesService = require('../services/entity_changes.js');
 const csurf = require('csurf');
+const {createPartialContentHandler} = require("express-partial-content");
+
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -175,7 +177,10 @@ function register(app) {
     route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
         filesRoute.updateFile, apiResultHandler);
 
-    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron], filesRoute.openFile);
+    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron],
+        createPartialContentHandler(filesRoute.fileContentProvider, {
+            debug: (string, extra) => { console.log(string, extra); }
+        }));
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
     route(GET, '/api/notes/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);

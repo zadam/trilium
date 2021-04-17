@@ -757,6 +757,10 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     height: 50em; /* PDF is rendered in iframe and it's not possible to put full height so at least a large height */
 }
 
+.include-note-wrapper {
+    width: 100%;
+}
+
 .alert-warning, .alert-info {
     color: var(--main-text-color) !important;
     background-color: var(--accented-background-color) !important;

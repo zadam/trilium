@@ -6,6 +6,7 @@ const utils = require('../../services/utils');
 const noteRevisionService = require('../../services/note_revisions');
 const tmp = require('tmp');
 const fs = require('fs');
+const { Readable } = require('stream');
 
 function updateFile(req) {
     const {noteId} = req.params;
@@ -73,6 +74,38 @@ function openFile(req, res) {
     return downloadNoteFile(noteId, res, false);
 }
 
+function fileContentProvider(req) {
+    // Read file name from route params.
+    const note = repository.getNote(req.params.noteId);
+    const fileName = getFilename(note);
+    let content = note.getContent();
+
+    if (typeof content === "string") {
+       content = Buffer.from(content, 'utf8');
+    }
+
+    const totalSize = content.byteLength;
+    const mimeType = note.mime;
+
+    const getStream = range => {
+        if (!range) {
+            // Request if for complete content.
+            return Readable.from(content);
+        }
+        // Partial content request.
+        const { start, end } = range;
+
+        return Readable.from(content.slice(start, end + 1));
+    }
+
+    return {
+        fileName,
+        totalSize,
+        mimeType,
+        getStream
+    };
+}
+
 function saveToTmpDir(req) {
     const noteId = req.params.noteId;
 
@@ -95,6 +128,7 @@ function saveToTmpDir(req) {
 module.exports = {
     updateFile,
     openFile,
+    fileContentProvider,
     downloadFile,
     downloadNoteFile,
     saveToTmpDir
