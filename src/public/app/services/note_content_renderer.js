@@ -39,7 +39,7 @@ async function getRenderedContent(note, options = {}) {
                 .css("max-width", "100%")
         );
     }
-    else if (!options.tooltip && (type === 'file' || type === 'pdf')) {
+    else if (!options.tooltip && ['file', 'pdf', 'audio', 'video']) {
         const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
         const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
@@ -56,6 +56,22 @@ async function getRenderedContent(note, options = {}) {
             $pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"));
 
             $content.append($pdfPreview);
+        }
+        else if (type === 'audio') {
+            const $audioPreview = $('<audio controls></audio>')
+                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"))
+                .attr("type", note.mime)
+                .css("width", "100%");
+
+            $content.append($audioPreview);
+        }
+        else if (type === 'video') {
+            const $videoPreview = $('<video controls></video>')
+                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"))
+                .attr("type", note.mime)
+                .css("width", "100%");
+
+            $content.append($videoPreview);
         }
 
         $content.append(
@@ -110,6 +126,10 @@ function getRenderingType(note) {
 
     if (type === 'file' && note.mime === 'application/pdf') {
         type = 'pdf';
+    } else if (type === 'file' && note.mime.startsWith('audio/')) {
+        type = 'audio';
+    } else if (type === 'file' && note.mime.startsWith('video/')) {
+        type = 'video';
     }
 
     if (note.isProtected) {

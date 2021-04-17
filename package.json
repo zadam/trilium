@@ -39,6 +39,7 @@
     "electron-find": "1.0.6",
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
+    "express-partial-content": "^1.0.2",
     "express-session": "1.17.1",
     "fs-extra": "9.1.0",
     "helmet": "4.4.1",
