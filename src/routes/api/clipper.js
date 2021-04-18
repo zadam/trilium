@@ -107,7 +107,11 @@ function processContent(images, note, content) {
             const filename = path.basename(src);
 
             if (!dataUrl || !dataUrl.startsWith("data:image")) {
-                log.info("Image could not be recognized as data URL:", dataUrl.substr(0, Math.min(100, dataUrl.length)));
+                const excerpt = dataUrl
+                    ? dataUrl.substr(0, Math.min(100, dataUrl.length))
+                    : "null";
+
+                log.info("Image could not be recognized as data URL: " + excerpt);
                 continue;
             }
 
