@@ -10,7 +10,7 @@ fi
 
 cd dist
 wget https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz
-tar xvfJ node-v${NODE_VERSION}-linux-x64.tar.xz
+tar xfJ node-v${NODE_VERSION}-linux-x64.tar.xz
 rm node-v${NODE_VERSION}-linux-x64.tar.xz
 cd ..
 

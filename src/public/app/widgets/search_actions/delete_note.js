@@ -5,7 +5,7 @@ const TPL = `
     <td colspan="2">
         <span class="bx bx-trash"></span>
     
-        Delete matched note
+        Delete matched notes
     </td>
     <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
