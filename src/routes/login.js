@@ -3,6 +3,7 @@
 const utils = require('../services/utils');
 const optionService = require('../services/options');
 const myScryptService = require('../services/my_scrypt');
+const log = require('../services/log');
 
 function loginPage(req, res) {
     res.render('login', { failedAuth: false });
@@ -28,6 +29,9 @@ function login(req, res) {
         });
     }
     else {
+        // note that logged IP address is usually meaningless since the traffic should come from a reverse proxy
+        log.info(`WARNING: Wrong username / password from ${req.ip}, rejecting.`);
+
         res.render('login', {'failedAuth': true});
     }
 }
