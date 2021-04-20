@@ -39,7 +39,7 @@ async function getRenderedContent(note, options = {}) {
                 .css("max-width", "100%")
         );
     }
-    else if (!options.tooltip && ['file', 'pdf', 'audio', 'video']) {
+    else if (!options.tooltip && ['file', 'pdf', 'audio', 'video'].includes(type)) {
         const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
         const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
