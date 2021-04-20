@@ -64,13 +64,12 @@ async function getWidgetBundlesByParent() {
 
         try {
             widget = await executeBundle(bundle);
+            widgetsByParent.add(widget);
         }
         catch (e) {
             logError("Widget initialization failed: ", e);
             continue;
         }
-
-        widgetsByParent.add(widget);
     }
 
     return widgetsByParent;
