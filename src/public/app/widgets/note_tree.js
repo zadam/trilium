@@ -382,8 +382,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                     else {
                         node.setActive();
-
-                        this.clearSelectedNodes();
                     }
 
                     return false;
@@ -392,6 +390,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
                 contextMenu.hide();
+
+                this.clearSelectedNodes();
 
                 const notePath = treeService.getNotePath(data.node);
 
