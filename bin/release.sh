@@ -55,47 +55,20 @@ echo "Creating release in GitHub"
 EXTRA=
 
 if [[ $TAG == *"beta"* ]]; then
-  EXTRA=--pre-release
+  EXTRA=--prerelease
 fi
 
-github-release release \
-    --tag $TAG \
-    --name "$TAG release" $EXTRA
+echo "$GITHUB_CLI_AUTH_TOKEN" | gh auth login --with-token
 
-echo "Uploading debian x64 package"
-
-github-release upload \
-    --tag $TAG \
-    --name "$DEBIAN_X64_BUILD" \
-    --file "dist/$DEBIAN_X64_BUILD"
-
-echo "Uploading linux x64 build"
-
-github-release upload \
-    --tag $TAG \
-    --name "$LINUX_X64_BUILD" \
-    --file "dist/$LINUX_X64_BUILD"
-
-echo "Uploading windows x64 build"
-
-github-release upload \
-    --tag $TAG \
-    --name "$WINDOWS_X64_BUILD" \
-    --file "dist/$WINDOWS_X64_BUILD"
-
-echo "Uploading mac x64 build"
-
-github-release upload \
-    --tag $TAG \
-    --name "$MAC_X64_BUILD" \
-    --file "dist/$MAC_X64_BUILD"
-
-echo "Uploading linux x64 server build"
-
-github-release upload \
-    --tag $TAG \
-    --name "$SERVER_BUILD" \
-    --file "dist/$SERVER_BUILD"
+gh release create "$TAG" \
+    --title "$TAG release" \
+    --notes ""
+    $EXTRA \
+    "dist/$DEBIAN_X64_BUILD" \
+    "dist/$LINUX_X64_BUILD" \
+    "dist/$WINDOWS_X64_BUILD" \
+    "dist/$MAC_X64_BUILD" \
+    "dist/$SERVER_BUILD"
 
 echo "Building docker image"
 
