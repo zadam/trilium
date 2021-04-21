@@ -382,8 +382,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                     else {
                         node.setActive();
-
-                        this.clearSelectedNodes();
                     }
 
                     return false;
@@ -392,6 +390,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
                 contextMenu.hide();
+
+                this.clearSelectedNodes();
 
                 const notePath = treeService.getNotePath(data.node);
 
@@ -1144,11 +1144,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
 
             if (node) {
-                node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
-
                 if (activeNodeFocused) {
-                    node.setFocus(true);
+                    // needed by Firefox: https://github.com/zadam/trilium/issues/1865
+                    this.tree.$container.focus();
                 }
+
+                await node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
             }
             else {
                 // this is used when original note has been deleted and we want to move the focus to the note above/below
