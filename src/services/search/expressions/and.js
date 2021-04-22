@@ -1,6 +1,7 @@
 "use strict";
 
 const Expression = require('./expression');
+const TrueExp = require("./true.js");
 
 class AndExp extends Expression {
     static of(subExpressions) {
@@ -10,6 +11,8 @@ class AndExp extends Expression {
             return subExpressions[0];
         } else if (subExpressions.length > 0) {
             return new AndExp(subExpressions);
+        } else {
+            return new TrueExp();
         }
     }
 

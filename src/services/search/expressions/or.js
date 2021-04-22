@@ -2,6 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
+const TrueExp = require("./true");
 
 class OrExp extends Expression {
     static of(subExpressions) {
@@ -12,6 +13,9 @@ class OrExp extends Expression {
         }
         else if (subExpressions.length > 0) {
             return new OrExp(subExpressions);
+        }
+        else {
+            return new TrueExp();
         }
     }
 

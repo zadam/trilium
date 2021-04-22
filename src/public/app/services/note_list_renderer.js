@@ -317,7 +317,9 @@ class NoteListRenderer {
         const $expander = $('<span class="note-expander bx bx-chevron-right"></span>');
 
         const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
-        const notePath = this.parentNote.noteId + '/' + note.noteId;
+        const notePath = this.parentNote.type === 'search'
+            ? note.noteId // for search note parent we want to display non-search path
+            : this.parentNote.noteId + '/' + note.noteId;
 
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)

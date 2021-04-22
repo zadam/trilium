@@ -28,17 +28,33 @@ class OrderByAndLimitExp extends Expression {
                 let valA = valueExtractor.extract(a);
                 let valB = valueExtractor.extract(b);
 
-                if (!isNaN(valA) && !isNaN(valB)) {
+                if (valA === null && valB === null) {
+                    // neither has attribute at all
+                    continue;
+                }
+                else if (valB === null) {
+                    return smaller;
+                }
+                else if (valA === null) {
+                    return larger;
+                }
+
+                // if both are numbers then parse them for numerical comparison
+                // beware that isNaN will return false for empty string and null
+                if (valA.trim() !== "" && valB.trim() !== "" && !isNaN(valA) && !isNaN(valB)) {
                     valA = parseFloat(valA);
                     valB = parseFloat(valB);
                 }
 
-                if (valA < valB) {
+                if (!valA && !valB) {
+                    // the attribute is not defined in either note so continue to next order definition
+                    continue;
+                } else if (!valB || valA < valB) {
                     return smaller;
-                } else if (valA > valB) {
+                } else if (!valA || valA > valB) {
                     return larger;
                 }
-                // else go to next order definition
+                // else the values are equal and continue to next order definition
             }
 
             return 0;

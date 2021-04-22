@@ -329,6 +329,9 @@ function getExpression(tokens, searchContext, level = 0) {
         else if (op === 'or') {
             return OrExp.of(expressions);
         }
+        else {
+            throw new Error(`Unrecognized op=${op}`);
+        }
     }
 
     for (i = 0; i < tokens.length; i++) {
@@ -358,8 +361,7 @@ function getExpression(tokens, searchContext, level = 0) {
                 continue;
             }
 
-            exp.subExpression = getAggregateExpression();
-
+            exp.subExpression = getAggregateExpression();console.log(exp);
             return exp;
         }
         else if (token === 'not') {
