@@ -62,7 +62,7 @@ echo "$GITHUB_CLI_AUTH_TOKEN" | gh auth login --with-token
 
 gh release create "$TAG" \
     --title "$TAG release" \
-    --notes ""
+    --notes "" \
     $EXTRA \
     "dist/$DEBIAN_X64_BUILD" \
     "dist/$LINUX_X64_BUILD" \
