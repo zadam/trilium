@@ -22,6 +22,7 @@ const TPL = `
         padding-left: 10px;
         padding-right: 10px;
         position: relative;
+        top: -2px;
         border-radius: 0;
     }
     

@@ -2,8 +2,9 @@ import Component from "../widgets/component.js";
 import appContext from "./app_context.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
+import openService from "./open.js";
 
-export default class DialogCommandExecutor extends Component {
+export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
         import("../dialogs/jump_to_note.js").then(d => d.showDialog());
     }
@@ -83,5 +84,13 @@ export default class DialogCommandExecutor extends Component {
 
     showBackendLogCommand() {
         import("../dialogs/backend_log.js").then(d => d.showDialog());
+    }
+
+    openNoteExternallyCommand() {
+        const noteId = appContext.tabManager.getActiveTabNoteId();
+
+        if (noteId) {
+            openService.openNoteExternally(noteId);
+        }
     }
 }

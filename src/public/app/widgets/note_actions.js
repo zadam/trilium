@@ -1,6 +1,6 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import protectedSessionService from "../services/protected_session.js";
-import openService from "../services/open.js";
+import utils from "../services/utils.js";
 
 const TPL = `
 <div class="dropdown note-actions">
@@ -123,7 +123,6 @@ export default class NoteActionsWidget extends TabAwareWidget {
             () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
 
         this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
-        this.$openNoteExternallyButton.on('click', () => openService.openNoteExternally(this.noteId));
     }
 
     refreshWithNote(note) {
@@ -133,6 +132,8 @@ export default class NoteActionsWidget extends TabAwareWidget {
 
         this.$protectButton.toggle(!note.isProtected);
         this.$unprotectButton.toggle(!!note.isProtected);
+
+        this.$openNoteExternallyButton.toggle(utils.isElectron());
     }
 
     toggleDisabled($el, enable) {
