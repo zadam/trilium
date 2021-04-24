@@ -188,6 +188,8 @@ function formatDownloadTitle(filename, type, mime) {
         filename = "untitled";
     }
 
+    filename = sanitize(filename);
+
     if (type === 'text') {
         return filename + '.html';
     } else if (['relation-map', 'search'].includes(type)) {

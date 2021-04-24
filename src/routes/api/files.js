@@ -7,6 +7,8 @@ const noteRevisionService = require('../../services/note_revisions');
 const tmp = require('tmp');
 const fs = require('fs');
 const { Readable } = require('stream');
+const chokidar = require('chokidar');
+const ws = require('../../services/ws');
 
 function updateFile(req) {
     const {noteId} = req.params;
@@ -119,6 +121,19 @@ function saveToTmpDir(req) {
 
     fs.writeSync(tmpObj.fd, note.getContent());
     fs.closeSync(tmpObj.fd);
+
+    if (utils.isElectron()) {
+        chokidar.watch(tmpObj.name).on('change', (path, stats) => {
+            ws.sendMessageToAllClients({
+                type: 'openedFileUpdated',
+                noteId: noteId,
+                lastModifiedMs: stats.atimeMs,
+                filePath: tmpObj.name
+            });
+
+            console.log(stats, path);
+        });
+    }
 
     return {
         tmpFilePath: tmpObj.name

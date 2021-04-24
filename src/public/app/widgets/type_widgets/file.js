@@ -1,6 +1,7 @@
-import utils from "../../services/utils.js";
 import openService from "../../services/open.js";
 import TypeWidget from "./type_widget.js";
+import fileWatcher from "../../services/file_watcher.js";
+import server from "../../services/server.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
@@ -22,6 +23,12 @@ const TPL = `
             margin: 10px;
         }
     </style>
+    
+    <div class="file-watcher-wrapper alert alert-warning">
+        <p>File <code class="file-watcher-path"></code> has been last modified on <span class="file-watcher-last-modified"></span>.</p> 
+        
+        <button class="btn btn-sm file-watcher-upload-button">Upload modified file</button>
+    </div>
     
     <pre class="file-preview-content"></pre>
     
@@ -47,12 +54,25 @@ export default class FileTypeWidget extends TypeWidget {
         this.$pdfPreview = this.$widget.find(".pdf-preview");
         this.$videoPreview = this.$widget.find(".video-preview");
         this.$audioPreview = this.$widget.find(".audio-preview");
+
+        this.$fileWatcherWrapper = this.$widget.find(".file-watcher-wrapper");
+        this.$fileWatcherWrapper.hide();
+
+        this.$fileWatcherPath = this.$widget.find(".file-watcher-path");
+        this.$fileWatcherLastModified = this.$widget.find(".file-watcher-last-modified");
+        this.$fileWatcherUploadButton = this.$widget.find(".file-watcher-upload-button");
+
+        this.$fileWatcherUploadButton.on("click", async () => {
+            await server.post(`notes/${this.noteId}/upload-modified-file`, {
+                filePath: this.$fileWatcherPath.text()
+            });
+
+            fileWatcher.fileModificationUploaded(this.noteId);
+            this.refreshFileWatchingStatus();
+        });
     }
 
     async doRefresh(note) {
-        const attributes = note.getAttributes();
-        const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
-
         this.$widget.show();
 
         const noteComplement = await this.tabContext.getNoteComplement();
@@ -87,5 +107,22 @@ export default class FileTypeWidget extends TypeWidget {
         else {
             this.$previewNotAvailable.show();
         }
+
+        this.refreshFileWatchingStatus();
+    }
+
+    refreshFileWatchingStatus() {
+        const status = fileWatcher.getFileModificationStatus(this.noteId);
+
+        this.$fileWatcherWrapper.toggle(!!status);
+
+        if (status) {
+            this.$fileWatcherPath.text(status.filePath);
+            this.$fileWatcherLastModified.text(dayjs.unix(status.lastModifiedMs / 1000).format("HH:mm:ss"));
+        }
+    }
+
+    openedFileUpdatedEvent(data) {
+        this.refreshFileWatchingStatus();
     }
 }
