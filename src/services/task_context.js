@@ -38,7 +38,7 @@ class TaskContext {
             this.lastSentCountTs = Date.now();
 
             ws.sendMessageToAllClients({
-                type: 'task-progress-count',
+                type: 'taskProgressCount',
                 taskId: this.taskId,
                 taskType: this.taskType,
                 data: this.data,
@@ -49,7 +49,7 @@ class TaskContext {
 
     reportError(message) {
         ws.sendMessageToAllClients({
-            type: 'task-error',
+            type: 'taskError',
             taskId: this.taskId,
             taskType: this.taskType,
             data: this.data,
@@ -59,7 +59,7 @@ class TaskContext {
 
     taskSucceeded(result) {
         ws.sendMessageToAllClients({
-            type: 'task-succeeded',
+            type: 'taskSucceeded',
             taskId: this.taskId,
             taskType: this.taskType,
             data: this.data,

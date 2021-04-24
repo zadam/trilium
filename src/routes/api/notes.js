@@ -7,6 +7,8 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
+const fs = require('fs');
+const noteRevisionService = require("../../services/note_revisions.js");
 
 function getNote(req) {
     const noteId = req.params.noteId;
@@ -80,7 +82,7 @@ function deleteNote(req) {
 function undeleteNote(req) {
     const note = repository.getNote(req.params.noteId);
 
-    const taskContext = TaskContext.getInstance(utils.randomString(10), 'undelete-notes');
+    const taskContext = TaskContext.getInstance(utils.randomString(10), 'undeleteNotes');
 
     noteService.undeleteNote(note, note.deleteId, taskContext);
 
@@ -109,7 +111,7 @@ function protectNote(req) {
     const protect = !!parseInt(req.params.isProtected);
     const includingSubTree = !!parseInt(req.query.subtree);
 
-    const taskContext = new TaskContext(utils.randomString(10), 'protect-notes', {protect});
+    const taskContext = new TaskContext(utils.randomString(10), 'protectNotes', {protect});
 
     noteService.protectNoteRecursively(note, protect, includingSubTree, taskContext);
 
@@ -273,6 +275,27 @@ function getDeleteNotesPreview(req) {
     };
 }
 
+function uploadModifiedFile(req) {
+    const noteId = req.params.noteId;
+    const {filePath} = req.body;
+
+    const note = repository.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} has not been found`];
+    }
+
+    noteRevisionService.createNoteRevision(note);
+
+    const fileContent = fs.readFileSync(filePath);
+
+    if (!fileContent) {
+        return [400, `File ${fileContent} is empty`];
+    }
+
+    note.setContent(fileContent);
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -286,5 +309,6 @@ module.exports = {
     changeTitle,
     duplicateSubtree,
     eraseDeletedNotesNow,
-    getDeleteNotesPreview
+    getDeleteNotesPreview,
+    uploadModifiedFile
 };

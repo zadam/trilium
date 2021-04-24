@@ -144,7 +144,7 @@ function processContent(images, note, content) {
 function openNote(req) {
     if (utils.isElectron()) {
         ws.sendMessageToAllClients({
-            type: 'open-note',
+            type: 'openNote',
             noteId: req.params.noteId
         });
 

@@ -59,7 +59,7 @@ async function handleMessage(event) {
     }
 
     if (message.type === 'frontend-update') {
-        let {entityChanges, lastSyncedPush} = message.data;
+        let {entityChanges} = message.data;
         lastPingTs = Date.now();
 
         if (entityChanges.length > 0) {
