@@ -93,14 +93,14 @@ export default class FileTypeWidget extends TypeWidget {
         else if (note.mime.startsWith('video/')) {
             this.$videoPreview
                 .show()
-                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open-partial"))
                 .attr("type", this.note.mime)
                 .css("width", this.$widget.width());
         }
         else if (note.mime.startsWith('audio/')) {
             this.$audioPreview
                 .show()
-                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open-partial"))
                 .attr("type", this.note.mime)
                 .css("width", this.$widget.width());
         }

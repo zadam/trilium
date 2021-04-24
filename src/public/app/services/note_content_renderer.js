@@ -59,7 +59,7 @@ async function getRenderedContent(note, options = {}) {
         }
         else if (type === 'audio') {
             const $audioPreview = $('<audio controls></audio>')
-                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"))
+                .attr("src", openService.getUrlForStreaming("api/notes/" + note.noteId + "/open-partial"))
                 .attr("type", note.mime)
                 .css("width", "100%");
 
@@ -67,7 +67,7 @@ async function getRenderedContent(note, options = {}) {
         }
         else if (type === 'video') {
             const $videoPreview = $('<video controls></video>')
-                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"))
+                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open-partial"))
                 .attr("type", note.mime)
                 .css("width", "100%");
 

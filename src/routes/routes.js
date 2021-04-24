@@ -178,7 +178,8 @@ function register(app) {
     route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
         filesRoute.updateFile, apiResultHandler);
 
-    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron],
+    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron], filesRoute.openFile);
+    route(GET, '/api/notes/:noteId/open-partial', [auth.checkApiAuthOrElectron],
         createPartialContentHandler(filesRoute.fileContentProvider, {
             debug: (string, extra) => { console.log(string, extra); }
         }));
