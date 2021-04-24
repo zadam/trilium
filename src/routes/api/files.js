@@ -3,6 +3,7 @@
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
+const log = require('../../services/log');
 const noteRevisionService = require('../../services/note_revisions');
 const tmp = require('tmp');
 const fs = require('fs');
@@ -122,6 +123,8 @@ function saveToTmpDir(req) {
     fs.writeSync(tmpObj.fd, note.getContent());
     fs.closeSync(tmpObj.fd);
 
+    log.info(`Saved temporary file for note ${noteId} into ${tmpObj.name}`);
+
     if (utils.isElectron()) {
         chokidar.watch(tmpObj.name).on('change', (path, stats) => {
             ws.sendMessageToAllClients({
@@ -130,8 +133,6 @@ function saveToTmpDir(req) {
                 lastModifiedMs: stats.atimeMs,
                 filePath: tmpObj.name
             });
-
-            console.log(stats, path);
         });
     }
 

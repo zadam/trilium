@@ -24,12 +24,6 @@ const TPL = `
         }
     </style>
     
-    <div class="file-watcher-wrapper alert alert-warning">
-        <p>File <code class="file-watcher-path"></code> has been last modified on <span class="file-watcher-last-modified"></span>.</p> 
-        
-        <button class="btn btn-sm file-watcher-upload-button">Upload modified file</button>
-    </div>
-    
     <pre class="file-preview-content"></pre>
     
     <div class="file-preview-not-available alert alert-info">
@@ -54,22 +48,6 @@ export default class FileTypeWidget extends TypeWidget {
         this.$pdfPreview = this.$widget.find(".pdf-preview");
         this.$videoPreview = this.$widget.find(".video-preview");
         this.$audioPreview = this.$widget.find(".audio-preview");
-
-        this.$fileWatcherWrapper = this.$widget.find(".file-watcher-wrapper");
-        this.$fileWatcherWrapper.hide();
-
-        this.$fileWatcherPath = this.$widget.find(".file-watcher-path");
-        this.$fileWatcherLastModified = this.$widget.find(".file-watcher-last-modified");
-        this.$fileWatcherUploadButton = this.$widget.find(".file-watcher-upload-button");
-
-        this.$fileWatcherUploadButton.on("click", async () => {
-            await server.post(`notes/${this.noteId}/upload-modified-file`, {
-                filePath: this.$fileWatcherPath.text()
-            });
-
-            fileWatcher.fileModificationUploaded(this.noteId);
-            this.refreshFileWatchingStatus();
-        });
     }
 
     async doRefresh(note) {
@@ -107,22 +85,5 @@ export default class FileTypeWidget extends TypeWidget {
         else {
             this.$previewNotAvailable.show();
         }
-
-        this.refreshFileWatchingStatus();
-    }
-
-    refreshFileWatchingStatus() {
-        const status = fileWatcher.getFileModificationStatus(this.noteId);
-
-        this.$fileWatcherWrapper.toggle(!!status);
-
-        if (status) {
-            this.$fileWatcherPath.text(status.filePath);
-            this.$fileWatcherLastModified.text(dayjs.unix(status.lastModifiedMs / 1000).format("HH:mm:ss"));
-        }
-    }
-
-    openedFileUpdatedEvent(data) {
-        this.refreshFileWatchingStatus();
     }
 }

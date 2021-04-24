@@ -11,6 +11,10 @@ function fileModificationUploaded(noteId) {
     delete fileModificationStatus[noteId];
 }
 
+function ignoreModification(noteId) {
+    delete fileModificationStatus[noteId];
+}
+
 ws.subscribeToMessages(async message => {
     if (message.type !== 'openedFileUpdated') {
         return;
@@ -27,5 +31,6 @@ ws.subscribeToMessages(async message => {
 
 export default {
     getFileModificationStatus,
-    fileModificationUploaded
+    fileModificationUploaded,
+    ignoreModification
 }

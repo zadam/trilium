@@ -36,6 +36,7 @@ import SearchResultWidget from "../widgets/search_result.js";
 import SyncStatusWidget from "../widgets/sync_status.js";
 import ScrollingContainer from "../widgets/containers/scrolling_container.js";
 import RootContainer from "../widgets/containers/root_container.js";
+import NoteUpdateStatusWidget from "../widgets/note_update_status.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -177,6 +178,7 @@ export default class DesktopLayout {
                             .child(new InheritedAttributesWidget())
                         )
                     )
+                    .child(new NoteUpdateStatusWidget())
                     .child(
                         new TabCachingWidget(() => new ScrollingContainer()
                             .child(new SqlTableSchemasWidget())

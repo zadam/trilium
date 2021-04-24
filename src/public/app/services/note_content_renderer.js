@@ -44,7 +44,7 @@ async function getRenderedContent(note, options = {}) {
         const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
         $downloadButton.on('click', () => openService.downloadFileNote(note.noteId));
-        $openButton.on('click', () => openService.openFileNote(note.noteId));
+        $openButton.on('click', () => openService.openNoteExternally(note.noteId));
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);

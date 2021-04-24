@@ -285,6 +285,8 @@ function uploadModifiedFile(req) {
         return [404, `Note ${noteId} has not been found`];
     }
 
+    log.info(`Updating note ${noteId} with content from ${filePath}`);
+
     noteRevisionService.createNoteRevision(note);
 
     const fileContent = fs.readFileSync(filePath);
