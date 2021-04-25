@@ -353,6 +353,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "openNoteExternally",
+        defaultShortcuts: [],
+        description: "Open note as a file with default application",
+        scope: "window"
+    },
+    {
         actionName: "renderActiveNote",
         defaultShortcuts: [],
         description: "Render (re-render) active note",

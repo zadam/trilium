@@ -1,6 +1,7 @@
-import utils from "../../services/utils.js";
 import openService from "../../services/open.js";
 import TypeWidget from "./type_widget.js";
+import fileWatcher from "../../services/file_watcher.js";
+import server from "../../services/server.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
@@ -50,9 +51,6 @@ export default class FileTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const attributes = note.getAttributes();
-        const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
-
         this.$widget.show();
 
         const noteComplement = await this.tabContext.getNoteComplement();
@@ -73,14 +71,14 @@ export default class FileTypeWidget extends TypeWidget {
         else if (note.mime.startsWith('video/')) {
             this.$videoPreview
                 .show()
-                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open-partial"))
                 .attr("type", this.note.mime)
                 .css("width", this.$widget.width());
         }
         else if (note.mime.startsWith('audio/')) {
             this.$audioPreview
                 .show()
-                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open"))
+                .attr("src", openService.getUrlForDownload("api/notes/" + this.noteId + "/open-partial"))
                 .attr("type", this.note.mime)
                 .css("width", this.$widget.width());
         }

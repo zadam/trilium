@@ -1,11 +1,12 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import protectedSessionService from "../services/protected_session.js";
+import utils from "../services/utils.js";
 
 const TPL = `
 <div class="dropdown note-actions">
     <style>
     .note-actions .dropdown-menu {
-        width: 15em;
+        width: 20em;
     }
     
     .note-actions .dropdown-item[disabled], .note-actions .dropdown-item[disabled]:hover {
@@ -84,6 +85,7 @@ const TPL = `
         <a data-trigger-command="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
         <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
         <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
+        <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"><kbd data-command="openNoteExternally"></kbd> Open note externally</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
         <a data-trigger-command="printActiveNote" class="dropdown-item print-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
@@ -119,6 +121,8 @@ export default class NoteActionsWidget extends TabAwareWidget {
 
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
+
+        this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
     }
 
     refreshWithNote(note) {
@@ -128,6 +132,8 @@ export default class NoteActionsWidget extends TabAwareWidget {
 
         this.$protectButton.toggle(!note.isProtected);
         this.$unprotectButton.toggle(!!note.isProtected);
+
+        this.$openNoteExternallyButton.toggle(utils.isElectron());
     }
 
     toggleDisabled($el, enable) {

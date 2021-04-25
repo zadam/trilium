@@ -21,6 +21,7 @@ const TPL = `
             <option value="ownedLabelCount">Number of labels</option>
             <option value="ownedRelationCount">Number of relations</option>
             <option value="targetRelationCount">Number of relations targeting the note</option>
+            <option value="random">Random order</option>
         </select>
         
         <select name="orderDirection" class="form-control w-auto d-inline">

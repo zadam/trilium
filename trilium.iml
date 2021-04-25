@@ -10,6 +10,9 @@
       <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/public/app-dist" />
       <excludeFolder url="file://$MODULE_DIR$/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/bin/better-sqlite3" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

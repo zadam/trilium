@@ -1,6 +1,6 @@
 import froca from "./froca.js";
 import bundleService from "./bundle.js";
-import DialogCommandExecutor from "./dialog_command_executor.js";
+import RootCommandExecutor from "./root_command_executor.js";
 import Entrypoints from "./entrypoints.js";
 import options from "./options.js";
 import utils from "./utils.js";
@@ -57,7 +57,7 @@ class AppContext extends Component {
 
         this.executors = [
             this.tabManager,
-            new DialogCommandExecutor(),
+            new RootCommandExecutor(),
             new Entrypoints(),
             new MainTreeExecutors()
         ];

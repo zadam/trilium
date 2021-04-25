@@ -165,6 +165,7 @@ function register(app) {
     apiRoute(POST, '/api/notes/erase-deleted-notes-now', notesApiRoute.eraseDeletedNotesNow);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
     apiRoute(POST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateSubtree);
+    apiRoute(POST, '/api/notes/:noteId/upload-modified-file', notesApiRoute.uploadModifiedFile);
 
     apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
 
@@ -177,14 +178,15 @@ function register(app) {
     route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
         filesRoute.updateFile, apiResultHandler);
 
-    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron],
+    route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron], filesRoute.openFile);
+    route(GET, '/api/notes/:noteId/open-partial', [auth.checkApiAuthOrElectron],
         createPartialContentHandler(filesRoute.fileContentProvider, {
             debug: (string, extra) => { console.log(string, extra); }
         }));
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
     route(GET, '/api/notes/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
-    apiRoute(POST, '/api/notes/:noteId/saveToTmpDir', filesRoute.saveToTmpDir);
+    apiRoute(POST, '/api/notes/:noteId/save-to-tmp-dir', filesRoute.saveToTmpDir);
 
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getEffectiveNoteAttributes);
     apiRoute(POST, '/api/notes/:noteId/attributes', attributesRoute.addNoteAttribute);

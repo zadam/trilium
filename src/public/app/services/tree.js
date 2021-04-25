@@ -127,7 +127,7 @@ async function sortAlphabetically(noteId) {
 }
 
 ws.subscribeToMessages(message => {
-   if (message.type === 'open-note') {
+   if (message.type === 'openNote') {
        appContext.tabManager.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {

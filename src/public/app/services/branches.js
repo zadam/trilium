@@ -153,12 +153,12 @@ ws.subscribeToMessages(async message => {
         return;
     }
 
-    if (message.type === 'task-error') {
+    if (message.type === 'taskError') {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
-    } else if (message.type === 'task-progress-count') {
+    } else if (message.type === 'taskProgressCount') {
         toastService.showPersistent(makeToast(message.taskId, "Delete notes in progress: " + message.progressCount));
-    } else if (message.type === 'task-succeeded') {
+    } else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Delete finished successfully.");
         toast.closeAfter = 5000;
 
@@ -167,16 +167,16 @@ ws.subscribeToMessages(async message => {
 });
 
 ws.subscribeToMessages(async message => {
-    if (message.taskType !== 'undelete-notes') {
+    if (message.taskType !== 'undeleteNotes') {
         return;
     }
 
-    if (message.type === 'task-error') {
+    if (message.type === 'taskError') {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
-    } else if (message.type === 'task-progress-count') {
+    } else if (message.type === 'taskProgressCount') {
         toastService.showPersistent(makeToast(message.taskId, "Undeleting notes in progress: " + message.progressCount));
-    } else if (message.type === 'task-succeeded') {
+    } else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Undeleting notes finished successfully.");
         toast.closeAfter = 5000;
 

@@ -59,6 +59,7 @@ async function sync() {
         if (e.message &&
                 (e.message.includes('ECONNREFUSED') ||
                  e.message.includes('ERR_CONNECTION_REFUSED') ||
+                 e.message.includes('ERR_ADDRESS_UNREACHABLE') ||
                  e.message.includes('Bad Gateway'))) {
 
             ws.syncFailed();

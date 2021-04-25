@@ -3,10 +3,13 @@
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
+const log = require('../../services/log');
 const noteRevisionService = require('../../services/note_revisions');
 const tmp = require('tmp');
 const fs = require('fs');
 const { Readable } = require('stream');
+const chokidar = require('chokidar');
+const ws = require('../../services/ws');
 
 function updateFile(req) {
     const {noteId} = req.params;
@@ -119,6 +122,19 @@ function saveToTmpDir(req) {
 
     fs.writeSync(tmpObj.fd, note.getContent());
     fs.closeSync(tmpObj.fd);
+
+    log.info(`Saved temporary file for note ${noteId} into ${tmpObj.name}`);
+
+    if (utils.isElectron()) {
+        chokidar.watch(tmpObj.name).on('change', (path, stats) => {
+            ws.sendMessageToAllClients({
+                type: 'openedFileUpdated',
+                noteId: noteId,
+                lastModifiedMs: stats.atimeMs,
+                filePath: tmpObj.name
+            });
+        });
+    }
 
     return {
         tmpFilePath: tmpObj.name

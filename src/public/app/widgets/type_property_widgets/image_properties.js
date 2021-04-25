@@ -26,6 +26,8 @@ const TPL = `
     <div class="no-print" style="display: flex; justify-content: space-evenly; margin: 10px;">
         <button class="image-download btn btn-sm btn-primary" type="button">Download</button>
 
+        <button class="image-open btn btn-sm btn-primary" type="button">Open</button>
+
         <button class="image-copy-to-clipboard btn btn-sm btn-primary" type="button">Copy to clipboard</button>
 
         <button class="image-upload-new-revision btn btn-sm btn-primary" type="button">Upload new revision</button>
@@ -58,6 +60,9 @@ export default class ImagePropertiesWidget extends TabAwareWidget {
         this.$fileName = this.$widget.find(".image-filename");
         this.$fileType = this.$widget.find(".image-filetype");
         this.$fileSize = this.$widget.find(".image-filesize");
+
+        this.$openButton = this.$widget.find(".image-open");
+        this.$openButton.on('click', () => openService.openNoteExternally(this.noteId));
 
         this.$imageDownloadButton = this.$widget.find(".image-download");
         this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));

@@ -164,11 +164,6 @@ div.ui-tooltip {
     overflow: auto;
 }
 
-.alert {
-    padding: 5px;
-    width: auto;
-}
-
 /*
 * .search-inactive is added to search window <webview> when the window
 * is inactive.
@@ -761,9 +756,14 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     width: 100%;
 }
 
+.alert {
+    padding: 8px 14px;
+    width: auto;
+}
+
 .alert-warning, .alert-info {
     color: var(--main-text-color) !important;
-    background-color: var(--accented-background-color) !important;
+    background-color: transparent !important;
     border-color: var(--main-border-color) !important;
 }
 

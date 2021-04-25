@@ -21,9 +21,9 @@ function downloadFileNote(noteId) {
     download(url);
 }
 
-async function openFileNote(noteId) {
+async function openNoteExternally(noteId) {
     if (utils.isElectron()) {
-        const resp = await server.post("notes/" + noteId + "/saveToTmpDir");
+        const resp = await server.post("notes/" + noteId + "/save-to-tmp-dir");
 
         const electron = utils.dynamicRequire('electron');
         const res = await electron.shell.openPath(resp.tmpFilePath);
@@ -66,7 +66,7 @@ function getHost() {
 export default {
     download,
     downloadFileNote,
-    openFileNote,
+    openNoteExternally,
     downloadNoteRevision,
     getUrlForDownload
 }

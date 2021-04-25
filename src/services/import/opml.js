@@ -36,6 +36,12 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
         if (opmlVersion === 1) {
             title = outline.$.title;
             content = toHtml(outline.$.text);
+
+            if (!title || !title.trim()) {
+                // https://github.com/zadam/trilium/issues/1862
+                title = outline.$.text;
+                content = '';
+            }
         }
         else if (opmlVersion === 2) {
             title = outline.$.text;

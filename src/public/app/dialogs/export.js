@@ -121,14 +121,14 @@ ws.subscribeToMessages(async message => {
         return;
     }
 
-    if (message.type === 'task-error') {
+    if (message.type === 'taskError') {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
     }
-    else if (message.type === 'task-progress-count') {
+    else if (message.type === 'taskProgressCount') {
         toastService.showPersistent(makeToast(message.taskId, "Export in progress: " + message.progressCount));
     }
-    else if (message.type === 'task-succeeded') {
+    else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Export finished successfully.");
         toast.closeAfter = 5000;
 

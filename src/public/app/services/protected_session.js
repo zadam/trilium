@@ -89,18 +89,18 @@ function makeToast(message, protectingLabel, text) {
 }
 
 ws.subscribeToMessages(async message => {
-    if (message.taskType !== 'protect-notes') {
+    if (message.taskType !== 'protectNotes') {
         return;
     }
 
     const protectingLabel = message.data.protect ? "Protecting" : "Unprotecting";
 
-    if (message.type === 'task-error') {
+    if (message.type === 'taskError') {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
-    } else if (message.type === 'task-progress-count') {
+    } else if (message.type === 'taskProgressCount') {
         toastService.showPersistent(makeToast(message, protectingLabel,protectingLabel + " in progress: " + message.progressCount));
-    } else if (message.type === 'task-succeeded') {
+    } else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message, protectingLabel, protectingLabel + " finished successfully.");
         toast.closeAfter = 3000;
 

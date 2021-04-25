@@ -69,7 +69,7 @@ class ValueExtractor {
 
                 i++;
             }
-            else if (pathEl in PROP_MAPPING) {
+            else if (pathEl in PROP_MAPPING || pathEl === 'random') {
                 if (i !== this.propertyPath.length - 1) {
                     return `${pathEl} is a terminal property specifier and must be at the end`;
                 }
@@ -112,6 +112,9 @@ class ValueExtractor {
             }
             else if (cur() === 'children') {
                 cursor = cursor.children[0];
+            }
+            else if (cur() === 'random') {
+                return Math.random();
             }
             else if (cur() in PROP_MAPPING) {
                 return cursor[PROP_MAPPING[cur()]];
