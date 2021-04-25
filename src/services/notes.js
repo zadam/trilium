@@ -7,8 +7,11 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
+const BeccaNote = require('../services/becca/entities/note.js');
 const Branch = require('../entities/branch');
+const BeccaBranch = require('../services/becca/entities/branch.js');
 const Attribute = require('../entities/attribute');
+const BeccaAttribute = require('../services/becca/entities/attribute.js');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
@@ -67,7 +70,7 @@ function deriveMime(type, mime) {
 function copyChildAttributes(parentNote, childNote) {
     for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
-            new Attribute({
+            new BeccaAttribute({
                 noteId: childNote.noteId,
                 type: attr.type,
                 name: attr.name.substr(6),
@@ -75,8 +78,6 @@ function copyChildAttributes(parentNote, childNote) {
                 position: attr.position,
                 isInheritable: attr.isInheritable
             }).save();
-
-            childNote.invalidateAttributeCache();
         }
     }
 }
@@ -99,7 +100,7 @@ function copyChildAttributes(parentNote, childNote) {
  * @return {{note: Note, branch: Branch}}
  */
 function createNewNote(params) {
-    const parentNote = repository.getNote(params.parentNoteId);
+    const parentNote = becca.notes[params.parentNoteId];
 
     if (!parentNote) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
@@ -110,7 +111,7 @@ function createNewNote(params) {
     }
 
     return sql.transactional(() => {
-        const note = new Note({
+        const note = new BeccaNote(becca,{
             noteId: params.noteId, // optionally can force specific noteId
             title: params.title,
             isProtected: !!params.isProtected,
@@ -120,7 +121,7 @@ function createNewNote(params) {
 
         note.setContent(params.content);
 
-        const branch = new Branch({
+        const branch = new BeccaBranch(becca,{
             noteId: note.noteId,
             parentNoteId: params.parentNoteId,
             notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
@@ -416,11 +417,12 @@ function saveLinks(note, content) {
         throw new Error("Unrecognized type " + note.type);
     }
 
-    const existingLinks = note.getLinks();
+    const existingLinks = note.getRelations().filter(rel =>
+        ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(rel.name));
 
     for (const foundLink of foundLinks) {
-        const targetNote = repository.getNote(foundLink.value);
-        if (!targetNote || targetNote.isDeleted) {
+        const targetNote = becca.notes[foundLink.value];
+        if (!targetNote) {
             continue;
         }
 
@@ -429,7 +431,7 @@ function saveLinks(note, content) {
             && existingLink.name === foundLink.name);
 
         if (!existingLink) {
-            const newLink = new Attribute({
+            const newLink = new BeccaAttribute({
                 noteId: note.noteId,
                 type: 'relation',
                 name: foundLink.name,
@@ -437,10 +439,6 @@ function saveLinks(note, content) {
             }).save();
 
             existingLinks.push(newLink);
-        }
-        else if (existingLink.isDeleted) {
-            existingLink.isDeleted = false;
-            existingLink.save();
         }
         // else the link exists so we don't need to do anything
     }
@@ -451,8 +449,7 @@ function saveLinks(note, content) {
                                     && existingLink.name === foundLink.name));
 
     for (const unusedLink of unusedLinks) {
-        unusedLink.isDeleted = true;
-        unusedLink.save();
+        unusedLink.markAsDeleted();
     }
 
     return content;

@@ -1,5 +1,9 @@
 "use strict";
 
+const utils = require('../../utils');
+
+let repo = null;
+
 class AbstractEntity {
     beforeSaving() {
         this.generateIdIfNecessary();
@@ -27,7 +31,7 @@ class AbstractEntity {
 
     get repository() {
         if (!repo) {
-            repo = require('../services/repository');
+            repo = require('../../repository');
         }
 
         return repo;

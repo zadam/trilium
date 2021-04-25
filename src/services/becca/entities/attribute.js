@@ -113,7 +113,7 @@ class Attribute extends AbstractEntity {
         }
     }
 
-    get pojo() {
+    getPojo() {
         return {
             attributeId: this.attributeId,
             noteId: this.noteId,

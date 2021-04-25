@@ -34,7 +34,7 @@ class Note extends AbstractEntity {
         this.ownedAttributes = [];
 
         /** @param {Attribute[]|null} */
-        this.attributeCache = null;
+        this.__attributeCache = null;
         /** @param {Attribute[]|null} */
         this.inheritableAttributeCache = null;
 
@@ -87,6 +87,18 @@ class Note extends AbstractEntity {
 
         /** @param {string|null} */
         this.flatTextCache = null;
+    }
+
+    getParentBranches() {
+        return this.parentBranches;
+    }
+
+    getParentNotes() {
+        return this.parents;
+    }
+
+    getChildrenNotes() {
+        return this.children;
     }
 
     /*
@@ -245,9 +257,26 @@ class Note extends AbstractEntity {
         return null;
     }
 
-    /** @return {Attribute[]} */
-    get attributes() {
-        return this.__getAttributes([]);
+    /**
+     * @param {string} [type] - (optional) attribute type to filter
+     * @param {string} [name] - (optional) attribute name to filter
+     * @returns {Attribute[]} all note's attributes, including inherited ones
+     */
+    getAttributes(type, name) {
+        this.__getAttributes([]);
+
+        if (type && name) {
+            return this.__attributeCache.filter(attr => attr.type === type && attr.name === name);
+        }
+        else if (type) {
+            return this.__attributeCache.filter(attr => attr.type === type);
+        }
+        else if (name) {
+            return this.__attributeCache.filter(attr => attr.name === name);
+        }
+        else {
+            return this.__attributeCache.slice();
+        }
     }
 
     __getAttributes(path) {
@@ -255,7 +284,7 @@ class Note extends AbstractEntity {
             return [];
         }
 
-        if (!this.attributeCache) {
+        if (!this.__attributeCache) {
             const parentAttributes = this.ownedAttributes.slice();
             const newPath = [...path, this.noteId];
 
@@ -277,7 +306,7 @@ class Note extends AbstractEntity {
                 }
             }
 
-            this.attributeCache = [];
+            this.__attributeCache = [];
 
             const addedAttributeIds = new Set();
 
@@ -285,20 +314,20 @@ class Note extends AbstractEntity {
                 if (!addedAttributeIds.has(attr.attributeId)) {
                     addedAttributeIds.add(attr.attributeId);
 
-                    this.attributeCache.push(attr);
+                    this.__attributeCache.push(attr);
                 }
             }
 
             this.inheritableAttributeCache = [];
 
-            for (const attr of this.attributeCache) {
+            for (const attr of this.__attributeCache) {
                 if (attr.isInheritable) {
                     this.inheritableAttributeCache.push(attr);
                 }
             }
         }
 
-        return this.attributeCache;
+        return this.__attributeCache;
     }
 
     /** @return {Attribute[]} */
@@ -315,21 +344,21 @@ class Note extends AbstractEntity {
     }
 
     hasAttribute(type, name) {
-        return !!this.attributes.find(attr => attr.type === type && attr.name === name);
+        return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
     }
 
     getAttributeCaseInsensitive(type, name, value) {
         name = name.toLowerCase();
         value = value ? value.toLowerCase() : null;
 
-        return this.attributes.find(
+        return this.getAttributes().find(
             attr => attr.type === type
             && attr.name.toLowerCase() === name
             && (!value || attr.value.toLowerCase() === value));
     }
 
     getRelationTarget(name) {
-        const relation = this.attributes.find(attr => attr.type === 'relation' && attr.name === name);
+        const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
 
         return relation ? relation.targetNote : null;
     }
@@ -448,6 +477,54 @@ class Note extends AbstractEntity {
         return attr ? attr.value : null;
     }
 
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     */
+    getLabels(name) {
+        return this.getAttributes(LABEL, name);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {string[]} all note's label values, including inherited ones
+     */
+    getLabelValues(name) {
+        return this.getLabels(name).map(l => l.value);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {Attribute[]} all note's labels (attributes with type label), excluding inherited ones
+     */
+    getOwnedLabels(name) {
+        return this.getOwnedAttributes(LABEL, name);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {string[]} all note's label values, excluding inherited ones
+     */
+    getOwnedLabelValues(name) {
+        return this.getOwnedAttributes(LABEL, name).map(l => l.value);
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     */
+    getRelations(name) {
+        return this.getAttributes(RELATION, name);
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Attribute[]} all note's relations (attributes with type relation), excluding inherited ones
+     */
+    getOwnedRelations(name) {
+        return this.getOwnedAttributes(RELATION, name);
+    }
+
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
@@ -485,7 +562,7 @@ class Note extends AbstractEntity {
 
             this.flatTextCache += this.title + ' ';
 
-            for (const attr of this.attributes) {
+            for (const attr of this.getAttributes()) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
                 this.flatTextCache += (attr.type === 'label' ? '#' : '~') + attr.name;
 
@@ -505,7 +582,7 @@ class Note extends AbstractEntity {
     invalidateThisCache() {
         this.flatTextCache = null;
 
-        this.attributeCache = null;
+        this.__attributeCache = null;
         this.inheritableAttributeCache = null;
         this.ancestorCache = null;
     }
@@ -604,7 +681,7 @@ class Note extends AbstractEntity {
     }
 
     get labelCount() {
-        return this.attributes.filter(attr => attr.type === 'label').length;
+        return this.getAttributes().filter(attr => attr.type === 'label').length;
     }
 
     get ownedLabelCount() {
@@ -612,11 +689,11 @@ class Note extends AbstractEntity {
     }
 
     get relationCount() {
-        return this.attributes.filter(attr => attr.type === 'relation' && !attr.isAutoLink()).length;
+        return this.getAttributes().filter(attr => attr.type === 'relation' && !attr.isAutoLink()).length;
     }
 
     get relationCountIncludingLinks() {
-        return this.attributes.filter(attr => attr.type === 'relation').length;
+        return this.getAttributes().filter(attr => attr.type === 'relation').length;
     }
 
     get ownedRelationCount() {
@@ -636,11 +713,11 @@ class Note extends AbstractEntity {
     }
 
     get attributeCount() {
-        return this.attributes.length;
+        return this.getAttributes().length;
     }
 
     get ownedAttributeCount() {
-        return this.attributes.length;
+        return this.getAttributes().length;
     }
 
     get ancestors() {
@@ -715,8 +792,8 @@ class Note extends AbstractEntity {
         }
     }
 
-    get pojo() {
-        return {
+    getPojo() {
+        const pojo = {
             noteId: this.noteId,
             title: this.title,
             isProtected: this.isProtected,
@@ -727,6 +804,18 @@ class Note extends AbstractEntity {
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified
         };
+
+        if (pojo.isProtected) {
+            if (this.isDecrypted) {
+                pojo.title = protectedSessionService.encrypt(pojo.title);
+            }
+            else {
+                // updating protected note outside of protected session means we will keep original ciphertexts
+                delete pojo.title;
+            }
+        }
+
+        return pojo;
     }
 
     beforeSaving() {
@@ -744,16 +833,8 @@ class Note extends AbstractEntity {
         this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
-    updatePojo(pojo) {
-        if (pojo.isProtected) {
-            if (this.isDecrypted) {
-                pojo.title = protectedSessionService.encrypt(pojo.title);
-            }
-            else {
-                // updating protected note outside of protected session means we will keep original ciphertexts
-                delete pojo.title;
-            }
-        }
+    markAsDeleted() {
+        sql.execute("UPDATE notes SET isDeleted = 1 WHERE noteId = ?", [this.noteId]);
     }
 }
 

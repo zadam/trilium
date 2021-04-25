@@ -94,11 +94,19 @@ function updateEntity(entity) {
         entity.beforeSaving();
     }
 
-    const clone = Object.assign({}, entity);
+    let clone;
 
-    // this check requires that updatePojo is not static
-    if (entity.updatePojo) {
-        entity.updatePojo(clone);
+    if (entity.getPojo) {
+        clone = entity.getPojo();
+    }
+    else {
+        // FIXME: delete this branch after migration to becca
+        clone = Object.assign({}, entity);
+
+        // this check requires that updatePojo is not static
+        if (entity.updatePojo) {
+            entity.updatePojo(clone);
+        }
     }
 
     for (const key in clone) {

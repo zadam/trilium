@@ -65,15 +65,25 @@ class Branch extends AbstractEntity {
         return this.becca.notes[this.parentNoteId];
     }
 
-    get pojo() {
-        return {
+    getPojo() {
+        const pojo = {
             branchId: this.branchId,
             noteId: this.noteId,
             parentNoteId: this.parentNoteId,
             prefix: this.prefix,
             notePosition: this.notePosition,
-            isExpanded: this.isExpanded
+            isExpanded: this.isExpanded,
+            utcDateModified: dateUtils.utcNowDateTime()
         };
+
+        // FIXME
+        if (true || !pojo.branchId) {
+            pojo.utcDateCreated = dateUtils.utcNowDateTime();
+        }
+
+        this.utcDateModified = dateUtils.utcNowDateTime();
+
+        return pojo;
     }
 
     createClone(parentNoteId, notePosition) {
@@ -96,13 +106,7 @@ class Branch extends AbstractEntity {
             this.isExpanded = false;
         }
 
-        if (!this.branchId) {
-            this.utcDateCreated = dateUtils.utcNowDateTime();
-        }
-
         super.beforeSaving();
-
-        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 }
 

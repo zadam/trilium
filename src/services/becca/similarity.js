@@ -73,7 +73,7 @@ function buildRewardMap(note) {
             addToRewardMap(ancestorNote.title, 0.3);
         }
 
-        for (const branch of ancestorNote.parentBranches) {
+        for (const branch of ancestorNote.getParentBranches()) {
             addToRewardMap(branch.prefix, 0.3);
         }
     }
@@ -84,11 +84,11 @@ function buildRewardMap(note) {
         addToRewardMap(note.title, 1);
     }
 
-    for (const branch of note.parentBranches) {
+    for (const branch of note.getParentBranches()) {
         addToRewardMap(branch.prefix, 1);
     }
 
-    for (const attr of note.attributes) {
+    for (const attr of note.getAttributes()) {
         if (attr.name.startsWith('child:')
             || attr.name.startsWith('relation:')
             || attr.name.startsWith('label:')) {
@@ -222,7 +222,7 @@ function splitToWords(text) {
  * that it doesn't actually need to be shown to the user.
  */
 function hasConnectingRelation(sourceNote, targetNote) {
-    return sourceNote.attributes.find(attr => attr.type === 'relation'
+    return sourceNote.getAttributes().find(attr => attr.type === 'relation'
                                            && ['includenotelink', 'imagelink'].includes(attr.name)
                                            && attr.value === targetNote.noteId);
 }
@@ -243,7 +243,7 @@ async function findSimilarNotes(noteId) {
         dateLimits = buildDateLimits(baseNote);
     }
     catch (e) {
-        throw new Error(`Date limits failed with ${e.message}, entity: ${JSON.stringify(baseNote.pojo)}`);
+        throw new Error(`Date limits failed with ${e.message}, entity: ${JSON.stringify(baseNote.getPojo())}`);
     }
 
     const rewardMap = buildRewardMap(baseNote);
@@ -298,7 +298,7 @@ async function findSimilarNotes(noteId) {
                         score += gatherRewards(parentNote.title, 0.3);
                     }
 
-                    for (const branch of parentNote.parentBranches) {
+                    for (const branch of parentNote.getParentBranches()) {
                         score += gatherRewards(branch.prefix, 0.3)
                                + gatherAncestorRewards(branch.parentNote);
                     }
@@ -319,11 +319,11 @@ async function findSimilarNotes(noteId) {
             score += gatherRewards(candidateNote.title);
         }
 
-        for (const branch of candidateNote.parentBranches) {
+        for (const branch of candidateNote.getParentBranches()) {
             score += gatherRewards(branch.prefix);
         }
 
-        for (const attr of candidateNote.attributes) {
+        for (const attr of candidateNote.getAttributes()) {
             if (attr.name.startsWith('child:')
                 || attr.name.startsWith('relation:')
                 || attr.name.startsWith('label:')) {
@@ -342,7 +342,7 @@ async function findSimilarNotes(noteId) {
             let factor = 1;
 
             if (!value.startsWith) {
-                log.info(`Unexpected falsy value for attribute ${JSON.stringify(attr.pojo)}`);
+                log.info(`Unexpected falsy value for attribute ${JSON.stringify(attr.getPojo())}`);
                 continue;
             }
             else if (value.startsWith('http')) {
@@ -433,8 +433,6 @@ async function findSimilarNotes(noteId) {
         if (results.length >= 1) {
             for (const {noteId} of results) {
                 const note = becca.notes[noteId];
-
-                console.log("NOTE", note.pojo);
 
                 displayRewards = true;
                 ancestorRewardCache = {}; // reset cache
