@@ -26,7 +26,8 @@ class AbstractEntity {
     }
 
     getUtcDateChanged() {
-        return this.utcDateModified || this.utcDateCreated;
+        // FIXME
+        return this.utcDateModified || this.utcDateCreated || "FAKE";
     }
 
     get repository() {

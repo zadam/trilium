@@ -121,7 +121,9 @@ class Attribute extends AbstractEntity {
             name: this.name,
             position: this.position,
             value: this.value,
-            isInheritable: this.isInheritable
+            isInheritable: this.isInheritable,
+            utcDateModified: dateUtils.utcNowDateTime(),
+            isDeleted: false
         };
     }
 
@@ -148,8 +150,6 @@ class Attribute extends AbstractEntity {
         }
 
         super.beforeSaving();
-
-        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
     createClone(type, name, value, isInheritable) {

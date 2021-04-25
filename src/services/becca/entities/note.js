@@ -93,12 +93,20 @@ class Note extends AbstractEntity {
         return this.parentBranches;
     }
 
+    getBranches() {
+        return this.parentBranches;
+    }
+
     getParentNotes() {
         return this.parents;
     }
 
-    getChildrenNotes() {
+    getChildNotes() {
         return this.children;
+    }
+
+    getChildBranches() {
+        return this.children.map(childNote => this.becca.getBranch(childNote.noteId, this.noteId));
     }
 
     /*
@@ -525,6 +533,26 @@ class Note extends AbstractEntity {
         return this.getOwnedAttributes(RELATION, name);
     }
 
+    /**
+     * @param {string} [type] - (optional) attribute type to filter
+     * @param {string} [name] - (optional) attribute name to filter
+     * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
+     */
+    getOwnedAttributes(type, name) {
+        if (type && name) {
+            return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name);
+        }
+        else if (type) {
+            return this.ownedAttributes.filter(attr => attr.type === type);
+        }
+        else if (name) {
+            return this.ownedAttributes.filter(attr => attr.name === name);
+        }
+        else {
+            return this.ownedAttributes.slice();
+        }
+    }
+
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
@@ -672,6 +700,10 @@ class Note extends AbstractEntity {
         return this.subtreeNotes.map(note => note.noteId);
     }
 
+    getDescendantNoteIds() {
+        return this.subtreeNoteIds;
+    }
+
     get parentCount() {
         return this.parents.length;
     }
@@ -773,10 +805,6 @@ class Note extends AbstractEntity {
         }
 
         return minDistance;
-    }
-
-    getChildBranches() {
-        return this.children.map(childNote => this.becca.getBranch(childNote.noteId, this.noteId));
     }
 
     decrypt() {

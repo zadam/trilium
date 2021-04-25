@@ -762,7 +762,7 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
 
     log.info(`Duplicating ${origNoteId} subtree into ${newParentNoteId}`);
 
-    const origNote = repository.getNote(origNoteId);
+    const origNote = becca.notes[origNoteId];
     // might be null if orig note is not in the target newParentNoteId
     const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === newParentNoteId);
 
@@ -799,16 +799,16 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
     const newNoteId = noteIdMapping[origNote.noteId];
 
-    const newBranch = new Branch({
+    const newBranch = new BeccaBranch(becca,{
         noteId: newNoteId,
         parentNoteId: newParentNoteId,
         // here increasing just by 1 to make sure it's directly after original
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
 
-    const existingNote = repository.getNote(newNoteId);
+    const existingNote = becca.notes[newNoteId];
 
-    if (existingNote) {
+    if (existingNote.title !== undefined) { // checking that it's not just note's skeleton created because of Branch above
         // note has multiple clones and was already created from another placement in the tree
         // so a branch is all we need for this clone
         return {
@@ -817,7 +817,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
         }
     }
 
-    const newNote = new Note(origNote);
+    const newNote = new BeccaNote(becca, origNote);
     newNote.noteId = newNoteId;
     newNote.dateCreated = dateUtils.localNowDateTime();
     newNote.utcDateCreated = dateUtils.utcNowDateTime();
@@ -833,7 +833,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     newNote.setContent(content);
 
     for (const attribute of origNote.getOwnedAttributes()) {
-        const attr = new Attribute(attribute);
+        const attr = new BeccaAttribute(becca, attribute);
         attr.attributeId = undefined; // force creation of new attribute
         attr.noteId = newNote.noteId;
 

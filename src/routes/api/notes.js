@@ -9,6 +9,7 @@ const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 const fs = require('fs');
 const noteRevisionService = require("../../services/note_revisions.js");
+const becca = require("../../services/becca/becca.js");
 
 function getNote(req) {
     const noteId = req.params.noteId;
@@ -107,7 +108,7 @@ function sortChildNotes(req) {
 
 function protectNote(req) {
     const noteId = req.params.noteId;
-    const note = repository.getNote(noteId);
+    const note = becca.notes[noteId];
     const protect = !!parseInt(req.params.isProtected);
     const includingSubTree = !!parseInt(req.query.subtree);
 

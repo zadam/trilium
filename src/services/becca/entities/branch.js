@@ -55,6 +55,10 @@ class Branch extends AbstractEntity {
         return this.becca.notes[this.noteId];
     }
 
+    getNote() {
+        return this.childNote;
+    }
+
     /** @return {Note} */
     get parentNote() {
         if (!(this.parentNoteId in this.becca.notes)) {
