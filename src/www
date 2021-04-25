@@ -8,10 +8,13 @@ process.on('unhandledRejection', error => {
     require('./services/log').info(error);
 });
 
-process.on('SIGINT', function() {
-	console.log("Caught interrupt signal. Exiting.");
-	process.exit();
-});
+function exit() {
+    console.log("Caught interrupt/termination signal. Exiting.");
+    process.exit(0);
+}
+
+process.on('SIGINT', exit);
+process.on('SIGTERM', exit);
 
 const { app, sessionParser } = require('./app');
 const fs = require('fs');
