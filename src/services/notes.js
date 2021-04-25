@@ -145,7 +145,7 @@ function createNewNote(params) {
 
 function createNewNoteWithTarget(target, targetBranchId, params) {
     if (!params.type) {
-        const parentNote = repository.getNote(params.parentNoteId);
+        const parentNote = becca.notes[params.parentNoteId];
 
         // code note type can be inherited, otherwise text is default
         params.type = parentNote.type === 'code' ? 'code' : 'text';
@@ -156,13 +156,13 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
         return createNewNote(params);
     }
     else if (target === 'after') {
-        const afterNote = becca.branches[targetBranchId].notePosition;
+        const afterBranch = becca.branches[targetBranchId];
 
-        // not updating utcDateModified to avoig having to sync whole rows
+        // not updating utcDateModified to avoid having to sync whole rows
         sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
-            [params.parentNoteId, afterNote.notePosition]);
+            [params.parentNoteId, afterBranch.notePosition]);
 
-        params.notePosition = afterNote.notePosition + 10;
+        params.notePosition = afterBranch.notePosition + 10;
 
         const retObject = createNewNote(params);
 
