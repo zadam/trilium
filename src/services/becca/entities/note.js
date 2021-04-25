@@ -2,12 +2,23 @@
 
 const protectedSessionService = require('../../protected_session');
 const log = require('../../log');
+const sql = require('../../sql');
+const utils = require('../../utils');
+const dateUtils = require('../../date_utils');
+const entityChangesService = require('../../entity_changes.js');
+const AbstractEntity = require("./abstract_entity.js");
 
 const LABEL = 'label';
 const RELATION = 'relation';
 
-class Note {
+class Note extends AbstractEntity {
+    static get entityName() { return "notes"; }
+    static get primaryKeyName() { return "noteId"; }
+    static get hashedProperties() { return ["noteId", "title", "isProtected", "type", "mime"]; }
+
     constructor(becca, row) {
+        super();
+
         /** @param {Becca} */
         this.becca = becca;
 
@@ -46,10 +57,14 @@ class Note {
     }
 
     update(row) {
+        // ------ Database persisted attributes ------
+
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */
         this.title = row.title;
+        /** @param {boolean} */
+        this.isProtected = !!row.isProtected;
         /** @param {string} */
         this.type = row.type;
         /** @param {string} */
@@ -62,8 +77,9 @@ class Note {
         this.utcDateCreated = row.utcDateCreated;
         /** @param {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @param {boolean} */
-        this.isProtected = !!row.isProtected;
+
+        // ------ Derived attributes ------
+
         /** @param {boolean} */
         this.isDecrypted = !row.isProtected || !!row.isContentAvailable;
 
@@ -71,6 +87,162 @@ class Note {
 
         /** @param {string|null} */
         this.flatTextCache = null;
+    }
+
+    /*
+     * Note content has quite special handling - it's not a separate entity, but a lazily loaded
+     * part of Note entity with it's own sync. Reasons behind this hybrid design has been:
+     *
+     * - content can be quite large and it's not necessary to load it / fill memory for any note access even if we don't need a content, especially for bulk operations like search
+     * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and entity changes records)
+     * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
+     */
+
+    /** @returns {*} */
+    getContent(silentNotFoundError = false) {
+        const row = sql.getRow(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+        if (!row) {
+            if (silentNotFoundError) {
+                return undefined;
+            }
+            else {
+                throw new Error("Cannot find note content for noteId=" + this.noteId);
+            }
+        }
+
+        let content = row.content;
+
+        if (this.isProtected) {
+            if (protectedSessionService.isProtectedSessionAvailable()) {
+                content = content === null ? null : protectedSessionService.decrypt(content);
+            }
+            else {
+                content = "";
+            }
+        }
+
+        if (this.isStringNote()) {
+            return content === null
+                ? ""
+                : content.toString("UTF-8");
+        }
+        else {
+            return content;
+        }
+    }
+
+    /** @returns {{contentLength, dateModified, utcDateModified}} */
+    getContentMetadata() {
+        return sql.getRow(`
+            SELECT 
+                LENGTH(content) AS contentLength, 
+                dateModified,
+                utcDateModified 
+            FROM note_contents 
+            WHERE noteId = ?`, [this.noteId]);
+    }
+
+    /** @returns {*} */
+    getJsonContent() {
+        const content = this.getContent();
+
+        if (!content || !content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(content);
+    }
+
+    setContent(content) {
+        if (content === null || content === undefined) {
+            throw new Error(`Cannot set null content to note ${this.noteId}`);
+        }
+
+        if (this.isStringNote()) {
+            content = content.toString();
+        }
+        else {
+            content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        }
+
+        const pojo = {
+            noteId: this.noteId,
+            content: content,
+            dateModified: dateUtils.localNowDateTime(),
+            utcDateModified: dateUtils.utcNowDateTime()
+        };
+
+        if (this.isProtected) {
+            if (protectedSessionService.isProtectedSessionAvailable()) {
+                pojo.content = protectedSessionService.encrypt(pojo.content);
+            }
+            else {
+                throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
+            }
+        }
+
+        sql.upsert("note_contents", "noteId", pojo);
+
+        const hash = utils.hash(this.noteId + "|" + pojo.content.toString());
+
+        entityChangesService.addEntityChange({
+            entityName: 'note_contents',
+            entityId: this.noteId,
+            hash: hash,
+            isErased: false,
+            utcDateChanged: pojo.utcDateModified
+        }, null);
+    }
+
+    setJsonContent(content) {
+        this.setContent(JSON.stringify(content, null, '\t'));
+    }
+
+    /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
+    isRoot() {
+        return this.noteId === 'root';
+    }
+
+    /** @returns {boolean} true if this note is of application/json content type */
+    isJson() {
+        return this.mime === "application/json";
+    }
+
+    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    isJavaScript() {
+        return (this.type === "code" || this.type === "file")
+            && (this.mime.startsWith("application/javascript")
+                || this.mime === "application/x-javascript"
+                || this.mime === "text/javascript");
+    }
+
+    /** @returns {boolean} true if this note is HTML */
+    isHtml() {
+        return ["code", "file", "render"].includes(this.type)
+            && this.mime === "text/html";
+    }
+
+    /** @returns {boolean} true if the note has string content (not binary) */
+    isStringNote() {
+        return utils.isStringNote(this.type, this.mime);
+    }
+
+    /** @returns {string|null} JS script environment - either "frontend" or "backend" */
+    getScriptEnv() {
+        if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
+            return "frontend";
+        }
+
+        if (this.type === 'render') {
+            return "frontend";
+        }
+
+        if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
+            return "backend";
+        }
+
+        return null;
     }
 
     /** @return {Attribute[]} */
@@ -543,19 +715,45 @@ class Note {
         }
     }
 
-    // for logging etc
     get pojo() {
-        const pojo = {...this};
+        return {
+            noteId: this.noteId,
+            title: this.title,
+            isProtected: this.isProtected,
+            type: this.type,
+            mime: this.mime,
+            dateCreated: this.dateCreated,
+            dateModified: this.dateModified,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        };
+    }
 
-        delete pojo.becca;
-        delete pojo.ancestorCache;
-        delete pojo.attributeCache;
-        delete pojo.flatTextCache;
-        delete pojo.children;
-        delete pojo.parents;
-        delete pojo.parentBranches;
+    beforeSaving() {
+        if (!this.dateCreated) {
+            this.dateCreated = dateUtils.localNowDateTime();
+        }
 
-        return pojo;
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
+        }
+
+        super.beforeSaving();
+
+        this.dateModified = dateUtils.localNowDateTime();
+        this.utcDateModified = dateUtils.utcNowDateTime();
+    }
+
+    updatePojo(pojo) {
+        if (pojo.isProtected) {
+            if (this.isDecrypted) {
+                pojo.title = protectedSessionService.encrypt(pojo.title);
+            }
+            else {
+                // updating protected note outside of protected session means we will keep original ciphertexts
+                delete pojo.title;
+            }
+        }
     }
 }
 

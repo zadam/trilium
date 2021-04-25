@@ -1,9 +1,19 @@
 "use strict";
 
 const Note = require('./note.js');
+const AbstractEntity = require("./abstract_entity.js");
+const sql = require("../../sql.js");
+const dateUtils = require("../../date_utils.js");
 
-class Branch {
+class Branch extends AbstractEntity {
+    static get entityName() { return "branches"; }
+    static get primaryKeyName() { return "branchId"; }
+    // notePosition is not part of hash because it would produce a lot of updates in case of reordering
+    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "prefix"]; }
+
     constructor(becca, row) {
+        super();
+
         /** @param {Becca} */
         this.becca = becca;
         /** @param {string} */
@@ -55,13 +65,44 @@ class Branch {
         return this.becca.notes[this.parentNoteId];
     }
 
-    // for logging etc
     get pojo() {
-        const pojo = {...this};
+        return {
+            branchId: this.branchId,
+            noteId: this.noteId,
+            parentNoteId: this.parentNoteId,
+            prefix: this.prefix,
+            notePosition: this.notePosition,
+            isExpanded: this.isExpanded
+        };
+    }
 
-        delete pojo.becca;
+    createClone(parentNoteId, notePosition) {
+        return new Branch({
+            noteId: this.noteId,
+            parentNoteId: parentNoteId,
+            notePosition: notePosition,
+            prefix: this.prefix,
+            isExpanded: this.isExpanded
+        });
+    }
 
-        return pojo;
+    beforeSaving() {
+        if (this.notePosition === undefined || this.notePosition === null) {
+            const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
+            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
+        }
+
+        if (!this.isExpanded) {
+            this.isExpanded = false;
+        }
+
+        if (!this.branchId) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
+        }
+
+        super.beforeSaving();
+
+        this.utcDateModified = dateUtils.utcNowDateTime();
     }
 }
 

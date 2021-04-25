@@ -1,9 +1,19 @@
 "use strict";
 
 const Note = require('./note.js');
+const AbstractEntity = require("./abstract_entity.js");
+const sql = require("../../sql.js");
+const dateUtils = require("../../date_utils.js");
+const promotedAttributeDefinitionParser = require("../../promoted_attribute_definition_parser");
 
-class Attribute {
+class Attribute extends AbstractEntity {
+    static get entityName() { return "attributes"; }
+    static get primaryKeyName() { return "attributeId"; }
+    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable"]; }
+
     constructor(becca, row) {
+        super();
+
         /** @param {Becca} */
         this.becca = becca;
         /** @param {string} */
@@ -60,13 +70,99 @@ class Attribute {
         }
     }
 
-    // for logging etc
+    /**
+     * @returns {Note|null}
+     */
+    getNote() {
+        return this.repository.getNote(this.noteId);
+    }
+
+    /**
+     * @returns {Note|null}
+     */
+    getTargetNote() {
+        if (this.type !== 'relation') {
+            throw new Error(`Attribute ${this.attributeId} is not relation`);
+        }
+
+        if (!this.value) {
+            return null;
+        }
+
+        return this.repository.getNote(this.value);
+    }
+
+    /**
+     * @return {boolean}
+     */
+    isDefinition() {
+        return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));
+    }
+
+    getDefinition() {
+        return promotedAttributeDefinitionParser.parse(this.value);
+    }
+
+    getDefinedName() {
+        if (this.type === 'label' && this.name.startsWith('label:')) {
+            return this.name.substr(6);
+        } else if (this.type === 'label' && this.name.startsWith('relation:')) {
+            return this.name.substr(9);
+        } else {
+            return this.name;
+        }
+    }
+
     get pojo() {
-        const pojo = {...this};
+        return {
+            attributeId: this.attributeId,
+            noteId: this.noteId,
+            type: this.type,
+            name: this.name,
+            position: this.position,
+            value: this.value,
+            isInheritable: this.isInheritable
+        };
+    }
 
-        delete pojo.becca;
+    beforeSaving() {
+        if (!this.value) {
+            if (this.type === 'relation') {
+                throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
+            }
 
-        return pojo;
+            // null value isn't allowed
+            this.value = "";
+        }
+
+        if (this.position === undefined) {
+            this.position = 1 + sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
+        }
+
+        if (!this.isInheritable) {
+            this.isInheritable = false;
+        }
+
+        if (!this.isDeleted) {
+            this.isDeleted = false;
+        }
+
+        super.beforeSaving();
+
+        this.utcDateModified = dateUtils.utcNowDateTime();
+    }
+
+    createClone(type, name, value, isInheritable) {
+        return new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value,
+            position: this.position,
+            isInheritable: isInheritable,
+            isDeleted: false,
+            utcDateModified: this.utcDateModified
+        });
     }
 }
 
