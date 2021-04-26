@@ -869,6 +869,8 @@ class Note extends AbstractEntity {
 
     markAsDeleted() {
         sql.execute("UPDATE notes SET isDeleted = 1 WHERE noteId = ?", [this.noteId]);
+
+        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }
 }
 

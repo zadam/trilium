@@ -52,6 +52,10 @@ class Becca {
         return this.notes[noteId];
     }
 
+    getNotes(noteIds) {
+        return this.notes.filter(note => noteIds.includes(note.noteId));
+    }
+
     getBranch(branchId) {
         return this.branches[branchId];
     }

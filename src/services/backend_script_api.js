@@ -14,6 +14,7 @@ const cloningService = require('./cloning');
 const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
 const SearchContext = require("./search/search_context.js");
+const becca = require("./becca/becca.js");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -58,21 +59,21 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} noteId
      * @returns {Note|null}
      */
-    this.getNote = repository.getNote;
+    this.getNote = becca.getNote;
 
     /**
      * @method
      * @param {string} branchId
      * @returns {Branch|null}
      */
-    this.getBranch = repository.getBranch;
+    this.getBranch = becca.getBranch;
 
     /**
      * @method
      * @param {string} attributeId
      * @returns {Attribute|null}
      */
-    this.getAttribute = repository.getAttribute;
+    this.getAttribute = becca.getAttribute;
 
     /**
      * Retrieves first entity from the SQL's result set.
@@ -113,7 +114,7 @@ function BackendScriptApi(currentNote, apiParams) {
         const noteIds = searchService.findResultsWithQuery(query, new SearchContext(searchParams))
             .map(sr => sr.noteId);
 
-        return repository.getNotes(noteIds);
+        return becca.getNotes(noteIds);
     };
 
     /**

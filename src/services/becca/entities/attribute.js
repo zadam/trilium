@@ -164,6 +164,12 @@ class Attribute extends AbstractEntity {
             utcDateModified: this.utcDateModified
         });
     }
+
+    markAttributeAsDeleted() {
+        sql.execute("UPDATE attributes SET isDeleted = 1 WHERE attributeId = ?", [this.attributeId]);
+
+        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
+    }
 }
 
 module.exports = Attribute;

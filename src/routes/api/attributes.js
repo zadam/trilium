@@ -5,6 +5,7 @@ const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
+const becca = require("../../services/becca/becca.js");
 
 function getEffectiveNoteAttributes(req) {
     const note = repository.getNote(req.params.noteId);
@@ -100,15 +101,14 @@ function deleteNoteAttribute(req) {
     const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
 
-    const attribute = repository.getAttribute(attributeId);
+    const attribute = becca.getAttribute(attributeId);
 
     if (attribute) {
         if (attribute.noteId !== noteId) {
             return [400, `Attribute ${attributeId} is not owned by ${noteId}`];
         }
 
-        attribute.isDeleted = true;
-        attribute.save();
+        attribute.markAttributeAsDeleted();
     }
 }
 
