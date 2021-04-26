@@ -44,7 +44,8 @@ function filterUrlValue(value) {
  * @param {Note} note
  */
 function buildRewardMap(note) {
-    const map = {};
+    // Need to use Map instead of object: https://github.com/zadam/trilium/issues/1895
+    const map = new Map();
 
     function addToRewardMap(text, rewardFactor) {
         if (!text) {
@@ -53,13 +54,13 @@ function buildRewardMap(note) {
 
         for (const word of splitToWords(text)) {
             if (word) {
-                map[word] = map[word] || 0;
+                const currentReward = map.get(word) || 0;
 
                 // reward grows with the length of matched string
                 const length = word.length
                     - 0.9; // to penalize specifically very short words - 1 and 2 characters
 
-                map[word] += rewardFactor * Math.pow(length, 0.7);
+                map.set(word, currentReward + rewardFactor * Math.pow(length, 0.7));
             }
         }
     }
@@ -186,7 +187,8 @@ function buildDateLimits(baseNote) {
     };
 }
 
-const wordCache = {};
+// Need to use Map instead of object: https://github.com/zadam/trilium/issues/1895
+const wordCache = new Map();
 
 const WORD_BLACKLIST = [
     "a", "the", "in", "for", "from", "but", "s", "so", "if", "while", "until",
@@ -195,10 +197,11 @@ const WORD_BLACKLIST = [
 ];
 
 function splitToWords(text) {
-    let words = wordCache[text];
+    let words = wordCache.get(text);
 
     if (!words) {
-        wordCache[text] = words = text.toLowerCase().split(/[^\p{L}\p{N}]+/u);
+        words = text.toLowerCase().split(/[^\p{L}\p{N}]+/u);
+        wordCache.set(text, words);
 
         for (const idx in words) {
             if (WORD_BLACKLIST.includes(words[idx])) {
@@ -265,12 +268,12 @@ async function findSimilarNotes(noteId) {
         const lengthPenalization = 1 / Math.pow(text.length, 0.3);
 
         for (const word of splitToWords(text)) {
-            const reward = (rewardMap[word] * factor * lengthPenalization) || 0;
+            const reward = (rewardMap.get(word) * factor * lengthPenalization) || 0;
 
             if (displayRewards && reward > 0) {
                 console.log(`Reward ${Math.round(reward * 10) / 10} for word: ${word}`);
                 console.log(`Before: ${counter}, add ${reward}, res: ${counter + reward}`);
-                console.log(`${rewardMap[word]} * ${factor} * ${lengthPenalization}`);
+                console.log(`${rewardMap.get(word)} * ${factor} * ${lengthPenalization}`);
             }
 
             counter += reward;
