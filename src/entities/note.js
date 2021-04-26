@@ -801,7 +801,7 @@ class Note extends Entity {
      *
      * @returns {NoteRevision[]}
      */
-    getRevisions() {
+    getNoteRevisions() {
         return this.repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 

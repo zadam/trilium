@@ -1,38 +1,48 @@
 "use strict";
 
-const Entity = require('./entity');
-const protectedSessionService = require('../services/protected_session');
-const utils = require('../services/utils');
-const sql = require('../services/sql');
-const dateUtils = require('../services/date_utils');
-const entityChangesService = require('../services/entity_changes.js');
+const protectedSessionService = require('../../protected_session');
+const utils = require('../../utils');
+const sql = require('../../sql');
+const dateUtils = require('../../date_utils');
+const becca = require('../../becca/becca');
+const entityChangesService = require('../../entity_changes');
+const AbstractEntity = require("./abstract_entity");
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
  *
- * @property {string} noteRevisionId
- * @property {string} noteId
- * @property {string} type
- * @property {string} mime
- * @property {string} title
- * @property {boolean} isProtected
- * @property {string} dateLastEdited
- * @property {string} dateCreated
- * @property {string} utcDateLastEdited
- * @property {string} utcDateCreated
- * @property {string} utcDateModified
- *
  * @extends Entity
  */
-class NoteRevision extends Entity {
+class NoteRevision extends AbstractEntity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
     static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
-        super(row);
+        super();
 
-        this.isProtected = !!this.isProtected;
+        /** @param {string} */
+        this.noteRevisionId = row.noteRevisionId;
+        /** @param {string} */
+        this.noteId = row.noteId;
+        /** @param {string} */
+        this.type = row.type;
+        /** @param {string} */
+        this.mime = row.mime;
+        /** @param {boolean} */
+        this.isProtected = !!row.isProtected;
+        /** @param {string} */
+        this.title = row.title;
+        /** @param {string} */
+        this.dateLastEdited = row.dateLastEdited;
+        /** @param {string} */
+        this.dateCreated = row.dateCreated;
+        /** @param {string} */
+        this.utcDateLastEdited = row.utcDateLastEdited;
+        /** @param {string} */
+        this.utcDateCreated = row.utcDateCreated;
+        /** @param {string} */
+        this.utcDateModified = row.utcDateModified;
 
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
@@ -45,7 +55,7 @@ class NoteRevision extends Entity {
     }
 
     getNote() {
-        return this.repository.getNote(this.noteId);
+        return becca.notes[this.noteId];
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
@@ -64,42 +74,39 @@ class NoteRevision extends Entity {
 
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
-        if (this.content === undefined) {
-            const res = sql.getRow(`SELECT content FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
+        const res = sql.getRow(`SELECT content FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
 
-            if (!res) {
-                if (silentNotFoundError) {
-                    return undefined;
-                }
-                else {
-                    throw new Error("Cannot find note revision content for noteRevisionId=" + this.noteRevisionId);
-                }
+        if (!res) {
+            if (silentNotFoundError) {
+                return undefined;
             }
+            else {
+                throw new Error("Cannot find note revision content for noteRevisionId=" + this.noteRevisionId);
+            }
+        }
 
-            this.content = res.content;
-            if (this.isProtected) {
-                if (protectedSessionService.isProtectedSessionAvailable()) {
-                    this.content = protectedSessionService.decrypt(this.content);
-                }
-                else {
-                    this.content = "";
-                }
+        let content = res.content;
+
+        if (this.isProtected) {
+            if (protectedSessionService.isProtectedSessionAvailable()) {
+                content = protectedSessionService.decrypt(content);
+            }
+            else {
+                content = "";
             }
         }
 
         if (this.isStringNote()) {
-            return this.content === null
+            return content === null
                 ? ""
-                : this.content.toString("UTF-8");
+                : content.toString("UTF-8");
         }
         else {
-            return this.content;
+            return content;
         }
     }
 
     setContent(content) {
-        this.content = content;
-
         const pojo = {
             noteRevisionId: this.noteRevisionId,
             content: content,

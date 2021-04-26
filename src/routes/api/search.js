@@ -62,7 +62,7 @@ const ACTION_HANDLERS = {
         note.save();
     },
     deleteNoteRevisions: (action, note) => {
-        noteRevisionService.eraseNoteRevisions(note.getRevisions().map(rev => rev.noteRevisionId));
+        noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {

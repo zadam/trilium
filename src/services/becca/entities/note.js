@@ -7,6 +7,7 @@ const utils = require('../../utils');
 const dateUtils = require('../../date_utils');
 const entityChangesService = require('../../entity_changes.js');
 const AbstractEntity = require("./abstract_entity.js");
+const NoteRevision = require("./note_revision.js");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -805,6 +806,11 @@ class Note extends AbstractEntity {
         }
 
         return minDistance;
+    }
+
+    getNoteRevisions() {
+        return sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId])
+            .map(row => new NoteRevision(row));
     }
 
     decrypt() {

@@ -1,6 +1,6 @@
 const repository = require('../services/repository');
 const Note = require('../entities/note');
-const NoteRevision = require('../entities/note_revision');
+const NoteRevision = require('../services/becca/entities/note_revision.js');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const RecentNote = require('../entities/recent_note');

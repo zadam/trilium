@@ -7,7 +7,7 @@ const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
 const Note = require('../entities/note');
 const Attribute = require('../entities/attribute');
-const NoteRevision = require('../entities/note_revision');
+const NoteRevision = require('./becca/entities/note_revision.js');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 
