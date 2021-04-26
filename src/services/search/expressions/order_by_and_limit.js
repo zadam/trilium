@@ -28,6 +28,14 @@ class OrderByAndLimitExp extends Expression {
                 let valA = valueExtractor.extract(a);
                 let valB = valueExtractor.extract(b);
 
+                if (valA === undefined) {
+                    valA = null;
+                }
+
+                if (valB === undefined) {
+                    valB = null;
+                }
+
                 if (valA === null && valB === null) {
                     // neither has attribute at all
                     continue;

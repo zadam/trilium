@@ -361,7 +361,7 @@ function getExpression(tokens, searchContext, level = 0) {
                 continue;
             }
 
-            exp.subExpression = getAggregateExpression();console.log(exp);
+            exp.subExpression = getAggregateExpression();
             return exp;
         }
         else if (token === 'not') {
