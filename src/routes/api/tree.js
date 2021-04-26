@@ -23,7 +23,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
         }
 
         for (const childNote of note.children) {
-            const childBranch = becca.getBranch(childNote.noteId, note.noteId);
+            const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, note.noteId);
 
             collectedBranchIds.add(childBranch.branchId);
         }
@@ -127,7 +127,7 @@ function getTree(req) {
         for (const childNote of parentNote.children) {
             collectedNoteIds.add(childNote.noteId);
 
-            const childBranch = becca.getBranch(childNote.noteId, parentNote.noteId);
+            const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId);
 
             if (childBranch.isExpanded) {
                 collect(childBranch.childNote);

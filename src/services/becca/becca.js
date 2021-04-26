@@ -1,5 +1,8 @@
 "use strict";
 
+const sql = require("../sql.js");
+const NoteRevision = require("./entities/note_revision.js");
+
 class Becca {
     constructor() {
         this.reset();
@@ -45,8 +48,26 @@ class Becca {
         }
     }
 
-    getBranch(childNoteId, parentNoteId) {
+    getNote(noteId) {
+        return this.notes[noteId];
+    }
+
+    getBranch(branchId) {
+        return this.branches[branchId];
+    }
+
+    getAttribute(attributeId) {
+        return this.attributes[attributeId];
+    }
+
+    getBranchFromChildAndParent(childNoteId, parentNoteId) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
+    }
+
+    getNoteRevision(noteRevisionId) {
+        const row = sql.getRow("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
+
+        return row ? new NoteRevision(row) : null;
     }
 }
 

@@ -80,7 +80,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
         title = childNote.title;
     }
 
-    const branch = parentNote ? becca.getBranch(childNote.noteId, parentNote.noteId) : null;
+    const branch = parentNote ? becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId) : null;
 
     return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
 }
@@ -175,7 +175,7 @@ function getNotePath(noteId) {
 
         return {
             noteId: noteId,
-            branchId: becca.getBranch(noteId, parentNote.noteId).branchId,
+            branchId: becca.getBranchFromChildAndParent(noteId, parentNote.noteId).branchId,
             title: noteTitle,
             notePath: retPath,
             path: retPath.join('/')

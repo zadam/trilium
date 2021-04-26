@@ -107,7 +107,7 @@ class Note extends AbstractEntity {
     }
 
     getChildBranches() {
-        return this.children.map(childNote => this.becca.getBranch(childNote.noteId, this.noteId));
+        return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
     /*

@@ -7,6 +7,7 @@ const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const path = require('path');
+const becca = require("../../services/becca/becca.js");
 
 function getNoteRevisions(req) {
     return repository.getEntities(`
@@ -19,11 +20,11 @@ function getNoteRevisions(req) {
 }
 
 function getNoteRevision(req) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.type === 'file') {
         if (noteRevision.isStringNote()) {
-            noteRevision.content = (noteRevision.getContent()).substr(0, 10000);
+            noteRevision.content = noteRevision.getContent().substr(0, 10000);
         }
     }
     else {
@@ -62,7 +63,7 @@ function getRevisionFilename(noteRevision) {
 }
 
 function downloadNoteRevision(req, res) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.noteId !== req.params.noteId) {
         return res.status(400).send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
@@ -92,7 +93,7 @@ function eraseNoteRevision(req) {
 }
 
 function restoreNoteRevision(req) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision) {
         const note = noteRevision.getNote();
