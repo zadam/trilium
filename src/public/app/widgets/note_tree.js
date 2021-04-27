@@ -813,6 +813,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
+            this.tree.$container.focus();
             this.tree.setFocus(true);
 
             const node = await this.expandToNote(activeContext.notePath);
