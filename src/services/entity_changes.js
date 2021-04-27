@@ -80,31 +80,37 @@ function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     try {
         cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
+        const repository = require("./repository.js");
 
-        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
-            + (condition ? ` WHERE ${condition}` : ''));
+        sql.transactional(() => {
+            const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
+                + (condition ? ` WHERE ${condition}` : ''));
 
-        let createdCount = 0;
+            let createdCount = 0;
 
-        for (const entityId of entityIds) {
-            const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            for (const entityId of entityIds) {
+                const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-            // we don't want to replace existing entities (which would effectively cause full resync)
-            if (existingRows === 0) {
-                createdCount++;
+                // we don't want to replace existing entities (which would effectively cause full resync)
+                if (existingRows === 0) {
+                    createdCount++;
 
-                sql.insert("entity_changes", {
-                    entityName: entityName,
-                    entityId: entityId,
-                    sourceId: "SYNC_FILL",
-                    isSynced: 1
-                });
+                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${entityPrimaryKey} = ?`, [entityId]);
+
+                    addEntityChange({
+                        entityName,
+                        entityId,
+                        hash: entity.generateHash(),
+                        isErased: false,
+                        utcDateChanged: entity.getUtcDateChanged()
+                    }, null);
+                }
             }
-        }
 
-        if (createdCount > 0) {
-            log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
-        }
+            if (createdCount > 0) {
+                log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
+            }
+        });
     }
     catch (e) {
         // this is to fix migration from 0.30 to 0.32, can be removed later
