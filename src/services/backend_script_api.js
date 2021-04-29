@@ -122,11 +122,12 @@ function BackendScriptApi(currentNote, apiParams) {
      * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
      *
      * @method
-     * @param {string} searchString
+     * @param {string} query
+     * @param {Object} [searchParams]
      * @returns {Note|null}
      */
-    this.searchForNote = searchString => {
-        const notes = searchService.searchNoteEntities(searchString);
+    this.searchForNote = (query, searchParams = {}) => {
+        const notes = this.searchForNotes(query, searchParams);
 
         return notes.length > 0 ? notes[0] : null;
     };
