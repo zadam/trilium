@@ -11,11 +11,9 @@ class Attribute extends AbstractEntity {
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable"]; }
 
-    constructor(becca, row) {
+    constructor(row) {
         super();
 
-        /** @param {Becca} */
-        this.becca = becca;
         /** @param {string} */
         this.attributeId = row.attributeId;
         /** @param {string} */
@@ -74,7 +72,7 @@ class Attribute extends AbstractEntity {
      * @returns {Note|null}
      */
     getNote() {
-        return this.repository.getNote(this.noteId);
+        return this.becca.getNote(this.noteId);
     }
 
     /**
@@ -89,7 +87,7 @@ class Attribute extends AbstractEntity {
             return null;
         }
 
-        return this.repository.getNote(this.value);
+        return this.becca.getNote(this.value);
     }
 
     /**

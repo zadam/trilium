@@ -17,11 +17,8 @@ class Note extends AbstractEntity {
     static get primaryKeyName() { return "noteId"; }
     static get hashedProperties() { return ["noteId", "title", "isProtected", "type", "mime"]; }
 
-    constructor(becca, row) {
+    constructor(row) {
         super();
-
-        /** @param {Becca} */
-        this.becca = becca;
 
         this.update(row);
 

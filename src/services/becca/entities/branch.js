@@ -11,11 +11,9 @@ class Branch extends AbstractEntity {
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "prefix"]; }
 
-    constructor(becca, row) {
+    constructor(row) {
         super();
 
-        /** @param {Becca} */
-        this.becca = becca;
         /** @param {string} */
         this.branchId = row.branchId;
         /** @param {string} */

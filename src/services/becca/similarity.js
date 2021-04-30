@@ -2,7 +2,6 @@ const becca = require('./becca.js');
 const log = require('../log');
 const beccaService = require('./becca_service.js');
 const dateUtils = require('../date_utils');
-const repository = require('../repository');
 const { JSDOM } = require("jsdom");
 
 const DEBUG = false;
@@ -124,8 +123,7 @@ function buildRewardMap(note) {
     }
 
     if (note.type === 'text' && note.isDecrypted) {
-        const noteEntity = repository.getNote(note.noteId);
-        const content = noteEntity.getContent();
+        const content = note.getContent();
         const dom = new JSDOM(content);
 
         function addHeadingsToRewardMap(elName, rewardFactor) {

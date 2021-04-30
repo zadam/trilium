@@ -2,6 +2,7 @@
 
 const utils = require('../../utils');
 
+let becca = null;
 let repo = null;
 
 class AbstractEntity {
@@ -30,6 +31,15 @@ class AbstractEntity {
         return this.utcDateModified || this.utcDateCreated || "FAKE";
     }
 
+    get becca() {
+        if (!becca) {
+            becca = require('../becca');
+        }
+
+        return becca;
+    }
+
+    // temporarily needed for saving entities
     get repository() {
         if (!repo) {
             repo = require('../../repository');

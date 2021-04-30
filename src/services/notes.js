@@ -111,7 +111,7 @@ function createNewNote(params) {
     }
 
     return sql.transactional(() => {
-        const note = new BeccaNote(becca,{
+        const note = new BeccaNote({
             noteId: params.noteId, // optionally can force specific noteId
             title: params.title,
             isProtected: !!params.isProtected,
@@ -121,7 +121,7 @@ function createNewNote(params) {
 
         note.setContent(params.content);
 
-        const branch = new BeccaBranch(becca,{
+        const branch = new BeccaBranch({
             noteId: note.noteId,
             parentNoteId: params.parentNoteId,
             notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
@@ -799,7 +799,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
     const newNoteId = noteIdMapping[origNote.noteId];
 
-    const newBranch = new BeccaBranch(becca,{
+    const newBranch = new BeccaBranch({
         noteId: newNoteId,
         parentNoteId: newParentNoteId,
         // here increasing just by 1 to make sure it's directly after original
@@ -817,7 +817,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
         }
     }
 
-    const newNote = new BeccaNote(becca, origNote);
+    const newNote = new BeccaNote(origNote);
     newNote.noteId = newNoteId;
     newNote.dateCreated = dateUtils.localNowDateTime();
     newNote.utcDateCreated = dateUtils.utcNowDateTime();
@@ -833,7 +833,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     newNote.setContent(content);
 
     for (const attribute of origNote.getOwnedAttributes()) {
-        const attr = new BeccaAttribute(becca, attribute);
+        const attr = new BeccaAttribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
         attr.noteId = newNote.noteId;
 
