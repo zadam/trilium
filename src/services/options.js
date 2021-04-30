@@ -1,5 +1,5 @@
 function getOption(name) {
-    const option = require('./repository').getOption(name);
+    const option = require('./becca').getOption(name);
 
     if (!option) {
         throw new Error(`Option ${name} doesn't exist`);
@@ -37,7 +37,7 @@ function getOptionBool(name) {
 }
 
 function setOption(name, value) {
-    const option = require('./repository').getOption(name);
+    const option = require('./becca').getOption(name);
 
     if (value === true || value === false) {
         value = value.toString();
@@ -55,7 +55,7 @@ function setOption(name, value) {
 
 function createOption(name, value, isSynced) {
     // to avoid circular dependency, need to find better solution
-    const Option = require('../entities/option');
+    const Option = require('../services/becca/entities/option');
 
     new Option({
         name: name,

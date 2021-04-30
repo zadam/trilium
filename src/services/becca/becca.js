@@ -10,15 +10,17 @@ class Becca {
 
     reset() {
         /** @type {Object.<String, Note>} */
-        this.notes = [];
+        this.notes = {};
         /** @type {Object.<String, Branch>} */
-        this.branches = [];
+        this.branches = {};
         /** @type {Object.<String, Branch>} */
         this.childParentToBranch = {};
         /** @type {Object.<String, Attribute>} */
-        this.attributes = [];
+        this.attributes = {};
         /** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes */
         this.attributeIndex = {};
+        /** @type {Object.<String, Option>} */
+        this.options = {};
 
         this.loaded = false;
     }
