@@ -3,13 +3,6 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
-const ApiToken = require('../entities/api_token');
-const Branch = require('../entities/branch');
-const Note = require('../entities/note');
-const Attribute = require('../entities/attribute');
-const NoteRevision = require('./becca/entities/note_revision.js');
-const RecentNote = require('../entities/recent_note');
-const Option = require('../entities/option');
 
 function getSectorHashes(tableName, primaryKeyName, whereBranch) {
     const hashes = sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName}`

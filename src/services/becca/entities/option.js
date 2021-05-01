@@ -26,6 +26,8 @@ class Option extends AbstractEntity {
         super.beforeSaving();
 
         this.utcDateModified = dateUtils.utcNowDateTime();
+        // utcDateCreated is scheduled for removal so the value does not matter
+        this.utcDateCreated = dateUtils.utcNowDateTime();
     }
 }
 

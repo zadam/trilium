@@ -5,7 +5,7 @@ const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options');
 const port = require('./port');
-const Option = require('../entities/option');
+const Option = require('./becca/entities/option');
 const TaskContext = require('./task_context.js');
 const migrationService = require('./migration');
 const cls = require('./cls');
@@ -38,8 +38,6 @@ async function initDbConnection() {
     }
 
     await migrationService.migrateIfNecessary();
-
-    require('./options_init').initStartupOptions();
 
     sql.execute('CREATE TEMP TABLE "param_list" (`paramId` TEXT NOT NULL PRIMARY KEY)');
 

@@ -75,6 +75,10 @@ class Becca {
 
         return row ? new NoteRevision(row) : null;
     }
+
+    getOption(name) {
+        return this.options[name];
+    }
 }
 
 const becca = new Becca();

@@ -10,8 +10,14 @@ const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 const Option = require('./entities/option');
 
-sqlInit.dbReady.then(() => {
-    load();
+const beccaLoaded = new Promise((res, rej) => {
+    sqlInit.dbReady.then(() => {
+        load();
+
+        require('../options_init').initStartupOptions();
+
+        res();
+    });
 });
 
 function load() {
@@ -182,5 +188,6 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
 eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, load);
 
 module.exports = {
-    load
+    load,
+    beccaLoaded
 };

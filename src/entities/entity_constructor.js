@@ -5,7 +5,6 @@ const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const RecentNote = require('../entities/recent_note');
 const ApiToken = require('../entities/api_token');
-const Option = require('../entities/option');
 const cls = require('../services/cls');
 
 const ENTITY_NAME_TO_ENTITY = {
@@ -16,7 +15,6 @@ const ENTITY_NAME_TO_ENTITY = {
     "note_revisions": NoteRevision,
     "note_revision_contents": NoteRevision,
     "recent_notes": RecentNote,
-    "options": Option,
     "api_tokens": ApiToken,
 };
 
@@ -56,9 +54,6 @@ function createEntityFromRow(row) {
         entity = new Note(row);
 
         cls.setEntityToCache('notes', row.noteId, entity);
-    }
-    else if (row.name) {
-        entity = new Option(row);
     }
     else {
         throw new Error('Unknown entity type for row: ' + JSON.stringify(row));

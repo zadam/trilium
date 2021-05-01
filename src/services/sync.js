@@ -383,17 +383,15 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-sqlInit.dbReady.then(() => {
+require("./becca/becca_loader").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately
     setTimeout(cls.wrap(sync), 5000);
-});
 
-if (sqlInit.isDbInitialized()) {
     // called just so ws.setLastSyncedPush() is called
     getLastSyncedPush();
-}
+});
 
 module.exports = {
     sync,
