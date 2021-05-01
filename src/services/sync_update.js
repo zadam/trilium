@@ -27,10 +27,18 @@ function updateEntity(entityChange, entity, sourceId) {
         : updateNormalEntity(entityChange, entity, sourceId);
 
     if (updated && !entityChange.isErased) {
-        eventService.emit(eventService.ENTITY_SYNCED, {
-            entityName: entityChange.entityName,
-            entity
-        });
+        if (entity.isDeleted) {
+            eventService.emit(eventService.ENTITY_DELETE_SYNCED, {
+                entityName: entityChange.entityName,
+                entityId: entityChange.entityId
+            });
+        }
+        else {
+            eventService.emit(eventService.ENTITY_CHANGE_SYNCED, {
+                entityName: entityChange.entityName,
+                entity
+            });
+        }
     }
 }
 

@@ -583,6 +583,10 @@ class ConsistencyChecks {
             this.checkTreeCycles();
         }
 
+        if (this.fixedIssues) {
+            require("../services/becca/becca_loader").load();
+        }
+
         return !this.unrecoveredConsistencyErrors;
     }
 

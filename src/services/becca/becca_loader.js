@@ -39,152 +39,136 @@ function load() {
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
-function updateNote(entity) {
-    const {noteId} = entity;
-
-    if (entity.isDeleted) {
-        delete becca.notes[noteId];
-    } else if (noteId in becca.notes) {
-        becca.notes[noteId].update(entity);
-    } else {
-        const note = new Note(entity);
-
-        note.decrypt();
+eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entity}) => {
+    if (!becca.loaded) {
+        return;
     }
-}
 
-function updateBranch(entity) {
-    const {branchId, noteId, parentNoteId} = entity;
-    const childNote = becca.notes[noteId];
-
-    if (entity.isDeleted) {
-        if (childNote) {
-            childNote.parents = childNote.parents.filter(parent => parent.noteId !== parentNoteId);
-            childNote.parentBranches = childNote.parentBranches.filter(branch => branch.branchId !== branchId);
-
-            if (childNote.parents.length > 0) {
-                childNote.invalidateSubTree();
-            }
-        }
-
-        const parentNote = becca.notes[parentNoteId];
-
-        if (parentNote) {
-            parentNote.children = parentNote.children.filter(child => child.noteId !== noteId);
-        }
-
-        delete becca.childParentToBranch[`${noteId}-${parentNoteId}`];
-        delete becca.branches[branchId];
-    } else if (branchId in becca.branches) {
-        // only relevant properties which can change in a branch are prefix and isExpanded
-        becca.branches[branchId].prefix = entity.prefix;
-        becca.branches[branchId].isExpanded = entity.isExpanded;
-
-        if (childNote) {
-            childNote.flatTextCache = null;
-        }
-    } else {
-        becca.branches[branchId] = new Branch(entity);
-
-        if (childNote) {
-            childNote.resortParents();
-        }
+    if (entityName === 'branches') {
+        branchUpdated(entity);
+    } else if (entityName === 'attributes') {
+        attributeUpdated(entity);
+    } else if (entityName === 'note_reordering') {
+        noteReorderingUpdated(entity);
     }
-}
+});
 
-function updateAttribute(entity) {
-    const {attributeId, noteId} = entity;
-    const note = becca.notes[noteId];
-    const attr = becca.attributes[attributeId];
-
-    if (entity.isDeleted) {
-        if (note && attr) {
-            // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
-            if (attr.isAffectingSubtree || note.isTemplate) {
-                note.invalidateSubTree();
-            } else {
-                note.invalidateThisCache();
-            }
-
-            note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
-
-            const targetNote = attr.targetNote;
-
-            if (targetNote) {
-                targetNote.targetRelations = targetNote.targetRelations.filter(rel => rel.attributeId !== attributeId);
-            }
-        }
-
-        delete becca.attributes[attributeId];
-
-        if (attr) {
-            const key = `${attr.type}-${attr.name.toLowerCase()}`;
-
-            if (key in becca.attributeIndex) {
-                becca.attributeIndex[key] = becca.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
-            }
-        }
-    } else if (attributeId in becca.attributes) {
-        const attr = becca.attributes[attributeId];
-
-        // attr name and isInheritable are immutable
-        attr.value = entity.value;
-
-        if (attr.isAffectingSubtree || note.isTemplate) {
-            note.invalidateSubtreeFlatText();
-        } else {
-            note.invalidateThisCache();
-        }
-    } else {
-        const attr = new Attribute(entity);
-
-        if (note) {
-            if (attr.isAffectingSubtree || note.isTemplate) {
-                note.invalidateSubTree();
-            } else {
-                note.invalidateThisCache();
-            }
-        }
-    }
-}
-
-function updateNoteReordering(entity) {
-    const parentNoteIds = new Set();
-
-    for (const branchId in entity) {
-        const branch = becca.branches[branchId];
-
-        if (branch) {
-            branch.notePosition = entity[branchId];
-
-            parentNoteIds.add(branch.parentNoteId);
-        }
-    }
-}
-
-eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED],  ({entityName, entity}) => {
-    // note that entity can also be just POJO without methods if coming from sync
-
+eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
     if (!becca.loaded) {
         return;
     }
 
     if (entityName === 'notes') {
-        updateNote(entity);
-    }
-    else if (entityName === 'branches') {
-        updateBranch(entity);
-    }
-    else if (entityName === 'attributes') {
-        updateAttribute(entity);
-    }
-    else if (entityName === 'options') {
-        // nothing needed
-    }
-    else if (entityName === 'note_reordering') {
-        updateNoteReordering(entity);
+        noteDeleted(entityId);
+    } else if (entityName === 'branches') {
+        branchDeleted(entityId);
+    } else if (entityName === 'attributes') {
+        attributeDeleted(entityId);
     }
 });
+
+function noteDeleted(noteId) {
+    delete becca.notes[noteId];
+}
+
+function branchDeleted(branchId) {
+    const branch = becca.branches[branchId];
+
+    if (!branch) {
+        return;
+    }
+
+    const childNote = becca.notes[noteId];
+
+    if (childNote) {
+        childNote.parents = childNote.parents.filter(parent => parent.noteId !== branch.parentNoteId);
+        childNote.parentBranches = childNote.parentBranches
+            .filter(parentBranch => parentBranch.branchId !== branch.branchId);
+
+        if (childNote.parents.length > 0) {
+            childNote.invalidateSubTree();
+        }
+    }
+
+    const parentNote = becca.notes[branch.parentNoteId];
+
+    if (parentNote) {
+        parentNote.children = parentNote.children.filter(child => child.noteId !== branch.noteId);
+    }
+
+    delete becca.childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`];
+    delete becca.branches[branch.branchId];
+}
+
+function branchUpdated(branch) {
+    const childNote = becca.notes[branch.noteId];
+
+    if (childNote) {
+        childNote.flatTextCache = null;
+        childNote.resortParents();
+    }
+}
+
+function attributeDeleted(attributeId) {
+    const attribute = becca.attributes[attributeId];
+
+    if (!attribute) {
+        return;
+    }
+
+    const note = becca.notes[attribute.noteId];
+
+    if (note) {
+        // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
+        if (attribute.isAffectingSubtree || note.isTemplate) {
+            note.invalidateSubTree();
+        } else {
+            note.invalidateThisCache();
+        }
+
+        note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
+
+        const targetNote = attribute.targetNote;
+
+        if (targetNote) {
+            targetNote.targetRelations = targetNote.targetRelations.filter(rel => rel.attributeId !== attributeId);
+        }
+    }
+
+    delete becca.attributes[attributeId];
+
+    const key = `${attribute.type}-${attribute.name.toLowerCase()}`;
+
+    if (key in becca.attributeIndex) {
+        becca.attributeIndex[key] = becca.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
+    }
+}
+
+function attributeUpdated(attribute) {
+    const note = becca.notes[attribute.noteId];
+
+    if (note) {
+        if (attribute.isAffectingSubtree || note.isTemplate) {
+            note.invalidateSubTree();
+        } else {
+            note.invalidateThisCache();
+        }
+    }
+}
+
+function noteReorderingUpdated(branchIdList) {
+    const parentNoteIds = new Set();
+
+    for (const branchId in branchIdList) {
+        const branch = becca.branches[branchId];
+
+        if (branch) {
+            branch.notePosition = branchIdList[branchId];
+
+            parentNoteIds.add(branch.parentNoteId);
+        }
+    }
+}
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     try {
@@ -195,9 +179,7 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     }
 });
 
-eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, () => {
-    load();
-});
+eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, load);
 
 module.exports = {
     load
