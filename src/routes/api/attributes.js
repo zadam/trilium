@@ -4,7 +4,7 @@ const sql = require('../../services/sql');
 const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
-const Attribute = require('../../entities/attribute');
+const Attribute = require('../../services/becca/entities/attribute');
 const becca = require("../../services/becca/becca");
 
 function getEffectiveNoteAttributes(req) {
@@ -56,7 +56,6 @@ function updateNoteAttribute(req) {
 
     if (attribute.type === 'label' || body.value.trim()) {
         attribute.value = body.value;
-        attribute.isDeleted = false;
     }
     else {
         // relations should never have empty target

@@ -4,7 +4,7 @@ const NoteRevision = require('../services/becca/entities/note_revision.js');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const RecentNote = require('../services/becca/entities/recent_note.js');
-const ApiToken = require('../entities/api_token');
+const ApiToken = require('../services/becca/entities/api_token.js');
 const cls = require('../services/cls');
 
 const ENTITY_NAME_TO_ENTITY = {

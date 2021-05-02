@@ -1,12 +1,11 @@
 "use strict";
 
-const Attribute = require('../../entities/attribute');
+const Attribute = require('../../services/becca/entities/attribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
-const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const Branch = require('../../entities/branch');
+const Branch = require('../../services/becca/entities/branch');
 const path = require('path');
 const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');

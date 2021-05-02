@@ -66,7 +66,7 @@ function note(title, extraParams = {}) {
         mime: 'text/html'
     }, extraParams);
 
-    const note = new Note(becca, row);
+    const note = new Note(row);
 
     return new NoteBuilder(note);
 }

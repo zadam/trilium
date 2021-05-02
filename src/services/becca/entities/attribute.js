@@ -33,7 +33,7 @@ class Attribute extends AbstractEntity {
 
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.becca.notes[this.noteId] = new Note(this.becca, {noteId: this.noteId});
+            this.becca.notes[this.noteId] = new Note({noteId: this.noteId});
         }
 
         this.becca.notes[this.noteId].ownedAttributes.push(this);

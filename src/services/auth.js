@@ -63,6 +63,7 @@ function checkAppNotInitialized(req, res, next) {
 function checkToken(req, res, next) {
     const token = req.headers.authorization;
 
+    // TODO: put all tokens into becca memory to avoid these requests
     if (sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
         reject(req, res, "Token not found");
     }

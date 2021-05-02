@@ -12,7 +12,7 @@ const cls = require('../../services/cls');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
-const ApiToken = require('../../entities/api_token');
+const ApiToken = require('../../services/becca/entities/api_token.js');
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {

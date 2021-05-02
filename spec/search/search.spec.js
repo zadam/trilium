@@ -12,7 +12,7 @@ describe("Search", () => {
     beforeEach(() => {
         becca.reset();
 
-        rootNote = new NoteBuilder(new Note(becca, {noteId: 'root', title: 'root', type: 'text'}));
+        rootNote = new NoteBuilder(new Note({noteId: 'root', title: 'root', type: 'text'}));
         new Branch(becca, {branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
