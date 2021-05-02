@@ -2,7 +2,7 @@
 
 const repository = require("../repository");
 const utils = require('../utils');
-const becca = require("../becca/becca.js");
+const becca = require("../becca/becca");
 
 function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {

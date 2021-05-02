@@ -1,7 +1,7 @@
 "use strict";
 
 const similarityService = require('../../services/becca/similarity.js');
-const becca = require("../../services/becca/becca.js");
+const becca = require("../../services/becca/becca");
 
 async function getSimilarNotes(req) {
     const noteId = req.params.noteId;

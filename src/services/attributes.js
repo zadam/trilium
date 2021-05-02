@@ -1,9 +1,10 @@
 "use strict";
 
-const repository = require('./repository');
+const searchService = require('./search/services/search');
 const sql = require('./sql');
 const becca = require('./becca/becca.js');
 const Attribute = require('../entities/attribute');
+const {formatAttrForSearch} = require("./attribute_formatter.js");
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
@@ -59,16 +60,7 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 function getNotesWithLabel(name, value) {
-    let valueCondition = "";
-    let params = [name];
-
-    if (value !== undefined) {
-        valueCondition = " AND attributes.value = ?";
-        params.push(value);
-    }
-
-    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId)
-          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
+    return searchService.findNotes(formatAttrForSearch({type: 'label', name, value}, true));
 }
 
 function getNoteIdsWithLabels(names) {

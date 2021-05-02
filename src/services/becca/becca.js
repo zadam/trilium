@@ -2,6 +2,7 @@
 
 const sql = require("../sql.js");
 const NoteRevision = require("./entities/note_revision.js");
+const RecentNote = require("./entities/recent_note.js");
 
 class Becca {
     constructor() {
@@ -93,6 +94,18 @@ class Becca {
         );
 
         return this[camelCaseEntityName][entityId];
+    }
+
+    getRecentNotesFromQuery(query, params = []) {
+        const rows = sql.getRows(query, params);
+
+        return rows.map(row => new RecentNote(row));
+    }
+
+    getNoteRevisionsFromQuery(query, params = []) {
+        const rows = sql.getRows(query, params);
+
+        return rows.map(row => new NoteRevision(row));
     }
 }
 

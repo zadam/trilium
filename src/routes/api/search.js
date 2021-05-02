@@ -6,6 +6,7 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const noteRevisionService = require("../../services/note_revisions.js");
+const {formatAttrForSearch} = require("../../services/attribute_formatter.js");
 
 async function searchFromNoteInt(note) {
     let searchResultNoteIds;
@@ -265,51 +266,6 @@ function getRelatedNotes(req) {
         count: allResults.length,
         results
     };
-}
-
-function formatAttrForSearch(attr, searchWithValue) {
-    let searchStr = '';
-
-    if (attr.type === 'label') {
-        searchStr += '#';
-    }
-    else if (attr.type === 'relation') {
-        searchStr += '~';
-    }
-    else {
-        throw new Error(`Unrecognized attribute type ${JSON.stringify(attr)}`);
-    }
-
-    searchStr += attr.name;
-
-    if (searchWithValue && attr.value) {
-        if (attr.type === 'relation') {
-            searchStr += ".noteId";
-        }
-
-        searchStr += '=';
-        searchStr += formatValue(attr.value);
-    }
-
-    return searchStr;
-}
-
-function formatValue(val) {
-    if (!/[^\w_-]/.test(val)) {
-        return val;
-    }
-    else if (!val.includes('"')) {
-        return '"' + val + '"';
-    }
-    else if (!val.includes("'")) {
-        return "'" + val + "'";
-    }
-    else if (!val.includes("`")) {
-        return "`" + val + "`";
-    }
-    else {
-        return '"' + val.replace(/"/g, '\\"') + '"';
-    }
 }
 
 module.exports = {

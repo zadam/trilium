@@ -8,7 +8,7 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
-const becca = require("./becca/becca.js");
+const becca = require("./becca/becca");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
     const parentBranch = becca.getBranch(parentBranchId);

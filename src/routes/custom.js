@@ -3,13 +3,17 @@ const log = require('../services/log');
 const fileUploadService = require('./api/files.js');
 const scriptService = require('../services/script');
 const cls = require('../services/cls');
+const sql = require("../services/sql");
+const becca = require("../services/becca/becca");
 
 async function handleRequest(req, res) {
     // express puts content after first slash into 0 index element
 
     const path = req.params.path + req.params[0];
 
-    const attrs = repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+    const attributeIds = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+
+    const attrs = attributeIds.map(attrId => becca.getAttribute(attrId));
 
     for (const attr of attrs) {
         if (!attr.value.trim()) {

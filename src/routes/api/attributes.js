@@ -5,7 +5,7 @@ const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
-const becca = require("../../services/becca/becca.js");
+const becca = require("../../services/becca/becca");
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);

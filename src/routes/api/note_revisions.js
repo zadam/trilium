@@ -7,10 +7,10 @@ const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const path = require('path');
-const becca = require("../../services/becca/becca.js");
+const becca = require("../../services/becca/becca");
 
 function getNoteRevisions(req) {
-    return repository.getEntities(`
+    return becca.getNoteRevisionsFromQuery(`
         SELECT note_revisions.*,
                LENGTH(note_revision_contents.content) AS contentLength
         FROM note_revisions
@@ -107,7 +107,7 @@ function restoreNoteRevision(req) {
 }
 
 function getEditedNotesOnDate(req) {
-    const notes = repository.getEntities(`
+    const noteIds = sql.getColumn(`
         SELECT notes.*
         FROM notes
         WHERE noteId IN (
@@ -120,6 +120,8 @@ function getEditedNotesOnDate(req) {
         )
         ORDER BY isDeleted
         LIMIT 50`, {date: req.params.date + '%'});
+
+    const notes = becca.getNotes(noteIds);
 
     for (const note of notes) {
         const notePath = note.isDeleted ? null : beccaService.getNotePath(note.noteId);

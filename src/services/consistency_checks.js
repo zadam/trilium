@@ -13,7 +13,7 @@ const Branch = require('../entities/branch');
 const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
-const becca = require("./becca/becca.js");
+const becca = require("./becca/becca");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -244,12 +244,14 @@ class ConsistencyChecks {
                     HAVING COUNT(1) > 1`,
             ({noteId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branches = repository.getEntities(
-                            `SELECT *
+                    const branchIds = sql.getColumn(
+                            `SELECT branchId
                              FROM branches
                              WHERE noteId = ?
                                and parentNoteId = ?
                                and isDeleted = 0`, [noteId, parentNoteId]);
+
+                    const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     // it's not necessarily "original" branch, it's just the only one which will survive
                     const origBranch = branches[0];
@@ -359,10 +361,12 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({parentNoteId}) => {
                 if (this.autoFix) {
-                    const branches = repository.getEntities(`SELECT *
+                    const branchIds = sql.getColumn(`SELECT branchId
                                                                    FROM branches
                                                                    WHERE isDeleted = 0
                                                                      AND parentNoteId = ?`, [parentNoteId]);
+
+                    const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     for (const branch of branches) {
                         branch.parentNoteId = 'root';

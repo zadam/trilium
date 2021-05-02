@@ -9,7 +9,7 @@ const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 const fs = require('fs');
 const noteRevisionService = require("../../services/note_revisions.js");
-const becca = require("../../services/becca/becca.js");
+const becca = require("../../services/becca/becca");
 
 function getNote(req) {
     const noteId = req.params.noteId;
@@ -159,7 +159,8 @@ function getRelationMap(req) {
 
     console.log("displayRelations", displayRelations);
 
-    const notes = repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+    const foundNoteIds = sql.getColumn(`SELECT noteId FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+    const notes = becca.getNotes(foundNoteIds);
 
     for (const note of notes) {
         resp.noteTitles[note.noteId] = note.title;

@@ -6,6 +6,7 @@ const repository = require('../../services/repository');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const cls = require('../../services/cls');
+const becca = require("../../services/becca/becca");
 
 function getAutocomplete(req) {
     const query = req.query.query.trim();
@@ -41,7 +42,7 @@ function getRecentNotes(activeNoteId) {
         params.push('%' + hoistedNoteId + '%');
     }
 
-    const recentNotes = repository.getEntities(`
+    const recentNotes = becca.getRecentNotesFromQuery(`
       SELECT 
         recent_notes.* 
       FROM 

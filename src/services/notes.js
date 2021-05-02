@@ -6,11 +6,8 @@ const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
-const Note = require('../entities/note');
 const BeccaNote = require('../services/becca/entities/note.js');
-const Branch = require('../entities/branch');
 const BeccaBranch = require('../services/becca/entities/branch.js');
-const Attribute = require('../entities/attribute');
 const BeccaAttribute = require('../services/becca/entities/attribute.js');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
@@ -617,14 +614,14 @@ function undeleteBranch(branch, deleteId, taskContext) {
         note.isDeleted = false;
         note.save();
 
-        const attrs = repository.getEntities(`
-                SELECT * FROM attributes 
+        const attributeIds = sql.getColumn(`
+                SELECT attributeId FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
                   AND (noteId = ? 
                            OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
 
-        for (const attr of attrs) {
+        for (const attr of attributeIds) {
             attr.isDeleted = false;
             attr.save();
         }
@@ -646,14 +643,16 @@ function undeleteBranch(branch, deleteId, taskContext) {
  * @return return deleted branches of an undeleted parent note
  */
 function getUndeletedParentBranches(noteId, deleteId) {
-    return repository.getEntities(`
-                    SELECT branches.*
+    const branchIds = sql.getColumn(`
+                    SELECT branches.branchId
                     FROM branches
                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
                     WHERE branches.noteId = ?
                       AND branches.isDeleted = 1
                       AND branches.deleteId = ?
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
+
+    return branchIds.map(branchId => becca.getBranch(branchId));
 }
 
 function scanForLinks(note) {

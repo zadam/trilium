@@ -3,7 +3,7 @@ const Note = require('../entities/note');
 const NoteRevision = require('../services/becca/entities/note_revision.js');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
-const RecentNote = require('../entities/recent_note');
+const RecentNote = require('../services/becca/entities/recent_note.js');
 const ApiToken = require('../entities/api_token');
 const cls = require('../services/cls');
 
