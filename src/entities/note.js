@@ -543,8 +543,7 @@ class Note extends Entity {
 
         for (const attribute of attributes) {
             if (attribute.type === type && attribute.name === name && (value === undefined || value === attribute.value)) {
-                attribute.isDeleted = true;
-                attribute.save();
+                attribute.markAsDeleted();
 
                 this.invalidateAttributeCache();
             }

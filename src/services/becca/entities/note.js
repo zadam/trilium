@@ -864,8 +864,8 @@ class Note extends AbstractEntity {
         this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
-    markAsDeleted() {
-        sql.execute("UPDATE notes SET isDeleted = 1 WHERE noteId = ?", [this.noteId]);
+    markAsDeleted(deleteId = null) {
+        sql.execute("UPDATE notes SET isDeleted = 1, deleteId = ? WHERE noteId = ?", [deleteId, this.noteId]);
 
         // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }

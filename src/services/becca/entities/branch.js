@@ -99,6 +99,7 @@ class Branch extends AbstractEntity {
     }
 
     beforeSaving() {
+        // TODO can be refactored into becca
         if (this.notePosition === undefined || this.notePosition === null) {
             const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
             this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
@@ -109,6 +110,13 @@ class Branch extends AbstractEntity {
         }
 
         super.beforeSaving();
+    }
+
+    markAsDeleted(deleteId = null) {
+        sql.execute("UPDATE branches SET isDeleted = 1, deleteId = ? WHERE branchId = ?",
+            [deleteId, this.branchId]);
+
+        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }
 }
 

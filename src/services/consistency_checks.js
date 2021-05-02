@@ -103,8 +103,7 @@ class ConsistencyChecks {
             ({branchId, noteId}) => {
                 if (this.autoFix) {
                     const branch = becca.getBranch(branchId);
-                    branch.isDeleted = true;
-                    branch.save();
+                    branch.markAsDeleted();
 
                     logFix(`Branch ${branchId} has been deleted since it references missing note ${noteId}`);
                 } else {
@@ -140,8 +139,7 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    attribute.markAsDeleted();
 
                     logFix(`Attribute ${attributeId} has been deleted since it references missing source note ${noteId}`);
                 } else {
@@ -159,8 +157,7 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    attribute.markAsDeleted();
 
                     logFix(`Relation ${attributeId} has been deleted since it references missing note ${noteId}`)
                 } else {
@@ -185,8 +182,7 @@ class ConsistencyChecks {
             ({branchId, noteId}) => {
                 if (this.autoFix) {
                     const branch = becca.getBranch(branchId);
-                    branch.isDeleted = true;
-                    branch.save();
+                    branch.markAsDeleted();
 
                     logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
                 } else {
@@ -204,8 +200,7 @@ class ConsistencyChecks {
         `, ({branchId, parentNoteId}) => {
             if (this.autoFix) {
                 const branch = becca.getBranch(branchId);
-                branch.isDeleted = true;
-                branch.save();
+                branch.markAsDeleted();
 
                 logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
             } else {
@@ -258,8 +253,7 @@ class ConsistencyChecks {
 
                     // delete all but the first branch
                     for (const branch of branches.slice(1)) {
-                        branch.isDeleted = true;
-                        branch.save();
+                        branch.markAsDeleted();
 
                         logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
                     }
@@ -388,8 +382,7 @@ class ConsistencyChecks {
             ({attributeId}) => {
                 if (this.autoFix) {
                     const relation = becca.getAttribute(attributeId);
-                    relation.isDeleted = true;
-                    relation.save();
+                    relation.markAsDeleted();
 
                     logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
                 } else {
@@ -426,8 +419,7 @@ class ConsistencyChecks {
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    attribute.markAsDeleted();
 
                     logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
                 } else {
@@ -446,8 +438,7 @@ class ConsistencyChecks {
             ({attributeId, targetNoteId}) => {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    attribute.markAsDeleted();
 
                     logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
                 } else {

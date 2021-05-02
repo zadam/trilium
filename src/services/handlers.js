@@ -154,8 +154,7 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
                 note.invalidateAttributeCache();
                 targetNote.invalidateAttributeCache();
 
-                relation.isDeleted = true;
-                relation.save();
+                relation.markAsDeleted();
             }
         }
     });

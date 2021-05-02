@@ -120,8 +120,7 @@ class Attribute extends AbstractEntity {
             position: this.position,
             value: this.value,
             isInheritable: this.isInheritable,
-            utcDateModified: dateUtils.utcNowDateTime(),
-            isDeleted: false
+            utcDateModified: dateUtils.utcNowDateTime()
         };
     }
 
@@ -143,10 +142,6 @@ class Attribute extends AbstractEntity {
             this.isInheritable = false;
         }
 
-        if (!this.isDeleted) {
-            this.isDeleted = false;
-        }
-
         super.beforeSaving();
     }
 
@@ -158,13 +153,12 @@ class Attribute extends AbstractEntity {
             value: value,
             position: this.position,
             isInheritable: isInheritable,
-            isDeleted: false,
             utcDateModified: this.utcDateModified
         });
     }
 
-    markAttributeAsDeleted() {
-        sql.execute("UPDATE attributes SET isDeleted = 1 WHERE attributeId = ?", [this.attributeId]);
+    markAsDeleted(deleteId = null) {
+        sql.execute("UPDATE attributes SET isDeleted = 1, deleteId = ? WHERE attributeId = ?", [deleteId, this.attributeId]);
 
         // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }

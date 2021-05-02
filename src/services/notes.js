@@ -532,9 +532,7 @@ function deleteBranch(branch, deleteId, taskContext) {
         throw new Error("Can't delete root branch/note");
     }
 
-    branch.isDeleted = true;
-    branch.deleteId = deleteId;
-    branch.save();
+    branch.markAsDeleted(deleteId);
 
     const note = branch.getNote();
     const notDeletedBranches = note.getBranches();
@@ -546,22 +544,16 @@ function deleteBranch(branch, deleteId, taskContext) {
 
         // first delete children and then parent - this will show up better in recent changes
 
-        note.isDeleted = true;
-        note.deleteId = deleteId;
-        note.save();
+        note.markAsDeleted(deleteId);
 
         log.info("Deleting note " + note.noteId);
 
         for (const attribute of note.getOwnedAttributes()) {
-            attribute.isDeleted = true;
-            attribute.deleteId = deleteId;
-            attribute.save();
+            attribute.markAsDeleted(deleteId);
         }
 
         for (const relation of note.getTargetRelations()) {
-            relation.isDeleted = true;
-            relation.deleteId = deleteId;
-            relation.save();
+            relation.markAsDeleted(deleteId);
         }
 
         return true;

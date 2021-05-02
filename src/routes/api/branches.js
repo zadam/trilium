@@ -44,7 +44,7 @@ function moveBranchToParent(req) {
     const newBranch = branchToMove.createClone(parentBranch.noteId, newNotePos);
     newBranch.save();
 
-    branchToMove.isDeleted = true;
+    branchToMove.markAsDeleted();
     branchToMove.save();
 
     return { success: true };
@@ -85,8 +85,7 @@ function moveBranchBeforeNote(req) {
         const newBranch = branchToMove.createClone(beforeBranch.parentNoteId, beforeBranch.notePosition);
         newBranch.save();
 
-        branchToMove.isDeleted = true;
-        branchToMove.save();
+        branchToMove.markAsDeleted();
     }
 
     return { success: true };
@@ -121,8 +120,7 @@ function moveBranchAfterNote(req) {
         const newBranch = branchToMove.createClone(afterNote.parentNoteId, movedNotePosition);
         newBranch.save();
 
-        branchToMove.isDeleted = true;
-        branchToMove.save();
+        branchToMove.markAsDeleted();
     }
 
     return { success: true };

@@ -59,22 +59,19 @@ async function searchFromNote(req) {
 
 const ACTION_HANDLERS = {
     deleteNote: (action, note) => {
-        note.isDeleted = true;
-        note.save();
+        note.markAsDeleted();
     },
     deleteNoteRevisions: (action, note) => {
         noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {
-            label.isDeleted = true;
-            label.save();
+            label.markAsDeleted();
         }
     },
     deleteRelation: (action, note) => {
         for (const relation of note.getOwnedRelations(action.relationName)) {
-            relation.isDeleted = true;
-            relation.save();
+            relation.markAsDeleted();
         }
     },
     renameLabel: (action, note) => {

@@ -36,8 +36,7 @@ function updateNoteAttribute(req) {
                 newAttribute.save();
             }
 
-            attribute.isDeleted = true;
-            attribute.save();
+            attribute.markAsDeleted();
 
             return {
                 attributeId: newAttribute ? newAttribute.attributeId : null
@@ -61,7 +60,7 @@ function updateNoteAttribute(req) {
     }
     else {
         // relations should never have empty target
-        attribute.isDeleted = true;
+        attribute.markAsDeleted();
     }
 
     attribute.save();
@@ -108,7 +107,7 @@ function deleteNoteAttribute(req) {
             return [400, `Attribute ${attributeId} is not owned by ${noteId}`];
         }
 
-        attribute.markAttributeAsDeleted();
+        attribute.markAsDeleted();
     }
 }
 
@@ -174,8 +173,7 @@ function updateNoteAttributes(req) {
     // all the remaining existing attributes are not defined anymore and should be deleted
     for (const toDeleteAttr of existingAttrs) {
         if (!toDeleteAttr.isAutoLink()) {
-            toDeleteAttr.isDeleted = true;
-            toDeleteAttr.save();
+            toDeleteAttr.markAsDeleted();
         }
     }
 }
@@ -221,8 +219,7 @@ function deleteRelation(req) {
     let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
     if (attribute) {
-        attribute.isDeleted = true;
-        attribute.save();
+        attribute.markAsDeleted();
     }
 }
 

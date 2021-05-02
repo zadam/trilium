@@ -196,14 +196,13 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 
     if (branch) {
         if (!parentNoteId) {
-            branch.isDeleted = true;
+            branch.markAsDeleted();
         }
         else {
             branch.parentNoteId = parentNoteId;
             branch.prefix = prefix;
+            branch.save();
         }
-
-        branch.save();
     }
     else if (parentNoteId) {
         const note = becca.getNote(noteId);
