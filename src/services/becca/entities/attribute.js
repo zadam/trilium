@@ -120,7 +120,8 @@ class Attribute extends AbstractEntity {
             position: this.position,
             value: this.value,
             isInheritable: this.isInheritable,
-            utcDateModified: dateUtils.utcNowDateTime()
+            utcDateModified: dateUtils.utcNowDateTime(),
+            isDeleted: false
         };
     }
 

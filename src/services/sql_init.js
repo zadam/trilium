@@ -32,7 +32,8 @@ function isDbInitialized() {
 
 async function initDbConnection() {
     if (!isDbInitialized()) {
-        log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
+        log.info(`DB not initialized, please visit setup page` +
+            (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
 
         return;
     }
@@ -59,8 +60,10 @@ async function createInitialDatabase(username, password, theme) {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        const Note = require("../entities/note");
-        const Branch = require("../entities/branch");
+        require("./becca/becca_loader").load();
+
+        const Note = require("./becca/entities/note");
+        const Branch = require("./becca/entities/branch");
 
         rootNote = new Note({
             noteId: 'root',

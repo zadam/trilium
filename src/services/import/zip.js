@@ -13,6 +13,7 @@ const mimeService = require("./mime");
 const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
+const becca = require("../becca/becca.js");
 
 /**
  * @param {TaskContext} taskContext

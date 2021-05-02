@@ -42,7 +42,7 @@ function getStats() {
     }
 
     const stats = {
-        initialized: optionService.getOption('initialized') === 'true',
+        initialized: sql.getValue("SELECT value FROM options WHERE name = 'initialized'") === 'true',
         outstandingPullCount: syncService.getOutstandingPullCount()
     };
 
