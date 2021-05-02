@@ -6,7 +6,7 @@ const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 function returnImage(req, res) {
-    const image = repository.getNote(req.params.noteId);
+    const image = becca.getNote(req.params.noteId);
 
     if (!image) {
         return res.sendStatus(404);
@@ -28,7 +28,7 @@ function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
@@ -50,7 +50,7 @@ function updateImage(req) {
     const {noteId} = req.params;
     const {file} = req;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];

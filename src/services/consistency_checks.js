@@ -13,6 +13,7 @@ const Branch = require('../entities/branch');
 const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
+const becca = require("./becca/becca.js");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -101,7 +102,7 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, noteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
+                    const branch = becca.getBranch(branchId);
                     branch.isDeleted = true;
                     branch.save();
 
@@ -120,7 +121,7 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
+                    const branch = becca.getBranch(branchId);
                     branch.parentNoteId = 'root';
                     branch.save();
 
@@ -138,7 +139,7 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.isDeleted = true;
                     attribute.save();
 
@@ -157,7 +158,7 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.isDeleted = true;
                     attribute.save();
 
@@ -183,7 +184,7 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({branchId, noteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
+                    const branch = becca.getBranch(branchId);
                     branch.isDeleted = true;
                     branch.save();
 
@@ -202,7 +203,7 @@ class ConsistencyChecks {
               AND branches.isDeleted = 0
         `, ({branchId, parentNoteId}) => {
             if (this.autoFix) {
-                const branch = repository.getBranch(branchId);
+                const branch = becca.getBranch(branchId);
                 branch.isDeleted = true;
                 branch.save();
 
@@ -274,7 +275,7 @@ class ConsistencyChecks {
                       AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book')`,
             ({noteId, type}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
+                    const note = becca.getNote(noteId);
                     note.type = 'file'; // file is a safe option to recover notes if type is not known
                     note.save();
 
@@ -291,7 +292,7 @@ class ConsistencyChecks {
                     WHERE note_contents.noteId IS NULL`,
             ({noteId}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
+                    const note = becca.getNote(noteId);
 
                     if (note.isProtected) {
                         // this is wrong for non-erased notes but we cannot set a valid value for protected notes
@@ -323,7 +324,7 @@ class ConsistencyChecks {
                       AND content IS NULL`,
             ({noteId}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
+                    const note = becca.getNote(noteId);
                     // empty string might be wrong choice for some note types but it's a best guess
                     note.setContent('');
 
@@ -382,7 +383,7 @@ class ConsistencyChecks {
                       AND value = ''`,
             ({attributeId}) => {
                 if (this.autoFix) {
-                    const relation = repository.getAttribute(attributeId);
+                    const relation = becca.getAttribute(attributeId);
                     relation.isDeleted = true;
                     relation.save();
 
@@ -401,7 +402,7 @@ class ConsistencyChecks {
                       AND type != 'relation'`,
             ({attributeId, type}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.type = 'label';
                     attribute.save();
 
@@ -420,7 +421,7 @@ class ConsistencyChecks {
                       AND notes.isDeleted = 1`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.isDeleted = true;
                     attribute.save();
 
@@ -440,7 +441,7 @@ class ConsistencyChecks {
                       AND notes.isDeleted = 1`,
             ({attributeId, targetNoteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.isDeleted = true;
                     attribute.save();
 

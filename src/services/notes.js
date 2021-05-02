@@ -320,7 +320,7 @@ function downloadImages(noteId, content) {
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
             if (url in imageUrlToNoteIdMapping) {
-                const imageNote = repository.getNote(imageUrlToNoteIdMapping[url]);
+                const imageNote = becca.getNote(imageUrlToNoteIdMapping[url]);
 
                 if (!imageNote || imageNote.isDeleted) {
                     delete imageUrlToNoteIdMapping[url];
@@ -363,9 +363,9 @@ function downloadImages(noteId, content) {
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
-                const imageNotes = repository.getNotes(Object.values(imageUrlToNoteIdMapping));
+                const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping));
 
-                const origNote = repository.getNote(noteId);
+                const origNote = becca.getNote(noteId);
                 const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
@@ -477,7 +477,7 @@ function saveNoteRevision(note) {
 }
 
 function updateNote(noteId, noteUpdates) {
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable) {
         throw new Error(`Note ${noteId} is not available for change!`);
@@ -784,7 +784,7 @@ function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
         throw new Error('Duplicating root is not possible');
     }
 
-    const origNote = repository.getNote(origNoteId);
+    const origNote = becca.getNote(origNoteId);
     const noteIdMapping = getNoteIdMapping(origNote);
 
     for (const childBranch of origNote.getChildBranches()) {

@@ -51,9 +51,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         runAttachedRelations(entity.getNote(), 'runOnAttributeCreation', entity);
 
         if (entity.type === 'relation' && entity.name === 'template') {
-            const note = repository.getNote(entity.noteId);
+            const note = becca.getNote(entity.noteId);
 
-            const templateNote = repository.getNote(entity.value);
+            const templateNote = becca.getNote(entity.value);
 
             if (!templateNote) {
                 return;

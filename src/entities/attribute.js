@@ -41,7 +41,7 @@ class Attribute extends Entity {
      * @returns {Note|null}
      */
     getNote() {
-        return this.repository.getNote(this.noteId);
+        return this.becca.getNote(this.noteId);
     }
 
     /**
@@ -56,7 +56,7 @@ class Attribute extends Entity {
             return null;
         }
 
-        return this.repository.getNote(this.value);
+        return this.becca.getNote(this.value);
     }
 
     /**

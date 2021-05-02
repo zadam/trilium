@@ -84,7 +84,7 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        noteRevisionService.createNoteRevision(await repository.getNote(getRandomNoteId()));
+        noteRevisionService.createNoteRevision(await becca.getNote(getRandomNoteId()));
 
         notes.push(note.noteId);
     }

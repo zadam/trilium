@@ -273,7 +273,7 @@ ${content}
             return;
         }
 
-        const note = repository.getNote(noteMeta.noteId);
+        const note = becca.getNote(noteMeta.noteId);
 
         notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
 

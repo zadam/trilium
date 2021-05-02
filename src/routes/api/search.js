@@ -38,7 +38,7 @@ async function searchFromNoteInt(note) {
 }
 
 async function searchFromNote(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} has not been found.`];
@@ -130,7 +130,7 @@ function getActions(note) {
 }
 
 async function searchAndExecute(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} has not been found.`];
@@ -150,7 +150,7 @@ async function searchAndExecute(req) {
     const actions = getActions(note);
 
     for (const resultNoteId of searchResultNoteIds) {
-        const resultNote = repository.getNote(resultNoteId);
+        const resultNote = becca.getNote(resultNoteId);
 
         if (!resultNote || resultNote.isDeleted) {
             continue;

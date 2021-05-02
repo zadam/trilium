@@ -29,12 +29,12 @@ class Branch extends Entity {
 
     /** @returns {Note|null} */
     getNote() {
-        return this.repository.getNote(this.noteId);
+        return this.becca.getNote(this.noteId);
     }
 
     /** @returns {Note|null} */
     getParentNote() {
-        return this.repository.getNote(this.parentNoteId);
+        return this.becca.getNote(this.parentNoteId);
     }
 
     beforeSaving() {

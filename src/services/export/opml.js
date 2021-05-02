@@ -2,6 +2,7 @@
 
 const repository = require("../repository");
 const utils = require('../utils');
+const becca = require("../becca/becca.js");
 
 function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {
@@ -13,7 +14,7 @@ function exportToOpml(taskContext, branch, version, res) {
     const note = branch.getNote();
 
     function exportNoteInner(branchId) {
-        const branch = repository.getBranch(branchId);
+        const branch = becca.getBranch(branchId);
         const note = branch.getNote();
 
         if (note.hasOwnedLabel('excludeFromExport')) {

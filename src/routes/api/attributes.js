@@ -8,7 +8,7 @@ const Attribute = require('../../entities/attribute');
 const becca = require("../../services/becca/becca.js");
 
 function getEffectiveNoteAttributes(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     return note.getAttributes();
 }
@@ -19,7 +19,7 @@ function updateNoteAttribute(req) {
 
     let attribute;
     if (body.attributeId) {
-        attribute = repository.getAttribute(body.attributeId);
+        attribute = becca.getAttribute(body.attributeId);
 
         if (attribute.noteId !== noteId) {
             return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
@@ -116,7 +116,7 @@ function updateNoteAttributes(req) {
     const noteId = req.params.noteId;
     const incomingAttributes = req.body;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     let existingAttrs = note.getOwnedAttributes();
 
@@ -143,7 +143,7 @@ function updateNoteAttributes(req) {
         }
 
         if (incAttr.type === 'relation') {
-            const targetNote = repository.getNote(incAttr.value);
+            const targetNote = becca.getNote(incAttr.value);
 
             if (!targetNote || targetNote.isDeleted) {
                 log.error(`Target note of relation ${JSON.stringify(incAttr)} does not exist or is deleted`);

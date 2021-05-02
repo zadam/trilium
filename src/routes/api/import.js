@@ -30,7 +30,7 @@ async function importToBranch(req) {
         return [400, "No file has been uploaded"];
     }
 
-    const parentNote = repository.getNote(parentNoteId);
+    const parentNote = becca.getNote(parentNoteId);
 
     if (!parentNote) {
         return [404, `Note ${parentNoteId} doesn't exist.`];

@@ -18,7 +18,7 @@ function getSchema() {
 }
 
 function execute(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} was not found.`];

@@ -130,7 +130,7 @@ function createSearchNote(req) {
 
 function getHoistedNote() {
     return cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root'
-        ? repository.getNote(cls.getHoistedNoteId())
+        ? becca.getNote(cls.getHoistedNoteId())
         : null;
 }
 

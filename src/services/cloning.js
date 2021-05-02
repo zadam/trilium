@@ -8,9 +8,10 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
+const becca = require("./becca/becca.js");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
-    const parentBranch = repository.getBranch(parentBranchId);
+    const parentBranch = becca.getBranch(parentBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(parentBranch.noteId)) {
         return { success: false, message: 'Note is deleted.' };
@@ -73,7 +74,7 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 }
 
 function cloneNoteAfter(noteId, afterBranchId) {
-    const afterNote = repository.getBranch(afterBranchId);
+    const afterNote = becca.getBranch(afterBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(afterNote.parentNoteId)) {
         return { success: false, message: 'Note is deleted.' };
@@ -103,7 +104,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
 }
 
 function isNoteDeleted(noteId) {
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     return note.isDeleted;
 }

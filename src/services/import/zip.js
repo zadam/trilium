@@ -171,7 +171,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
-        let note = repository.getNote(noteId);
+        let note = becca.getNote(noteId);
 
         if (note) {
             return;
@@ -340,7 +340,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
-        let note = repository.getNote(noteId);
+        let note = becca.getNote(noteId);
 
         if (note) {
             note.setContent(content);
@@ -458,7 +458,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        noteService.scanForLinks(repository.getNote(noteId));
+        noteService.scanForLinks(becca.getNote(noteId));
 
         if (!metaFile) {
             // if there's no meta file then the notes are created based on the order in that tar file but that

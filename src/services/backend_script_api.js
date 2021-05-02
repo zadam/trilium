@@ -275,7 +275,7 @@ function BackendScriptApi(currentNote, apiParams) {
         extraOptions.parentNoteId = parentNoteId;
         extraOptions.title = title;
 
-        const parentNote = repository.getNote(parentNoteId);
+        const parentNote = becca.getNote(parentNoteId);
 
         // code note type can be inherited, otherwise text is default
         extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';

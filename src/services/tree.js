@@ -156,7 +156,7 @@ function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
 
 function sortNotes(parentNoteId, sortBy, reverse = false) {
     sql.transactional(() => {
-        const notes = repository.getNote(parentNoteId).getChildNotes();
+        const notes = becca.getNote(parentNoteId).getChildNotes();
 
         notes.sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1);
 
@@ -185,7 +185,7 @@ function sortNotes(parentNoteId, sortBy, reverse = false) {
  * @deprecated - this will be removed in the future
  */
 function setNoteToParent(noteId, prefix, parentNoteId) {
-    const parentNote = repository.getNote(parentNoteId);
+    const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote && parentNote.isDeleted) {
         throw new Error(`Cannot move note to deleted parent note ${parentNoteId}`);
@@ -206,7 +206,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
         branch.save();
     }
     else if (parentNoteId) {
-        const note = repository.getNote(noteId);
+        const note = becca.getNote(noteId);
 
         if (note.isDeleted) {
             throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);

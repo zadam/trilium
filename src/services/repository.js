@@ -155,10 +155,5 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
-    getNotes,
-    getNoteRevision,
-    getBranch,
-    getAttribute,
-    getOption,
     updateEntity
 };

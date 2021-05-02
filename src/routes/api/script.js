@@ -30,7 +30,7 @@ async function exec(req) {
 }
 
 async function run(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     const result = await scriptService.executeNote(note, { originEntity: note });
 
@@ -78,7 +78,7 @@ function getWidgetBundles() {
 
 function getRelationBundles(req) {
     const noteId = req.params.noteId;
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
     const relationName = req.params.relationName;
 
     const attributes = note.getAttributes();
@@ -89,7 +89,7 @@ function getRelationBundles(req) {
     const bundles = [];
 
     for (const noteId of uniqueNoteIds) {
-        const note = repository.getNote(noteId);
+        const note = becca.getNote(noteId);
 
         if (!note.isJavaScript() || note.getScriptEnv() !== 'frontend') {
             continue;
@@ -106,7 +106,7 @@ function getRelationBundles(req) {
 }
 
 function getBundle(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     return scriptService.getScriptBundleForFrontend(note);
 }

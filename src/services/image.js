@@ -55,7 +55,7 @@ function getImageMimeFromExtension(ext) {
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     noteRevisionService.createNoteRevision(note);
     noteRevisionService.protectNoteRevisions(note);
@@ -78,7 +78,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
 
     const fileName = sanitizeFilename(originalName);
 
-    const parentNote = repository.getNote(parentNoteId);
+    const parentNote = becca.getNote(parentNoteId);
 
     const {note} = noteService.createNewNote({
         parentNoteId,

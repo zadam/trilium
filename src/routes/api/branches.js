@@ -17,8 +17,8 @@ const TaskContext = require('../../services/task_context');
 function moveBranchToParent(req) {
     const {branchId, parentBranchId} = req.params;
 
-    const parentBranch = repository.getBranch(parentBranchId);
-    const branchToMove = repository.getBranch(branchId);
+    const parentBranch = becca.getBranch(parentBranchId);
+    const branchToMove = becca.getBranch(branchId);
 
     if (!parentBranch || !branchToMove) {
         return [400, `One or both branches ${branchId}, ${parentBranchId} have not been found`];
@@ -53,8 +53,8 @@ function moveBranchToParent(req) {
 function moveBranchBeforeNote(req) {
     const {branchId, beforeBranchId} = req.params;
 
-    const branchToMove = repository.getBranch(branchId);
-    const beforeBranch = repository.getBranch(beforeBranchId);
+    const branchToMove = becca.getBranch(branchId);
+    const beforeBranch = becca.getBranch(beforeBranchId);
 
     if (!branchToMove) {
         return [404, `Can't find branch ${branchId}`];
@@ -95,8 +95,8 @@ function moveBranchBeforeNote(req) {
 function moveBranchAfterNote(req) {
     const {branchId, afterBranchId} = req.params;
 
-    const branchToMove = repository.getBranch(branchId);
-    const afterNote = repository.getBranch(afterBranchId);
+    const branchToMove = becca.getBranch(branchId);
+    const afterNote = becca.getBranch(afterBranchId);
 
     const validationResult = treeService.validateParentChild(afterNote.parentNoteId, branchToMove.noteId, branchId);
 
@@ -180,7 +180,7 @@ function setExpandedForSubtree(req) {
 
 function deleteBranch(req) {
     const last = req.query.last === 'true';
-    const branch = repository.getBranch(req.params.branchId);
+    const branch = becca.getBranch(req.params.branchId);
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
     const deleteId = utils.randomString(10);
@@ -199,7 +199,7 @@ function setPrefix(req) {
     const branchId = req.params.branchId;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
-    const branch = repository.getBranch(branchId);
+    const branch = becca.getBranch(branchId);
     branch.prefix = prefix;
     branch.save();
 }

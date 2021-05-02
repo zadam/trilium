@@ -52,8 +52,8 @@ async function executeBundle(bundle, apiParams = {}) {
  * bundle's startNote.
  */
 async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
-    const startNote = repository.getNote(startNoteId);
-    const currentNote = repository.getNote(currentNoteId);
+    const startNote = becca.getNote(startNoteId);
+    const currentNote = becca.getNote(currentNoteId);
     const originEntity = repository.getEntityFromName(originEntityName, originEntityId);
 
     currentNote.content = `return (${script}\r\n)(${getParams(params)})`;

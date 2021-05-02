@@ -13,7 +13,7 @@ const becca = require("../../services/becca/becca.js");
 
 function getNote(req) {
     const noteId = req.params.noteId;
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, "Note " + noteId + " has not been found."];
@@ -67,7 +67,7 @@ function deleteNote(req) {
     // note how deleteId is separate from taskId - single taskId produces separate deleteId for each "top level" deleted note
     const deleteId = utils.randomString(10);
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
@@ -81,7 +81,7 @@ function deleteNote(req) {
 }
 
 function undeleteNote(req) {
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
 
     const taskContext = TaskContext.getInstance(utils.randomString(10), 'undeleteNotes');
 
@@ -125,7 +125,7 @@ function setNoteTypeMime(req) {
     const type = req.params[1];
     const mime = req.params[2];
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
     note.type = type;
     note.mime = mime;
     note.save();
@@ -150,7 +150,7 @@ function getRelationMap(req) {
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
-    const relationMapNote = repository.getNote(relationMapNoteId);
+    const relationMapNote = becca.getNote(relationMapNoteId);
 
     const displayRelationsVal = relationMapNote.getLabelValue('displayRelations');
     const displayRelations = !displayRelationsVal ? [] : displayRelationsVal
@@ -191,7 +191,7 @@ function changeTitle(req) {
     const noteId = req.params.noteId;
     const title = req.body.title;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} has not been found`];
@@ -246,7 +246,7 @@ function getDeleteNotesPreview(req) {
     }
 
     for (const branchId of branchIdsToDelete) {
-        const branch = repository.getBranch(branchId);
+        const branch = becca.getBranch(branchId);
 
         if (!branch) {
             log.error(`Branch ${branchId} was not found and delete preview can't be calculated for this note.`);
@@ -280,7 +280,7 @@ function uploadModifiedFile(req) {
     const noteId = req.params.noteId;
     const {filePath} = req.body;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} has not been found`];

@@ -658,7 +658,7 @@ class Note extends Entity {
     getRelationTarget(name) {
         const relation = this.getRelation(name);
 
-        return relation ? this.repository.getNote(relation.value) : null;
+        return relation ? this.becca.getNote(relation.value) : null;
     }
 
     /**
@@ -668,7 +668,7 @@ class Note extends Entity {
     getOwnedRelationTarget(name) {
         const relation = this.getOwnedRelation(name);
 
-        return relation ? this.repository.getNote(relation.value) : null;
+        return relation ? this.becca.getNote(relation.value) : null;
     }
 
     /**
