@@ -79,6 +79,21 @@ class Becca {
     getOption(name) {
         return this.options[name];
     }
+
+    getEntityFromName(entityName, entityId) {
+        if (!entityName || !entityId) {
+            return null;
+        }
+
+        const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,
+            group =>
+                group
+                    .toUpperCase()
+                    .replace('_', '')
+        );
+
+        return this[camelCaseEntityName][entityId];
+    }
 }
 
 const becca = new Becca();

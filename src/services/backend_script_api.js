@@ -76,24 +76,6 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getAttribute = becca.getAttribute;
 
     /**
-     * Retrieves first entity from the SQL's result set.
-     *
-     * @method
-     * @param {string} SQL query
-     * @param {Array.<?>} array of params
-     * @returns {Entity|null}
-     */
-    this.getEntity = repository.getEntity;
-
-    /**
-     * @method
-     * @param {string} SQL query
-     * @param {Array.<?>} array of params
-     * @returns {Entity[]}
-     */
-    this.getEntities = repository.getEntities;
-
-    /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
      *

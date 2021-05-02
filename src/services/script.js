@@ -2,6 +2,7 @@ const ScriptContext = require('./script_context');
 const repository = require('./repository');
 const cls = require('./cls');
 const log = require('./log');
+const becca = require("./becca/becca.js");
 
 async function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
@@ -54,7 +55,7 @@ async function executeBundle(bundle, apiParams = {}) {
 async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = becca.getNote(startNoteId);
     const currentNote = becca.getNote(currentNoteId);
-    const originEntity = repository.getEntityFromName(originEntityName, originEntityId);
+    const originEntity = becca.getEntityFromName(originEntityName, originEntityId);
 
     currentNote.content = `return (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';

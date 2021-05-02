@@ -6,16 +6,6 @@ const eventService = require('./events');
 const cls = require('./cls');
 const entityConstructor = require('../entities/entity_constructor');
 
-function getEntityFromName(entityName, entityId) {
-    if (!entityName || !entityId) {
-        return null;
-    }
-
-    const constructor = entityConstructor.getEntityFromEntityName(entityName);
-
-    return getEntity(`SELECT * FROM ${constructor.entityName} WHERE ${constructor.primaryKeyName} = ?`, [entityId]);
-}
-
 function getEntities(query, params = []) {
     const rows = sql.getRows(query, params);
 
@@ -151,9 +141,6 @@ function updateEntity(entity) {
 }
 
 module.exports = {
-    getEntityFromName,
     getEntities,
-    getEntity,
-    getNote,
     updateEntity
 };
