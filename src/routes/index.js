@@ -7,6 +7,7 @@ const config = require('../services/config');
 const optionService = require('../services/options');
 const log = require('../services/log');
 const env = require('../services/env');
+const protectedSessionService = require("../services/protected_session.js");
 
 function index(req, res) {
     const options = optionService.getOptionsMap();
@@ -30,7 +31,8 @@ function index(req, res) {
         appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),
         isMainWindow: !req.query.extra,
-        extraHoistedNoteId: req.query.extraHoistedNoteId
+        extraHoistedNoteId: req.query.extraHoistedNoteId,
+        isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable()
     });
 }
 

@@ -67,8 +67,6 @@ function setupGlobs() {
         return false;
     };
 
-    protectedSessionHolder.setProtectedSessionId(null);
-
     for (const appCssNoteId of glob.appCssNoteIds || []) {
         libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`);
     }

@@ -1,16 +1,16 @@
-import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
 import treeCache from "./tree_cache.js";
+import utils from "./utils.js";
 
 let protectedSessionDeferred = null;
 
 async function leaveProtectedSession() {
     if (protectedSessionHolder.isProtectedSessionAvailable()) {
-        protectedSessionHolder.resetProtectedSession();
+        await protectedSessionHolder.resetProtectedSession();
     }
 }
 
@@ -41,37 +41,37 @@ async function reloadData() {
 }
 
 async function setupProtectedSession(password) {
-    const response = await enterProtectedSessionOnServer(password);
+    const response = await server.post('login/protected', { password: password });
 
     if (!response.success) {
         toastService.showError("Wrong password.", 3000);
         return;
     }
 
-    protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
-    protectedSessionHolder.touchProtectedSession();
+    protectedSessionHolder.enableProtectedSession();
+}
 
-    await reloadData();
+ws.subscribeToMessages(async message => {
+    if (message.type === 'protectedSessionLogin') {
+        await reloadData();
 
-    await appContext.triggerEvent('treeCacheReloaded');
+        await appContext.triggerEvent('treeCacheReloaded');
 
-    appContext.triggerEvent('protectedSessionStarted');
+        appContext.triggerEvent('protectedSessionStarted');
 
-    if (protectedSessionDeferred !== null) {
-        import("../dialogs/protected_session.js").then(dialog => dialog.close());
+        if (protectedSessionDeferred !== null) {
+            import("../dialogs/protected_session.js").then(dialog => dialog.close());
 
-        protectedSessionDeferred.resolve(true);
-        protectedSessionDeferred = null;
+            protectedSessionDeferred.resolve(true);
+            protectedSessionDeferred = null;
+        }
+
+        toastService.showMessage("Protected session has been started.");
     }
-
-    toastService.showMessage("Protected session has been started.");
-}
-
-async function enterProtectedSessionOnServer(password) {
-    return await server.post('login/protected', {
-        password: password
-    });
-}
+    else if (message.type === 'protectedSessionLogout') {
+        utils.reloadApp();
+    }
+});
 
 async function protectNote(noteId, protect, includingSubtree) {
     await enterProtectedSession();

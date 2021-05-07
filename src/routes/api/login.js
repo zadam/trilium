@@ -8,11 +8,11 @@ const passwordEncryptionService = require('../../services/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info');
 const eventService = require('../../services/events');
-const cls = require('../../services/cls');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const ApiToken = require('../../entities/api_token');
+const ws = require("../../services/ws.js");
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {
@@ -65,16 +65,14 @@ function loginToProtectedSession(req) {
 
     const decryptedDataKey = passwordEncryptionService.getDataKey(password);
 
-    const protectedSessionId = protectedSessionService.setDataKey(decryptedDataKey);
-
-    // this is set here so that event handlers have access to the protected session
-    cls.set('protectedSessionId', protectedSessionId);
+    protectedSessionService.setDataKey(decryptedDataKey);
 
     eventService.emit(eventService.ENTER_PROTECTED_SESSION);
 
+    ws.sendMessageToAllClients({ type: 'protectedSessionLogin' });
+
     return {
-        success: true,
-        protectedSessionId: protectedSessionId
+        success: true
     };
 }
 
@@ -82,6 +80,8 @@ function logoutFromProtectedSession() {
     protectedSessionService.resetDataKey();
 
     eventService.emit(eventService.LEAVE_PROTECTED_SESSION);
+
+    ws.sendMessageToAllClients({ type: 'protectedSessionLogout' });
 }
 
 function token(req) {

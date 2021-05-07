@@ -1,42 +1,24 @@
 "use strict";
 
-const utils = require('./utils');
 const log = require('./log');
 const dataEncryptionService = require('./data_encryption');
-const cls = require('./cls');
 
-let dataKeyMap = {};
+let dataKey = null;
 
 function setDataKey(decryptedDataKey) {
-    const protectedSessionId = utils.randomSecureToken(32);
-
-    dataKeyMap[protectedSessionId] = Array.from(decryptedDataKey); // can't store buffer in session
-
-    return protectedSessionId;
-}
-
-function setProtectedSessionId(req) {
-    cls.set('protectedSessionId', req.cookies.protectedSessionId);
-}
-
-function getProtectedSessionId() {
-    return cls.get('protectedSessionId');
+    dataKey = Array.from(decryptedDataKey);
 }
 
 function getDataKey() {
-    const protectedSessionId = getProtectedSessionId();
-
-    return dataKeyMap[protectedSessionId];
+    return dataKey;
 }
 
 function resetDataKey() {
-    dataKeyMap = {};
+    dataKey = null;
 }
 
 function isProtectedSessionAvailable() {
-    const protectedSessionId = getProtectedSessionId();
-
-    return !!dataKeyMap[protectedSessionId];
+    return !!dataKey;
 }
 
 function decryptNotes(notes) {
@@ -74,12 +56,10 @@ function decryptString(cipherText) {
 
 module.exports = {
     setDataKey,
-    getDataKey,
     resetDataKey,
     isProtectedSessionAvailable,
     encrypt,
     decrypt,
     decryptString,
-    decryptNotes,
-    setProtectedSessionId
+    decryptNotes
 };
