@@ -3,6 +3,7 @@ import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import treeCache from "../services/tree_cache.js";
+import bundle from "../services/bundle.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -700,6 +701,55 @@ class NoteShort {
     getWorkspaceTabBackgroundColor() {
         const labels = this.getLabels('workspaceTabBackgroundColor');
         return labels.length > 0 ? labels[0].value : "";
+    }
+
+    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    isJavaScript() {
+        return (this.type === "code" || this.type === "file")
+            && (this.mime.startsWith("application/javascript")
+                || this.mime === "application/x-javascript"
+                || this.mime === "text/javascript");
+    }
+
+    /** @returns {boolean} true if this note is HTML */
+    isHtml() {
+        return (this.type === "code" || this.type === "file" || this.type === "render") && this.mime === "text/html";
+    }
+
+    /** @returns {string|null} JS script environment - either "frontend" or "backend" */
+    getScriptEnv() {
+        if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
+            return "frontend";
+        }
+
+        if (this.type === 'render') {
+            return "frontend";
+        }
+
+        if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
+            return "backend";
+        }
+
+        return null;
+    }
+
+    async executeScript() {
+        if (!this.isJavaScript()) {
+            throw new Error(`Note ${this.noteId} is of type ${this.type} and mime ${this.mime} and thus cannot be executed`);
+        }
+
+        const env = this.getScriptEnv();
+
+        if (env === "frontend") {
+            const bundleService = (await import("../services/bundle.js")).default;
+            await bundleService.getAndExecuteBundle(this.noteId);
+        }
+        else if (env === "backend") {
+            await server.post('script/run/' + this.noteId);
+        }
+        else {
+            throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
+        }
     }
 }
 

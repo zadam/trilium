@@ -8,7 +8,7 @@ import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 
-const ENABLE_INSPECTOR = false;
+const ENABLE_INSPECTOR = true;
 
 const mentionSetup = {
     feeds: [
@@ -121,7 +121,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         });
 
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
-
+console.log('glob.isDev', glob.isDev);
         if (glob.isDev && ENABLE_INSPECTOR) {
             await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector.js');
             CKEditorInspector.attach(this.textEditor);
