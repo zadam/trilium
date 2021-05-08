@@ -224,7 +224,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 <script>
     document.body.className += ' ck-content printed-content';
     
-    renderMathInElement(document.body, {});
+    renderMathInElement(document.body, {trust: true});
 </script>
 `,
             importCSS: false,
