@@ -81,10 +81,10 @@ function getRecentChanges(req) {
         if (change.current_isDeleted) {
             const deleteId = change.current_deleteId;
 
-            const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
+            const undeletedParentBranchIds = noteService.getUndeletedParentBranchIds(change.noteId, deleteId);
 
             // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
-            change.canBeUndeleted = undeletedParentBranches.length > 0;
+            change.canBeUndeleted = undeletedParentBranchIds.length > 0;
         }
     }
 

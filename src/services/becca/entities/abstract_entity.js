@@ -96,17 +96,15 @@ class AbstractEntity {
     }
 
     markAsDeleted(deleteId = null) {
-        sql.execute(`UPDATE ${this.constructor.entityName} SET isDeleted = 1, deleteId = ? WHERE ${this.constructor.primaryKeyName} = ?`,
-            [deleteId, this[this.constructor.primaryKeyName]]);
+        const entityId = this[this.constructor.primaryKeyName];
+        const entityName = this.constructor.entityName;
+
+        sql.execute(`UPDATE ${entityName} SET isDeleted = 1, deleteId = ? WHERE ${this.constructor.primaryKeyName} = ?`,
+            [deleteId, entityId]);
 
         this.addEntityChange(true);
 
-        const eventPayload = {
-            entityName: this.constructor.entityName,
-            entity: this
-        };
-
-        eventService.emit(eventService.ENTITY_DELETED, eventPayload);
+        eventService.emit(eventService.ENTITY_DELETED, { entityName, entity: this });
     }
 }
 

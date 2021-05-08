@@ -2,7 +2,7 @@
 
 const scriptService = require('../../services/script');
 const attributeService = require('../../services/attributes');
-const repository = require('../../services/repository');
+const becca = require('../../services/becca/becca');
 const syncService = require('../../services/sync');
 
 async function exec(req) {

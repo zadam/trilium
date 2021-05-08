@@ -551,6 +551,17 @@ class Note extends AbstractEntity {
         }
     }
 
+    /**
+     * @returns {Attribute} attribute belonging to this specific note (excludes inherited attributes)
+     *
+     * This method can be significantly faster than the getAttribute()
+     */
+    getOwnedAttribute(type, name) {
+        const attrs = this.getOwnedAttributes(type, name);
+
+        return attrs.length > 0 ? attrs[0] : null;
+    }
+
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
@@ -771,6 +782,10 @@ class Note extends AbstractEntity {
         }
 
         return this.ancestorCache;
+    }
+
+    getTargetRelations() {
+        return this.targetRelations;
     }
 
     /** @return {Note[]} - returns only notes which are templated, does not include their subtrees

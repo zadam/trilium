@@ -523,7 +523,7 @@ function updateNote(noteId, noteUpdates) {
 function deleteBranch(branch, deleteId, taskContext) {
     taskContext.increaseProgressCount();
 
-    if (!branch || branch.isDeleted) {
+    if (!branch) {
         return false;
     }
 
@@ -531,7 +531,7 @@ function deleteBranch(branch, deleteId, taskContext) {
         || branch.noteId === 'root'
         || branch.noteId === cls.getHoistedNoteId()) {
 
-        throw new Error("Can't delete root branch/note");
+        throw new Error("Can't delete root or hoisted branch/note");
     }
 
     branch.markAsDeleted(deleteId);
@@ -546,8 +546,6 @@ function deleteBranch(branch, deleteId, taskContext) {
 
         // first delete children and then parent - this will show up better in recent changes
 
-        note.markAsDeleted(deleteId);
-
         log.info("Deleting note " + note.noteId);
 
         for (const attribute of note.getOwnedAttributes()) {
@@ -557,6 +555,8 @@ function deleteBranch(branch, deleteId, taskContext) {
         for (const relation of note.getTargetRelations()) {
             relation.markAsDeleted(deleteId);
         }
+
+        note.markAsDeleted(deleteId);
 
         return true;
     }
@@ -874,7 +874,7 @@ module.exports = {
     scanForLinks,
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
-    getUndeletedParentBranches: getUndeletedParentBranchIds,
+    getUndeletedParentBranchIds,
     triggerNoteTitleChanged,
     eraseDeletedNotesNow
 };

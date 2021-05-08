@@ -113,13 +113,13 @@ function getSomeNotePathSegments(note, hoistedNotePath = 'root') {
 
     const notePaths = note.getSortedNotePaths(hoistedNotePath);
 
-    return notePaths[0].notePath;
+    return notePaths.length > 0 ? notePaths[0].notePath : null;
 }
 
 function getSomeNotePath(note, hoistedNotePath = 'root') {
     const notePath = getSomeNotePathSegments(note, hoistedNotePath);
 
-    return notePath.join('/');
+    return notePath === null ? null : notePath.join('/');
 }
 
 async function sortAlphabetically(noteId) {

@@ -59,32 +59,26 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_CHANGE_
     }
 });
 
-eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
+eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entity}) => {
     if (!becca.loaded) {
         return;
     }
 
     if (entityName === 'notes') {
-        noteDeleted(entityId);
+        noteDeleted(entity);
     } else if (entityName === 'branches') {
-        branchDeleted(entityId);
+        branchDeleted(entity);
     } else if (entityName === 'attributes') {
-        attributeDeleted(entityId);
+        attributeDeleted(entity);
     }
 });
 
-function noteDeleted(noteId) {
-    delete becca.notes[noteId];
+function noteDeleted(note) {
+    delete becca.notes[note.noteId];
 }
 
-function branchDeleted(branchId) {
-    const branch = becca.branches[branchId];
-
-    if (!branch) {
-        return;
-    }
-
-    const childNote = becca.notes[noteId];
+function branchDeleted(branch) {
+    const childNote = becca.notes[branch.noteId];
 
     if (childNote) {
         childNote.parents = childNote.parents.filter(parent => parent.noteId !== branch.parentNoteId);
@@ -115,13 +109,7 @@ function branchUpdated(branch) {
     }
 }
 
-function attributeDeleted(attributeId) {
-    const attribute = becca.attributes[attributeId];
-
-    if (!attribute) {
-        return;
-    }
-
+function attributeDeleted(attribute) {
     const note = becca.notes[attribute.noteId];
 
     if (note) {
@@ -132,21 +120,21 @@ function attributeDeleted(attributeId) {
             note.invalidateThisCache();
         }
 
-        note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attributeId);
+        note.ownedAttributes = note.ownedAttributes.filter(attr => attr.attributeId !== attribute.attributeId);
 
         const targetNote = attribute.targetNote;
 
         if (targetNote) {
-            targetNote.targetRelations = targetNote.targetRelations.filter(rel => rel.attributeId !== attributeId);
+            targetNote.targetRelations = targetNote.targetRelations.filter(rel => rel.attributeId !== attribute.attributeId);
         }
     }
 
-    delete becca.attributes[attributeId];
+    delete becca.attributes[attribute.attributeId];
 
     const key = `${attribute.type}-${attribute.name.toLowerCase()}`;
 
     if (key in becca.attributeIndex) {
-        becca.attributeIndex[key] = becca.attributeIndex[key].filter(attr => attr.attributeId !== attributeId);
+        becca.attributeIndex[key] = becca.attributeIndex[key].filter(attr => attr.attributeId !== attribute.attributeId);
     }
 }
 
