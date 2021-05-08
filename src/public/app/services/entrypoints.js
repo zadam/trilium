@@ -216,6 +216,7 @@ export default class Entrypoints extends Component {
             return;
         }
 
+        // TODO: use note.executeScript()
         if (note.mime.endsWith("env=frontend")) {
             await bundleService.getAndExecuteBundle(note.noteId);
         } else if (note.mime.endsWith("env=backend")) {

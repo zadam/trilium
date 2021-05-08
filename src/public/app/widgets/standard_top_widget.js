@@ -1,5 +1,6 @@
 import BasicWidget from "./basic_widget.js";
 import HistoryNavigationWidget from "./history_navigation.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 import protectedSessionService from "../services/protected_session.js";
 import QuickSearchWidget from "./quick_search.js";
 
@@ -68,8 +69,7 @@ const TPL = `
         </button>
     
         <button class="btn btn-sm leave-protected-session-button noborder"
-                title="Leave protected session so that protected notes are not accessible any more."
-                style="display: none;">
+                title="Leave protected session so that protected notes are not accessible any more.">
             <span class="bx bx-log-out"></span>
     
             Leave protected session
@@ -96,9 +96,11 @@ export default class StandardTopWidget extends BasicWidget {
 
         this.$enterProtectedSessionButton = this.$widget.find(".enter-protected-session-button");
         this.$enterProtectedSessionButton.on('click', protectedSessionService.enterProtectedSession);
+        this.$enterProtectedSessionButton.toggle(!protectedSessionHolder.isProtectedSessionAvailable());
 
         this.$leaveProtectedSessionButton = this.$widget.find(".leave-protected-session-button");
         this.$leaveProtectedSessionButton.on('click', protectedSessionService.leaveProtectedSession);
+        this.$leaveProtectedSessionButton.toggle(protectedSessionHolder.isProtectedSessionAvailable());
 
         return this.$widget;
     }

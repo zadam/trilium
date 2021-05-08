@@ -14,6 +14,10 @@ button.btn, button.btn-sm {
     font-size: inherit;
 }
 
+.btn-micro {
+    padding: 0 10px 0 10px;
+}
+
 .input-group-text {
     background-color: var(--accented-background-color) !important;
     color: var(--muted-text-color) !important;

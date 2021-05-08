@@ -119,8 +119,6 @@ const appContext = new AppContext(window.glob.isMainWindow);
 
 // we should save all outstanding changes before the page/app is closed
 $(window).on('beforeunload', () => {
-    protectedSessionHolder.resetSessionCookie();
-
     let allSaved = true;
 
     appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter(wr => !!wr.deref());

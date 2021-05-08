@@ -1,8 +1,5 @@
-import utils from "./utils.js";
 import options from './options.js';
 import server from "./server.js";
-
-const PROTECTED_SESSION_ID_KEY = 'protectedSessionId';
 
 let lastProtectedSessionOperationDate = 0;
 
@@ -15,32 +12,23 @@ setInterval(() => {
     }
 }, 10000);
 
-function setProtectedSessionId(id) {
-    // using session cookie so that it disappears after browser/tab is closed
-    utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, id);
-}
+function enableProtectedSession() {
+    glob.isProtectedSessionAvailable = true;
 
-function resetSessionCookie() {
-    utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, null);
+    touchProtectedSession();
 }
 
 async function resetProtectedSession() {
-    resetSessionCookie();
-
     await server.post("logout/protected");
-
-    utils.reloadApp();
 }
 
 function isProtectedSessionAvailable() {
-    return !!utils.getCookie(PROTECTED_SESSION_ID_KEY);
+    return glob.isProtectedSessionAvailable;
 }
 
 function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {
         lastProtectedSessionOperationDate = Date.now();
-
-        setProtectedSessionId(utils.getCookie(PROTECTED_SESSION_ID_KEY));
     }
 }
 
@@ -51,8 +39,7 @@ function touchProtectedSessionIfNecessary(note) {
 }
 
 export default {
-    setProtectedSessionId,
-    resetSessionCookie,
+    enableProtectedSession,
     resetProtectedSession,
     isProtectedSessionAvailable,
     touchProtectedSession,

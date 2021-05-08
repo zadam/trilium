@@ -93,7 +93,6 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                 cls.set('sourceId', req.headers['trilium-source-id']);
                 cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
                 cls.set('hoistedNoteId', req.headers['trilium-hoisted-note-id'] || 'root');
-                protectedSessionService.setProtectedSessionId(req);
 
                 const cb = () => routeHandler(req, res, next);
 
