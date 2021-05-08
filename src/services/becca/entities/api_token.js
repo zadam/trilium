@@ -18,6 +18,14 @@ class ApiToken extends AbstractEntity {
         this.token = row.token;
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
+
+    getPojo() {
+        return {
+            apiTokenId: this.apiTokenId,
+            token: this.token,
+            utcDateCreated: this.utcDateCreated
+        }
+    }
 }
 
 module.exports = ApiToken;

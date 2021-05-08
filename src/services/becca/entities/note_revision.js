@@ -141,11 +141,24 @@ class NoteRevision extends AbstractEntity {
         this.utcDateModified = dateUtils.utcNowDateTime();
     }
 
-    // cannot be static!
-    updatePojo(pojo) {
+    getPojo() {
+        const pojo = {
+            noteRevisionId: this.noteRevisionId,
+            noteId: this.noteId,
+            type: this.type,
+            mime: this.mime,
+            isProtected: this.isProtected,
+            title: this.title,
+            dateLastEdited: this.dateLastEdited,
+            dateCreated: this.dateCreated,
+            utcDateLastEdited: this.utcDateLastEdited,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        };
+
         if (pojo.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                pojo.title = protectedSessionService.encrypt(pojo.title);
+                pojo.title = protectedSessionService.encrypt(this.title);
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts
@@ -153,7 +166,7 @@ class NoteRevision extends AbstractEntity {
             }
         }
 
-        delete pojo.content;
+        return pojo;
     }
 }
 

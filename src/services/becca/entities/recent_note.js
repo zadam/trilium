@@ -17,6 +17,14 @@ class RecentNote extends AbstractEntity {
         this.notePath = row.notePath;
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
+
+    getPojo() {
+        return {
+            noteId: this.noteId,
+            notePath: this.notePath,
+            utcDateCreated: this.utcDateCreated
+        }
+    }
 }
 
 module.exports = RecentNote;

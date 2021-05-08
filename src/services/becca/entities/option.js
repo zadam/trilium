@@ -26,8 +26,17 @@ class Option extends AbstractEntity {
         super.beforeSaving();
 
         this.utcDateModified = dateUtils.utcNowDateTime();
-        // utcDateCreated is scheduled for removal so the value does not matter
-        this.utcDateCreated = dateUtils.utcNowDateTime();
+    }
+
+    getPojo() {
+        return {
+            name: this.name,
+            value: this.value,
+            isSynced: this.isSynced,
+            utcDateModified: this.utcDateModified,
+            // utcDateCreated is scheduled for removal so the value does not matter
+            utcDateCreated: dateUtils.utcNowDateTime()
+        }
     }
 }
 
