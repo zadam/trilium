@@ -68,11 +68,11 @@ class Note extends AbstractEntity {
         /** @param {string} */
         this.mime = row.mime;
         /** @param {string} */
-        this.dateCreated = row.dateCreated;
+        this.dateCreated = row.dateCreated || dateUtils.localNowDateTime();
         /** @param {string} */
         this.dateModified = row.dateModified;
         /** @param {string} */
-        this.utcDateCreated = row.utcDateCreated;
+        this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
         /** @param {string} */
         this.utcDateModified = row.utcDateModified;
 
@@ -823,6 +823,13 @@ class Note extends AbstractEntity {
         }
     }
 
+    beforeSaving() {
+        super.beforeSaving();
+
+        this.dateModified = dateUtils.localNowDateTime();
+        this.utcDateModified = dateUtils.utcNowDateTime();
+    }
+
     getPojo() {
         const pojo = {
             noteId: this.noteId,
@@ -847,27 +854,6 @@ class Note extends AbstractEntity {
         }
 
         return pojo;
-    }
-
-    beforeSaving() {
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.localNowDateTime();
-        }
-
-        if (!this.utcDateCreated) {
-            this.utcDateCreated = dateUtils.utcNowDateTime();
-        }
-
-        super.beforeSaving();
-
-        this.dateModified = dateUtils.localNowDateTime();
-        this.utcDateModified = dateUtils.utcNowDateTime();
-    }
-
-    markAsDeleted(deleteId = null) {
-        sql.execute("UPDATE notes SET isDeleted = 1, deleteId = ? WHERE noteId = ?", [deleteId, this.noteId]);
-
-        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }
 }
 

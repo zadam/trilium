@@ -1,9 +1,12 @@
 "use strict";
 
 const utils = require('../../utils');
+const sql = require('../../sql');
+const entityChangesService = require('../../entity_changes');
+const eventService = require("../../events.js");
+const cls = require("../../cls.js");
 
 let becca = null;
-let repo = null;
 
 class AbstractEntity {
     beforeSaving() {
@@ -16,11 +19,15 @@ class AbstractEntity {
         }
     }
 
-    generateHash() {
+    generateHash(isDeleted = false) {
         let contentToHash = "";
 
         for (const propertyName of this.constructor.hashedProperties) {
             contentToHash += "|" + this[propertyName];
+        }
+
+        if (isDeleted) {
+            contentToHash += "|deleted";
         }
 
         return utils.hash(contentToHash).substr(0, 10);
@@ -39,19 +46,67 @@ class AbstractEntity {
         return becca;
     }
 
-    // temporarily needed for saving entities
-    get repository() {
-        if (!repo) {
-            repo = require('../../repository');
-        }
-
-        return repo;
+    addEntityChange(isDeleted = false) {
+        entityChangesService.addEntityChange({
+            entityName: this.constructor.entityName,
+            entityId: this[this.constructor.primaryKeyName],
+            hash: this.generateHash(isDeleted),
+            isErased: false,
+            utcDateChanged: this.getUtcDateChanged(),
+            isSynced: this.constructor.entityName !== 'options' || !!this.isSynced
+        });
     }
 
     save() {
-        this.repository.updateEntity(this);
+        const entityName = this.constructor.entityName;
+        const primaryKeyName = this.constructor.primaryKeyName;
+
+        const isNewEntity = !this[primaryKeyName];
+
+        if (this.beforeSaving) {
+            this.beforeSaving();
+        }
+
+        const pojo = this.getPojo();
+
+        sql.transactional(() => {
+            sql.upsert(entityName, primaryKeyName, pojo);
+
+            if (entityName === 'recent_notes') {
+                return;
+            }
+
+            this.addEntityChange(false);
+
+            if (!cls.isEntityEventsDisabled()) {
+                const eventPayload = {
+                    entityName,
+                    entity: this
+                };
+
+                if (isNewEntity) {
+                    eventService.emit(eventService.ENTITY_CREATED, eventPayload);
+                }
+
+                eventService.emit(eventService.ENTITY_CHANGED, eventPayload);
+            }
+        });
 
         return this;
+    }
+
+    markAsDeleted(deleteId = null) {
+        sql.execute(`UPDATE ${this.constructor.entityName} SET isDeleted = 1, deleteId = ? WHERE ${this.constructor.primaryKeyName} = ?`,
+            [deleteId, this[this.constructor.primaryKeyName]]);
+
+        this.addEntityChange(true);
+
+        const eventPayload = {
+            entityName: this.constructor.entityName,
+            entity: this
+        };
+
+        eventService.emit(eventService.ENTITY_DELETED, eventPayload);
     }
 }
 

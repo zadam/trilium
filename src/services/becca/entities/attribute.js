@@ -111,6 +111,28 @@ class Attribute extends AbstractEntity {
         }
     }
 
+    beforeSaving() {
+        if (!this.value) {
+            if (this.type === 'relation') {
+                throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
+            }
+
+            // null value isn't allowed
+            this.value = "";
+        }
+
+        if (this.position === undefined) {
+            // TODO: can be calculated from becca
+            this.position = 1 + sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
+        }
+
+        if (!this.isInheritable) {
+            this.isInheritable = false;
+        }
+
+        super.beforeSaving();
+    }
+
     getPojo() {
         return {
             attributeId: this.attributeId,
@@ -125,27 +147,6 @@ class Attribute extends AbstractEntity {
         };
     }
 
-    beforeSaving() {
-        if (!this.value) {
-            if (this.type === 'relation') {
-                throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
-            }
-
-            // null value isn't allowed
-            this.value = "";
-        }
-
-        if (this.position === undefined) {
-            this.position = 1 + sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
-        }
-
-        if (!this.isInheritable) {
-            this.isInheritable = false;
-        }
-
-        super.beforeSaving();
-    }
-
     createClone(type, name, value, isInheritable) {
         return new Attribute({
             noteId: this.noteId,
@@ -156,12 +157,6 @@ class Attribute extends AbstractEntity {
             isInheritable: isInheritable,
             utcDateModified: this.utcDateModified
         });
-    }
-
-    markAsDeleted(deleteId = null) {
-        sql.execute("UPDATE attributes SET isDeleted = 1, deleteId = ? WHERE attributeId = ?", [deleteId, this.attributeId]);
-
-        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }
 }
 

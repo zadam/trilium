@@ -67,25 +67,34 @@ class Branch extends AbstractEntity {
         return this.becca.notes[this.parentNoteId];
     }
 
+    beforeSaving() {
+        if (this.notePosition === undefined || this.notePosition === null) {
+            // TODO finding new position can be refactored into becca
+            const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
+            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
+        }
+
+        if (!this.isExpanded) {
+            this.isExpanded = false;
+        }
+
+        this.utcDateModified = dateUtils.utcNowDateTime();
+
+        super.beforeSaving();
+    }
+
     getPojo() {
-        const pojo = {
+        return {
             branchId: this.branchId,
             noteId: this.noteId,
             parentNoteId: this.parentNoteId,
             prefix: this.prefix,
             notePosition: this.notePosition,
             isExpanded: this.isExpanded,
-            utcDateModified: dateUtils.utcNowDateTime()
+            utcDateModified: this.utcDateModified,
+            // not used for anything, will be later dropped
+            utcDateCreated: dateUtils.utcNowDateTime()
         };
-
-        // FIXME
-        if (true || !pojo.branchId) {
-            pojo.utcDateCreated = dateUtils.utcNowDateTime();
-        }
-
-        this.utcDateModified = dateUtils.utcNowDateTime();
-
-        return pojo;
     }
 
     createClone(parentNoteId, notePosition) {
@@ -96,27 +105,6 @@ class Branch extends AbstractEntity {
             prefix: this.prefix,
             isExpanded: this.isExpanded
         });
-    }
-
-    beforeSaving() {
-        // TODO can be refactored into becca
-        if (this.notePosition === undefined || this.notePosition === null) {
-            const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
-            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
-        }
-
-        if (!this.isExpanded) {
-            this.isExpanded = false;
-        }
-
-        super.beforeSaving();
-    }
-
-    markAsDeleted(deleteId = null) {
-        sql.execute("UPDATE branches SET isDeleted = 1, deleteId = ? WHERE branchId = ?",
-            [deleteId, this.branchId]);
-
-        // FIXME: this needs to be published into entity_changes (for sync and becca cleanup)
     }
 }
 
