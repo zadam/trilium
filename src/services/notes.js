@@ -4,7 +4,6 @@ const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
-const repository = require('./repository');
 const cls = require('../services/cls');
 const BeccaNote = require('../services/becca/entities/note.js');
 const BeccaBranch = require('../services/becca/entities/branch.js');
@@ -18,6 +17,9 @@ const request = require('./request');
 const path = require('path');
 const url = require('url');
 const becca = require('../services/becca/becca');
+const Branch = require('../services/becca/entities/branch');
+const Note = require('../services/becca/entities/note');
+const Attribute = require('../services/becca/entities/attribute');
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -569,73 +571,72 @@ function deleteBranch(branch, deleteId, taskContext) {
  * @param {TaskContext} taskContext
  */
 function undeleteNote(note, deleteId, taskContext) {
-    const undeletedParentBranches = getUndeletedParentBranches(note.noteId, deleteId);
+    const undeletedParentBranchIds = getUndeletedParentBranchIds(note.noteId, deleteId);
 
-    if (undeletedParentBranches.length === 0) {
+    if (undeletedParentBranchIds.length === 0) {
         // cannot undelete if there's no undeleted parent
         return;
     }
 
-    for (const parentBranch of undeletedParentBranches) {
-        undeleteBranch(parentBranch, deleteId, taskContext);
+    for (const parentBranchId of undeletedParentBranchIds) {
+        undeleteBranch(parentBranchId, deleteId, taskContext);
     }
 }
 
 /**
- * @param {Branch} branch
+ * @param {string} branchId
  * @param {string} deleteId
  * @param {TaskContext} taskContext
  */
-function undeleteBranch(branch, deleteId, taskContext) {
+function undeleteBranch(branchId, deleteId, taskContext) {
+    const branch = sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId])
+
     if (!branch.isDeleted) {
         return;
     }
 
-    const note = branch.getNote();
+    const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [branch.noteId]);
 
     if (note.isDeleted && note.deleteId !== deleteId) {
         return;
     }
 
-    branch.isDeleted = false;
-    branch.save();
+    new Branch(branch).save();
 
     taskContext.increaseProgressCount();
 
     if (note.isDeleted && note.deleteId === deleteId) {
-        note.isDeleted = false;
-        note.save();
+        new Note(note).save();
 
-        const attributeIds = sql.getColumn(`
-                SELECT attributeId FROM attributes 
+        const attributes = sql.getRows(`
+                SELECT * FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
                   AND (noteId = ? 
                            OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
 
-        for (const attr of attributeIds) {
-            attr.isDeleted = false;
-            attr.save();
+        for (const attribute of attributes) {
+            new Attribute(attribute).save();
         }
 
-        const childBranches = repository.getEntities(`
-            SELECT branches.*
+        const childBranchIds = sql.getColumn(`
+            SELECT branches.id
             FROM branches
             WHERE branches.isDeleted = 1
               AND branches.deleteId = ?
               AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
 
-        for (const childBranch of childBranches) {
-            undeleteBranch(childBranch, deleteId, taskContext);
+        for (const childBranchId of childBranchIds) {
+            undeleteBranch(childBranchId, deleteId, taskContext);
         }
     }
 }
 
 /**
- * @return return deleted branches of an undeleted parent note
+ * @return return deleted branchIds of an undeleted parent note
  */
-function getUndeletedParentBranches(noteId, deleteId) {
-    const branchIds = sql.getColumn(`
+function getUndeletedParentBranchIds(noteId, deleteId) {
+    return sql.getColumn(`
                     SELECT branches.branchId
                     FROM branches
                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
@@ -643,8 +644,6 @@ function getUndeletedParentBranches(noteId, deleteId) {
                       AND branches.isDeleted = 1
                       AND branches.deleteId = ?
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
-
-    return branchIds.map(branchId => becca.getBranch(branchId));
 }
 
 function scanForLinks(note) {
@@ -875,7 +874,7 @@ module.exports = {
     scanForLinks,
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
-    getUndeletedParentBranches,
+    getUndeletedParentBranches: getUndeletedParentBranchIds,
     triggerNoteTitleChanged,
     eraseDeletedNotesNow
 };
