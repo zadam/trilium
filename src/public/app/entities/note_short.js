@@ -3,8 +3,6 @@ import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import froca from "../services/froca.js";
-import treeCache from "../services/tree_cache.js";
-import bundle from "../services/bundle.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';

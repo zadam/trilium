@@ -56,7 +56,19 @@ class Becca {
     }
 
     getNotes(noteIds) {
-        return this.notes.filter(note => noteIds.includes(note.noteId));
+        const filteredNotes = [];
+
+        for (const noteId of noteIds) {
+            const note = this.notes[noteId];
+
+            if (!note) {
+                throw new Error(`Note '${noteId}' was not found in becca.`);
+            }
+
+            filteredNotes.push(note);
+        }
+
+        return filteredNotes;
     }
 
     getBranch(branchId) {
