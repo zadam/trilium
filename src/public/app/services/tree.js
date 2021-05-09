@@ -72,7 +72,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                 if (logErrors) {
                     const parent = froca.getNoteFromCache(parentNoteId);
 
-                    console.log(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}`);
+                    console.debug(utils.now(), `Did not find parent ${parentNoteId} (${parent ? parent.title : 'n/a'}) for child ${childNoteId} (${child.title}), available parents: ${parents.map(p => `${p.noteId} (${p.title})`)}. You can ignore this message as it is mostly harmless.`);
                 }
 
                 const someNotePath = getSomeNotePath(child, hoistedNoteId);

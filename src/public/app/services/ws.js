@@ -219,8 +219,13 @@ async function processEntityChanges(entityChanges) {
         const note = froca.notes[ec.entityId];
 
         if (note) {
-            note.update(ec.entity);
-            loadResults.addNote(ec.entityId, ec.sourceId);
+            if (ec.entity.isDeleted) {
+                delete froca.notes[ec.entityId];
+            }
+            else {
+                note.update(ec.entity);
+                loadResults.addNote(ec.entityId, ec.sourceId);
+            }
         }
     }
 

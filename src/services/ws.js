@@ -75,6 +75,10 @@ function sendMessageToAllClients(message) {
 }
 
 function fillInAdditionalProperties(entityChange) {
+    // most of these could be filled by becca
+    // the exception is isDeleted - in that case becca doesn't contain such entity at all
+    // this would have to be handled separately
+
     // fill in some extra data needed by the frontend
     if (entityChange.entityName === 'attributes') {
         entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
