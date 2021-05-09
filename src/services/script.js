@@ -57,11 +57,11 @@ async function executeScript(script, params, startNoteId, currentNoteId, originE
     const currentNote = becca.getNote(currentNoteId);
     const originEntity = becca.getEntityFromName(originEntityName, originEntityId);
 
-    currentNote.content = `return (${script}\r\n)(${getParams(params)})`;
-    currentNote.type = 'code';
-    currentNote.mime = 'application/javascript;env=backend';
+    // we're just executing an excerpt of the original frontend script in the backend context so we must
+    // override normal note's content and it's mime type / script environment
+    const backendOverrideContent = `return (${script}\r\n)(${getParams(params)})`;
 
-    const bundle = getScriptBundle(currentNote);
+    const bundle = getScriptBundle(currentNote, true, null, [], backendOverrideContent);
 
     return await executeBundle(bundle, { startNote, originEntity });
 }
@@ -102,7 +102,7 @@ function getScriptBundleForFrontend(note) {
     return bundle;
 }
 
-function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
+function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
     if (!note.isContentAvailable) {
         return;
     }
@@ -116,10 +116,12 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
     }
 
     if (root) {
-        scriptEnv = note.getScriptEnv();
+        scriptEnv = !!backendOverrideContent
+            ? 'backend'
+            : note.getScriptEnv();
     }
 
-    if (note.type !== 'file' && scriptEnv !== note.getScriptEnv()) {
+    if (note.type !== 'file' && !root && scriptEnv !== note.getScriptEnv()) {
         return;
     }
 
@@ -157,7 +159,7 @@ apiContext.modules['${note.noteId}'] = {};
 ${root ? 'return ' : ''}await ((async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
-${note.getContent()};
+${backendOverrideContent || note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];

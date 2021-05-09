@@ -51,6 +51,8 @@ export default class NoteTypeWidget extends TabAwareWidget {
             () => ["file", "image", "search"].includes(note.type));
 
         this.$noteTypeDesc.text(await this.findTypeTitle(note.type, note.mime));
+
+        this.$noteTypeButton.dropdown('hide');
     }
 
     /** actual body is rendered lazily on note-type button click */
@@ -93,8 +95,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     const $link = $(e.target).closest('.dropdown-item');
 
                     this.save('code', $link.attr('data-mime-type'));
-
-                    this.$noteTypeButton.dropdown('hide');
                 });
 
             if (this.note.type === 'code' && this.note.mime === mimeType.mime) {
@@ -147,7 +147,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
             this.refresh();
         }
     }
