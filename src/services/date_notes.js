@@ -3,7 +3,7 @@
 const noteService = require('./notes');
 const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
-const repository = require('./repository');
+const becca = require('./becca/becca');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
 
@@ -26,10 +26,12 @@ function createNote(parentNote, noteTitle) {
 }
 
 function getNoteStartingWith(parentNoteId, startsWith) {
-    return repository.getEntity(`SELECT notes.* FROM notes JOIN branches USING(noteId) 
+    const noteId = sql.getValue(`SELECT notes.noteId FROM notes JOIN branches USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
                                     AND branches.isDeleted = 0`, [parentNoteId]);
+
+    return becca.getNote(noteId);
 }
 
 /** @return {Note} */

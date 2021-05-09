@@ -6,7 +6,6 @@ const dateUtils = require('../../services/date_utils');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
 const cls = require('../../services/cls');
-const repository = require('../../services/repository');
 
 function getInboxNote(req) {
     const hoistedNote = getHoistedNote();

@@ -81,6 +81,8 @@ class Branch extends AbstractEntity {
         this.utcDateModified = dateUtils.utcNowDateTime();
 
         super.beforeSaving();
+
+        this.becca.branches[this.branchId] = this;
     }
 
     getPojo() {

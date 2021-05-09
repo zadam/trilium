@@ -306,7 +306,9 @@ class Froca {
      */
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
-            this.noteComplementPromises[noteId] = server.get('notes/' + noteId).then(row => new NoteComplement(row));
+            this.noteComplementPromises[noteId] = server.get('notes/' + noteId)
+                .then(row => new NoteComplement(row))
+                .catch(e => console.error(`Cannot get note complement for note ${noteId}`));
 
             // we don't want to keep large payloads forever in memory so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)

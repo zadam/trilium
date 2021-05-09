@@ -831,6 +831,36 @@ class Note extends AbstractEntity {
             .map(row => new NoteRevision(row));
     }
 
+    /**
+     * @return {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
+     */
+    getAllNotePaths() {
+        if (this.noteId === 'root') {
+            return [['root']];
+        }
+
+        const notePaths = [];
+
+        for (const parentNote of this.getParentNotes()) {
+            for (const parentPath of parentNote.getAllNotePaths()) {
+                parentPath.push(this.noteId);
+                notePaths.push(parentPath);
+            }
+        }
+
+        return notePaths;
+    }
+
+    /**
+     * @param ancestorNoteId
+     * @return {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
+     */
+    isDescendantOfNote(ancestorNoteId) {
+        const notePaths = this.getAllNotePaths();
+
+        return notePaths.some(path => path.includes(ancestorNoteId));
+    }
+
     decrypt() {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
@@ -846,6 +876,8 @@ class Note extends AbstractEntity {
 
     beforeSaving() {
         super.beforeSaving();
+
+        this.becca.notes[this.noteId] = this;
 
         this.dateModified = dateUtils.localNowDateTime();
         this.utcDateModified = dateUtils.utcNowDateTime();

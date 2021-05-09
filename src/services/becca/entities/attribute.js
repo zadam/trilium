@@ -29,7 +29,9 @@ class Attribute extends AbstractEntity {
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
 
-        this.becca.attributes[this.attributeId] = this;
+        if (this.attributeId) {
+            this.becca.attributes[this.attributeId] = this;
+        }
 
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
@@ -131,6 +133,8 @@ class Attribute extends AbstractEntity {
         }
 
         super.beforeSaving();
+
+        this.becca.attributes[this.attributeId] = this;
     }
 
     getPojo() {
