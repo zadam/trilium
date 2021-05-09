@@ -3,8 +3,9 @@
 const utils = require('../../utils');
 const sql = require('../../sql');
 const entityChangesService = require('../../entity_changes');
-const eventService = require("../../events.js");
-const cls = require("../../cls.js");
+const eventService = require("../../events");
+const dateUtils = require("../../date_utils");
+const cls = require("../../cls");
 
 let becca = null;
 
@@ -99,8 +100,14 @@ class AbstractEntity {
         const entityId = this[this.constructor.primaryKeyName];
         const entityName = this.constructor.entityName;
 
-        sql.execute(`UPDATE ${entityName} SET isDeleted = 1, deleteId = ? WHERE ${this.constructor.primaryKeyName} = ?`,
-            [deleteId, entityId]);
+        sql.execute(`UPDATE ${entityName} SET isDeleted = 1, deleteId = ?, utcDateModified = ?
+                           WHERE ${this.constructor.primaryKeyName} = ?`,
+            [deleteId, dateUtils.utcNowDateTime(), entityId]);
+
+        if (this.dateModified) {
+            sql.execute(`UPDATE ${entityName} SET dateModified = ? WHERE ${this.constructor.primaryKeyName} = ?`,
+                [dateUtils.localNowDateTime(), entityId]);
+        }
 
         this.addEntityChange(true);
 

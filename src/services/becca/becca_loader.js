@@ -9,12 +9,13 @@ const Note = require('./entities/note');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 const Option = require('./entities/option');
+const cls = require("../cls.js");
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
         load();
 
-        require('../options_init').initStartupOptions();
+        cls.init(() => require('../options_init').initStartupOptions());
 
         res();
     });

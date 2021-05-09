@@ -81,11 +81,9 @@ function deleteNote(req) {
 }
 
 function undeleteNote(req) {
-    const note = becca.getNote(req.params.noteId);
-
     const taskContext = TaskContext.getInstance(utils.randomString(10), 'undeleteNotes');
 
-    noteService.undeleteNote(note, note.deleteId, taskContext);
+    noteService.undeleteNote(req.params.noteId, taskContext);
 
     taskContext.taskSucceeded();
 }

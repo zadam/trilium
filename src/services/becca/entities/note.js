@@ -79,12 +79,18 @@ class Note extends AbstractEntity {
         // ------ Derived attributes ------
 
         /** @param {boolean} */
-        this.isDecrypted = !row.isProtected || !!row.isContentAvailable;
+        this.isDecrypted = !row.isProtected || row.isContentAvailable;
 
         this.decrypt();
 
         /** @param {string|null} */
         this.flatTextCache = null;
+    }
+
+    get isContentAvailable() {
+        return !this.noteId // new note which was not encrypted yet
+            || !this.isProtected
+            || protectedSessionService.isProtectedSessionAvailable()
     }
 
     getParentBranches() {
@@ -852,6 +858,7 @@ class Note extends AbstractEntity {
             isProtected: this.isProtected,
             type: this.type,
             mime: this.mime,
+            isDeleted: false,
             dateCreated: this.dateCreated,
             dateModified: this.dateModified,
             utcDateCreated: this.utcDateCreated,

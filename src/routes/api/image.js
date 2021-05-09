@@ -1,7 +1,7 @@
 "use strict";
 
 const imageService = require('../../services/image');
-const repository = require('../../services/repository');
+const becca = require('../../services/becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
