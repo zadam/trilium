@@ -1,12 +1,12 @@
 "use strict";
 
-const repository = require('../../services/repository');
-const SearchContext = require('../../services/search/search_context.js');
+const becca = require('../../services/becca/becca');
+const SearchContext = require('../../services/search/search_context');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
-const noteRevisionService = require("../../services/note_revisions.js");
-const {formatAttrForSearch} = require("../../services/attribute_formatter.js");
+const noteRevisionService = require("../../services/note_revisions");
+const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 async function searchFromNoteInt(note) {
     let searchResultNoteIds;

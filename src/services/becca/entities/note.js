@@ -5,9 +5,9 @@ const log = require('../../log');
 const sql = require('../../sql');
 const utils = require('../../utils');
 const dateUtils = require('../../date_utils');
-const entityChangesService = require('../../entity_changes.js');
-const AbstractEntity = require("./abstract_entity.js");
-const NoteRevision = require("./note_revision.js");
+const entityChangesService = require('../../entity_changes');
+const AbstractEntity = require("./abstract_entity");
+const NoteRevision = require("./note_revision");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -860,6 +860,143 @@ class Note extends AbstractEntity {
 
         return notePaths.some(path => path.includes(ancestorNoteId));
     }
+
+    /**
+     * Update's given attribute's value or creates it if it doesn't exist
+     *
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     */
+    setAttribute(type, name, value) {
+        const attributes = this.getOwnedAttributes();
+        const attr = attributes.find(attr => attr.type === type && attr.name === name);
+
+        if (attr) {
+            if (attr.value !== value) {
+                attr.value = value;
+                attr.save();
+            }
+        }
+        else {
+            const Attribute = require("./attribute");
+
+            new Attribute({
+                noteId: this.noteId,
+                type: type,
+                name: name,
+                value: value !== undefined ? value : ""
+            }).save();
+        }
+    }
+
+    /**
+     * Removes given attribute name-value pair if it exists.
+     *
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     */
+    removeAttribute(type, name, value) {
+        const attributes = this.getOwnedAttributes();
+
+        for (const attribute of attributes) {
+            if (attribute.type === type && attribute.name === name && (value === undefined || value === attribute.value)) {
+                attribute.markAsDeleted();
+            }
+        }
+    }
+
+    /**
+     * @return {Attribute}
+     */
+    addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
+        const Attribute = require("./attribute");
+
+        return new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value,
+            isInheritable: isInheritable,
+            position: position
+        }).save();
+    }
+
+    addLabel(name, value = "", isInheritable = false) {
+        return this.addAttribute(LABEL, name, value, isInheritable);
+    }
+
+    addRelation(name, targetNoteId, isInheritable = false) {
+        return this.addAttribute(RELATION, name, targetNoteId, isInheritable);
+    }
+
+    /**
+     * Based on enabled, attribute is either set or removed.
+     *
+     * @param {string} type - attribute type ('relation', 'label' etc.)
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     */
+    toggleAttribute(type, enabled, name, value) {
+        if (enabled) {
+            this.setAttribute(type, name, value);
+        }
+        else {
+            this.removeAttribute(type, name, value);
+        }
+    }
+
+    /**
+     * Based on enabled, label is either set or removed.
+     *
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - label name
+     * @param {string} [value] - label value (optional)
+     */
+    toggleLabel(enabled, name, value) { return this.toggleAttribute(LABEL, enabled, name, value); }
+
+    /**
+     * Based on enabled, relation is either set or removed.
+     *
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value (noteId)
+     */
+    toggleRelation(enabled, name, value) { return this.toggleAttribute(RELATION, enabled, name, value); }
+
+    /**
+     * Update's given label's value or creates it if it doesn't exist
+     *
+     * @param {string} name - label name
+     * @param {string} [value] - label value
+     */
+    setLabel(name, value) { return this.setAttribute(LABEL, name, value); }
+
+    /**
+     * Update's given relation's value or creates it if it doesn't exist
+     *
+     * @param {string} name - relation name
+     * @param {string} value - relation value (noteId)
+     */
+    setRelation(name, value) { return this.setAttribute(RELATION, name, value); }
+
+    /**
+     * Remove label name-value pair, if it exists.
+     *
+     * @param {string} name - label name
+     * @param {string} [value] - label value
+     */
+    removeLabel(name, value) { return this.removeAttribute(LABEL, name, value); }
+
+    /**
+     * Remove relation name-value pair, if it exists.
+     *
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value (noteId)
+     */
+    removeRelation(name, value) { return this.removeAttribute(RELATION, name, value); }
 
     decrypt() {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {

@@ -49,10 +49,13 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
         const parentNoteId = path[i++];
 
         if (childNoteId !== null) {
-            const child = await froca.getNote(childNoteId);
+            const child = await froca.getNote(childNoteId, !logErrors);
 
             if (!child) {
-                console.log(`Can't find note ${childNoteId}`);
+                if (logErrors) {
+                    ws.logError(`Can't find note ${childNoteId}`);
+                }
+
                 return;
             }
 

@@ -102,8 +102,8 @@ class TabContext extends Component {
 
     /** @property {NoteShort} */
     get note() {
-        if (this.noteId && !(this.noteId in froca.notes)) {
-            logError(`Cannot find tabContext's note id='${this.noteId}'`);
+        if (!this.noteId || !(this.noteId in froca.notes)) {
+            return null;
         }
 
         return froca.notes[this.noteId];

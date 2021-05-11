@@ -2,7 +2,6 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const repository = require('./repository');
 const Branch = require('../services/becca/entities/branch');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
@@ -60,7 +59,9 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 }
 
 function getExistingBranch(parentNoteId, childNoteId) {
-    return repository.getEntity('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+    const branchId = sql.getValue('SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+
+    return becca.getBranch(branchId);
 }
 
 /**
@@ -192,7 +193,8 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
     }
 
     // case where there might be more such branches is ignored. It's expected there should be just one
-    const branch = repository.getEntity("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
+    const branchId = sql.getValue("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
+    const branch = becca.getBranch(branchId);
 
     if (branch) {
         if (!parentNoteId) {
@@ -211,7 +213,8 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
             throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
         }
 
-        const branch = repository.getEntity('SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
+        const branchId = sql.getValue('SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
+        const branch = becca.getBranch(branchId);
 
         if (branch) {
             branch.prefix = prefix;

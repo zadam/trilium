@@ -4,7 +4,6 @@ const sql = require('./sql');
 const eventChangesService = require('./entity_changes.js');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const repository = require('./repository');
 const Branch = require('../services/becca/entities/branch');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
@@ -56,7 +55,8 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
 }
 
 function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
-    const branch = repository.getEntity(`SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
+    const branchId = sql.getValue(`SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
+    const branch = becca.getBranch(branchId);
 
     if (branch) {
         const deleteId = utils.randomString(10);
