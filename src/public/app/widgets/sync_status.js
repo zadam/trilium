@@ -11,7 +11,7 @@ const TPL = `
     .sync-status-widget {
         height: 35px;
         box-sizing: border-box;
-        border-bottom: 1px solid var(--main-border-color);
+        border-bottom: 0px solid var(--main-border-color);
     }
     
     .sync-status {
@@ -86,9 +86,9 @@ export default class SyncStatusWidget extends BasicWidget {
     constructor() {
         super();
 
-        ws.subscribeToMessages(message => this.processMessage(message));
+        ws.subscribeToMessages((message) => this.processMessage(message));
 
-        this.syncState = 'unknown';
+        this.syncState = "unknown";
         this.allChangesPushed = false;
     }
 
@@ -97,61 +97,63 @@ export default class SyncStatusWidget extends BasicWidget {
         this.$widget.hide();
 
         this.$widget.find('[data-toggle="tooltip"]').tooltip({
-            html: true
+            html: true,
         });
 
-        this.$widget.find('.sync-status-icon:not(.sync-status-in-progress)')
-            .on('click', () => syncService.syncNow())
+        this.$widget
+            .find(".sync-status-icon:not(.sync-status-in-progress)")
+            .on("click", () => syncService.syncNow());
 
         this.overflowing();
     }
 
     showIcon(className) {
-        if (!options.get('syncServerHost')) {
+        if (!options.get("syncServerHost")) {
             this.$widget.hide();
             return;
         }
 
         this.$widget.show();
-        this.$widget.find('.sync-status-icon').hide();
-        this.$widget.find('.sync-status-' + className).show();
+        this.$widget.find(".sync-status-icon").hide();
+        this.$widget.find(".sync-status-" + className).show();
     }
 
     processMessage(message) {
-        if (message.type === 'sync-pull-in-progress') {
+        if (message.type === "sync-pull-in-progress") {
             toastService.showPersistent({
-                id: 'sync',
+                id: "sync",
                 title: "Sync status",
                 message: "Sync update in progress",
-                icon: "refresh"
+                icon: "refresh",
             });
 
-            this.syncState = 'in-progress';
+            this.syncState = "in-progress";
             this.allChangesPushed = false;
-        }
-        else if (message.type === 'sync-push-in-progress') {
-            this.syncState = 'in-progress';
+        } else if (message.type === "sync-push-in-progress") {
+            this.syncState = "in-progress";
             this.allChangesPushed = false;
-        }
-        else if (message.type === 'sync-finished') {
+        } else if (message.type === "sync-finished") {
             // this gives user a chance to see the toast in case of fast sync finish
-            setTimeout(() => toastService.closePersistent('sync'), 1000);
+            setTimeout(() => toastService.closePersistent("sync"), 1000);
 
-            this.syncState = 'connected';
-        }
-        else if (message.type === 'sync-failed') {
-            this.syncState = 'disconnected';
-        }
-        else if (message.type === 'frontend-update') {
-            const {lastSyncedPush} = message.data;
+            this.syncState = "connected";
+        } else if (message.type === "sync-failed") {
+            this.syncState = "disconnected";
+        } else if (message.type === "frontend-update") {
+            const { lastSyncedPush } = message.data;
 
-            this.allChangesPushed = lastSyncedPush === ws.getMaxKnownEntityChangeSyncId();
+            this.allChangesPushed =
+                lastSyncedPush === ws.getMaxKnownEntityChangeSyncId();
         }
 
-        if (this.syncState === 'unknown') {
-            this.showIcon('unknown');
+        if (this.syncState === "unknown") {
+            this.showIcon("unknown");
         } else {
-            this.showIcon(this.syncState + '-' + (this.allChangesPushed ? 'no-changes' : 'with-changes'));
+            this.showIcon(
+                this.syncState +
+                    "-" +
+                    (this.allChangesPushed ? "no-changes" : "with-changes")
+            );
         }
     }
 }
