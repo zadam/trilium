@@ -11,32 +11,32 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
 INSERT INTO mig_entity_changes (id, entityName, entityId, hash, sourceId, isSynced, utcDateChanged, isErased)
 SELECT id, entityName, entityId, '', sourceId, isSynced, utcChangedDate, 0 FROM entity_changes;
 
-UPDATE mig_entity_changes SET isErased = (SELECT isErased FROM notes WHERE noteId = entityId) WHERE entityName = 'notes';
+UPDATE mig_entity_changes SET isErased = COALESCE((SELECT isErased FROM notes WHERE noteId = entityId), 0) WHERE entityName = 'notes';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM notes WHERE noteId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'notes';
 
-UPDATE mig_entity_changes SET isErased = (SELECT isErased FROM notes WHERE noteId = entityId) WHERE entityName = 'note_contents';
+UPDATE mig_entity_changes SET isErased = COALESCE((SELECT isErased FROM notes WHERE noteId = entityId), 0) WHERE entityName = 'note_contents';
 
-UPDATE mig_entity_changes SET isErased = (
+UPDATE mig_entity_changes SET isErased = COALESCE((
     SELECT isErased
     FROM attributes
          JOIN notes USING(noteId)
     WHERE attributeId = entityId
-) WHERE entityName = 'attributes';
+), 0) WHERE entityName = 'attributes';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM attributes WHERE attributeId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'attributes';
 
-UPDATE mig_entity_changes SET isErased = (
+UPDATE mig_entity_changes SET isErased = COALESCE((
     SELECT isErased
     FROM branches
     JOIN notes USING(noteId)
     WHERE branchId = entityId
-) WHERE entityName = 'branches';
+), 0) WHERE entityName = 'branches';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM branches WHERE branchId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'branches';
 
-UPDATE mig_entity_changes SET isErased = (
+UPDATE mig_entity_changes SET isErased = COALESCE((
     SELECT isErased
     FROM note_revisions
     WHERE noteRevisionId = entityId
-) WHERE entityName = 'note_revisions';
+), 0) WHERE entityName = 'note_revisions';
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateModified FROM note_revisions WHERE noteRevisionId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'note_revisions';
 
 UPDATE mig_entity_changes SET utcDateChanged = COALESCE((SELECT utcDateCreated FROM api_tokens WHERE apiTokenId = entityId), '2020-12-14 14:07:05.165Z') WHERE entityName = 'api_tokens';
