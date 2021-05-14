@@ -65,7 +65,7 @@ export default class LinkMap {
 
         await treeCache.getNotes(Array.from(noteIds));
 
-        // pre-fetch the link titles, it's important to have hte construction afterwards synchronous
+        // pre-fetch the link titles, it's important to have the construction afterwards synchronous
         // since jsPlumb caculates width of the element
         const $linkTitles = {};
 
