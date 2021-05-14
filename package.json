@@ -24,6 +24,7 @@
     "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
+    "archiver": "^5.3.0",
     "async-mutex": "0.3.1",
     "axios": "0.21.1",
     "better-sqlite3": "7.1.4",
@@ -75,8 +76,7 @@
     "turndown": "7.0.0",
     "unescape": "1.0.1",
     "ws": "7.4.5",
-    "yauzl": "2.10.0",
-    "yazl": "2.5.1"
+    "yauzl": "2.10.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
