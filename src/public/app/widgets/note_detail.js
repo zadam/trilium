@@ -219,11 +219,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
             header: $("<h2>").text(this.note && this.note.title).prop('outerHTML'),
             footer: `
 <script src="libraries/katex/katex.min.js"></script>
+<script src="libraries/katex/mhchem.min.js"></script>
 <script src="libraries/katex/auto-render.min.js"></script>
 <script>
     document.body.className += ' ck-content printed-content';
     
-    renderMathInElement(document.body, {});
+    renderMathInElement(document.body, {trust: true});
 </script>
 `,
             importCSS: false,
