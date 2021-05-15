@@ -167,7 +167,7 @@ async function searchAndExecute(req) {
     }
 }
 
-async function searchFromRelation(note, relationName) {
+function searchFromRelation(note, relationName) {
     const scriptNote = note.getRelationTarget(relationName);
 
     if (!scriptNote) {
@@ -188,7 +188,7 @@ async function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const result = await scriptService.executeNote(scriptNote, { originEntity: note });
+    const result = scriptService.executeNote(scriptNote, { originEntity: note });
 
     if (!Array.isArray(result)) {
         log.info(`Result from ${scriptNote.noteId} is not an array.`);

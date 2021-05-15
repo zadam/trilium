@@ -5,11 +5,11 @@ const attributeService = require('../../services/attributes');
 const becca = require('../../services/becca/becca');
 const syncService = require('../../services/sync');
 
-async function exec(req) {
+function exec(req) {
     try {
         const {body} = req;
 
-        const result = await scriptService.executeScript(
+        const result = scriptService.executeScript(
             body.script,
             body.params,
             body.startNoteId,
@@ -29,10 +29,10 @@ async function exec(req) {
     }
 }
 
-async function run(req) {
+function run(req) {
     const note = becca.getNote(req.params.noteId);
 
-    const result = await scriptService.executeNote(note, { originEntity: note });
+    const result = scriptService.executeNote(note, { originEntity: note });
 
     return { executionResult: result };
 }
