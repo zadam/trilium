@@ -50,7 +50,9 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
 function moveEntityChangeToTop(entityName, entityId) {
     const ec = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
 
-    insertEntityChange(entityName, entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
+    const localEntityChange = insertEntityChange(entityName, entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
+
+    cls.addEntityChange(localEntityChange);
 }
 
 function addEntityChangesForSector(entityName, sector) {
