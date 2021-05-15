@@ -3,7 +3,6 @@ import toastService from "../services/toast.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import syncService from "../services/sync.js";
-import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="sync-status-widget">
@@ -108,7 +107,7 @@ export default class SyncStatusWidget extends BasicWidget {
 
     showIcon(className) {
         if (!options.get('syncServerHost')) {
-            this.$widget.hide();
+            this.toggleInt(false);
             return;
         }
 
@@ -148,8 +147,8 @@ export default class SyncStatusWidget extends BasicWidget {
             this.allChangesPushed = lastSyncedPush === ws.getMaxKnownEntityChangeSyncId();
         }
 
-        if (this.syncState === 'unknown') {
-            this.showIcon('unknown');
+        if (['unknown', 'in-progress'].includes(this.syncState)) {
+            this.showIcon(this.syncState);
         } else {
             this.showIcon(this.syncState + '-' + (this.allChangesPushed ? 'no-changes' : 'with-changes'));
         }
