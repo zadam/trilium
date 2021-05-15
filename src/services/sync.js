@@ -334,6 +334,7 @@ function getEntityChangesRecords(entityChanges) {
         const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
 
         if (entityChange.entityName === 'options' && !entity.isSynced) {
+            // if non-synced entities should count towards "lastSyncedPush"
             records.push({entityChange});
 
             continue;
@@ -358,7 +359,8 @@ function getLastSyncedPull() {
 }
 
 function setLastSyncedPull(entityChangeId) {
-    optionService.setOption('lastSyncedPull', entityChangeId);
+    // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
+    sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPull']);
 }
 
 function getLastSyncedPush() {
@@ -372,7 +374,8 @@ function getLastSyncedPush() {
 function setLastSyncedPush(entityChangeId) {
     ws.setLastSyncedPush(entityChangeId);
 
-    optionService.setOption('lastSyncedPush', entityChangeId);
+    // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
+    sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPush']);
 }
 
 function getMaxEntityChangeId() {

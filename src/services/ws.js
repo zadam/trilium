@@ -131,19 +131,19 @@ function sendTransactionEntityChangesToAllClients() {
 }
 
 function syncPullInProgress() {
-    sendMessageToAllClients({ type: 'sync-pull-in-progress' });
+    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush });
 }
 
 function syncPushInProgress() {
-    sendMessageToAllClients({ type: 'sync-push-in-progress' });
+    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush });
 }
 
 function syncFinished() {
-    sendMessageToAllClients({ type: 'sync-finished' });
+    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush });
 }
 
 function syncFailed() {
-    sendMessageToAllClients({ type: 'sync-failed' });
+    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
 }
 
 function setLastSyncedPush(entityChangeId) {
