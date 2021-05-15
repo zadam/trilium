@@ -134,7 +134,7 @@ async function setContentPane() {
         if ($content.find('span.math-tex').length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement($content[0], {});
+            renderMathInElement($content[0], {trust: true});
         }
     }
     else if (revisionItem.type === 'code') {

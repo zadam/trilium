@@ -103,7 +103,7 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         if (this.$content.find('span.math-tex').length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement(this.$content[0], {});
+            renderMathInElement(this.$content[0], {trust: true});
         }
     }
 

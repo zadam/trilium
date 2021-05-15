@@ -24,7 +24,7 @@ async function getRenderedContent(note, options = {}) {
         if ($renderedContent.find('span.math-tex').length > 0) {
             await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement($renderedContent[0], {});
+            renderMathInElement($renderedContent[0], {trust: true});
         }
     }
     else if (type === 'code') {
