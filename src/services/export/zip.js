@@ -73,6 +73,10 @@ function exportToZip(taskContext, branch, format, res) {
 
         let fileName = baseFileName;
 
+        if (fileName.length > 30) {
+            fileName = fileName.substr(0, 30);
+        }
+
         // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
         if (newExtension && existingExtension !== "." + newExtension.toLowerCase()) {
             fileName += "." + newExtension;
