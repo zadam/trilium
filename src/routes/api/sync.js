@@ -111,8 +111,6 @@ function forceNoteSync(req) {
         entityChangesService.moveEntityChangeToTop('note_revision_contents', noteRevisionId);
     }
 
-    entityChangesService.moveEntityChangeToTop('recent_changes', noteId);
-
     log.info("Forcing note sync for " + noteId);
 
     // not awaiting for the job to finish (will probably take a long time)
