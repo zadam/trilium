@@ -15,7 +15,7 @@ const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
 const entityChangesService = require('./entity_changes.js');
-const entityConstructor = require('../services/becca/entity_constructor');
+const entityConstructor = require('../becca/entity_constructor.js');
 
 let proxyToggle = true;
 
@@ -385,7 +385,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require("./becca/becca_loader").beccaLoaded.then(() => {
+require("../becca/becca_loader.js").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately

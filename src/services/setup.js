@@ -6,7 +6,7 @@ const syncOptions = require('./sync_options');
 const request = require('./request');
 const appInfo = require('./app_info');
 const utils = require('./utils');
-const becca = require("./becca/becca");
+const becca = require("../becca/becca.js");
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');

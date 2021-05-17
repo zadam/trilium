@@ -249,7 +249,7 @@ function transactional(func) {
         if (entityChanges.length > 0) {
             log.info("Transaction rollback dirtied the becca, forcing reload.");
 
-            require('./becca/becca_loader.js').load();
+            require('../becca/becca_loader.js').load();
         }
 
         throw e;

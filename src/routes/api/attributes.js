@@ -3,8 +3,8 @@
 const sql = require('../../services/sql');
 const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
-const Attribute = require('../../services/becca/entities/attribute');
-const becca = require("../../services/becca/becca");
+const Attribute = require('../../becca/entities/attribute.js');
+const becca = require("../../becca/becca.js");
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);

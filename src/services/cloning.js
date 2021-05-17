@@ -4,10 +4,10 @@ const sql = require('./sql');
 const eventChangesService = require('./entity_changes.js');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const Branch = require('../services/becca/entities/branch');
+const Branch = require('../becca/entities/branch.js');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
-const becca = require("./becca/becca");
+const becca = require("../becca/becca.js");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
     const parentBranch = becca.getBranch(parentBranchId);

@@ -1,21 +1,21 @@
 "use strict";
 
-const sql = require('../sql.js');
-const eventService = require('../events.js');
+const sql = require('../services/sql.js');
+const eventService = require('../services/events.js');
 const becca = require('./becca.js');
-const sqlInit = require('../sql_init');
-const log = require('../log');
-const Note = require('./entities/note');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
-const Option = require('./entities/option');
-const cls = require("../cls.js");
+const sqlInit = require('../services/sql_init');
+const log = require('../services/log');
+const Note = require('./entities/note.js');
+const Branch = require('./entities/branch.js');
+const Attribute = require('./entities/attribute.js');
+const Option = require('./entities/option.js');
+const cls = require("../services/cls.js");
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
         load();
 
-        cls.init(() => require('../options_init').initStartupOptions());
+        cls.init(() => require('../services/options_init').initStartupOptions());
 
         res();
     });

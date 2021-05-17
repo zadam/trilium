@@ -9,7 +9,7 @@ const fs = require('fs');
 const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws');
-const becca = require("../../services/becca/becca");
+const becca = require("../../becca/becca.js");
 
 function updateFile(req) {
     const {noteId} = req.params;

@@ -1,11 +1,11 @@
 "use strict";
 
-const Attribute = require('../../services/becca/entities/attribute');
+const Attribute = require('../../becca/entities/attribute.js');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const Branch = require('../../services/becca/entities/branch');
+const Branch = require('../../becca/entities/branch.js');
 const path = require('path');
 const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');
@@ -13,7 +13,7 @@ const mimeService = require("./mime");
 const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
-const becca = require("../becca/becca.js");
+const becca = require("../../becca/becca.js");
 
 /**
  * @param {TaskContext} taskContext

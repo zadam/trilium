@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const becca = require('../../becca/becca.js');
+const becca = require('../../../becca/becca.js');
 
 class RelationWhereExp extends Expression {
     constructor(relationName, subExpression) {

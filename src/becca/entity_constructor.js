@@ -1,7 +1,7 @@
-const Note = require('./entities/note');
+const Note = require('./entities/note.js');
 const NoteRevision = require('./entities/note_revision.js');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
+const Branch = require('./entities/branch.js');
+const Attribute = require('./entities/attribute.js');
 const RecentNote = require('./entities/recent_note.js');
 const ApiToken = require('./entities/api_token.js');
 

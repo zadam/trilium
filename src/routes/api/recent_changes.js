@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
-const beccaService = require('../../services/becca/becca_service.js');
+const beccaService = require('../../becca/becca_service.js');
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;

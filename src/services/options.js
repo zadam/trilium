@@ -1,7 +1,7 @@
-const becca = require('./becca/becca');
+const becca = require('../becca/becca.js');
 
 function getOption(name) {
-    const option = require('./becca/becca').getOption(name);
+    const option = require('../becca/becca.js').getOption(name);
 
     if (!option) {
         throw new Error(`Option "${name}" doesn't exist`);
@@ -57,7 +57,7 @@ function setOption(name, value) {
 
 function createOption(name, value, isSynced) {
     // to avoid circular dependency, need to find better solution
-    const Option = require('../services/becca/entities/option');
+    const Option = require('../becca/entities/option.js');
 
     new Option({
         name: name,

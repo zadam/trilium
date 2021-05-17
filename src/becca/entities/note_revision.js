@@ -1,12 +1,12 @@
 "use strict";
 
-const protectedSessionService = require('../../protected_session');
-const utils = require('../../utils');
-const sql = require('../../sql');
-const dateUtils = require('../../date_utils');
-const becca = require('../../becca/becca');
-const entityChangesService = require('../../entity_changes');
-const AbstractEntity = require("./abstract_entity");
+const protectedSessionService = require('../../services/protected_session');
+const utils = require('../../services/utils');
+const sql = require('../../services/sql');
+const dateUtils = require('../../services/date_utils');
+const becca = require('../becca.js');
+const entityChangesService = require('../../services/entity_changes');
+const AbstractEntity = require("./abstract_entity.js");
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.

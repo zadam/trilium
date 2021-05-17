@@ -1,13 +1,13 @@
 "use strict";
 
-const protectedSessionService = require('../../protected_session');
-const log = require('../../log');
-const sql = require('../../sql');
-const utils = require('../../utils');
-const dateUtils = require('../../date_utils');
-const entityChangesService = require('../../entity_changes');
-const AbstractEntity = require("./abstract_entity");
-const NoteRevision = require("./note_revision");
+const protectedSessionService = require('../../services/protected_session');
+const log = require('../../services/log');
+const sql = require('../../services/sql');
+const utils = require('../../services/utils');
+const dateUtils = require('../../services/date_utils');
+const entityChangesService = require('../../services/entity_changes');
+const AbstractEntity = require("./abstract_entity.js");
+const NoteRevision = require("./note_revision.js");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -879,7 +879,7 @@ class Note extends AbstractEntity {
             }
         }
         else {
-            const Attribute = require("./attribute");
+            const Attribute = require("./attribute.js");
 
             new Attribute({
                 noteId: this.noteId,
@@ -911,7 +911,7 @@ class Note extends AbstractEntity {
      * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
-        const Attribute = require("./attribute");
+        const Attribute = require("./attribute.js");
 
         return new Attribute({
             noteId: this.noteId,

@@ -6,8 +6,8 @@ const parse = require('./parse.js');
 const NoteSet = require("../note_set.js");
 const SearchResult = require("../search_result.js");
 const SearchContext = require("../search_context.js");
-const becca = require('../../becca/becca.js');
-const beccaService = require('../../becca/becca_service.js');
+const becca = require('../../../becca/becca.js');
+const beccaService = require('../../../becca/becca_service.js');
 const utils = require('../../utils.js');
 const log = require('../../log.js');
 

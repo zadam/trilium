@@ -10,7 +10,7 @@ const ws = require('../../services/ws.js');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const Attribute = require('../../services/becca/entities/attribute');
+const Attribute = require('../../becca/entities/attribute.js');
 const htmlSanitizer = require('../../services/html_sanitizer');
 
 function findClippingNote(todayNote, pageUrl) {

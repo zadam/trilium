@@ -1,11 +1,11 @@
 "use strict";
 
-const utils = require('../../utils');
-const sql = require('../../sql');
-const entityChangesService = require('../../entity_changes');
-const eventService = require("../../events");
-const dateUtils = require("../../date_utils");
-const cls = require("../../cls");
+const utils = require('../../services/utils');
+const sql = require('../../services/sql');
+const entityChangesService = require('../../services/entity_changes');
+const eventService = require("../../services/events");
+const dateUtils = require("../../services/date_utils");
+const cls = require("../../services/cls");
 
 let becca = null;
 
@@ -41,7 +41,7 @@ class AbstractEntity {
 
     get becca() {
         if (!becca) {
-            becca = require('../becca');
+            becca = require('../becca.js');
         }
 
         return becca;

@@ -1,7 +1,7 @@
 const ScriptContext = require('./script_context');
 const cls = require('./cls');
 const log = require('./log');
-const becca = require("./becca/becca");
+const becca = require("../becca/becca.js");
 
 function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
