@@ -89,7 +89,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 const note = becca.notes[entity.noteId];
 
                 if (note) {
-                    for (const noteId of note.subtreeNoteIds) {
+                    for (const noteId of note.getSubtreeNoteIds()) {
                         treeService.sortNotesByTitle(noteId);
                     }
                 }

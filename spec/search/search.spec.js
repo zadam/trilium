@@ -337,11 +337,11 @@ describe("Search", () => {
 
         const searchContext = new SearchContext();
 
-        let searchResults = searchService.findResultsWithQuery('#city AND note.ancestors.title = Europe', searchContext);
+        let searchResults = searchService.findResultsWithQuery('#city AND note.getAncestors().title = Europe', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
 
-        searchResults = searchService.findResultsWithQuery('#city AND note.ancestors.title = Asia', searchContext);
+        searchResults = searchService.findResultsWithQuery('#city AND note.getAncestors().title = Asia', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taipei")).toBeTruthy();
     });

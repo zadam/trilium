@@ -25,10 +25,10 @@ class AttributeExistsExp extends Expression {
 
             if (inputNoteSet.hasNoteId(note.noteId)) {
                 if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
+                    resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
                 }
-                else if (note.isTemplate) {
-                    resultNoteSet.addAll(note.templatedNotes);
+                else if (note.isTemplate()) {
+                    resultNoteSet.addAll(note.getTemplatedNotes());
                 }
                 else {
                     resultNoteSet.add(note);

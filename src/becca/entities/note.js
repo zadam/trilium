@@ -79,7 +79,7 @@ class Note extends AbstractEntity {
         // ------ Derived attributes ------
 
         /** @param {boolean} */
-        this.isDecrypted = !row.isProtected || row.isContentAvailable;
+        this.isDecrypted = !this.isProtected;
 
         this.decrypt();
 
@@ -87,7 +87,7 @@ class Note extends AbstractEntity {
         this.flatTextCache = null;
     }
 
-    get isContentAvailable() {
+    isContentAvailable() {
         return !this.noteId // new note which was not encrypted yet
             || !this.isProtected
             || protectedSessionService.isProtectedSessionAvailable()
@@ -568,11 +568,11 @@ class Note extends AbstractEntity {
         return attrs.length > 0 ? attrs[0] : null;
     }
 
-    get isArchived() {
+    isArchived() {
         return this.hasAttribute('label', 'archived');
     }
 
-    get hasInheritableOwnedArchivedLabel() {
+    hasInheritableOwnedArchivedLabel() {
         return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
     }
 
@@ -581,7 +581,7 @@ class Note extends AbstractEntity {
     resortParents() {
         this.parentBranches.sort((a, b) =>
             a.branchId.startsWith('virt-')
-            || a.parentNote.hasInheritableOwnedArchivedLabel ? 1 : -1);
+            || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
 
         this.parents = this.parentBranches.map(branch => branch.parentNote);
     }
@@ -593,7 +593,7 @@ class Note extends AbstractEntity {
      *
      * @return {string} - returns flattened textual representation of note, prefixes and attributes
      */
-    get flatText() {
+    getFlatText() {
         if (!this.flatTextCache) {
             this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime + ' ';
 
@@ -674,16 +674,16 @@ class Note extends AbstractEntity {
         }
     }
 
-    get isTemplate() {
+    isTemplate() {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
     /** @return {Note[]} */
-    get subtreeNotesIncludingTemplated() {
+    getSubtreeNotesIncludingTemplated() {
         const arr = [[this]];
 
         for (const childNote of this.children) {
-            arr.push(childNote.subtreeNotesIncludingTemplated);
+            arr.push(childNote.getSubtreeNotesIncludingTemplated());
         }
 
         for (const targetRelation of this.targetRelations) {
@@ -691,7 +691,7 @@ class Note extends AbstractEntity {
                 const note = targetRelation.note;
 
                 if (note) {
-                    arr.push(note.subtreeNotesIncludingTemplated);
+                    arr.push(note.getSubtreeNotesIncludingTemplated());
                 }
             }
         }
@@ -700,23 +700,23 @@ class Note extends AbstractEntity {
     }
 
     /** @return {Note[]} */
-    get subtreeNotes() {
+    getSubtreeNotes() {
         const arr = [[this]];
 
         for (const childNote of this.children) {
-            arr.push(childNote.subtreeNotes);
+            arr.push(childNote.getSubtreeNotes());
         }
 
         return arr.flat();
     }
 
     /** @return {String[]} */
-    get subtreeNoteIds() {
-        return this.subtreeNotes.map(note => note.noteId);
+    getSubtreeNoteIds() {
+        return this.getSubtreeNotes().map(note => note.noteId);
     }
 
     getDescendantNoteIds() {
-        return this.subtreeNoteIds;
+        return this.getSubtreeNoteIds();
     }
 
     get parentCount() {
@@ -767,7 +767,7 @@ class Note extends AbstractEntity {
         return this.getAttributes().length;
     }
 
-    get ancestors() {
+    getAncestors() {
         if (!this.ancestorCache) {
             const noteIds = new Set();
             this.ancestorCache = [];
@@ -778,7 +778,7 @@ class Note extends AbstractEntity {
                     noteIds.add(parent.noteId);
                 }
 
-                for (const ancestorNote of parent.ancestors) {
+                for (const ancestorNote of parent.getAncestors()) {
                     if (!noteIds.has(ancestorNote.noteId)) {
                         this.ancestorCache.push(ancestorNote);
                         noteIds.add(ancestorNote.noteId);
@@ -796,7 +796,7 @@ class Note extends AbstractEntity {
 
     /** @return {Note[]} - returns only notes which are templated, does not include their subtrees
      *                     in effect returns notes which are influenced by note's non-inheritable attributes */
-    get templatedNotes() {
+    getTemplatedNotes() {
         const arr = [this];
 
         for (const targetRelation of this.targetRelations) {

@@ -195,7 +195,7 @@ function changeTitle(req) {
         return [404, `Note ${noteId} has not been found`];
     }
 
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         return [400, `Note ${noteId} is not available for change`];
     }
 

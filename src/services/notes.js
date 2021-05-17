@@ -475,7 +475,7 @@ function saveNoteRevision(note) {
 function updateNote(noteId, noteUpdates) {
     const note = becca.getNote(noteId);
 
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 

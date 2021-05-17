@@ -129,7 +129,7 @@ class BeccaFlatTextExp extends Expression {
 
         for (const note of noteSet.notes) {
             for (const token of this.tokens) {
-                if (note.flatText.includes(token)) {
+                if (note.getFlatText().includes(token)) {
                     candidateNotes.push(note);
                     break;
                 }

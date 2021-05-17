@@ -9,7 +9,7 @@ function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
     const note = becca.notes[noteId];
 
-    if (note.isArchived) {
+    if (note.isArchived()) {
         return true;
     }
 
@@ -17,7 +17,7 @@ function isNotePathArchived(notePath) {
         const note = becca.notes[notePath[i]];
 
         // this is going through parents so archived must be inheritable
-        if (note.hasInheritableOwnedArchivedLabel) {
+        if (note.hasInheritableOwnedArchivedLabel()) {
             return true;
         }
     }

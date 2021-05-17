@@ -182,7 +182,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         log.info(`Note ${scriptNote.noteId} is not available outside of protected session.`);
 
         return [];

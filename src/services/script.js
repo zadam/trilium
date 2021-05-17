@@ -4,7 +4,7 @@ const log = require('./log');
 const becca = require("../becca/becca.js");
 
 function executeNote(note, apiParams) {
-    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
+    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
         log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS frontend"`);
 
         return;
@@ -105,7 +105,7 @@ function getScriptBundleForFrontend(note) {
 }
 
 function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         return;
     }
 
