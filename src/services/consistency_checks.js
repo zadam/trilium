@@ -5,7 +5,6 @@ const sqlInit = require('./sql_init');
 const log = require('./log');
 const ws = require('./ws.js');
 const syncMutexService = require('./sync_mutex');
-const repository = require('./repository');
 const cls = require('./cls');
 const entityChangesService = require('./entity_changes.js');
 const optionsService = require('./options');
@@ -459,7 +458,7 @@ class ConsistencyChecks {
           entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             ({entityId}) => {
                 if (this.autoFix) {
-                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+                    const entity = becca.getEntity(entityName, entityId);
 
                     entityChangesService.addEntityChange({
                         entityName,

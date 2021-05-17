@@ -1,11 +1,9 @@
-const repository = require('../services/repository');
-const Note = require('../entities/note');
-const NoteRevision = require('../services/becca/entities/note_revision.js');
-const Branch = require('../entities/branch');
-const Attribute = require('../entities/attribute');
-const RecentNote = require('../services/becca/entities/recent_note.js');
-const ApiToken = require('../services/becca/entities/api_token.js');
-const cls = require('../services/cls');
+const Note = require('./entities/note');
+const NoteRevision = require('./entities/note_revision.js');
+const Branch = require('./entities/branch');
+const Attribute = require('./entities/attribute');
+const RecentNote = require('./entities/recent_note.js');
+const ApiToken = require('./entities/api_token.js');
 
 const ENTITY_NAME_TO_ENTITY = {
     "attributes": Attribute,
@@ -31,13 +29,9 @@ function createEntityFromRow(row) {
 
     if (row.attributeId) {
         entity = new Attribute(row);
-
-        cls.setEntityToCache('attributes', row.attributeId, entity);
     }
     else if (row.noteRevisionId) {
         entity = new NoteRevision(row);
-
-        cls.setEntityToCache('note_revisions', row.noteRevisionId, entity);
     }
     else if (row.branchId && row.notePath) {
         entity = new RecentNote(row);
@@ -47,13 +41,9 @@ function createEntityFromRow(row) {
     }
     else if (row.branchId) {
         entity = new Branch(row);
-
-        cls.setEntityToCache('branches', row.branchId, entity);
     }
     else if (row.noteId) {
         entity = new Note(row);
-
-        cls.setEntityToCache('notes', row.noteId, entity);
     }
     else {
         throw new Error('Unknown entity type for row: ' + JSON.stringify(row));

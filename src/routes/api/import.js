@@ -1,6 +1,5 @@
 "use strict";
 
-const repository = require('../../services/repository');
 const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const zipImportService = require('../../services/import/zip');

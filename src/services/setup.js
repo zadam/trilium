@@ -1,7 +1,6 @@
 const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
-const repository = require('./repository');
 const optionService = require('./options');
 const syncOptions = require('./sync_options');
 const request = require('./request');

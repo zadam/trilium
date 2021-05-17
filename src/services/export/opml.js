@@ -1,6 +1,5 @@
 "use strict";
 
-const repository = require("../repository");
 const utils = require('../utils');
 const becca = require("../becca/becca");
 

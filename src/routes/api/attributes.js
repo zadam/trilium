@@ -3,7 +3,6 @@
 const sql = require('../../services/sql');
 const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
-const repository = require('../../services/repository');
 const Attribute = require('../../services/becca/entities/attribute');
 const becca = require("../../services/becca/becca");
 
@@ -73,16 +72,17 @@ function setNoteAttribute(req) {
     const noteId = req.params.noteId;
     const body = req.body;
 
-    let attr = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
+    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
 
-    if (attr) {
+    if (attributeId) {
+        const attr = becca.getAttribute(attributeId);
         attr.value = body.value;
+        attr.save();
     } else {
-        attr = new Attribute(body);
+        const attr = new Attribute(body);
         attr.noteId = noteId;
+        attr.save();
     }
-
-    attr.save();
 }
 
 function addNoteAttribute(req) {
@@ -195,16 +195,16 @@ function createRelation(req) {
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    let attribute = becca.getAttribute(attributeId);
 
     if (!attribute) {
-        attribute = new Attribute();
-        attribute.noteId = sourceNoteId;
-        attribute.name = name;
-        attribute.type = 'relation';
-        attribute.value = targetNoteId;
-
-        attribute.save();
+        attribute = new Attribute({
+            noteId: sourceNoteId,
+            name: name,
+            type: 'relation',
+            value: targetNoteId
+        }).save();
     }
 
     return attribute;
@@ -215,9 +215,10 @@ function deleteRelation(req) {
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
-    if (attribute) {
+    if (attributeId) {
+        const attribute = becca.getAttribute(attributeId);
         attribute.markAsDeleted();
     }
 }

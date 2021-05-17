@@ -72,14 +72,6 @@ function reset() {
     clsHooked.reset();
 }
 
-function getEntityFromCache(entityName, entityId) {
-    return namespace.get(entityName + '-' + entityId);
-}
-
-function setEntityToCache(entityName, entityId, entity) {
-    namespace.set(entityName + '-' + entityId, entity);
-}
-
 function ignoreEntityChanges() {
     namespace.set('ignoreEntityChanges', true);
 }
@@ -99,7 +91,5 @@ module.exports = {
     clearEntityChanges,
     getAndClearEntityChanges,
     addEntityChange,
-    getEntityFromCache,
-    setEntityToCache,
     ignoreEntityChanges
 };

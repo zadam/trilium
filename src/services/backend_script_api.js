@@ -6,7 +6,6 @@ const attributeService = require('./attributes');
 const dateNoteService = require('./date_notes');
 const treeService = require('./tree');
 const config = require('./config');
-const repository = require('./repository');
 const axios = require('axios');
 const dayjs = require('dayjs');
 const xml2js = require('xml2js');

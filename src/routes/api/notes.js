@@ -2,7 +2,6 @@
 
 const noteService = require('../../services/notes');
 const treeService = require('../../services/tree');
-const repository = require('../../services/repository');
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');

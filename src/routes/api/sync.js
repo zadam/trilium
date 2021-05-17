@@ -10,7 +10,6 @@ const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
-const entityConstructor = require('../../entities/entity_constructor');
 const utils = require('../../services/utils');
 
 async function testSync() {

@@ -93,7 +93,7 @@ class Becca {
         return this.options[name];
     }
 
-    getEntityFromName(entityName, entityId) {
+    getEntity(entityName, entityId) {
         if (!entityName || !entityId) {
             return null;
         }

@@ -2,7 +2,6 @@
 
 const beccaService = require('../../services/becca/becca_service.js');
 const searchService = require('../../services/search/services/search.js');
-const repository = require('../../services/repository');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const cls = require('../../services/cls');

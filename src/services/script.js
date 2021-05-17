@@ -57,7 +57,7 @@ function executeBundle(bundle, apiParams = {}) {
 function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = becca.getNote(startNoteId);
     const currentNote = becca.getNote(currentNoteId);
-    const originEntity = becca.getEntityFromName(originEntityName, originEntityId);
+    const originEntity = becca.getEntity(originEntityName, originEntityId);
 
     // we're just executing an excerpt of the original frontend script in the backend context so we must
     // override normal note's content and it's mime type / script environment
