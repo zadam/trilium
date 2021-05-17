@@ -1,9 +1,9 @@
 "use strict";
 
 const becca = require('./becca.js');
-const cls = require('../cls');
-const protectedSessionService = require('../protected_session');
-const log = require('../log');
+const cls = require('../services/cls');
+const protectedSessionService = require('../services/protected_session');
+const log = require('../services/log');
 
 function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];

@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require("../sql.js");
+const sql = require("../services/sql.js");
 const NoteRevision = require("./entities/note_revision.js");
 const RecentNote = require("./entities/recent_note.js");
 
