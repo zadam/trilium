@@ -7,7 +7,6 @@ const TPL = `
     .global-menu-wrapper {
         height: 35px;
         box-sizing: border-box;
-        border-bottom: 1px solid var(--main-border-color);
     }
     
     .global-menu {

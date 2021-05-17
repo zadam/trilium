@@ -15,7 +15,9 @@ class ZoomService extends Component {
             });
 
             window.addEventListener("wheel", event => {
-                this.setZoomFactorAndSave(this.getCurrentZoom() + event.deltaY * 0.001);
+                if (event.ctrlKey) {
+                    this.setZoomFactorAndSave(this.getCurrentZoom() + event.deltaY * 0.001);
+                }
             });
         }
     }

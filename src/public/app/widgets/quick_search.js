@@ -7,11 +7,9 @@ import utils from "../services/utils.js";
 import appContext from "../services/app_context.js";
 
 const TPL = `
-<div class="quick-search input-group input-group-sm" style="width: 250px;">
+<div class="quick-search input-group input-group-sm">
   <style>
     .quick-search {
-        margin-left: 5px;
-        margin-right: 5px;
     }
   
     .quick-search .dropdown-menu {

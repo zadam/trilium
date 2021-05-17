@@ -10,7 +10,6 @@ const TPL = `
     .sync-status-widget {
         height: 35px;
         box-sizing: border-box;
-        border-bottom: 1px solid var(--main-border-color);
     }
     
     .sync-status {
