@@ -17,7 +17,7 @@ class NoteBuilder {
     }
 
     label(name, value = '', isInheritable = false) {
-        new Attribute(becca, {
+        new Attribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'label',
@@ -30,7 +30,7 @@ class NoteBuilder {
     }
 
     relation(name, targetNote) {
-        new Attribute(becca, {
+        new Attribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'relation',

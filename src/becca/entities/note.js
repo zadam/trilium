@@ -568,7 +568,7 @@ class Note extends AbstractEntity {
         return attrs.length > 0 ? attrs[0] : null;
     }
 
-    isArchived() {
+    get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
 

@@ -308,8 +308,8 @@ class NoteShort {
                 return a.isInHoistedSubTree ? -1 : 1;
             } else if (a.isSearch !== b.isSearch) {
                 return a.isSearch ? 1 : -1;
-            } else if (a.isArchived() !== b.isArchived()) {
-                return a.isArchived() ? 1 : -1;
+            } else if (a.isArchived !== b.isArchived) {
+                return a.isArchived ? 1 : -1;
             } else {
                 return a.notePath.length - b.notePath.length;
             }

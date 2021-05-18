@@ -9,7 +9,7 @@ function isNotePathArchived(notePath) {
     const noteId = notePath[notePath.length - 1];
     const note = becca.notes[noteId];
 
-    if (note.isArchived()) {
+    if (note.isArchived) {
         return true;
     }
 
@@ -123,7 +123,7 @@ function getNoteTitleForPath(notePathArray) {
  * Returns notePath for noteId from cache. Note hoisting is respected.
  * Archived notes are also returned, but non-archived paths are preferred if available
  * - this means that archived paths is returned only if there's no non-archived path
- * - you can check whether returned path is archived using isArchived()
+ * - you can check whether returned path is archived using isArchived
  */
 function getSomePath(note, path = []) {
     // first try to find note within hoisted note, otherwise take any existing note path

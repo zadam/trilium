@@ -100,7 +100,7 @@ export default class NotePathsWidget extends TabAwareWidget {
             icons.push(`<span class="bx bx-trending-up" title="This path is outside of hoisted note and you would have to unhoist."></span>`);
         }
 
-        if (notePathRecord.isArchived()) {
+        if (notePathRecord.isArchived) {
             $noteLink.addClass("path-archived");
 
             icons.push(`<span class="bx bx-archive" title="Archived"></span>`);

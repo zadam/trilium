@@ -47,10 +47,11 @@ function updateNoteAttribute(req) {
             return {};
         }
 
-        attribute = new Attribute();
-        attribute.noteId = noteId;
-        attribute.name = body.name;
-        attribute.type = body.type;
+        attribute = new Attribute({
+            noteId: noteId,
+            name: body.name,
+            type: body.type
+        });
     }
 
     if (attribute.type === 'label' || body.value.trim()) {
