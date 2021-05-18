@@ -22,6 +22,23 @@ export default class RootContainer extends FlexContainer {
 
             this.$widget.toggleClass("protected", note.isProtected);
         }
+
+        this.setZenMode(this.isZenModeActive);
+    }
+
+    setZenMode(active) {
+        this.isZenModeActive = active;
+
+        if (this.isZenModeActive) {
+            $("#root-widget").addClass("zen-mode");
+        }
+        else {
+            $("#root-widget").removeClass("zen-mode");
+        }
+    }
+
+    toggleZenModeEvent() {
+        this.setZenMode(!this.isZenModeActive);
     }
 
     tabNoteSwitchedEvent() {

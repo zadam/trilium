@@ -103,32 +103,16 @@ span.fancytree-node.muted { opacity: 0.6; }
     display: none;
 }
 
-.note-tab-content-template {
-    display: none !important;
-}
-
-.note-tab-content {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    width: 100%;
-}
-
-/** we disable shield background when in zen mode because I couldn't get it to stay static
-    (it kept growing with content) */
-#root-widget:not(.zen-mode) .note-tab-content.protected {
-    /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
-    background: url('../images/shield.svg') no-repeat;
-    background-size: contain;
-    background-position: center;
-}
-
 .zen-mode #center-pane {
     width: 100% !important;
     /* limit max width to improve readability */
     max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.zen-mode .hide-in-zen-mode, .zen-mode .gutter {
+    display: none !important;
 }
 
 .ui-autocomplete {
@@ -773,10 +757,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 
 body {
     font-size: var(--main-font-size);
-}
-
-.hidden-by-zen-mode {
-    display: none !important;
 }
 
 .gutter {
