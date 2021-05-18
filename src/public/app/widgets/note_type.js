@@ -24,7 +24,7 @@ const TPL = `
     }
     </style>
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle note-type-button">
-        Type: <span class="note-type-desc"></span>
+        <span class="note-type-desc"></span>
         <span class="caret"></span>
     </button>
     <div class="note-type-dropdown dropdown-menu dropdown-menu-right"></div>

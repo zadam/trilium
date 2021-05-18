@@ -5,24 +5,18 @@ const TPL = `
 <div class="global-menu-wrapper">
     <style>
     .global-menu-wrapper {
-        height: 35px;
         box-sizing: border-box;
     }
     
     .global-menu {
-        height: 34px;
         box-sizing: border-box;
     }
     
     .global-menu button {
-        height: 34px;
-        border: none;
+        padding: 10px;
         font-size: 150%;
-        padding-left: 10px;
-        padding-right: 10px;
-        position: relative;
-        top: -2px;
-        border-radius: 0;
+        border: none;
+        border-radius: 0 !important;
     }
     
     .global-menu button:hover {
@@ -35,9 +29,7 @@ const TPL = `
     </style>
 
     <div class="dropdown global-menu">
-        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm" title="Menu">
-            <span class="bx bx-menu"></span>
-        </button>
+        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm bx bx-menu" title="Menu"></button>
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item options-button" data-trigger-command="showOptions">
                 <span class="bx bx-slider"></span>

@@ -10,6 +10,7 @@ const TPL = `
 <div class="quick-search input-group input-group-sm">
   <style>
     .quick-search {
+        padding: 4px 10px 10px;
     }
   
     .quick-search .dropdown-menu {

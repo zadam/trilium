@@ -8,29 +8,25 @@ const TPL = `
 <div class="sync-status-widget">
     <style>
     .sync-status-widget {
-        height: 35px;
         box-sizing: border-box;
     }
     
     .sync-status {
-        height: 34px;
         box-sizing: border-box;
     }
     
     .sync-status .sync-status-icon {
-        height: 34px;
-        font-size: 180%;
+        font-size: 150%;
         display: inline-block;
+        padding: 10px;
         position: relative;
-        padding-left: 10px;
-        padding-right: 10px;
     }
     
     .sync-status .sync-status-sub-icon {
         font-size: 40%; 
         position: absolute; 
-        left: 7px; 
-        top: 20px;
+        left: 9px; 
+        top: 24px;
     }
     
     .sync-status .sync-status-icon span {
@@ -44,37 +40,31 @@ const TPL = `
     </style>
 
     <div class="sync-status">
-        <span class="sync-status-icon sync-status-unknown" 
+        <span class="sync-status-icon sync-status-unknown bx bx-time" 
               data-toggle="tooltip" 
               title="<p>Sync status will be known once the next sync attempt starts.</p><p>Click to trigger sync now.</p>">
-            <span class="bx bx-time"></span>
         </span>
-        <span class="sync-status-icon sync-status-connected-with-changes"
+        <span class="sync-status-icon sync-status-connected-with-changes bx-wifi"
               data-toggle="tooltip" 
               title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
-            <span class="bx bx-wifi"></span>
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
-        <span class="sync-status-icon sync-status-connected-no-changes" 
+        <span class="sync-status-icon sync-status-connected-no-changes bx bx-wifi" 
               data-toggle="tooltip" 
               title="<p>Connected to the sync server.<br>All changes have been already synced.</p><p>Click to trigger sync.</p>">
-            <span class="bx bx-wifi"></span>
         </span>
-        <span class="sync-status-icon sync-status-disconnected-with-changes"
+        <span class="sync-status-icon sync-status-disconnected-with-changes bx bx-wifi-off"
               data-toggle="tooltip" 
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
-            <span class="bx bx-wifi-off"></span>
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
-        <span class="sync-status-icon sync-status-disconnected-no-changes" 
+        <span class="sync-status-icon sync-status-disconnected-no-changes bx bx-wifi-off" 
               data-toggle="tooltip"
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>All known changes have been synced.</p><p>Click to trigger sync.</p>">
-            <span class="bx bx-wifi-off"></span>
         </span>
-        <span class="sync-status-icon sync-status-in-progress" 
+        <span class="sync-status-icon sync-status-in-progress bx bx-analyse bx-spin" 
               data-toggle="tooltip"
               title="Sync with the server is in progress.">
-            <span class="bx bx-analyse bx-spin"></span>
         </span>
     </div>
 </div>

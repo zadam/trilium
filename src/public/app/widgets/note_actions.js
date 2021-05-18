@@ -5,6 +5,14 @@ import utils from "../services/utils.js";
 const TPL = `
 <div class="dropdown note-actions">
     <style>
+    .note-actions-button {
+        font-size: 120% !important;
+    }
+    
+    .note-actions-button::after {
+        display: none !important; // disabling the standard caret
+    }
+    
     .note-actions .dropdown-menu {
         width: 20em;
     }
@@ -59,10 +67,9 @@ const TPL = `
     }
     </style>
 
-    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-        Actions
-        <span class="caret"></span>
-    </button>
+    <button type="button" data-toggle="dropdown" aria-haspopup="true" 
+        aria-expanded="false" class="note-actions-button btn btn-sm dropdown-toggle bx bx-cog"></button>
+
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button"><kbd data-command="renderActiveNote"></kbd> Re-render note</a>
         <div class="dropdown-item protect-button">
