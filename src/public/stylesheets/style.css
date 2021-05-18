@@ -103,26 +103,6 @@ span.fancytree-node.muted { opacity: 0.6; }
     display: none;
 }
 
-.note-tab-content-template {
-    display: none !important;
-}
-
-.note-tab-content {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    width: 100%;
-}
-
-/** we disable shield background when in zen mode because I couldn't get it to stay static
-    (it kept growing with content) */
-#root-widget:not(.zen-mode) .note-tab-content.protected {
-    /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
-    background: url('../images/shield.svg') no-repeat;
-    background-size: contain;
-    background-position: center;
-}
-
 .zen-mode #center-pane {
     width: 100% !important;
     /* limit max width to improve readability */
