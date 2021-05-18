@@ -2,7 +2,6 @@
 
 const log = require('./log');
 const sql = require('./sql');
-const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const utils = require('./utils');
 const sourceIdService = require('./source_id');
@@ -16,7 +15,7 @@ const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
 const entityChangesService = require('./entity_changes.js');
-const entityConstructor = require('../entities/entity_constructor');
+const entityConstructor = require('../becca/entity_constructor.js');
 
 let proxyToggle = true;
 
@@ -386,7 +385,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require("./becca/becca_loader").beccaLoaded.then(() => {
+require("../becca/becca_loader.js").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately

@@ -3,7 +3,7 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const log = require('../../log');
-const becca = require('../../becca/becca.js');
+const becca = require('../../../becca/becca.js');
 
 class AncestorExp extends Expression {
     constructor(ancestorNoteId, ancestorDepth) {
@@ -23,7 +23,7 @@ class AncestorExp extends Expression {
             return new NoteSet([]);
         }
 
-        const subTreeNoteSet = new NoteSet(ancestorNote.subtreeNotes).intersection(inputNoteSet);
+        const subTreeNoteSet = new NoteSet(ancestorNote.getSubtreeNotes()).intersection(inputNoteSet);
 
         if (!this.ancestorDepthComparator) {
             return subTreeNoteSet;

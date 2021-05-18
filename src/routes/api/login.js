@@ -11,7 +11,7 @@ const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
-const ApiToken = require('../../services/becca/entities/api_token.js');
+const ApiToken = require('../../becca/entities/api_token.js');
 const ws = require("../../services/ws.js");
 
 function loginSync(req) {

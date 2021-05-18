@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../../services/becca/becca');
+const becca = require('../../becca/becca.js');
 const SearchContext = require('../../services/search/search_context');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
@@ -182,7 +182,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         log.info(`Note ${scriptNote.noteId} is not available outside of protected session.`);
 
         return [];

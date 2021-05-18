@@ -1,7 +1,7 @@
-const Note = require('../../src/services/becca/entities/note.js');
-const Branch = require('../../src/services/becca/entities/branch.js');
-const Attribute = require('../../src/services/becca/entities/attribute.js');
-const becca = require('../../src/services/becca/becca.js');
+const Note = require('../../src/becca/entities/note.js');
+const Branch = require('../../src/becca/entities/branch.js');
+const Attribute = require('../../src/becca/entities/attribute.js');
+const becca = require('../../src/becca/becca.js');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
 /** @return {Note} */
@@ -17,7 +17,7 @@ class NoteBuilder {
     }
 
     label(name, value = '', isInheritable = false) {
-        new Attribute(becca, {
+        new Attribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'label',
@@ -30,7 +30,7 @@ class NoteBuilder {
     }
 
     relation(name, targetNote) {
-        new Attribute(becca, {
+        new Attribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'relation',

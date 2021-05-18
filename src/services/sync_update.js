@@ -2,7 +2,7 @@ const sql = require('./sql');
 const log = require('./log');
 const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
-const entityConstructor = require('../entities/entity_constructor');
+const entityConstructor = require("../becca/entity_constructor.js");
 
 function updateEntity(entityChange, entity, sourceId) {
     // can be undefined for options with isSynced=false

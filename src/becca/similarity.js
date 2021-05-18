@@ -1,7 +1,7 @@
 const becca = require('./becca.js');
-const log = require('../log');
+const log = require('../services/log');
 const beccaService = require('./becca_service.js');
-const dateUtils = require('../date_utils');
+const dateUtils = require('../services/date_utils');
 const { JSDOM } = require("jsdom");
 
 const DEBUG = false;
@@ -64,7 +64,7 @@ function buildRewardMap(note) {
         }
     }
 
-    for (const ancestorNote of note.ancestors) {
+    for (const ancestorNote of note.getAncestors()) {
         if (ancestorNote.noteId === 'root') {
             continue;
         }
@@ -249,7 +249,7 @@ async function findSimilarNotes(noteId) {
 
     const rewardMap = buildRewardMap(baseNote);
     let ancestorRewardCache = {};
-    const ancestorNoteIds = new Set(baseNote.ancestors.map(note => note.noteId));
+    const ancestorNoteIds = new Set(baseNote.getAncestors().map(note => note.noteId));
     ancestorNoteIds.add(baseNote.noteId);
 
     let displayRewards = false;

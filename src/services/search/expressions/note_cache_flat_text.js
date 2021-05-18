@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const becca = require('../../becca/becca.js');
+const becca = require('../../../becca/becca.js');
 
 class BeccaFlatTextExp extends Expression {
     constructor(tokens) {
@@ -13,7 +13,7 @@ class BeccaFlatTextExp extends Expression {
 
     execute(inputNoteSet, executionContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
-        const beccaService = require('../../becca/becca_service.js');
+        const beccaService = require('../../../becca/becca_service.js');
         const resultNoteSet = new NoteSet();
 
         function searchDownThePath(note, tokens, path) {
@@ -129,7 +129,7 @@ class BeccaFlatTextExp extends Expression {
 
         for (const note of noteSet.notes) {
             for (const token of this.tokens) {
-                if (note.flatText.includes(token)) {
+                if (note.getFlatText().includes(token)) {
                     candidateNotes.push(note);
                     break;
                 }

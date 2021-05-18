@@ -1,5 +1,5 @@
 const sql = require('../../services/sql');
-const becca = require('../../services/becca/becca.js');
+const becca = require('../../becca/becca.js');
 
 function getNoteSize(req) {
     const {noteId} = req.params;
@@ -29,7 +29,7 @@ function getSubtreeSize(req) {
         return [404, `Note ${noteId} was not found.`];
     }
 
-    const subTreeNoteIds = note.subtreeNotes.map(note => note.noteId);
+    const subTreeNoteIds = note.getSubtreeNotes().map(note => note.noteId);
 
     sql.fillParamList(subTreeNoteIds);
 

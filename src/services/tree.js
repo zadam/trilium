@@ -2,10 +2,10 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const Branch = require('../services/becca/entities/branch');
+const Branch = require('../becca/entities/branch.js');
 const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
-const becca = require('./becca/becca.js');
+const becca = require('../becca/becca.js');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for

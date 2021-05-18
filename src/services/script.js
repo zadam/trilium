@@ -1,10 +1,10 @@
 const ScriptContext = require('./script_context');
 const cls = require('./cls');
 const log = require('./log');
-const becca = require("./becca/becca");
+const becca = require("../becca/becca.js");
 
 function executeNote(note, apiParams) {
-    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
+    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
         log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS frontend"`);
 
         return;
@@ -57,7 +57,7 @@ function executeBundle(bundle, apiParams = {}) {
 function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = becca.getNote(startNoteId);
     const currentNote = becca.getNote(currentNoteId);
-    const originEntity = becca.getEntityFromName(originEntityName, originEntityId);
+    const originEntity = becca.getEntity(originEntityName, originEntityId);
 
     // we're just executing an excerpt of the original frontend script in the backend context so we must
     // override normal note's content and it's mime type / script environment
@@ -105,7 +105,7 @@ function getScriptBundleForFrontend(note) {
 }
 
 function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         return;
     }
 

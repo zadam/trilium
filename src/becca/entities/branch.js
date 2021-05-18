@@ -2,8 +2,8 @@
 
 const Note = require('./note.js');
 const AbstractEntity = require("./abstract_entity.js");
-const sql = require("../../sql.js");
-const dateUtils = require("../../date_utils.js");
+const sql = require("../../services/sql.js");
+const dateUtils = require("../../services/date_utils.js");
 
 class Branch extends AbstractEntity {
     static get entityName() { return "branches"; }

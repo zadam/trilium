@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const becca = require('../../becca/becca.js');
+const becca = require('../../../becca/becca.js');
 
 class RelationWhereExp extends Expression {
     constructor(relationName, subExpression) {
@@ -24,9 +24,9 @@ class RelationWhereExp extends Expression {
 
                 if (subResNoteSet.hasNote(attr.targetNote)) {
                     if (attr.isInheritable) {
-                        candidateNoteSet.addAll(note.subtreeNotesIncludingTemplated);
-                    } else if (note.isTemplate) {
-                        candidateNoteSet.addAll(note.templatedNotes);
+                        candidateNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
+                    } else if (note.isTemplate()) {
+                        candidateNoteSet.addAll(note.getTemplatedNotes());
                     } else {
                         candidateNoteSet.add(note);
                     }

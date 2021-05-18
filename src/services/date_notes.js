@@ -3,7 +3,7 @@
 const noteService = require('./notes');
 const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
-const becca = require('./becca/becca');
+const becca = require('../becca/becca.js');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
 

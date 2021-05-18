@@ -3,6 +3,7 @@ const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
+const becca = require("../becca/becca.js");
 
 let maxEntityChangeId = 0;
 
@@ -82,7 +83,6 @@ function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     try {
         cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
-        const repository = require("./repository.js");
 
         sql.transactional(() => {
             const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
@@ -97,7 +97,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                 if (existingRows === 0) {
                     createdCount++;
 
-                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${entityPrimaryKey} = ?`, [entityId]);
+                    const entity = becca.getEntity(entityName, entityId);
 
                     addEntityChange({
                         entityName,

@@ -2,8 +2,8 @@ const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const becca = require('./becca/becca.js');
-const Attribute = require('./becca/entities/attribute');
+const becca = require('../becca/becca.js');
+const Attribute = require('../becca/entities/attribute.js');
 
 function runAttachedRelations(note, relationName, originEntity) {
     // same script note can get here with multiple ways, but execute only once
@@ -89,7 +89,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 const note = becca.notes[entity.noteId];
 
                 if (note) {
-                    for (const noteId of note.subtreeNoteIds) {
+                    for (const noteId of note.getSubtreeNoteIds()) {
                         treeService.sortNotesByTitle(noteId);
                     }
                 }

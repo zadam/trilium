@@ -2,9 +2,9 @@
 
 const Note = require('./note.js');
 const AbstractEntity = require("./abstract_entity.js");
-const sql = require("../../sql.js");
-const dateUtils = require("../../date_utils.js");
-const promotedAttributeDefinitionParser = require("../../promoted_attribute_definition_parser");
+const sql = require("../../services/sql.js");
+const dateUtils = require("../../services/date_utils.js");
+const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 
 class Attribute extends AbstractEntity {
     static get entityName() { return "attributes"; }

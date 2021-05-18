@@ -13,10 +13,10 @@ const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
-const becca = require('../services/becca/becca');
-const Branch = require('../services/becca/entities/branch');
-const Note = require('../services/becca/entities/note');
-const Attribute = require('../services/becca/entities/attribute');
+const becca = require('../becca/becca.js');
+const Branch = require('../becca/entities/branch.js');
+const Note = require('../becca/entities/note.js');
+const Attribute = require('../becca/entities/attribute.js');
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -475,7 +475,7 @@ function saveNoteRevision(note) {
 function updateNote(noteId, noteUpdates) {
     const note = becca.getNote(noteId);
 
-    if (!note.isContentAvailable) {
+    if (!note.isContentAvailable()) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 

@@ -1,9 +1,9 @@
 const searchService = require('../../src/services/search/services/search.js');
-const Note = require('../../src/services/becca/entities/note.js');
-const Branch = require('../../src/services/becca/entities/branch.js');
+const Note = require('../../src/becca/entities/note.js');
+const Branch = require('../../src/becca/entities/branch.js');
 const SearchContext = require('../../src/services/search/search_context.js');
 const dateUtils = require('../../src/services/date_utils.js');
-const becca = require('../../src/services/becca/becca.js');
+const becca = require('../../src/becca/becca.js');
 const {NoteBuilder, findNoteByTitle, note} = require('./note_cache_mocking.js');
 
 describe("Search", () => {
@@ -337,11 +337,11 @@ describe("Search", () => {
 
         const searchContext = new SearchContext();
 
-        let searchResults = searchService.findResultsWithQuery('#city AND note.ancestors.title = Europe', searchContext);
+        let searchResults = searchService.findResultsWithQuery('#city AND note.getAncestors().title = Europe', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Prague")).toBeTruthy();
 
-        searchResults = searchService.findResultsWithQuery('#city AND note.ancestors.title = Asia', searchContext);
+        searchResults = searchService.findResultsWithQuery('#city AND note.getAncestors().title = Asia', searchContext);
         expect(searchResults.length).toEqual(1);
         expect(findNoteByTitle(searchResults, "Taipei")).toBeTruthy();
     });

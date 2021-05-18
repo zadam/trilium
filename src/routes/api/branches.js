@@ -5,8 +5,7 @@ const utils = require('../../services/utils');
 const entityChangesService = require('../../services/entity_changes.js');
 const treeService = require('../../services/tree');
 const noteService = require('../../services/notes');
-const becca = require('../../services/becca/becca.js');
-const repository = require('../../services/repository');
+const becca = require('../../becca/becca.js');
 const TaskContext = require('../../services/task_context');
 
 /**

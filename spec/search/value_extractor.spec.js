@@ -1,6 +1,6 @@
 const {note} = require('./note_cache_mocking.js');
 const ValueExtractor = require('../../src/services/search/value_extractor.js');
-const becca = require('../../src/services/becca/becca.js');
+const becca = require('../../src/becca/becca.js');
 const SearchContext = require("../../src/services/search/search_context.js");
 
 const dsc = new SearchContext();

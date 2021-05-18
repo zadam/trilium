@@ -1,6 +1,6 @@
 "use strict";
 
-const dateUtils = require('../../date_utils.js');
+const dateUtils = require('../../services/date_utils.js');
 const AbstractEntity = require("./abstract_entity.js");
 
 /**

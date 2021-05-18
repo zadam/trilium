@@ -5,15 +5,14 @@ const sqlInit = require('./sql_init');
 const log = require('./log');
 const ws = require('./ws.js');
 const syncMutexService = require('./sync_mutex');
-const repository = require('./repository');
 const cls = require('./cls');
 const entityChangesService = require('./entity_changes.js');
 const optionsService = require('./options');
-const Branch = require('../services/becca/entities/branch');
+const Branch = require('../becca/entities/branch.js');
 const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
-const becca = require("./becca/becca");
+const becca = require("../becca/becca.js");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -459,7 +458,7 @@ class ConsistencyChecks {
           entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             ({entityId}) => {
                 if (this.autoFix) {
-                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+                    const entity = becca.getEntity(entityName, entityId);
 
                     entityChangesService.addEntityChange({
                         entityName,
@@ -580,7 +579,7 @@ class ConsistencyChecks {
         }
 
         if (this.fixedIssues) {
-            require("../services/becca/becca_loader").load();
+            require("../becca/becca_loader.js").load();
         }
 
         return !this.unrecoveredConsistencyErrors;
