@@ -3,6 +3,7 @@ import appContext from "./app_context.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
 import openService from "./open.js";
+import protectedSessionService from "./protected_session.js";
 
 export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -92,5 +93,13 @@ export default class RootCommandExecutor extends Component {
         if (noteId) {
             openService.openNoteExternally(noteId);
         }
+    }
+
+    enterProtectedSessionCommand() {
+        protectedSessionService.enterProtectedSession();
+    }
+
+    leaveProtectedSessionCommand() {
+        protectedSessionService.leaveProtectedSession();
     }
 }

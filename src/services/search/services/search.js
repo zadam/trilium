@@ -153,8 +153,6 @@ function findResultsWithQuery(query, searchContext) {
 
     const expression = parseQueryToExpression(query, searchContext);
 
-    console.log("expression", expression);
-
     if (!expression) {
         return [];
     }

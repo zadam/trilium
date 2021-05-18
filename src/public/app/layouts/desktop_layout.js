@@ -38,6 +38,8 @@ import RootContainer from "../widgets/containers/root_container.js";
 import NoteUpdateStatusWidget from "../widgets/note_update_status.js";
 import SpacerWidget from "../widgets/spacer.js";
 import QuickSearchWidget from "../widgets/quick_search.js";
+import ButtonWidget from "../widgets/button_widget.js";
+import ProtectedSessionStatusWidget from "../widgets/protected_session_status.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -141,6 +143,29 @@ export default class DesktopLayout {
 
         return new RootContainer()
             .setParent(appContext)
+            .child(new FlexContainer("column")
+                .child(new GlobalMenuWidget())
+                .child(new ButtonWidget()
+                    .icon("bx-file-blank")
+                    .title("New note")
+                    .command("createNoteIntoInbox"))
+                .child(new ButtonWidget()
+                    .icon("bx-search")
+                    .title("Search")
+                    .command("searchNotes"))
+                .child(new ButtonWidget()
+                    .icon("bx-send")
+                    .title("Jump to note")
+                    .command("jumpToNote"))
+                .child(new ButtonWidget()
+                    .icon("bx-history")
+                    .title("Show recent changes")
+                    .command("showRecentChanges"))
+                .child(new SpacerWidget())
+                .child(new ProtectedSessionStatusWidget())
+                .child(new SyncStatusWidget())
+                .css("width", "50px")
+            )
             .child(new SidePaneContainer('left')
                 .hideInZenMode()
                 .css("width", "300px")
@@ -152,15 +177,9 @@ export default class DesktopLayout {
                 .id('center-pane')
                 .css("flex-grow", "1")
                 .child(new FlexContainer('row').overflowing()
-                    .filling()
-                    .child(new GlobalMenuWidget())
-                    .child(new SyncStatusWidget())
-                    .child(new SpacerWidget())
+                    .child(new TabRowWidget())
                     .child(new TitleBarButtonsWidget())
                     .css('height', '36px')
-                )
-                .child(new FlexContainer('row').overflowing()
-                    .child(new TabRowWidget())
                 )
                 .child(new FlexContainer('row').class('title-row')
                     .css('align-items: center;')

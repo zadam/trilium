@@ -16,7 +16,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
         collectedNoteIds.add(note.noteId);
 
-        for (const branch of note.parentBranches) {
+        for (const branch of note.getParentBranches()) {
             collectedBranchIds.add(branch.branchId);
 
             collectEntityIds(branch.parentNote);

@@ -928,3 +928,15 @@ ul.fancytree-container li {
     padding: 10px;
     margin: 10px;
 }
+
+.button-widget .bx {
+    font-size: 180%;
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.button-widget:hover .bx {
+    background-color: var(--hover-item-background-color);
+}
