@@ -427,10 +427,14 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     activeTabChangedEvent() {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
+        let activeTabContext = appContext.tabManager.getActiveTabContext();
 
         if (!activeTabContext) {
             return;
+        }
+
+        if (activeTabContext.parentTabId) {
+            activeTabContext = appContext.tabManager.getTabContextById(activeTabContext.parentTabId);
         }
 
         const tabEl = this.getTabById(activeTabContext.tabId)[0];
@@ -441,7 +445,9 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     newTabOpenedEvent({tabContext}) {
-        this.addTab(tabContext.tabId);
+        if (!tabContext.parentId) {
+            this.addTab(tabContext.tabId);
+        }
     }
 
     removeTab(tabId) {
@@ -606,11 +612,11 @@ export default class TabRowWidget extends BasicWidget {
     tabNoteSwitchedAndActivatedEvent({tabContext}) {
         this.activeTabChangedEvent();
 
-        this.updateTabById(tabContext.tabId);
+        this.updateTabById(tabContext.parentTabId || tabContext.tabId);
     }
 
     tabNoteSwitchedEvent({tabContext}) {
-        this.updateTabById(tabContext.tabId);
+        this.updateTabById(tabContext.parentTabId || tabContext.tabId);
     }
 
     updateTabById(tabId) {

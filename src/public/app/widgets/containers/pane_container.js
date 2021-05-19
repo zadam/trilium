@@ -16,14 +16,32 @@ export default class PaneContainer extends FlexContainer {
         this.css('flex-grow', '1');
     }
 
+    doRender() {
+        super.doRender();
+
+        this.$widget.find("div").on("click", () => {
+            const activeTabContext = appContext.tabManager.getActiveTabContext();
+
+            const tabId = activeTabContext.parentTabId || activeTabContext.tabId;
+
+            appContext.tabManager.activateTab(tabId);
+        });
+    }
+
     async openNewPaneCommand() {
         const newWidget = this.widgetFactory();
 
-        this.$widget.append(newWidget.render());
+        const $rendered = newWidget.render();
+
+        this.$widget.append($rendered);
 
         const tabContext = new TabContext();
         appContext.tabManager.tabContexts.push(tabContext);
         appContext.tabManager.child(tabContext);
+
+        $rendered.on('click', () => {
+            appContext.tabManager.activateTab(tabContext.tabId);
+        });
 
         tabContext.parentTabId = appContext.tabManager.getActiveTabContext().tabId;
 
