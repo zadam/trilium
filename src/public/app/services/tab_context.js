@@ -16,6 +16,7 @@ class TabContext extends Component {
 
         this.tabId = tabId || utils.randomString(4);
         this.hoistedNoteId = hoistedNoteId;
+        this.parentTabId = null;
     }
 
     setEmpty() {

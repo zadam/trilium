@@ -216,7 +216,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
             result.highlightedNotePathTitle += ` "mime: ${note.mime}'`;
         }
 
-        for (const attr of note.attributes) {
+        for (const attr of note.getAttributes()) {
             if (highlightedTokens.find(token => attr.name.toLowerCase().includes(token)
                 || attr.value.toLowerCase().includes(token))) {
 

@@ -53,7 +53,7 @@ export default class TabCachingWidget extends TabAwareWidget {
 
     toggleExt(show) {
         for (const tabId in this.widgets) {
-            this.widgets[tabId].toggleExt(show && this.isTab(tabId));
+            this.widgets[tabId].toggleExt(show && this.isTabOrParent(tabId));
         }
     }
 
@@ -65,7 +65,11 @@ export default class TabCachingWidget extends TabAwareWidget {
     handleEventInChildren(name, data) {
         if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
-            const widget = this.widgets[data.tabContext.tabId];
+            let widget = this.widgets[data.tabContext.tabId];
+
+            if (!widget) {
+                widget = this.widgets[data.tabContext.parentTabId];
+            }
 
             if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
                 widget.hasBeenAlreadyShown = true;
@@ -78,7 +82,11 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
 
         if (name === 'activeTabChanged') {
-            const widget = this.widgets[data.tabContext.tabId];
+            let widget = this.widgets[data.tabContext.tabId];
+
+            if (!widget) {
+                widget = this.widgets[data.tabContext.parentTabId];
+            }
 
             if (widget.hasBeenAlreadyShown) {
                 return Promise.resolve();

@@ -6,6 +6,10 @@ export default class TabAwareWidget extends BasicWidget {
         return this.tabContext && this.tabContext.tabId === tabId;
     }
 
+    isTabOrParent(tabId) {
+        return this.tabContext && (this.tabContext.tabId === tabId || this.tabContext.parentTabId === tabId);
+    }
+
     isNote(noteId) {
         return this.noteId === noteId;
     }
