@@ -36,6 +36,11 @@ export default class TabManager extends Component {
         return this.children;
     }
 
+    /** @type {TabContext[]} */
+    get mainTabContexts() {
+        return this.tabContexts.filter(tc => !tc.parentTabId)
+    }
+
     async loadTabs() {
         const tabsToOpen = appContext.isMainWindow
             ? (options.getJson('openTabs') || [])
@@ -97,7 +102,7 @@ export default class TabManager extends Component {
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
-                await this.openTabWithNote(tab.notePath, tab.active, tab.tabId, tab.hoistedNoteId);
+                await this.openTabWithNote(tab.notePath, tab.active, tab.tabId, tab.hoistedNoteId, tab.parentTabId);
             }
         });
     }
@@ -138,12 +143,20 @@ export default class TabManager extends Component {
 
     /** @returns {TabContext} */
     getTabContextById(tabId) {
-        return this.tabContexts.find(tc => tc.tabId === tabId);
+        const tabContext = this.tabContexts.find(tc => tc.tabId === tabId);
+
+        if (!tabContext) {
+            throw new Error(`Cannot find tabContext id='${tabId}'`);
+        }
+
+        return tabContext;
     }
 
     /** @returns {TabContext} */
     getActiveTabContext() {
-        return this.getTabContextById(this.activeTabId);
+        return this.activeTabId
+            ? this.getTabContextById(this.activeTabId)
+            : null;
     }
 
     /** @returns {string|null} */
@@ -188,8 +201,8 @@ export default class TabManager extends Component {
         await tabContext.setEmpty();
     }
 
-    async openEmptyTab(tabId, hoistedNoteId) {
-        const tabContext = new TabContext(tabId, hoistedNoteId);
+    async openEmptyTab(tabId, hoistedNoteId, parentTabId = null) {
+        const tabContext = new TabContext(tabId, hoistedNoteId, parentTabId);
         this.child(tabContext);
 
         await this.triggerEvent('newTabOpened', {tabContext});
@@ -215,8 +228,8 @@ export default class TabManager extends Component {
         return this.openTabWithNote(notePath, false, null, hoistedNoteId);
     }
 
-    async openTabWithNote(notePath, activate, tabId, hoistedNoteId) {
-        const tabContext = await this.openEmptyTab(tabId, hoistedNoteId);
+    async openTabWithNote(notePath, activate, tabId, hoistedNoteId, parentTabId = null) {
+        const tabContext = await this.openEmptyTab(tabId, hoistedNoteId, parentTabId);
 
         if (notePath) {
             await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
@@ -267,24 +280,30 @@ export default class TabManager extends Component {
     }
 
     async removeTab(tabId) {
-        const tabContextToRemove = this.getTabContextById(tabId);
+        let mainTabContextToRemove = this.getTabContextById(tabId);
 
-        if (!tabContextToRemove) {
+        if (!mainTabContextToRemove) {
             return;
+        }
+
+        if (mainTabContextToRemove.parentTabId) {
+            mainTabContextToRemove = this.getTabContextById(mainTabContextToRemove.parentTabId);
         }
 
         // close dangling autocompletes after closing the tab
         $(".aa-input").autocomplete("close");
 
-        await this.triggerEvent('beforeTabRemove', {tabId});
+        const tabIdsToRemove = mainTabContextToRemove.getAllSubTabContexts().map(tc => tc.tabId);
 
-        if (this.tabContexts.length <= 1) {
-            this.openAndActivateEmptyTab();
+        await this.triggerEvent('beforeTabRemove', { tabIds: tabIdsToRemove });
+
+        if (this.mainTabContexts.length <= 1) {
+            await this.openAndActivateEmptyTab();
         }
-        else if (tabContextToRemove.isActive()) {
-            const idx = this.tabContexts.findIndex(tc => tc.tabId === tabId);
+        else if (tabIdsToRemove.includes(this.activeTabId)) {
+            const idx = this.mainTabContexts.findIndex(tc => tc.tabId === mainTabContextToRemove.tabId);
 
-            if (idx === this.tabContexts.length - 1) {
+            if (idx === this.mainTabContexts.length - 1) {
                 this.activatePreviousTabCommand();
             }
             else {
@@ -292,9 +311,9 @@ export default class TabManager extends Component {
             }
         }
 
-        this.children = this.children.filter(tc => tc.tabId !== tabId);
+        this.children = this.children.filter(tc => !tabIdsToRemove.includes(tc.tabId));
 
-        this.triggerEvent('tabRemoved', {tabId});
+        this.triggerEvent('tabRemoved', {tabIds: tabIdsToRemove});
 
         this.tabsUpdate.scheduleUpdate();
     }
@@ -312,15 +331,15 @@ export default class TabManager extends Component {
     }
 
     activateNextTabCommand() {
-        const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
-        const newActiveTabId = this.tabContexts[oldIdx === this.tabContexts.length - 1 ? 0 : oldIdx + 1].tabId;
+        const oldIdx = this.mainTabContexts.findIndex(tc => tc.tabId === this.activeTabId);
+        const newActiveTabId = this.mainTabContexts[oldIdx === this.tabContexts.length - 1 ? 0 : oldIdx + 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
     activatePreviousTabCommand() {
-        const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
-        const newActiveTabId = this.tabContexts[oldIdx === 0 ? this.tabContexts.length - 1 : oldIdx - 1].tabId;
+        const oldIdx = this.mainTabContexts.findIndex(tc => tc.tabId === this.activeTabId);
+        const newActiveTabId = this.mainTabContexts[oldIdx === 0 ? this.tabContexts.length - 1 : oldIdx - 1].tabId;
 
         this.activateTab(newActiveTabId);
     }

@@ -34,14 +34,16 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
     }
 
-    tabRemovedEvent({tabId}) {
-        const widget = this.widgets[tabId];
+    tabRemovedEvent({tabIds}) {
+        for (const tabId of tabIds) {
+            const widget = this.widgets[tabId];
 
-        if (widget) {
-            widget.remove();
-            delete this.widgets[tabId];
+            if (widget) {
+                widget.remove();
+                delete this.widgets[tabId];
 
-            this.children = this.children.filter(ch => ch !== widget);
+                this.children = this.children.filter(ch => ch !== widget);
+            }
         }
     }
 

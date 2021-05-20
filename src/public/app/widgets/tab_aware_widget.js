@@ -3,7 +3,12 @@ import appContext from "../services/app_context.js";
 
 export default class TabAwareWidget extends BasicWidget {
     isTab(tabId) {
-        return this.tabContext && this.tabContext.tabId === tabId;
+        if (Array.isArray(tabId)) {
+            return this.tabContext && tabId.includes(this.tabContext.tabId);
+        }
+        else {
+            return this.tabContext && this.tabContext.tabId === tabId;
+        }
     }
 
     isTabOrParent(tabId) {

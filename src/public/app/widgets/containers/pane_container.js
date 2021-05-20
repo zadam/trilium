@@ -1,6 +1,5 @@
 import FlexContainer from "./flex_container.js";
 import appContext from "../../services/app_context.js";
-import TabContext from "../../services/tab_context.js";
 
 export default class PaneContainer extends FlexContainer {
     constructor(widgetFactory) {
@@ -9,48 +8,90 @@ export default class PaneContainer extends FlexContainer {
         this.counter = 0;
 
         this.widgetFactory = widgetFactory;
+        this.widgets = {};
 
-        this.child(this.widgetFactory());
-
-        this.id('pane-container-widget');
+        this.class('pane-container-widget');
         this.css('flex-grow', '1');
     }
 
-    doRender() {
-        super.doRender();
-
-        this.$widget.find("div").on("click", () => {
-            const activeTabContext = appContext.tabManager.getActiveTabContext();
-
-            const tabId = activeTabContext.parentTabId || activeTabContext.tabId;
-
-            appContext.tabManager.activateTab(tabId);
-        });
+    setTabContextEvent({tabContext}) {
+        /** @var {TabContext} */
+        this.tabContext = tabContext;
     }
 
-    async openNewPaneCommand() {
-        const newWidget = this.widgetFactory();
+    async newTabOpenedEvent({tabContext}) {
+        const widget = this.widgetFactory();
 
-        const $rendered = newWidget.render();
+        const $renderedWidget = widget.render();
 
-        this.$widget.append($rendered);
-
-        const tabContext = new TabContext();
-        appContext.tabManager.tabContexts.push(tabContext);
-        appContext.tabManager.child(tabContext);
-
-        $rendered.on('click', () => {
+        $renderedWidget.on('click', () => {
             appContext.tabManager.activateTab(tabContext.tabId);
         });
 
-        tabContext.parentTabId = appContext.tabManager.getActiveTabContext().tabId;
+        let $parent;
 
-        await newWidget.handleEvent('setTabContext', { tabContext });
+        if (!tabContext.parentTabId) {
+            $parent = $("<div>")
+                .attr("data-main-tab-id", tabContext.tabId)
+                .css("display", "flex")
+                .css("flex-grow", "1");
 
-        this.child(newWidget);
+            this.$widget.append($parent);
+        }
+        else {
+            $parent = this.$widget.find(`[data-main-tab-id="${tabContext.parentTabId}"]`);
+        }
 
-        tabContext.setEmpty();
+        $parent.append($renderedWidget);
 
-        appContext.tabManager.activateTab(tabContext.tabId);
+        this.widgets[tabContext.tabId] = widget;
+
+        await widget.handleEvent('setTabContext', { tabContext });
+
+        this.child(widget);
+    }
+
+    async openNewPaneCommand() {
+        const tabContext = await appContext.tabManager.openEmptyTab(null, null, appContext.tabManager.getActiveTabContext().tabId);
+
+        await appContext.tabManager.activateTab(tabContext.tabId);
+
+        await tabContext.setEmpty();
+    }
+
+    /**
+     * widget.hasBeenAlreadyShown is intended for lazy loading of cached tabs - initial note switches of new tabs
+     * are not executed, we're waiting for the first tab activation and then we update the tab. After this initial
+     * activation further note switches are always propagated to the tabs.
+     */
+    handleEventInChildren(name, data) {
+        if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
+            // this event is propagated only to the widgets of a particular tab
+            const widget = this.widgets[data.tabContext.tabId];
+
+            if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+                widget.hasBeenAlreadyShown = true;
+
+                return widget.handleEvent('tabNoteSwitched', data);
+            }
+            else {
+                return Promise.resolve();
+            }
+        }
+
+        if (name === 'activeTabChanged') {
+            const widget = this.widgets[data.tabContext.tabId];
+
+            if (widget.hasBeenAlreadyShown) {
+                return Promise.resolve();
+            }
+            else {
+                widget.hasBeenAlreadyShown = true;
+
+                return widget.handleEvent(name, data);
+            }
+        } else {
+            return super.handleEventInChildren(name, data);
+        }
     }
 }

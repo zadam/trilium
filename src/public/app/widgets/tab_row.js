@@ -445,7 +445,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     newTabOpenedEvent({tabContext}) {
-        if (!tabContext.parentId) {
+        if (!tabContext.parentTabId) {
             this.addTab(tabContext.tabId);
         }
     }
@@ -478,8 +478,10 @@ export default class TabRowWidget extends BasicWidget {
         return $tab.attr('data-tab-id');
     }
 
-    tabRemovedEvent({tabId}) {
-        this.removeTab(tabId);
+    tabRemovedEvent({tabIds}) {
+        for (const tabId of tabIds) {
+            this.removeTab(tabId);
+        }
     }
 
     cleanUpPreviouslyDraggedTabs() {

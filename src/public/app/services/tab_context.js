@@ -11,12 +11,12 @@ class TabContext extends Component {
     /**
      * @param {string|null} tabId
      */
-    constructor(tabId = null, hoistedNoteId = 'root') {
+    constructor(tabId = null, hoistedNoteId = 'root', parentTabId = null) {
         super();
 
         this.tabId = tabId || utils.randomString(4);
         this.hoistedNoteId = hoistedNoteId;
-        this.parentTabId = null;
+        this.parentTabId = parentTabId;
     }
 
     setEmpty() {
@@ -57,6 +57,19 @@ class TabContext extends Component {
         if (utils.isDesktop()) {
             // close dangling autocompletes after closing the tab
             $(".aa-input").autocomplete("close");
+        }
+    }
+
+    getAllSubTabContexts() {
+        return appContext.tabManager.tabContexts.filter(tc => tc.tabId === this.tabId || tc.parentTabId === this.tabId);
+    }
+
+    getMainTabContext() {
+        if (this.parentTabId) {
+            return appContext.tabManager.getTabContextById(this.parentTabId);
+        }
+        else {
+            return this;
         }
     }
 
@@ -135,6 +148,7 @@ class TabContext extends Component {
 
         return {
             tabId: this.tabId,
+            parentTabId: this.parentTabId,
             notePath: this.notePath,
             hoistedNoteId: this.hoistedNoteId,
             active: this.isActive()
