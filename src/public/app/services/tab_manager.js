@@ -100,6 +100,8 @@ export default class TabManager extends Component {
             filteredTabs[0].active = true;
         }
 
+        console.log("filteredTabs", filteredTabs);
+
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
                 await this.openTabWithNote(tab.notePath, tab.active, tab.tabId, tab.hoistedNoteId, tab.parentTabId);
@@ -201,8 +203,15 @@ export default class TabManager extends Component {
         await tabContext.setEmpty();
     }
 
-    async openEmptyTab(tabId, hoistedNoteId, parentTabId = null) {
+    async openEmptyTab(tabId, hoistedNoteId = 'root', parentTabId = null) {
         const tabContext = new TabContext(tabId, hoistedNoteId, parentTabId);
+
+        const existingTabContext = this.children.find(tc => tc.tabId === tabContext.tabId);
+
+        if (existingTabContext) {
+            return existingTabContext;
+        }
+
         this.child(tabContext);
 
         await this.triggerEvent('newTabOpened', {tabContext});
@@ -228,7 +237,7 @@ export default class TabManager extends Component {
         return this.openTabWithNote(notePath, false, null, hoistedNoteId);
     }
 
-    async openTabWithNote(notePath, activate, tabId, hoistedNoteId, parentTabId = null) {
+    async openTabWithNote(notePath, activate, tabId, hoistedNoteId = 'root', parentTabId = null) {
         const tabContext = await this.openEmptyTab(tabId, hoistedNoteId, parentTabId);
 
         if (notePath) {
@@ -280,15 +289,7 @@ export default class TabManager extends Component {
     }
 
     async removeTab(tabId) {
-        let mainTabContextToRemove = this.getTabContextById(tabId);
-
-        if (!mainTabContextToRemove) {
-            return;
-        }
-
-        if (mainTabContextToRemove.parentTabId) {
-            mainTabContextToRemove = this.getTabContextById(mainTabContextToRemove.parentTabId);
-        }
+        const mainTabContextToRemove = this.getTabContextById(tabId).getMainTabContext();
 
         // close dangling autocompletes after closing the tab
         $(".aa-input").autocomplete("close");

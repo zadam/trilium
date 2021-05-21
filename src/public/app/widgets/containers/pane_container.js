@@ -14,49 +14,53 @@ export default class PaneContainer extends FlexContainer {
         this.css('flex-grow', '1');
     }
 
-    setTabContextEvent({tabContext}) {
-        /** @var {TabContext} */
-        this.tabContext = tabContext;
-    }
-
     async newTabOpenedEvent({tabContext}) {
         const widget = this.widgetFactory();
 
         const $renderedWidget = widget.render();
 
-        $renderedWidget.on('click', () => {
-            appContext.tabManager.activateTab(tabContext.tabId);
-        });
+        $renderedWidget.attr("data-main-tab-id", tabContext.tabId);
 
-        let $parent;
+        $renderedWidget.on('click', () => appContext.tabManager.activateTab(tabContext.tabId));
 
-        if (!tabContext.parentTabId) {
-            $parent = $("<div>")
-                .attr("data-main-tab-id", tabContext.tabId)
-                .css("display", "flex")
-                .css("flex-grow", "1");
-
-            this.$widget.append($parent);
-        }
-        else {
-            $parent = this.$widget.find(`[data-main-tab-id="${tabContext.parentTabId}"]`);
-        }
-
-        $parent.append($renderedWidget);
+        this.$widget.append($renderedWidget);
 
         this.widgets[tabContext.tabId] = widget;
 
         await widget.handleEvent('setTabContext', { tabContext });
 
         this.child(widget);
+
+        this.refresh();
     }
 
     async openNewPaneCommand() {
-        const tabContext = await appContext.tabManager.openEmptyTab(null, null, appContext.tabManager.getActiveTabContext().tabId);
+        const tabContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveTabContext().tabId);
 
         await appContext.tabManager.activateTab(tabContext.tabId);
 
         await tabContext.setEmpty();
+    }
+
+    async refresh() {
+        this.toggleExt(true);
+    }
+
+    toggleInt(show) {} // not needed
+
+    toggleExt(show) {
+        const activeTabId = appContext.tabManager.getActiveTabContext().getMainTabContext().tabId;
+
+        for (const tabId in this.widgets) {
+            const tabContext = appContext.tabManager.getTabContextById(tabId);
+
+            const widget = this.widgets[tabId];
+            widget.toggleExt(show && activeTabId && [tabContext.tabId, tabContext.parentTabId].includes(activeTabId));
+
+            if (!widget.hasBeenAlreadyShown) {
+                widget.handleEvent('activeTabChanged', {tabContext});
+            }
+        }
     }
 
     /**
@@ -69,27 +73,56 @@ export default class PaneContainer extends FlexContainer {
             // this event is propagated only to the widgets of a particular tab
             const widget = this.widgets[data.tabContext.tabId];
 
-            if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
-                widget.hasBeenAlreadyShown = true;
-
-                return widget.handleEvent('tabNoteSwitched', data);
-            }
-            else {
+            if (!widget) {
                 return Promise.resolve();
             }
+
+            const promises = [];
+
+            for (const subTabContext of data.tabContext.getMainTabContext().getAllSubTabContexts()) {
+                const subWidget = this.widgets[subTabContext.tabId];
+
+                if (!subWidget) {
+                    continue;
+                }
+
+                if (subTabContext !== data.tabContext && !subWidget.hasBeenAlreadyShown) {
+                    promises.push(widget.handleEvent('activeTabChanged', {tabContext: subTabContext}));
+                    continue;
+                }
+
+                if (subTabContext === data.tabContext && (subWidget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+                    subWidget.hasBeenAlreadyShown = true;
+
+                    promises.push(widget.handleEvent('tabNoteSwitched', data));
+                }
+            }
+
+            if (name === 'tabNoteSwitchedAndActivated') {
+                this.toggleExt(true);
+            }
+
+            return Promise.all(promises);
         }
 
         if (name === 'activeTabChanged') {
-            const widget = this.widgets[data.tabContext.tabId];
+            const promises = [];
 
-            if (widget.hasBeenAlreadyShown) {
-                return Promise.resolve();
-            }
-            else {
-                widget.hasBeenAlreadyShown = true;
+            for (const subTabContext of data.tabContext.getMainTabContext().getAllSubTabContexts()) {
+                console.log("subTabContext", subTabContext);
 
-                return widget.handleEvent(name, data);
+                const widget = this.widgets[subTabContext.tabId];
+
+                if (!widget.hasBeenAlreadyShown) {
+                    widget.hasBeenAlreadyShown = true;
+
+                    promises.push(widget.handleEvent(name, {tabContext: subTabContext}));
+                }
             }
+
+            this.toggleExt(true);
+
+            return Promise.all(promises);
         } else {
             return super.handleEventInChildren(name, data);
         }

@@ -55,7 +55,7 @@ export default class TabCachingWidget extends TabAwareWidget {
 
     toggleExt(show) {
         for (const tabId in this.widgets) {
-            this.widgets[tabId].toggleExt(show && this.isTabOrParent(tabId));
+            this.widgets[tabId].toggleExt(show && this.isTab(tabId));
         }
     }
 
