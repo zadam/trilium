@@ -19,7 +19,7 @@ export default class PaneContainer extends FlexContainer {
 
         const $renderedWidget = widget.render();
 
-        $renderedWidget.attr("data-main-tab-id", tabContext.tabId);
+        $renderedWidget.attr("data-tab-id", tabContext.tabId);
 
         $renderedWidget.on('click', () => appContext.tabManager.activateTab(tabContext.tabId));
 
@@ -78,6 +78,10 @@ export default class PaneContainer extends FlexContainer {
             }
 
             const promises = [];
+
+            if (appContext.tabManager.getActiveTabContext().getMainTabContext() === data.tabContext.getMainTabContext()) {
+                promises.push(widget.handleEvent('activeTabChanged', data));
+            }
 
             for (const subTabContext of data.tabContext.getMainTabContext().getAllSubTabContexts()) {
                 const subWidget = this.widgets[subTabContext.tabId];

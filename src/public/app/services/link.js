@@ -81,8 +81,17 @@ function goToLink(e) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
-            const activeTabContext = appContext.tabManager.getActiveTabContext();
-            activeTabContext.setNote(notePath);
+            const tabId = $(e.target).closest("[data-tab-id]").attr("data-tab-id");
+
+            const tabContext = tabId
+                ? appContext.tabManager.getTabContextById(tabId)
+                : appContext.tabManager.getActiveTabContext();
+
+            tabContext.setNote(notePath).then(() => {
+                if (tabContext !== appContext.tabManager.getActiveTabContext()) {
+                    appContext.tabManager.activateTab(tabContext.tabId);
+                }
+            });
         }
     }
     else {
