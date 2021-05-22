@@ -848,7 +848,7 @@ body {
     background-color: inherit;
 }
 
-[data-toggle="tooltip"] span {
+[data-toggle="tooltip"]:not(.button-widget) span {
     padding-bottom: 0;
     border-bottom: 1px dotted;
 }

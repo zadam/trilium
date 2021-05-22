@@ -2,6 +2,8 @@ import BasicWidget from "./basic_widget.js";
 
 const TPL = `
 <span class="button-widget" 
+      data-toggle="tooltip"
+      data-placement="right"
       title="">
     <span class="bx"></span>
 </span>
@@ -19,6 +21,11 @@ export default class ButtonWidget extends BasicWidget {
         this.overflowing();
 
         this.$widget.on("click", () => this.triggerCommand(this.settings.command));
+
+        this.$widget.tooltip({
+            html: true,
+            title: () => this.settings.title
+        });
 
         super.doRender();
     }

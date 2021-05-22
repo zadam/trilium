@@ -42,28 +42,34 @@ const TPL = `
     <div class="sync-status">
         <span class="sync-status-icon sync-status-unknown bx bx-time" 
               data-toggle="tooltip" 
+              data-placement="right"
               title="<p>Sync status will be known once the next sync attempt starts.</p><p>Click to trigger sync now.</p>">
         </span>
         <span class="sync-status-icon sync-status-connected-with-changes bx-wifi"
               data-toggle="tooltip" 
+              data-placement="right"
               title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
         <span class="sync-status-icon sync-status-connected-no-changes bx bx-wifi" 
               data-toggle="tooltip" 
+              data-placement="right"
               title="<p>Connected to the sync server.<br>All changes have been already synced.</p><p>Click to trigger sync.</p>">
         </span>
         <span class="sync-status-icon sync-status-disconnected-with-changes bx bx-wifi-off"
               data-toggle="tooltip" 
+              data-placement="right"
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
         <span class="sync-status-icon sync-status-disconnected-no-changes bx bx-wifi-off" 
               data-toggle="tooltip"
+              data-placement="right"
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>All known changes have been synced.</p><p>Click to trigger sync.</p>">
         </span>
         <span class="sync-status-icon sync-status-in-progress bx bx-analyse bx-spin" 
               data-toggle="tooltip"
+              data-placement="right"
               title="Sync with the server is in progress.">
         </span>
     </div>
