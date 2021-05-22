@@ -5,7 +5,7 @@ import options from "./options.js";
 import froca from "./froca.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
-import NoteContext from "./tab_context.js";
+import NoteContext from "./note_context.js";
 import appContext from "./app_context.js";
 
 export default class TabManager extends Component {
@@ -104,12 +104,12 @@ export default class TabManager extends Component {
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
-                await this.openTabWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
+                await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
             }
         });
     }
 
-    tabNoteSwitchedEvent({noteContext}) {
+    noteSwitchedEvent({noteContext}) {
         if (noteContext.isActive()) {
             this.setCurrentNotePathToHash();
         }
@@ -118,7 +118,7 @@ export default class TabManager extends Component {
     }
 
     setCurrentNotePathToHash() {
-        const activeNoteContext = this.getActiveNoteContext();
+        const activeNoteContext = this.getActiveContext();
 
         if (window.history.length === 0 // first history entry
             || (activeNoteContext && activeNoteContext.notePath !== treeService.getHashValueFromAddress()[0])) {
@@ -155,50 +155,50 @@ export default class TabManager extends Component {
     }
 
     /** @returns {NoteContext} */
-    getActiveNoteContext() {
+    getActiveContext() {
         return this.activeTabId
             ? this.getNoteContextById(this.activeTabId)
             : null;
     }
 
     /** @returns {string|null} */
-    getActiveTabNotePath() {
-        const activeContext = this.getActiveNoteContext();
+    getActiveContextNotePath() {
+        const activeContext = this.getActiveContext();
         return activeContext ? activeContext.notePath : null;
     }
 
     /** @return {NoteShort} */
-    getActiveTabNote() {
-        const activeContext = this.getActiveNoteContext();
+    getActiveContextNote() {
+        const activeContext = this.getActiveContext();
         return activeContext ? activeContext.note : null;
     }
 
     /** @return {string|null} */
-    getActiveTabNoteId() {
-        const activeNote = this.getActiveTabNote();
+    getActiveContextNoteId() {
+        const activeNote = this.getActiveContextNote();
 
         return activeNote ? activeNote.noteId : null;
     }
 
     /** @return {string|null} */
-    getActiveTabNoteType() {
-        const activeNote = this.getActiveTabNote();
+    getActiveContextNoteType() {
+        const activeNote = this.getActiveContextNote();
 
         return activeNote ? activeNote.type : null;
     }
 
-    async switchToTab(ntxId, notePath) {
+    async switchToNoteContext(ntxId, notePath) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
             || await this.openEmptyTab();
 
-        this.activateTab(noteContext.ntxId);
+        this.activateNoteContext(noteContext.ntxId);
         await noteContext.setNote(notePath);
     }
 
     async openAndActivateEmptyTab() {
         const noteContext = await this.openEmptyTab();
 
-        await this.activateTab(noteContext.ntxId);
+        await this.activateNoteContext(noteContext.ntxId);
 
         await noteContext.setEmpty();
     }
@@ -214,7 +214,7 @@ export default class TabManager extends Component {
 
         this.child(noteContext);
 
-        await this.triggerEvent('newTabOpened', {noteContext});
+        await this.triggerEvent('newNoteContextCreated', {noteContext});
 
         return noteContext;
     }
@@ -223,7 +223,7 @@ export default class TabManager extends Component {
      * If the requested notePath is within current note hoisting scope then keep the note hoisting also for the new tab.
      */
     async openTabWithNoteWithHoisting(notePath) {
-        const noteContext = this.getActiveNoteContext();
+        const noteContext = this.getActiveContext();
         let hoistedNoteId = 'root';
 
         if (noteContext) {
@@ -234,10 +234,10 @@ export default class TabManager extends Component {
             }
         }
 
-        return this.openTabWithNote(notePath, false, null, hoistedNoteId);
+        return this.openContextWithNote(notePath, false, null, hoistedNoteId);
     }
 
-    async openTabWithNote(notePath, activate, ntxId, hoistedNoteId = 'root', mainNtxId = null) {
+    async openContextWithNote(notePath, activate, ntxId, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
         if (notePath) {
@@ -245,9 +245,9 @@ export default class TabManager extends Component {
         }
 
         if (activate) {
-            this.activateTab(noteContext.ntxId, false);
+            this.activateNoteContext(noteContext.ntxId, false);
 
-            await this.triggerEvent('tabNoteSwitchedAndActivated', {
+            await this.triggerEvent('noteSwitchedAndActivated', {
                 noteContext,
                 notePath: noteContext.notePath // resolved note path
             });
@@ -259,7 +259,7 @@ export default class TabManager extends Component {
     async activateOrOpenNote(noteId) {
         for (const noteContext of this.getNoteContexts()) {
             if (noteContext.note && noteContext.note.noteId === noteId) {
-                this.activateTab(noteContext.ntxId);
+                this.activateNoteContext(noteContext.ntxId);
 
                 return;
             }
@@ -267,10 +267,10 @@ export default class TabManager extends Component {
 
         // if no tab with this note has been found we'll create new tab
 
-        await this.openTabWithNote(noteId, true);
+        await this.openContextWithNote(noteId, true);
     }
 
-    activateTab(ntxId, triggerEvent = true) {
+    activateNoteContext(ntxId, triggerEvent = true) {
         if (ntxId === this.activeTabId) {
             return;
         }
@@ -288,7 +288,7 @@ export default class TabManager extends Component {
         this.setCurrentNotePathToHash();
     }
 
-    async removeTab(ntxId) {
+    async removeNoteContext(ntxId) {
         const mainNoteContextToRemove = this.getNoteContextById(ntxId).getMainNoteContext();
 
         // close dangling autocompletes after closing the tab
@@ -314,7 +314,7 @@ export default class TabManager extends Component {
 
         this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
 
-        this.triggerEvent('tabRemoved', {ntxIds: ntxIdsToRemove});
+        this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
 
         this.tabsUpdate.scheduleUpdate();
     }
@@ -335,18 +335,18 @@ export default class TabManager extends Component {
         const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeTabId);
         const newActiveTabId = this.mainNoteContexts[oldIdx === this.noteContexts.length - 1 ? 0 : oldIdx + 1].ntxId;
 
-        this.activateTab(newActiveTabId);
+        this.activateNoteContext(newActiveTabId);
     }
 
     activatePreviousTabCommand() {
         const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeTabId);
         const newActiveTabId = this.mainNoteContexts[oldIdx === 0 ? this.noteContexts.length - 1 : oldIdx - 1].ntxId;
 
-        this.activateTab(newActiveTabId);
+        this.activateNoteContext(newActiveTabId);
     }
 
     closeActiveTabCommand() {
-        this.removeTab(this.activeTabId);
+        this.removeNoteContext(this.activeTabId);
     }
 
     beforeUnloadEvent() {
@@ -361,14 +361,14 @@ export default class TabManager extends Component {
 
     async removeAllTabsCommand() {
         for (const ntxIdToRemove of this.noteContexts.map(nc => nc.ntxId)) {
-            await this.removeTab(ntxIdToRemove);
+            await this.removeNoteContext(ntxIdToRemove);
         }
     }
 
     async removeAllTabsExceptForThisCommand({ntxId}) {
         for (const ntxIdToRemove of this.noteContexts.map(nc => nc.ntxId)) {
             if (ntxIdToRemove !== ntxId) {
-                await this.removeTab(ntxIdToRemove);
+                await this.removeNoteContext(ntxIdToRemove);
             }
         }
     }
@@ -376,7 +376,7 @@ export default class TabManager extends Component {
     moveTabToNewWindowCommand({ntxId}) {
         const {notePath, hoistedNoteId} = this.getNoteContextById(ntxId);
 
-        this.removeTab(ntxId);
+        this.removeNoteContext(ntxId);
 
         this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
     }

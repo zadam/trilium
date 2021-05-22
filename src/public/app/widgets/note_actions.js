@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import protectedSessionService from "../services/protected_session.js";
 import utils from "../services/utils.js";
 
@@ -100,7 +100,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteActionsWidget extends TabAwareWidget {
+export default class NoteActionsWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();

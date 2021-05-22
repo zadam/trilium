@@ -1,4 +1,4 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <div class="note-properties-widget">
@@ -14,7 +14,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NotePropertiesWidget extends TabAwareWidget {
+export default class NotePropertiesWidget extends NoteContextAwareWidget {
     static getType() { return "note-properties"; }
 
     isEnabled() {

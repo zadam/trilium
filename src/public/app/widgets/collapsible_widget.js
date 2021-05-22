@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import options from "../services/options.js";
 
 const WIDGET_TPL = `
@@ -29,7 +29,7 @@ const WIDGET_TPL = `
     </div>
 </div>`;
 
-export default class CollapsibleWidget extends TabAwareWidget {
+export default class CollapsibleWidget extends NoteContextAwareWidget {
     get widgetTitle() { return "Untitled widget"; }
 
     get headerActions() { return []; }

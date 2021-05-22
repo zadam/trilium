@@ -5,7 +5,7 @@ import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import SidePaneContainer from "../widgets/containers/side_pane_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
-import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
 import NotePathsWidget from "../widgets/note_paths.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/type_property_widgets/owned_attribute_list.js";

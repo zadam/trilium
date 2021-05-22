@@ -5,7 +5,7 @@ import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js';
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
 
@@ -222,7 +222,7 @@ const ATTR_HELP = {
     }
 };
 
-export default class AttributeDetailWidget extends TabAwareWidget {
+export default class AttributeDetailWidget extends NoteContextAwareWidget {
     async refresh() {
         // switching note/tab should close the widget
 

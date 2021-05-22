@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
@@ -27,7 +27,7 @@ const TPL = `
     <input autocomplete="off" value="" placeholder="type note's title here..." class="note-title" tabindex="100">
 </div>`;
 
-export default class NoteTitleWidget extends TabAwareWidget {
+export default class NoteTitleWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 

@@ -10,8 +10,8 @@ import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import appContext from "./app_context.js";
-import TabAwareWidget from "../widgets/tab_aware_widget.js";
-import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
+import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 
 /**
@@ -39,11 +39,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
 
-    /** @property {TabAwareWidget} */
-    this.TabAwareWidget = TabAwareWidget;
+    /** @property {NoteContextAwareWidget} */
+    this.TabAwareWidget = NoteContextAwareWidget;
 
-    /** @property {TabCachingWidget} */
-    this.TabCachingWidget = TabCachingWidget;
+    /** @property {NoteContextCachingWidget} */
+    this.TabCachingWidget = NoteContextCachingWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;
@@ -56,7 +56,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<void>}
      */
     this.activateNote = async notePath => {
-        await appContext.tabManager.getActiveNoteContext().setNote(notePath);
+        await appContext.tabManager.getActiveContext().setNote(notePath);
     };
 
     /**
@@ -68,7 +68,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.getActiveNoteContext().setNote(notePath);
+        await appContext.tabManager.getActiveContext().setNote(notePath);
         appContext.triggerEvent('focusAndSelectTitle');
     };
 
@@ -82,7 +82,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.openTabWithNote = async (notePath, activate) => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.openTabWithNote(notePath, activate);
+        await appContext.tabManager.openContextWithNote(notePath, activate);
 
         if (activate) {
             appContext.triggerEvent('focusAndSelectTitle');
@@ -313,7 +313,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
+    this.getActiveTabNote = () => appContext.tabManager.getActiveContextNote();
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -327,7 +327,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = () => appContext.tabManager.getActiveTabNotePath();
+    this.getActiveTabNotePath = () => appContext.tabManager.getActiveContextNotePath();
 
     /**
      * @method
@@ -340,7 +340,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      */
     this.protectActiveNote = async () => {
-        const activeNote = appContext.tabManager.getActiveTabNote();
+        const activeNote = appContext.tabManager.getActiveContextNote();
 
         await protectedSessionService.protectNote(activeNote.noteId, true, false);
     };
@@ -406,7 +406,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @return {Promise}
      */
     this.setHoistedNoteId = (noteId) => {
-        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        const activeNoteContext = appContext.tabManager.getActiveContext();
 
         if (activeNoteContext) {
             activeNoteContext.setHoistedNoteId(noteId);

@@ -74,17 +74,17 @@ export default class Entrypoints extends Component {
 
         await ws.waitForMaxKnownEntityChangeId();
 
-        const hoistedNoteId = appContext.tabManager.getActiveNoteContext()
-            ? appContext.tabManager.getActiveNoteContext().hoistedNoteId
+        const hoistedNoteId = appContext.tabManager.getActiveContext()
+            ? appContext.tabManager.getActiveContext().hoistedNoteId
             : 'root';
 
-        await appContext.tabManager.openTabWithNote(note.noteId, true, null, hoistedNoteId);
+        await appContext.tabManager.openContextWithNote(note.noteId, true, null, hoistedNoteId);
 
         appContext.triggerEvent('focusAndSelectTitle');
     }
 
     async toggleNoteHoistingCommand() {
-        const noteContext = appContext.tabManager.getActiveNoteContext();
+        const noteContext = appContext.tabManager.getActiveContext();
 
         if (noteContext.note.noteId === noteContext.hoistedNoteId) {
             await noteContext.unhoist();
@@ -95,7 +95,7 @@ export default class Entrypoints extends Component {
     }
 
     async hoistNoteCommand({noteId}) {
-        const noteContext = appContext.tabManager.getActiveNoteContext();
+        const noteContext = appContext.tabManager.getActiveContext();
 
         if (noteContext.hoistedNoteId !== noteId) {
             await noteContext.setHoistedNoteId(noteId);
@@ -103,7 +103,7 @@ export default class Entrypoints extends Component {
     }
 
     async unhoistCommand() {
-        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        const activeNoteContext = appContext.tabManager.getActiveContext();
 
         if (activeNoteContext) {
             activeNoteContext.unhoist();
@@ -194,7 +194,7 @@ export default class Entrypoints extends Component {
     }
 
     async runActiveNoteCommand() {
-        const noteContext = appContext.tabManager.getActiveNoteContext();
+        const noteContext = appContext.tabManager.getActiveContext();
         const note = noteContext.note;
 
         // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
@@ -220,7 +220,7 @@ export default class Entrypoints extends Component {
         $(".tooltip").removeClass("show");
     }
 
-    tabNoteSwitchedEvent() {
+    noteSwitchedEvent() {
         this.hideAllTooltips();
     }
 

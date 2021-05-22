@@ -1,4 +1,4 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import server from "../../services/server.js";
 import contextMenuService from "../../services/context_menu.js";
@@ -176,7 +176,7 @@ const editorConfig = {
     mention: mentionSetup
 };
 
-export default class AttributeEditorWidget extends TabAwareWidget {
+export default class AttributeEditorWidget extends NoteContextAwareWidget {
     constructor(attributeDetailWidget) {
         super();
 

@@ -12,7 +12,7 @@ export default class RootContainer extends FlexContainer {
 
     refresh() {
         this.$widget.removeClass(); // remove all classes
-        const note = appContext.tabManager.getActiveTabNote();
+        const note = appContext.tabManager.getActiveContextNote();
 
         if (note) {
             this.$widget.addClass(note.getCssClass());
@@ -41,7 +41,7 @@ export default class RootContainer extends FlexContainer {
         this.setZenMode(!this.isZenModeActive);
     }
 
-    tabNoteSwitchedEvent() {
+    noteSwitchedEvent() {
         this.refresh();
     }
 
@@ -49,7 +49,7 @@ export default class RootContainer extends FlexContainer {
         this.refresh();
     }
 
-    tabNoteSwitchedAndActivatedEvent() {
+    noteSwitchedAndActivatedEvent() {
         this.refresh();
     }
 

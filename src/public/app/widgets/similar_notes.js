@@ -1,7 +1,7 @@
 import linkService from "../services/link.js";
 import server from "../services/server.js";
 import froca from "../services/froca.js";
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import options from "../services/options.js";
 
 const TPL = `
@@ -39,7 +39,7 @@ const TPL = `
 </div>
 `;
 
-export default class SimilarNotesWidget extends TabAwareWidget {
+export default class SimilarNotesWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type !== 'search'

@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
 
 const TPL = `
@@ -33,7 +33,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class SearchResultWidget extends TabAwareWidget {
+export default class SearchResultWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'search';

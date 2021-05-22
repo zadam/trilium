@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
@@ -48,7 +48,7 @@ const typeWidgetClasses = {
     'book': BookTypeWidget
 };
 
-export default class NoteDetailWidget extends TabAwareWidget {
+export default class NoteDetailWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 
@@ -82,7 +82,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.on("dragleave", e => e.preventDefault());
 
         this.$widget.on("drop", async e => {
-            const activeNote = appContext.tabManager.getActiveTabNote();
+            const activeNote = appContext.tabManager.getActiveContextNote();
 
             if (!activeNote) {
                 return;
@@ -122,7 +122,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             await typeWidget.handleEvent('setNoteContext', {noteContext: this.noteContext});
 
             // this is happening in update() so note has been already set and we need to reflect this
-            await typeWidget.handleEvent('tabNoteSwitched', {
+            await typeWidget.handleEvent('noteSwitched', {
                 noteContext: this.noteContext,
                 notePath: this.noteContext.notePath
             });
@@ -291,14 +291,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async cutIntoNoteCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
+        const note = appContext.tabManager.getActiveContextNote();
 
         if (!note) {
             return;
         }
 
         // without await as this otherwise causes deadlock through component mutex
-        noteCreateService.createNote(appContext.tabManager.getActiveTabNotePath(), {
+        noteCreateService.createNote(appContext.tabManager.getActiveContextNotePath(), {
             isProtected: note.isProtected,
             saveSelection: true
         });

@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import froca from "../../services/froca.js";
 import ws from "../../services/ws.js";
 import toastService from "../../services/toast.js";
@@ -199,7 +199,7 @@ for (const clazz of [
     ACTION_CLASSES[clazz.actionName] = clazz;
 }
 
-export default class SearchDefinitionWidget extends TabAwareWidget {
+export default class SearchDefinitionWidget extends NoteContextAwareWidget {
     static getType() { return "search"; }
 
     isEnabled() {

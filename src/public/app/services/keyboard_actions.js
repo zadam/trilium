@@ -43,7 +43,7 @@ getActionsForScope("window").then(actions => {
 server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 	for (const shortcut in shortcutForNotes) {
 		utils.bindGlobalShortcut(shortcut, async () => {
-			appContext.tabManager.getActiveNoteContext().setNote(shortcutForNotes[shortcut]);
+			appContext.tabManager.getActiveContext().setNote(shortcutForNotes[shortcut]);
 		});
 	}
 });

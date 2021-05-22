@@ -98,13 +98,13 @@ export default class QuickSearchWidget extends BasicWidget {
 
                 if (!e.target || e.target.nodeName !== 'A') {
                     // click on the link is handled by link handling but we want the whole item clickable
-                    appContext.tabManager.getActiveNoteContext().setNote(note.noteId);
+                    appContext.tabManager.getActiveContext().setNote(note.noteId);
                 }
             });
             utils.bindElShortcut($link, 'return', () => {
                 this.$dropdownToggle.dropdown("hide");
 
-                appContext.tabManager.getActiveNoteContext().setNote(note.noteId);
+                appContext.tabManager.getActiveContext().setNote(note.noteId);
             });
 
             this.$dropdownMenu.append($link);
@@ -131,7 +131,7 @@ export default class QuickSearchWidget extends BasicWidget {
     async showInFullSearch() {
         const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
 
-        await appContext.tabManager.getActiveNoteContext().setNote(searchNote.noteId);
+        await appContext.tabManager.getActiveContext().setNote(searchNote.noteId);
     }
 
     quickSearchEvent() {

@@ -2,7 +2,7 @@ import server from "../../services/server.js";
 import ws from "../../services/ws.js";
 import treeService from "../../services/tree.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <div>
@@ -34,7 +34,7 @@ const TPL = `
 </div>
 `;
 
-export default class PromotedAttributesWidget extends TabAwareWidget {
+export default class PromotedAttributesWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();

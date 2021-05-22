@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 
 const TPL = `
 <div class="sql-result-widget">
@@ -11,7 +11,7 @@ const TPL = `
     <div class="sql-console-result-container"></div>
 </div>`;
 
-export default class SqlResultWidget extends TabAwareWidget {
+export default class SqlResultWidget extends NoteContextAwareWidget {
     isEnabled() {
         return this.note
             && this.note.mime === 'text/x-sqlite;schema=trilium'

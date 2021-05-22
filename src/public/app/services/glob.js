@@ -16,7 +16,7 @@ function setupGlobs() {
     window.glob.getHeaders = server.getHeaders;
 
     // required for ESLint plugin and CKEditor
-    window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
+    window.glob.getActiveTabNote = () => appContext.tabManager.getActiveContextNote();
     window.glob.requireLibrary = libraryLoader.requireLibrary;
     window.glob.ESLINT = libraryLoader.ESLINT;
     window.glob.appContext = appContext; // for debugging

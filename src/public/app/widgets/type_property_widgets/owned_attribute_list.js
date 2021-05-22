@@ -1,4 +1,4 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import AttributeDetailWidget from "../attribute_widgets/attribute_detail.js";
 import AttributeEditorWidget from "../attribute_widgets/attribute_editor.js";
 
@@ -21,7 +21,7 @@ const TPL = `
 </div>
 `;
 
-export default class OwnedAttributeListWidget extends TabAwareWidget {
+export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 

@@ -4,7 +4,7 @@ const REQUEST_LOGGING_ENABLED = false;
 
 async function getHeaders(headers) {
     const appContext = (await import('./app_context.js')).default;
-    const activeNoteContext = appContext.tabManager ? appContext.tabManager.getActiveNoteContext() : null;
+    const activeNoteContext = appContext.tabManager ? appContext.tabManager.getActiveContext() : null;
 
     // headers need to be lowercase because node.js automatically converts them to lower case
     // also avoiding using underscores instead of dashes since nginx filters them out by default

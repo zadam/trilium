@@ -1,6 +1,6 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
-export default class TypeWidget extends TabAwareWidget {
+export default class TypeWidget extends NoteContextAwareWidget {
     // for overriding
     static getType() {}
 

@@ -1,6 +1,6 @@
 import server from '../services/server.js';
 import mimeTypesService from '../services/mime_types.js';
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -31,7 +31,7 @@ const TPL = `
 </div>
 `;
 
-export default class NoteTypeWidget extends TabAwareWidget {
+export default class NoteTypeWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();

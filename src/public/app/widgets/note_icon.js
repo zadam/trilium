@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import attributeService from "../services/attributes.js";
 
 const TPL = `
@@ -75,7 +75,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteIconWidget extends TabAwareWidget {
+export default class NoteIconWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();

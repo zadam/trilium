@@ -14,14 +14,14 @@ export default class PaneContainer extends FlexContainer {
         this.css('flex-grow', '1');
     }
 
-    async newTabOpenedEvent({noteContext}) {
+    async newNoteContextCreatedEvent({noteContext}) {
         const widget = this.widgetFactory();
 
         const $renderedWidget = widget.render();
 
         $renderedWidget.attr("data-tab-id", noteContext.ntxId);
 
-        $renderedWidget.on('click', () => appContext.tabManager.activateTab(noteContext.ntxId));
+        $renderedWidget.on('click', () => appContext.tabManager.activateNoteContext(noteContext.ntxId));
 
         this.$widget.append($renderedWidget);
 
@@ -35,9 +35,9 @@ export default class PaneContainer extends FlexContainer {
     }
 
     async openNewPaneCommand() {
-        const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveNoteContext().ntxId);
+        const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveContext().ntxId);
 
-        await appContext.tabManager.activateTab(noteContext.ntxId);
+        await appContext.tabManager.activateNoteContext(noteContext.ntxId);
 
         await noteContext.setEmpty();
     }
@@ -49,7 +49,7 @@ export default class PaneContainer extends FlexContainer {
     toggleInt(show) {} // not needed
 
     toggleExt(show) {
-        const activeTabId = appContext.tabManager.getActiveNoteContext().getMainNoteContext().ntxId;
+        const activeTabId = appContext.tabManager.getActiveContext().getMainNoteContext().ntxId;
 
         for (const ntxId in this.widgets) {
             const noteContext = appContext.tabManager.getNoteContextById(ntxId);
@@ -69,7 +69,7 @@ export default class PaneContainer extends FlexContainer {
      * activation further note switches are always propagated to the tabs.
      */
     handleEventInChildren(name, data) {
-        if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
+        if (['noteSwitched', 'noteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
             const widget = this.widgets[data.noteContext.ntxId];
 
@@ -79,7 +79,7 @@ export default class PaneContainer extends FlexContainer {
 
             const promises = [];
 
-            if (appContext.tabManager.getActiveNoteContext().getMainNoteContext() === data.noteContext.getMainNoteContext()) {
+            if (appContext.tabManager.getActiveContext().getMainNoteContext() === data.noteContext.getMainNoteContext()) {
                 promises.push(widget.handleEvent('activeTabChanged', data));
             }
 
@@ -95,14 +95,14 @@ export default class PaneContainer extends FlexContainer {
                     continue;
                 }
 
-                if (subNoteContext === data.noteContext && (subWidget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+                if (subNoteContext === data.noteContext && (subWidget.hasBeenAlreadyShown || name === 'noteSwitchedAndActivated')) {
                     subWidget.hasBeenAlreadyShown = true;
 
-                    promises.push(widget.handleEvent('tabNoteSwitched', data));
+                    promises.push(widget.handleEvent('noteSwitched', data));
                 }
             }
 
-            if (name === 'tabNoteSwitchedAndActivated') {
+            if (name === 'noteSwitchedAndActivated') {
                 this.toggleExt(true);
             }
 

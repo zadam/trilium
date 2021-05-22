@@ -161,7 +161,7 @@ $(window).on('hashchange', function() {
             return;
         }
 
-        appContext.tabManager.switchToTab(ntxId, notePath);
+        appContext.tabManager.switchToNoteContext(ntxId, notePath);
     }
 });
 

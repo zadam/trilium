@@ -5,7 +5,7 @@ import contextMenu from "../services/context_menu.js";
 import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import server from "../services/server.js";
 import noteCreateService from "../services/note_create.js";
 import toastService from "../services/toast.js";
@@ -197,7 +197,7 @@ const TPL = `
 
 const MAX_SEARCH_RESULTS_IN_TREE = 100;
 
-export default class NoteTreeWidget extends TabAwareWidget {
+export default class NoteTreeWidget extends NoteContextAwareWidget {
     constructor(treeName) {
         super();
 
@@ -395,7 +395,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const notePath = treeService.getNotePath(data.node);
 
-                const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+                const activeNoteContext = appContext.tabManager.getActiveContext();
                 await activeNoteContext.setNote(notePath);
 
                 if (utils.isMobile()) {
@@ -525,7 +525,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
 
                 const note = await froca.getNote(node.data.noteId);
-                const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+                const activeNoteContext = appContext.tabManager.getActiveContext();
 
                 const $span = $(node.span);
 
@@ -810,7 +810,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async scrollToActiveNoteEvent() {
-        const activeContext = appContext.tabManager.getActiveNoteContext();
+        const activeContext = appContext.tabManager.getActiveContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.$container.focus();
@@ -1162,7 +1162,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     //        this should be done by NoteContext / TabManager and note tree should only listen to
                     //        changes in active note and just set the "active" state
                     // We don't await since that can bring up infinite cycles when e.g. custom widget does some backend requests which wait for max sync ID processed
-                    appContext.tabManager.getActiveNoteContext().setNote(nextNotePath).then(() => {
+                    appContext.tabManager.getActiveContext().setNote(nextNotePath).then(() => {
                         const newActiveNode = this.getActiveNode();
 
                         // return focus if the previously active node was also focused

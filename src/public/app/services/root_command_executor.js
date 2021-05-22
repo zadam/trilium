@@ -35,7 +35,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     async editBranchPrefixCommand() {
-        const notePath = appContext.tabManager.getActiveTabNotePath();
+        const notePath = appContext.tabManager.getActiveContextNotePath();
 
         if (notePath) {
             const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
@@ -64,7 +64,7 @@ export default class RootCommandExecutor extends Component {
     async showSQLConsoleCommand() {
         const sqlConsoleNote = await dateNoteService.createSqlConsole();
 
-        const noteContext = await appContext.tabManager.openTabWithNote(sqlConsoleNote.noteId, true);
+        const noteContext = await appContext.tabManager.openContextWithNote(sqlConsoleNote.noteId, true);
 
         appContext.triggerEvent('focusOnDetail', {ntxId: noteContext.ntxId});
     }
@@ -72,7 +72,7 @@ export default class RootCommandExecutor extends Component {
     async searchNotesCommand({searchString, ancestorNoteId}) {
         const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
 
-        const noteContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
+        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true);
 
         appContext.triggerCommand('focusOnSearchDefinition', {ntxId: noteContext.ntxId});
     }
@@ -88,7 +88,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     openNoteExternallyCommand() {
-        const noteId = appContext.tabManager.getActiveTabNoteId();
+        const noteId = appContext.tabManager.getActiveContextNoteId();
 
         if (noteId) {
             openService.openNoteExternally(noteId);

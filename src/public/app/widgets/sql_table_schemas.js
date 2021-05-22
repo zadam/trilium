@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 import hoistedNoteService from "../services/hoisted_note.js";
@@ -33,7 +33,7 @@ const TPL = `
     <span class="sql-table-schemas"></span>
 </div>`;
 
-export default class SqlTableSchemasWidget extends TabAwareWidget {
+export default class SqlTableSchemasWidget extends NoteContextAwareWidget {
     isEnabled() {
         return this.note
             && this.note.mime === 'text/x-sqlite;schema=trilium'

@@ -12,7 +12,7 @@ const $okButton = $("#note-info-ok-button");
 export async function showDialog() {
     utils.openDialog($dialog);
 
-    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    const activeNoteContext = appContext.tabManager.getActiveContext();
     const {note} = activeNoteContext;
     const noteComplement = await activeNoteContext.getNoteComplement();
 

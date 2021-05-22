@@ -20,7 +20,7 @@ class NoteContext extends Component {
     }
 
     setEmpty() {
-        this.triggerEvent('tabNoteSwitched', {
+        this.triggerEvent('noteSwitched', {
             noteContext: this,
             notePath: this.notePath
         });
@@ -48,7 +48,7 @@ class NoteContext extends Component {
         protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
         if (triggerSwitchEvent) {
-            await this.triggerEvent('tabNoteSwitched', {
+            await this.triggerEvent('noteSwitched', {
                 noteContext: this,
                 notePath: this.notePath
             });
@@ -180,7 +180,7 @@ class NoteContext extends Component {
                 this.noteId = null;
                 this.notePath = null;
 
-                this.triggerEvent('tabNoteSwitched', {
+                this.triggerEvent('noteSwitched', {
                     noteContext: this,
                     notePath: this.notePath
                 });

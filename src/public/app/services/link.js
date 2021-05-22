@@ -85,11 +85,11 @@ function goToLink(e) {
 
             const noteContext = ntxId
                 ? appContext.tabManager.getNoteContextById(ntxId)
-                : appContext.tabManager.getActiveNoteContext();
+                : appContext.tabManager.getActiveContext();
 
             noteContext.setNote(notePath).then(() => {
-                if (noteContext !== appContext.tabManager.getActiveNoteContext()) {
-                    appContext.tabManager.activateTab(noteContext.ntxId);
+                if (noteContext !== appContext.tabManager.getActiveContext()) {
+                    appContext.tabManager.activateNoteContext(noteContext.ntxId);
                 }
             });
         }

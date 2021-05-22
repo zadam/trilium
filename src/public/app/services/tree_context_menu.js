@@ -39,7 +39,7 @@ class TreeContextMenu {
         const note = await froca.getNote(this.node.data.noteId);
         const branch = froca.getBranch(this.node.data.branchId);
         const isNotRoot = note.noteId !== 'root';
-        const isHoisted = note.noteId === appContext.tabManager.getActiveNoteContext().hoistedNoteId;
+        const isHoisted = note.noteId === appContext.tabManager.getActiveContext().hoistedNoteId;
         const parentNote = isNotRoot ? await froca.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected

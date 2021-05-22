@@ -1,4 +1,4 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <div class="section-container">
@@ -57,7 +57,7 @@ const TPL = `
     <div class="section-body-container"></div>
 </div>`;
 
-export default class CollapsibleSectionContainer extends TabAwareWidget {
+export default class CollapsibleSectionContainer extends NoteContextAwareWidget {
     constructor() {
         super();
 

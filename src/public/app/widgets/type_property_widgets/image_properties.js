@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import toastService from "../../services/toast.js";
 import openService from "../../services/open.js";
 import utils from "../../services/utils.js";
@@ -36,7 +36,7 @@ const TPL = `
     <input type="file" class="image-upload-new-revision-input" style="display: none">
 </div>`;
 
-export default class ImagePropertiesWidget extends TabAwareWidget {
+export default class ImagePropertiesWidget extends NoteContextAwareWidget {
     static getType() { return "image"; }
 
     isEnabled() {

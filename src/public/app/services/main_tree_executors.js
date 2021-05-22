@@ -27,7 +27,7 @@ export default class MainTreeExecutors extends Component {
     }
 
     async createNoteIntoCommand() {
-        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        const activeNoteContext = appContext.tabManager.getActiveContext();
 
         if (!activeNoteContext) {
             return;

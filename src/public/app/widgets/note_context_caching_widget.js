@@ -1,7 +1,7 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 
-export default class TabCachingWidget extends TabAwareWidget {
+export default class NoteContextCachingWidget extends NoteContextAwareWidget {
     constructor(widgetFactory) {
         super();
 
@@ -13,7 +13,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         return this.$widget = $(`<div class="marker" style="display: none;">`);
     }
 
-    async newTabOpenedEvent({noteContext}) {
+    async newNoteContextCreatedEvent({noteContext}) {
         const {ntxId} = noteContext;
 
         if (this.widgets[ntxId]) {
@@ -34,7 +34,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.child(this.widgets[ntxId]); // add as child only once it is ready (rendered with noteContext)
     }
 
-    tabRemovedEvent({ntxIds}) {
+    noteContextRemovedEvent({ntxIds}) {
         for (const ntxId of ntxIds) {
             const widget = this.widgets[ntxId];
 
@@ -65,7 +65,7 @@ export default class TabCachingWidget extends TabAwareWidget {
      * activation further note switches are always propagated to the tabs.
      */
     handleEventInChildren(name, data) {
-        if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
+        if (['noteSwitched', 'noteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
             let widget = this.widgets[data.noteContext.ntxId];
 
@@ -73,10 +73,10 @@ export default class TabCachingWidget extends TabAwareWidget {
                 widget = this.widgets[data.noteContext.mainNtxId];
             }
 
-            if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
+            if (widget && (widget.hasBeenAlreadyShown || name === 'noteSwitchedAndActivated')) {
                 widget.hasBeenAlreadyShown = true;
 
-                return widget.handleEvent('tabNoteSwitched', data);
+                return widget.handleEvent('noteSwitched', data);
             }
             else {
                 return Promise.resolve();

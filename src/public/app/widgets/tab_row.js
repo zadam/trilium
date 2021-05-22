@@ -409,13 +409,13 @@ export default class TabRowWidget extends BasicWidget {
     closeActiveTabCommand({$el}) {
         const ntxId = $el.closest(".note-tab").attr('data-tab-id');
 
-        appContext.tabManager.removeTab(ntxId);
+        appContext.tabManager.removeNoteContext(ntxId);
     }
 
     setTabCloseEvent($tab) {
         $tab.on('mousedown', e => {
             if (e.which === 2) {
-                appContext.tabManager.removeTab($tab.attr('data-tab-id'));
+                appContext.tabManager.removeNoteContext($tab.attr('data-tab-id'));
 
                 return true; // event has been handled
             }
@@ -427,7 +427,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     activeTabChangedEvent() {
-        let activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        let activeNoteContext = appContext.tabManager.getActiveContext();
 
         if (!activeNoteContext) {
             return;
@@ -444,7 +444,7 @@ export default class TabRowWidget extends BasicWidget {
         if (tabEl) tabEl.setAttribute('active', '');
     }
 
-    newTabOpenedEvent({noteContext}) {
+    newNoteContextCreatedEvent({noteContext}) {
         if (!noteContext.mainNtxId) {
             this.addTab(noteContext.ntxId);
         }
@@ -478,7 +478,7 @@ export default class TabRowWidget extends BasicWidget {
         return $tab.attr('data-tab-id');
     }
 
-    tabRemovedEvent({ntxIds}) {
+    noteContextRemovedEvent({ntxIds}) {
         for (const ntxId of ntxIds) {
             this.removeTab(ntxId);
         }
@@ -517,7 +517,7 @@ export default class TabRowWidget extends BasicWidget {
             this.draggabillies.push(draggabilly);
 
             draggabilly.on('pointerDown', _ => {
-                appContext.tabManager.activateTab(tabEl.getAttribute('data-tab-id'));
+                appContext.tabManager.activateNoteContext(tabEl.getAttribute('data-tab-id'));
             });
 
             draggabilly.on('dragStart', _ => {
@@ -611,13 +611,13 @@ export default class TabRowWidget extends BasicWidget {
         return closestIndex;
     };
 
-    tabNoteSwitchedAndActivatedEvent({noteContext}) {
+    noteSwitchedAndActivatedEvent({noteContext}) {
         this.activeTabChangedEvent();
 
         this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    tabNoteSwitchedEvent({noteContext}) {
+    noteSwitchedEvent({noteContext}) {
         this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 

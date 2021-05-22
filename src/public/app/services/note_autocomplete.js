@@ -31,7 +31,7 @@ async function autocompleteSourceForCKEditor(queryText) {
 }
 
 async function autocompleteSource(term, cb, options = {}) {
-    const activeNoteId = appContext.tabManager.getActiveTabNoteId();
+    const activeNoteId = appContext.tabManager.getActiveContextNoteId();
 
     let results = await server.get('autocomplete'
             + '?query=' + encodeURIComponent(term)

@@ -56,7 +56,7 @@ export async function showDialog(ancestorNoteId) {
 
                                 await froca.reloadNotes([change.noteId]);
 
-                                appContext.tabManager.getActiveNoteContext().setNote(change.noteId);
+                                appContext.tabManager.getActiveContext().setNote(change.noteId);
                             }
                         });
 

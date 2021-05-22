@@ -20,7 +20,7 @@ async function createNote(parentNotePath, options = {}) {
         options.isProtected = false;
     }
 
-    if (appContext.tabManager.getActiveTabNoteType() !== 'text') {
+    if (appContext.tabManager.getActiveContextNoteType() !== 'text') {
         options.saveSelection = false;
     }
 
@@ -48,7 +48,7 @@ async function createNote(parentNotePath, options = {}) {
     await ws.waitForMaxKnownEntityChangeId();
 
     if (options.activate) {
-        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        const activeNoteContext = appContext.tabManager.getActiveContext();
         await activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
@@ -90,7 +90,7 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    const activeNoteContext = appContext.tabManager.getActiveContext();
     activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
     const origNote = await froca.getNote(noteId);

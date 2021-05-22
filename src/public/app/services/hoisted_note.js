@@ -2,13 +2,13 @@ import appContext from "./app_context.js";
 import treeService from "./tree.js";
 
 function getHoistedNoteId() {
-    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    const activeNoteContext = appContext.tabManager.getActiveContext();
 
     return activeNoteContext ? activeNoteContext.hoistedNoteId : 'root';
 }
 
 async function unhoist() {
-    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    const activeNoteContext = appContext.tabManager.getActiveContext();
 
     if (activeNoteContext) {
         await activeNoteContext.unhoist();

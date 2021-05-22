@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
 
 const TPL = `
@@ -20,7 +20,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteListWidget extends TabAwareWidget {
+export default class NoteListWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && ['book', 'text', 'code'].includes(this.note.type)

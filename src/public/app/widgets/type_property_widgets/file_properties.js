@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import toastService from "../../services/toast.js";
 import openService from "../../services/open.js";
 import utils from "../../services/utils.js";
@@ -54,7 +54,7 @@ const TPL = `
     </table>
 </div>`;
 
-export default class FilePropertiesWidget extends TabAwareWidget {
+export default class FilePropertiesWidget extends NoteContextAwareWidget {
     static getType() { return "file"; }
 
     isEnabled() {
