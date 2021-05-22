@@ -947,3 +947,35 @@ ul.fancytree-container li {
 .button-widget:hover .bx {
     background-color: var(--hover-item-background-color);
 }
+
+#left-pane, #launcher-pane {
+    background-color: #F3F3F3;
+}
+
+#left-pane, #launcher-pane {
+    color: #333 !important;
+}
+
+input {
+    background-color: transparent !important;
+}
+
+@font-face {
+    font-family: OpenSansRegular;
+    src: url(../OpenSans-Regular.ttf);
+}
+
+@font-face {
+    font-family: OpenSansLight;
+    src: url(../OpenSans-Light.ttf);
+}
+
+@font-face {
+    font-family: MontserratMedium;
+    src: url(../Montserrat-Medium.ttf);
+}
+
+@font-face {
+    font-family: MontserratLight;
+    src: url(../Montserrat-Light.ttf);
+}
