@@ -67,11 +67,7 @@ export default class NoteContextCachingWidget extends NoteContextAwareWidget {
     handleEventInChildren(name, data) {
         if (['noteSwitched', 'noteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
-            let widget = this.widgets[data.noteContext.ntxId];
-
-            if (!widget) {
-                widget = this.widgets[data.noteContext.mainNtxId];
-            }
+            const widget = this.widgets[data.noteContext.ntxId];
 
             if (widget && (widget.hasBeenAlreadyShown || name === 'noteSwitchedAndActivated')) {
                 widget.hasBeenAlreadyShown = true;
@@ -83,12 +79,8 @@ export default class NoteContextCachingWidget extends NoteContextAwareWidget {
             }
         }
 
-        if (name === 'activeTabChanged') {
-            let widget = this.widgets[data.noteContext.ntxId];
-
-            if (!widget) {
-                widget = this.widgets[data.noteContext.mainNtxId];
-            }
+        if (name === 'activeContextChanged') {
+            const widget = this.widgets[data.noteContext.ntxId];
 
             if (widget.hasBeenAlreadyShown) {
                 return Promise.resolve();

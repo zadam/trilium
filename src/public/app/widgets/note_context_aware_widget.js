@@ -66,13 +66,13 @@ export default class NoteContextAwareWidget extends BasicWidget {
         await this.refresh();
     }
 
-    async activeTabChangedEvent({noteContext}) {
+    async activeContextChangedEvent({noteContext}) {
         this.noteContext = noteContext;
 
-        await this.activeTabChanged();
+        await this.activeContextChanged();
     }
 
-    async activeTabChanged() {
+    async activeContextChanged() {
         await this.refresh();
     }
 

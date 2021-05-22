@@ -5,8 +5,6 @@ export default class PaneContainer extends FlexContainer {
     constructor(widgetFactory) {
         super('row');
 
-        this.counter = 0;
-
         this.widgetFactory = widgetFactory;
         this.widgets = {};
 
@@ -25,13 +23,13 @@ export default class PaneContainer extends FlexContainer {
 
         this.$widget.append($renderedWidget);
 
+        widget.toggleExt(false);
+
         this.widgets[noteContext.ntxId] = widget;
 
         await widget.handleEvent('setNoteContext', { noteContext });
 
         this.child(widget);
-
-        this.refresh();
     }
 
     async openNewPaneCommand() {
@@ -40,6 +38,14 @@ export default class PaneContainer extends FlexContainer {
         await appContext.tabManager.activateNoteContext(noteContext.ntxId);
 
         await noteContext.setEmpty();
+    }
+
+    activeContextChangedEvent() {
+        this.refresh();
+    }
+
+    noteSwitchedAndActivatedEvent() {
+        this.refresh();
     }
 
     async refresh() {
@@ -57,10 +63,6 @@ export default class PaneContainer extends FlexContainer {
 
             const widget = this.widgets[ntxId];
             widget.toggleExt(show && activeNtxId && [noteContext.ntxId, noteContext.mainNtxId].includes(activeNtxId));
-
-            if (!widget.hasBeenAlreadyShown) {
-                widget.handleEvent('activeTabChanged', {noteContext});
-            }
         }
     }
 
@@ -78,58 +80,42 @@ export default class PaneContainer extends FlexContainer {
                 return Promise.resolve();
             }
 
-            const promises = [];
+            if (widget.hasBeenAlreadyShown
+                || name === 'noteSwitchedAndActivated'
+                || appContext.tabManager.getActiveMainContext() === data.noteContext.getMainContext()
+            ) {
+                widget.hasBeenAlreadyShown = true;
 
-            if (appContext.tabManager.getActiveMainContext() === data.noteContext.getMainContext()) {
-                promises.push(widget.handleEvent('activeTabChanged', data));
+                return [
+                    widget.handleEvent('noteSwitched', data),
+                    this.refreshNotShown(data)
+                ];
             }
-
-            for (const subNoteContext of data.noteContext.getMainContext().getSubContexts()) {
-                const subWidget = this.widgets[subNoteContext.ntxId];
-
-                if (!subWidget) {
-                    continue;
-                }
-
-                if (subNoteContext !== data.noteContext && !subWidget.hasBeenAlreadyShown) {
-                    promises.push(widget.handleEvent('activeTabChanged', {noteContext: subNoteContext}));
-                    continue;
-                }
-
-                if (subNoteContext === data.noteContext && (subWidget.hasBeenAlreadyShown || name === 'noteSwitchedAndActivated')) {
-                    subWidget.hasBeenAlreadyShown = true;
-
-                    promises.push(widget.handleEvent('noteSwitched', data));
-                }
+            else {
+                return Promise.resolve();
             }
-
-            if (name === 'noteSwitchedAndActivated') {
-                this.toggleExt(true);
-            }
-
-            return Promise.all(promises);
         }
 
-        if (name === 'activeTabChanged') {
-            const promises = [];
-
-            for (const subNoteContext of data.noteContext.getMainContext().getSubContexts()) {
-                console.log("subNoteContext", subNoteContext);
-
-                const widget = this.widgets[subNoteContext.ntxId];
-
-                if (!widget.hasBeenAlreadyShown) {
-                    widget.hasBeenAlreadyShown = true;
-
-                    promises.push(widget.handleEvent(name, {noteContext: subNoteContext}));
-                }
-            }
-
-            this.toggleExt(true);
-
-            return Promise.all(promises);
+        if (name === 'activeContextChanged') {
+            return this.refreshNotShown(data);
         } else {
             return super.handleEventInChildren(name, data);
         }
+    }
+
+    refreshNotShown(data) {
+        const promises = [];
+
+        for (const subContext of data.noteContext.getMainContext().getSubContexts()) {
+            const widget = this.widgets[subContext.ntxId];
+
+            if (!widget.hasBeenAlreadyShown) {
+                widget.hasBeenAlreadyShown = true;
+
+                promises.push(widget.handleEvent('activeContextChanged', {noteContext: subContext}));
+            }
+        }
+
+        return Promise.all(promises);
     }
 }

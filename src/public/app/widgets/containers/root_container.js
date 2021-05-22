@@ -45,7 +45,7 @@ export default class RootContainer extends FlexContainer {
         this.refresh();
     }
 
-    activeTabChangedEvent() {
+    activeContextChangedEvent() {
         this.refresh();
     }
 

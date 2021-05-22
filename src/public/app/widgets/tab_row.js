@@ -426,7 +426,7 @@ export default class TabRowWidget extends BasicWidget {
         return this.$widget.find('.note-tab[active]')[0];
     }
 
-    activeTabChangedEvent() {
+    activeContextChangedEvent() {
         let activeNoteContext = appContext.tabManager.getActiveContext();
 
         if (!activeNoteContext) {
@@ -612,7 +612,7 @@ export default class TabRowWidget extends BasicWidget {
     };
 
     noteSwitchedAndActivatedEvent({noteContext}) {
-        this.activeTabChangedEvent();
+        this.activeContextChangedEvent();
 
         this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }

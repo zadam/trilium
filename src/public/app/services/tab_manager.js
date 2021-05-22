@@ -285,7 +285,7 @@ export default class TabManager extends Component {
         this.activeNtxId = ntxId;
 
         if (triggerEvent) {
-            this.triggerEvent('activeTabChanged', {
+            this.triggerEvent('activeContextChanged', {
                 noteContext: this.getNoteContextById(ntxId)
             });
         }

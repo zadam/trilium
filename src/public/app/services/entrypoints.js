@@ -224,7 +224,7 @@ export default class Entrypoints extends Component {
         this.hideAllTooltips();
     }
 
-    activeTabChangedEvent() {
+    activeContextChangedEvent() {
         this.hideAllTooltips();
     }
 }
