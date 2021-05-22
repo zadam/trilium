@@ -12,7 +12,7 @@ export default class TabManager extends Component {
     constructor() {
         super();
 
-        this.activeTabId = null;
+        this.activeNtxId = null;
 
         this.tabsUpdate = new SpacedUpdate(async () => {
             if (!appContext.isMainWindow) {
@@ -156,8 +156,15 @@ export default class TabManager extends Component {
 
     /** @returns {NoteContext} */
     getActiveContext() {
-        return this.activeTabId
-            ? this.getNoteContextById(this.activeTabId)
+        return this.activeNtxId
+            ? this.getNoteContextById(this.activeNtxId)
+            : null;
+    }
+
+    /** @returns {NoteContext} */
+    getActiveMainContext() {
+        return this.activeNtxId
+            ? this.getNoteContextById(this.activeNtxId).getMainContext()
             : null;
     }
 
@@ -271,11 +278,11 @@ export default class TabManager extends Component {
     }
 
     activateNoteContext(ntxId, triggerEvent = true) {
-        if (ntxId === this.activeTabId) {
+        if (ntxId === this.activeNtxId) {
             return;
         }
 
-        this.activeTabId = ntxId;
+        this.activeNtxId = ntxId;
 
         if (triggerEvent) {
             this.triggerEvent('activeTabChanged', {
@@ -289,19 +296,19 @@ export default class TabManager extends Component {
     }
 
     async removeNoteContext(ntxId) {
-        const mainNoteContextToRemove = this.getNoteContextById(ntxId).getMainNoteContext();
+        const mainNoteContextToRemove = this.getNoteContextById(ntxId).getMainContext();
 
         // close dangling autocompletes after closing the tab
         $(".aa-input").autocomplete("close");
 
-        const ntxIdsToRemove = mainNoteContextToRemove.getAllSubNoteContexts().map(nc => nc.ntxId);
+        const ntxIdsToRemove = mainNoteContextToRemove.getSubContexts().map(nc => nc.ntxId);
 
         await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
 
         if (this.mainNoteContexts.length <= 1) {
             await this.openAndActivateEmptyTab();
         }
-        else if (ntxIdsToRemove.includes(this.activeTabId)) {
+        else if (ntxIdsToRemove.includes(this.activeNtxId)) {
             const idx = this.mainNoteContexts.findIndex(nc => nc.ntxId === mainNoteContextToRemove.ntxId);
 
             if (idx === this.mainNoteContexts.length - 1) {
@@ -332,21 +339,21 @@ export default class TabManager extends Component {
     }
 
     activateNextTabCommand() {
-        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeTabId);
+        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeNtxId);
         const newActiveTabId = this.mainNoteContexts[oldIdx === this.noteContexts.length - 1 ? 0 : oldIdx + 1].ntxId;
 
         this.activateNoteContext(newActiveTabId);
     }
 
     activatePreviousTabCommand() {
-        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeTabId);
+        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeNtxId);
         const newActiveTabId = this.mainNoteContexts[oldIdx === 0 ? this.noteContexts.length - 1 : oldIdx - 1].ntxId;
 
         this.activateNoteContext(newActiveTabId);
     }
 
     closeActiveTabCommand() {
-        this.removeNoteContext(this.activeTabId);
+        this.removeNoteContext(this.activeNtxId);
     }
 
     beforeUnloadEvent() {

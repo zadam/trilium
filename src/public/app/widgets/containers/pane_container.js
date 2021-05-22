@@ -49,13 +49,14 @@ export default class PaneContainer extends FlexContainer {
     toggleInt(show) {} // not needed
 
     toggleExt(show) {
-        const activeTabId = appContext.tabManager.getActiveContext().getMainNoteContext().ntxId;
+        const activeMainContext = appContext.tabManager.getActiveMainContext();
+        const activeNtxId = activeMainContext ? activeMainContext.ntxId : null;
 
         for (const ntxId in this.widgets) {
             const noteContext = appContext.tabManager.getNoteContextById(ntxId);
 
             const widget = this.widgets[ntxId];
-            widget.toggleExt(show && activeTabId && [noteContext.ntxId, noteContext.mainNtxId].includes(activeTabId));
+            widget.toggleExt(show && activeNtxId && [noteContext.ntxId, noteContext.mainNtxId].includes(activeNtxId));
 
             if (!widget.hasBeenAlreadyShown) {
                 widget.handleEvent('activeTabChanged', {noteContext});
@@ -79,11 +80,11 @@ export default class PaneContainer extends FlexContainer {
 
             const promises = [];
 
-            if (appContext.tabManager.getActiveContext().getMainNoteContext() === data.noteContext.getMainNoteContext()) {
+            if (appContext.tabManager.getActiveMainContext() === data.noteContext.getMainContext()) {
                 promises.push(widget.handleEvent('activeTabChanged', data));
             }
 
-            for (const subNoteContext of data.noteContext.getMainNoteContext().getAllSubNoteContexts()) {
+            for (const subNoteContext of data.noteContext.getMainContext().getSubContexts()) {
                 const subWidget = this.widgets[subNoteContext.ntxId];
 
                 if (!subWidget) {
@@ -112,7 +113,7 @@ export default class PaneContainer extends FlexContainer {
         if (name === 'activeTabChanged') {
             const promises = [];
 
-            for (const subNoteContext of data.noteContext.getMainNoteContext().getAllSubNoteContexts()) {
+            for (const subNoteContext of data.noteContext.getMainContext().getSubContexts()) {
                 console.log("subNoteContext", subNoteContext);
 
                 const widget = this.widgets[subNoteContext.ntxId];

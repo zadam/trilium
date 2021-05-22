@@ -60,11 +60,11 @@ class NoteContext extends Component {
         }
     }
 
-    getAllSubNoteContexts() {
+    getSubContexts() {
         return appContext.tabManager.noteContexts.filter(nc => nc.ntxId === this.ntxId || nc.mainNtxId === this.ntxId);
     }
 
-    getMainNoteContext() {
+    getMainContext() {
         if (this.mainNtxId) {
             return appContext.tabManager.getNoteContextById(this.mainNtxId);
         }
@@ -138,7 +138,7 @@ class NoteContext extends Component {
     }
 
     isActive() {
-        return appContext.tabManager.activeTabId === this.ntxId;
+        return appContext.tabManager.activeNtxId === this.ntxId;
     }
 
     getTabState() {
