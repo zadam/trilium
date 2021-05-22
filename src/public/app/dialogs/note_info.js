@@ -12,9 +12,9 @@ const $okButton = $("#note-info-ok-button");
 export async function showDialog() {
     utils.openDialog($dialog);
 
-    const activeTabContext = appContext.tabManager.getActiveTabContext();
-    const {note} = activeTabContext;
-    const noteComplement = await activeTabContext.getNoteComplement();
+    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    const {note} = activeNoteContext;
+    const noteComplement = await activeNoteContext.getNoteComplement();
 
     $noteId.text(note.noteId);
     $dateCreated.text(noteComplement.dateCreated);

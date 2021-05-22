@@ -27,7 +27,7 @@ async function setupActionsForElement(scope, $el, component) {
 
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName, {tabId: appContext.tabManager.activeTabId}));
+			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeTabId}));
 		}
 	}
 }
@@ -35,7 +35,7 @@ async function setupActionsForElement(scope, $el, component) {
 getActionsForScope("window").then(actions => {
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {tabId: appContext.tabManager.activeTabId}));
+			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeTabId}));
 		}
 	}
 });
@@ -43,7 +43,7 @@ getActionsForScope("window").then(actions => {
 server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 	for (const shortcut in shortcutForNotes) {
 		utils.bindGlobalShortcut(shortcut, async () => {
-			appContext.tabManager.getActiveTabContext().setNote(shortcutForNotes[shortcut]);
+			appContext.tabManager.getActiveNoteContext().setNote(shortcutForNotes[shortcut]);
 		});
 	}
 });

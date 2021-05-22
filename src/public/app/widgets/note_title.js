@@ -50,7 +50,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
 
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
-            this.triggerCommand('focusOnAttributes', {tabId: this.tabContext.tabId});
+            this.triggerCommand('focusOnAttributes', {ntxId: this.noteContext.ntxId});
         });
     }
 
@@ -66,26 +66,26 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.toggleClass("protected", !!note.isProtected);
     }
 
-    async beforeNoteSwitchEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    async beforeNoteSwitchEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async beforeTabRemoveEvent({tabIds}) {
-        if (this.isTab(tabIds)) {
+    async beforeTabRemoveEvent({ntxIds}) {
+        if (this.isTab(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
     focusOnTitleEvent() {
-        if (this.tabContext && this.tabContext.isActive()) {
+        if (this.noteContext && this.noteContext.isActive()) {
             this.$noteTitle.trigger('focus');
         }
     }
 
     focusAndSelectTitleEvent() {
-        if (this.tabContext && this.tabContext.isActive()) {
+        if (this.noteContext && this.noteContext.isActive()) {
             this.$noteTitle
                 .trigger('focus')
                 .trigger('select');

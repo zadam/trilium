@@ -53,7 +53,7 @@ export default class FileTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.$widget.show();
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$previewContent.empty().hide();
         this.$pdfPreview.attr('src', '').empty().hide();

@@ -67,7 +67,7 @@ export default class ImagePropertiesWidget extends TabAwareWidget {
         this.$imageDownloadButton = this.$widget.find(".image-download");
         this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));
 
-        this.$copyToClipboardButton.on('click', () => this.triggerEvent(`copyImageToClipboard`, {tabId: this.tabContext.tabId}));
+        this.$copyToClipboardButton.on('click', () => this.triggerEvent(`copyImageToClipboard`, {ntxId: this.noteContext.ntxId}));
 
         this.$uploadNewRevisionButton.on("click", () => {
             this.$uploadNewRevisionInput.trigger("click");
@@ -109,7 +109,7 @@ export default class ImagePropertiesWidget extends TabAwareWidget {
 
         this.$widget.show();
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileSize.text(noteComplement.contentLength + " bytes");

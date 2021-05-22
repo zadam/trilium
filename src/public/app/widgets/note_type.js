@@ -136,7 +136,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async confirmChangeIfContent() {
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         if (!noteComplement.content || !noteComplement.content.trim().length) {
             return true;

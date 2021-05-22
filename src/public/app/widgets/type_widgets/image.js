@@ -62,8 +62,8 @@ class ImageTypeWidget extends TypeWidget {
         this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}?${imageHash}`);
     }
 
-    copyImageToClipboardEvent({tabId}) {
-        if (!this.isTab(tabId)) {
+    copyImageToClipboardEvent({ntxId}) {
+        if (!this.isTab(ntxId)) {
             return;
         }
 

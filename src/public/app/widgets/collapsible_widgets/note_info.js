@@ -100,7 +100,7 @@ export default class NoteInfoWidget extends CollapsibleWidget {
     }
 
     async refreshWithNote(note) {
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$noteId.text(note.noteId);
         this.$dateCreated

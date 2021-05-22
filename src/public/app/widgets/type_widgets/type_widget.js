@@ -23,7 +23,7 @@ export default class TypeWidget extends TabAwareWidget {
 
             await this.doRefresh(this.note);
 
-            this.triggerEvent('noteDetailRefreshed', {tabId: this.tabContext.tabId});
+            this.triggerEvent('noteDetailRefreshed', {ntxId: this.noteContext.ntxId});
         }
     }
 
@@ -35,14 +35,14 @@ export default class TypeWidget extends TabAwareWidget {
 
     focus() {}
 
-    textPreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    textPreviewDisabledEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
-    codePreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    codePreviewDisabledEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             this.refresh();
         }
     }

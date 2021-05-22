@@ -38,7 +38,7 @@ export default class RenderTypeWidget extends TypeWidget {
     }
 
     renderActiveNoteEvent() {
-        if (this.tabContext.isActive()) {
+        if (this.noteContext.isActive()) {
             this.refresh();
         }
     }

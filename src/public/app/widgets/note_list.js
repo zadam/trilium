@@ -77,8 +77,8 @@ export default class NoteListWidget extends TabAwareWidget {
      * If it's evaluated before note detail then it's clearly intersected (visible) although after note detail load
      * it is not intersected (visible) anymore.
      */
-    noteDetailRefreshedEvent({tabId}) {
-        if (!this.isTab(tabId)) {
+    noteDetailRefreshedEvent({ntxId}) {
+        if (!this.isTab(ntxId)) {
             return;
         }
 

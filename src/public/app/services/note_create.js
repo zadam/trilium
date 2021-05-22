@@ -48,14 +48,14 @@ async function createNote(parentNotePath, options = {}) {
     await ws.waitForMaxKnownEntityChangeId();
 
     if (options.activate) {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
-        await activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
+        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+        await activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
             appContext.triggerEvent('focusAndSelectTitle');
         }
         else if (options.focus === 'content') {
-            appContext.triggerEvent('focusOnDetail', {tabId: activeTabContext.tabId});
+            appContext.triggerEvent('focusOnDetail', {ntxId: activeNoteContext.ntxId});
         }
     }
 
@@ -90,8 +90,8 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    const activeTabContext = appContext.tabManager.getActiveTabContext();
-    activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
+    const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+    activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
     const origNote = await froca.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);

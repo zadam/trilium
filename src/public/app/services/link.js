@@ -81,15 +81,15 @@ function goToLink(e) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
-            const tabId = $(e.target).closest("[data-tab-id]").attr("data-tab-id");
+            const ntxId = $(e.target).closest("[data-tab-id]").attr("data-tab-id");
 
-            const tabContext = tabId
-                ? appContext.tabManager.getTabContextById(tabId)
-                : appContext.tabManager.getActiveTabContext();
+            const noteContext = ntxId
+                ? appContext.tabManager.getNoteContextById(ntxId)
+                : appContext.tabManager.getActiveNoteContext();
 
-            tabContext.setNote(notePath).then(() => {
-                if (tabContext !== appContext.tabManager.getActiveTabContext()) {
-                    appContext.tabManager.activateTab(tabContext.tabId);
+            noteContext.setNote(notePath).then(() => {
+                if (noteContext !== appContext.tabManager.getActiveNoteContext()) {
+                    appContext.tabManager.activateTab(noteContext.ntxId);
                 }
             });
         }

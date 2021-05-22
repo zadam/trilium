@@ -1,3 +1,4 @@
 - drop branches.utcDateCreated - not used for anything
 - drop options.utcDateCreated - not used for anything
 - isDeleted = 0 by default
+- rename openTabs to openNoteContexts

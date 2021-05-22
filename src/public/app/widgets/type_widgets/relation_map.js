@@ -246,7 +246,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         };
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         if (noteComplement.content) {
             try {

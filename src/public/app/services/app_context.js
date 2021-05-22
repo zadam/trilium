@@ -145,23 +145,23 @@ $(window).on('beforeunload', () => {
 });
 
 function isNotePathInAddress() {
-    const [notePath, tabId] = treeService.getHashValueFromAddress();
+    const [notePath, ntxId] = treeService.getHashValueFromAddress();
 
     return notePath.startsWith("root")
         // empty string is for empty/uninitialized tab
-        || (notePath === '' && !!tabId);
+        || (notePath === '' && !!ntxId);
 }
 
 $(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
-        const [notePath, tabId] = treeService.getHashValueFromAddress();
+        const [notePath, ntxId] = treeService.getHashValueFromAddress();
 
         if (!notePath) {
             console.log(`Invalid hash value "${document.location.hash}", ignoring.`);
             return;
         }
 
-        appContext.tabManager.switchToTab(tabId, notePath);
+        appContext.tabManager.switchToTab(ntxId, notePath);
     }
 });
 

@@ -72,7 +72,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             || note.mime === 'text/x-sqlite;schema=trilium'
         );
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)

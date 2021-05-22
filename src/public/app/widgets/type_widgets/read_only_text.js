@@ -63,9 +63,9 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         this.$content = this.$widget.find('.note-detail-readonly-text-content');
 
         this.$widget.find('.edit-text-note-button').on('click', () => {
-            this.tabContext.textPreviewDisabled = true;
+            this.noteContext.textPreviewDisabled = true;
 
-            this.triggerEvent('textPreviewDisabled', {tabContext: this.tabContext});
+            this.triggerEvent('textPreviewDisabled', {noteContext: this.noteContext});
         });
 
         this.setupImageOpening(true);

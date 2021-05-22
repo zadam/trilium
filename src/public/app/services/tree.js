@@ -24,7 +24,7 @@ async function resolveNotePath(notePath, hoistedNoteId = 'root') {
 async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logErrors = true) {
     utils.assertArguments(notePath);
 
-    // we might get notePath with the tabId suffix, remove it if present
+    // we might get notePath with the ntxId suffix, remove it if present
     notePath = notePath.split("-")[0].trim();
 
     if (notePath.length === 0) {
@@ -154,7 +154,7 @@ function getNoteIdFromNotePath(notePath) {
 
     const lastSegment = path[path.length - 1];
 
-    // path could have also tabId suffix
+    // path could have also ntxId suffix
     return lastSegment.split("-")[0];
 }
 
@@ -180,7 +180,7 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
 
         const lastSegment = path[path.length - 1];
 
-        // path could have also tabId suffix
+        // path could have also ntxId suffix
         noteId = lastSegment.split("-")[0];
 
         if (path.length > 1) {

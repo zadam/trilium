@@ -266,7 +266,7 @@ export default class TabRowWidget extends BasicWidget {
         this.$widget.on('contextmenu', '.note-tab', e => {
             e.preventDefault();
 
-            const tabId = $(e.target).closest(".note-tab").attr('data-tab-id');
+            const ntxId = $(e.target).closest(".note-tab").attr('data-tab-id');
 
             contextMenu.show({
                 x: e.pageX,
@@ -277,7 +277,7 @@ export default class TabRowWidget extends BasicWidget {
                     {title: "Close all tabs except for this", command: "removeAllTabsExceptForThis", uiIcon: "x"},
                 ],
                 selectMenuItemHandler: ({command}) => {
-                    this.triggerCommand(command, {tabId});
+                    this.triggerCommand(command, {ntxId});
                 }
             });
         });
@@ -388,8 +388,8 @@ export default class TabRowWidget extends BasicWidget {
         this.$style.html(styleHTML);
     }
 
-    addTab(tabId) {
-        const $tab = $(TAB_TPL).attr('data-tab-id', tabId);
+    addTab(ntxId) {
+        const $tab = $(TAB_TPL).attr('data-tab-id', ntxId);
 
         keyboardActionService.updateDisplayedShortcuts($tab);
 
@@ -407,9 +407,9 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     closeActiveTabCommand({$el}) {
-        const tabId = $el.closest(".note-tab").attr('data-tab-id');
+        const ntxId = $el.closest(".note-tab").attr('data-tab-id');
 
-        appContext.tabManager.removeTab(tabId);
+        appContext.tabManager.removeTab(ntxId);
     }
 
     setTabCloseEvent($tab) {
@@ -427,31 +427,31 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     activeTabChangedEvent() {
-        let activeTabContext = appContext.tabManager.getActiveTabContext();
+        let activeNoteContext = appContext.tabManager.getActiveNoteContext();
 
-        if (!activeTabContext) {
+        if (!activeNoteContext) {
             return;
         }
 
-        if (activeTabContext.parentTabId) {
-            activeTabContext = appContext.tabManager.getTabContextById(activeTabContext.parentTabId);
+        if (activeNoteContext.mainNtxId) {
+            activeNoteContext = appContext.tabManager.getNoteContextById(activeNoteContext.mainNtxId);
         }
 
-        const tabEl = this.getTabById(activeTabContext.tabId)[0];
+        const tabEl = this.getTabById(activeNoteContext.ntxId)[0];
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');
         if (tabEl) tabEl.setAttribute('active', '');
     }
 
-    newTabOpenedEvent({tabContext}) {
-        if (!tabContext.parentTabId) {
-            this.addTab(tabContext.tabId);
+    newTabOpenedEvent({noteContext}) {
+        if (!noteContext.mainNtxId) {
+            this.addTab(noteContext.ntxId);
         }
     }
 
-    removeTab(tabId) {
-        const tabEl = this.getTabById(tabId)[0];
+    removeTab(ntxId) {
+        const tabEl = this.getTabById(ntxId)[0];
 
         if (tabEl) {
             tabEl.parentNode.removeChild(tabEl);
@@ -470,17 +470,17 @@ export default class TabRowWidget extends BasicWidget {
         $tab.find('.note-tab-title').text(title);
     }
 
-    getTabById(tabId) {
-        return this.$widget.find(`[data-tab-id='${tabId}']`);
+    getTabById(ntxId) {
+        return this.$widget.find(`[data-tab-id='${ntxId}']`);
     }
 
     getTabId($tab) {
         return $tab.attr('data-tab-id');
     }
 
-    tabRemovedEvent({tabIds}) {
-        for (const tabId of tabIds) {
-            this.removeTab(tabId);
+    tabRemovedEvent({ntxIds}) {
+        for (const ntxId of ntxIds) {
+            this.removeTab(ntxId);
         }
     }
 
@@ -567,7 +567,7 @@ export default class TabRowWidget extends BasicWidget {
                 }
 
                 if (Math.abs(moveVector.y) > 100) {
-                    this.triggerCommand('moveTabToNewWindow', {tabId: this.getTabId($(tabEl))});
+                    this.triggerCommand('moveTabToNewWindow', {ntxId: this.getTabId($(tabEl))});
                 }
             });
         });
@@ -581,7 +581,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        this.triggerEvent('tabReorder', {tabIdsInOrder: this.getTabIdsInOrder()});
+        this.triggerEvent('tabReorder', {ntxIdsInOrder: this.getTabIdsInOrder()});
         this.layoutTabs();
     }
 
@@ -611,20 +611,20 @@ export default class TabRowWidget extends BasicWidget {
         return closestIndex;
     };
 
-    tabNoteSwitchedAndActivatedEvent({tabContext}) {
+    tabNoteSwitchedAndActivatedEvent({noteContext}) {
         this.activeTabChangedEvent();
 
-        this.updateTabById(tabContext.parentTabId || tabContext.tabId);
+        this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    tabNoteSwitchedEvent({tabContext}) {
-        this.updateTabById(tabContext.parentTabId || tabContext.tabId);
+    tabNoteSwitchedEvent({noteContext}) {
+        this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    updateTabById(tabId) {
-        const $tab = this.getTabById(tabId);
+    updateTabById(ntxId) {
+        const $tab = this.getTabById(ntxId);
 
-        const {note} = appContext.tabManager.getTabContextById(tabId);
+        const {note} = appContext.tabManager.getNoteContextById(ntxId);
 
         this.updateTab($tab, note);
     }
@@ -640,10 +640,10 @@ export default class TabRowWidget extends BasicWidget {
             }
         }
 
-        const tabContext = appContext.tabManager.getTabContextById(this.getTabId($tab));
+        const noteContext = appContext.tabManager.getNoteContextById(this.getTabId($tab));
 
-        if (tabContext) {
-            const hoistedNote = froca.getNoteFromCache(tabContext.hoistedNoteId);
+        if (noteContext) {
+            const hoistedNote = froca.getNoteFromCache(noteContext.hoistedNoteId);
 
             if (hoistedNote) {
                 $tab.find('.note-tab-icon')
@@ -671,38 +671,38 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        for (const tabContext of appContext.tabManager.tabContexts) {
-            if (!tabContext.noteId) {
+        for (const noteContext of appContext.tabManager.noteContexts) {
+            if (!noteContext.noteId) {
                 continue;
             }
 
-            if (loadResults.isNoteReloaded(tabContext.noteId) ||
+            if (loadResults.isNoteReloaded(noteContext.noteId) ||
                 loadResults.getAttributes().find(attr =>
                     ['workspace', 'workspaceIconClass', 'workspaceTabBackgroundColor'].includes(attr.name)
-                    && attr.isAffecting(tabContext.note))
+                    && attr.isAffecting(noteContext.note))
             ) {
-                const $tab = this.getTabById(tabContext.tabId);
+                const $tab = this.getTabById(noteContext.ntxId);
 
-                this.updateTab($tab, tabContext.note);
+                this.updateTab($tab, noteContext.note);
             }
         }
     }
 
     frocaReloadedEvent() {
-        for (const tabContext of appContext.tabManager.tabContexts) {
-            const $tab = this.getTabById(tabContext.tabId);
+        for (const noteContext of appContext.tabManager.noteContexts) {
+            const $tab = this.getTabById(noteContext.ntxId);
 
-            this.updateTab($tab, tabContext.note);
+            this.updateTab($tab, noteContext.note);
         }
     }
 
-    hoistedNoteChangedEvent({tabId}) {
-        const $tab = this.getTabById(tabId);
+    hoistedNoteChangedEvent({ntxId}) {
+        const $tab = this.getTabById(ntxId);
 
         if ($tab) {
-            const tabContext = appContext.tabManager.getTabContextById(tabId);
+            const noteContext = appContext.tabManager.getNoteContextById(ntxId);
 
-            this.updateTab($tab, tabContext.note);
+            this.updateTab($tab, noteContext.note);
         }
     }
 }

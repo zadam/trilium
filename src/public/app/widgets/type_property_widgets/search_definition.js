@@ -271,7 +271,7 @@ export default class SearchDefinitionWidget extends TabAwareWidget {
             toastService.showError(e.message);
         }
 
-        this.triggerEvent('searchRefreshed', {tabId: this.tabContext.tabId});
+        this.triggerEvent('searchRefreshed', {ntxId: this.noteContext.ntxId});
     }
 
     async refreshSearchDefinitionCommand() {

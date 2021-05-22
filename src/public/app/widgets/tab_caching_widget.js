@@ -13,34 +13,34 @@ export default class TabCachingWidget extends TabAwareWidget {
         return this.$widget = $(`<div class="marker" style="display: none;">`);
     }
 
-    async newTabOpenedEvent({tabContext}) {
-        const {tabId} = tabContext;
+    async newTabOpenedEvent({noteContext}) {
+        const {ntxId} = noteContext;
 
-        if (this.widgets[tabId]) {
+        if (this.widgets[ntxId]) {
             return;
         }
 
-        this.widgets[tabId] = this.widgetFactory();
+        this.widgets[ntxId] = this.widgetFactory();
 
-        const $renderedWidget = this.widgets[tabId].render();
-        this.widgets[tabId].toggleExt(false); // new tab is always not active, can be activated after creation
+        const $renderedWidget = this.widgets[ntxId].render();
+        this.widgets[ntxId].toggleExt(false); // new tab is always not active, can be activated after creation
 
         this.$widget.after($renderedWidget);
 
         keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
-        await this.widgets[tabId].handleEvent('setTabContext', {tabContext});
+        await this.widgets[ntxId].handleEvent('setNoteContext', {noteContext});
 
-        this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
+        this.child(this.widgets[ntxId]); // add as child only once it is ready (rendered with noteContext)
     }
 
-    tabRemovedEvent({tabIds}) {
-        for (const tabId of tabIds) {
-            const widget = this.widgets[tabId];
+    tabRemovedEvent({ntxIds}) {
+        for (const ntxId of ntxIds) {
+            const widget = this.widgets[ntxId];
 
             if (widget) {
                 widget.remove();
-                delete this.widgets[tabId];
+                delete this.widgets[ntxId];
 
                 this.children = this.children.filter(ch => ch !== widget);
             }
@@ -54,8 +54,8 @@ export default class TabCachingWidget extends TabAwareWidget {
     toggleInt(show) {} // not needed
 
     toggleExt(show) {
-        for (const tabId in this.widgets) {
-            this.widgets[tabId].toggleExt(show && this.isTab(tabId));
+        for (const ntxId in this.widgets) {
+            this.widgets[ntxId].toggleExt(show && this.isTab(ntxId));
         }
     }
 
@@ -67,10 +67,10 @@ export default class TabCachingWidget extends TabAwareWidget {
     handleEventInChildren(name, data) {
         if (['tabNoteSwitched', 'tabNoteSwitchedAndActivated'].includes(name)) {
             // this event is propagated only to the widgets of a particular tab
-            let widget = this.widgets[data.tabContext.tabId];
+            let widget = this.widgets[data.noteContext.ntxId];
 
             if (!widget) {
-                widget = this.widgets[data.tabContext.parentTabId];
+                widget = this.widgets[data.noteContext.mainNtxId];
             }
 
             if (widget && (widget.hasBeenAlreadyShown || name === 'tabNoteSwitchedAndActivated')) {
@@ -84,10 +84,10 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
 
         if (name === 'activeTabChanged') {
-            let widget = this.widgets[data.tabContext.tabId];
+            let widget = this.widgets[data.noteContext.ntxId];
 
             if (!widget) {
-                widget = this.widgets[data.tabContext.parentTabId];
+                widget = this.widgets[data.noteContext.mainNtxId];
             }
 
             if (widget.hasBeenAlreadyShown) {

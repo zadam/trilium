@@ -25,8 +25,8 @@ export default class SqlResultWidget extends TabAwareWidget {
         this.$sqlConsoleResultContainer = this.$widget.find('.sql-console-result-container');
     }
 
-    async sqlQueryResultsEvent({tabId, results}) {
-        if (!this.isTab(tabId)) {
+    async sqlQueryResultsEvent({ntxId, results}) {
+        if (!this.isTab(ntxId)) {
             return;
         }
 

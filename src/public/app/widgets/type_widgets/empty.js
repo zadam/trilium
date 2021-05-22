@@ -61,7 +61,7 @@ export default class EmptyTypeWidget extends TypeWidget {
                     return false;
                 }
 
-                appContext.tabManager.getActiveTabContext().setNote(suggestion.notePath);
+                appContext.tabManager.getActiveNoteContext().setNote(suggestion.notePath);
             });
 
         noteAutocompleteService.showRecentNotes(this.$autoComplete);

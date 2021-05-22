@@ -56,8 +56,8 @@ export default class SearchResultWidget extends TabAwareWidget {
         await noteListRenderer.renderList();
     }
 
-    searchRefreshedEvent({tabId}) {
-        if (!this.isTab(tabId)) {
+    searchRefreshedEvent({ntxId}) {
+        if (!this.isTab(ntxId)) {
             return;
         }
 

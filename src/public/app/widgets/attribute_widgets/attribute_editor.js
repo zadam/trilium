@@ -226,15 +226,15 @@ export default class AttributeEditorWidget extends TabAwareWidget {
     }
 
     // triggered from keyboard shortcut
-    addNewLabelEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    addNewLabelEvent({ntxId}) {
+        if (this.isTab(ntxId)) {
             this.handleAddNewAttributeCommand('addNewLabel');
         }
     }
 
     // triggered from keyboard shortcut
-    addNewRelationEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    addNewRelationEvent({ntxId}) {
+        if (this.isTab(ntxId)) {
             this.handleAddNewAttributeCommand('addNewRelation');
         }
     }
@@ -482,8 +482,8 @@ export default class AttributeEditorWidget extends TabAwareWidget {
         }
     }
 
-    async focusOnAttributesEvent({tabId}) {
-        if (this.tabContext.tabId === tabId) {
+    async focusOnAttributesEvent({ntxId}) {
+        if (this.noteContext.ntxId === ntxId) {
             if (this.$editor.is(":visible")) {
                 this.$editor.trigger('focus');
 
@@ -492,7 +492,7 @@ export default class AttributeEditorWidget extends TabAwareWidget {
                 });
             }
             else {
-                this.triggerEvent('focusOnDetail', {tabId: this.tabContext.tabId});
+                this.triggerEvent('focusOnDetail', {ntxId: this.noteContext.ntxId});
             }
         }
     }

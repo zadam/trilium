@@ -23,7 +23,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         const noteId = this.getNoteIdFromImage(imgSrc);
 
         if (noteId) {
-            appContext.tabManager.getActiveTabContext().setNote(noteId);
+            appContext.tabManager.getActiveNoteContext().setNote(noteId);
         } else {
             window.open(imgSrc, '_blank');
         }

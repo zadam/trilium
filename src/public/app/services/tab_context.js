@@ -7,21 +7,21 @@ import Component from "../widgets/component.js";
 import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 
-class TabContext extends Component {
+class NoteContext extends Component {
     /**
-     * @param {string|null} tabId
+     * @param {string|null} ntxId
      */
-    constructor(tabId = null, hoistedNoteId = 'root', parentTabId = null) {
+    constructor(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         super();
 
-        this.tabId = tabId || utils.randomString(4);
+        this.ntxId = ntxId || utils.randomString(4);
         this.hoistedNoteId = hoistedNoteId;
-        this.parentTabId = parentTabId;
+        this.mainNtxId = mainNtxId;
     }
 
     setEmpty() {
         this.triggerEvent('tabNoteSwitched', {
-            tabContext: this,
+            noteContext: this,
             notePath: this.notePath
         });
     }
@@ -33,7 +33,7 @@ class TabContext extends Component {
             return;
         }
 
-        await this.triggerEvent('beforeNoteSwitch', {tabContext: this});
+        await this.triggerEvent('beforeNoteSwitch', {noteContext: this});
 
         utils.closeActiveDialog();
 
@@ -49,7 +49,7 @@ class TabContext extends Component {
 
         if (triggerSwitchEvent) {
             await this.triggerEvent('tabNoteSwitched', {
-                tabContext: this,
+                noteContext: this,
                 notePath: this.notePath
             });
         }
@@ -60,13 +60,13 @@ class TabContext extends Component {
         }
     }
 
-    getAllSubTabContexts() {
-        return appContext.tabManager.tabContexts.filter(tc => tc.tabId === this.tabId || tc.parentTabId === this.tabId);
+    getAllSubNoteContexts() {
+        return appContext.tabManager.noteContexts.filter(nc => nc.ntxId === this.ntxId || nc.mainNtxId === this.ntxId);
     }
 
-    getMainTabContext() {
-        if (this.parentTabId) {
-            return appContext.tabManager.getTabContextById(this.parentTabId);
+    getMainNoteContext() {
+        if (this.mainNtxId) {
+            return appContext.tabManager.getNoteContextById(this.mainNtxId);
         }
         else {
             return this;
@@ -138,7 +138,7 @@ class TabContext extends Component {
     }
 
     isActive() {
-        return appContext.tabManager.activeTabId === this.tabId;
+        return appContext.tabManager.activeTabId === this.ntxId;
     }
 
     getTabState() {
@@ -147,8 +147,8 @@ class TabContext extends Component {
         }
 
         return {
-            tabId: this.tabId,
-            parentTabId: this.parentTabId,
+            ntxId: this.ntxId,
+            mainNtxId: this.mainNtxId,
             notePath: this.notePath,
             hoistedNoteId: this.hoistedNoteId,
             active: this.isActive()
@@ -168,7 +168,7 @@ class TabContext extends Component {
 
         await this.triggerEvent('hoistedNoteChanged', {
             noteId: noteIdToHoist,
-            tabId: this.tabId
+            ntxId: this.ntxId
         });
     }
 
@@ -181,7 +181,7 @@ class TabContext extends Component {
                 this.notePath = null;
 
                 this.triggerEvent('tabNoteSwitched', {
-                    tabContext: this,
+                    noteContext: this,
                     notePath: this.notePath
                 });
             }
@@ -189,4 +189,4 @@ class TabContext extends Component {
     }
 }
 
-export default TabContext;
+export default NoteContext;

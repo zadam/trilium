@@ -56,7 +56,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<void>}
      */
     this.activateNote = async notePath => {
-        await appContext.tabManager.getActiveTabContext().setNote(notePath);
+        await appContext.tabManager.getActiveNoteContext().setNote(notePath);
     };
 
     /**
@@ -68,7 +68,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.getActiveTabContext().setNote(notePath);
+        await appContext.tabManager.getActiveNoteContext().setNote(notePath);
         appContext.triggerEvent('focusAndSelectTitle');
     };
 
@@ -406,10 +406,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @return {Promise}
      */
     this.setHoistedNoteId = (noteId) => {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
+        const activeNoteContext = appContext.tabManager.getActiveNoteContext();
 
-        if (activeTabContext) {
-            activeTabContext.setHoistedNoteId(noteId);
+        if (activeNoteContext) {
+            activeNoteContext.setHoistedNoteId(noteId);
         }
     };
 

@@ -114,7 +114,7 @@ export default class NoteActionsWidget extends TabAwareWidget {
                 return;
             }
 
-            import('../dialogs/export.js').then(d => d.showDialog(this.tabContext.notePath, 'single'));
+            import('../dialogs/export.js').then(d => d.showDialog(this.noteContext.notePath, 'single'));
         });
 
         this.$importNoteButton = this.$widget.find('.import-files-button');

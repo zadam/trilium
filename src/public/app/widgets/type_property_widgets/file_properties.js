@@ -126,7 +126,7 @@ export default class FilePropertiesWidget extends TabAwareWidget {
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileType.text(note.mime);
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$fileSize.text(noteComplement.contentLength + " bytes");
 

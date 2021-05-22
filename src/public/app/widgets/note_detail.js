@@ -55,7 +55,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgets = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const {note} = this.tabContext;
+            const {note} = this.noteContext;
             const {noteId} = note;
 
             const dto = note.dto;
@@ -119,12 +119,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             this.$widget.append($renderedWidget);
 
-            await typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
+            await typeWidget.handleEvent('setNoteContext', {noteContext: this.noteContext});
 
             // this is happening in update() so note has been already set and we need to reflect this
             await typeWidget.handleEvent('tabNoteSwitched', {
-                tabContext: this.tabContext,
-                notePath: this.tabContext.notePath
+                noteContext: this.noteContext,
+                notePath: this.noteContext.notePath
             });
 
             this.child(typeWidget);
@@ -150,8 +150,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !this.tabContext.textPreviewDisabled) {
-            const noteComplement = await this.tabContext.getNoteComplement();
+        if (type === 'text' && !this.noteContext.textPreviewDisabled) {
+            const noteComplement = await this.noteContext.getNoteComplement();
 
             if (note.hasLabel('readOnly') ||
                 (noteComplement.content
@@ -161,8 +161,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
             }
         }
 
-        if (type === 'code' && !this.tabContext.codePreviewDisabled) {
-            const noteComplement = await this.tabContext.getNoteComplement();
+        if (type === 'code' && !this.noteContext.codePreviewDisabled) {
+            const noteComplement = await this.noteContext.getNoteComplement();
 
             if (note.hasLabel('readOnly') ||
                 (noteComplement.content
@@ -187,8 +187,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return type;
     }
 
-    async focusOnDetailEvent({tabId}) {
-        if (this.tabContext.tabId === tabId) {
+    async focusOnDetailEvent({ntxId}) {
+        if (this.noteContext.ntxId === ntxId) {
             await this.refresh();
 
             const widget = this.getTypeWidget();
@@ -196,20 +196,20 @@ export default class NoteDetailWidget extends TabAwareWidget {
         }
     }
 
-    async beforeNoteSwitchEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    async beforeNoteSwitchEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async beforeTabRemoveEvent({tabIds}) {
-        if (this.isTab(tabIds)) {
+    async beforeTabRemoveEvent({ntxIds}) {
+        if (this.isTab(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
     async printActiveNoteEvent() {
-        if (!this.tabContext.isActive()) {
+        if (!this.noteContext.isActive()) {
             return;
         }
 
@@ -241,8 +241,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
         });
     }
 
-    hoistedNoteChangedEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    hoistedNoteChangedEvent({ntxId}) {
+        if (this.isTab(ntxId)) {
             this.refresh();
         }
     }
@@ -278,14 +278,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.spacedUpdate.isAllSavedAndTriggerUpdate();
     }
 
-    textPreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    textPreviewDisabledEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
-    codePreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    codePreviewDisabledEvent({noteContext}) {
+        if (this.isTab(noteContext.ntxId)) {
             this.refresh();
         }
     }
@@ -310,7 +310,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     renderActiveNoteEvent() {
-        if (this.tabContext.isActive()) {
+        if (this.noteContext.isActive()) {
             this.refresh();
         }
     }

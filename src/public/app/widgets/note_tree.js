@@ -395,8 +395,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const notePath = treeService.getNotePath(data.node);
 
-                const activeTabContext = appContext.tabManager.getActiveTabContext();
-                await activeTabContext.setNote(notePath);
+                const activeNoteContext = appContext.tabManager.getActiveNoteContext();
+                await activeNoteContext.setNote(notePath);
 
                 if (utils.isMobile()) {
                     this.triggerCommand('setActiveScreen', {screen: 'detail'});
@@ -525,13 +525,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
 
                 const note = await froca.getNote(node.data.noteId);
-                const activeTabContext = appContext.tabManager.getActiveTabContext();
+                const activeNoteContext = appContext.tabManager.getActiveNoteContext();
 
                 const $span = $(node.span);
 
                 $span.find('.tree-item-button').remove();
 
-                const isHoistedNote = activeTabContext && activeTabContext.hoistedNoteId === note.noteId && note.noteId !== 'root';
+                const isHoistedNote = activeNoteContext && activeNoteContext.hoistedNoteId === note.noteId && note.noteId !== 'root';
 
                 if (isHoistedNote) {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
@@ -810,7 +810,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async scrollToActiveNoteEvent() {
-        const activeContext = appContext.tabManager.getActiveTabContext();
+        const activeContext = appContext.tabManager.getActiveNoteContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.$container.focus();
@@ -920,7 +920,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     isEnabled() {
-        return !!this.tabContext;
+        return !!this.noteContext;
     }
 
     async refresh() {
@@ -939,12 +939,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
             oldActiveNode.setFocus(false);
         }
 
-        if (this.tabContext && this.tabContext.notePath && !this.tabContext.note.isDeleted) {
-            const newActiveNode = await this.getNodeFromPath(this.tabContext.notePath);
+        if (this.noteContext && this.noteContext.notePath && !this.noteContext.note.isDeleted) {
+            const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
 
             if (newActiveNode) {
                 if (!newActiveNode.isVisible()) {
-                    await this.expandToNote(this.tabContext.notePath);
+                    await this.expandToNote(this.noteContext.notePath);
                 }
 
                 newActiveNode.setActive(true, {noEvents: true, noFocus: !oldActiveNodeFocused});
@@ -993,8 +993,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
              */
 
             const noteIdsToKeepExpanded = new Set(
-                appContext.tabManager.getTabContexts()
-                    .map(tc => tc.notePathArray)
+                appContext.tabManager.getNoteContexts()
+                    .map(nc => nc.notePathArray)
                     .flat()
             );
 
@@ -1159,10 +1159,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 if (node) {
                     // FIXME: this is conceptually wrong
                     //        here note tree is responsible for updating global state of the application
-                    //        this should be done by tabcontext / tabmanager and note tree should only listen to
+                    //        this should be done by NoteContext / TabManager and note tree should only listen to
                     //        changes in active note and just set the "active" state
                     // We don't await since that can bring up infinite cycles when e.g. custom widget does some backend requests which wait for max sync ID processed
-                    appContext.tabManager.getActiveTabContext().setNote(nextNotePath).then(() => {
+                    appContext.tabManager.getActiveNoteContext().setNote(nextNotePath).then(() => {
                         const newActiveNode = this.getActiveNode();
 
                         // return focus if the previously active node was also focused
@@ -1232,25 +1232,25 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async hoistedNoteChangedEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    async hoistedNoteChangedEvent({ntxId}) {
+        if (this.isTab(ntxId)) {
             this.filterHoistedBranch();
         }
     }
 
     async filterHoistedBranch() {
-        if (this.tabContext) {
+        if (this.noteContext) {
             // make sure the hoisted node is loaded (can be unloaded e.g. after tree collapse in another tab)
-            const hoistedNotePath = await treeService.resolveNotePath(this.tabContext.hoistedNoteId);
+            const hoistedNotePath = await treeService.resolveNotePath(this.noteContext.hoistedNoteId);
             await this.getNodeFromPath(hoistedNotePath);
 
-            if (this.tabContext.hoistedNoteId === 'root') {
+            if (this.noteContext.hoistedNoteId === 'root') {
                 this.tree.clearFilter();
             }
             else {
                 // hack when hoisted note is cloned then it could be filtered multiple times while we want only 1
                 this.tree.filterBranches(node =>
-                    node.data.noteId === this.tabContext.hoistedNoteId // optimization to not having always resolve the node path
+                    node.data.noteId === this.noteContext.hoistedNoteId // optimization to not having always resolve the node path
                     && treeService.getNotePath(node) === hoistedNotePath);
             }
         }

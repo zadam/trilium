@@ -2,17 +2,17 @@ import BasicWidget from "./basic_widget.js";
 import appContext from "../services/app_context.js";
 
 export default class TabAwareWidget extends BasicWidget {
-    isTab(tabId) {
-        if (Array.isArray(tabId)) {
-            return this.tabContext && tabId.includes(this.tabContext.tabId);
+    isTab(ntxId) {
+        if (Array.isArray(ntxId)) {
+            return this.noteContext && ntxId.includes(this.noteContext.ntxId);
         }
         else {
-            return this.tabContext && this.tabContext.tabId === tabId;
+            return this.noteContext && this.noteContext.ntxId === ntxId;
         }
     }
 
-    isTabOrParent(tabId) {
-        return this.tabContext && (this.tabContext.tabId === tabId || this.tabContext.parentTabId === tabId);
+    isTabOrParent(ntxId) {
+        return this.noteContext && (this.noteContext.ntxId === ntxId || this.noteContext.mainNtxId === ntxId);
     }
 
     isNote(noteId) {
@@ -20,7 +20,7 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     get note() {
-        return this.tabContext && this.tabContext.note;
+        return this.noteContext && this.noteContext.note;
     }
 
     get noteId() {
@@ -28,11 +28,11 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     get notePath() {
-        return this.tabContext && this.tabContext.notePath;
+        return this.noteContext && this.noteContext.notePath;
     }
 
     get hoistedNoteId() {
-        return this.tabContext && this.tabContext.hoistedNoteId;
+        return this.noteContext && this.noteContext.hoistedNoteId;
     }
 
     isEnabled() {
@@ -59,9 +59,9 @@ export default class TabAwareWidget extends BasicWidget {
 
     async refreshWithNote(note) {}
 
-    async tabNoteSwitchedEvent({tabContext, notePath}) {
-        // if notePath does not match then the tabContext has been switched to another note in the mean time
-        if (tabContext.notePath === notePath) {
+    async tabNoteSwitchedEvent({noteContext, notePath}) {
+        // if notePath does not match then the noteContext has been switched to another note in the mean time
+        if (noteContext.notePath === notePath) {
             await this.noteSwitched();
         }
     }
@@ -70,8 +70,8 @@ export default class TabAwareWidget extends BasicWidget {
         await this.refresh();
     }
 
-    async activeTabChangedEvent({tabContext}) {
-        this.tabContext = tabContext;
+    async activeTabChangedEvent({noteContext}) {
+        this.noteContext = noteContext;
 
         await this.activeTabChanged();
     }
@@ -81,18 +81,18 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     // when note is both switched and activated, this should not produce double refresh
-    async tabNoteSwitchedAndActivatedEvent({tabContext, notePath}) {
-        this.tabContext = tabContext;
+    async tabNoteSwitchedAndActivatedEvent({noteContext, notePath}) {
+        this.noteContext = noteContext;
 
-        // if notePath does not match then the tabContext has been switched to another note in the mean time
+        // if notePath does not match then the noteContext has been switched to another note in the mean time
         if (this.notePath === notePath) {
             await this.refresh();
         }
     }
 
-    setTabContextEvent({tabContext}) {
-        /** @var {TabContext} */
-        this.tabContext = tabContext;
+    setNoteContextEvent({noteContext}) {
+        /** @var {NoteContext} */
+        this.noteContext = noteContext;
     }
 
     async noteTypeMimeChangedEvent({noteId}) {
@@ -106,8 +106,8 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     async lazyLoadedEvent() {
-        if (!this.tabContext) { // has not been loaded yet
-            this.tabContext = appContext.tabManager.getActiveTabContext();
+        if (!this.noteContext) { // has not been loaded yet
+            this.noteContext = appContext.tabManager.getActiveNoteContext();
         }
 
         await this.refresh();

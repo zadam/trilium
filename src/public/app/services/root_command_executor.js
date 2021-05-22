@@ -64,17 +64,17 @@ export default class RootCommandExecutor extends Component {
     async showSQLConsoleCommand() {
         const sqlConsoleNote = await dateNoteService.createSqlConsole();
 
-        const tabContext = await appContext.tabManager.openTabWithNote(sqlConsoleNote.noteId, true);
+        const noteContext = await appContext.tabManager.openTabWithNote(sqlConsoleNote.noteId, true);
 
-        appContext.triggerEvent('focusOnDetail', {tabId: tabContext.tabId});
+        appContext.triggerEvent('focusOnDetail', {ntxId: noteContext.ntxId});
     }
 
     async searchNotesCommand({searchString, ancestorNoteId}) {
         const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
 
-        const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
+        const noteContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
 
-        appContext.triggerCommand('focusOnSearchDefinition', {tabId: tabContext.tabId});
+        appContext.triggerCommand('focusOnSearchDefinition', {ntxId: noteContext.ntxId});
     }
 
     async searchInSubtreeCommand({notePath}) {

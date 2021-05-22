@@ -56,7 +56,7 @@ export default class CalendarWidget extends CollapsibleWidget {
             const note = await dateNoteService.getDateNote(date);
 
             if (note) {
-                appContext.tabManager.getActiveTabContext().setNote(note.noteId);
+                appContext.tabManager.getActiveNoteContext().setNote(note.noteId);
             }
             else {
                 alert("Cannot find day note");

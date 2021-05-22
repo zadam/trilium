@@ -36,14 +36,14 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
         this.$content = this.$widget.find('.note-detail-read-only-code-content');
 
         this.$widget.find('.edit-code-note-button').on('click', () => {
-            this.tabContext.codePreviewDisabled = true;
+            this.noteContext.codePreviewDisabled = true;
 
-            this.triggerEvent('codePreviewDisabled', {tabContext: this.tabContext});
+            this.triggerEvent('codePreviewDisabled', {noteContext: this.noteContext});
         });
     }
 
     async doRefresh(note) {
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$content.text(noteComplement.content);
     }
