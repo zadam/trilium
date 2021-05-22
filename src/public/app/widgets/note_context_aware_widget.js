@@ -100,12 +100,4 @@ export default class NoteContextAwareWidget extends BasicWidget {
     async frocaReloadedEvent() {
         await this.refresh();
     }
-
-    async lazyLoadedEvent() {
-        if (!this.noteContext) { // has not been loaded yet
-            this.noteContext = appContext.tabManager.getActiveContext();
-        }
-
-        await this.refresh();
-    }
 }

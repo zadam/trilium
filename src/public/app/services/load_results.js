@@ -100,7 +100,7 @@ export default class LoadResults {
     }
 
     isOptionReloaded(name) {
-        this.options.includes(name);
+        return this.options.includes(name);
     }
 
     /**

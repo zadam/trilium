@@ -11,39 +11,42 @@ export default class ButtonWidget extends BasicWidget {
     constructor() {
         super();
 
-        this.options = {};
+        this.settings = {};
     }
 
     doRender() {
         this.$widget = $(TPL);
-        this.refreshIcon();
         this.overflowing();
 
-        this.$widget.on("click", () => this.triggerCommand(this.options.command));
+        this.$widget.on("click", () => this.triggerCommand(this.settings.command));
 
         super.doRender();
     }
 
     refreshIcon() {
-        this.$widget.attr("title", this.options.title);
+        this.$widget.attr("title", this.settings.title);
         this.$widget.find("span.bx")
             .removeClass()
             .addClass("bx")
-            .addClass(this.options.icon);
+            .addClass(this.settings.icon);
+    }
+
+    initialRenderCompleteEvent() {
+        this.refreshIcon();
     }
 
     icon(icon) {
-        this.options.icon = icon;
+        this.settings.icon = icon;
         return this;
     }
 
     title(title) {
-        this.options.title = title;
+        this.settings.title = title;
         return this;
     }
 
     command(command) {
-        this.options.command = command;
+        this.settings.command = command;
         return this;
     }
 }

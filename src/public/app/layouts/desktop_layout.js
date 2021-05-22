@@ -41,6 +41,7 @@ import QuickSearchWidget from "../widgets/quick_search.js";
 import ButtonWidget from "../widgets/button_widget.js";
 import ProtectedSessionStatusWidget from "../widgets/protected_session_status.js";
 import PaneContainer from "../widgets/containers/pane_container.js";
+import SidebarToggleWidget from "../widgets/sidebar_toggle.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -165,6 +166,7 @@ export default class DesktopLayout {
                 .child(new SpacerWidget())
                 .child(new ProtectedSessionStatusWidget())
                 .child(new SyncStatusWidget())
+                .child(new SidebarToggleWidget())
                 .css("width", "50px")
             )
             .child(new SidePaneContainer('left')

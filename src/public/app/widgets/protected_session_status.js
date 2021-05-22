@@ -2,32 +2,28 @@ import ButtonWidget from "./button_widget.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 
 export default class ProtectedSessionStatusWidget extends ButtonWidget {
-    constructor() {
-        super();
-    }
-
     doRender() {
-        this.updateOptions();
+        this.updateSettings();
 
         super.doRender();
     }
 
-    updateOptions() {
-        this.options.icon = protectedSessionHolder.isProtectedSessionAvailable()
+    updateSettings() {
+        this.settings.icon = protectedSessionHolder.isProtectedSessionAvailable()
             ? "bx-shield-quarter"
             : "bx-log-in";
 
-        this.options.title = protectedSessionHolder.isProtectedSessionAvailable()
+        this.settings.title = protectedSessionHolder.isProtectedSessionAvailable()
             ? "Protected session is active. Click to leave protected session."
             : "Click to enter protected session";
 
-        this.options.command = protectedSessionHolder.isProtectedSessionAvailable()
+        this.settings.command = protectedSessionHolder.isProtectedSessionAvailable()
             ? "leaveProtectedSession"
             : "enterProtectedSession";
     }
 
     protectedSessionStartedEvent() {
-        this.updateOptions();
+        this.updateSettings();
         this.refreshIcon();
     }
 }

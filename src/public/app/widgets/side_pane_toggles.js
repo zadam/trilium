@@ -3,15 +3,8 @@ import splitService from "../services/split.js";
 import BasicWidget from "./basic_widget.js";
 
 const TPL = `
-<div class="hide-in-zen-mode">
+<div>
     <style>
-    .hide-right-pane-button, .show-right-pane-button {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 100;
-    }
-    
     .hide-left-pane-button, .show-left-pane-button {
         position: fixed;
         bottom: 10px;

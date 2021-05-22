@@ -2,13 +2,15 @@ import options from "./options.js";
 
 let instance;
 
-function setupSplit(left, right) {
+function setupSplit(leftPaneVisible) {
     if (instance) {
         instance.destroy();
         instance = null;
     }
 
-    if (!left && !right) {
+    $("#left-pane").toggle(leftPaneVisible);
+
+    if (!leftPaneVisible) {
         $("#center-pane").css('width', '100%');
 
         return;
@@ -19,37 +21,11 @@ function setupSplit(left, right) {
         leftPaneWidth = 5;
     }
 
-    let rightPaneWidth = options.getInt('rightPaneWidth');
-    if (!rightPaneWidth || rightPaneWidth < 5) {
-        rightPaneWidth = 5;
-    }
-
-    if (left && right) {
-        instance = Split(['#left-pane', '#center-pane', '#right-pane'], {
-            sizes: [leftPaneWidth, 100 - leftPaneWidth - rightPaneWidth, rightPaneWidth],
-            gutterSize: 5,
-            onDragEnd: sizes => {
-                options.save('leftPaneWidth', Math.round(sizes[0]));
-                options.save('rightPaneWidth', Math.round(sizes[2]));
-            }
-        });
-    }
-    else if (left) {
+    if (leftPaneVisible) {
         instance = Split(['#left-pane', '#center-pane'], {
             sizes: [leftPaneWidth, 100 - leftPaneWidth],
             gutterSize: 5,
-            onDragEnd: sizes => {
-                options.save('leftPaneWidth', Math.round(sizes[0]));
-            }
-        });
-    }
-    else if (right) {
-        instance = Split(['#center-pane', '#right-pane'], {
-            sizes: [100 - rightPaneWidth, rightPaneWidth],
-            gutterSize: 5,
-            onDragEnd: sizes => {
-                options.save('rightPaneWidth', Math.round(sizes[1]));
-            }
+            onDragEnd: sizes => options.save('leftPaneWidth', Math.round(sizes[0]))
         });
     }
 }
