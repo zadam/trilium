@@ -23,6 +23,8 @@ export default class PaneContainer extends FlexContainer {
 
         this.$widget.append($renderedWidget);
 
+        widget.handleEvent('initialRenderComplete');
+
         widget.toggleExt(false);
 
         this.widgets[noteContext.ntxId] = widget;
@@ -60,7 +62,7 @@ export default class PaneContainer extends FlexContainer {
 
         for (const ntxId in this.widgets) {
             const noteContext = appContext.tabManager.getNoteContextById(ntxId);
-
+console.log(noteContext, activeNtxId);
             const widget = this.widgets[ntxId];
             widget.toggleExt(show && activeNtxId && [noteContext.ntxId, noteContext.mainNtxId].includes(activeNtxId));
         }
@@ -115,6 +117,8 @@ export default class PaneContainer extends FlexContainer {
                 promises.push(widget.handleEvent('activeContextChanged', {noteContext: subContext}));
             }
         }
+
+        this.refresh();
 
         return Promise.all(promises);
     }

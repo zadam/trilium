@@ -146,6 +146,7 @@ export default class DesktopLayout {
         return new RootContainer()
             .setParent(appContext)
             .child(new FlexContainer("column")
+                .id("launcher-pane")
                 .child(new GlobalMenuWidget())
                 .child(new ButtonWidget()
                     .icon("bx-file-blank")
@@ -199,7 +200,9 @@ export default class DesktopLayout {
                             .child(new ButtonWidget()
                                 .icon("bx-window-open bx-rotate-90")
                                 .title("Create new pane")
-                                .command("openNewPane"))
+                                .titlePlacement("bottom")
+                                .command("openNewPane")
+                            )
                         )
                         .child(
                             new CollapsibleSectionContainer()

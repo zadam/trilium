@@ -10,7 +10,12 @@ const TPL = `
 <div class="quick-search input-group input-group-sm">
   <style>
     .quick-search {
-        padding: 4px 10px 10px;
+        padding: 10px 10px 10px 10px;
+    }
+    
+    .quick-search button, .quick-search input {
+        border: 0;
+        font-size: 100% !important;
     }
   
     .quick-search .dropdown-menu {
@@ -23,13 +28,13 @@ const TPL = `
     }
   </style>
   
-  <input type="text" class="form-control form-control-sm search-string" placeholder="Quick search">
-  <div class="input-group-append">
+  <div class="input-group-prepend">
     <button class="btn btn-outline-secondary search-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="bx bx-search"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-right"></div>
   </div>
+  <input type="text" class="form-control form-control-sm search-string" placeholder="Quick search">
   </div>
 </div>`;
 

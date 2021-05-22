@@ -297,9 +297,12 @@ div.ui-tooltip {
 }
 
 .btn:not(.btn-primary) {
-    border-color: var(--button-border-color);
     background-color: var(--button-background-color);
     color: var(--button-text-color);
+}
+
+.btn:not(.btn-primary):hover {
+    border-color: var(--button-border-color);
 }
 
 .btn.active:not(.btn-primary) {
@@ -930,11 +933,15 @@ ul.fancytree-container li {
 }
 
 .button-widget .bx {
-    font-size: 150%;
+    font-size: 120%;
     display: inline-block;
     position: relative;
     padding: 10px;
     cursor: pointer;
+}
+
+#launcher-pane .button-widget .bx {
+    font-size: 150%;
 }
 
 .button-widget:hover .bx {

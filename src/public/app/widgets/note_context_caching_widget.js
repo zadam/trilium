@@ -27,6 +27,8 @@ export default class NoteContextCachingWidget extends NoteContextAwareWidget {
 
         this.$widget.after($renderedWidget);
 
+        this.widgets[ntxId].handleEvent('initialRenderComplete');
+
         keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
         await this.widgets[ntxId].handleEvent('setNoteContext', {noteContext});

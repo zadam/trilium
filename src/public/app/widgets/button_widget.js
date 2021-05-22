@@ -3,7 +3,6 @@ import BasicWidget from "./basic_widget.js";
 const TPL = `
 <span class="button-widget" 
       data-toggle="tooltip"
-      data-placement="right"
       title="">
     <span class="bx"></span>
 </span>
@@ -13,7 +12,9 @@ export default class ButtonWidget extends BasicWidget {
     constructor() {
         super();
 
-        this.settings = {};
+        this.settings = {
+            titlePlacement: 'right'
+        };
     }
 
     doRender() {
@@ -31,7 +32,9 @@ export default class ButtonWidget extends BasicWidget {
     }
 
     refreshIcon() {
-        this.$widget.attr("title", this.settings.title);
+        this.$widget
+            .attr("title", this.settings.title)
+            .attr("data-placement", this.settings.titlePlacement);
         this.$widget.find("span.bx")
             .removeClass()
             .addClass("bx")
@@ -49,6 +52,11 @@ export default class ButtonWidget extends BasicWidget {
 
     title(title) {
         this.settings.title = title;
+        return this;
+    }
+
+    titlePlacement(placement) {
+        this.settings.titlePlacement = placement;
         return this;
     }
 
