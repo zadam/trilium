@@ -55,7 +55,7 @@ export default class NoteContextCachingWidget extends NoteContextAwareWidget {
 
     toggleExt(show) {
         for (const ntxId in this.widgets) {
-            this.widgets[ntxId].toggleExt(show && this.isTab(ntxId));
+            this.widgets[ntxId].toggleExt(show && this.isNoteContext(ntxId));
         }
     }
 

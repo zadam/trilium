@@ -36,13 +36,13 @@ export default class TypeWidget extends NoteContextAwareWidget {
     focus() {}
 
     textPreviewDisabledEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
     codePreviewDisabledEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }

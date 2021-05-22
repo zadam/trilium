@@ -227,14 +227,14 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     // triggered from keyboard shortcut
     addNewLabelEvent({ntxId}) {
-        if (this.isTab(ntxId)) {
+        if (this.isNoteContext(ntxId)) {
             this.handleAddNewAttributeCommand('addNewLabel');
         }
     }
 
     // triggered from keyboard shortcut
     addNewRelationEvent({ntxId}) {
-        if (this.isTab(ntxId)) {
+        if (this.isNoteContext(ntxId)) {
             this.handleAddNewAttributeCommand('addNewRelation');
         }
     }

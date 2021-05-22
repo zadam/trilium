@@ -2,17 +2,13 @@ import BasicWidget from "./basic_widget.js";
 import appContext from "../services/app_context.js";
 
 export default class NoteContextAwareWidget extends BasicWidget {
-    isTab(ntxId) {
+    isNoteContext(ntxId) {
         if (Array.isArray(ntxId)) {
             return this.noteContext && ntxId.includes(this.noteContext.ntxId);
         }
         else {
             return this.noteContext && this.noteContext.ntxId === ntxId;
         }
-    }
-
-    isTabOrParent(ntxId) {
-        return this.noteContext && (this.noteContext.ntxId === ntxId || this.noteContext.mainNtxId === ntxId);
     }
 
     isNote(noteId) {

@@ -63,7 +63,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     copyImageToClipboardEvent({ntxId}) {
-        if (!this.isTab(ntxId)) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 

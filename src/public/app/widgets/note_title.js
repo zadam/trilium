@@ -67,13 +67,13 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
     }
 
     async beforeNoteSwitchEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
     async beforeTabRemoveEvent({ntxIds}) {
-        if (this.isTab(ntxIds)) {
+        if (this.isNoteContext(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }

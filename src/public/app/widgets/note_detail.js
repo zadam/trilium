@@ -197,13 +197,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     async beforeNoteSwitchEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
     async beforeTabRemoveEvent({ntxIds}) {
-        if (this.isTab(ntxIds)) {
+        if (this.isNoteContext(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
@@ -242,7 +242,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     hoistedNoteChangedEvent({ntxId}) {
-        if (this.isTab(ntxId)) {
+        if (this.isNoteContext(ntxId)) {
             this.refresh();
         }
     }
@@ -279,13 +279,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     textPreviewDisabledEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
     codePreviewDisabledEvent({noteContext}) {
-        if (this.isTab(noteContext.ntxId)) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }

@@ -78,7 +78,7 @@ export default class NoteListWidget extends NoteContextAwareWidget {
      * it is not intersected (visible) anymore.
      */
     noteDetailRefreshedEvent({ntxId}) {
-        if (!this.isTab(ntxId)) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 

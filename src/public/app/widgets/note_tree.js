@@ -1233,7 +1233,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     async hoistedNoteChangedEvent({ntxId}) {
-        if (this.isTab(ntxId)) {
+        if (this.isNoteContext(ntxId)) {
             this.filterHoistedBranch();
         }
     }

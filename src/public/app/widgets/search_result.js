@@ -57,7 +57,7 @@ export default class SearchResultWidget extends NoteContextAwareWidget {
     }
 
     searchRefreshedEvent({ntxId}) {
-        if (!this.isTab(ntxId)) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 

@@ -26,7 +26,7 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
     }
 
     async sqlQueryResultsEvent({ntxId, results}) {
-        if (!this.isTab(ntxId)) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 
