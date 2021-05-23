@@ -135,6 +135,7 @@ const TAB_ROW_TPL = `
     
     .note-tab-row .note-tab[active] .note-tab-wrapper {
         font-weight: bold;
+        background-color : var(--active-item-background-color);
     }
     
     .note-tab-row .note-tab[is-mini] .note-tab-wrapper {

@@ -28,7 +28,7 @@ const TPL = `
     }
     </style>
 
-    <div class="dropdown global-menu">
+    <div class="dropdown global-menu dropright">
         <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm bx bx-menu" title="Menu"></button>
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item options-button" data-trigger-command="showOptions">
