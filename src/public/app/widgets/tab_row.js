@@ -23,6 +23,7 @@ const TAB_CONTAINER_MIN_WIDTH = 24;
 const TAB_CONTAINER_MAX_WIDTH = 240;
 const NEW_TAB_WIDTH = 32;
 const MIN_FILLER_WIDTH = 50;
+const MARGIN_WIDTH = 5;
 
 const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
@@ -39,9 +40,7 @@ const TAB_TPL = `
 </div>`;
 
 const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab" data-trigger-command="openNewTab" title="Add new tab">+</div>`;
-const FILLER_TPL = `<div class="tab-row-filler">
-    <div class="tab-row-border"></div>
-</div>`;
+const FILLER_TPL = `<div class="tab-row-filler"></div>`;
 
 const TAB_ROW_TPL = `
 <div class="note-tab-row">
@@ -49,7 +48,6 @@ const TAB_ROW_TPL = `
     .note-tab-row {
         box-sizing: border-box;
         position: relative;
-        height: 36px;
         width: 100%;
         background: var(--main-background-color);
         overflow: hidden;
@@ -71,7 +69,6 @@ const TAB_ROW_TPL = `
     .note-tab-row .note-tab {
         position: absolute;
         left: 0;
-        height: 33px;
         width: 240px;
         border: 0;
         margin: 0;
@@ -82,15 +79,15 @@ const TAB_ROW_TPL = `
     .note-new-tab {
         position: absolute;
         left: 0;
-        height: 33px;
-        width: 32px;
+        width: 40px;
+        height: 40px;
+        padding: 3px;
         border: 0;
         margin: 0;
         z-index: 1;
         text-align: center;
         font-size: 24px;
         cursor: pointer;
-        border-bottom: 1px solid var(--main-border-color);
         box-sizing: border-box;
     }
     
@@ -104,15 +101,8 @@ const TAB_ROW_TPL = `
         -webkit-app-region: drag;
         position: absolute;
         left: 0;
-        height: 36px;
     }
-    
-    .tab-row-filler .tab-row-border {
-        background: linear-gradient(to right, var(--main-border-color), transparent);
-        height: 1px;
-        margin-top: 32px;
-    }
-    
+        
     .note-tab-row .note-tab[active] {
         z-index: 5;
     }
@@ -135,19 +125,15 @@ const TAB_ROW_TPL = `
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 5px 8px;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
+        height: 40px;
+        padding: 8px 11px;
+        border-radius: 8px;
         overflow: hidden;
         pointer-events: all;
         background-color: var(--accented-background-color);
-        border-bottom: 1px solid var(--main-border-color);
     }
     
     .note-tab-row .note-tab[active] .note-tab-wrapper {
-        background-color: var(--main-background-color);
-        border: 1px solid var(--main-border-color);
-        border-bottom: 0;
         font-weight: bold;
     }
     
@@ -193,8 +179,6 @@ const TAB_ROW_TPL = `
         flex-shrink: 0;
         border-radius: 50%;
         z-index: 100;
-        width: 24px;
-        height: 24px;
         text-align: center;
     }
     
@@ -251,9 +235,9 @@ const TAB_ROW_TPL = `
 export default class TabRowWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TAB_ROW_TPL);
+        this.overflowing();
 
         this.draggabillies = [];
-        this.eventListeners = {};
 
         this.setupStyle();
         this.setupEvents();
@@ -321,10 +305,11 @@ export default class TabRowWidget extends BasicWidget {
     get tabWidths() {
         const numberOfTabs = this.tabEls.length;
         const tabsContainerWidth = this.$tabContainer[0].clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
-        const targetWidth = tabsContainerWidth / numberOfTabs;
+        const marginWidth = (numberOfTabs - 1) * MARGIN_WIDTH;
+        const targetWidth = (tabsContainerWidth - marginWidth) / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTAINER_MIN_WIDTH, Math.min(TAB_CONTAINER_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
-        const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs;
+        const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs + marginWidth;
         const totalExtraWidthDueToFlooring = tabsContainerWidth - totalTabsWidthUsingTarget;
 
         const widths = [];
@@ -332,8 +317,12 @@ export default class TabRowWidget extends BasicWidget {
 
         for (let i = 0; i < numberOfTabs; i += 1) {
             const extraWidth = flooredClampedTargetWidth < TAB_CONTAINER_MAX_WIDTH && extraWidthRemaining > 0 ? 1 : 0;
+
             widths.push(flooredClampedTargetWidth + extraWidth);
-            if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
+
+            if (extraWidthRemaining > 0) {
+                extraWidthRemaining -= 1;
+            }
         }
 
         if (this.$filler) {
@@ -349,8 +338,10 @@ export default class TabRowWidget extends BasicWidget {
         let position = 0;
         this.tabWidths.forEach(width => {
             tabPositions.push(position);
-            position += width;
+            position += width + MARGIN_WIDTH;
         });
+
+        position -= MARGIN_WIDTH; // last margin should not be applied
 
         const newTabPosition = position;
         const fillerPosition = position + 32;

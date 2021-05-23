@@ -183,7 +183,7 @@ export default class DesktopLayout {
                 .child(new FlexContainer('row').overflowing()
                     .child(new TabRowWidget())
                     .child(new TitleBarButtonsWidget())
-                    .css('height', '36px')
+                    .css('height', '40px')
                 )
                 .child(new PaneContainer(() =>
                     new FlexContainer('column')
