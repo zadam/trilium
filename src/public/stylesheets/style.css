@@ -1,3 +1,13 @@
+@font-face {
+    font-family: MontserratLight;
+    src: url(../fonts/Montserrat-Light.ttf);
+}
+
+@font-face {
+    font-family: JetBrainsLight;
+    src: url(../fonts/JetBrainsMono-Light.woff2) format('woff');
+}
+
 html {
     /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
     height: 100%;
@@ -38,61 +48,6 @@ button.close:hover {
 .nav-link.active {
     background-color: inherit !important;
     color: var(--main-text-color) !important;
-}
-
-ul.fancytree-container {
-    /* override specific size from fancytree.css */
-    font-family: inherit !important;
-    font-size: inherit !important;
-}
-
-.fancytree-title {
-    margin-left: 7px !important;
-}
-
-.fancytree-node:not(.fancytree-loading) .fancytree-expander {
-    background: none;
-    width: 21px;
-    height: auto;
-    text-align: center;
-}
-
-.fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
-    font-family: 'boxicons' !important;
-    speak: none;
-    font-size: x-large;
-    text-transform: none;
-    line-height: 1;
-    content: "\e9b2";
-    position: relative;
-    top: -2px;
-    margin-right: 5px;
-}
-
-/* this is done to preserve correct indentation. Better solution would be preferable */
-.fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
-    color: var(--main-background-color); /* setting to background color makes this invisible */
-}
-
-.fancytree-node.fancytree-expanded .fancytree-expander:before {
-    font-family: 'boxicons' !important;
-    content: "\e9ac";
-}
-
-/** some common text styling for cssClass label */
-span.fancytree-node.underline .fancytree-title { text-decoration: underline; }
-span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
-span.fancytree-node.bold .fancytree-title { font-weight: bold; }
-span.fancytree-node.muted { opacity: 0.6; }
-
-/** following will hide ancestors of hoisted (filtered) note */
-.fancytree-submatch:not(.fancytree-match) {
-    display: none !important;
-}
-
-/** resets indent of hoisted note */
-.fancytree-submatch:not(.fancytree-match) + ul {
-    padding: 0 !important;
 }
 
 .note-title[readonly] {
@@ -936,7 +891,7 @@ ul.fancytree-container li {
     font-size: 120%;
     display: inline-block;
     position: relative;
-    padding: 10px;
+    padding: 15px 15px;
     cursor: pointer;
 }
 
@@ -958,24 +913,4 @@ ul.fancytree-container li {
 
 input {
     background-color: transparent !important;
-}
-
-@font-face {
-    font-family: OpenSansRegular;
-    src: url(../OpenSans-Regular.ttf);
-}
-
-@font-face {
-    font-family: OpenSansLight;
-    src: url(../OpenSans-Light.ttf);
-}
-
-@font-face {
-    font-family: MontserratMedium;
-    src: url(../Montserrat-Medium.ttf);
-}
-
-@font-face {
-    font-family: MontserratLight;
-    src: url(../Montserrat-Light.ttf);
 }

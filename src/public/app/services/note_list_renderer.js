@@ -82,12 +82,10 @@ const TPL = `
     }
     
     .note-book-title .note-icon {
-        font-size: 120%;
+        font-size: 100%;
         display: inline-block;
-        padding-right: 5px;
-        padding-left: 5px;
+        padding-right: 7px;
         position: relative;
-        top: 3px;
     }
     
     .note-book-card .note-book-card {

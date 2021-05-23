@@ -13,7 +13,7 @@ const TPL = `
     }
     
     .global-menu button {
-        padding: 10px;
+        padding: 15px 15px;
         font-size: 150%;
         border: none;
         border-radius: 0 !important;

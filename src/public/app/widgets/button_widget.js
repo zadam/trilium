@@ -22,6 +22,7 @@ export default class ButtonWidget extends BasicWidget {
         this.overflowing();
 
         this.$widget.on("click", () => this.triggerCommand(this.settings.command));
+        this.$widget.attr("data-placement", this.settings.titlePlacement);
 
         this.$widget.tooltip({
             html: true,
@@ -34,7 +35,6 @@ export default class ButtonWidget extends BasicWidget {
     refreshIcon() {
         this.$widget
             .attr("title", this.settings.title)
-            .attr("data-placement", this.settings.titlePlacement);
         this.$widget.find("span.bx")
             .removeClass()
             .addClass("bx")

@@ -1,4 +1,5 @@
 :root {
+    --font-family-monospace: JetBrainsLight;
     --main-font-family: MontserratLight;
     --main-font-size: normal;
     --tree-font-family: MontserratLight;
@@ -24,7 +25,7 @@
     --input-text-color: black;
     --input-background-color: white;
     --hover-item-text-color: black;
-    --hover-item-background-color: #eee;
+    --hover-item-background-color: #ddd;
     --active-item-text-color: black;
     --active-item-background-color: #ddd;
     --menu-text-color: black;
