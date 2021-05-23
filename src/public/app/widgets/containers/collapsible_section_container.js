@@ -22,6 +22,12 @@ const TPL = `
         color: var(--muted-text-color);
         border-bottom: 1px solid var(--main-border-color); 
     }
+
+    .section-title .bx {
+        font-size: 170%;
+        position: relative;
+        top: 6px;
+    }
     
     .section-title.active {
         color: var(--main-text-color);
@@ -37,6 +43,10 @@ const TPL = `
     }
     
     .section-title-empty {
+        flex-basis: 20px;
+    }
+    
+    .section-title-empty:last-of-type {
         flex-shrink: 1;
         flex-grow: 1;
     }
@@ -50,6 +60,14 @@ const TPL = `
     
     .section-body.active {
         display: block;
+    }
+    
+    .section-title-label {
+        display: none;
+    }
+    
+    .section-title.active .section-title-label {
+        display: inline;
     }
     </style>
 
@@ -128,7 +146,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
         this.$titleContainer.empty().append('<div class="section-title section-title-empty">');
 
         for (const widget of this.children) {
-            const ret = widget.renderTitle(note);
+            const ret = widget.getTitle(note);
 
             if (!ret.show) {
                 continue;
@@ -136,7 +154,11 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
             const $sectionTitle = $('<div class="section-title section-title-real">')
                 .attr('data-section-component-id', widget.componentId)
-                .append(ret.$title);
+                .append($('<span class="section-title-icon">')
+                            .addClass(ret.icon)
+                            .attr("title", ret.title))
+                .append(" ")
+                .append($('<span class="section-title-label">').text(ret.title));
 
             this.$titleContainer.append($sectionTitle);
             this.$titleContainer.append('<div class="section-title section-title-empty">');
@@ -149,6 +171,8 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
                 $lastActiveSection = $sectionTitle;
             }
         }
+
+        this.$titleContainer.find('.section-title-icon').tooltip();
 
         if (!$sectionToActivate) {
             $sectionToActivate = $lastActiveSection;

@@ -580,7 +580,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             node.setExpanded(branch.isExpanded, {noEvents: true, noAnimation: true});
         }
 
-        node.renderTitle();
+        node.getTitle();
     }
 
     /**

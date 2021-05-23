@@ -120,7 +120,7 @@ async function moveNodeUpInHierarchy(node) {
 
     if (!hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
         node.getParent().folder = false;
-        node.getParent().renderTitle();
+        node.getParent().getTitle();
     }
 }
 

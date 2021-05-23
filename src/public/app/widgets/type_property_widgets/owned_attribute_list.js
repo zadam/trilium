@@ -31,14 +31,11 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
         this.child(this.attributeEditorWidget, this.attributeDetailWidget);
     }
 
-    renderTitle(note) {
-        const ownedAttrs = note.getAttributes().filter(attr => attr.noteId === this.noteId && !attr.isAutoLink)
-
-        this.$title.text(`Owned attrs (${ownedAttrs.length})`);
-
+    getTitle() {
         return {
             show: true,
-            $title: this.$title
+            title: "Owned attributes",
+            icon: "bx bx-list-check"
         };
     }
 
@@ -68,7 +65,7 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
         if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
             this.refreshWithNote(this.note, true);
 
-            this.renderTitle(this.note);
+            this.getTitle(this.note);
         }
     }
 }

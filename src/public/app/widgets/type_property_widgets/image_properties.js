@@ -43,11 +43,12 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
         return this.note && this.note.type === 'image';
     }
 
-    renderTitle(note) {
+    getTitle(note) {
         return {
             show: this.isEnabled(),
             activate: true,
-            $title: 'Image'
+            title: 'Image',
+            icon: 'bx bx-image'
         };
     }
 

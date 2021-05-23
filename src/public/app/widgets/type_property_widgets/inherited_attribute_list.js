@@ -28,14 +28,11 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
         this.child(this.attributeDetailWidget);
     }
 
-    renderTitle(note) {
-        const inheritedAttributes = this.getInheritedAttributes(note);
-
-        this.$title.text(`Inherited attrs (${inheritedAttributes.length})`);
-
+    getTitle() {
         return {
             show: true,
-            $title: this.$title
+            title: "Inherited attributes",
+            icon: "bx bx-list-plus"
         };
     }
 
@@ -45,8 +42,6 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
 
         this.$container = this.$widget.find('.inherited-attributes-container');
         this.$widget.append(this.attributeDetailWidget.render());
-
-        this.$title = $('<div>');
     }
 
     async refreshWithNote(note) {

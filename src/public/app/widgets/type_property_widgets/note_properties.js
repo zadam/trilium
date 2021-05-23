@@ -21,11 +21,12 @@ export default class NotePropertiesWidget extends NoteContextAwareWidget {
         return this.note && !!this.note.getLabelValue('pageUrl');
     }
 
-    renderTitle(note) {
+    getTitle() {
         return {
             show: this.isEnabled(),
             activate: true,
-            $title: 'Info'
+            title: 'Info',
+            icon: 'bx bx-info-square'
         };
     }
 

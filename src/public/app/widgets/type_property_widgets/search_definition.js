@@ -206,11 +206,12 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         return this.note && this.note.type === 'search';
     }
 
-    renderTitle(note) {
+    getTitle() {
         return {
             show: this.isEnabled(),
             activate: true,
-            $title: 'Search'
+            title: 'Search',
+            icon: 'bx bx-search'
         };
     }
 

@@ -61,11 +61,12 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
         return this.note && this.note.type === 'file';
     }
 
-    renderTitle(note) {
+    getTitle() {
         return {
             show: this.isEnabled(),
             activate: true,
-            $title: 'File'
+            title: 'File',
+            icon: 'bx bx-file'
         };
     }
 
