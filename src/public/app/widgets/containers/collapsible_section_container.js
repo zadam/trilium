@@ -7,13 +7,16 @@ const TPL = `
         margin-bottom: 5px;  
     }
     
+    .section-top-row {
+        display: flex;
+    }
+    
     .section-title-container {
         display: flex;
         flex-direction: row;
         justify-content: center;
-        margin-top: 7px;
         margin-left: 10px;
-        margin-right: 10px;
+        flex-grow: 1;
     }
     
     .section-title {
@@ -51,6 +54,16 @@ const TPL = `
         flex-grow: 1;
     }
     
+    .section-button-container {
+        border-bottom: 1px solid var(--main-border-color); 
+        margin-right: 10px;
+    }
+    
+    .section-button-container .bx {
+        position: relative;
+        top: 6px;
+    }
+    
     .section-body {
         display: none;
         border-bottom: 1px solid var(--main-border-color);
@@ -71,7 +84,11 @@ const TPL = `
     }
     </style>
 
-    <div class="section-title-container"></div>
+    <div class="section-top-row">
+        <div class="section-title-container"></div>
+        <div class="section-button-container"></div>
+    </div>
+    
     <div class="section-body-container"></div>
 </div>`;
 
@@ -79,26 +96,22 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
     constructor() {
         super();
 
-        this.children = [];
-
-        this.positionCounter = 10;
+        this.sectionWidgets = [];
+        this.buttonWidgets = [];
     }
 
-    child(...components) {
-        if (!components) {
-            return this;
-        }
+    section(widget) {
+        super.child(widget);
 
-        super.child(...components);
+        this.sectionWidgets.push(widget);
 
-        for (const component of components) {
-            if (!component.position) {
-                component.position = this.positionCounter;
-                this.positionCounter += 10;
-            }
-        }
+        return this;
+    }
 
-        this.children.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
+    button(widget) {
+        super.child(widget);
+
+        this.buttonWidgets.push(widget);
 
         return this;
     }
@@ -108,14 +121,19 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
         this.overflowing();
 
         this.$titleContainer = this.$widget.find('.section-title-container');
+        this.$buttonContainer = this.$widget.find('.section-button-container');
         this.$bodyContainer = this.$widget.find('.section-body-container');
 
-        for (const widget of this.children) {
+        for (const sectionWidget of this.sectionWidgets) {
             this.$bodyContainer.append(
                 $('<div class="section-body">')
-                    .attr('data-section-component-id', widget.componentId)
-                    .append(widget.render())
+                    .attr('data-section-component-id', sectionWidget.componentId)
+                    .append(sectionWidget.render())
             );
+        }
+
+        for (const buttonWidget of this.buttonWidgets) {
+            this.$buttonContainer.append(buttonWidget.render());
         }
 
         this.$titleContainer.on('click', '.section-title-real', e => {
@@ -145,15 +163,15 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
         this.$titleContainer.empty().append('<div class="section-title section-title-empty">');
 
-        for (const widget of this.children) {
-            const ret = widget.getTitle(note);
+        for (const sectionWidget of this.sectionWidgets) {
+            const ret = sectionWidget.getTitle(note);
 
             if (!ret.show) {
                 continue;
             }
 
             const $sectionTitle = $('<div class="section-title section-title-real">')
-                .attr('data-section-component-id', widget.componentId)
+                .attr('data-section-component-id', sectionWidget.componentId)
                 .append($('<span class="section-title-icon">')
                             .addClass(ret.icon)
                             .attr("title", ret.title))
@@ -167,7 +185,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
                 $sectionToActivate = $sectionTitle;
             }
 
-            if (this.lastActiveComponentId === widget.componentId) {
+            if (this.lastActiveComponentId === sectionWidget.componentId) {
                 $lastActiveSection = $sectionTitle;
             }
         }

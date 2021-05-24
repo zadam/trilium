@@ -2,24 +2,12 @@ import FlexContainer from "../widgets/containers/flex_container.js";
 import GlobalMenuWidget from "../widgets/global_menu.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
-import StandardTopWidget from "../widgets/standard_top_widget.js";
 import SidePaneContainer from "../widgets/containers/side_pane_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
-import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
-import NotePathsWidget from "../widgets/note_paths.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/type_property_widgets/owned_attribute_list.js";
-import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
-import NoteInfoWidget from "../widgets/collapsible_widgets/note_info.js";
-import CalendarWidget from "../widgets/collapsible_widgets/calendar.js";
-import LinkMapWidget from "../widgets/collapsible_widgets/link_map.js";
-import NoteRevisionsWidget from "../widgets/collapsible_widgets/note_revisions.js";
-import SimilarNotesWidget from "../widgets/similar_notes.js";
-import WhatLinksHereWidget from "../widgets/collapsible_widgets/what_links_here.js";
-import SidePaneToggles from "../widgets/side_pane_toggles.js";
-import EditedNotesWidget from "../widgets/collapsible_widgets/edited_notes.js";
 import CollapsibleSectionContainer from "../widgets/containers/collapsible_section_container.js";
 import PromotedAttributesWidget from "../widgets/type_property_widgets/promoted_attributes.js";
 import InheritedAttributesWidget from "../widgets/type_property_widgets/inherited_attribute_list.js";
@@ -194,7 +182,6 @@ export default class DesktopLayout {
                             .overflowing()
                             .child(new NoteIconWidget())
                             .child(new NoteTitleWidget())
-                            .child(new NoteActionsWidget().hideInZenMode())
                             .child(new ButtonWidget()
                                 .icon("bx-window-open bx-rotate-90")
                                 .title("Create new pane")
@@ -204,13 +191,14 @@ export default class DesktopLayout {
                         )
                         .child(
                             new CollapsibleSectionContainer()
-                                .child(new SearchDefinitionWidget())
-                                .child(new NotePropertiesWidget())
-                                .child(new FilePropertiesWidget())
-                                .child(new ImagePropertiesWidget())
-                                .child(new PromotedAttributesWidget())
-                                .child(new OwnedAttributeListWidget())
-                                .child(new InheritedAttributesWidget())
+                                .section(new SearchDefinitionWidget())
+                                .section(new NotePropertiesWidget())
+                                .section(new FilePropertiesWidget())
+                                .section(new ImagePropertiesWidget())
+                                .section(new PromotedAttributesWidget())
+                                .section(new OwnedAttributeListWidget())
+                                .section(new InheritedAttributesWidget())
+                                .button(new NoteActionsWidget())
                         )
                             .child(new NoteUpdateStatusWidget())
                         .child(
