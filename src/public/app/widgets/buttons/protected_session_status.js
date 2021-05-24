@@ -1,5 +1,5 @@
 import ButtonWidget from "./button_widget.js";
-import protectedSessionHolder from "../services/protected_session_holder.js";
+import protectedSessionHolder from "../../services/protected_session_holder.js";
 
 export default class ProtectedSessionStatusWidget extends ButtonWidget {
     doRender() {

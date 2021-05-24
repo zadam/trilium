@@ -9,7 +9,7 @@ const TPL = `
 <div class="note-title-container">
     <style>
     .note-title-container {
-        flex-grow: 100;
+        flex-grow: 1000;
     }
     
     .note-title-container input.note-title {

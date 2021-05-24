@@ -64,6 +64,11 @@ class NoteContext extends Component {
         return appContext.tabManager.noteContexts.filter(nc => nc.ntxId === this.ntxId || nc.mainNtxId === this.ntxId);
     }
 
+    isMainContext() {
+        // if null then this is a main context
+        return !this.mainNtxId;
+    }
+
     getMainContext() {
         if (this.mainNtxId) {
             return appContext.tabManager.getNoteContextById(this.mainNtxId);

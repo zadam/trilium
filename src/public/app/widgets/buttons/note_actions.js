@@ -1,6 +1,6 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import protectedSessionService from "../services/protected_session.js";
-import utils from "../services/utils.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import protectedSessionService from "../../services/protected_session.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="dropdown note-actions">
@@ -114,11 +114,11 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
                 return;
             }
 
-            import('../dialogs/export.js').then(d => d.showDialog(this.noteContext.notePath, 'single'));
+            import('../../dialogs/export.js').then(d => d.showDialog(this.noteContext.notePath, 'single'));
         });
 
         this.$importNoteButton = this.$widget.find('.import-files-button');
-        this.$importNoteButton.on("click", () => import('../dialogs/import.js').then(d => d.showDialog(this.noteId)));
+        this.$importNoteButton.on("click", () => import('../../dialogs/import.js').then(d => d.showDialog(this.noteId)));
 
         this.$protectButton = this.$widget.find(".protect-button");
         this.$protectButton.on('click', () => protectedSessionService.protectNote(this.noteId, true, false));

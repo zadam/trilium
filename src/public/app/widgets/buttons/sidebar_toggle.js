@@ -1,6 +1,6 @@
 import ButtonWidget from "./button_widget.js";
-import options from "../services/options.js";
-import splitService from "../services/split.js";
+import options from "../../services/options.js";
+import splitService from "../../services/split.js";
 
 export default class SidebarToggleWidget extends ButtonWidget {
     refreshIcon() {

@@ -55,12 +55,26 @@ export default class PaneContainer extends FlexContainer {
         await noteContext.setEmpty();
     }
 
+    closeThisPaneCommand({ntxId}) {
+        appContext.tabManager.removeNoteContext(ntxId);
+    }
+
     activeContextChangedEvent() {
         this.refresh();
     }
 
     noteSwitchedAndActivatedEvent() {
         this.refresh();
+    }
+
+    noteContextRemovedEvent({ntxIds}) {
+        this.children = this.children.filter(c => !ntxIds.includes(c.ntxId));
+
+        for (const ntxId of ntxIds) {
+            this.$widget.find(`[data-ntx-id="${ntxId}"]`).remove();
+
+            delete this.widgets[ntxId];
+        }
     }
 
     async refresh() {

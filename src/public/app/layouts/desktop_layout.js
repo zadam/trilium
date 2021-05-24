@@ -1,12 +1,12 @@
 import FlexContainer from "../widgets/containers/flex_container.js";
-import GlobalMenuWidget from "../widgets/global_menu.js";
+import GlobalMenuWidget from "../widgets/buttons/global_menu.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import SidePaneContainer from "../widgets/containers/side_pane_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/type_property_widgets/owned_attribute_list.js";
-import NoteActionsWidget from "../widgets/note_actions.js";
+import NoteActionsWidget from "../widgets/buttons/note_actions.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
 import CollapsibleSectionContainer from "../widgets/containers/collapsible_section_container.js";
 import PromotedAttributesWidget from "../widgets/type_property_widgets/promoted_attributes.js";
@@ -26,10 +26,12 @@ import RootContainer from "../widgets/containers/root_container.js";
 import NoteUpdateStatusWidget from "../widgets/note_update_status.js";
 import SpacerWidget from "../widgets/spacer.js";
 import QuickSearchWidget from "../widgets/quick_search.js";
-import ButtonWidget from "../widgets/button_widget.js";
-import ProtectedSessionStatusWidget from "../widgets/protected_session_status.js";
+import ButtonWidget from "../widgets/buttons/button_widget.js";
+import ProtectedSessionStatusWidget from "../widgets/buttons/protected_session_status.js";
 import PaneContainer from "../widgets/containers/pane_container.js";
-import SidebarToggleWidget from "../widgets/sidebar_toggle.js";
+import SidebarToggleWidget from "../widgets/buttons/sidebar_toggle.js";
+import CreatePaneButton from "../widgets/buttons/create_pane_button.js";
+import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -90,12 +92,9 @@ export default class DesktopLayout {
                             .overflowing()
                             .child(new NoteIconWidget())
                             .child(new NoteTitleWidget())
-                            .child(new ButtonWidget()
-                                .icon("bx-window-open bx-rotate-90")
-                                .title("Create new pane")
-                                .titlePlacement("bottom")
-                                .onClick(widget => widget.triggerCommand("openNewPane", { ntxId: widget.getNtxId() }))
-                            )
+                            .child(new SpacerWidget(1))
+                            .child(new ClosePaneButton())
+                            .child(new CreatePaneButton())
                         )
                         .child(
                             new CollapsibleSectionContainer()

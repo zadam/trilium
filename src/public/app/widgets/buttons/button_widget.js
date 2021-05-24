@@ -1,4 +1,4 @@
-import BasicWidget from "./basic_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <span class="button-widget" 
@@ -8,7 +8,11 @@ const TPL = `
 </span>
 `;
 
-export default class ButtonWidget extends BasicWidget {
+export default class ButtonWidget extends NoteContextAwareWidget {
+    isEnabled() {
+        return true;
+    }
+
     constructor() {
         super();
 

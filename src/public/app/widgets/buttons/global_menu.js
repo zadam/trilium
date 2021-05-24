@@ -1,5 +1,5 @@
-import BasicWidget from "./basic_widget.js";
-import utils from "../services/utils.js";
+import BasicWidget from "../basic_widget.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="global-menu-wrapper">
@@ -105,7 +105,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.overflowing();
 
         this.$widget.find(".show-about-dialog-button").on('click',
-            () => import("../dialogs/about.js").then(d => d.showDialog()));
+            () => import("../../dialogs/about.js").then(d => d.showDialog()));
 
         this.$widget.find(".logout-button").toggle(!utils.isElectron());
 
