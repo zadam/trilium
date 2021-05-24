@@ -331,8 +331,8 @@ export default class TabManager extends Component {
 
         let i = 0;
 
-        for (const ntxId in ntxIdsInOrder) {
-            for (const noteContext of this.noteContexts[ntxId].getSubContexts()) {
+        for (const ntxId of ntxIdsInOrder) {
+            for (const noteContext of this.getNoteContextById(ntxId).getSubContexts()) {
                 order[noteContext.ntxId] = i++;
             }
         }

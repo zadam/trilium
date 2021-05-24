@@ -35,17 +35,20 @@ export default class PaneContainer extends FlexContainer {
     }
 
     async openNewPaneCommand({ntxId}) {
-        const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveContext().ntxId);
+        const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveMainContext().ntxId);
 
+        // remove the original position of newly created note context
         const ntxIds = appContext.tabManager.children.map(c => c.ntxId)
             .filter(id => id !== noteContext.ntxId);
 
+        // insert the note context after the originating note context
         ntxIds.splice(ntxIds.indexOf(ntxId) + 1, 0, noteContext.ntxId);
 
         this.triggerCommand("noteContextReorder", ntxIds);
 
+        // move the note context rendered widget after the originating widget
         this.$widget.find(`[data-ntx-id="${noteContext.ntxId}"]`)
-            .insertAfter(this.$widget.find(`[data-ntx-id="${ntxId}"]`))
+            .insertAfter(this.$widget.find(`[data-ntx-id="${ntxId}"]`));
 
         await appContext.tabManager.activateNoteContext(noteContext.ntxId);
 
@@ -72,7 +75,7 @@ export default class PaneContainer extends FlexContainer {
 
         for (const ntxId in this.widgets) {
             const noteContext = appContext.tabManager.getNoteContextById(ntxId);
-console.log(noteContext, activeNtxId);
+
             const widget = this.widgets[ntxId];
             widget.toggleExt(show && activeNtxId && [noteContext.ntxId, noteContext.mainNtxId].includes(activeNtxId));
         }

@@ -251,7 +251,7 @@ export default class TabRowWidget extends BasicWidget {
         this.$widget.on('contextmenu', '.note-tab', e => {
             e.preventDefault();
 
-            const ntxId = $(e.target).closest(".note-tab").attr('data-tab-id');
+            const ntxId = $(e.target).closest(".note-tab").attr('data-ntx-id');
 
             contextMenu.show({
                 x: e.pageX,
@@ -381,7 +381,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     addTab(ntxId) {
-        const $tab = $(TAB_TPL).attr('data-tab-id', ntxId);
+        const $tab = $(TAB_TPL).attr('data-ntx-id', ntxId);
 
         keyboardActionService.updateDisplayedShortcuts($tab);
 
@@ -399,7 +399,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     closeActiveTabCommand({$el}) {
-        const ntxId = $el.closest(".note-tab").attr('data-tab-id');
+        const ntxId = $el.closest(".note-tab").attr('data-ntx-id');
 
         appContext.tabManager.removeNoteContext(ntxId);
     }
@@ -407,7 +407,7 @@ export default class TabRowWidget extends BasicWidget {
     setTabCloseEvent($tab) {
         $tab.on('mousedown', e => {
             if (e.which === 2) {
-                appContext.tabManager.removeNoteContext($tab.attr('data-tab-id'));
+                appContext.tabManager.removeNoteContext($tab.attr('data-ntx-id'));
 
                 return true; // event has been handled
             }
@@ -454,8 +454,8 @@ export default class TabRowWidget extends BasicWidget {
         }
     }
 
-    getTabIdsInOrder() {
-        return this.tabEls.map(el => el.getAttribute('data-tab-id'));
+    getNtxIdsInOrder() {
+        return this.tabEls.map(el => el.getAttribute('data-ntx-id'));
     }
 
     updateTitle($tab, title) {
@@ -463,11 +463,11 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     getTabById(ntxId) {
-        return this.$widget.find(`[data-tab-id='${ntxId}']`);
+        return this.$widget.find(`[data-ntx-id='${ntxId}']`);
     }
 
     getTabId($tab) {
-        return $tab.attr('data-tab-id');
+        return $tab.attr('data-ntx-id');
     }
 
     noteContextRemovedEvent({ntxIds}) {
@@ -509,7 +509,7 @@ export default class TabRowWidget extends BasicWidget {
             this.draggabillies.push(draggabilly);
 
             draggabilly.on('pointerDown', _ => {
-                appContext.tabManager.activateNoteContext(tabEl.getAttribute('data-tab-id'));
+                appContext.tabManager.activateNoteContext(tabEl.getAttribute('data-ntx-id'));
             });
 
             draggabilly.on('dragStart', _ => {
@@ -573,7 +573,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        this.triggerEvent('tabReorder', {ntxIdsInOrder: this.getTabIdsInOrder()});
+        this.triggerEvent('tabReorder', {ntxIdsInOrder: this.getNtxIdsInOrder()});
         this.layoutTabs();
     }
 
