@@ -329,8 +329,25 @@ export default class TabManager extends Component {
     tabReorderEvent({ntxIdsInOrder}) {
         const order = {};
 
-        for (const i in ntxIdsInOrder) {
-            order[ntxIdsInOrder[i]] = i;
+        let i = 0;
+
+        for (const ntxId in ntxIdsInOrder) {
+            for (const noteContext of this.noteContexts[ntxId].getSubContexts()) {
+                order[noteContext.ntxId] = i++;
+            }
+        }
+
+        this.children.sort((a, b) => order[a.ntxId] < order[b.ntxId] ? -1 : 1);
+
+        this.tabsUpdate.scheduleUpdate();
+    }
+
+    noteContextReorderEvent({ntxIdsInOrder}) {
+        const order = {};
+        let i = 0;
+
+        for (const ntxId in ntxIdsInOrder) {
+            order[ntxId] = i++;
         }
 
         this.children.sort((a, b) => order[a.ntxId] < order[b.ntxId] ? -1 : 1);

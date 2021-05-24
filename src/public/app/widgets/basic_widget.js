@@ -123,6 +123,15 @@ class BasicWidget extends Component {
         }
     }
 
+    getNtxId() {
+        if (this.$widget) {
+            return this.$widget.closest("[data-ntx-id]").attr("data-ntx-id");
+        }
+        else {
+            return null;
+        }
+    }
+
     cleanup() {}
 }
 

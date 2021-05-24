@@ -21,7 +21,14 @@ export default class ButtonWidget extends BasicWidget {
         this.$widget = $(TPL);
         this.overflowing();
 
-        this.$widget.on("click", () => this.triggerCommand(this.settings.command));
+        if (this.settings.command) {
+            this.$widget.on("click", () => this.triggerCommand(this.settings.command));
+        }
+
+        if (this.settings.onClick) {
+            this.$widget.on("click", () => this.settings.onClick(this));
+        }
+
         this.$widget.attr("data-placement", this.settings.titlePlacement);
 
         this.$widget.tooltip({
@@ -62,6 +69,11 @@ export default class ButtonWidget extends BasicWidget {
 
     command(command) {
         this.settings.command = command;
+        return this;
+    }
+
+    onClick(handler) {
+        this.settings.onClick = handler;
         return this;
     }
 }

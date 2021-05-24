@@ -31,98 +31,6 @@ import ProtectedSessionStatusWidget from "../widgets/protected_session_status.js
 import PaneContainer from "../widgets/containers/pane_container.js";
 import SidebarToggleWidget from "../widgets/sidebar_toggle.js";
 
-const RIGHT_PANE_CSS = `
-<style>
-#right-pane {
-    overflow: auto;
-}
-
-#right-pane .card {
-    border: 0;
-    display: flex;
-    flex-shrink: 0;
-    flex-direction: column;
-}
-
-#right-pane .card-header {
-    background: inherit;
-    padding: 6px 10px 3px 0;
-    width: 99%; /* to give minimal right margin */
-    background-color: var(--button-background-color);
-    border-color: var(--button-border-color);
-    border-width: 0 0 1px 0;
-    border-radius: 4px;
-    border-style: solid;
-    display: flex;
-    justify-content: space-between;
-}
-
-#right-pane .widget-title {
-    border-radius: 0;
-    padding: 0;
-    border: 0;
-    background: inherit;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: var(--muted-text-color) !important;
-}
-
-#right-pane .widget-header-action {
-    cursor: pointer;
-    color: var(--main-text-color) !important;
-    text-decoration: none;
-    font-size: large;
-    position: relative;
-    top: 2px;
-}
-
-#right-pane .widget-help {
-    color: var(--muted-text-color);
-    position: relative;
-    top: 2px;
-    font-size: large;
-}
-
-#right-pane .widget-help.no-link:hover {
-    cursor: default;
-    text-decoration: none;
-}
-
-#right-pane .widget-toggle-button {
-    cursor: pointer;
-    color: var(--main-text-color) !important;
-}
-
-#right-pane .widget-toggle-button:hover {
-    text-decoration: none !important;
-}
-
-#right-pane .widget-toggle-icon {
-    position: relative;
-    top: 2px;
-    font-size: large;
-    padding-left: 5px;
-}
-
-#right-pane .body-wrapper {
-    overflow: auto;
-}
-
-#right-pane .card-body {
-    width: 100%;
-    padding: 8px;
-    border: 0;
-    height: 100%;
-    overflow: auto;
-    max-height: 300px;
-}
-
-#right-pane .card-body ul {
-    padding-left: 25px;
-    margin-bottom: 5px;
-}
-</style>`;
-
 export default class DesktopLayout {
     constructor(customWidgets) {
         this.customWidgets = customWidgets;
@@ -186,7 +94,7 @@ export default class DesktopLayout {
                                 .icon("bx-window-open bx-rotate-90")
                                 .title("Create new pane")
                                 .titlePlacement("bottom")
-                                .command("openNewPane")
+                                .onClick(widget => widget.triggerCommand("openNewPane", { ntxId: widget.getNtxId() }))
                             )
                         )
                         .child(

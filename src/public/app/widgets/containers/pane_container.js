@@ -17,7 +17,7 @@ export default class PaneContainer extends FlexContainer {
 
         const $renderedWidget = widget.render();
 
-        $renderedWidget.attr("data-tab-id", noteContext.ntxId);
+        $renderedWidget.attr("data-ntx-id", noteContext.ntxId);
 
         $renderedWidget.on('click', () => appContext.tabManager.activateNoteContext(noteContext.ntxId));
 
@@ -34,8 +34,18 @@ export default class PaneContainer extends FlexContainer {
         this.child(widget);
     }
 
-    async openNewPaneCommand() {
+    async openNewPaneCommand({ntxId}) {
         const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveContext().ntxId);
+
+        const ntxIds = appContext.tabManager.children.map(c => c.ntxId)
+            .filter(id => id !== noteContext.ntxId);
+
+        ntxIds.splice(ntxIds.indexOf(ntxId) + 1, 0, noteContext.ntxId);
+
+        this.triggerCommand("noteContextReorder", ntxIds);
+
+        this.$widget.find(`[data-ntx-id="${noteContext.ntxId}"]`)
+            .insertAfter(this.$widget.find(`[data-ntx-id="${ntxId}"]`))
 
         await appContext.tabManager.activateNoteContext(noteContext.ntxId);
 

@@ -81,7 +81,7 @@ function goToLink(e) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
-            const ntxId = $(e.target).closest("[data-tab-id]").attr("data-tab-id");
+            const ntxId = $(e.target).closest("[data-ntx-id]").attr("data-ntx-id");
 
             const noteContext = ntxId
                 ? appContext.tabManager.getNoteContextById(ntxId)
