@@ -307,6 +307,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 return `href="#root/${targetNoteId}"`;
             });
 
+            content = content.replace(/data-note-path="([^"]*)"/g, (match, notePath) => {
+                const noteId = notePath.split("/").pop();
+
+                const targetNoteId = noteIdMap[noteId];
+
+                return `data-note-path="root/${targetNoteId}"`;
+            });
+
             if (noteMeta) {
                 const includeNoteLinks = (noteMeta.attributes || [])
                     .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');

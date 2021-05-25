@@ -11,7 +11,7 @@ function sanitize(dirtyHtml) {
             'figure', 'span', 'label', 'input'
         ],
         allowedAttributes: {
-            'a': [ 'href', 'class' ],
+            'a': [ 'href', 'class', 'data-note-path' ],
             'img': [ 'src' ],
             'section': [ 'class', 'data-note-id' ],
             'figure': [ 'class' ],
