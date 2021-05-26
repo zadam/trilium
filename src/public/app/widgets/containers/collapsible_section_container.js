@@ -27,9 +27,9 @@ const TPL = `
     }
 
     .section-title .bx {
-        font-size: 170%;
+        font-size: 150%;
         position: relative;
-        top: 6px;
+        top: 3px;
     }
     
     .section-title.active {
@@ -61,7 +61,7 @@ const TPL = `
     
     .section-button-container .bx {
         position: relative;
-        top: 6px;
+        top: 3px;
     }
     
     .section-body {

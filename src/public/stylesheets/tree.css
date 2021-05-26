@@ -6,18 +6,20 @@ ul.fancytree-container {
     margin-left: 7px !important;
 }
 
-.fancytree-node {
-    padding: 5px;
-    display: block;
-    cursor: pointer;
-}
-
 .fancytree-expander {
     visibility: hidden;
 }
 
 .fancytree-folder .fancytree-expander {
     visibility: visible;
+}
+
+.fancytree-node {
+    padding: 5px;
+    display: block;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander {

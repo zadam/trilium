@@ -41,12 +41,19 @@ const TPL = `
         position: absolute; 
         top: 5px;
         right: 10px;
-        font-size: 130%;
+        font-size: 150%;
+        padding: 5px;
         cursor: pointer;
+        border: 1px solid transparent;
+        border-radius: 5px;
+    }
+    
+    .edit-text-note-button:hover {
+        border-color: var(--main-border-color);
     }
     </style>
 
-    <div class="alert alert-warning no-print edit-text-note-button bx bx-edit-alt"
+    <div class="no-print edit-text-note-button bx bx-edit-alt"
          title="Edit this note"></div>
 
     <div class="note-detail-readonly-text-content ck-content"></div>
