@@ -1,9 +1,13 @@
-import CollapsibleWidget from "../collapsible_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import server from "../../services/server.js";
 
 const TPL = `
-<table class="note-info-widget-table">
+<div class="note-info-widget">
     <style>
+        .note-info-widget {
+            padding: 12px;
+        }
+        
         .note-info-widget-table {
             max-width: 100%;            
             display: block;
@@ -23,61 +27,71 @@ const TPL = `
         }
     </style>
 
-    <tr>
-        <th>Note ID:</th>
-        <td class="note-info-note-id"></td>
-        <th>Type:</th>
-        <td>
-            <span class="note-info-type"></span>
-            
-            <span class="note-info-mime"></span>
-        </td>
-    </tr>
-    <tr>
-        <th>Created:</th>
-        <td class="note-info-date-created"></td>
-        <th>Modified:</th>
-        <td class="note-info-date-modified"></td>
-    </tr>
-    <tr title="Note size provides rough estimate of storage requirements for this note. It takes into account note's content and content of its note revisions.">
-        <th>Note size:</th>
-        
-        <td colspan="3">
-            <button class="btn btn-sm calculate-button" style="padding: 0px 10px 0px 10px;">
-                <span class="bx bx-calculator"></span> calculate
-            </button>
-            
-            <span class="note-sizes-wrapper">
-                <span class="note-size"></span>
+    <table class="note-info-widget-table">
+        <tr>
+            <th>Note ID:</th>
+            <td class="note-info-note-id"></td>
+            <th>Created:</th>
+            <td class="note-info-date-created"></td>
+            <th>Modified:</th>
+            <td class="note-info-date-modified"></td>
+        </tr>
+        <tr>
+            <th>Type:</th>
+            <td>
+                <span class="note-info-type"></span>
                 
-                <span class="subtree-size"></span>
-            </span>
-        </td>
-    </tr>
-</table>
-`;
+                <span class="note-info-mime"></span>
+            </td>
 
-export default class NoteInfoWidget extends CollapsibleWidget {
+            <th title="Note size provides rough estimate of storage requirements for this note. It takes into account note's content and content of its note revisions.">Note size:</th>
+           
+            <td>
+                <button class="btn btn-sm calculate-button" style="padding: 0px 10px 0px 10px;">
+                    <span class="bx bx-calculator"></span> calculate
+                </button>
+                
+                <span class="note-sizes-wrapper">
+                    <span class="note-size"></span>
+                    
+                    <span class="subtree-size"></span>
+                </span>
+            </td>
+        </tr>
+    </table>
+</div>
+`;
+export default class NoteInfoWidget extends NoteContextAwareWidget {
+    static getType() { return "note-info"; }
+
     isEnabled() {
-        return super.isEnabled() && !this.note.hasLabel('noteInfoWidgetDisabled');
+        return this.note;
     }
 
-    get widgetTitle() { return "Note info"; }
+    getTitle() {
+        return {
+            show: this.isEnabled(),
+            activate: true,
+            title: 'Note Info',
+            icon: 'bx bx-info-circle'
+        };
+    }
 
-    async doRenderBody() {
-        this.$body.html(TPL);
+    doRender() {
+        this.$widget = $(TPL);
+        this.overflowing();
 
-        this.$noteId = this.$body.find(".note-info-note-id");
-        this.$dateCreated = this.$body.find(".note-info-date-created");
-        this.$dateModified = this.$body.find(".note-info-date-modified");
-        this.$type = this.$body.find(".note-info-type");
-        this.$mime = this.$body.find(".note-info-mime");
+        this.$noteId = this.$widget.find(".note-info-note-id");
+        this.$dateCreated = this.$widget.find(".note-info-date-created");
+        this.$dateModified = this.$widget.find(".note-info-date-modified");
+        this.$type = this.$widget.find(".note-info-type");
+        this.$mime = this.$widget.find(".note-info-mime");
 
-        this.$noteSizesWrapper = this.$body.find('.note-sizes-wrapper');
-        this.$noteSize = this.$body.find(".note-size");
-        this.$subTreeSize = this.$body.find(".subtree-size");
+        this.$noteSizesWrapper = this.$widget.find('.note-sizes-wrapper');
+        this.$noteSize = this.$widget.find(".note-size");
+        this.$subTreeSize = this.$widget.find(".subtree-size");
 
-        this.$calculateButton = this.$body.find(".calculate-button");
+        this.$calculateButton = this.$widget.find(".calculate-button");
         this.$calculateButton.on('click', async () => {
             this.$noteSizesWrapper.show();
             this.$calculateButton.hide();

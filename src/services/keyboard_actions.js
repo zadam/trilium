@@ -231,12 +231,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         separator: "Dialogs"
     },
     {
-        actionName: "showNoteInfo",
-        defaultShortcuts: [],
-        description: "Shows Note Info dialog",
-        scope: "window"
-    },
-    {
         actionName: "showNoteSource",
         defaultShortcuts: [],
         description: "Shows Note Source dialog",

@@ -33,6 +33,7 @@ import SidebarToggleWidget from "../widgets/buttons/sidebar_toggle.js";
 import CreatePaneButton from "../widgets/buttons/create_pane_button.js";
 import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 import BasicPropertiesWidget from "../widgets/type_property_widgets/basic_properties.js";
+import NoteInfoWidget from "../widgets/type_property_widgets/note_info_widget.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -107,6 +108,7 @@ export default class DesktopLayout {
                                 .section(new PromotedAttributesWidget())
                                 .section(new OwnedAttributeListWidget())
                                 .section(new InheritedAttributesWidget())
+                                .section(new NoteInfoWidget())
                                 .button(new NoteActionsWidget())
                         )
                             .child(new NoteUpdateStatusWidget())
