@@ -41,13 +41,17 @@ function initLogFile() {
 function checkDate(millisSinceMidnight) {
     if (millisSinceMidnight >= DAY) {
         initLogFile();
+
+        millisSinceMidnight =- DAY;
     }
+
+    return millisSinceMidnight;
 }
 
 function log(str) {
-    const millisSinceMidnight = Date.now() - todaysMidnight.getTime();
+    let millisSinceMidnight = Date.now() - todaysMidnight.getTime();
 
-    checkDate(millisSinceMidnight);
+    millisSinceMidnight = checkDate(millisSinceMidnight);
 
     logFile.write(formatTime(millisSinceMidnight) + ' ' + str + NEW_LINE);
 
