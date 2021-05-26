@@ -55,8 +55,13 @@ const TPL = `
     }
     
     .section-button-container {
+        display: flex;
         border-bottom: 1px solid var(--main-border-color); 
         margin-right: 10px;
+    }
+    
+    .section-button-container .bx {
+        padding: 5px;
     }
     
     .section-body {
