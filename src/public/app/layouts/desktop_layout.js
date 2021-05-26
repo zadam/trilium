@@ -32,6 +32,7 @@ import PaneContainer from "../widgets/containers/pane_container.js";
 import SidebarToggleWidget from "../widgets/buttons/sidebar_toggle.js";
 import CreatePaneButton from "../widgets/buttons/create_pane_button.js";
 import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
+import BasicPropertiesWidget from "../widgets/type_property_widgets/basic_properties.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -99,6 +100,7 @@ export default class DesktopLayout {
                         .child(
                             new CollapsibleSectionContainer()
                                 .section(new SearchDefinitionWidget())
+                                .section(new BasicPropertiesWidget())
                                 .section(new NotePropertiesWidget())
                                 .section(new FilePropertiesWidget())
                                 .section(new ImagePropertiesWidget())

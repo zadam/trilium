@@ -1,5 +1,4 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
-import protectedSessionService from "../../services/protected_session.js";
 import utils from "../../services/utils.js";
 
 const TPL = `
@@ -14,7 +13,7 @@ const TPL = `
     }
     
     .note-actions .dropdown-menu {
-        width: 20em;
+        width: 15em;
     }
     
     .note-actions .dropdown-item[disabled], .note-actions .dropdown-item[disabled]:hover {
@@ -22,72 +21,13 @@ const TPL = `
         background-color: transparent !important;
         pointer-events: none; /* makes it unclickable */
     }
-    
-    /* The switch - the box around the slider */
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-        float: right;
-    }
-    
-    /* The slider */
-    .slider {
-        border-radius: 24px;
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--more-accented-background-color);
-        transition: .4s;
-    }
-    
-    .slider:before {
-        border-radius: 50%;
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 4px;
-        bottom: 4px;
-        background-color: var(--main-background-color);
-        -webkit-transition: .4s;
-        transition: .4s;
-    }
-    
-    .slider.checked {
-        background-color: var(--main-text-color);
-    }
-    
-    .slider.checked:before {
-        transform: translateX(26px);
-    }
     </style>
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" 
-        aria-expanded="false" class="note-actions-button btn btn-sm dropdown-toggle bx bx-cog"></button>
+        aria-expanded="false" class="note-actions-button btn btn-sm dropdown-toggle bx bx-dots-vertical-rounded"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button"><kbd data-command="renderActiveNote"></kbd> Re-render note</a>
-        <div class="dropdown-item protect-button">
-            Protect the note
-        
-            <span title="Note is not protected, click to make it protected">
-                <label class="switch">
-                <span class="slider"></span>
-            </span>
-        </div>
-        <div class="dropdown-item unprotect-button">
-            Unprotect the note
-        
-            <span title="Note is protected, click to make it unprotected">
-                <label class="switch">
-                <span class="slider checked"></span>
-            </span>
-        </div>
         <a data-trigger-command="findInText" class="dropdown-item">Search in note <kbd data-command="findInText"></a>
         <a data-trigger-command="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
         <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
@@ -120,12 +60,6 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$importNoteButton = this.$widget.find('.import-files-button');
         this.$importNoteButton.on("click", () => import('../../dialogs/import.js').then(d => d.showDialog(this.noteId)));
 
-        this.$protectButton = this.$widget.find(".protect-button");
-        this.$protectButton.on('click', () => protectedSessionService.protectNote(this.noteId, true, false));
-
-        this.$unprotectButton = this.$widget.find(".unprotect-button");
-        this.$unprotectButton.on('click', () => protectedSessionService.protectNote(this.noteId, false, false));
-
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
 
@@ -136,9 +70,6 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.toggleDisabled(this.$showSourceButton, ['text', 'relation-map', 'search', 'code'].includes(note.type));
 
         this.$renderNoteButton.toggle(note.type === 'render');
-
-        this.$protectButton.toggle(!note.isProtected);
-        this.$unprotectButton.toggle(!!note.isProtected);
 
         this.$openNoteExternallyButton.toggle(utils.isElectron());
     }

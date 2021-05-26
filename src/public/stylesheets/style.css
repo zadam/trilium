@@ -20,6 +20,10 @@ body {
     width: 100%;
 }
 
+code, kbd, pre, samp {
+    font-family: var(--font-family-monospace);
+}
+
 button.btn, button.btn-sm {
     font-size: inherit;
 }

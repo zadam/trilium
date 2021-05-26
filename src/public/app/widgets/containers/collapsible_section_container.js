@@ -59,11 +59,6 @@ const TPL = `
         margin-right: 10px;
     }
     
-    .section-button-container .bx {
-        position: relative;
-        top: 3px;
-    }
-    
     .section-body {
         display: none;
         border-bottom: 1px solid var(--main-border-color);
