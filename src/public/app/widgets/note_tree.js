@@ -36,26 +36,33 @@ const TPL = `
         padding-bottom: 35px;
         padding-top: 5px;
     }
-        
-    .collapse-tree-button {
-        position: absolute;
-        bottom: 10px;
-        right: 80px;
+    
+    button.tree-floating-button {
+        font-size: 1.5em;
+        padding: 2px;
+        max-height: 34px;
+        color: var(--button-text-color);
+        border-radius: var(--button-border-radius);
+        border: 1px solid transparent;
         z-index: 100;
+        position: absolute;
+        bottom: 13px;
+    }
+    
+    button.tree-floating-button:hover {
+        border: 1px solid var(--button-border-color);
+    }
+    
+    .collapse-tree-button {
+        right: 100px;
     }
     
     .scroll-to-active-note-button {
-        position: absolute;
-        bottom: 10px;
-        right: 45px;
-        z-index: 100;
+        right: 55px;
     }
     
     .tree-settings-button {
-        position: absolute;
-        bottom: 10px;
         right: 10px;
-        z-index: 100;
     }
     
     .tree-settings-popup {
@@ -65,16 +72,23 @@ const TPL = `
         border: 1px solid var(--main-border-color); 
         padding: 20px; 
         z-index: 1000;
-        width: 320px; 
+        width: 340px; 
         border-radius: 10px;
     }
     </style>
     
-    <button class="btn btn-sm icon-button bx bx-layer-minus collapse-tree-button" title="Collapse note tree" data-trigger-command="collapseTree"></button>
+    <div class="tree"></div>
     
-    <button class="btn btn-sm icon-button bx bx-crosshair scroll-to-active-note-button" title="Scroll to active note" data-trigger-command="scrollToActiveNote"></button>
+    <button class="tree-floating-button bx bx-layer-minus collapse-tree-button" 
+            title="Collapse note tree" 
+            data-trigger-command="collapseTree"></button>
     
-    <button class="btn btn-sm icon-button bx bx-cog tree-settings-button" title="Tree settings"></button>
+    <button class="tree-floating-button bx bx-crosshair scroll-to-active-note-button" 
+            title="Scroll to active note" 
+            data-trigger-command="scrollToActiveNote"></button>
+    
+    <button class="tree-floating-button bx bx-cog tree-settings-button" 
+            title="Tree settings"></button>
     
     <div class="tree-settings-popup">
         <div class="form-check">
@@ -107,8 +121,6 @@ const TPL = `
     
         <button class="btn btn-sm btn-primary save-tree-settings-button" type="submit">Save & apply changes</button>
     </div>
-    
-    <div class="tree"></div>
 </div>
 `;
 

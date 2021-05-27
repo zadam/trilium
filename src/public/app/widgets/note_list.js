@@ -92,4 +92,12 @@ export default class NoteListWidget extends NoteContextAwareWidget {
             this.refresh();
         }
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && attr.name === 'viewType')) {
+            this.shownNoteId = null; // force render
+
+            this.checkRenderStatus();
+        }
+    }
 }

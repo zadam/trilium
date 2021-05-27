@@ -62,6 +62,10 @@ const TPL = `
     
     .section-button-container .bx {
         padding: 5px;
+        font-size: 150%;
+        position: relative;
+        top: -3px;
+        margin-right: 5px;
     }
     
     .section-body {
@@ -206,5 +210,15 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
     refreshSectionContainerCommand() {
         this.refreshWithNote(this.note, true);
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId) && this.lastNoteType !== this.note.type) {
+            // note type influences the list of available sections the most
+            // check for type is so that we don't update on each title rename
+            this.lastNoteType = this.note.type;
+
+            this.refresh();
+        }
     }
 }

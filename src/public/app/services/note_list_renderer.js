@@ -132,30 +132,6 @@ const TPL = `
     }
     </style>
     
-    <div class="btn-group floating-button" style="right: 20px; top: 10px;">
-        <button type="button"
-                class="collapse-all-button btn icon-button bx bx-layer-minus"
-                title="Collapse all notes"></button>
-
-        &nbsp;
-        
-        <button type="button"
-                class="expand-children-button btn icon-button bx bx-move-vertical"
-                title="Expand all children"></button>
-
-        &nbsp;
-
-        <button type="button"
-                class="list-view-button btn icon-button bx bx-menu"
-                title="List view"></button>
-
-        &nbsp;
-
-        <button type="button"
-                class="grid-view-button btn icon-button bx bx-grid-alt"
-                title="Grid view"></button>
-    </div>
-
     <div class="note-list-wrapper">
         <div class="note-list-pager"></div>
     
@@ -202,26 +178,6 @@ class NoteListRenderer {
 
         this.$noteList.addClass(this.viewType + '-view');
 
-        this.$noteList.find('.list-view-button').on('click', () => this.toggleViewType('list'));
-        this.$noteList.find('.grid-view-button').on('click', () => this.toggleViewType('grid'));
-
-        this.$noteList.find('.expand-children-button').on('click', async () => {
-            if (!this.parentNote.hasLabel('expanded')) {
-                await attributeService.addLabel(this.parentNote.noteId, 'expanded');
-            }
-
-            await this.renderList();
-        });
-
-        this.$noteList.find('.collapse-all-button').on('click', async () => {
-            // owned is important - we shouldn't remove inherited expanded labels
-            for (const expandedAttr of this.parentNote.getOwnedLabels('expanded')) {
-                await attributeService.removeAttributeById(this.parentNote.noteId, expandedAttr.attributeId);
-            }
-
-            await this.renderList();
-        });
-
         this.showNotePath = showNotePath;
     }
 
@@ -233,23 +189,6 @@ class NoteListRenderer {
             : [];
 
         return new Set(includedLinks.map(rel => rel.value));
-    }
-
-    async toggleViewType(type) {
-        if (type !== 'list' && type !== 'grid') {
-            throw new Error(`Invalid view type ${type}`);
-        }
-
-        this.viewType = type;
-
-        this.$noteList
-            .removeClass('grid-view')
-            .removeClass('list-view')
-            .addClass(this.viewType + '-view');
-
-        await attributeService.setLabel(this.parentNote.noteId, 'viewType', type);
-
-        await this.renderList();
     }
 
     async renderList() {

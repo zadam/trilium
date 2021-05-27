@@ -6,7 +6,7 @@ const TPL = `
 <div class="basic-properties-widget">
     <style>
         .basic-properties-widget {
-            padding: 12px;
+            padding: 12px 12px 6px 12px;
             display: flex;
             align-items: baseline;
         }

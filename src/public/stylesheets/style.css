@@ -269,12 +269,6 @@ div.ui-tooltip {
     opacity: 0.4;
 }
 
-button.icon-button {
-    font-size: 1.5em;
-    padding: 2px;
-    max-height: 34px;
-}
-
 .ck.ck-block-toolbar-button {
     transform: translateX(7px);
     color: var(--muted-text-color);
@@ -893,14 +887,15 @@ ul.fancytree-container li {
 
 .button-widget .bx {
     font-size: 120%;
-    display: inline-block;
-    position: relative;
-    padding: 15px 15px;
-    cursor: pointer;
+
 }
 
 #launcher-pane .button-widget .bx {
     font-size: 150%;
+    display: inline-block;
+    position: relative;
+    padding: 15px 15px;
+    cursor: pointer;
 }
 
 .button-widget:hover .bx {
