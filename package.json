@@ -75,7 +75,7 @@
     "tmp": "^0.2.1",
     "turndown": "7.0.0",
     "unescape": "1.0.1",
-    "ws": "7.4.5",
+    "ws": "7.4.6",
     "yauzl": "2.10.0"
   },
   "devDependencies": {
