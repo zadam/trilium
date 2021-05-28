@@ -3,6 +3,21 @@ import froca from "../../services/froca.js";
 
 const TPL = `
 <div class="link-map-widget">
+    <style>
+        .link-map-widget {
+            position: relative;
+        }
+    
+        .open-full-dialog-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            z-index: 1000;
+        }
+    </style>
+
+    <button class="bx bx-expand icon-action open-full-dialog-button" title="Show Link Map dialog"></button>
+
     <div class="link-map-container" style="height: 300px;"></div>
 </div>`;
 
@@ -25,6 +40,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$widget.find('.open-full-dialog-button').on('click', () => this.triggerCommand('showLinkMap'));
         this.overflowing();
     }
 
@@ -45,7 +61,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     }
 
     async displayLinkMap(note) {
-        this.$widget.html(TPL);
+        this.$widget.find(".link-map-container").empty();
 
         const $linkMapContainer = this.$widget.find('.link-map-container');
         $linkMapContainer.attr("id", "link-map-container-" + linkMapContainerIdCtr++);
