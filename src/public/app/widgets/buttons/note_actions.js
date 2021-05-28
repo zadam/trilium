@@ -3,15 +3,7 @@ import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="dropdown note-actions">
-    <style>
-    .note-actions-button {
-        font-size: 120% !important;
-    }
-    
-    .note-actions-button::after {
-        display: none !important; // disabling the standard caret
-    }
-    
+    <style>    
     .note-actions .dropdown-menu {
         width: 15em;
     }
@@ -24,12 +16,11 @@ const TPL = `
     </style>
 
     <button type="button" data-toggle="dropdown" aria-haspopup="true" 
-        aria-expanded="false" class="note-actions-button btn btn-sm dropdown-toggle bx bx-dots-vertical-rounded"></button>
+        aria-expanded="false" class="icon-action bx bx-dots-vertical-rounded"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button"><kbd data-command="renderActiveNote"></kbd> Re-render note</a>
         <a data-trigger-command="findInText" class="dropdown-item">Search in note <kbd data-command="findInText"></a>
-        <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
         <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"><kbd data-command="openNoteExternally"></kbd> Open note externally</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>

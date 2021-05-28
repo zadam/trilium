@@ -57,15 +57,14 @@ const TPL = `
     .section-button-container {
         display: flex;
         border-bottom: 1px solid var(--main-border-color); 
-        margin-right: 10px;
+        margin-right: 5px;
     }
     
-    .section-button-container .bx {
+    .section-button-container .icon-action {
         padding: 5px;
-        font-size: 150%;
         position: relative;
         top: -3px;
-        margin-right: 5px;
+        margin-left: 10px;
     }
     
     .section-body {

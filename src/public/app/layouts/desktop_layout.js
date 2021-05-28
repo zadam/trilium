@@ -35,6 +35,7 @@ import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 import BasicPropertiesWidget from "../widgets/type_property_widgets/basic_properties.js";
 import NoteInfoWidget from "../widgets/type_property_widgets/note_info_widget.js";
 import BookPropertiesWidget from "../widgets/type_property_widgets/book_properties.js";
+import ShowNoteSourceButton from "../widgets/buttons/show_note_source.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -69,7 +70,7 @@ export default class DesktopLayout {
                 .child(new ProtectedSessionStatusWidget())
                 .child(new SyncStatusWidget())
                 .child(new SidebarToggleWidget())
-                .css("width", "50px")
+                .css("width", "54px")
             )
             .child(new SidePaneContainer('left')
                 .hideInZenMode()
@@ -114,11 +115,9 @@ export default class DesktopLayout {
                                 .button(new ButtonWidget()
                                     .icon('bx bx-history')
                                     .title("Note Revisions")
-                                    .command("showNoteRevisions"))
-                                .button(new ButtonWidget() // FIXME should be displayed only when applicable
-                                    .icon('bx bx-code')
-                                    .title("Show Note Source")
-                                    .command("showNoteSource"))
+                                    .command("showNoteRevisions")
+                                    .titlePlacement("bottom"))
+                                .button(new ShowNoteSourceButton())
                                 .button(new NoteActionsWidget())
                         )
                             .child(new NoteUpdateStatusWidget())

@@ -1,12 +1,8 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
-const TPL = `
-<span class="button-widget" 
+const TPL = `<span class="button-widget icon-action bx"
       data-toggle="tooltip"
-      title="">
-    <span class="bx"></span>
-</span>
-`;
+      title=""></span>`;
 
 export default class ButtonWidget extends NoteContextAwareWidget {
     isEnabled() {
@@ -44,11 +40,14 @@ export default class ButtonWidget extends NoteContextAwareWidget {
     }
 
     refreshIcon() {
+        for (const className of this.$widget[0].classList) {
+            if (className.startsWith("bx-")) {
+                this.$widget.removeClass(className);
+            }
+        }
+
         this.$widget
             .attr("title", this.settings.title)
-        this.$widget.find("span.bx")
-            .removeClass()
-            .addClass("bx")
             .addClass(this.settings.icon);
     }
 

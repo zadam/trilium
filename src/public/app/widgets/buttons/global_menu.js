@@ -2,99 +2,79 @@ import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 
 const TPL = `
-<div class="global-menu-wrapper">
+<div class="dropdown global-menu dropright">
     <style>
-    .global-menu-wrapper {
-        box-sizing: border-box;
-    }
-    
-    .global-menu {
-        box-sizing: border-box;
-    }
-    
-    .global-menu button {
-        padding: 15px 15px;
-        font-size: 150%;
-        border: none;
-        border-radius: 0 !important;
-    }
-    
-    .global-menu button:hover {
-        background-color: var(--hover-item-background-color);
-    }
-    
     .global-menu .dropdown-menu {
         width: 20em;
     }
     </style>
 
-    <div class="dropdown global-menu dropright">
-        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm bx bx-menu" title="Menu"></button>
-        <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item options-button" data-trigger-command="showOptions">
-                <span class="bx bx-slider"></span>
-                Options
-            </a>
+    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="icon-action bx bx-menu" title="Menu"></button>
 
-            <a class="dropdown-item" data-trigger-command="openNewWindow">
-                <span class="bx bx-window-open"></span>
-                Open new window
-                <kbd data-command="openNewWindow"></kbd>
-            </a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <a class="dropdown-item options-button" data-trigger-command="showOptions">
+            <span class="bx bx-slider"></span>
+            Options
+        </a>
 
-            <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
-                <span class="bx bx-terminal"></span>
-                Open Dev Tools
-                <kbd data-command="openDevTools"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="openNewWindow">
+            <span class="bx bx-window-open"></span>
+            Open new window
+            <kbd data-command="openNewWindow"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="showSQLConsole">
-                <span class="bx bx-data"></span>
-                Open SQL Console
-                <kbd data-command="showSQLConsole"></kbd>
-            </a>
+        <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
+            <span class="bx bx-terminal"></span>
+            Open Dev Tools
+            <kbd data-command="openDevTools"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="showBackendLog">
-                <span class="bx bx-empty"></span>
-                Show backend log
-                <kbd data-command="showBackendLog"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="showSQLConsole">
+            <span class="bx bx-data"></span>
+            Open SQL Console
+            <kbd data-command="showSQLConsole"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
-                title="Reload can help with some visual glitches without restarting the whole app.">
-                <span class="bx bx-empty"></span>
-                Reload frontend
-                <kbd data-command="reloadFrontendApp"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="showBackendLog">
+            <span class="bx bx-empty"></span>
+            Show backend log
+            <kbd data-command="showBackendLog"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="toggleZenMode">
-                <span class="bx bx-empty"></span>
-                Toggle Zen mode
-                <kbd data-command="toggleZenMode"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
+            title="Reload can help with some visual glitches without restarting the whole app.">
+            <span class="bx bx-empty"></span>
+            Reload frontend
+            <kbd data-command="reloadFrontendApp"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="toggleFullscreen">
-                <span class="bx bx-empty"></span>
-                Toggle fullscreen
-                <kbd data-command="toggleFullscreen"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="toggleZenMode">
+            <span class="bx bx-empty"></span>
+            Toggle Zen mode
+            <kbd data-command="toggleZenMode"></kbd>
+        </a>
 
-            <a class="dropdown-item" data-trigger-command="showHelp">
-                <span class="bx bx-info-circle"></span>
-                Show Help
-                <kbd data-command="showHelp"></kbd>
-            </a>
+        <a class="dropdown-item" data-trigger-command="toggleFullscreen">
+            <span class="bx bx-empty"></span>
+            Toggle fullscreen
+            <kbd data-command="toggleFullscreen"></kbd>
+        </a>
 
-            <a class="dropdown-item show-about-dialog-button">
-                <span class="bx bx-empty"></span>
-                About Trilium Notes
-            </a>
+        <a class="dropdown-item" data-trigger-command="showHelp">
+            <span class="bx bx-info-circle"></span>
+            Show Help
+            <kbd data-command="showHelp"></kbd>
+        </a>
 
-            <a class="dropdown-item logout-button" data-trigger-command="logout">
-                <span class="bx bx-log-out"></span>
-                Logout
-            </a>
-        </div>
+        <a class="dropdown-item show-about-dialog-button">
+            <span class="bx bx-empty"></span>
+            About Trilium Notes
+        </a>
+
+        <a class="dropdown-item logout-button" data-trigger-command="logout">
+            <span class="bx bx-log-out"></span>
+            Logout
+        </a>
     </div>
 </div>
 `;

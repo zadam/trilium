@@ -46,7 +46,7 @@ const TPL = `
 
             <th title="Note size provides rough estimate of storage requirements for this note. It takes into account note's content and content of its note revisions.">Note size:</th>
            
-            <td>
+            <td colspan="3">
                 <button class="btn btn-sm calculate-button" style="padding: 0px 10px 0px 10px;">
                     <span class="bx bx-calculator"></span> calculate
                 </button>

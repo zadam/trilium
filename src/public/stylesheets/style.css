@@ -24,14 +24,6 @@ code, kbd, pre, samp {
     font-family: var(--font-family-monospace);
 }
 
-button.btn, button.btn-sm {
-    font-size: inherit;
-}
-
-.btn-micro {
-    padding: 0 10px 0 10px;
-}
-
 .input-group-text {
     background-color: var(--accented-background-color) !important;
     color: var(--muted-text-color) !important;
@@ -81,11 +73,6 @@ button.close:hover {
     overflow-x: hidden;
 }
 
-.icon-action:hover:not(.disabled) {
-    text-decoration: none;
-    border-color: var(--button-border-color);
-}
-
 .icon-action {
     border: 1px solid transparent;
     border-radius: 3px;
@@ -93,6 +80,12 @@ button.close:hover {
     cursor: pointer;
     font-size: 1.5em;
     color: var(--main-text-color);
+    background: var(--button-background-color);
+}
+
+.icon-action:hover:not(.disabled) {
+    text-decoration: none;
+    border-color: var(--button-border-color);
 }
 
 .icon-action.disabled {
@@ -237,6 +230,15 @@ div.ui-tooltip {
 
 .btn {
     border-radius: var(--button-border-radius);
+    border-color: var(--button-border-color);
+}
+
+button.btn, button.btn-sm {
+    font-size: inherit;
+}
+
+.btn-micro {
+    padding: 0 10px 0 10px;
 }
 
 .btn.btn-primary {
@@ -258,10 +260,6 @@ div.ui-tooltip {
 .btn:not(.btn-primary) {
     background-color: var(--button-background-color);
     color: var(--button-text-color);
-}
-
-.btn:not(.btn-primary):hover {
-    border-color: var(--button-border-color);
 }
 
 .btn.active:not(.btn-primary) {
@@ -885,20 +883,15 @@ ul.fancytree-container li {
     margin: 10px;
 }
 
-.button-widget .bx {
-    font-size: 120%;
-
-}
-
-#launcher-pane .button-widget .bx {
+#launcher-pane .icon-action {
     font-size: 150%;
     display: inline-block;
-    position: relative;
     padding: 15px 15px;
     cursor: pointer;
+    border: none;
 }
 
-.button-widget:hover .bx {
+#launcher-pane .icon-action:hover {
     background-color: var(--hover-item-background-color);
 }
 
