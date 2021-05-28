@@ -210,7 +210,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         return {
             show: this.isEnabled(),
             activate: true,
-            title: 'Search',
+            title: 'Search parameters',
             icon: 'bx bx-search'
         };
     }

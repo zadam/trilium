@@ -47,7 +47,6 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
     getTitle() {
         return {
             show: this.isEnabled(),
-            activate: true,
             title: 'Basic Properties',
             icon: 'bx bx-slider'
         };
