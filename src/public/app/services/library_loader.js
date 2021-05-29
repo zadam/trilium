@@ -57,6 +57,10 @@ const WHEEL_ZOOM = {
     js: [ "libraries/wheel-zoom.min.js"]
 };
 
+const FORCE_GRAPH = {
+    js: [ "libraries/force-graph.min.js"]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -106,5 +110,6 @@ export default {
     PRINT_THIS,
     CALENDAR_WIDGET,
     KATEX,
-    WHEEL_ZOOM
+    WHEEL_ZOOM,
+    FORCE_GRAPH
 }

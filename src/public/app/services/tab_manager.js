@@ -100,8 +100,6 @@ export default class TabManager extends Component {
             filteredTabs[0].active = true;
         }
 
-        console.log("filteredTabs", filteredTabs);
-
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
                 await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);

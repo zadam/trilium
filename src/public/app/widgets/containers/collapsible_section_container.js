@@ -159,14 +159,14 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
                 this.lastActiveComponentId = sectionComponentId;
 
+                this.$titleContainer.find(`.section-title-real[data-section-component-id="${sectionComponentId}"]`).addClass("active");
+                this.$bodyContainer.find(`.section-body[data-section-component-id="${sectionComponentId}"]`).addClass("active");
+
                 const activeChild = this.getActiveSectionWidget();
 
                 if (activeChild) {
                     activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
                 }
-
-                this.$titleContainer.find(`.section-title-real[data-section-component-id="${sectionComponentId}"]`).addClass("active");
-                this.$bodyContainer.find(`.section-body[data-section-component-id="${sectionComponentId}"]`).addClass("active");
             }
             else {
                 this.lastActiveComponentId = null;

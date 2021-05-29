@@ -79,8 +79,7 @@ export default class LinkMapWidget extends CollapsibleWidget {
 
         this.linkMapService = new LinkMapServiceClass(note, $linkMapContainer, {
             maxDepth: 1,
-            zoom: 0.6,
-            stopCheckerCallback: () => this.noteId !== note.noteId // stop when current note is not what was originally requested
+            zoom: 0.6
         });
 
         await this.linkMapService.render();

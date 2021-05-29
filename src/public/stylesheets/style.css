@@ -599,7 +599,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .modal-header {
-    padding: 0.7rem 1rem !important; /* make modal header padding slightly smaller */
+    padding: 0.7rem 1rem 0 1rem !important; /* make modal header padding slightly smaller */
 }
 
 .floating-button {

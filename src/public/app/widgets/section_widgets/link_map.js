@@ -7,6 +7,10 @@ const TPL = `
         .link-map-widget {
             position: relative;
         }
+        
+        .link-map-container {
+            max-height: 300px;
+        }
     
         .open-full-dialog-button {
             position: absolute;
@@ -46,14 +50,12 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         this.$widget.find(".link-map-container").empty();
 
         const $linkMapContainer = this.$widget.find('.link-map-container');
-        $linkMapContainer.attr("id", "link-map-container-" + linkMapContainerIdCtr++);
 
         const LinkMapServiceClass = (await import('../../services/link_map.js')).default;
 
         this.linkMapService = new LinkMapServiceClass(note, $linkMapContainer, {
             maxDepth: 3,
-            zoom: 0.6,
-            stopCheckerCallback: () => this.noteId !== note.noteId // stop when current note is not what was originally requested
+            zoom: 0.6
         });
 
         await this.linkMapService.render();
