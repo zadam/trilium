@@ -164,7 +164,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
     async refreshWithNote(note, noExplicitActivation = false) {
         let $sectionToActivate, $lastActiveSection;
 
-        this.$titleContainer.empty().append('<div class="section-title section-title-empty">');
+        this.$titleContainer.empty();
 
         for (const sectionWidget of this.sectionWidgets) {
             const ret = sectionWidget.getTitle(note);

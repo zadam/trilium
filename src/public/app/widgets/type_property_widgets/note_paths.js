@@ -1,21 +1,18 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import treeService from "../services/tree.js";
-import linkService from "../services/link.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import treeService from "../../services/tree.js";
+import linkService from "../../services/link.js";
 
 const TPL = `
-<div class="dropdown note-paths-widget">
+<div class="note-paths-widget">
     <style>
-    .note-path-list-button {
-        font-size: 120% !important;
-    }
-    
-    .note-path-list-button::after {
-        display: none !important; // disabling the standard caret
+    .note-paths-widget {
+        padding: 12px;
+        max-height: 300px;
+        overflow-y: auto;
     }
     
     .note-path-list {
-        max-height: 700px;
-        overflow-y: auto;
+        margin-top: 10px;
     }
     
     .note-path-list .path-current {
@@ -31,12 +28,28 @@ const TPL = `
     }
     </style>
     
-    <button class="btn dropdown-toggle note-path-list-button bx bx-collection" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Note paths"></button>
-    <ul class="note-path-list dropdown-menu dropdown-menu-right" aria-labelledby="note-path-list-button">
-    </ul>
+    <div>This note is placed into the following paths:</div>
+    
+    <ul class="note-path-list"></ul>
+    
+    <button class="btn btn-sm" data-trigger-command="cloneNoteIdsTo">Clone note to new location...</button>
 </div>`;
 
 export default class NotePathsWidget extends NoteContextAwareWidget {
+    static getType() { return "note-paths"; }
+
+    isEnabled() {
+        return this.note;
+    }
+
+    getTitle() {
+        return {
+            show: this.isEnabled(),
+            title: 'Note Paths',
+            icon: 'bx bx-collection'
+        };
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.overflowing();
@@ -45,13 +58,8 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
     }
 
-    async renderDropdown() {
+    async refreshWithNote(note) {
         this.$notePathList.empty();
-        this.$notePathList.append(
-            $("<div>")
-                .addClass("dropdown-header")
-                .text('This note is placed into the following paths:')
-        );
 
         if (this.noteId === 'root') {
             await this.addPath('root');
@@ -61,16 +69,6 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         for (const notePathRecord of this.note.getSortedNotePaths(this.hoistedNoteId)) {
             await this.addPath(notePathRecord);
         }
-
-        const cloneLink = $("<div>")
-            .addClass("dropdown-header")
-            .append(
-                $('<button class="btn btn-sm">')
-                    .text('Clone note to new location...')
-                    .on('click', () => import("../dialogs/clone_to.js").then(d => d.showDialog([this.noteId])))
-            );
-
-        this.$notePathList.append(cloneLink);
     }
 
     async addPath(notePathRecord) {
@@ -79,9 +77,6 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         const title = await treeService.getNotePathTitle(notePath);
 
         const $noteLink = await linkService.createNoteLink(notePath, {title});
-
-        $noteLink
-            .addClass("dropdown-item");
 
         $noteLink
             .find('a')
@@ -116,7 +111,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             $noteLink.append(` ${icons.join(' ')}`);
         }
 
-        this.$notePathList.append($noteLink);
+        this.$notePathList.append($("<li>").append($noteLink));
     }
 
     entitiesReloadedEvent({loadResults}) {
@@ -125,11 +120,5 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
 
             this.refresh();
         }
-    }
-
-    async refresh() {
-        await super.refresh();
-
-        this.$widget.find('.dropdown-toggle').dropdown('hide');
     }
 }

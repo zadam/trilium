@@ -4,6 +4,7 @@ import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#clone-to-dialog");
 const $form = $("#clone-to-form");
@@ -14,6 +15,10 @@ const $noteList = $("#clone-to-note-list");
 let clonedNoteIds;
 
 export async function showDialog(noteIds) {
+    if (!noteIds || noteIds.length === 0) {
+        noteIds = [ appContext.tabManager.getActiveContextNoteId() ]
+    }
+
     clonedNoteIds = [];
 
     for (const noteId of noteIds) {

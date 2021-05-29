@@ -37,6 +37,7 @@ import NoteInfoWidget from "../widgets/type_property_widgets/note_info_widget.js
 import BookPropertiesWidget from "../widgets/type_property_widgets/book_properties.js";
 import ShowNoteSourceButton from "../widgets/buttons/show_note_source.js";
 import LinkMapWidget from "../widgets/type_property_widgets/link_map.js";
+import NotePathsWidget from "../widgets/type_property_widgets/note_paths.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -112,6 +113,7 @@ export default class DesktopLayout {
                                 .section(new PromotedAttributesWidget())
                                 .section(new OwnedAttributeListWidget())
                                 .section(new InheritedAttributesWidget())
+                                .section(new NotePathsWidget())
                                 .section(new LinkMapWidget())
                                 .section(new NoteInfoWidget())
                                 .button(new ButtonWidget()
