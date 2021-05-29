@@ -38,6 +38,7 @@ import BookPropertiesWidget from "../widgets/type_property_widgets/book_properti
 import ShowNoteSourceButton from "../widgets/buttons/show_note_source.js";
 import LinkMapWidget from "../widgets/type_property_widgets/link_map.js";
 import NotePathsWidget from "../widgets/type_property_widgets/note_paths.js";
+import SimilarNotesWidget from "../widgets/type_property_widgets/similar_notes.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -115,6 +116,7 @@ export default class DesktopLayout {
                                 .section(new InheritedAttributesWidget())
                                 .section(new NotePathsWidget())
                                 .section(new LinkMapWidget())
+                                .section(new SimilarNotesWidget())
                                 .section(new NoteInfoWidget())
                                 .button(new ButtonWidget()
                                     .icon('bx bx-history')

@@ -16,7 +16,7 @@ let clonedNoteIds;
 
 export async function showDialog(noteIds) {
     if (!noteIds || noteIds.length === 0) {
-        noteIds = [ appContext.tabManager.getActiveContextNoteId() ]
+        noteIds = [ appContext.tabManager.getActiveContextNoteId() ];
     }
 
     clonedNoteIds = [];
