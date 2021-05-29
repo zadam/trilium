@@ -155,7 +155,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
                 this.lastActiveComponentId = sectionComponentId;
 
-                const activeChild = this.getActiveChild();
+                const activeChild = this.getActiveSectionWidget();
 
                 if (activeChild) {
                     activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
@@ -193,7 +193,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
             this.$titleContainer.append($sectionTitle);
             this.$titleContainer.append('<div class="section-title section-title-empty">');
 
-            if (ret.activate && !$sectionToActivate && !noExplicitActivation) {
+            if (ret.activate && !this.lastActiveComponentId && !$sectionToActivate && !noExplicitActivation) {
                 $sectionToActivate = $sectionTitle;
             }
 
@@ -226,11 +226,15 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
             await super.handleEventInChildren('setNoteContext', data);
         }
         else {
-            const activeChild = this.getActiveChild();
+            const activeSectionWidget = this.getActiveSectionWidget();
 
             // forward events only to active section, inactive ones don't need to be updated
-            if (activeChild) {
-                await activeChild.handleEvent(name, data);
+            if (activeSectionWidget) {
+                await activeSectionWidget.handleEvent(name, data);
+            }
+
+            for (const buttonWidget of this.buttonWidgets) {
+                await buttonWidget.handleEvent(name, data);
             }
         }
     }
@@ -245,7 +249,7 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
         }
     }
 
-    getActiveChild() {
-        return this.children.find(ch => ch.componentId === this.lastActiveComponentId)
+    getActiveSectionWidget() {
+        return this.sectionWidgets.find(ch => ch.componentId === this.lastActiveComponentId)
     }
 }
