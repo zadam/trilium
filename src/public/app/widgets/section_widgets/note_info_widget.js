@@ -62,8 +62,6 @@ const TPL = `
 </div>
 `;
 export default class NoteInfoWidget extends NoteContextAwareWidget {
-    static getType() { return "note-info"; }
-
     isEnabled() {
         return this.note;
     }

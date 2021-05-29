@@ -36,8 +36,6 @@ const TPL = `
 </div>`;
 
 export default class NotePathsWidget extends NoteContextAwareWidget {
-    static getType() { return "note-paths"; }
-
     isEnabled() {
         return this.note;
     }

@@ -200,8 +200,6 @@ for (const clazz of [
 }
 
 export default class SearchDefinitionWidget extends NoteContextAwareWidget {
-    static getType() { return "search"; }
-
     isEnabled() {
         return this.note && this.note.type === 'search';
     }

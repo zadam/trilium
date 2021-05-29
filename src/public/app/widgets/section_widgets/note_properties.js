@@ -15,8 +15,6 @@ const TPL = `
 </div>`;
 
 export default class NotePropertiesWidget extends NoteContextAwareWidget {
-    static getType() { return "note-properties"; }
-
     isEnabled() {
         return this.note && !!this.note.getLabelValue('pageUrl');
     }

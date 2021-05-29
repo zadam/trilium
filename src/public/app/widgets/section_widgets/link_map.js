@@ -24,8 +24,6 @@ const TPL = `
 let linkMapContainerIdCtr = 1;
 
 export default class LinkMapWidget extends NoteContextAwareWidget {
-    static getType() { return "link-map"; }
-
     isEnabled() {
         return this.note;
     }
