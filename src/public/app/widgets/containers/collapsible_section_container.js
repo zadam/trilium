@@ -20,8 +20,6 @@ const TPL = `
     }
     
     .section-title {
-        padding-right: 10px;
-        padding-left: 10px;
         color: var(--muted-text-color);
         border-bottom: 1px solid var(--main-border-color); 
     }
@@ -45,10 +43,15 @@ const TPL = `
         color: var(--main-text-color);
     }
     
-    .section-title-empty {
-        flex-basis: 20px;
+    .section-title:first-of-type {
+        padding-left: 10px;
     }
     
+    .section-title-empty {
+        flex-basis: 35px;
+        flex-shrink: 1;
+    }
+        
     .section-title-empty:last-of-type {
         flex-shrink: 1;
         flex-grow: 1;
@@ -152,6 +155,12 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
                 this.lastActiveComponentId = sectionComponentId;
 
+                const activeChild = this.getActiveChild();
+
+                if (activeChild) {
+                    activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
+                }
+
                 this.$titleContainer.find(`.section-title-real[data-section-component-id="${sectionComponentId}"]`).addClass("active");
                 this.$bodyContainer.find(`.section-body[data-section-component-id="${sectionComponentId}"]`).addClass("active");
             }
@@ -211,6 +220,21 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
         this.refreshWithNote(this.note, true);
     }
 
+    async handleEventInChildren(name, data) {
+        if (['activeContextChanged', 'setNoteContext'].includes(name)) {
+            // won't trigger .refresh();
+            await super.handleEventInChildren('setNoteContext', data);
+        }
+        else {
+            const activeChild = this.getActiveChild();
+
+            // forward events only to active section, inactive ones don't need to be updated
+            if (activeChild) {
+                await activeChild.handleEvent(name, data);
+            }
+        }
+    }
+
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId) && this.lastNoteType !== this.note.type) {
             // note type influences the list of available sections the most
@@ -219,5 +243,9 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
 
             this.refresh();
         }
+    }
+
+    getActiveChild() {
+        return this.children.find(ch => ch.componentId === this.lastActiveComponentId)
     }
 }

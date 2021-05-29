@@ -43,22 +43,6 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        let shown = false;
-
-        const observer = new IntersectionObserver(entries => {
-            if (!shown && entries[0].isIntersecting) {
-                shown = true;
-                this.displayLinkMap(note);
-            }
-        }, {
-            rootMargin: '0px',
-            threshold: 0.1
-        });
-
-        observer.observe(this.$widget[0]);
-    }
-
-    async displayLinkMap(note) {
         this.$widget.find(".link-map-container").empty();
 
         const $linkMapContainer = this.$widget.find('.link-map-container');
