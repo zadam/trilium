@@ -123,7 +123,6 @@ export default class DesktopLayout {
                                     .title("Note Revisions")
                                     .command("showNoteRevisions")
                                     .titlePlacement("bottom"))
-                                .button(new ShowNoteSourceButton())
                                 .button(new NoteActionsWidget())
                         )
                             .child(new NoteUpdateStatusWidget())

@@ -33,6 +33,10 @@ const TPL = `
     .section-title.active {
         color: var(--main-text-color);
         border-bottom: 1px solid var(--main-text-color);
+        flex-shrink: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .section-title:hover {
