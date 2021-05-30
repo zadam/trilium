@@ -101,7 +101,12 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 
             if (resultHandler) {
                 if (result && result.then) {
-                    result.then(actualResult => resultHandler(req, res, actualResult))
+                    result
+                        .then(actualResult => {
+                            resultHandler(req, res, actualResult);
+
+                            log.request(req, res, Date.now() - start);
+                        })
                         .catch(e => {
                             log.error(`${method} ${path} threw exception: ` + e.stack);
 
@@ -110,6 +115,8 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                 }
                 else {
                     resultHandler(req, res, result);
+
+                    log.request(req, res, Date.now() - start);
                 }
             }
         }
@@ -118,8 +125,6 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 
             res.status(500).send(e.message);
         }
-
-        log.request(req, res, Date.now() - start);
     });
 }
 
@@ -239,7 +244,7 @@ function register(app) {
 
     // group of services below are meant to be executed from outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
-    route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
+    route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler, false);
     route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
     route(GET, '/api/setup/sync-seed', [auth.checkCredentials], setupApiRoute.getSyncSeed, apiResultHandler);
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);

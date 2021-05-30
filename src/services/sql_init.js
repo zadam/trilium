@@ -47,7 +47,7 @@ async function initDbConnection() {
 }
 
 async function createInitialDatabase(username, password, theme) {
-    log.info("Creating initial database ...");
+    log.info("Creating database schema ...");
 
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
@@ -57,6 +57,8 @@ async function createInitialDatabase(username, password, theme) {
     const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.zip');
 
     let rootNote;
+
+    log.info("Creating root note ...");
 
     sql.transactional(() => {
         sql.executeScript(schema);
@@ -82,10 +84,14 @@ async function createInitialDatabase(username, password, theme) {
         }).save();
     });
 
+    log.info("Importing demo content ...");
+
     const dummyTaskContext = new TaskContext("initial-demo-import", 'import', false);
 
     const zipImportService = require("./import/zip");
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
+
+    log.info("Initializing options ...");
 
     sql.transactional(() => {
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
