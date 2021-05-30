@@ -24,20 +24,22 @@ export default class LinkMap {
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
         this.graph = ForceGraph()(this.$linkMapContainer[0])
+            .width(this.options.width)
+            .height(this.options.height)
             .onZoom(zoom => this.setZoomLevel(zoom.k))
             .nodeRelSize(7)
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
-            .nodeLabel(node => this.getNodeLabel(node))
+            .nodeLabel(node => node.name)
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI, false);
                 ctx.fill();
             })
-            .linkLabel(l => `${this.getNodeLabel(l.source)} - <strong>${l.type}</strong> - ${this.getNodeLabel(l.target)}`)
+            .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
             .linkCanvasObject((link, ctx) => this.paintLink(link, ctx))
-            .linkCanvasObjectMode("after")
+            .linkCanvasObjectMode(() => "after")
             .linkDirectionalArrowLength(4)
             .linkDirectionalArrowRelPos(1)
             .linkWidth(2)
@@ -116,11 +118,11 @@ export default class LinkMap {
     }
 
     paintLink(link, ctx) {
-        if (this.zoomLevel < 2) {
+        if (this.zoomLevel < 3) {
             return;
         }
 
-        ctx.font = '3px Sans-Serif';
+        ctx.font = '3px MontserratLight';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = "grey";
@@ -137,13 +139,15 @@ export default class LinkMap {
         const deltaX = source.x - target.x;
 
         let angle = Math.atan2(deltaY, deltaX);
+        let moveY = 2;
 
         if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
             angle += Math.PI;
+            moveY = -2;
         }
 
         ctx.rotate(angle);
-        ctx.fillText(link.name, 0, 0);
+        ctx.fillText(link.name, 0, moveY);
         ctx.restore();
     }
 
@@ -152,7 +156,7 @@ export default class LinkMap {
 
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
+        ctx.arc(x, y, 4, 0, 2 * Math.PI, false);
         ctx.fill();
 
         if (this.zoomLevel < 2) {
@@ -161,24 +165,24 @@ export default class LinkMap {
 
         if (!node.expanded) {
             ctx.fillStyle =  color;
-            ctx.font = 10 + 'px Sans-Serif';
+            ctx.font = 10 + 'px MontserratLight';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText("+", x, y + 1);
         }
 
         ctx.fillStyle = "#555";
-        ctx.font = 3 + 'px Sans-Serif';
+        ctx.font = 5 + 'px MontserratLight';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         let title = node.name;
 
-        if (title.length > 10) {
-            title = title.substr(0, 10) + "...";
+        if (title.length > 15) {
+            title = title.substr(0, 15) + "...";
         }
 
-        ctx.fillText(title, x, y + 8);
+        ctx.fillText(title, x, y + 7);
     }
 
     stringToColor(str) {
@@ -192,23 +196,5 @@ export default class LinkMap {
             colour += ('00' + value.toString(16)).substr(-2);
         }
         return colour;
-    }
-
-    getNodeLabel(node) {
-        if (node.type === node.name) {
-            return node.type;
-        }
-        else {
-            return `${node.type}: ${node.name}`;
-        }
-    }
-
-    shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
     }
 }

@@ -9,7 +9,7 @@ const TPL = `
         }
         
         .link-map-container {
-            max-height: 300px;
+            height: 300px;
         }
     
         .open-full-dialog-button {
@@ -22,10 +22,8 @@ const TPL = `
 
     <button class="bx bx-expand icon-action open-full-dialog-button" title="Show Link Map dialog"></button>
 
-    <div class="link-map-container" style="height: 300px;"></div>
+    <div class="link-map-container"></div>
 </div>`;
-
-let linkMapContainerIdCtr = 1;
 
 export default class LinkMapWidget extends NoteContextAwareWidget {
     isEnabled() {
@@ -55,7 +53,9 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
         this.linkMapService = new LinkMapServiceClass(note, $linkMapContainer, {
             maxDepth: 3,
-            zoom: 0.6
+            zoom: 0.6,
+            width: $linkMapContainer.width(),
+            height: $linkMapContainer.height()
         });
 
         await this.linkMapService.render();
