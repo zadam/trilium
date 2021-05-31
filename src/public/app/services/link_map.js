@@ -31,6 +31,7 @@ export default class LinkMap {
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodeLabel(node => node.name)
+            .maxZoom(5)
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
@@ -63,6 +64,10 @@ export default class LinkMap {
         if (zoomToFit) {
             setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
         }
+    }
+
+    setHeight(height) {
+        this.graph.height(height);
     }
 
     centerOnNode(node) {
