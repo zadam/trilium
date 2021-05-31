@@ -35,7 +35,6 @@ import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 import BasicPropertiesWidget from "../widgets/section_widgets/basic_properties.js";
 import NoteInfoWidget from "../widgets/section_widgets/note_info_widget.js";
 import BookPropertiesWidget from "../widgets/section_widgets/book_properties.js";
-import ShowNoteSourceButton from "../widgets/buttons/show_note_source.js";
 import LinkMapWidget from "../widgets/section_widgets/link_map.js";
 import NotePathsWidget from "../widgets/section_widgets/note_paths.js";
 import SimilarNotesWidget from "../widgets/section_widgets/similar_notes.js";

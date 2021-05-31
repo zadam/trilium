@@ -22,10 +22,6 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/note_source.js").then(d => d.showDialog());
     }
 
-    showLinkMapCommand() {
-        import("../dialogs/link_map.js").then(d => d.showDialog());
-    }
-
     pasteMarkdownIntoTextCommand() {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
