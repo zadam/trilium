@@ -46,31 +46,70 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         this.$widget = $(TPL);
         this.$container = this.$widget.find(".link-map-container");
 
+        this.openState = 'small';
+
         this.$openFullButton = this.$widget.find('.open-full-button');
         this.$openFullButton.on('click', () => {
-            const {top} = this.$widget[0].getBoundingClientRect();
-
-            const maxHeight = $(window).height() - top;
-
-            this.$widget.find('.link-map-container').css("height", maxHeight);
-
-            this.graph.height(maxHeight);
+            this.setFullHeight();
 
             this.$openFullButton.hide();
             this.$collapseButton.show();
+
+            this.openState = 'full';
         });
 
         this.$collapseButton = this.$widget.find('.collapse-button');
         this.$collapseButton.on('click', () => {
-            this.$widget.find('.link-map-container,.force-graph-container,canvas').css("height", 300);
-
-            this.graph.height(300);
+            this.setSmallSize();
 
             this.$openFullButton.show();
             this.$collapseButton.hide();
+
+            this.openState = 'small';
         });
 
         this.overflowing();
+
+        window.addEventListener('resize', () => {
+            if (!this.graph) { // no graph has been even rendered
+                return;
+            }
+
+            if (this.openState === 'full') {
+                this.setFullHeight();
+            }
+            else if (this.openState === 'small') {
+                this.setSmallSize();
+            }
+        }, false);
+    }
+
+    setSmallSize() {
+        const SMALL_SIZE_HEIGHT = 300;
+        const width = this.$widget.width();
+
+        this.$widget.find('.link-map-container')
+            .css("height", SMALL_SIZE_HEIGHT)
+            .css("width", width);
+
+        this.graph
+            .height(SMALL_SIZE_HEIGHT)
+            .width(width);
+    }
+
+    setFullHeight() {
+        const {top} = this.$widget[0].getBoundingClientRect();
+
+        const height = $(window).height() - top;
+        const width = this.$widget.width();
+
+        this.$widget.find('.link-map-container')
+            .css("height", height)
+            .css("width", this.$widget.width());
+
+        this.graph
+            .height(height)
+            .width(width);
     }
 
     setZoomLevel(level) {
@@ -90,7 +129,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodeLabel(node => node.name)
-            .maxZoom(5)
+            .maxZoom(7)
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
@@ -143,29 +182,41 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     }
 
     async loadNotesAndRelations(options = {}) {
-        const links = await server.post(`notes/${this.note.noteId}/link-map`, {
+        const {noteIdToLinkCountMap, links} = await server.post(`notes/${this.note.noteId}/link-map`, {
             maxNotes: 30,
-            maxDepth: 5
+            maxDepth: 1
         });
 
-        const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
+        // preload all notes
+        const notes = await froca.getNotes(Object.keys(noteIdToLinkCountMap), true);
 
-        if (noteIds.size === 0) {
-            noteIds.add(this.note.noteId);
+        const noteIdToLinkMap = {};
+
+        for (const link of links) {
+            noteIdToLinkMap[link.sourceNoteId] = noteIdToLinkMap[link.sourceNoteId] || [];
+            noteIdToLinkMap[link.sourceNoteId].push(link);
+
+            noteIdToLinkMap[link.targetNoteId] = noteIdToLinkMap[link.targetNoteId] || [];
+            noteIdToLinkMap[link.targetNoteId].push(link);
         }
 
-        // preload all notes
-        const notes = await froca.getNotes(Array.from(noteIds), true);
+        console.log(notes.map(note => ({
+            id: note.noteId,
+            name: note.title,
+            type: note.type,
+            expanded: noteIdToLinkCountMap[note.noteId] === noteIdToLinkMap[note.noteId].length
+        })))
 
         return {
             nodes: notes.map(note => ({
                 id: note.noteId,
                 name: note.title,
-                type: note.type
+                type: note.type,
+                expanded: noteIdToLinkCountMap[note.noteId] === noteIdToLinkMap[note.noteId].length
             })),
             links: links.map(link => ({
-                id: link.noteId + "-" + link.name + "-" + link.targetNoteId,
-                source: link.noteId,
+                id: link.sourceNoteId + "-" + link.name + "-" + link.targetNoteId,
+                source: link.sourceNoteId,
                 target: link.targetNoteId,
                 name: link.name
             }))
@@ -219,11 +270,11 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         }
 
         if (!node.expanded) {
-            ctx.fillStyle =  color;
+            ctx.fillStyle =  "white";
             ctx.font = 10 + 'px MontserratLight';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText("+", x, y + 1);
+            ctx.fillText("+", x, y + 0.5);
         }
 
         ctx.fillStyle = "#555";

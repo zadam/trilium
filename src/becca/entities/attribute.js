@@ -56,6 +56,10 @@ class Attribute extends AbstractEntity {
             || (this.type === 'relation' && this.name === 'template');
     }
 
+    get targetNoteId() { // alias
+        return this.type === 'relation' ? this.value : undefined;
+    }
+
     isAutoLink() {
         return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
     }
