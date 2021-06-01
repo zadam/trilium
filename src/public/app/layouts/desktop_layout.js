@@ -2,7 +2,7 @@ import FlexContainer from "../widgets/containers/flex_container.js";
 import GlobalMenuWidget from "../widgets/buttons/global_menu.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
-import SidePaneContainer from "../widgets/containers/side_pane_container.js";
+import TreeSidebarContainer from "../widgets/containers/tree_sidebar_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/section_widgets/owned_attribute_list.js";
@@ -50,7 +50,7 @@ export default class DesktopLayout {
         return new RootContainer()
             .setParent(appContext)
             .child(new FlexContainer("column")
-                .id("launcher-pane")
+                .id("launcher-sidebar")
                 .child(new GlobalMenuWidget())
                 .child(new ButtonWidget()
                     .icon("bx-file-blank")
@@ -74,12 +74,12 @@ export default class DesktopLayout {
                 .child(new SidebarToggleWidget())
                 .css("width", "54px")
             )
-            .child(new SidePaneContainer('left')
+            .child(new TreeSidebarContainer()
                 .hideInZenMode()
                 .css("width", "300px")
                 .child(new QuickSearchWidget())
                 .child(appContext.mainTreeWidget)
-                .child(...this.customWidgets.get('left-pane'))
+                .child(...this.customWidgets.get('tree-sidebar'))
             )
             .child(new FlexContainer('column')
                 .id('center-pane')

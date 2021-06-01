@@ -42,6 +42,7 @@ const TPL = `
         padding: 2px;
         max-height: 34px;
         color: var(--button-text-color);
+        background-color: var(--button-background-color);
         border-radius: var(--button-border-radius);
         border: 1px solid transparent;
         z-index: 100;

@@ -35,6 +35,12 @@
     --modal-background-color: white;
     --modal-backdrop-color: black;
     --scrollbar-border-color: #ddd;
+
+    --tree-sidebar-background-color: #F3F3F3;
+    --tree-sidebar-text-color: #333;
+
+    --launcher-sidebar-background-color: #F3F3F3;
+    --launcher-sidebar-text-color: #333;
 }
 
 body.theme-black {
@@ -78,9 +84,9 @@ body.theme-dark {
     --accented-background-color: #555;
     --more-accented-background-color: #777;
     --header-background-color: #333;
-    --button-background-color: #555;
-    --button-border-color: #444;
-    --button-text-color: white;
+    --button-background-color: transparent;
+    --button-border-color: transparent;
+    --button-text-color: currentColor;
     --button-border-radius: 5px;
     --primary-button-background-color: #888;
     --primary-button-text-color: white;
@@ -89,9 +95,9 @@ body.theme-dark {
     --input-text-color: white;
     --input-background-color: #333;
     --hover-item-text-color: black;
-    --hover-item-background-color: #aaa;
+    --hover-item-background-color: #333;
     --active-item-text-color: black;
-    --active-item-background-color: #ccc;
+    --active-item-background-color: #999;
     --menu-text-color: white;
     --menu-background-color: #222;
     --tooltip-background-color: #333;
@@ -99,6 +105,12 @@ body.theme-dark {
     --modal-background-color: #333;
     --modal-backdrop-color: #444;
     --scrollbar-border-color: #888;
+
+    --tree-sidebar-background-color: #1f1f1f;
+    --tree-sidebar-text-color: #807c7c;
+
+    --launcher-sidebar-background-color: #1f1f1f;
+    --launcher-sidebar-text-color: #807c7c;
 }
 
 body.theme-dark .CodeMirror {

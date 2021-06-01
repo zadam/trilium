@@ -125,8 +125,8 @@ const TAB_ROW_TPL = `
         bottom: 0;
         left: 0;
         right: 0;
-        height: 40px;
-        padding: 8px 11px;
+        height: 36px;
+        padding: 7px 11px;
         border-radius: 8px;
         overflow: hidden;
         pointer-events: all;

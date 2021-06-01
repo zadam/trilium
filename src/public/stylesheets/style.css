@@ -883,24 +883,27 @@ ul.fancytree-container li {
     margin: 10px;
 }
 
-#launcher-pane .icon-action {
+#launcher-sidebar .icon-action {
     font-size: 150%;
     display: inline-block;
     padding: 15px 15px;
     cursor: pointer;
     border: none;
+    color: var(--button-text-color);
 }
 
-#launcher-pane .icon-action:hover {
+#launcher-sidebar .icon-action:hover {
     background-color: var(--hover-item-background-color);
 }
 
-#left-pane, #launcher-pane {
-    background-color: #F3F3F3;
+#tree-sidebar {
+    color: var(--tree-sidebar-text-color);
+    background-color: var(--tree-sidebar-background-color);
 }
 
-#left-pane, #launcher-pane {
-    color: #333 !important;
+#launcher-sidebar {
+    color: var(--launcher-sidebar-text-color);
+    background-color: var(--launcher-sidebar-background-color);
 }
 
 input {
