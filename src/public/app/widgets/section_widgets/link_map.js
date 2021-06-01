@@ -2,6 +2,7 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import froca from "../../services/froca.js";
 import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
+import appContext from "../../services/app_context.js";
 
 const TPL = `
 <div class="link-map-widget">
@@ -117,6 +118,9 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
+        this.linkIdToLinkMap = {};
+        this.noteIdToLinkCountMap = {};
+
         this.$container.empty();
 
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
@@ -153,7 +157,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         this.graph.d3Force('charge').strength(-30);
         this.graph.d3Force('charge').distanceMax(400);
 
-        this.renderData(await this.loadNotesAndRelations());
+        this.renderData(await this.loadNotesAndRelations(this.noteId,1));
     }
 
     renderData(data, zoomToFit = true, zoomPadding = 10) {
@@ -164,61 +168,72 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         }
     }
 
-    centerOnNode(node) {
-        this.nodeClicked(node);
-
-        this.graph.centerAt(node.x, node.y, 1000);
-        this.graph.zoom(6, 2000);
-    }
-
     async nodeClicked(node) {
         if (!node.expanded) {
-            const neighborGraph = await fetchNeighborGraph(node.id);
-
-            addToTasGraph(neighborGraph);
-
-            renderData(getTasGraph(), false);
+            this.renderData(
+                await this.loadNotesAndRelations(node.id,1),
+                false
+            );
+        }
+        else {
+            await appContext.tabManager.getActiveContext().setNote(node.id);
         }
     }
 
-    async loadNotesAndRelations(options = {}) {
-        const {noteIdToLinkCountMap, links} = await server.post(`notes/${this.note.noteId}/link-map`, {
-            maxNotes: 30,
-            maxDepth: 1
+    async loadNotesAndRelations(noteId, maxDepth) {
+        const resp = await server.post(`notes/${noteId}/link-map`, {
+            maxNotes: 1000,
+            maxDepth
         });
 
-        // preload all notes
-        const notes = await froca.getNotes(Object.keys(noteIdToLinkCountMap), true);
+        this.noteIdToLinkCountMap = {...this.noteIdToLinkCountMap, ...resp.noteIdToLinkCountMap};
 
-        const noteIdToLinkMap = {};
-
-        for (const link of links) {
-            noteIdToLinkMap[link.sourceNoteId] = noteIdToLinkMap[link.sourceNoteId] || [];
-            noteIdToLinkMap[link.sourceNoteId].push(link);
-
-            noteIdToLinkMap[link.targetNoteId] = noteIdToLinkMap[link.targetNoteId] || [];
-            noteIdToLinkMap[link.targetNoteId].push(link);
+        for (const link of resp.links) {
+            this.linkIdToLinkMap[link.id] = link;
         }
 
-        console.log(notes.map(note => ({
-            id: note.noteId,
-            name: note.title,
-            type: note.type,
-            expanded: noteIdToLinkCountMap[note.noteId] === noteIdToLinkMap[note.noteId].length
-        })))
+        // preload all notes
+        const notes = await froca.getNotes(Object.keys(this.noteIdToLinkCountMap), true);
+
+        const noteIdToLinkIdMap = {};
+        const linksGroupedBySourceTarget = {};
+
+        for (const link of Object.values(this.linkIdToLinkMap)) {
+            noteIdToLinkIdMap[link.sourceNoteId] = noteIdToLinkIdMap[link.sourceNoteId] || new Set();
+            noteIdToLinkIdMap[link.sourceNoteId].add(link.id);
+
+            noteIdToLinkIdMap[link.targetNoteId] = noteIdToLinkIdMap[link.targetNoteId] || new Set();
+            noteIdToLinkIdMap[link.targetNoteId].add(link.id);
+
+            const key = `${link.sourceNoteId}-${link.targetNoteId}`;
+
+            if (key in linksGroupedBySourceTarget) {
+                if (!linksGroupedBySourceTarget[key].names.includes(link.name)) {
+                    linksGroupedBySourceTarget[key].names.push(link.name);
+                }
+            }
+            else {
+                linksGroupedBySourceTarget[key] = {
+                    id: key,
+                    sourceNoteId: link.sourceNoteId,
+                    targetNoteId: link.targetNoteId,
+                    names: [link.name]
+                }
+            }
+        }
 
         return {
             nodes: notes.map(note => ({
                 id: note.noteId,
                 name: note.title,
                 type: note.type,
-                expanded: noteIdToLinkCountMap[note.noteId] === noteIdToLinkMap[note.noteId].length
+                expanded: this.noteIdToLinkCountMap[note.noteId] === noteIdToLinkIdMap[note.noteId].size
             })),
-            links: links.map(link => ({
-                id: link.sourceNoteId + "-" + link.name + "-" + link.targetNoteId,
+            links: Object.values(linksGroupedBySourceTarget).map(link => ({
+                id: link.id,
                 source: link.sourceNoteId,
                 target: link.targetNoteId,
-                name: link.name
+                name: link.names.join(", ")
             }))
         };
     }
@@ -260,9 +275,9 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     paintNode(node, color, ctx) {
         const {x, y} = node;
 
-        ctx.fillStyle = color;
+        ctx.fillStyle = node.id === this.noteId ? 'red' : color;
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, 2 * Math.PI, false);
+        ctx.arc(x, y, node.id === this.noteId ? 8 : 4, 0, 2 * Math.PI, false);
         ctx.fill();
 
         if (this.zoomLevel < 2) {
@@ -288,7 +303,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
             title = title.substr(0, 15) + "...";
         }
 
-        ctx.fillText(title, x, y + 7);
+        ctx.fillText(title, x, y + (node.id === this.noteId ? 11 : 7));
     }
 
     stringToColor(str) {
@@ -306,21 +321,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes().find(attr => attr.type === 'relation' && (attr.noteId === this.noteId || attr.value === this.noteId))) {
-            this.noteSwitched();
-        }
-
-        const changedNoteIds = loadResults.getNoteIds();
-
-        if (changedNoteIds.length > 0) {
-            const $linkMapContainer = this.$widget.find('.link-map-container');
-
-            for (const noteId of changedNoteIds) {
-                const note = froca.notes[noteId];
-
-                if (note) {
-                    $linkMapContainer.find(`a[data-note-path="${noteId}"]`).text(note.title);
-                }
-            }
+            this.refresh();
         }
     }
 }

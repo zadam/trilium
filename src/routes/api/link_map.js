@@ -40,9 +40,9 @@ function collectRelations(noteId, relations, depth) {
             relations.add(relation);
 
             if (relation.noteId !== noteId) {
-                collectRelations(relation.noteId, relations, depth--);
+                collectRelations(relation.noteId, relations, depth - 1);
             } else if (relation.value !== noteId) {
-                collectRelations(relation.value, relations, depth--);
+                collectRelations(relation.value, relations, depth - 1);
             }
         }
     }
@@ -71,6 +71,7 @@ function getLinkMap(req) {
     return {
         noteIdToLinkCountMap,
         links: Array.from(relations).map(rel => ({
+            id: rel.noteId + "-" + rel.name + "-" + rel.value,
             sourceNoteId: rel.noteId,
             targetNoteId: rel.value,
             name: rel.name

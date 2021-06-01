@@ -175,6 +175,8 @@ export default class CollapsibleSectionContainer extends NoteContextAwareWidget 
     }
 
     async refreshWithNote(note, noExplicitActivation = false) {
+        this.lastNoteType = note.type;
+
         let $sectionToActivate, $lastActiveSection;
 
         this.$titleContainer.empty();
