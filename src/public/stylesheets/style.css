@@ -247,7 +247,13 @@ div.ui-tooltip {
 }
 
 .dropdown-item {
+    display: flex;
+    align-items: center;
     color: var(--menu-text-color) !important;
+}
+
+.dropdown-item > span {
+    margin-right: .2em;
 }
 
 .dropdown-item.disabled, .dropdown-item.disabled kbd {
