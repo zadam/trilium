@@ -64,7 +64,7 @@ const TPL = `
             </a>
 
             <a class="dropdown-item" data-trigger-command="showBackendLog">
-                <span class="bx bx-empty"></span>
+                <span class="bx bx-code-block"></span>
                 Show backend log
                 <kbd data-command="showBackendLog"></kbd>
             </a>
@@ -77,13 +77,13 @@ const TPL = `
             </a>
 
             <a class="dropdown-item" data-trigger-command="toggleZenMode">
-                <span class="bx bx-empty"></span>
+                <span class="bx bx-target-lock"></span>
                 Toggle Zen mode
                 <kbd data-command="toggleZenMode"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-command="toggleFullscreen">
-                <span class="bx bx-empty"></span>
+                <span class="bx bx-fullscreen"></span>
                 Toggle fullscreen
                 <kbd data-command="toggleFullscreen"></kbd>
             </a>
