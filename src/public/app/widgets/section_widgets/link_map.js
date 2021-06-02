@@ -172,7 +172,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         this.graph.d3Force('charge').strength(-30);
         this.graph.d3Force('charge').distanceMax(400);
 
-        this.renderData(await this.loadNotesAndRelations(this.noteId,1));
+        this.renderData(await this.loadNotesAndRelations(this.noteId,2));
     }
 
     renderData(data, zoomToFit = true, zoomPadding = 10) {
@@ -254,7 +254,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     }
 
     paintLink(link, ctx) {
-        if (this.zoomLevel < 3) {
+        if (this.zoomLevel < 5) {
             return;
         }
 
