@@ -12,7 +12,7 @@ const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
-const yazl = require("yazl");
+const archiver = require('archiver');
 
 /**
  * @param {TaskContext} taskContext
@@ -20,7 +20,9 @@ const yazl = require("yazl");
  * @param {string} format - 'html' or 'markdown'
  */
 function exportToZip(taskContext, branch, format, res) {
-    const zipFile = new yazl.ZipFile();
+    const archive = archiver('zip', {
+        zlib: { level: 9 } // Sets the compression level.
+    });
 
     const noteIdToMeta = {};
 
@@ -70,6 +72,10 @@ function exportToZip(taskContext, branch, format, res) {
         }
 
         let fileName = baseFileName;
+
+        if (fileName.length > 30) {
+            fileName = fileName.substr(0, 30);
+        }
 
         // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
         if (newExtension && existingExtension !== "." + newExtension.toLowerCase()) {
@@ -268,7 +274,7 @@ ${content}
 
             content = prepareContent(noteMeta.title, content, noteMeta);
 
-            zipFile.addBuffer(content, filePathPrefix + noteMeta.dataFileName);
+            archive.append(content, { name: filePathPrefix + noteMeta.dataFileName });
 
             return;
         }
@@ -280,7 +286,7 @@ ${content}
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, note.getContent(), noteMeta);
 
-            zipFile.addBuffer(content, filePathPrefix + noteMeta.dataFileName, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
+            archive.append(content, { name: filePathPrefix + noteMeta.dataFileName, date: dateUtils.parseDateTime(note.utcDateModified) });
         }
 
         taskContext.increaseProgressCount();
@@ -288,7 +294,8 @@ ${content}
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
-            zipFile.addEmptyDirectory(directoryPath, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
+            // create directory
+            archive.append('', { name: directoryPath + '/', date: dateUtils.parseDateTime(note.utcDateModified) });
 
             for (const childMeta of noteMeta.children) {
                 saveNote(childMeta, directoryPath + '/');
@@ -335,7 +342,7 @@ ${content}
 </html>`;
         const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
 
-        zipFile.addBuffer(prettyHtml, navigationMeta.dataFileName);
+        archive.append(prettyHtml, { name: navigationMeta.dataFileName });
     }
 
     function saveIndex(rootMeta, indexMeta) {
@@ -367,13 +374,13 @@ ${content}
 </frameset>
 </html>`;
 
-        zipFile.addBuffer(fullHtml, indexMeta.dataFileName);
+        archive.append(fullHtml, { name: indexMeta.dataFileName });
     }
 
     function saveCss(rootMeta, cssMeta) {
         const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
 
-        zipFile.addBuffer(cssContent, cssMeta.dataFileName);
+        archive.append(cssContent, { name: cssMeta.dataFileName });
     }
 
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
@@ -422,7 +429,7 @@ ${content}
 
     const metaFileJson = JSON.stringify(metaFile, null, '\t');
 
-    zipFile.addBuffer(metaFileJson, "!!!meta.json");
+    archive.append(metaFileJson, { name: "!!!meta.json" });
 
     saveNote(rootMeta, '');
 
@@ -438,8 +445,8 @@ ${content}
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');
 
-    zipFile.outputStream.pipe(res);
-    zipFile.end();
+    archive.pipe(res);
+    archive.finalize();
 
     taskContext.taskSucceeded();
 }

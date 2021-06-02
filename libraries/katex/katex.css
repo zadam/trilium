@@ -124,15 +124,17 @@
   line-height: 1.2;
   text-indent: 0;
   text-rendering: auto;
-  border-color: currentColor;
 }
 .katex * {
   -ms-high-contrast-adjust: none !important;
+  border-color: currentColor;
 }
 .katex .katex-version::after {
-  content: "0.12.0";
+  content: "0.13.9";
 }
 .katex .katex-mathml {
+  /* Accessibility hack to only show to screen readers
+         Found at: http://a11yproject.com/posts/how-to-hide-content/ */
   position: absolute;
   clip: rect(1px, 1px, 1px, 1px);
   padding: 0;
@@ -151,6 +153,8 @@
   position: relative;
   display: inline-block;
   white-space: nowrap;
+  width: -webkit-min-content;
+  width: -moz-min-content;
   width: min-content;
 }
 .katex .strut {
@@ -266,22 +270,28 @@
   min-width: 2px;
 }
 .katex .vbox {
-  display: -ms-inline-flexbox;
+  display: -webkit-inline-box;
   display: inline-flex;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  align-items: baseline;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+  -webkit-box-align: baseline;
+          align-items: baseline;
 }
 .katex .hbox {
-  display: -ms-inline-flexbox;
+  display: -webkit-inline-box;
   display: inline-flex;
-  -ms-flex-direction: row;
-  flex-direction: row;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
   width: 100%;
 }
 .katex .thinbox {
+  display: -webkit-inline-box;
   display: inline-flex;
-  flex-direction: row;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
   width: 0;
   max-width: 0;
 }
@@ -352,6 +362,8 @@
   border-bottom-style: dashed;
 }
 .katex .sqrt > .root {
+  /* These values are taken from the definition of `\r@@t`,
+             `\mkern 5mu` and `\mkern -10mu`. */
   margin-left: 0.27777778em;
   margin-right: -0.55555556em;
 }
@@ -982,6 +994,9 @@
 .katex .x-arrow-pad {
   padding: 0 0.5em;
 }
+.katex .cd-arrow-pad {
+  padding: 0 0.55556em 0 0.27778em;
+}
 .katex .x-arrow,
 .katex .mover,
 .katex .munder {
@@ -1005,6 +1020,44 @@
 .katex .sout {
   border-bottom-style: solid;
   border-bottom-width: 0.08em;
+}
+.katex .angl {
+  box-sizing: border-content;
+  border-top: 0.049em solid;
+  border-right: 0.049em solid;
+  margin-right: 0.03889em;
+}
+.katex .anglpad {
+  padding: 0 0.03889em 0 0.03889em;
+}
+.katex .eqn-num::before {
+  counter-increment: katexEqnNo;
+  content: "(" counter(katexEqnNo) ")";
+}
+.katex .mml-eqn-num::before {
+  counter-increment: mmlEqnNo;
+  content: "(" counter(mmlEqnNo) ")";
+}
+.katex .mtr-glue {
+  width: 50%;
+}
+.katex .cd-vert-arrow {
+  display: inline-block;
+  position: relative;
+}
+.katex .cd-label-left {
+  display: inline-block;
+  position: absolute;
+  right: -webkit-calc(50% + 0.3em);
+  right: calc(50% + 0.3em);
+  text-align: left;
+}
+.katex .cd-label-right {
+  display: inline-block;
+  position: absolute;
+  left: -webkit-calc(50% + 0.3em);
+  left: calc(50% + 0.3em);
+  text-align: right;
 }
 .katex-display {
   display: block;
@@ -1031,5 +1084,8 @@
 .katex-display.fleqn > .katex {
   text-align: left;
   padding-left: 2em;
+}
+body {
+  counter-reset: katexEqnNo mmlEqnNo;
 }
 
