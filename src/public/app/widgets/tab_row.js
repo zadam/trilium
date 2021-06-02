@@ -79,9 +79,9 @@ const TAB_ROW_TPL = `
     .note-new-tab {
         position: absolute;
         left: 0;
-        width: 40px;
-        height: 40px;
-        padding: 3px;
+        width: 36px;
+        height: 36px;
+        padding: 1px;
         border: 0;
         margin: 0;
         z-index: 1;
@@ -130,12 +130,14 @@ const TAB_ROW_TPL = `
         border-radius: 8px;
         overflow: hidden;
         pointer-events: all;
-        background-color: var(--accented-background-color);
+        color: var(--inactive-tab-text-color);
+        background-color: var(--inactive-tab-background-color);
     }
     
     .note-tab-row .note-tab[active] .note-tab-wrapper {
         font-weight: bold;
-        background-color : var(--active-item-background-color);
+        color: var(--active-tab-text-color);
+        background-color : var(--active-tab-background-color);
     }
     
     .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
@@ -148,7 +150,6 @@ const TAB_ROW_TPL = `
         vertical-align: top;
         overflow: hidden;
         white-space: nowrap;
-        color: var(--muted-text-color);
     }
     
     .note-tab-row .note-tab .note-tab-icon {
@@ -159,10 +160,6 @@ const TAB_ROW_TPL = `
     
     .note-tab-row .note-tab[is-small] .note-tab-title {
         margin-left: 0;
-    }
-    
-    .note-tab-row .note-tab[active] .note-tab-title {
-        color: var(--main-text-color);
     }
     
     .note-tab-row .note-tab .note-tab-drag-handle {

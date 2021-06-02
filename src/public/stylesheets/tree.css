@@ -15,7 +15,8 @@ ul.fancytree-container {
 }
 
 .fancytree-node {
-    padding: 5px;
+    padding: 4px;
+    border: 1px solid transparent;
     display: block;
     cursor: pointer;
     overflow: hidden;
@@ -128,9 +129,8 @@ span.fancytree-selected {
 }
 
 span.fancytree-node:hover {
-    background-color: var(--active-item-background-color) !important;
     border-radius: 5px;
-    border: 0;
+    border: 1px solid var(--main-border-color);
 }
 
 .fancytree-title:hover, span.fancytree-node:hover .fancytree-title {

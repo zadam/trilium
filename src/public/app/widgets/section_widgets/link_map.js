@@ -22,12 +22,19 @@ const TPL = `
             font-size: 180%;
             z-index: 1000;
         }
+        
+        .style-resolver {
+            color: var(--muted-text-color);
+            display: none;
+        }
     </style>
 
     <button class="bx bx-arrow-to-bottom icon-action open-full-button" title="Open full"></button>
     <button class="bx bx-arrow-to-top icon-action collapse-button" style="display: none;" title="Collapse to normal size"></button>
 
     <div class="link-map-container"></div>
+    
+    <div class="style-resolver"></div>
 </div>`;
 
 export default class LinkMapWidget extends NoteContextAwareWidget {
@@ -68,6 +75,8 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
             this.openState = 'small';
         });
+
+        this.$styleResolver = this.$widget.find('.style-resolver');
 
         this.overflowing();
 
@@ -123,6 +132,12 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
         this.$container.empty();
 
+        this.css = {
+            fontFamily: this.$container.css("font-family"),
+            textColor: this.rgb2hex(this.$container.css("color")),
+            mutedTextColor: this.rgb2hex(this.$styleResolver.css("color"))
+        };
+
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
         this.graph = ForceGraph()(this.$container[0])
@@ -146,7 +161,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
             .linkDirectionalArrowLength(4)
             .linkDirectionalArrowRelPos(1)
             .linkWidth(2)
-            .linkColor("#ddd")
+            .linkColor(() => this.css.mutedTextColor)
             .d3VelocityDecay(0.2)
             .onNodeClick(node => this.nodeClicked(node));
 
@@ -243,10 +258,10 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
             return;
         }
 
-        ctx.font = '3px MontserratLight';
+        ctx.font = '3px ' + this.css.fontFamily;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = "grey";
+        ctx.fillStyle = this.css.mutedTextColor;
 
         const {source, target} = link;
 
@@ -285,15 +300,15 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         }
 
         if (!node.expanded) {
-            ctx.fillStyle =  "white";
-            ctx.font = 10 + 'px MontserratLight';
+            ctx.fillStyle =  this.css.textColor;
+            ctx.font = 10 + 'px ' + this.css.fontFamily;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText("+", x, y + 0.5);
         }
 
-        ctx.fillStyle = "#555";
-        ctx.font = 5 + 'px MontserratLight';
+        ctx.fillStyle = this.css.textColor;
+        ctx.font = 5 + 'px ' + this.css.fontFamily;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -317,6 +332,13 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
             colour += ('00' + value.toString(16)).substr(-2);
         }
         return colour;
+    }
+
+    rgb2hex(rgb) {
+        return `#${rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+            .slice(1)
+            .map(n => parseInt(n, 10).toString(16).padStart(2, '0'))
+            .join('')}`
     }
 
     entitiesReloadedEvent({loadResults}) {

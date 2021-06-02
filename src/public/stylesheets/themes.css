@@ -12,7 +12,6 @@
     --main-border-color: #ccc;
     --accented-background-color: #f5f5f5;
     --more-accented-background-color: #ddd;
-    --header-background-color: #fff;
     --button-background-color: transparent;
     --button-disabled-background-color: #ddd;
     --button-border-color: #ddd;
@@ -41,63 +40,34 @@
 
     --launcher-sidebar-background-color: #F3F3F3;
     --launcher-sidebar-text-color: #333;
-}
 
-body.theme-black {
-    --main-background-color: black;
-    --main-text-color: white;
-    --main-border-color: #ddd;
-    --accented-background-color: #222;
-    --more-accented-background-color: #444;
-    --header-background-color: black;
-    --button-background-color: #333;
-    --button-border-color: #444;
-    --button-text-color: white;
-    --button-border-radius: 5px;
-    --primary-button-background-color: #888;
-    --primary-button-text-color: white;
-    --primary-button-border-color: #999;
-    --muted-text-color: #ccc;
-    --input-text-color: white;
-    --input-background-color: black;
-    --hover-item-text-color: black;
-    --hover-item-background-color: #aaa;
-    --active-item-text-color: black;
-    --active-item-background-color: #ccc;
-    --menu-text-color: white;
-    --menu-background-color: #222;
-    --tooltip-background-color: black;
-    --link-color: lightskyblue;
-    --modal-background-color: black;
-    --modal-backdrop-color: #444;
-    --scrollbar-border-color: #888;
-}
+    --active-tab-background-color: #ddd;
+    --active-tab-text-color: black;
 
-body.theme-black .CodeMirror {
-    filter: invert(100%) hue-rotate(180deg);
+    --inactive-tab-background-color: #f5f5f5;
+    --inactive-tab-text-color: #666;
 }
 
 body.theme-dark {
     --main-background-color: #333;
-    --main-text-color: white;
+    --main-text-color: #ccc;
     --main-border-color: #aaa;
     --accented-background-color: #555;
     --more-accented-background-color: #777;
-    --header-background-color: #333;
     --button-background-color: transparent;
-    --button-border-color: transparent;
+    --button-border-color: #ccc;
     --button-text-color: currentColor;
     --button-border-radius: 5px;
     --primary-button-background-color: #888;
     --primary-button-text-color: white;
     --primary-button-border-color: #999;
-    --muted-text-color: #ccc;
-    --input-text-color: white;
+    --muted-text-color: #bbb;
+    --input-text-color: #ccc;
     --input-background-color: #333;
     --hover-item-text-color: black;
     --hover-item-background-color: #333;
     --active-item-text-color: black;
-    --active-item-background-color: #999;
+    --active-item-background-color: #777;
     --menu-text-color: white;
     --menu-background-color: #222;
     --tooltip-background-color: #333;
@@ -107,10 +77,20 @@ body.theme-dark {
     --scrollbar-border-color: #888;
 
     --tree-sidebar-background-color: #1f1f1f;
-    --tree-sidebar-text-color: #807c7c;
+    --tree-sidebar-text-color: #8D8888;
 
     --launcher-sidebar-background-color: #1f1f1f;
-    --launcher-sidebar-text-color: #807c7c;
+    --launcher-sidebar-text-color: #8D8888;
+
+    --active-tab-background-color: #666;
+    --active-tab-text-color: #ccc;
+
+    --inactive-tab-background-color: #444;
+    --inactive-tab-text-color: #bbb;
+}
+
+body.theme-dark ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
 }
 
 body.theme-dark .CodeMirror {
