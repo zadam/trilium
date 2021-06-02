@@ -27,10 +27,10 @@ function initSyncedOptions(username, password) {
     passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
-function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
+function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('openTabs', JSON.stringify([
         {
-            notePath: startNotePath,
+            notePath: 'root',
             active: true
         }
     ]), false);
@@ -98,7 +98,7 @@ function initStartupOptions() {
         if (!(name in optionsMap)) {
             optionService.createOption(name, value, isSynced);
 
-            log.info(`Created missing option "${name}" with default value "${value}"`);
+            log.info(`Created option "${name}" with default value "${value}"`);
         }
     }
 

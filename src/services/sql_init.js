@@ -47,7 +47,7 @@ async function initDbConnection() {
 }
 
 async function createInitialDatabase(username, password, theme) {
-    log.info("Creating initial database ...");
+    log.info("Creating database schema ...");
 
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
@@ -57,6 +57,8 @@ async function createInitialDatabase(username, password, theme) {
     const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.zip');
 
     let rootNote;
+
+    log.info("Creating root note ...");
 
     sql.transactional(() => {
         sql.executeScript(schema);
@@ -80,7 +82,16 @@ async function createInitialDatabase(username, password, theme) {
             isExpanded: true,
             notePosition: 10
         }).save();
+
+        const optionsInitService = require('./options_init');
+
+        optionsInitService.initDocumentOptions();
+        optionsInitService.initSyncedOptions(username, password);
+        optionsInitService.initNotSyncedOptions(true, { theme });
+        optionsInitService.initStartupOptions();
     });
+
+    log.info("Importing demo content ...");
 
     const dummyTaskContext = new TaskContext("initial-demo-import", 'import', false);
 
@@ -88,13 +99,19 @@ async function createInitialDatabase(username, password, theme) {
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
+        // this needs to happen after ZIP import
+        // previous solution was to move option initialization here but then the important parts of initialization
+        // are not all in one transaction (because ZIP import is async and thus not transactional)
+
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        const optionsInitService = require('./options_init');
-
-        optionsInitService.initDocumentOptions();
-        optionsInitService.initSyncedOptions(username, password);
-        optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
+        const optionService = require("./options");
+        optionService.setOption('openTabs', JSON.stringify([
+            {
+                notePath: startNoteId,
+                active: true
+            }
+        ]));
     });
 
     log.info("Schema and initial content generated.");
@@ -114,7 +131,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require('./options_init').initNotSyncedOptions(false, 'root', { syncServerHost, syncProxy });
+        require('./options_init').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {
