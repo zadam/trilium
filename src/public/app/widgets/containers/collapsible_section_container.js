@@ -17,6 +17,7 @@ const TPL = `
         justify-content: center;
         margin-left: 10px;
         flex-grow: 1;
+        flex-flow: row wrap;
     }
     
     .section-title {

@@ -21,6 +21,7 @@ ul.fancytree-container {
     cursor: pointer;
     overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander {

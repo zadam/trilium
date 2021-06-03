@@ -34,7 +34,7 @@ export default class PaneContainer extends FlexContainer {
         this.child(widget);
     }
 
-    async openNewPaneCommand({ntxId}) {
+    async openNewPaneEvent({ntxId, notePath}) {
         const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveMainContext().ntxId);
 
         // remove the original position of newly created note context
@@ -52,7 +52,12 @@ export default class PaneContainer extends FlexContainer {
 
         await appContext.tabManager.activateNoteContext(noteContext.ntxId);
 
-        await noteContext.setEmpty();
+        if (notePath) {
+            await noteContext.setNote(notePath);
+        }
+        else {
+            await noteContext.setEmpty();
+        }
     }
 
     closeThisPaneCommand({ntxId}) {

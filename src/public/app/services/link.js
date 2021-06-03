@@ -132,12 +132,19 @@ function linkContextMenu(e) {
         x: e.pageX,
         y: e.pageY,
         items: [
-            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "empty"},
-            {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
+            {title: "Open note in a new tab", command: "openNoteInNewTab", uiIcon: "empty"},
+            {title: "Open note in a new pane", command: "openNoteInNewPane", uiIcon: "dock-right"},
+            {title: "Open note in a new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
                 appContext.tabManager.openTabWithNoteWithHoisting(notePath);
+            }
+            else if (command === 'openNoteInNewPane') {
+                const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
+                const {ntxId} = subContexts[subContexts.length - 1];
+
+                appContext.triggerCommand("openNewPane", {ntxId, notePath});
             }
             else if (command === 'openNoteInNewWindow') {
                 appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId: 'root'});
