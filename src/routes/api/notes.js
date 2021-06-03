@@ -18,23 +18,25 @@ function getNote(req) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
-    if (note.isStringNote()) {
-        note.content = note.getContent();
+    const pojo = note.getPojo();
 
-        if (note.type === 'file' && note.content.length > 10000) {
-            note.content = note.content.substr(0, 10000)
-                + `\r\n\r\n... and ${note.content.length - 10000} more characters.`;
+    if (note.isStringNote()) {
+        pojo.content = note.getContent();
+
+        if (note.type === 'file' && pojo.content.length > 10000) {
+            pojo.content = pojo.content.substr(0, 10000)
+                + `\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
         }
     }
 
     const contentMetadata = note.getContentMetadata();
 
-    note.contentLength = contentMetadata.contentLength;
+    pojo.contentLength = contentMetadata.contentLength;
 
-    note.combinedUtcDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.utcDateModified : contentMetadata.utcDateModified;
-    note.combinedDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified;
+    pojo.combinedUtcDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.utcDateModified : contentMetadata.utcDateModified;
+    pojo.combinedDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified;
 
-    return note;
+    return pojo;
 }
 
 function createNote(req) {
