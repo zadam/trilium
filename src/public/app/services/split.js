@@ -8,7 +8,7 @@ function setupSplit(leftPaneVisible) {
         instance = null;
     }
 
-    $("#tree-sidebar").toggle(leftPaneVisible);
+    $("#left-pane").toggle(leftPaneVisible);
 
     if (!leftPaneVisible) {
         $("#center-pane").css('width', '100%');
@@ -22,7 +22,7 @@ function setupSplit(leftPaneVisible) {
     }
 
     if (leftPaneVisible) {
-        instance = Split(['#tree-sidebar', '#center-pane'], {
+        instance = Split(['#left-pane', '#center-pane'], {
             sizes: [leftPaneWidth, 100 - leftPaneWidth],
             gutterSize: 5,
             onDragEnd: sizes => options.save('leftPaneWidth', Math.round(sizes[0]))

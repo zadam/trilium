@@ -2,7 +2,7 @@ import ButtonWidget from "./button_widget.js";
 import options from "../../services/options.js";
 import splitService from "../../services/split.js";
 
-export default class SidebarToggleWidget extends ButtonWidget {
+export default class LeftPaneToggleWidget extends ButtonWidget {
     refreshIcon() {
         const isLeftPaneVisible = options.is('leftPaneVisible');
 

@@ -45,11 +45,11 @@
     --modal-background-color: white;
     --modal-backdrop-color: black;
 
-    --tree-sidebar-background-color: #F3F3F3;
-    --tree-sidebar-text-color: #333;
+    --left-pane-background-color: #F3F3F3;
+    --left-pane-text-color: #333;
 
-    --launcher-sidebar-background-color: #F3F3F3;
-    --launcher-sidebar-text-color: #333;
+    --launcher-pane-background-color: #F3F3F3;
+    --launcher-pane-text-color: #333;
 
     --active-tab-background-color: #ddd;
     --active-tab-text-color: black;
@@ -109,11 +109,11 @@ body.theme-dark {
     --modal-background-color: #333;
     --modal-backdrop-color: #444;
 
-    --tree-sidebar-background-color: #1f1f1f;
-    --tree-sidebar-text-color: #8D8888;
+    --left-pane-background-color: #1f1f1f;
+    --left-pane-text-color: #8D8888;
 
-    --launcher-sidebar-background-color: #1f1f1f;
-    --launcher-sidebar-text-color: #8D8888;
+    --launcher-pane-background-color: #1f1f1f;
+    --launcher-pane-text-color: #8D8888;
 
     --active-tab-background-color: #666;
     --active-tab-text-color: #ccc;

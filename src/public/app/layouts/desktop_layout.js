@@ -2,7 +2,7 @@ import FlexContainer from "../widgets/containers/flex_container.js";
 import GlobalMenuWidget from "../widgets/buttons/global_menu.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
-import TreeSidebarContainer from "../widgets/containers/tree_sidebar_container.js";
+import LeftPaneContainer from "../widgets/containers/left_pane_container.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import OwnedAttributeListWidget from "../widgets/ribbon_widgets/owned_attribute_list.js";
@@ -28,8 +28,8 @@ import SpacerWidget from "../widgets/spacer.js";
 import QuickSearchWidget from "../widgets/quick_search.js";
 import ButtonWidget from "../widgets/buttons/button_widget.js";
 import ProtectedSessionStatusWidget from "../widgets/buttons/protected_session_status.js";
-import PaneContainer from "../widgets/containers/pane_container.js";
-import SidebarToggleWidget from "../widgets/buttons/sidebar_toggle.js";
+import SplitNoteContainer from "../widgets/containers/split_note_container.js";
+import LeftPaneToggleWidget from "../widgets/buttons/left_pane_toggle.js";
 import CreatePaneButton from "../widgets/buttons/create_pane_button.js";
 import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 import BasicPropertiesWidget from "../widgets/ribbon_widgets/basic_properties.js";
@@ -50,7 +50,7 @@ export default class DesktopLayout {
         return new RootContainer()
             .setParent(appContext)
             .child(new FlexContainer("column")
-                .id("launcher-sidebar")
+                .id("launcher-pane")
                 .child(new GlobalMenuWidget())
                 .child(new ButtonWidget()
                     .icon("bx-file-blank")
@@ -71,15 +71,15 @@ export default class DesktopLayout {
                 .child(new SpacerWidget())
                 .child(new ProtectedSessionStatusWidget())
                 .child(new SyncStatusWidget())
-                .child(new SidebarToggleWidget())
+                .child(new LeftPaneToggleWidget())
                 .css("width", "54px")
             )
-            .child(new TreeSidebarContainer()
+            .child(new LeftPaneContainer()
                 .hideInZenMode()
                 .css("width", "300px")
                 .child(new QuickSearchWidget())
                 .child(appContext.mainTreeWidget)
-                .child(...this.customWidgets.get('tree-sidebar'))
+                .child(...this.customWidgets.get('left-pane'))
             )
             .child(new FlexContainer('column')
                 .id('center-pane')
@@ -89,7 +89,7 @@ export default class DesktopLayout {
                     .child(new TitleBarButtonsWidget())
                     .css('height', '40px')
                 )
-                .child(new PaneContainer(() =>
+                .child(new SplitNoteContainer(() =>
                     new FlexContainer('column')
                         .css("flex-grow", "1")
                         .child(new FlexContainer('row').class('title-row')

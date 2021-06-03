@@ -1,14 +1,14 @@
 import FlexContainer from "./flex_container.js";
 import appContext from "../../services/app_context.js";
 
-export default class PaneContainer extends FlexContainer {
+export default class SplitNoteContainer extends FlexContainer {
     constructor(widgetFactory) {
         super('row');
 
         this.widgetFactory = widgetFactory;
         this.widgets = {};
 
-        this.class('pane-container-widget');
+        this.class('note-split-container-widget');
         this.css('flex-grow', '1');
     }
 
@@ -34,7 +34,7 @@ export default class PaneContainer extends FlexContainer {
         this.child(widget);
     }
 
-    async openNewPaneEvent({ntxId, notePath}) {
+    async openNewNoteSplitEvent({ntxId, notePath}) {
         const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveMainContext().ntxId);
 
         // remove the original position of newly created note context
@@ -60,7 +60,7 @@ export default class PaneContainer extends FlexContainer {
         }
     }
 
-    closeThisPaneCommand({ntxId}) {
+    closeThisNoteSplitCommand({ntxId}) {
         appContext.tabManager.removeNoteContext(ntxId);
     }
 

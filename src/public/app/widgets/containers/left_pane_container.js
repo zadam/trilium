@@ -1,11 +1,11 @@
 import options from "../../services/options.js";
 import FlexContainer from "./flex_container.js";
 
-export default class TreeSidebarContainer extends FlexContainer {
+export default class LeftPaneContainer extends FlexContainer {
     constructor() {
         super('column');
 
-        this.id('tree-sidebar');
+        this.id('left-pane');
         this.css('height', '100%');
     }
 

@@ -55,7 +55,7 @@ class TreeContextMenu {
 
         return [
             { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
-            { title: 'Open in a new pane', command: "openNoteInPane", uiIcon: "dock-right", enabled: noSelectedNotes },
+            { title: 'Open in a new split', command: "openNoteInSplit", uiIcon: "dock-right", enabled: noSelectedNotes },
             { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "plus",
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
@@ -130,11 +130,11 @@ class TreeContextMenu {
                 isProtected: this.node.data.isProtected
             });
         }
-        else if (command === 'openNoteInPane') {
+        else if (command === 'openNoteInSplit') {
             const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
             const {ntxId} = subContexts[subContexts.length - 1];
 
-            this.treeWidget.triggerCommand("openNewPane", {ntxId, notePath});
+            this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
         }
         else {
             this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});

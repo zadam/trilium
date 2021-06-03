@@ -883,7 +883,7 @@ ul.fancytree-container li {
     margin: 10px;
 }
 
-#launcher-sidebar .icon-action {
+#launcher-pane .icon-action {
     font-size: 150%;
     display: inline-block;
     padding: 15px 15px;
@@ -892,18 +892,18 @@ ul.fancytree-container li {
     color: var(--button-text-color);
 }
 
-#launcher-sidebar .icon-action:hover {
+#launcher-pane .icon-action:hover {
     background-color: var(--hover-item-background-color);
 }
 
-#tree-sidebar {
-    color: var(--tree-sidebar-text-color);
-    background-color: var(--tree-sidebar-background-color);
+#left-pane {
+    color: var(--left-pane-text-color);
+    background-color: var(--left-pane-background-color);
 }
 
-#launcher-sidebar {
-    color: var(--launcher-sidebar-text-color);
-    background-color: var(--launcher-sidebar-background-color);
+#launcher-pane {
+    color: var(--launcher-pane-text-color);
+    background-color: var(--launcher-pane-background-color);
 }
 
 input {

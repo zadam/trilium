@@ -2,7 +2,4 @@
 - drop options.utcDateCreated - not used for anything
 - isDeleted = 0 by default
 - rename openTabs to openNoteContexts
-- rename leftPaneVisible to leftSidebarVisible
-  - pane is now used for side by side notes
-  - "left" should be preserved since custom widgets may create right sidebar
 - migrate black theme to dark theme
