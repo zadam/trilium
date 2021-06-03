@@ -290,7 +290,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             this.refresh();
 
             this.getTitle(this.note);
-            this.triggerCommand('refreshSectionContainer');
+            this.triggerCommand('refreshRibbonContainer');
         }
     }
 }

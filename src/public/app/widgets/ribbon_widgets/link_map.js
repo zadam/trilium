@@ -211,6 +211,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         const notes = await froca.getNotes(Object.keys(this.noteIdToLinkCountMap), true);
 
         const noteIdToLinkIdMap = {};
+        noteIdToLinkIdMap[this.noteId] = new Set(); // for case there are no relations
         const linksGroupedBySourceTarget = {};
 
         for (const link of Object.values(this.linkIdToLinkMap)) {
