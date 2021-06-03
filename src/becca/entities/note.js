@@ -674,6 +674,16 @@ class Note extends AbstractEntity {
         }
     }
 
+    getRelationDefinitions() {
+        return this.getLabels()
+            .filter(l => l.name.startsWith("relation:"));
+    }
+
+    getLabelDefinitions() {
+        return this.getLabels()
+            .filter(l => l.name.startsWith("relation:"));
+    }
+
     isTemplate() {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }

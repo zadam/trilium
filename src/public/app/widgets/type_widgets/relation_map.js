@@ -75,7 +75,7 @@ const TPL = `
     <button type="button"
             class="relation-map-reset-pan-zoom btn icon-button floating-button bx bx-crop no-print"
             title="Reset pan & zoom to initial coordinates and magnification"
-            style="right: 70px;"></button>
+            style="right: 100px;"></button>
 
     <div class="btn-group floating-button no-print" style="right: 10px;">
         <button type="button"
