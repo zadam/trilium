@@ -550,6 +550,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
 
         for (const branch of childBranches) {
+            if (branch.noteId === 'hidden') {
+                continue;
+            }
+
             if (hideArchivedNotes) {
                 const note = branch.getNoteFromCache();
 
@@ -869,7 +873,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             oldActiveNode.setFocus(false);
         }
 
-        if (this.noteContext && this.noteContext.notePath && !this.noteContext.note.isDeleted) {
+        if (this.noteContext
+            && this.noteContext.notePath
+            && !this.noteContext.note.isDeleted
+            && !this.noteContext.notePath.includes("root/hidden")
+        ) {
             const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
 
             if (newActiveNode) {
@@ -1158,7 +1166,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);
 
-            await node.setActive(true, {noEvents: true, noFocus: true});
+            if (node) {
+                await node.setActive(true, {noEvents: true, noFocus: true});
+            }
         }
     }
 

@@ -6,6 +6,7 @@ const dateUtils = require('../../services/date_utils');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
 const cls = require('../../services/cls');
+const becca = require('../../becca/becca');
 
 function getInboxNote(req) {
     const hoistedNote = getHoistedNote();
@@ -79,6 +80,40 @@ function createSqlConsole() {
     return note;
 }
 
+function getHiddenRoot() {
+    let hidden = becca.getNote('hidden');
+
+    if (!hidden) {
+        hidden = noteService.createNewNote({
+            noteId: 'hidden',
+            title: 'hidden',
+            type: 'text',
+            content: '',
+            parentNoteId: 'root'
+        }).note;
+
+        hidden.addLabel('archived', "", true);
+    }
+
+    return hidden;
+}
+
+function getSearchRoot() {
+    let searchRoot = becca.getNote('search');
+
+    if (!searchRoot) {
+        searchRoot = noteService.createNewNote({
+            noteId: 'search',
+            title: 'search',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return searchRoot;
+}
+
 function createSearchNote(req) {
     const params = req.body;
     const searchString = params.searchString || "";
@@ -86,29 +121,29 @@ function createSearchNote(req) {
 
     const hoistedNote = getHoistedNote();
 
-    let searchHome;
+    let searchHome = getSearchRoot();
 
-    if (hoistedNote) {
-        ([searchHome] = hoistedNote.getDescendantNotesWithLabel('hoistedSearchHome'));
-
-        if (!searchHome) {
-            ([searchHome] = hoistedNote.getDescendantNotesWithLabel('searchHome'));
-        }
-
-        if (!searchHome) {
-            searchHome = hoistedNote;
-        }
-
-        if (!ancestorNoteId) {
-            ancestorNoteId = hoistedNote.noteId;
-        }
-    }
-    else {
-        const today = dateUtils.localNowDate();
-
-        searchHome = attributeService.getNoteWithLabel('searchHome')
-                  || dateNoteService.getDateNote(today);
-    }
+    // if (hoistedNote) {
+    //     ([searchHome] = hoistedNote.getDescendantNotesWithLabel('hoistedSearchHome'));
+    //
+    //     if (!searchHome) {
+    //         ([searchHome] = hoistedNote.getDescendantNotesWithLabel('searchHome'));
+    //     }
+    //
+    //     if (!searchHome) {
+    //         searchHome = hoistedNote;
+    //     }
+    //
+    //     if (!ancestorNoteId) {
+    //         ancestorNoteId = hoistedNote.noteId;
+    //     }
+    // }
+    // else {
+    //     const today = dateUtils.localNowDate();
+    //
+    //     searchHome = attributeService.getNoteWithLabel('searchHome')
+    //               || dateNoteService.getDateNote(today);
+    // }
 
     const {note} = noteService.createNewNote({
         parentNoteId: searchHome.noteId,
