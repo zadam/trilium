@@ -112,18 +112,22 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
                 .on('click', () => {
                     setTimeout(() => $pluginButtons.dropdown('hide'), 0);
                 });
+
+            if (opts.icon) {
+                button.append($("<span>").addClass("bx bx-" + opts.icon))
+                    .append("&nbsp;");
+            }
+
+            button.append($("<span>").text(opts.title));
         } else {
-            button = $('<button class="noborder">')
-                .addClass("btn btn-sm");
+            button = $('<span class="button-widget icon-action bx" data-toggle="tooltip" title="" data-placement="right"></span>')
+                .addClass("bx bx-" + opts.icon);
+
+            button.attr("title", opts.title);
+            button.tooltip({html: true});
         }
+
         button = button.on('click', opts.action);
-
-        if (opts.icon) {
-            button.append($("<span>").addClass("bx bx-" + opts.icon))
-                  .append("&nbsp;");
-        }
-
-        button.append($("<span>").text(opts.title));
 
         button.attr('id', buttonId);
 
