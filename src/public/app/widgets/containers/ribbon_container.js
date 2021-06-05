@@ -23,6 +23,10 @@ const TPL = `
     .ribbon-tab-title {
         color: var(--muted-text-color);
         border-bottom: 1px solid var(--main-border-color); 
+        min-width: 24px;
+        flex-basis: 24px;
+        max-width: fit-content;
+        flex-grow: 10;
     }
 
     .ribbon-tab-title .bx {
@@ -34,7 +38,6 @@ const TPL = `
     .ribbon-tab-title.active {
         color: var(--main-text-color);
         border-bottom: 1px solid var(--main-text-color);
-        flex-shrink: 1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -53,14 +56,18 @@ const TPL = `
     }
     
     .ribbon-tab-spacer {
-        flex-basis: 35px;
-        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 0;
+        max-width: 35px;
+        flex-grow: 1;
         border-bottom: 1px solid var(--main-border-color);
     }
         
     .ribbon-tab-spacer:last-of-type {
-        flex-shrink: 1;
         flex-grow: 1;
+        flex-basis: 0;
+        min-width: 0;
+        max-width: 10000px;
     }
     
     .ribbon-button-container {

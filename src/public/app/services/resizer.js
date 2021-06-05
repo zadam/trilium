@@ -33,8 +33,8 @@ function setupLeftPaneResizer(leftPaneVisible) {
 
 function setupRightPaneResizer() {
     if (rightInstance) {
-        leftInstance.destroy();
-        leftInstance = null;
+        rightInstance.destroy();
+        rightInstance = null;
     }
 
     const rightPaneVisible = $("#right-pane").is(":visible");

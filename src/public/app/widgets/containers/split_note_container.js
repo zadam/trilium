@@ -18,6 +18,7 @@ export default class SplitNoteContainer extends FlexContainer {
         const $renderedWidget = widget.render();
 
         $renderedWidget.attr("data-ntx-id", noteContext.ntxId);
+        $renderedWidget.css("flex-basis", "0"); // so that each split has same width
 
         $renderedWidget.on('click', () => appContext.tabManager.activateNoteContext(noteContext.ntxId));
 
