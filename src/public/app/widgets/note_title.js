@@ -44,7 +44,6 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$noteTitle = this.$widget.find(".note-title");
 
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());

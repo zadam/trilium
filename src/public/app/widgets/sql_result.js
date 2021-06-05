@@ -20,7 +20,6 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$sqlConsoleResultContainer = this.$widget.find('.sql-console-result-container');
     }

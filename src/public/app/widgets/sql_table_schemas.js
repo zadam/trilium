@@ -42,7 +42,6 @@ export default class SqlTableSchemasWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$sqlConsoleTableSchemas = this.$widget.find('.sql-table-schemas');
     }

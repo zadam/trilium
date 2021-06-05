@@ -70,7 +70,6 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$fileNoteId = this.$widget.find(".file-note-id");
         this.$fileName = this.$widget.find(".file-filename");
         this.$fileType = this.$widget.find(".file-filetype");

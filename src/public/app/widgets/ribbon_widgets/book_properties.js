@@ -58,7 +58,6 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$viewTypeSelect = this.$widget.find('.view-type-select');
         this.$viewTypeSelect.on('change', () => this.toggleViewType(this.$viewTypeSelect.val()));

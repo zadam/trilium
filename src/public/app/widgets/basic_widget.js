@@ -26,12 +26,14 @@ class BasicWidget extends Component {
     }
 
     contentSized() {
-        this.css('contain', 'layout paint');
+        console.log("Using contentSized() is deprecated NOOP and it is recommended to remove its use.");
+
         return this;
     }
 
     overflowing() {
-        this.css('contain', 'none !important');
+        console.log("Using overflowing() is deprecated NOOP and it is recommended to remove its use.");
+
         return this;
     }
 

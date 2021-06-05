@@ -30,7 +30,6 @@ export default class NotePropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
 
         this.$pageUrl = this.$widget.find('.page-url');
     }

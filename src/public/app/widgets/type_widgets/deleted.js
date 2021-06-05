@@ -14,6 +14,5 @@ export default class DeletedTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
     }
 }

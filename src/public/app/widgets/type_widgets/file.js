@@ -42,7 +42,6 @@ export default class FileTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$previewContent = this.$widget.find(".file-preview-content");
         this.$previewNotAvailable = this.$widget.find(".file-preview-not-available");
         this.$pdfPreview = this.$widget.find(".pdf-preview");

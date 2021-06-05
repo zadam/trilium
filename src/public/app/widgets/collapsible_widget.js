@@ -16,7 +16,6 @@ export default class CollapsibleWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(WIDGET_TPL);
-        this.contentSized();
         this.$widget.find('[data-target]').attr('data-target', "#" + this.componentId);
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');

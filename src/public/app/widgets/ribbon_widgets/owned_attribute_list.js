@@ -41,7 +41,6 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.find('.attr-editor-placeholder').replaceWith(this.attributeEditorWidget.render());
         this.$widget.append(this.attributeDetailWidget.render());

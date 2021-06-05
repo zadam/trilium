@@ -25,7 +25,6 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$editor = this.$widget.find('.note-detail-code-editor');
         this.$executeButton = this.$widget.find('.execute-button');
 

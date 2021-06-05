@@ -97,7 +97,6 @@ export default class SyncStatusWidget extends BasicWidget {
         this.$widget.find('.sync-status-icon:not(.sync-status-in-progress)')
             .on('click', () => syncService.syncNow())
 
-        this.overflowing();
     }
 
     showIcon(className) {

@@ -52,7 +52,6 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.find(".note-type-container").append(this.noteTypeWidget.render());
         this.$widget.find(".protected-note-switch-container").append(this.protectedNoteSwitchWidget.render());

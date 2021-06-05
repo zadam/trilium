@@ -32,7 +32,6 @@ export default class NoteListWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$content = this.$widget.find('.note-list-widget-content');
-        this.contentSized();
 
         const observer = new IntersectionObserver(entries => {
             this.isIntersecting = entries[0].isIntersecting;

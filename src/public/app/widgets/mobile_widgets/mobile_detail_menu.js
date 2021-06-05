@@ -10,7 +10,6 @@ const TPL = `<button type="button" class="action-button bx bx-menu" style="paddi
 class MobileDetailMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.on("click", async e => {
             const note = appContext.tabManager.getActiveContextNote();

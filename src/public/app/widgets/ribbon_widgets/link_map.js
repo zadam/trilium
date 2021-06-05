@@ -78,7 +78,6 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
         this.$styleResolver = this.$widget.find('.style-resolver');
 
-        this.overflowing();
 
         window.addEventListener('resize', () => {
             if (!this.graph) { // no graph has been even rendered

@@ -73,7 +73,6 @@ const TPL = `
 export default class ProtectedNoteSwitchWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$protectButton = this.$widget.find(".protect-button");
         this.$protectButton.on('click', () => protectedSessionService.protectNote(this.noteId, true, false));

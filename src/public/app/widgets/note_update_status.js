@@ -27,7 +27,6 @@ export default class NoteUpdateStatusWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$filePath = this.$widget.find(".file-path");
         this.$fileLastModified = this.$widget.find(".file-last-modified");

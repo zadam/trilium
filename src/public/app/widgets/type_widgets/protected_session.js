@@ -25,7 +25,6 @@ export default class ProtectedSessionTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$passwordForm = this.$widget.find(".protected-session-password-form");
         this.$passwordInput = this.$widget.find(".protected-session-password");
 

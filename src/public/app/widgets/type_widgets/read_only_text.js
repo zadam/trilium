@@ -65,7 +65,6 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
 
         this.$content = this.$widget.find('.note-detail-readonly-text-content');
 

@@ -44,7 +44,6 @@ export default class SearchResultWidget extends NoteContextAwareWidget {
         this.$content = this.$widget.find('.search-result-widget-content');
         this.$noResults = this.$widget.find('.search-no-results');
         this.$notExecutedYet = this.$widget.find('.search-not-executed-yet');
-        this.contentSized();
     }
 
     async refreshWithNote(note) {

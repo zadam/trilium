@@ -99,7 +99,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$relationMapContainer = this.$widget.find(".relation-map-container");
         this.$createChildNote = this.$widget.find(".relation-map-create-child-note");
         this.$zoomInButton = this.$widget.find(".relation-map-zoom-in");

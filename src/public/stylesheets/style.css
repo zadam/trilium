@@ -602,10 +602,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     pointer-events: none;
 }
 
-.component {
-    contain: size;
-}
-
 .toast {
     background-color: var(--accented-background-color) !important;
     color: var(--main-text-color) !important;

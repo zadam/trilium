@@ -233,7 +233,6 @@ const TAB_ROW_TPL = `
 export default class TabRowWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TAB_ROW_TPL);
-        this.overflowing();
 
         this.draggabillies = [];
 

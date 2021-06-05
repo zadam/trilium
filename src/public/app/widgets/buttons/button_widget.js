@@ -19,7 +19,6 @@ export default class ButtonWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         if (this.settings.onClick) {
             this.$widget.on("click", () => this.settings.onClick(this));

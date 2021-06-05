@@ -78,7 +78,6 @@ const TPL = `
 export default class NoteIconWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
         this.$icon = this.$widget.find('button.note-icon');
         this.$iconList = this.$widget.find('.icon-list');
         this.$iconList.on('click', 'span', async e => {

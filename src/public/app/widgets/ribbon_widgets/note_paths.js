@@ -50,7 +50,6 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$notePathList = this.$widget.find(".note-path-list");
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());

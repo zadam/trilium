@@ -77,7 +77,6 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$editor = this.$widget.find('.note-detail-editable-text-editor');
 
         this.initialized = this.initEditor();

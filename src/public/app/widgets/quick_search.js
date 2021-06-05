@@ -43,7 +43,6 @@ const MAX_DISPLAYED_NOTES = 15;
 export default class QuickSearchWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$searchString = this.$widget.find('.search-string');
         this.$dropdownMenu = this.$widget.find('.dropdown-menu');

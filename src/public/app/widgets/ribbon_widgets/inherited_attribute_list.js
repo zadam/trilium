@@ -38,7 +38,6 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$container = this.$widget.find('.inherited-attributes-container');
         this.$widget.append(this.attributeDetailWidget.render());

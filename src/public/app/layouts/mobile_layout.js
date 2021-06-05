@@ -98,7 +98,7 @@ export default class MobileLayout {
             .child(new ScreenContainer("detail", "column")
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
                 .css('max-height', '100%')
-                .child(new FlexContainer('row').overflowing()
+                .child(new FlexContainer('row')
                     .css('font-size', 'larger')
                     .css('align-items', 'center')
                     .css('position', 'fixed')

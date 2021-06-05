@@ -34,7 +34,6 @@ const TPL = `
 export default class NoteTypeWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
 

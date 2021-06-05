@@ -25,7 +25,6 @@ export default class HistoryNavigationWidget extends BasicWidget {
         }
 
         this.$widget = $(TPL);
-        this.contentSized();
 
         const contextMenuHandler = e => {
             e.preventDefault();

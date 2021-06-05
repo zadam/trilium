@@ -237,7 +237,6 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
         utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
-        this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
 

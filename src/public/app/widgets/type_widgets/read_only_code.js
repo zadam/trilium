@@ -32,7 +32,6 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$content = this.$widget.find('.note-detail-read-only-code-content');
 
         this.$widget.find('.edit-code-note-button').on('click', () => {

@@ -130,7 +130,6 @@ export default class RibbonContainer extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$tabContainer = this.$widget.find('.ribbon-tab-container');
         this.$buttonContainer = this.$widget.find('.ribbon-button-container');

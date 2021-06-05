@@ -37,7 +37,6 @@ const TPL = `
 export default class PromotedAttributesWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
         this.$container = this.$widget.find(".promoted-attributes-container");
     }
 

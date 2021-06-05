@@ -52,7 +52,6 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$copyToClipboardButton = this.$widget.find(".image-copy-to-clipboard");
         this.$uploadNewRevisionButton = this.$widget.find(".image-upload-new-revision");
         this.$uploadNewRevisionInput = this.$widget.find(".image-upload-new-revision-input");

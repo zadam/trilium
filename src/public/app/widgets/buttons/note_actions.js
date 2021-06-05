@@ -32,7 +32,6 @@ const TPL = `
 export default class NoteActionsWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$showSourceButton = this.$widget.find('.show-source-button');
         this.$renderNoteButton = this.$widget.find('.render-note-button');
