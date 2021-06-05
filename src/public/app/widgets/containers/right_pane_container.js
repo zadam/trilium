@@ -1,4 +1,5 @@
 import FlexContainer from "./flex_container.js";
+import splitService from "../../services/resizer.js";
 
 export default class RightPaneContainer extends FlexContainer {
     constructor() {
@@ -19,7 +20,11 @@ export default class RightPaneContainer extends FlexContainer {
             // right pane is displayed only if some child widget is active
             // we'll reevaluate the visibility based on events which are probable to cause visibility change
             // but these events needs to be finished and only then we check
-            promise.then(() => this.toggleInt(this.isEnabled()));
+            promise.then(() => {
+                this.toggleInt(this.isEnabled());
+
+                splitService.setupRightPaneResizer();
+            });
         }
 
         return promise;

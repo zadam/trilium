@@ -1,6 +1,6 @@
 import ButtonWidget from "./button_widget.js";
 import options from "../../services/options.js";
-import splitService from "../../services/split.js";
+import splitService from "../../services/resizer.js";
 
 export default class LeftPaneToggleWidget extends ButtonWidget {
     refreshIcon() {
@@ -20,7 +20,7 @@ export default class LeftPaneToggleWidget extends ButtonWidget {
 
         super.refreshIcon();
 
-        splitService.setupSplit(isLeftPaneVisible);
+        splitService.setupLeftPaneResizer(isLeftPaneVisible);
     }
 
     hideSidebarCommand() {
