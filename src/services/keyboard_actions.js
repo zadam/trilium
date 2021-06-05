@@ -397,11 +397,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "toggleZenMode",
-        defaultShortcuts: ["Alt+M"],
-        scope: "window"
-    },
-    {
         actionName: "zoomOut",
         defaultShortcuts: isElectron ? ["CommandOrControl+-"] : [],
         scope: "window"

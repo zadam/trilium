@@ -54,18 +54,6 @@ button.close:hover {
     display: none;
 }
 
-.zen-mode #center-pane {
-    width: 100% !important;
-    /* limit max width to improve readability */
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.zen-mode .hide-in-zen-mode, .zen-mode .gutter {
-    display: none !important;
-}
-
 .ui-autocomplete {
     max-height: 300px;
     overflow-y: auto;

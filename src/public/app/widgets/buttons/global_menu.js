@@ -48,12 +48,6 @@ const TPL = `
             <kbd data-command="reloadFrontendApp"></kbd>
         </a>
 
-        <a class="dropdown-item" data-trigger-command="toggleZenMode">
-            <span class="bx bx-empty"></span>
-            Toggle Zen mode
-            <kbd data-command="toggleZenMode"></kbd>
-        </a>
-
         <a class="dropdown-item" data-trigger-command="toggleFullscreen">
             <span class="bx bx-empty"></span>
             Toggle fullscreen

@@ -45,11 +45,6 @@ class BasicWidget extends Component {
         return this;
     }
 
-    hideInZenMode() {
-        this.class('hide-in-zen-mode');
-        return this;
-    }
-
     cssBlock(block) {
         this.cssEl = block;
         return this;
