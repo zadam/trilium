@@ -60,7 +60,7 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 function getNotesWithLabel(name, value) {
-    return searchService.findNotes(formatAttrForSearch({type: 'label', name, value}, true));
+    return searchService.searchNotes(formatAttrForSearch({type: 'label', name, value}, true));
 }
 
 function getNoteIdsWithLabels(names) {
@@ -75,6 +75,7 @@ function getNoteIdsWithLabels(names) {
     return Array.from(noteIds);
 }
 
+// TODO: should be in search service
 function getNoteWithLabel(name, value) {
     const notes = getNotesWithLabel(name, value);
 

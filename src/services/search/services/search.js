@@ -136,7 +136,7 @@ function parseQueryToExpression(query, searchContext) {
  * @param {string} query
  * @return {Note[]}
  */
-function findNotes(query) {
+function searchNotes(query) {
     const searchResults = findResultsWithQuery(query, new SearchContext());
 
     return searchResults.map(sr => becca.notes[sr.noteId]);
@@ -263,5 +263,5 @@ module.exports = {
     searchTrimmedNotes,
     searchNotesForAutocomplete,
     findResultsWithQuery,
-    findNotes
+    searchNotes
 };

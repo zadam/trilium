@@ -3,6 +3,7 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import froca from "../../services/froca.js";
 import ws from "../../services/ws.js";
 import toastService from "../../services/toast.js";
+import treeService from "../../services/tree.js";
 
 import DeleteNoteSearchAction from "../search_actions/delete_note.js";
 import DeleteLabelSearchAction from "../search_actions/delete_label.js";
@@ -21,6 +22,8 @@ import SearchScript from "../search_options/search_script.js";
 import Limit from "../search_options/limit.js";
 import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
 import Debug from "../search_options/debug.js";
+import appContext from "../../services/app_context.js";
+import toast from "../../services/toast.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -164,6 +167,11 @@ const TPL = `
                                 <span class="bx bxs-zap"></span>
                                 Search & Execute actions
                             </button>
+                            
+                            <button type="button" class="btn btn-sm save-to-note-button">
+                                <span class="bx bx-save"></span>
+                                Save to note
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -258,6 +266,19 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
         this.$searchAndExecuteButton = this.$widget.find('.search-and-execute-button');
         this.$searchAndExecuteButton.on('click', () => this.searchAndExecute());
+
+        this.$saveToNoteButton = this.$widget.find('.save-to-note-button');
+        this.$saveToNoteButton.on('click', async () => {
+            const {notePath} = await server.post("save-search-note", {searchNoteId: this.noteId});
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            await appContext.tabManager.getActiveContext().setNote(notePath);
+
+            console.log("notePath", notePath);
+
+            toastService.showMessage("Search note has been saved into " + await treeService.getNotePathTitle(notePath));
+        });
     }
 
     async refreshResultsCommand() {
@@ -277,6 +298,8 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
     async refreshWithNote(note) {
         this.$component.show();
+
+        this.$saveToNoteButton.toggle(!note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden")));
 
         this.$searchOptions.empty();
 

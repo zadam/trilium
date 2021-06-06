@@ -92,7 +92,7 @@ function update(name, value) {
 }
 
 function getUserThemes() {
-    const notes = searchService.findNotes("#appTheme");
+    const notes = searchService.searchNotes("#appTheme");
     const ret = [];
 
     for (const note of notes) {

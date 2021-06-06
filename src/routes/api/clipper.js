@@ -12,9 +12,16 @@ const utils = require('../../services/utils');
 const path = require('path');
 const Attribute = require('../../becca/entities/attribute.js');
 const htmlSanitizer = require('../../services/html_sanitizer');
+const {formatAttrForSearch} = require("../../services/attribute_formatter.js");
 
 function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
+    const notes = todayNote.searchNoteInSubtree(
+        formatAttrForSearch({
+            type: 'label',
+            name: "pageUrl",
+            value: pageUrl
+        }, true)
+    );
 
     for (const note of notes) {
         if (note.getOwnedLabelValue('clipType') === 'clippings') {

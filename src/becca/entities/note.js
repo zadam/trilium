@@ -1008,6 +1008,24 @@ class Note extends AbstractEntity {
      */
     removeRelation(name, value) { return this.removeAttribute(RELATION, name, value); }
 
+    searchNotesInSubtree(searchString) {
+        const searchService = require("../../services/search/services/search");
+
+        return searchService.searchNotes(searchString);
+    }
+
+    searchNoteInSubtree(searchString) {
+        return this.searchNotesInSubtree(searchString)[0];
+    }
+
+    cloneTo(parentNoteId) {
+        const cloningService = require("../../services/cloning");
+
+        const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
+
+        return cloningService.cloneNoteToParent(this.noteId, branch.branchId);
+    }
+
     decrypt() {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {

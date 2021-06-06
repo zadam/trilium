@@ -13,11 +13,11 @@ function getInboxNote(req) {
 
     let inbox;
 
-    if (hoistedNote) {
-        ([inbox] = hoistedNote.getDescendantNotesWithLabel('hoistedInbox'));
+    if (!hoistedNote.isRoot()) {
+        inbox = hoistedNote.searchNoteInSubtree('#hoistedInbox');
 
         if (!inbox) {
-            ([inbox] = hoistedNote.getDescendantNotesWithLabel('inbox'));
+            inbox = hoistedNote.searchNoteInSubtree('#inbox');
         }
 
         if (!inbox) {
@@ -114,39 +114,35 @@ function getSearchRoot() {
     return searchRoot;
 }
 
+function saveSearchNote(req) {
+    const searchNote = becca.getNote(req.body.searchNoteId);
+
+    const hoistedNote = getHoistedNote();
+    let searchHome;
+
+    if (!hoistedNote.isRoot()) {
+        searchHome = hoistedNote.searchNoteInSubtree('#hoistedSearchHome')
+            || hoistedNote.searchNoteInSubtree('#searchHome')
+            || hoistedNote;
+    }
+    else {
+        const today = dateUtils.localNowDate();
+
+        searchHome = hoistedNote.searchNoteInSubtree('#searchHome')
+            || dateNoteService.getDateNote(today);
+    }
+
+    return searchNote.cloneTo(searchHome.noteId);
+}
+
 function createSearchNote(req) {
     const params = req.body;
     const searchString = params.searchString || "";
-    let ancestorNoteId = params.ancestorNoteId;
-
     const hoistedNote = getHoistedNote();
-
-    let searchHome = getSearchRoot();
-
-    // if (hoistedNote) {
-    //     ([searchHome] = hoistedNote.getDescendantNotesWithLabel('hoistedSearchHome'));
-    //
-    //     if (!searchHome) {
-    //         ([searchHome] = hoistedNote.getDescendantNotesWithLabel('searchHome'));
-    //     }
-    //
-    //     if (!searchHome) {
-    //         searchHome = hoistedNote;
-    //     }
-    //
-    //     if (!ancestorNoteId) {
-    //         ancestorNoteId = hoistedNote.noteId;
-    //     }
-    // }
-    // else {
-    //     const today = dateUtils.localNowDate();
-    //
-    //     searchHome = attributeService.getNoteWithLabel('searchHome')
-    //               || dateNoteService.getDateNote(today);
-    // }
+    const ancestorNoteId = params.ancestorNoteId || hoistedNote.noteId;
 
     const {note} = noteService.createNewNote({
-        parentNoteId: searchHome.noteId,
+        parentNoteId: getSearchRoot().noteId,
         title: 'Search: ' + searchString,
         content: "",
         type: 'search',
@@ -163,9 +159,7 @@ function createSearchNote(req) {
 }
 
 function getHoistedNote() {
-    return cls.getHoistedNoteId() && cls.getHoistedNoteId() !== 'root'
-        ? becca.getNote(cls.getHoistedNoteId())
-        : null;
+    return becca.getNote(cls.getHoistedNoteId());
 }
 
 module.exports = {
@@ -175,5 +169,6 @@ module.exports = {
     getYearNote,
     getDateNotesForMonth,
     createSqlConsole,
-    createSearchNote
+    createSearchNote,
+    saveSearchNote
 };

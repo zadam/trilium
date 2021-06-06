@@ -8,6 +8,7 @@ const Branch = require('../becca/entities/branch.js');
 const TaskContext = require("./task_context.js");
 const utils = require('./utils');
 const becca = require("../becca/becca.js");
+const beccaService = require("../becca/becca_service");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
     const parentBranch = becca.getBranch(parentBranchId);
@@ -32,7 +33,11 @@ function cloneNoteToParent(noteId, parentBranchId, prefix) {
     parentBranch.isExpanded = true; // the new target should be expanded so it immediately shows up to the user
     parentBranch.save();
 
-    return { success: true, branchId: branch.branchId };
+    return {
+        success: true,
+        branchId: branch.branchId,
+        notePath: beccaService.getNotePath(parentBranch.noteId).path + "/" + noteId
+    };
 }
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
