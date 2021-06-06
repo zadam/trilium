@@ -92,7 +92,9 @@ function getHiddenRoot() {
             parentNoteId: 'root'
         }).note;
 
-        hidden.addLabel('archived', "", true);
+        // isInheritable: false means that this notePath is automatically not preffered but at the same time
+        // the flag is not inherited to the children
+        hidden.addLabel('archived', "", false);
     }
 
     return hidden;

@@ -28,7 +28,7 @@ const TPL = `
     }
     </style>
     
-    <div>This note is placed into the following paths:</div>
+    <div class="note-path-intro"></div>
     
     <ul class="note-path-list"></ul>
     
@@ -51,6 +51,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        this.$notePathIntro = this.$widget.find(".note-path-intro");
         this.$notePathList = this.$widget.find(".note-path-list");
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
     }
@@ -63,7 +64,17 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             return;
         }
 
-        for (const notePathRecord of this.note.getSortedNotePaths(this.hoistedNoteId)) {
+        const sortedNotePaths = this.note.getSortedNotePaths(this.hoistedNoteId)
+            .filter(notePath => !notePath.isHidden);
+
+        if (sortedNotePaths.length > 0) {
+            this.$notePathIntro.text("This note is placed into the following paths:");
+        }
+        else {
+            this.$notePathIntro.text("This note is not yet placed into the note tree.");
+        }
+
+        for (const notePathRecord of sortedNotePaths) {
             await this.addPath(notePathRecord);
         }
     }

@@ -300,7 +300,8 @@ class NoteShort {
             notePath: path,
             isInHoistedSubTree: path.includes(hoistedNotePath),
             isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
-            isSearch: path.find(noteId => froca.notes[noteId].type === 'search')
+            isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
+            isHidden: path.includes("hidden")
         }));
 
         notePaths.sort((a, b) => {
