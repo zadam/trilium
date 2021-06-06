@@ -121,7 +121,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
             button.append($("<span>").text(opts.title));
         } else {
             button = $('<span class="button-widget icon-action bx" data-toggle="tooltip" title="" data-placement="right"></span>')
-                .addClass("bx bx-" + opts.icon);
+                .addClass("bx bx-" + (opts.icon || "question-mark"));
 
             button.attr("title", opts.title);
             button.tooltip({html: true});

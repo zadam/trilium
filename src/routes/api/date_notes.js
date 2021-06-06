@@ -60,22 +60,27 @@ function getDateNotesForMonth(req) {
             AND attr.value LIKE '${month}%'`);
 }
 
-function createSqlConsole() {
+function saveSqlConsole(req) {
+    const sqlConsoleNote = becca.getNote(req.body.sqlConsoleNoteId);
     const today = dateUtils.localNowDate();
 
     const sqlConsoleHome =
         attributeService.getNoteWithLabel('sqlConsoleHome')
         || dateNoteService.getDateNote(today);
 
+    return sqlConsoleNote.cloneTo(sqlConsoleHome.noteId);
+}
+
+function createSqlConsole() {
     const {note} = noteService.createNewNote({
-        parentNoteId: sqlConsoleHome.noteId,
+        parentNoteId: getSqlConsoleRoot().noteId,
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
         mime: 'text/x-sqlite;schema=trilium'
     });
 
-    note.setLabel("sqlConsole", today);
+    note.setLabel("sqlConsole", dateUtils.localNowDate());
 
     return note;
 }
@@ -114,6 +119,22 @@ function getSearchRoot() {
     }
 
     return searchRoot;
+}
+
+function getSqlConsoleRoot() {
+    let sqlConsoleRoot = becca.getNote('sqlconsole');
+
+    if (!sqlConsoleRoot) {
+        sqlConsoleRoot = noteService.createNewNote({
+            noteId: 'sqlconsole',
+            title: 'SQL Console',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return sqlConsoleRoot;
 }
 
 function saveSearchNote(req) {
@@ -171,6 +192,7 @@ module.exports = {
     getYearNote,
     getDateNotesForMonth,
     createSqlConsole,
+    saveSqlConsole,
     createSearchNote,
     saveSearchNote
 };

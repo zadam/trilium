@@ -191,6 +191,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             await this.refresh();
 
             const widget = this.getTypeWidget();
+            await widget.initialized;
             widget.focus();
         }
     }
