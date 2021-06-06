@@ -7,9 +7,23 @@ const TPL = `
     .global-menu .dropdown-menu {
         width: 20em;
     }
+    
+    .global-menu-button {
+        background-image: url("images/icon-bw.png");
+        background-repeat: no-repeat;
+        background-position: 50% 45%;
+        width: 53px;
+        height: 53px;
+    }
+    
+    .global-menu-button:hover {
+        background-image: url("images/icon-color.png");
+    }
     </style>
 
-    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="icon-action bx bx-menu" title="Menu"></button>
+    <button type="button" data-toggle="dropdown" data-placement="right"
+            aria-haspopup="true" aria-expanded="false" 
+            class="icon-action global-menu-button" title="Menu"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a class="dropdown-item options-button" data-trigger-command="showOptions">
@@ -76,6 +90,8 @@ const TPL = `
 export default class GlobalMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+
+        this.$widget.find(".global-menu-button").tooltip();
 
         this.$widget.find(".show-about-dialog-button").on('click',
             () => import("../../dialogs/about.js").then(d => d.showDialog()));

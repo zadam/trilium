@@ -41,7 +41,7 @@ const TPL = `
         font-size: 1.5em;
         padding: 2px;
         max-height: 34px;
-        color: var(--button-text-color);
+        color: var(--launcher-pane-text-color);
         background-color: var(--button-background-color);
         border-radius: var(--button-border-radius);
         border: 1px solid transparent;

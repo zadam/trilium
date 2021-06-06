@@ -157,9 +157,9 @@ export default class ApperanceOptions {
 
     async optionsLoaded(options) {
         const themes = [
+            { val: 'green', title: 'Green' },
             { val: 'white', title: 'White' },
-            { val: 'dark', title: 'Dark' },
-            { val: 'black', title: 'Black' }
+            { val: 'dark', title: 'Dark' }
         ].concat(await server.get('options/user-themes'));
 
         this.$themeSelect.empty();

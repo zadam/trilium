@@ -51,6 +51,12 @@ async function createMainWindow() {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
     const {BrowserWindow} = require('electron'); // should not be statically imported
+
+    const nativeImage = require('electron').nativeImage
+
+    const image = nativeImage.createFromPath(getIcon())
+    console.log(image)
+
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
         y: mainWindowState.y,
@@ -64,7 +70,7 @@ async function createMainWindow() {
             spellcheck: spellcheckEnabled
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
-        icon: getIcon()
+        icon: image
     });
 
     mainWindowState.manage(mainWindow);
@@ -102,7 +108,8 @@ async function createMainWindow() {
 }
 
 function getIcon() {
-    return path.join(__dirname, '../../images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png');
+//    return path.join(__dirname, '../../images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png');
+    return path.join(__dirname, '../../images/app-icons/png/new.png');
 }
 
 async function createSetupWindow() {

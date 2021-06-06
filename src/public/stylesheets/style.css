@@ -67,7 +67,7 @@ button.close:hover {
     padding: 5px;
     cursor: pointer;
     font-size: 1.5em;
-    color: var(--main-text-color);
+    color: var(--button-text-color);
     background: var(--button-background-color);
 }
 
@@ -248,6 +248,11 @@ button.btn, button.btn-sm {
 .btn:not(.btn-primary) {
     background-color: var(--button-background-color);
     color: var(--button-text-color);
+}
+
+#left-pane .btn:not(.btn-primary) {
+    background-color: var(--button-background-color);
+    color: var(--left-pane-text-color);
 }
 
 .btn.active:not(.btn-primary) {
@@ -873,7 +878,7 @@ ul.fancytree-container li {
     padding: 15px 15px;
     cursor: pointer;
     border: none;
-    color: var(--button-text-color);
+    color: var(--launcher-pane-text-color);
 }
 
 #launcher-pane .icon-action:hover {
