@@ -42,6 +42,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-partial-content": "^1.0.2",
+    "express-rate-limit": "^5.2.6",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
     "helmet": "4.6.0",
@@ -80,8 +81,8 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "13.1.1",
-    "electron-builder": "22.11.3",
+    "electron": "13.1.2",
+    "electron-builder": "22.11.7",
     "electron-packager": "15.2.0",
     "electron-rebuild": "2.3.5",
     "esm": "3.2.25",
@@ -90,7 +91,7 @@
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.0",
     "webpack": "5.38.1",
-    "webpack-cli": "4.7.0"
+    "webpack-cli": "4.7.2"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"

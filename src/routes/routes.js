@@ -45,11 +45,10 @@ const router = express.Router();
 const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
-const protectedSessionService = require('../services/protected_session');
 const entityChangesService = require('../services/entity_changes.js');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
-
+const rateLimit = require("express-rate-limit");
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -134,7 +133,13 @@ const uploadMiddleware = multer.single('upload');
 function register(app) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
-    route(POST, '/login', [], loginRoute.login);
+
+    const loginRateLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 10 // limit each IP to 10 requests per windowMs
+    });
+
+    route(POST, '/login', [loginRateLimiter], loginRoute.login);
     route(POST, '/logout', [csrfMiddleware, auth.checkAuth], loginRoute.logout);
     route(GET, '/setup', [], setupRoute.setupPage);
 
