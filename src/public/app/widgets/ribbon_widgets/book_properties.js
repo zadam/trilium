@@ -1,5 +1,4 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
-import server from "../../services/server.js";
 import attributeService from "../../services/attributes.js";
 
 const TPL = `
@@ -58,6 +57,7 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$viewTypeSelect = this.$widget.find('.view-type-select');
         this.$viewTypeSelect.on('change', () => this.toggleViewType(this.$viewTypeSelect.val()));

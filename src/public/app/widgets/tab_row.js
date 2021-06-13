@@ -43,9 +43,9 @@ const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab" data-trigger-command="open
 const FILLER_TPL = `<div class="tab-row-filler"></div>`;
 
 const TAB_ROW_TPL = `
-<div class="note-tab-row">
+<div class="tab-row-widget">
     <style>
-    .note-tab-row {
+    .tab-row-widget {
         box-sizing: border-box;
         position: relative;
         width: 100%;
@@ -54,19 +54,19 @@ const TAB_ROW_TPL = `
         margin-top: 2px;
     }
     
-    .note-tab-row * {
+    .tab-row-widget * {
         box-sizing: inherit;
         font: inherit;
     }
     
-    .note-tab-row .note-tab-row-container {
+    .tab-row-widget .tab-row-widget-container {
         box-sizing: border-box;
         position: relative;
         width: 100%;
         height: 100%;
     }
     
-    .note-tab-row .note-tab {
+    .tab-row-widget .note-tab {
         position: absolute;
         left: 0;
         width: 240px;
@@ -103,22 +103,22 @@ const TAB_ROW_TPL = `
         left: 0;
     }
         
-    .note-tab-row .note-tab[active] {
+    .tab-row-widget .note-tab[active] {
         z-index: 5;
     }
     
-    .note-tab-row .note-tab,
-    .note-tab-row .note-tab * {
+    .tab-row-widget .note-tab,
+    .tab-row-widget .note-tab * {
         user-select: none;
         cursor: default;
     }
     
-    .note-tab-row .note-tab.note-tab-was-just-added {
+    .tab-row-widget .note-tab.note-tab-was-just-added {
         top: 10px;
         animation: note-tab-was-just-added 120ms forwards ease-in-out;
     }
     
-    .note-tab-row .note-tab .note-tab-wrapper {
+    .tab-row-widget .note-tab .note-tab-wrapper {
         position: absolute;
         display: flex;
         top: 0;
@@ -134,35 +134,35 @@ const TAB_ROW_TPL = `
         background-color: var(--inactive-tab-background-color);
     }
     
-    .note-tab-row .note-tab[active] .note-tab-wrapper {
+    .tab-row-widget .note-tab[active] .note-tab-wrapper {
         font-weight: bold;
         color: var(--active-tab-text-color);
         background-color : var(--active-tab-background-color);
     }
     
-    .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
+    .tab-row-widget .note-tab[is-mini] .note-tab-wrapper {
         padding-left: 2px;
         padding-right: 2px;
     }
     
-    .note-tab-row .note-tab .note-tab-title {
+    .tab-row-widget .note-tab .note-tab-title {
         flex: 1;
         vertical-align: top;
         overflow: hidden;
         white-space: nowrap;
     }
     
-    .note-tab-row .note-tab .note-tab-icon {
+    .tab-row-widget .note-tab .note-tab-icon {
         position: relative;
         top: -1px;
         padding-right: 3px;
     }
     
-    .note-tab-row .note-tab[is-small] .note-tab-title {
+    .tab-row-widget .note-tab[is-small] .note-tab-title {
         margin-left: 0;
     }
     
-    .note-tab-row .note-tab .note-tab-drag-handle {
+    .tab-row-widget .note-tab .note-tab-drag-handle {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -172,7 +172,7 @@ const TAB_ROW_TPL = `
         border-top-right-radius: 8px;
     }
     
-    .note-tab-row .note-tab .note-tab-close {
+    .tab-row-widget .note-tab .note-tab-close {
         flex-grow: 0;
         flex-shrink: 0;
         border-radius: 50%;
@@ -180,24 +180,24 @@ const TAB_ROW_TPL = `
         text-align: center;
     }
     
-    .note-tab-row .note-tab .note-tab-close span {
+    .tab-row-widget .note-tab .note-tab-close span {
         font-size: 24px;
         position: relative;
         top: -6px;
     }
     
-    .note-tab-row .note-tab .note-tab-close:hover {
+    .tab-row-widget .note-tab .note-tab-close:hover {
         background-color: var(--hover-item-background-color);
         color: var(--hover-item-text-color);
     }
     
-    .note-tab-row .note-tab[is-smaller] .note-tab-close {
+    .tab-row-widget .note-tab[is-smaller] .note-tab-close {
         margin-left: auto;
     }
-    .note-tab-row .note-tab[is-mini]:not([active]) .note-tab-close {
+    .tab-row-widget .note-tab[is-mini]:not([active]) .note-tab-close {
         display: none;
     }
-    .note-tab-row .note-tab[is-mini][active] .note-tab-close {
+    .tab-row-widget .note-tab[is-mini][active] .note-tab-close {
         margin-left: auto;
         margin-right: auto;
     }
@@ -221,13 +221,13 @@ const TAB_ROW_TPL = `
             top: 0;
         }
     }
-    .note-tab-row.note-tab-row-is-sorting .note-tab:not(.note-tab-is-dragging),
-    .note-tab-row:not(.note-tab-row-is-sorting) .note-tab.note-tab-was-just-dragged {
+    .tab-row-widget.tab-row-widget-is-sorting .note-tab:not(.note-tab-is-dragging),
+    .tab-row-widget:not(.tab-row-widget-is-sorting) .note-tab.note-tab-was-just-dragged {
         transition: transform 120ms ease-in-out;
     }
     </style>
 
-    <div class="note-tab-row-container"></div>
+    <div class="tab-row-widget-container"></div>
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
@@ -296,7 +296,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     get $tabContainer() {
-        return this.$widget.find('.note-tab-row-container');
+        return this.$widget.find('.tab-row-widget-container');
     }
 
     get tabWidths() {
@@ -482,7 +482,7 @@ export default class TabRowWidget extends BasicWidget {
 
         if (this.isDragging) {
             this.isDragging = false;
-            this.$widget.removeClass('note-tab-row-is-sorting');
+            this.$widget.removeClass('tab-row-widget-is-sorting');
             this.draggabillyDragging.element.classList.remove('note-tab-is-dragging');
             this.draggabillyDragging.element.style.transform = '';
             this.draggabillyDragging.dragEnd();
@@ -512,7 +512,7 @@ export default class TabRowWidget extends BasicWidget {
                 this.isDragging = true;
                 this.draggabillyDragging = draggabilly;
                 tabEl.classList.add('note-tab-is-dragging');
-                this.$widget.addClass('note-tab-row-is-sorting');
+                this.$widget.addClass('tab-row-widget-is-sorting');
             });
 
             draggabilly.on('dragEnd', _ => {
@@ -527,7 +527,7 @@ export default class TabRowWidget extends BasicWidget {
 
                     requestAnimationFrame(_ => {
                         tabEl.classList.remove('note-tab-is-dragging');
-                        this.$widget.removeClass('note-tab-row-is-sorting');
+                        this.$widget.removeClass('tab-row-widget-is-sorting');
 
                         tabEl.classList.add('note-tab-was-just-dragged');
 

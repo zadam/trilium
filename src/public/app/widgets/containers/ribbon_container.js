@@ -4,7 +4,7 @@ const TPL = `
 <div class="ribbon-container">
     <style>
     .ribbon-container {
-        margin-bottom: 5px;  
+        margin-bottom: 5px;
     }
     
     .ribbon-top-row {
@@ -78,6 +78,9 @@ const TPL = `
     
     .ribbon-button-container .icon-action {
         padding: 5px;
+    }
+    
+    .ribbon-button-container > * {
         position: relative;
         top: -3px;
         margin-left: 10px;
@@ -115,6 +118,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
     constructor() {
         super();
 
+        this.contentSized();
         this.ribbonWidgets = [];
         this.buttonWidgets = [];
     }

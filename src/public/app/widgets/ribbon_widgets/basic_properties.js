@@ -21,7 +21,7 @@ const TPL = `
         }
     </style>
     
-    <div class="note-type-container" style="display: flex">
+    <div class="note-type-container">
         <span>Note type:</span> &nbsp;
     </div>
     
@@ -32,8 +32,8 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 
-        this.noteTypeWidget = new NoteTypeWidget();
-        this.protectedNoteSwitchWidget = new ProtectedNoteSwitchWidget();
+        this.noteTypeWidget = new NoteTypeWidget().contentSized();
+        this.protectedNoteSwitchWidget = new ProtectedNoteSwitchWidget().contentSized();
 
         this.child(this.noteTypeWidget, this.protectedNoteSwitchWidget);
     }
@@ -52,6 +52,7 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$widget.find(".note-type-container").append(this.noteTypeWidget.render());
         this.$widget.find(".protected-note-switch-container").append(this.protectedNoteSwitchWidget.render());

@@ -7,6 +7,7 @@ export default class RightPaneContainer extends FlexContainer {
 
         this.id('right-pane');
         this.css('height', '100%');
+        this.collapsible();
     }
 
     isEnabled() {

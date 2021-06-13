@@ -4,6 +4,11 @@ import utils from "../../services/utils.js";
 const TPL = `
 <div class="dropdown global-menu dropright">
     <style>
+    .global-menu {
+        width: 53px;
+        height: 53px;
+    }
+    
     .global-menu .dropdown-menu {
         width: 20em;
     }
@@ -12,8 +17,8 @@ const TPL = `
         background-image: url("images/icon-bw.png");
         background-repeat: no-repeat;
         background-position: 50% 45%;
-        width: 53px;
-        height: 53px;
+        width: 100%;
+        height: 100%;
     }
     
     .global-menu-button:hover {

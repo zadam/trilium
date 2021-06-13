@@ -10,7 +10,8 @@ const TPL = `
 <div class="quick-search input-group input-group-sm">
   <style>
     .quick-search {
-        padding: 10px 10px 10px 10px;
+        padding: 10px 10px 10px 0px;
+        height: 50px;
     }
     
     .quick-search button, .quick-search input {

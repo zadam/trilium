@@ -20,6 +20,10 @@ body {
     width: 100%;
 }
 
+.component {
+    contain: size;
+}
+
 code, kbd, pre, samp {
     font-family: var(--font-family-monospace);
 }
@@ -65,6 +69,8 @@ button.close:hover {
     border: 1px solid transparent;
     border-radius: 3px;
     padding: 5px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
     font-size: 1.5em;
     color: var(--button-text-color);
@@ -879,6 +885,8 @@ ul.fancytree-container li {
     cursor: pointer;
     border: none;
     color: var(--launcher-pane-text-color);
+    width: 53px;
+    height: 53px;
 }
 
 #launcher-pane .icon-action:hover {

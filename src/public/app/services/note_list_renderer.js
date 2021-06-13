@@ -1,37 +1,36 @@
 import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
 import froca from "./froca.js";
-import attributeService from "./attributes.js";
 import attributeRenderer from "./attribute_renderer.js";
 
 const TPL = `
-<div class="note-list">
+<div class="note-list-widget">
     <style>
-    .note-list {
+    .note-list-widget {
         overflow: hidden;
         position: relative;
         height: 100%;
     }
     
-    .note-list.grid-view .note-list-container {
+    .note-list-widget.grid-view .note-list-widget-container {
         display: flex;
         flex-wrap: wrap;
     }
     
-    .note-list.grid-view .note-book-card {
+    .note-list-widget.grid-view .note-book-card {
         flex-basis: 300px;
         border: 1px solid transparent;
     }
     
-    .note-list.grid-view .note-expander {
+    .note-list-widget.grid-view .note-expander {
         display: none;
     }
     
-    .note-list.grid-view .note-book-card {
+    .note-list-widget.grid-view .note-book-card {
         max-height: 300px;
     }
     
-    .note-list.grid-view .note-book-card:hover {
+    .note-list-widget.grid-view .note-book-card:hover {
         cursor: pointer;
         border: 1px solid var(--main-border-color);
         background: var(--more-accented-background-color);
@@ -199,7 +198,7 @@ class NoteListRenderer {
 
         this.$noteList.show();
 
-        const $container = this.$noteList.find('.note-list-container').empty();
+        const $container = this.$noteList.find('.note-list-widget-container').empty();
 
         const startIdx = (this.page - 1) * this.pageSize;
         const endIdx = startIdx + this.pageSize;

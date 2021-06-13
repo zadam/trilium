@@ -50,6 +50,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$notePathIntro = this.$widget.find(".note-path-intro");
         this.$notePathList = this.$widget.find(".note-path-list");

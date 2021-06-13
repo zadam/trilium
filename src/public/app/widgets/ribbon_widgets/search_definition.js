@@ -223,8 +223,8 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$component = this.$widget.find('.search-definition-widget');
-
 
         this.$widget.on('click', '[data-search-option-add]', async event => {
             const searchOptionName = $(event.target).attr('data-search-option-add');

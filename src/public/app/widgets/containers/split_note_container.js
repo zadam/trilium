@@ -8,8 +8,9 @@ export default class SplitNoteContainer extends FlexContainer {
         this.widgetFactory = widgetFactory;
         this.widgets = {};
 
-        this.class('note-split-container-widget');
+        this.class('split-note-container-widget');
         this.css('flex-grow', '1');
+        this.collapsible();
     }
 
     async newNoteContextCreatedEvent({noteContext}) {

@@ -76,6 +76,7 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$noteId = this.$widget.find(".note-info-note-id");
         this.$dateCreated = this.$widget.find(".note-info-date-created");

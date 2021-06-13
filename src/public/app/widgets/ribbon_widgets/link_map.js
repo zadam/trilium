@@ -52,6 +52,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$container = this.$widget.find(".link-map-container");
 
         this.openState = 'small';
@@ -177,7 +178,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     renderData(data, zoomToFit = true, zoomPadding = 10) {
         this.graph.graphData(data);
 
-        if (zoomToFit) {
+        if (zoomToFit && data.nodes.length > 1) {
             setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
         }
     }

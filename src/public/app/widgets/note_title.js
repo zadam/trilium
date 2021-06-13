@@ -6,20 +6,21 @@ import SpacedUpdate from "../services/spaced_update.js";
 import appContext from "../services/app_context.js";
 
 const TPL = `
-<div class="note-title-container">
+<div class="note-title-widget">
     <style>
-    .note-title-container {
+    .note-title-widget {
         flex-grow: 1000;
+        height: 100%;
     }
     
-    .note-title-container input.note-title {
+    .note-title-widget input.note-title {
         font-size: 180%;
         border: 0;
         min-width: 5em;
         width: 100%;
     }
     
-    .note-title-container input.note-title.protected {
+    .note-title-widget input.note-title.protected {
         text-shadow: 4px 4px 4px var(--muted-text-color);
     }
     </style>

@@ -26,7 +26,7 @@ class BasicWidget extends Component {
     }
 
     contentSized() {
-        console.log("Using contentSized() is deprecated NOOP and it is recommended to remove its use.");
+        this.css("contain", "none");
 
         return this;
     }
@@ -39,6 +39,7 @@ class BasicWidget extends Component {
 
     collapsible() {
         this.css('min-height', '0');
+        this.css('min-width', '0');
         return this;
     }
 

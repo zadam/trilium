@@ -3,7 +3,12 @@ import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="dropdown note-actions">
-    <style>    
+    <style>
+    .note-actions {
+        width: 35px;
+        height: 35px;
+    }  
+    
     .note-actions .dropdown-menu {
         width: 15em;
     }

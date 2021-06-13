@@ -4,7 +4,7 @@ export default class ScrollingContainer extends Container {
     constructor() {
         super();
 
-        this.css('height: 100%; overflow: auto;');
+        this.css('overflow', 'auto');
     }
 
     async noteSwitchedEvent({noteContext, notePath}) {

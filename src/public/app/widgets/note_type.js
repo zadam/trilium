@@ -15,7 +15,7 @@ const NOTE_TYPES = [
 ];
 
 const TPL = `
-<div class="dropdown note-type">
+<div class="dropdown note-type-widget">
     <style>
     .note-type-dropdown {
         max-height: 500px;

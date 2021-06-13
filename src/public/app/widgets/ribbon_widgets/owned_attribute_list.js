@@ -25,8 +25,13 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 
-        this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
-        this.attributeEditorWidget = new AttributeEditorWidget(this.attributeDetailWidget).setParent(this);
+        this.attributeDetailWidget = new AttributeDetailWidget()
+            .contentSized()
+            .setParent(this);
+
+        this.attributeEditorWidget = new AttributeEditorWidget(this.attributeDetailWidget)
+            .contentSized()
+            .setParent(this);
 
         this.child(this.attributeEditorWidget, this.attributeDetailWidget);
     }
@@ -41,6 +46,7 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$widget.find('.attr-editor-placeholder').replaceWith(this.attributeEditorWidget.render());
         this.$widget.append(this.attributeDetailWidget.render());

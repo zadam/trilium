@@ -47,6 +47,7 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$similarNotesWrapper = this.$widget.find(".similar-notes-wrapper");
     }
