@@ -53,6 +53,8 @@ class ImageTypeWidget extends TypeWidget {
                 zoomOnClick: false
             });
         });
+
+        super.doRender();
     }
 
     async doRefresh(note) {

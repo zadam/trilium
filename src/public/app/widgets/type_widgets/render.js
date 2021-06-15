@@ -19,6 +19,8 @@ export default class RenderTypeWidget extends TypeWidget {
         this.$widget = $(TPL);
         this.$noteDetailRenderHelp = this.$widget.find('.note-detail-render-help');
         this.$noteDetailRenderContent = this.$widget.find('.note-detail-render-content');
+
+        super.doRender();
     }
 
     async doRefresh(note) {

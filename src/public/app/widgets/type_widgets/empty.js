@@ -66,6 +66,8 @@ export default class EmptyTypeWidget extends TypeWidget {
         noteAutocompleteService.showRecentNotes(this.$autoComplete);
 
         this.$workspaceNotes = this.$widget.find('.workspace-notes');
+
+        super.doRender();
     }
 
     async doRefresh(note) {

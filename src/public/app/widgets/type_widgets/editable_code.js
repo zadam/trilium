@@ -51,6 +51,8 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
         keyboardActionService.setupActionsForElement('code-detail', this.$widget, this);
 
+        super.doRender();
+
         this.initialized = this.initEditor();
     }
 

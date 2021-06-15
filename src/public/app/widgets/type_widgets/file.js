@@ -47,6 +47,8 @@ export default class FileTypeWidget extends TypeWidget {
         this.$pdfPreview = this.$widget.find(".pdf-preview");
         this.$videoPreview = this.$widget.find(".video-preview");
         this.$audioPreview = this.$widget.find(".audio-preview");
+
+        super.doRender();
     }
 
     async doRefresh(note) {

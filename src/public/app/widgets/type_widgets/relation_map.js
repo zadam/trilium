@@ -183,6 +183,8 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             jsPlumb.ready(res);
         });
+
+        super.doRender();
     }
 
     async contextMenuHandler(command, originalTarget) {
