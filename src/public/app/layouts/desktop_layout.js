@@ -39,6 +39,7 @@ import LinkMapWidget from "../widgets/ribbon_widgets/link_map.js";
 import NotePathsWidget from "../widgets/ribbon_widgets/note_paths.js";
 import SimilarNotesWidget from "../widgets/ribbon_widgets/similar_notes.js";
 import RightPaneContainer from "../widgets/containers/right_pane_container.js";
+import EditButton from "../widgets/buttons/edit_button.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -128,6 +129,7 @@ export default class DesktopLayout {
                                         .ribbon(new LinkMapWidget())
                                         .ribbon(new SimilarNotesWidget())
                                         .ribbon(new NoteInfoWidget())
+                                        .button(new EditButton())
                                         .button(new ButtonWidget()
                                             .icon('bx bx-history')
                                             .title("Note Revisions")

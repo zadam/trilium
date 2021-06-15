@@ -40,8 +40,8 @@ class NoteContext extends Component {
         this.notePath = resolvedNotePath;
         this.noteId = treeService.getNoteIdFromNotePath(resolvedNotePath);
 
-        this.textPreviewDisabled = false;
-        this.codePreviewDisabled = false;
+        this.readOnlyTemporarilyDisabled = false;
+        this.readOnlyTemporarilyDisabled = false;
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -175,6 +175,28 @@ class NoteContext extends Component {
             noteId: noteIdToHoist,
             ntxId: this.ntxId
         });
+    }
+
+    async isReadOnly() {
+        if (this.readOnlyTemporarilyDisabled) {
+            return false;
+        }
+
+        if (this.note.type !== 'text' && this.note.type !== 'code') {
+            return false;
+        }
+
+        if (this.note.hasLabel('readOnly')) {
+            return true;
+        }
+
+        const noteComplement = await this.getNoteComplement();
+
+        const SIZE_LIMIT = this.note.type === 'text' ? 10000 : 30000;
+
+        return noteComplement.content
+            && noteComplement.content.length > SIZE_LIMIT
+            && !this.note.hasLabel('autoReadOnlyDisabled');
     }
 
     async entitiesReloadedEvent({loadResults}) {

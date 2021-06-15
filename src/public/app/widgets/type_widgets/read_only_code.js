@@ -21,9 +21,6 @@ const TPL = `
     }
     </style>
 
-    <div class="alert alert-warning no-print edit-code-note-button bx bx-edit-alt"
-         title="Edit this note"></div>
-
     <pre class="note-detail-read-only-code-content"></pre>
 </div>`;
 
@@ -33,12 +30,6 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$content = this.$widget.find('.note-detail-read-only-code-content');
-
-        this.$widget.find('.edit-code-note-button').on('click', () => {
-            this.noteContext.codePreviewDisabled = true;
-
-            this.triggerEvent('codePreviewDisabled', {noteContext: this.noteContext});
-        });
     }
 
     async doRefresh(note) {

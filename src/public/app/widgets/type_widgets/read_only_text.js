@@ -24,7 +24,6 @@ const TPL = `
         padding-left: 24px;
         padding-top: 10px;
         font-family: var(--detail-text-font-family);
-        position: relative;
         min-height: 50px;
     }
         
@@ -53,9 +52,6 @@ const TPL = `
     }
     </style>
 
-    <div class="no-print edit-text-note-button bx bx-edit-alt"
-         title="Edit this note"></div>
-
     <div class="note-detail-readonly-text-content ck-content"></div>
 </div>
 `;
@@ -67,12 +63,6 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         this.$widget = $(TPL);
 
         this.$content = this.$widget.find('.note-detail-readonly-text-content');
-
-        this.$widget.find('.edit-text-note-button').on('click', () => {
-            this.noteContext.textPreviewDisabled = true;
-
-            this.triggerEvent('textPreviewDisabled', {noteContext: this.noteContext});
-        });
 
         this.setupImageOpening(true);
 

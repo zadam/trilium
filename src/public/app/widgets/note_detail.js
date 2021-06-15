@@ -150,26 +150,12 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !this.noteContext.textPreviewDisabled) {
-            const noteComplement = await this.noteContext.getNoteComplement();
-
-            if (note.hasLabel('readOnly') ||
-                (noteComplement.content
-                    && noteComplement.content.length > 10000)
-                    && !note.hasLabel('autoReadOnlyDisabled')) {
-                type = 'read-only-text';
-            }
+        if (type === 'text' && await this.noteContext.isReadOnly()) {
+            type = 'read-only-text';
         }
 
-        if (type === 'code' && !this.noteContext.codePreviewDisabled) {
-            const noteComplement = await this.noteContext.getNoteComplement();
-
-            if (note.hasLabel('readOnly') ||
-                (noteComplement.content
-                    && noteComplement.content.length > 30000)
-                    && !note.hasLabel('autoReadOnlyDisabled')) {
-                type = 'read-only-code';
-            }
+        if (type === 'code' && await this.noteContext.isReadOnly()) {
+            type = 'read-only-code';
         }
 
         if (type === 'text') {
@@ -279,13 +265,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         return this.spacedUpdate.isAllSavedAndTriggerUpdate();
     }
 
-    textPreviewDisabledEvent({noteContext}) {
+    readOnlyTemporarilyDisabledEvent({noteContext}) {
         if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
-    codePreviewDisabledEvent({noteContext}) {
+    readOnlyTemporarilyDisabledEvent({noteContext}) {
         if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
