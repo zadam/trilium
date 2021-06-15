@@ -4,6 +4,12 @@ export default class TypeWidget extends NoteContextAwareWidget {
     // for overriding
     static getType() {}
 
+    doRender() {
+        this.contentSized();
+
+        return super.doRender();
+    }
+
     /**
      * @param {NoteShort} note
      */

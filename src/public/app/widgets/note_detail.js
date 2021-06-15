@@ -75,6 +75,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$widget.on("dragover", e => e.preventDefault());
 
