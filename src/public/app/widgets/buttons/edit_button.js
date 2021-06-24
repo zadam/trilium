@@ -1,4 +1,5 @@
 import ButtonWidget from "./button_widget.js";
+import appContext from "../../services/app_context.js";
 
 export default class EditButton extends ButtonWidget {
     isEnabled() {
@@ -14,7 +15,7 @@ export default class EditButton extends ButtonWidget {
             .onClick(widget => {
                 this.noteContext.readOnlyTemporarilyDisabled = true;
 
-                this.triggerEvent('readOnlyTemporarilyDisabled', {noteContext: this.noteContext});
+                appContext.triggerEvent('readOnlyTemporarilyDisabled', {noteContext: this.noteContext});
 
                 this.refresh();
             });

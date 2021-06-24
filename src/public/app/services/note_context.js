@@ -41,7 +41,6 @@ class NoteContext extends Component {
         this.noteId = treeService.getNoteIdFromNotePath(resolvedNotePath);
 
         this.readOnlyTemporarilyDisabled = false;
-        this.readOnlyTemporarilyDisabled = false;
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -182,7 +181,8 @@ class NoteContext extends Component {
             return false;
         }
 
-        if (this.note.type !== 'text' && this.note.type !== 'code') {
+        // "readOnly" is a state valid only for text/code notes
+        if (!this.note || this.note.type !== 'text' && this.note.type !== 'code') {
             return false;
         }
 

@@ -271,12 +271,6 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         }
     }
 
-    readOnlyTemporarilyDisabledEvent({noteContext}) {
-        if (this.isNoteContext(noteContext.ntxId)) {
-            this.refresh();
-        }
-    }
-
     async cutIntoNoteCommand() {
         const note = appContext.tabManager.getActiveContextNote();
 

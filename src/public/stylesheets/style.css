@@ -278,6 +278,7 @@ button.btn, button.btn-sm {
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
     white-space: pre-wrap;
+    font-size: 100%;
 }
 
 .pointer {

@@ -1,18 +1,18 @@
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
-<div class="note-detail-read-only-code note-detail-printable">
+<div class="note-detail-readonly-code note-detail-printable">
     <style>
-    .note-detail-read-only-code {
+    .note-detail-readonly-code {
         min-height: 50px;
     }
     
-    .note-detail-read-only-code-content {
+    .note-detail-readonly-code-content {
         padding: 10px;
     }
     </style>
 
-    <pre class="note-detail-read-only-code-content"></pre>
+    <pre class="note-detail-readonly-code-content"></pre>
 </div>`;
 
 export default class ReadOnlyCodeTypeWidget extends TypeWidget {
@@ -20,7 +20,7 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$content = this.$widget.find('.note-detail-read-only-code-content');
+        this.$content = this.$widget.find('.note-detail-readonly-code-content');
 
         super.doRender();
     }
