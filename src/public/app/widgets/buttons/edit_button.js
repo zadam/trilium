@@ -24,8 +24,6 @@ export default class EditButton extends ButtonWidget {
         // can't do this in isEnabled() since isReadOnly is async
         this.toggleInt(await this.noteContext.isReadOnly());
 
-        console.log("await this.noteContext.isReadOnly()", await this.noteContext.isReadOnly());
-
         await super.refreshWithNote(note);
     }
 }

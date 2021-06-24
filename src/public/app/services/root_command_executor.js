@@ -35,6 +35,13 @@ export default class RootCommandExecutor extends Component {
         }
     }
 
+    editReadOnlyNoteCommand() {
+        const noteContext = appContext.tabManager.getActiveContext();
+        noteContext.readOnlyTemporarilyDisabled = true;
+
+        appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
+    }
+
     async cloneNoteIdsToCommand({noteIds}) {
         const d = await import("../dialogs/clone_to.js");
         d.showDialog(noteIds);

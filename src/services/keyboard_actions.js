@@ -313,6 +313,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Opens the dialog to include a note",
         scope: "text-detail"
     },
+    {
+        actionName: "editReadOnlyNote",
+        defaultShortcuts: [],
+        description: "Edit a read-only note",
+        scope: "window"
+    },
 
     {
         separator: "Attributes (labels & relations)"
