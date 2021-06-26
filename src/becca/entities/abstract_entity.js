@@ -35,8 +35,7 @@ class AbstractEntity {
     }
 
     getUtcDateChanged() {
-        // FIXME
-        return this.utcDateModified || this.utcDateCreated || "FAKE";
+        return this.utcDateModified || this.utcDateCreated;
     }
 
     get becca() {

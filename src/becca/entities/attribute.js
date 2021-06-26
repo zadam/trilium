@@ -28,6 +28,8 @@ class Attribute extends AbstractEntity {
         this.value = row.value;
         /** @param {boolean} */
         this.isInheritable = !!row.isInheritable;
+        /** @param {string} */
+        this.utcDateModified = row.utcDateModified;
 
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
@@ -136,6 +138,8 @@ class Attribute extends AbstractEntity {
             this.isInheritable = false;
         }
 
+        this.utcDateModified = dateUtils.utcNowDateTime();
+
         super.beforeSaving();
 
         this.becca.attributes[this.attributeId] = this;
@@ -150,7 +154,7 @@ class Attribute extends AbstractEntity {
             position: this.position,
             value: this.value,
             isInheritable: this.isInheritable,
-            utcDateModified: dateUtils.utcNowDateTime(),
+            utcDateModified: this.utcDateModified,
             isDeleted: false
         };
     }

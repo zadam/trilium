@@ -26,6 +26,8 @@ class Branch extends AbstractEntity {
         this.notePosition = row.notePosition;
         /** @param {boolean} */
         this.isExpanded = !!row.isExpanded;
+        /** @param {string} */
+        this.utcDateModified = row.utcDateModified;
 
         if (this.branchId === 'root') {
             return;
