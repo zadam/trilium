@@ -7,15 +7,14 @@ const TPL = `
     <style>
     .title-bar-buttons {
         margin-top: 4px;
+        margin-right: 4px;
         flex-shrink: 0;
     }
     
-    .title-bar-buttons button {
+    .title-bar-buttons button.icon-action {
         border: none !important;
         background: none !important;
         font-size: 150%;
-        padding-left: 10px;
-        padding-right: 10px;
     }
     
     .title-bar-buttons button:hover {
@@ -35,6 +34,7 @@ export default class TitleBarButtonsWidget extends BasicWidget {
         }
 
         this.$widget = $(TPL);
+        this.contentSized();
 
         const $minimizeBtn = this.$widget.find(".minimize-btn");
         const $maximizeBtn = this.$widget.find(".maximize-btn");

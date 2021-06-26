@@ -101,6 +101,7 @@ const TAB_ROW_TPL = `
         -webkit-app-region: drag;
         position: absolute;
         left: 0;
+        height: 100%;
     }
         
     .tab-row-widget .note-tab[active] {
