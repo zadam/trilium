@@ -163,9 +163,14 @@ async function registerGlobalShortcuts() {
     }
 }
 
+function getMainWindow() {
+    return mainWindow;
+}
+
 module.exports = {
     createMainWindow,
     createSetupWindow,
     closeSetupWindow,
-    registerGlobalShortcuts
+    registerGlobalShortcuts,
+    getMainWindow
 };
