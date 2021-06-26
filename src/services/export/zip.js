@@ -10,6 +10,7 @@ const utils = require('../utils');
 const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
+const becca = require("../../becca/becca");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const archiver = require('archiver');
 

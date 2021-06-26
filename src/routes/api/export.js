@@ -3,6 +3,7 @@
 const zipExportService = require('../../services/export/zip');
 const singleExportService = require('../../services/export/single');
 const opmlExportService = require('../../services/export/opml');
+const becca = require('../../becca/becca');
 const TaskContext = require("../../services/task_context");
 const log = require("../../services/log");
 

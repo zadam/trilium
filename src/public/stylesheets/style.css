@@ -787,12 +787,12 @@ body {
 
 ::-webkit-scrollbar {
     width: 12px;
-    background-color: var(--main-background-color);
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
     border: 1px solid var(--scrollbar-border-color);
+    background-color: var(--main-background-color);
 }
 
 ::-webkit-scrollbar-corner {
