@@ -20,14 +20,17 @@ const TPL = `
     </button>
     <div class="editability-dropdown dropdown-menu dropdown-menu-right">
         <a class="dropdown-item" href="#" data-editability="auto">
+            <span class="check">&check;</span>
             Auto
             <div>Note is editable if it's not too long.</div>    
         </a>
         <a class="dropdown-item" href="#" data-editability="readOnly">
+            <span class="check">&check;</span>
             Read-only
             <div>Note is read-only, but can be edited with a button click.</div>
         </a>
         <a class="dropdown-item" href="#" data-editability="autoReadOnlyDisabled">
+            <span class="check">&check;</span>
             Always editable
             <div>Note is always editable, regardless of its length.</div>
         </a>
@@ -60,11 +63,25 @@ export default class EditabilitySelectWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        this.$editabilityActiveDesc.text(
-            this.note.hasLabel('readOnly') ? 'Read-Only' : (
-                this.note.hasLabel('autoReadOnlyDisabled') ? 'Always Editable' : 'Auto'
-            )
-        );
+        let editability = 'auto'
+
+        if (this.note.hasLabel('readOnly')) {
+            editability = 'readOnly';
+        }
+        else if (this.note.hasLabel('autoReadOnlyDisabled')) {
+            editability = 'autoReadOnlyDisabled';
+        }
+
+        const labels = {
+            "auto": "Auto",
+            "readOnly": "Read-only",
+            "autoReadOnlyDisabled": "Always Editable"
+        }
+
+        this.$widget.find('.dropdown-item').removeClass("selected");
+        this.$widget.find(`.dropdown-item[data-editability='${editability}']`).addClass("selected");
+
+        this.$editabilityActiveDesc.text(labels[editability]);
     }
 
     entitiesReloadedEvent({loadResults}) {
