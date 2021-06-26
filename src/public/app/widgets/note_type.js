@@ -27,7 +27,7 @@ const TPL = `
         <span class="note-type-desc"></span>
         <span class="caret"></span>
     </button>
-    <div class="note-type-dropdown dropdown-menu dropdown-menu-right"></div>
+    <div class="note-type-dropdown dropdown-menu dropdown-menu-left"></div>
 </div>
 `;
 

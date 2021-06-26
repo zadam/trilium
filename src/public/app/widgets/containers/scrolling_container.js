@@ -35,7 +35,10 @@ export default class ScrollingContainer extends Container {
 
             const promise = super.handleEventInChildren(name, data);
 
+            // there seems to be some asynchronicity and we need to wait a bit before scrolling
             promise.then(() => setTimeout(() => this.$widget.scrollTop(scrollTop), 500));
+
+            return promise;
         }
         else {
             return super.handleEventInChildren(name, data);

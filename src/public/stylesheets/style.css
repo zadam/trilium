@@ -787,6 +787,7 @@ body {
 
 ::-webkit-scrollbar {
     width: 12px;
+    background-color: var(--main-background-color);
 }
 
 ::-webkit-scrollbar-thumb {
