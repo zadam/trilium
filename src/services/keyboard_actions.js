@@ -237,12 +237,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "showLinkMap",
-        defaultShortcuts: [],
-        description: "Shows Link Map dialog",
-        scope: "window"
-    },
-    {
         actionName: "showOptions",
         defaultShortcuts: [],
         description: "Shows Options dialog",
@@ -325,12 +319,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
 
     {
-        actionName: "focusOnAttributes",
-        defaultShortcuts: ["Alt+A"],
-        description: "Put focus into attribute editor",
-        scope: "window"
-    },
-    {
         actionName: "addNewLabel",
         defaultShortcuts: ["Alt+L"],
         description: "Create new label",
@@ -340,6 +328,77 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "addNewRelation",
         defaultShortcuts: ["Alt+R"],
         description: "Create new relation",
+        scope: "window"
+    },
+
+    {
+        separator: "Ribbon tabs"
+    },
+
+    {
+        actionName: "toggleRibbonTabBasicProperties",
+        defaultShortcuts: [],
+        description: "Toggle Basic Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabBookProperties",
+        defaultShortcuts: [],
+        description: "Toggle Book Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabFileProperties",
+        defaultShortcuts: [],
+        description: "Toggle File Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabImageProperties",
+        defaultShortcuts: [],
+        description: "Toggle Image Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabOwnedAttributes",
+        defaultShortcuts: ["Alt+A"],
+        description: "Toggle Owned Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabInheritedAttributes",
+        defaultShortcuts: [],
+        description: "Toggle Inherited Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabPromotedAttributes",
+        defaultShortcuts: [],
+        description: "Toggle Promoted Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabLinkMap",
+        defaultShortcuts: [],
+        description: "Toggle Link Map",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabNoteInfo",
+        defaultShortcuts: [],
+        description: "Toggle Note Info",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabNotePaths",
+        defaultShortcuts: [],
+        description: "Toggle Note Paths",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabSimilarNotes",
+        defaultShortcuts: [],
+        description: "Toggle Similar Notes",
         scope: "window"
     },
 

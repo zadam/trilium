@@ -38,6 +38,10 @@ const TPL = `
 </div>`;
 
 export default class LinkMapWidget extends NoteContextAwareWidget {
+    get name() {
+        return "linkMap";
+    }
+
     isEnabled() {
         return this.note;
     }

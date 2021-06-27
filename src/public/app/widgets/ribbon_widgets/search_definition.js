@@ -23,7 +23,6 @@ import Limit from "../search_options/limit.js";
 import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
 import Debug from "../search_options/debug.js";
 import appContext from "../../services/app_context.js";
-import toast from "../../services/toast.js";
 
 const TPL = `
 <div class="search-definition-widget">

@@ -37,6 +37,10 @@ const TPL = `
 </div>`;
 
 export default class ImagePropertiesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "imageProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'image';
     }

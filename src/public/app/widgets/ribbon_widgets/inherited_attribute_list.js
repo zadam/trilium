@@ -21,6 +21,10 @@ const TPL = `
 </div>`;
 
 export default class InheritedAttributesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "inheritedAttributes";
+    }
+
     constructor() {
         super();
 

@@ -42,6 +42,10 @@ const TPL = `
 </div>
 `;
 export default class BookPropertiesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "bookProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'book';
     }

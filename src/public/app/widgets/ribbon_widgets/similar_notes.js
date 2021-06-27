@@ -31,6 +31,10 @@ const TPL = `
 `;
 
 export default class SimilarNotesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "similarNotes";
+    }
+
     isEnabled() {
         return super.isEnabled()
             && this.note.type !== 'search'

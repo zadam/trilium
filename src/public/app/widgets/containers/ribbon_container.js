@@ -161,29 +161,32 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         this.$tabContainer.on('click', '.ribbon-tab-title', e => {
             const $ribbonTitle = $(e.target).closest('.ribbon-tab-title');
 
-            const activate = !$ribbonTitle.hasClass("active");
-
-            this.$tabContainer.find('.ribbon-tab-title').removeClass("active");
-            this.$bodyContainer.find('.ribbon-body').removeClass("active");
-
-            if (activate) {
-                const ribbonComponendId = $ribbonTitle.attr('data-ribbon-component-id');
-
-                this.lastActiveComponentId = ribbonComponendId;
-
-                this.$tabContainer.find(`.ribbon-tab-title[data-ribbon-component-id="${ribbonComponendId}"]`).addClass("active");
-                this.$bodyContainer.find(`.ribbon-body[data-ribbon-component-id="${ribbonComponendId}"]`).addClass("active");
-
-                const activeChild = this.getActiveRibbonWidget();
-
-                if (activeChild) {
-                    activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
-                }
-            }
-            else {
-                this.lastActiveComponentId = null;
-            }
+            this.toggleRibbonTab($ribbonTitle);
         });
+    }
+
+    toggleRibbonTab($ribbonTitle) {
+        const activate = !$ribbonTitle.hasClass("active");
+
+        this.$tabContainer.find('.ribbon-tab-title').removeClass("active");
+        this.$bodyContainer.find('.ribbon-body').removeClass("active");
+
+        if (activate) {
+            const ribbonComponendId = $ribbonTitle.attr('data-ribbon-component-id');
+
+            this.lastActiveComponentId = ribbonComponendId;
+
+            this.$tabContainer.find(`.ribbon-tab-title[data-ribbon-component-id="${ribbonComponendId}"]`).addClass("active");
+            this.$bodyContainer.find(`.ribbon-body[data-ribbon-component-id="${ribbonComponendId}"]`).addClass("active");
+
+            const activeChild = this.getActiveRibbonWidget();
+
+            if (activeChild) {
+                activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
+            }
+        } else {
+            this.lastActiveComponentId = null;
+        }
     }
 
     async refreshWithNote(note, noExplicitActivation = false) {
@@ -202,6 +205,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
 
             const $ribbonTitle = $('<div class="ribbon-tab-title">')
                 .attr('data-ribbon-component-id', ribbonWidget.componentId)
+                .attr('data-ribbon-component-name', ribbonWidget.name)
                 .append($('<span class="ribbon-tab-title-icon">')
                             .addClass(ret.icon)
                             .attr("title", ret.title))
@@ -234,8 +238,54 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         }
     }
 
+    isRibbonTabActive(name) {
+        const $ribbonComponent = this.$widget.find(`.ribbon-tab-title[data-ribbon-component-name='${name}']`);
+
+        return $ribbonComponent.hasClass("active");
+    }
+
     refreshRibbonContainerCommand() {
         this.refreshWithNote(this.note, true);
+    }
+
+    ensureOwnedAttributesAreOpen(ntxId) {
+        if (this.isNoteContext(ntxId) && !this.isRibbonTabActive('ownedAttributes')) {
+            this.toggleRibbonTabWithName('ownedAttributes', ntxId);
+        }
+    }
+
+    addNewLabelEvent({ntxId}) {
+        this.ensureOwnedAttributesAreOpen(ntxId);
+    }
+
+    addNewRelationEvent({ntxId}) {
+        this.ensureOwnedAttributesAreOpen(ntxId);
+    }
+
+    toggleRibbonTabWithName(name, ntxId) {
+        if (!this.isNoteContext(ntxId)) {
+            return false;
+        }
+
+        const $ribbonComponent = this.$widget.find(`.ribbon-tab-title[data-ribbon-component-name='${name}']`);
+
+        if ($ribbonComponent) {
+            this.toggleRibbonTab($ribbonComponent);
+        }
+    }
+
+    handleEvent(name, data) {
+        const PREFIX = "toggleRibbonTab";
+
+        if (name.startsWith(PREFIX)) {
+            let componentName = name.substr(PREFIX.length);
+            componentName = componentName[0].toLowerCase() + componentName.substr(1);
+
+            this.toggleRibbonTabWithName(componentName, data.ntxId);
+        }
+        else {
+            return super.handleEvent(name, data);
+        }
     }
 
     async handleEventInChildren(name, data) {

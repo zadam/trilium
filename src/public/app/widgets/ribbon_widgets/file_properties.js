@@ -55,6 +55,10 @@ const TPL = `
 </div>`;
 
 export default class FilePropertiesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "fileProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'file';
     }

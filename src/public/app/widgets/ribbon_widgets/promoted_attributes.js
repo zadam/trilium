@@ -35,6 +35,10 @@ const TPL = `
 `;
 
 export default class PromotedAttributesWidget extends NoteContextAwareWidget {
+    get name() {
+        return "promotedAttributes";
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();

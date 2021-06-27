@@ -46,6 +46,10 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
         this.child(this.noteTypeWidget, this.protectedNoteSwitchWidget, this.editabilitySelectWidget);
     }
 
+    get name() {
+        return "basicProperties";
+    }
+
     isEnabled() {
         return this.note && (this.note.type === 'text' || this.note.type === 'code');
     }

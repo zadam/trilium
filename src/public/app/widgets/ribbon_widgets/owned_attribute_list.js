@@ -22,6 +22,10 @@ const TPL = `
 `;
 
 export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
+    get name() {
+        return "ownedAttributes";
+    }
+
     constructor() {
         super();
 
