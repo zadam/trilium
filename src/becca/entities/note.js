@@ -215,7 +215,8 @@ class Note extends AbstractEntity {
             entityId: this.noteId,
             hash: hash,
             isErased: false,
-            utcDateChanged: pojo.utcDateModified
+            utcDateChanged: pojo.utcDateModified,
+            isSynced: true
         }, null);
     }
 

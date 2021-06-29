@@ -13,6 +13,7 @@ const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
+const utils = require("../services/utils");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -291,13 +292,23 @@ class ConsistencyChecks {
 
                     if (note.isProtected) {
                         // this is wrong for non-erased notes but we cannot set a valid value for protected notes
+                        const utcDateModified = dateUtils.utcNowDateTime();
+
                         sql.upsert("note_contents", "noteId", {
                             noteId: noteId,
                             content: null,
-                            utcDateModified: dateUtils.utcNowDateTime()
+                            utcDateModified: utcDateModified
                         });
 
-                        entityChangesService.addEntityChange('note_contents', noteId, "consistency_checks");
+                        const hash = utils.hash(noteId + "|null");
+
+                        entityChangesService.addEntityChange({
+                            entityName: 'note_contents',
+                            entityId: noteId,
+                            hash: hash,
+                            isErased: false,
+                            utcDateChanged: utcDateModified
+                        }, null);
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess

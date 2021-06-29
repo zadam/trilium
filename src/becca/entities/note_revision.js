@@ -131,7 +131,8 @@ class NoteRevision extends AbstractEntity {
             entityId: this.noteRevisionId,
             hash: hash,
             isErased: false,
-            utcDateChanged: this.getUtcDateChanged()
+            utcDateChanged: this.getUtcDateChanged(),
+            isSynced: true
         }, null);
     }
 

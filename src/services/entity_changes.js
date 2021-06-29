@@ -25,8 +25,8 @@ function insertEntityChange(entityName, entityId, hash, isErased, utcDateChanged
     return entityChange;
 }
 
-function addEntityChange(entityChange, sourceId, isSynced) {
-    const localEntityChange = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, entityChange.isErased, entityChange.utcDateChanged, sourceId, isSynced);
+function addEntityChange(entityChange, sourceId) {
+    const localEntityChange = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, entityChange.isErased, entityChange.utcDateChanged, sourceId, entityChange.isSynced);
 
     cls.addEntityChange(localEntityChange);
 }
@@ -37,7 +37,8 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
         entityId: parentNoteId,
         hash: 'N/A',
         isErased: false,
-        utcDateChanged: dateUtils.utcNowDateTime()
+        utcDateChanged: dateUtils.utcNowDateTime(),
+        isSynced: true
     }, sourceId);
 
     const eventService = require('./events');
@@ -104,7 +105,8 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                         entityId,
                         hash: entity.generateHash(),
                         isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged()
+                        utcDateChanged: entity.getUtcDateChanged(),
+                        isSynced: entityName !== 'options' || !!entity.isSynced
                     }, null);
                 }
             }

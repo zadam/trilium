@@ -16,6 +16,7 @@ const request = require('./request');
 const ws = require('./ws');
 const entityChangesService = require('./entity_changes');
 const entityConstructor = require('../becca/entity_constructor');
+const becca = require("../becca/becca");
 
 let proxyToggle = true;
 
@@ -358,6 +359,9 @@ function getLastSyncedPull() {
 }
 
 function setLastSyncedPull(entityChangeId) {
+    const lastSyncedPullOption = becca.getOption('lastSyncedPull');
+    lastSyncedPullOption.value = entityChangeId + '';
+
     // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
     sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPull']);
 }
@@ -372,6 +376,9 @@ function getLastSyncedPush() {
 
 function setLastSyncedPush(entityChangeId) {
     ws.setLastSyncedPush(entityChangeId);
+
+    const lastSyncedPushOption = becca.getOption('lastSyncedPush');
+    lastSyncedPushOption.value = entityChangeId + '';
 
     // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
     sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPush']);
