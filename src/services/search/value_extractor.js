@@ -114,7 +114,7 @@ class ValueExtractor {
                 cursor = cursor.children[0];
             }
             else if (cur() === 'random') {
-                return Math.random();
+                return Math.random().toString(); // string is expected for comparison
             }
             else if (cur() in PROP_MAPPING) {
                 return cursor[PROP_MAPPING[cur()]];
