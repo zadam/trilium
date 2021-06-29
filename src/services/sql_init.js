@@ -5,8 +5,8 @@ const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options');
 const port = require('./port');
-const Option = require('../becca/entities/option.js');
-const TaskContext = require('./task_context.js');
+const Option = require('../becca/entities/option');
+const TaskContext = require('./task_context');
 const migrationService = require('./migration');
 const cls = require('./cls');
 const config = require('./config');
@@ -62,10 +62,10 @@ async function createInitialDatabase(username, password, theme) {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require("../becca/becca_loader.js").load();
+        require("../becca/becca_loader").load();
 
-        const Note = require("../becca/entities/note.js");
-        const Branch = require("../becca/entities/branch.js");
+        const Note = require("../becca/entities/note");
+        const Branch = require("../becca/entities/branch");
 
         rootNote = new Note({
             noteId: 'root',

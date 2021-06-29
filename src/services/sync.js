@@ -14,8 +14,8 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
-const entityChangesService = require('./entity_changes.js');
-const entityConstructor = require('../becca/entity_constructor.js');
+const entityChangesService = require('./entity_changes');
+const entityConstructor = require('../becca/entity_constructor');
 
 let proxyToggle = true;
 
@@ -385,7 +385,7 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-require("../becca/becca_loader.js").beccaLoaded.then(() => {
+require("../becca/becca_loader").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately

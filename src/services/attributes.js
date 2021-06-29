@@ -2,9 +2,9 @@
 
 const searchService = require('./search/services/search');
 const sql = require('./sql');
-const becca = require('../becca/becca.js');
-const Attribute = require('../becca/entities/attribute.js');
-const {formatAttrForSearch} = require("./attribute_formatter.js");
+const becca = require('../becca/becca');
+const Attribute = require('../becca/entities/attribute');
+const {formatAttrForSearch} = require("./attribute_formatter");
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 

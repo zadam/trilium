@@ -6,9 +6,9 @@ const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
-const beccaLoader = require('../../becca/becca_loader.js');
+const beccaLoader = require('../../becca/becca_loader');
 const log = require('../../services/log');
-const TaskContext = require('../../services/task_context.js');
+const TaskContext = require('../../services/task_context');
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;

@@ -1,18 +1,18 @@
 "use strict";
 
-const lex = require('./lex.js');
-const handleParens = require('./handle_parens.js');
-const parse = require('./parse.js');
-const NoteSet = require("../note_set.js");
-const SearchResult = require("../search_result.js");
-const SearchContext = require("../search_context.js");
-const becca = require('../../../becca/becca.js');
-const beccaService = require('../../../becca/becca_service.js');
-const utils = require('../../utils.js');
-const log = require('../../log.js');
+const lex = require('./lex');
+const handleParens = require('./handle_parens');
+const parse = require('./parse');
+const NoteSet = require("../note_set");
+const SearchResult = require("../search_result");
+const SearchContext = require("../search_context");
+const becca = require('../../../becca/becca');
+const beccaService = require('../../../becca/becca_service');
+const utils = require('../../utils');
+const log = require('../../log');
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql.js');
+    const sql = require('../../sql');
 
     for (const noteId in becca.notes) {
         becca.notes[noteId].contentSize = 0;

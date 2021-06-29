@@ -1,6 +1,6 @@
 "use strict";
 
-const NoteRevision = require('../becca/entities/note_revision.js');
+const NoteRevision = require('../becca/entities/note_revision');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const sql = require('./sql');

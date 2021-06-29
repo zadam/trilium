@@ -3,16 +3,16 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const log = require('./log');
-const ws = require('./ws.js');
+const ws = require('./ws');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
-const entityChangesService = require('./entity_changes.js');
+const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
-const Branch = require('../becca/entities/branch.js');
+const Branch = require('../becca/entities/branch');
 const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
-const becca = require("../becca/becca.js");
+const becca = require("../becca/becca");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -579,7 +579,7 @@ class ConsistencyChecks {
         }
 
         if (this.fixedIssues) {
-            require("../becca/becca_loader.js").load();
+            require("../becca/becca_loader").load();
         }
 
         return !this.unrecoveredConsistencyErrors;

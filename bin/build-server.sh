@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PKG_DIR=dist/trilium-linux-x64-server
-NODE_VERSION=14.17.0
+NODE_VERSION=14.17.1
 
 if [ "$1" != "DONTCOPY" ]
 then

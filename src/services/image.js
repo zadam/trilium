@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../becca/becca.js');
+const becca = require('../becca/becca');
 const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
@@ -9,7 +9,7 @@ const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
-const noteRevisionService = require('./note_revisions.js');
+const noteRevisionService = require('./note_revisions');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 

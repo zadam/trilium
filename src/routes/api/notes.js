@@ -7,8 +7,8 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 const fs = require('fs');
-const noteRevisionService = require("../../services/note_revisions.js");
-const becca = require("../../becca/becca.js");
+const noteRevisionService = require("../../services/note_revisions");
+const becca = require("../../becca/becca");
 
 function getNote(req) {
     const noteId = req.params.noteId;

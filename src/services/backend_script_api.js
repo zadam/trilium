@@ -12,8 +12,8 @@ const xml2js = require('xml2js');
 const cloningService = require('./cloning');
 const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
-const SearchContext = require("./search/search_context.js");
-const becca = require("../becca/becca.js");
+const SearchContext = require("./search/search_context");
+const becca = require("../becca/becca");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.

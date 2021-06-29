@@ -4,7 +4,7 @@ const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
 const sql = require("./sql");
-const becca = require("../becca/becca.js");
+const becca = require("../becca/becca");
 
 function getRunAtHours(note) {
     try {

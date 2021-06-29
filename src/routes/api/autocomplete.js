@@ -1,11 +1,11 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service.js');
-const searchService = require('../../services/search/services/search.js');
+const beccaService = require('../../becca/becca_service');
+const searchService = require('../../services/search/services/search');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const cls = require('../../services/cls');
-const becca = require("../../becca/becca.js");
+const becca = require("../../becca/becca");
 
 function getAutocomplete(req) {
     const query = req.query.query.trim();

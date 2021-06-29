@@ -2,7 +2,7 @@
 
 const syncService = require('../../services/sync');
 const syncUpdateService = require('../../services/sync_update');
-const entityChangesService = require('../../services/entity_changes.js');
+const entityChangesService = require('../../services/entity_changes');
 const sql = require('../../services/sql');
 const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');

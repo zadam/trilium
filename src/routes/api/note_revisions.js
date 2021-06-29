@@ -1,12 +1,12 @@
 "use strict";
 
-const beccaService = require('../../becca/becca_service.js');
+const beccaService = require('../../becca/becca_service');
 const protectedSessionService = require('../../services/protected_session');
 const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const path = require('path');
-const becca = require("../../becca/becca.js");
+const becca = require("../../becca/becca");
 
 function getNoteRevisions(req) {
     return becca.getNoteRevisionsFromQuery(`

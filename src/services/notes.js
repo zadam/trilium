@@ -2,7 +2,7 @@ const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
-const entityChangesService = require('./entity_changes.js');
+const entityChangesService = require('./entity_changes');
 const eventService = require('./events');
 const cls = require('../services/cls');
 const protectedSessionService = require('../services/protected_session');
@@ -13,10 +13,10 @@ const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
-const becca = require('../becca/becca.js');
-const Branch = require('../becca/entities/branch.js');
-const Note = require('../becca/entities/note.js');
-const Attribute = require('../becca/entities/attribute.js');
+const becca = require('../becca/becca');
+const Branch = require('../becca/entities/branch');
+const Note = require('../becca/entities/note');
+const Attribute = require('../becca/entities/attribute');
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
