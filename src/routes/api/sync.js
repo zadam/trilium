@@ -170,10 +170,10 @@ function update(req) {
         }
     }
 
-    const {sourceId, entities} = body;
+    const {entities} = body;
 
     for (const {entityChange, entity} of entities) {
-        syncUpdateService.updateEntity(entityChange, entity, sourceId);
+        syncUpdateService.updateEntity(entityChange, entity);
     }
 }
 

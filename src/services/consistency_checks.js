@@ -307,8 +307,9 @@ class ConsistencyChecks {
                             entityId: noteId,
                             hash: hash,
                             isErased: false,
-                            utcDateChanged: utcDateModified
-                        }, null);
+                            utcDateChanged: utcDateModified,
+                            isSynced: true
+                        });
                     }
                     else {
                         // empty string might be wrong choice for some note types but it's a best guess
@@ -466,7 +467,7 @@ class ConsistencyChecks {
           LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
                                   AND entity_changes.entityId = ${key} 
         WHERE 
-          entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
+          entity_changes.id IS NULL`,
             ({entityId}) => {
                 if (this.autoFix) {
                     const entity = becca.getEntity(entityName, entityId);
@@ -476,8 +477,9 @@ class ConsistencyChecks {
                         entityId,
                         hash: entity.generateHash(),
                         isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged()
-                    }, null);
+                        utcDateChanged: entity.getUtcDateChanged(),
+                        isSynced: entityName !== 'options' || entity.isSynced
+                    });
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {

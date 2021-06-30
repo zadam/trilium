@@ -156,7 +156,7 @@ async function pullChanges(syncContext) {
                         atLeastOnePullApplied = true;
                     }
 
-                    syncUpdateService.updateEntity(entityChange, entity, syncContext.sourceId);
+                    syncUpdateService.updateEntity(entityChange, entity);
                 }
 
                 outstandingPullCount = Math.max(0, resp.maxEntityChangeId - entityChange.id);

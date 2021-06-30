@@ -133,7 +133,7 @@ class NoteRevision extends AbstractEntity {
             isErased: false,
             utcDateChanged: this.getUtcDateChanged(),
             isSynced: true
-        }, null);
+        });
     }
 
     beforeSaving() {

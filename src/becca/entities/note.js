@@ -217,7 +217,7 @@ class Note extends AbstractEntity {
             isErased: false,
             utcDateChanged: pojo.utcDateModified,
             isSynced: true
-        }, null);
+        });
     }
 
     setJsonContent(content) {

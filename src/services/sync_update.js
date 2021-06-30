@@ -4,12 +4,12 @@ const entityChangesService = require('./entity_changes');
 const eventService = require('./events');
 const entityConstructor = require("../becca/entity_constructor");
 
-function updateEntity(entityChange, entity, sourceId) {
+function updateEntity(entityChange, entity) {
     // can be undefined for options with isSynced=false
     if (!entity) {
         if (entityChange.isSynced) {
             if (entityChange.isErased) {
-                entityChangesService.addEntityChange(entityChange, sourceId);
+                entityChangesService.addEntityChange(entityChange);
             }
             else {
                 log.info(`Encountered synced non-erased entity change without entity: ${JSON.stringify(entityChange)}`);
@@ -23,8 +23,8 @@ function updateEntity(entityChange, entity, sourceId) {
     }
 
     const updated = entityChange.entityName === 'note_reordering'
-        ? updateNoteReordering(entityChange, entity, sourceId)
-        : updateNormalEntity(entityChange, entity, sourceId);
+        ? updateNoteReordering(entityChange, entity)
+        : updateNormalEntity(entityChange, entity);
 
     if (updated && !entityChange.isErased) {
         if (entity.isDeleted) {
@@ -42,7 +42,7 @@ function updateEntity(entityChange, entity, sourceId) {
     }
 }
 
-function updateNormalEntity(remoteEntityChange, entity, sourceId) {
+function updateNormalEntity(remoteEntityChange, entity) {
     const localEntityChange = sql.getRow(`
         SELECT utcDateChanged, hash, isErased
         FROM entity_changes 
@@ -54,7 +54,7 @@ function updateNormalEntity(remoteEntityChange, entity, sourceId) {
 
             sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
-            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
+            entityChangesService.addEntityChange(remoteEntityChange);
         });
 
         return true;
@@ -71,7 +71,7 @@ function updateNormalEntity(remoteEntityChange, entity, sourceId) {
         sql.transactional(() => {
             sql.replace(remoteEntityChange.entityName, entity);
 
-            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
+            entityChangesService.addEntityChange(remoteEntityChange);
         });
 
         return true;
@@ -80,13 +80,13 @@ function updateNormalEntity(remoteEntityChange, entity, sourceId) {
     return false;
 }
 
-function updateNoteReordering(entityChange, entity, sourceId) {
+function updateNoteReordering(entityChange, entity) {
     sql.transactional(() => {
         for (const key in entity) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
         }
 
-        entityChangesService.addEntityChange(entityChange, sourceId);
+        entityChangesService.addEntityChange(entityChange);
     });
 
     return true;

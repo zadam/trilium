@@ -7,28 +7,15 @@ const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function insertEntityChange(entityName, entityId, hash, isErased, utcDateChanged, sourceId = null, isSynced = true) {
-    const entityChange = {
-        entityName: entityName,
-        entityId: entityId,
-        hash: hash,
-        sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
-        isSynced: isSynced ? 1 : 0,
-        isErased: isErased ? 1 : 0,
-        utcDateChanged: utcDateChanged
-    };
-
+function addEntityChange(entityChange) {
+    entityChange.sourceId = entityChange.sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId();
+    entityChange.isSynced = entityChange.isSynced ? 1 : 0;
+    entityChange.isErased = entityChange.isErased ? 1 : 0;
     entityChange.id = sql.replace("entity_changes", entityChange);
 
     maxEntityChangeId = Math.max(maxEntityChangeId, entityChange.id);
 
-    return entityChange;
-}
-
-function addEntityChange(entityChange, sourceId) {
-    const localEntityChange = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, entityChange.isErased, entityChange.utcDateChanged, sourceId, entityChange.isSynced);
-
-    cls.addEntityChange(localEntityChange);
+    cls.addEntityChange(entityChange);
 }
 
 function addNoteReorderingEntityChange(parentNoteId, sourceId) {
@@ -38,8 +25,9 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
         hash: 'N/A',
         isErased: false,
         utcDateChanged: dateUtils.utcNowDateTime(),
-        isSynced: true
-    }, sourceId);
+        isSynced: true,
+        sourceId
+    });
 
     const eventService = require('./events');
 
@@ -52,9 +40,7 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
 function moveEntityChangeToTop(entityName, entityId) {
     const ec = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
 
-    const localEntityChange = insertEntityChange(entityName, entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
-
-    cls.addEntityChange(localEntityChange);
+    addEntityChange(ec);
 }
 
 function addEntityChangesForSector(entityName, sector) {
@@ -64,7 +50,7 @@ function addEntityChangesForSector(entityName, sector) {
 
     sql.transactional(() => {
         for (const ec of entityChanges) {
-            insertEntityChange(entityName, ec.entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
+            addEntityChange(ec);
         }
     });
 
@@ -107,7 +93,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                         isErased: false,
                         utcDateChanged: entity.getUtcDateChanged(),
                         isSynced: entityName !== 'options' || !!entity.isSynced
-                    }, null);
+                    });
                 }
             }
 
