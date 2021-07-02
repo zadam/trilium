@@ -187,7 +187,7 @@ class Froca {
         }
 
         const branches = [...note.getBranches(), ...note.getChildBranches()];
-console.log("searchResultNoteIds", searchResultNoteIds);
+
         searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
             // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
             branchId: "virt-" + note.noteId + '-' + resultNoteId,
@@ -196,8 +196,6 @@ console.log("searchResultNoteIds", searchResultNoteIds);
             notePosition: (index + 1) * 10,
             fromSearchNote: true
         }));
-
-        console.log("branches", branches);
 
         // update this note with standard (parent) branches + virtual (children) branches
         this.addResp({

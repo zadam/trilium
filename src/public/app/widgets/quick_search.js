@@ -33,7 +33,7 @@ const TPL = `
     <button class="btn btn-outline-secondary search-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="bx bx-search"></span>
     </button>
-    <div class="dropdown-menu dropdown-menu-right"></div>
+    <div class="dropdown-menu dropdown-menu-left"></div>
   </div>
   <input type="text" class="form-control form-control-sm search-string" placeholder="Quick search">
   </div>
@@ -50,7 +50,7 @@ export default class QuickSearchWidget extends BasicWidget {
         this.$dropdownToggle = this.$widget.find('.search-button');
         this.$dropdownToggle.dropdown();
 
-        this.$widget.find('.input-group-append').on('shown.bs.dropdown', () => this.search());
+        this.$widget.find('.input-group-prepend').on('shown.bs.dropdown', () => this.search());
 
         utils.bindElShortcut(this.$searchString, 'return', () => {
             if (this.$dropdownMenu.is(":visible")) {
