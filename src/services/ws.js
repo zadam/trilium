@@ -75,6 +75,10 @@ function sendMessageToAllClients(message) {
 }
 
 function fillInAdditionalProperties(entityChange) {
+    if (entityChange.isErased) {
+        return;
+    }
+
     // fill in some extra data needed by the frontend
     if (entityChange.entityName === 'attributes') {
         entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
