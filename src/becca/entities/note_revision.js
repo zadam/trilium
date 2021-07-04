@@ -43,6 +43,8 @@ class NoteRevision extends AbstractEntity {
         this.utcDateCreated = row.utcDateCreated;
         /** @param {string} */
         this.utcDateModified = row.utcDateModified;
+        /** @param {number} */
+        this.contentLength = row.contentLength;
 
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
