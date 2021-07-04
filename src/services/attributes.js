@@ -60,7 +60,11 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 function getNotesWithLabel(name, value) {
-    return searchService.searchNotes(formatAttrForSearch({type: 'label', name, value}, true));
+    const query = formatAttrForSearch({type: 'label', name, value}, true);
+    return searchService.searchNotes(query, {
+        includeArchivedNotes: true,
+        ignoreHoistedNote: true
+    });
 }
 
 function getNoteIdsWithLabels(names) {

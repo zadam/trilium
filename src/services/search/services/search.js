@@ -136,8 +136,8 @@ function parseQueryToExpression(query, searchContext) {
  * @param {string} query
  * @return {Note[]}
  */
-function searchNotes(query) {
-    const searchResults = findResultsWithQuery(query, new SearchContext());
+function searchNotes(query, params = {}) {
+    const searchResults = findResultsWithQuery(query, new SearchContext(params));
 
     return searchResults.map(sr => becca.notes[sr.noteId]);
 }

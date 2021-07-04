@@ -28,7 +28,7 @@ function formatAttrForSearch(attr, searchWithValue) {
 }
 
 function formatValue(val) {
-    if (!/[^\w_-]/.test(val)) {
+    if (!/[^\w_]/.test(val)) {
         return val;
     }
     else if (!val.includes('"')) {
