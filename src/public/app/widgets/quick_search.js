@@ -136,6 +136,8 @@ export default class QuickSearchWidget extends BasicWidget {
     async showInFullSearch() {
         const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
 
+        await froca.loadSearchNote(searchNote.noteId);
+
         await appContext.tabManager.getActiveContext().setNote(searchNote.noteId);
     }
 
