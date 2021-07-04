@@ -81,6 +81,8 @@ span.fancytree-title {
     color: inherit !important;
     background: inherit !important;
     outline: none !important;
+    position: relative;
+    top: -2px;
 }
 
 span.fancytree-node.protected > span.fancytree-custom-icon {

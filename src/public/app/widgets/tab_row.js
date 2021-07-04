@@ -127,7 +127,7 @@ const TAB_ROW_TPL = `
         left: 0;
         right: 0;
         height: 36px;
-        padding: 7px 11px;
+        padding: 7px 5px 7px 11px;
         border-radius: 8px;
         overflow: hidden;
         pointer-events: all;
@@ -179,6 +179,7 @@ const TAB_ROW_TPL = `
         border-radius: 50%;
         z-index: 100;
         text-align: center;
+        width: 22px;
     }
     
     .tab-row-widget .note-tab .note-tab-close span {
