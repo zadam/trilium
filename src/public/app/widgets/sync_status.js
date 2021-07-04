@@ -5,10 +5,9 @@ import options from "../services/options.js";
 import syncService from "../services/sync.js";
 
 const TPL = `
-<div class="sync-status-widget">
+<div class="sync-status-widget icon-action">
     <style>
     .sync-status-widget {
-        box-sizing: border-box;
     }
     
     .sync-status {
@@ -16,17 +15,17 @@ const TPL = `
     }
     
     .sync-status .sync-status-icon {
-        font-size: 150%;
         display: inline-block;
-        padding: 10px;
         position: relative;
+        top: -5px;
+        font-size: 110%;
     }
     
     .sync-status .sync-status-sub-icon {
         font-size: 40%; 
         position: absolute; 
-        left: 9px; 
-        top: 24px;
+        left: 0;
+        top: 16px;
     }
     
     .sync-status .sync-status-icon span {
