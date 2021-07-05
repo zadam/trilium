@@ -1,4 +1,5 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import keyboardActionsService from "../../services/keyboard_actions.js";
 
 const TPL = `
 <div class="ribbon-container">
@@ -208,7 +209,8 @@ export default class RibbonContainer extends NoteContextAwareWidget {
                 .attr('data-ribbon-component-name', ribbonWidget.name)
                 .append($('<span class="ribbon-tab-title-icon">')
                             .addClass(ret.icon)
-                            .attr("title", ret.title))
+                            .attr("data-title", ret.title)
+                            .attr('data-toggle-command', ribbonWidget.toggleCommand))
                 .append(" ")
                 .append($('<span class="ribbon-tab-title-label">').text(ret.title));
 
@@ -224,7 +226,22 @@ export default class RibbonContainer extends NoteContextAwareWidget {
             }
         }
 
-        this.$tabContainer.find('.ribbon-tab-title-icon').tooltip();
+        keyboardActionsService.getActions().then(actions => {
+            this.$tabContainer.find('.ribbon-tab-title-icon').tooltip({
+                title: function() {
+                    const toggleCommandName = $(this).attr("data-toggle-command");
+                    const action = actions.find(act => act.actionName === toggleCommandName);
+                    const title = $(this).attr("data-title");
+
+                    if (action && action.effectiveShortcuts.length > 0) {
+                        return `${title} (${action.effectiveShortcuts.join(", ")})`;
+                    }
+                    else {
+                        return title;
+                    }
+                }
+            });
+        });
 
         if (!$ribbonTabToActivate) {
             $ribbonTabToActivate = $lastActiveRibbon;

@@ -66,6 +66,10 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
         return "noteInfo";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabNoteInfo";
+    }
+
     isEnabled() {
         return this.note;
     }

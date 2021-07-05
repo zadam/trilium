@@ -46,6 +46,10 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
         return "bookProperties";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabBookProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'book';
     }

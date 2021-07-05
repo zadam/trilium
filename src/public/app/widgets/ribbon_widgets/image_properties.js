@@ -41,6 +41,10 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
         return "imageProperties";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabImageProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'image';
     }

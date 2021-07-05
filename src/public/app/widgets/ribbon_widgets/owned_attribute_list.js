@@ -26,6 +26,10 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
         return "ownedAttributes";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabOwnedAttributes";
+    }
+
     constructor() {
         super();
 

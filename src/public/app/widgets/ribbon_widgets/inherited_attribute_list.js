@@ -25,6 +25,10 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
         return "inheritedAttributes";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabInheritedAttributes";
+    }
+
     constructor() {
         super();
 

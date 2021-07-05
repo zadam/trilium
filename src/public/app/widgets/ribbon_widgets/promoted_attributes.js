@@ -39,6 +39,10 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
         return "promotedAttributes";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabPromotedAttributes";
+    }
+
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();

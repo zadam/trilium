@@ -42,6 +42,10 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         return "linkMap";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabLinkMap";
+    }
+
     isEnabled() {
         return this.note;
     }

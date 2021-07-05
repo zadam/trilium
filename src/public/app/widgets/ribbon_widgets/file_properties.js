@@ -59,6 +59,10 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
         return "fileProperties";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabFileProperties";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'file';
     }

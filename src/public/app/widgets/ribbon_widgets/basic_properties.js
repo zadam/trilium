@@ -50,6 +50,10 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
         return "basicProperties";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonBasicProperties";
+    }
+
     isEnabled() {
         return this.note && (this.note.type === 'text' || this.note.type === 'code');
     }

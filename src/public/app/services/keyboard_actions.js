@@ -16,6 +16,10 @@ const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 	return actions;
 });
 
+async function getActions() {
+	return await keyboardActionsLoaded;
+}
+
 async function getActionsForScope(scope) {
 	const actions = await keyboardActionsLoaded;
 
@@ -115,6 +119,7 @@ export default {
 	setElementActionHandler,
 	updateDisplayedShortcuts,
 	setupActionsForElement,
+	getActions,
 	getActionsForScope,
 	getAction
 };

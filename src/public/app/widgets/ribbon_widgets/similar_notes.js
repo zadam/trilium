@@ -35,6 +35,10 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
         return "similarNotes";
     }
 
+    get toggleCommand() {
+        return "toggleRibbonTabSimilarNotes";
+    }
+
     isEnabled() {
         return super.isEnabled()
             && this.note.type !== 'search'
