@@ -1,8 +1,13 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import keyboardActionsService from "../../services/keyboard_actions.js";
 
 const TPL = `<span class="button-widget icon-action bx"
       data-toggle="tooltip"
       title=""></span>`;
+
+let actions;
+
+keyboardActionsService.getActions().then(as => actions = as);
 
 export default class ButtonWidget extends NoteContextAwareWidget {
     isEnabled() {
@@ -30,7 +35,17 @@ export default class ButtonWidget extends NoteContextAwareWidget {
 
         this.$widget.tooltip({
             html: true,
-            title: () => this.settings.title,
+            title: () => {
+                const title = this.settings.title;
+                const action = actions.find(act => act.actionName === this.settings.command);
+
+                if (action && action.effectiveShortcuts.length > 0) {
+                    return `${title} (${action.effectiveShortcuts.join(", ")})`;
+                }
+                else {
+                    return title;
+                }
+            },
             trigger: "hover"
         });
 
