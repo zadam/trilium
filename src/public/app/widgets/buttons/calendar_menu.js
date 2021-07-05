@@ -1,71 +1,88 @@
-import CollapsibleWidget from "../collapsible_widget.js";
 import libraryLoader from "../../services/library_loader.js";
 import utils from "../../services/utils.js";
 import dateNoteService from "../../services/date_notes.js";
 import server from "../../services/server.js";
 import appContext from "../../services/app_context.js";
+import BasicWidget from "../basic_widget.js";
 
 const TPL = `
-<div class="calendar-widget">
-  <div class="calendar-header">
-    <button class="calendar-btn bx bx-left-arrow-alt" data-calendar-toggle="previous"></button>
+<div class="dropdown calendar-menu-widget dropright">
+    <style>
+    .calendar-menu-widget {
+        width: 53px;
+        height: 53px;
+    }
+    
+    .calendar-menu {
+        width: 350px;
+    }
+    </style>
 
-    <div class="calendar-header-label" data-calendar-label="month"></div>
-
-    <button class="calendar-btn bx bx-right-arrow-alt" data-calendar-toggle="next"></button>
-  </div>
-
-  <div class="calendar-week">
-    <span>Mon</span> <span>Tue</span><span>Wed</span> <span>Thu</span> <span>Fri</span> <span>Sat</span> <span>Sun</span>
-  </div>
-  <div class="calendar-body" data-calendar-area="month"></div>
+    <button type="button" data-toggle="dropdown" data-placement="right"
+            aria-haspopup="true" aria-expanded="false" 
+            class="icon-action bx bx-calendar calendar-menu-button" title="Calendar"></button>
+    
+    <div class="dropdown-menu dropdown-menu-right">
+        <div class="calendar-menu">
+          <div class="calendar-header">
+            <button class="calendar-btn bx bx-left-arrow-alt" data-calendar-toggle="previous"></button>
+        
+            <div class="calendar-header-label" data-calendar-label="month"></div>
+        
+            <button class="calendar-btn bx bx-right-arrow-alt" data-calendar-toggle="next"></button>
+          </div>
+        
+          <div class="calendar-week">
+            <span>Mon</span> <span>Tue</span><span>Wed</span> <span>Thu</span> <span>Fri</span> <span>Sat</span> <span>Sun</span>
+          </div>
+          <div class="calendar-body" data-calendar-area="month"></div>
+        </div>
+    </div>
 </div>
 `;
 
-export default class CalendarWidget extends CollapsibleWidget {
-    get widgetTitle() { return "Calendar"; }
+export default class CalendarMenuWidget extends BasicWidget {
+    doRender() {
+        this.$widget = $(TPL);
 
-    isEnabled() {
-        return super.isEnabled()
-            && this.note.hasOwnedLabel("dateNote");
-    }
-
-    async doRenderBody() {
-        await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
-
-        this.$body.html(TPL);
-
-        this.$month = this.$body.find('[data-calendar-area="month"]');
-        this.$next = this.$body.find('[data-calendar-toggle="next"]');
-        this.$previous = this.$body.find('[data-calendar-toggle="previous"]');
-        this.$label = this.$body.find('[data-calendar-label="month"]');
+        this.$month = this.$widget.find('[data-calendar-area="month"]');
+        this.$next = this.$widget.find('[data-calendar-toggle="next"]');
+        this.$previous = this.$widget.find('[data-calendar-toggle="previous"]');
+        this.$label = this.$widget.find('[data-calendar-label="month"]');
 
         this.$next.on('click', () => {
             this.date.setMonth(this.date.getMonth() + 1);
             this.createMonth();
         });
 
-        this.$previous.on('click', () => {
+        this.$previous.on('click', e => {
             this.date.setMonth(this.date.getMonth() - 1);
             this.createMonth();
         });
 
-        this.$body.on('click', '.calendar-date', async ev => {
+        this.$widget.find('.calendar-header').on("click", e => e.stopPropagation());
+
+        this.$widget.on('click', '.calendar-date', async ev => {
             const date = $(ev.target).closest('.calendar-date').attr('data-calendar-date');
 
             const note = await dateNoteService.getDateNote(date);
 
             if (note) {
                 appContext.tabManager.getActiveContext().setNote(note.noteId);
+                this.$widget.dropdown("hide");
             }
             else {
                 alert("Cannot find day note");
             }
         });
-    }
 
-    async refreshWithNote(note) {
-        this.init(this.$body, note.getOwnedLabelValue("dateNote"));
+        this.$widget.on('show.bs.dropdown', async () => {
+            await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
+
+            const activeNote = appContext.tabManager.getActiveContextNote();
+
+            this.init(this.$widget, activeNote?.getOwnedLabelValue("dateNote"));
+        });
     }
 
     init($el, activeDate) {

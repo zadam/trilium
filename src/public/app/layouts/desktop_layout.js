@@ -40,6 +40,7 @@ import NotePathsWidget from "../widgets/ribbon_widgets/note_paths.js";
 import SimilarNotesWidget from "../widgets/ribbon_widgets/similar_notes.js";
 import RightPaneContainer from "../widgets/containers/right_pane_container.js";
 import EditButton from "../widgets/buttons/edit_button.js";
+import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -71,6 +72,7 @@ export default class DesktopLayout {
                     .icon("bx-history")
                     .title("Show recent changes")
                     .command("showRecentChanges"))
+                .child(new CalendarMenuWidget())
                 .child(new SpacerWidget(40, 0))
                 .child(new FlexContainer("column")
                     .id("plugin-buttons")

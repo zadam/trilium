@@ -1,14 +1,14 @@
-.calendar-widget *, .calendar-widget *:before, .calendar-widget *:after {
+.calendar-menu *, .calendar-menu *:before, .calendar-menu *:after {
   box-sizing: border-box;
 }
 
-.calendar-widget {
+.calendar-menu {
   margin: 0 auto;
   overflow: hidden;
   width: 100%;
 }
 
-.calendar-widget .calendar-btn {
+.calendar-menu .calendar-btn {
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-appearance: button;
@@ -25,24 +25,24 @@
   text-align: center;
 }
 
-.calendar-widget .calendar-header {
+.calendar-menu .calendar-header {
   align-items: center;
   display: flex;
   padding: 0 0.5rem 0.5rem 0.5rem;
 }
 
-.calendar-widget .calendar-header-label {
+.calendar-menu .calendar-header-label {
   font-weight: bold;
   text-align: center;
   width: 100%;
 }
 
-.calendar-widget .calendar-week {
+.calendar-menu .calendar-week {
   display: flex;
   flex-wrap: wrap;
 }
 
-.calendar-widget .calendar-week span {
+.calendar-menu .calendar-week span {
   flex-direction: column;
   flex: 0 0 14.28%;
   font-size: 1rem;
@@ -54,12 +54,12 @@
   text-transform: uppercase;
 }
 
-.calendar-widget .calendar-body {
+.calendar-menu .calendar-body {
   display: flex;
   flex-wrap: wrap;
 }
 
-.calendar-widget .calendar-date {
+.calendar-menu .calendar-date {
   align-items: center;
   color: var(--main-text-color);
   background-color: var(--main-background-color);
@@ -71,24 +71,24 @@
   font-size: 120%;
 }
 
-.calendar-widget .calendar-date:hover {
+.calendar-menu .calendar-date:hover {
   color: var(--hover-item-text-color);
   background-color: var(--hover-item-background-color);
 }
 
-.calendar-widget .calendar-date-active {
+.calendar-menu .calendar-date-active {
   background-color: var(--active-item-background-color);
   color: var(--active-item-text-color);
 }
 
-.calendar-widget .calendar-date-today {
+.calendar-menu .calendar-date-today {
   font-weight: bold;
 }
 
-.calendar-widget .calendar-date-exists {
+.calendar-menu .calendar-date-exists {
   text-decoration: underline !important;
 }
 
-.calendar-widget .calendar-date:not(.calendar-date-active) {
+.calendar-menu .calendar-date:not(.calendar-date-active) {
   cursor: pointer;
 }

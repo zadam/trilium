@@ -7,8 +7,8 @@ const TPL = `
 <div class="edited-notes-widget">
     <style>    
         .edited-notes-widget .edited-note-line {
-            white-space: nowrap; 
-            overflow-x: hidden; 
+            white-space: nowrap;
+            overflow-x: hidden;
             text-overflow: ellipsis;
         }
     </style>
