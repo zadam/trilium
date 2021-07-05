@@ -97,11 +97,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget = $(TPL);
 
         const $button = this.$widget.find(".global-menu-button");
-
-        $button.tooltip({
-            trigger: "hover"
-        });
-
+        $button.tooltip({ trigger: "hover" });
         $button.on("click", () => $button.tooltip("hide"));
 
         this.$widget.find(".show-about-dialog-button").on('click',

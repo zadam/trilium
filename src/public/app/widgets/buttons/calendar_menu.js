@@ -45,6 +45,10 @@ export default class CalendarMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        const $button = this.$widget.find(".calendar-menu-button");
+        $button.tooltip({ trigger: "hover" });
+        $button.on("click", () => $button.tooltip("hide"));
+
         this.$month = this.$widget.find('[data-calendar-area="month"]');
         this.$next = this.$widget.find('[data-calendar-toggle="next"]');
         this.$previous = this.$widget.find('[data-calendar-toggle="previous"]');
