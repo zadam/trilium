@@ -41,6 +41,7 @@ import SimilarNotesWidget from "../widgets/ribbon_widgets/similar_notes.js";
 import RightPaneContainer from "../widgets/containers/right_pane_container.js";
 import EditButton from "../widgets/buttons/edit_button.js";
 import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
+import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -120,6 +121,7 @@ export default class DesktopLayout {
                                     new RibbonContainer()
                                         .ribbon(new SearchDefinitionWidget())
                                         .ribbon(new BasicPropertiesWidget())
+                                        .ribbon(new EditedNotesWidget())
                                         .ribbon(new BookPropertiesWidget())
                                         .ribbon(new NotePropertiesWidget())
                                         .ribbon(new FilePropertiesWidget())

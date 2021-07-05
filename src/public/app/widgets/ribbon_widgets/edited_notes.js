@@ -5,11 +5,12 @@ import froca from "../../services/froca.js";
 
 const TPL = `
 <div class="edited-notes-widget">
-    <style>    
-        .edited-notes-widget .edited-note-line {
-            white-space: nowrap;
-            overflow-x: hidden;
-            text-overflow: ellipsis;
+    <style>
+        .edited-notes-widget {
+            padding: 12px;
+            max-height: 200px;
+            width: 100%;
+            overflow: auto;
         }
     </style>
     
@@ -20,12 +21,8 @@ const TPL = `
 `;
 
 export default class EditedNotesWidget extends CollapsibleWidget {
-    get widgetTitle() { return "Edited notes on this day"; }
-
-    get help() {
-        return {
-            title: "This contains a list of notes created or updated on this day."
-        };
+    get name() {
+        return "editedNotes";
     }
 
     isEnabled() {
@@ -33,10 +30,20 @@ export default class EditedNotesWidget extends CollapsibleWidget {
             && this.note.hasOwnedLabel("dateNote");
     }
 
-    async doRenderBody() {
-        this.$body.html(TPL);
-        this.$list = this.$body.find('.edited-notes-list');
-        this.$noneFound = this.$body.find('.no-edited-notes-found');
+    getTitle() {
+        return {
+            show: this.isEnabled(),
+            activate: true,
+            title: 'Edited Notes',
+            icon: 'bx bx-calendar-edit'
+        };
+    }
+
+    async doRender() {
+        this.$widget = $(TPL);
+        this.contentSized();
+        this.$list = this.$widget.find('.edited-notes-list');
+        this.$noneFound = this.$widget.find('.no-edited-notes-found');
     }
 
     async refreshWithNote(note) {
@@ -56,8 +63,9 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
         await froca.getNotes(noteIds, true); // preload all at once
 
-        for (const editedNote of editedNotes) {
-            const $item = $('<div class="edited-note-line">');
+        for (let i = 0; i < editedNotes.length; i++) {
+            const editedNote = editedNotes[i];
+            const $item = $('<span class="edited-note-line">');
 
             if (editedNote.isDeleted) {
                 const title = editedNote.title + " (deleted)";
@@ -69,6 +77,10 @@ export default class EditedNotesWidget extends CollapsibleWidget {
             }
             else {
                 $item.append(editedNote.notePath ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true}) : editedNote.title);
+            }
+
+            if (i < editedNotes.length - 1) {
+                $item.append(", ");
             }
 
             this.$list.append($item);
