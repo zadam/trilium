@@ -30,7 +30,8 @@ export default class ButtonWidget extends NoteContextAwareWidget {
 
         this.$widget.tooltip({
             html: true,
-            title: () => this.settings.title
+            title: () => this.settings.title,
+            trigger: "hover"
         });
 
         super.doRender();
