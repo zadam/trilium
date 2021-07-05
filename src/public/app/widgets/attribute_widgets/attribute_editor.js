@@ -166,6 +166,7 @@ const editorConfig = {
         'IncludeNote',
         'CutToNote',
         'Mathematics',
+        'AutoformatMath',
         'indentBlockShortcutPlugin',
         'removeFormatLinksPlugin'
     ],
