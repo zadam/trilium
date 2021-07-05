@@ -86,9 +86,10 @@ export default class CalendarMenuWidget extends BasicWidget {
     }
 
     init($el, activeDate) {
-        this.activeDate = new Date(activeDate + "T12:00:00"); // attaching time fixes local timezone handling
+        // attaching time fixes local timezone handling
+        this.activeDate = activeDate ? new Date(activeDate + "T12:00:00") : null;
         this.todaysDate = new Date();
-        this.date = new Date(this.activeDate.getTime());
+        this.date = new Date((this.activeDate || this.todaysDate).getTime());
         this.date.setDate(1);
 
         this.createMonth();
@@ -129,6 +130,10 @@ export default class CalendarMenuWidget extends BasicWidget {
     }
 
     isEqual(a, b) {
+        if (!a && b || a && !b) {
+            return false;
+        }
+
         return a.getFullYear() === b.getFullYear()
             && a.getMonth() === b.getMonth()
             && a.getDate() === b.getDate();
