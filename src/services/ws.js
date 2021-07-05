@@ -79,6 +79,10 @@ function fillInAdditionalProperties(entityChange) {
     // the exception is isDeleted - in that case becca doesn't contain such entity at all
     // this would have to be handled separately
 
+    if (entityChange.isErased) {
+        return;
+    }
+
     // fill in some extra data needed by the frontend
     if (entityChange.entityName === 'attributes') {
         entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
