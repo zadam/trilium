@@ -171,11 +171,20 @@ function getNotePath(noteId) {
 
     if (retPath) {
         const noteTitle = getNoteTitleForPath(retPath);
-        const parentNote = note.parents[0];
+
+        let branchId;
+
+        if (note.noteId === 'root') {
+            branchId = 'root';
+        }
+        else {
+            const parentNote = note.parents[0];
+            branchId = becca.getBranchFromChildAndParent(noteId, parentNote.noteId).branchId;
+        }
 
         return {
             noteId: noteId,
-            branchId: becca.getBranchFromChildAndParent(noteId, parentNote.noteId).branchId,
+            branchId: branchId,
             title: noteTitle,
             notePath: retPath,
             path: retPath.join('/')
