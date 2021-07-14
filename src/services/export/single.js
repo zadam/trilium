@@ -23,7 +23,11 @@ function exportSingleNote(taskContext, branch, format, res) {
     if (note.type === 'text') {
         if (format === 'html') {
             if (!content.toLowerCase().includes("<html")) {
-                content = '<html><head><meta charset="utf-8"></head><body>' + content + '</body></html>';
+            	// KaTeX Auto-render Extension — from https://katex.org/docs/autorender.html
+            	let katexRender = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" integrity="sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc" crossorigin="anonymous">
+					<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js" integrity="sha384-YNHdsYkH6gMx9y3mRkmcJ2mFUjTd0qNQQvY9VYZgQd7DcN7env35GzlmFaZ23JGp" crossorigin="anonymous"></script>
+					<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>`;
+                content = '<!doctype html><html><head><meta charset="utf-8">' + katexRender + '</head><body>' + content + '</body></html>';
             }
 
             payload = html.prettyPrint(content, {indent_size: 2});
