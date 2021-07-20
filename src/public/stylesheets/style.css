@@ -531,29 +531,6 @@ div[data-notify="container"] {
     background-color: var(--accented-background-color);
 }
 
-.fancytree-loading span.fancytree-expander {
-    background-image: none !important;
-    display: inline-block;
-}
-
-.fancytree-loading span.fancytree-expander:after {
-    content: " ";
-    color: inherit !important;
-    display: block;
-    border-radius: 50%;
-    border-color: #000 transparent #000 transparent;
-    animation: lds-dual-ring 1.2s linear infinite;
-}
-
-@keyframes lds-dual-ring {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
 .ck-content .image > figcaption {
     color: var(--main-text-color) !important;
     background-color: var(--accented-background-color) !important;
@@ -765,21 +742,6 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     transform: rotate(-90deg);
 }
 
-.fancytree-loading span.fancytree-expander {
-    width: 16px;
-    height: 16px;
-    margin-left: 4px;
-}
-
-.fancytree-loading span.fancytree-expander:after {
-    width: 12px;
-    height: 12px;
-    margin-top: 4px;
-    margin-left: 1px;
-    border-width: 1px;
-    border-style: solid;
-}
-
 body {
     /* FF basic styling */
     scrollbar-color: var(--active-item-background-color) var(--main-background-color);
@@ -815,10 +777,6 @@ body {
 .ck.ck-mentions > .ck-list__item .ck-button {
     /* wrap text for very long note path title */
     white-space: normal !important;
-}
-
-ul.fancytree-container li {
-    contain: layout paint;
 }
 
 /**

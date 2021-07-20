@@ -42,6 +42,45 @@ ul.fancytree-container {
     margin-right: 5px;
 }
 
+.fancytree-loading span.fancytree-expander {
+    background-image: none !important;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    margin-right: 8px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.fancytree-loading span.fancytree-expander:after {
+    content: " ";
+    color: inherit !important;
+    display: block;
+    border-radius: 50%;
+    border-color: #000 transparent #000 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    margin-left: 1px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+ul.fancytree-container li {
+    contain: layout paint;
+}
+
 /* this is done to preserve correct indentation. Better solution would be preferable */
 .fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
     color: var(--main-background-color); /* setting to background color makes this invisible */
