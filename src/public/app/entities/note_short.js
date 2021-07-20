@@ -252,6 +252,10 @@ class NoteShort {
         return noteAttributeCache.attributes[this.noteId];
     }
 
+    isRoot() {
+        return this.noted
+    }
+
     getAllNotePaths(encounteredNoteIds = null) {
         if (this.noteId === 'root') {
             return [['root']];

@@ -132,7 +132,7 @@ function getSomePath(note, path = []) {
 }
 
 function getSomePathInner(note, path, respectHoistng) {
-    if (note.noteId === 'root') {
+    if (note.isRoot()) {
         path.push(note.noteId);
         path.reverse();
 
@@ -174,7 +174,7 @@ function getNotePath(noteId) {
 
         let branchId;
 
-        if (note.noteId === 'root') {
+        if (note.isRoot()) {
             branchId = 'root';
         }
         else {

@@ -6,6 +6,7 @@ const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
+const becca = require('../../becca/becca');
 const beccaLoader = require('../../becca/becca_loader');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
@@ -81,7 +82,7 @@ async function importToBranch(req) {
 
     beccaLoader.load();
 
-    return note;
+    return note.getPojo();
 }
 
 module.exports = {
