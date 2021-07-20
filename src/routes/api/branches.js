@@ -44,7 +44,6 @@ function moveBranchToParent(req) {
     newBranch.save();
 
     branchToMove.markAsDeleted();
-    branchToMove.save();
 
     return { success: true };
 }
