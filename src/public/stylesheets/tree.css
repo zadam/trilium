@@ -207,3 +207,17 @@ span.fancytree-node.archived {
 span.fancytree-node:hover .add-note-button {
     display: inline-block;
 }
+
+.fancytree-drop-accept {
+    border: 1px solid var(--main-border-color);
+}
+
+#fancytree-drop-marker.fancytree-drop-after {
+    width: 60px;
+    border-bottom: 1px solid var(--main-border-color);
+}
+
+#fancytree-drop-marker.fancytree-drop-before {
+    width: 60px;
+    border-top: 1px solid var(--main-border-color);
+}
