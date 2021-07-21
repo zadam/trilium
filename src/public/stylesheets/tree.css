@@ -212,12 +212,18 @@ span.fancytree-node:hover .add-note-button {
     border: 1px solid var(--main-border-color);
 }
 
+#fancytree-drop-marker.fancytree-drop-after, #fancytree-drop-marker.fancytree-drop-before {
+    width: 100px;
+    /* marker is by default position: relative which doesn't make sense */
+    position: absolute !important;
+    /* heaving a height helps with positioning since the algorithm calculating "top" takes it into account */
+    height: 19px;
+}
+
 #fancytree-drop-marker.fancytree-drop-after {
-    width: 60px;
-    border-bottom: 1px solid var(--main-border-color);
+    border-bottom: 1px solid var(--muted-text-color);
 }
 
 #fancytree-drop-marker.fancytree-drop-before {
-    width: 60px;
-    border-top: 1px solid var(--main-border-color);
+    border-top: 1px solid var(--muted-text-color);
 }
