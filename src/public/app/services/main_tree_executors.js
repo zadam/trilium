@@ -41,6 +41,11 @@ export default class MainTreeExecutors extends Component {
 
     async createNoteAfterCommand() {
         const node = this.tree.getActiveNode();
+
+        if (!node) {
+            return;
+        }
+
         const parentNotePath = treeService.getNotePath(node.getParent());
         const isProtected = await treeService.getParentProtectedStatus(node);
 
