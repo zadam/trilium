@@ -1174,25 +1174,25 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     async hoistedNoteChangedEvent({ntxId}) {
         if (this.isNoteContext(ntxId)) {
-            this.filterHoistedBranch();
+            await this.filterHoistedBranch();
         }
     }
 
     async filterHoistedBranch() {
-        if (this.noteContext) {
-            // make sure the hoisted node is loaded (can be unloaded e.g. after tree collapse in another tab)
-            const hoistedNotePath = await treeService.resolveNotePath(this.noteContext.hoistedNoteId);
-            await this.getNodeFromPath(hoistedNotePath);
+        if (!this.noteContext) {
+            return;
+        }
 
-            if (this.noteContext.hoistedNoteId === 'root') {
-                this.tree.clearFilter();
-            }
-            else {
-                // hack when hoisted note is cloned then it could be filtered multiple times while we want only 1
-                this.tree.filterBranches(node =>
-                    node.data.noteId === this.noteContext.hoistedNoteId // optimization to not having always resolve the node path
-                    && treeService.getNotePath(node) === hoistedNotePath);
-            }
+        const hoistedNotePath = await treeService.resolveNotePath(this.noteContext.hoistedNoteId);
+        await this.getNodeFromPath(hoistedNotePath);
+
+        if (this.noteContext.hoistedNoteId === 'root') {
+            this.tree.clearFilter();
+        } else {
+            // hack when hoisted note is cloned then it could be filtered multiple times while we want only 1
+            this.tree.filterBranches(node =>
+                node.data.noteId === this.noteContext.hoistedNoteId // optimization to not having always resolve the node path
+                && treeService.getNotePath(node) === hoistedNotePath);
         }
     }
 

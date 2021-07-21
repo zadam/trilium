@@ -2,6 +2,14 @@ ul.fancytree-container {
     padding-left: 0;
 }
 
+ul.fancytree-container li {
+    list-style: none;
+}
+
+span.fancytree-node.fancytree-hide {
+    display: none;
+}
+
 .fancytree-title {
     margin-left: 7px !important;
 }
