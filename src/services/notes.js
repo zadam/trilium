@@ -362,6 +362,12 @@ function downloadImages(noteId, content) {
                 const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping));
 
                 const origNote = becca.getNote(noteId);
+
+                if (!origNote) {
+                    log.error(`Cannot find note ${noteId} to replace image link.`);
+                    return;
+                }
+
                 const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
