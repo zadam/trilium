@@ -51,7 +51,6 @@ const TAB_ROW_TPL = `
         width: 100%;
         background: var(--main-background-color);
         overflow: hidden;
-        margin-top: 2px;
     }
     
     .tab-row-widget * {
