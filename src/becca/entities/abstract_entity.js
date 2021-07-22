@@ -110,7 +110,7 @@ class AbstractEntity {
 
         this.addEntityChange(true);
 
-        eventService.emit(eventService.ENTITY_DELETED, { entityName, entity: this });
+        eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
     }
 }
 

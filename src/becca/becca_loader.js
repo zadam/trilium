@@ -60,25 +60,31 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_CHANGE_
     }
 });
 
-eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entity}) => {
+eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
     if (!becca.loaded) {
         return;
     }
 
     if (entityName === 'notes') {
-        noteDeleted(entity);
+        noteDeleted(entityId);
     } else if (entityName === 'branches') {
-        branchDeleted(entity);
+        branchDeleted(entityId);
     } else if (entityName === 'attributes') {
-        attributeDeleted(entity);
+        attributeDeleted(entityId);
     }
 });
 
-function noteDeleted(note) {
-    delete becca.notes[note.noteId];
+function noteDeleted(noteId) {
+    delete becca.notes[noteId];
 }
 
-function branchDeleted(branch) {
+function branchDeleted(branchId) {
+    const branch = becca.branches[branchId];
+
+    if (!branch) {
+        return;
+    }
+
     const childNote = becca.notes[branch.noteId];
 
     if (childNote) {
@@ -110,7 +116,13 @@ function branchUpdated(branch) {
     }
 }
 
-function attributeDeleted(attribute) {
+function attributeDeleted(attributeId) {
+    const attribute = becca.attributes[attributeId];
+
+    if (!attribute) {
+        return;
+    }
+
     const note = becca.notes[attribute.noteId];
 
     if (note) {

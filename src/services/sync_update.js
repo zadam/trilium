@@ -26,14 +26,14 @@ function updateEntity(entityChange, entity) {
         ? updateNoteReordering(entityChange, entity)
         : updateNormalEntity(entityChange, entity);
 
-    if (updated && !entityChange.isErased) {
+    if (updated) {
         if (entity.isDeleted) {
             eventService.emit(eventService.ENTITY_DELETE_SYNCED, {
                 entityName: entityChange.entityName,
                 entityId: entityChange.entityId
             });
         }
-        else {
+        else if (!entityChange.isErased) {
             eventService.emit(eventService.ENTITY_CHANGE_SYNCED, {
                 entityName: entityChange.entityName,
                 entity
