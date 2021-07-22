@@ -55,13 +55,17 @@ class Becca {
         return this.notes[noteId];
     }
 
-    getNotes(noteIds) {
+    getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
 
         for (const noteId of noteIds) {
             const note = this.notes[noteId];
 
             if (!note) {
+                if (ignoreMissing) {
+                    continue;
+                }
+
                 throw new Error(`Note '${noteId}' was not found in becca.`);
             }
 

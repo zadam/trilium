@@ -120,7 +120,7 @@ function getEditedNotesOnDate(req) {
         ORDER BY isDeleted
         LIMIT 50`, {date: req.params.date + '%'});
 
-    const notes = becca.getNotes(noteIds);
+    const notes = becca.getNotes(noteIds, true);
 
     for (const note of notes) {
         const notePath = note.isDeleted ? null : beccaService.getNotePath(note.noteId);
