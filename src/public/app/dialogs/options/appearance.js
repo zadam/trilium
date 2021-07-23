@@ -34,6 +34,7 @@ const TPL = `
             <label for="heading-style">Heading style</label>
             <select class="form-control" id="heading-style">
                 <option value="plain">Plain</option>
+                <option value="underline">Underline</option>
                 <option value="markdown">Markdown-style</option>
             </select>
         </div>

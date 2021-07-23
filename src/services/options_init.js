@@ -85,7 +85,7 @@ const defaultOptions = [
     { name: 'promotedAttributesExpanded', value: 'true', isSynced: true },
     { name: 'similarNotesExpanded', value: 'true', isSynced: true },
     { name: 'debugModeEnabled', value: 'false', isSynced: false },
-    { name: 'headingStyle', value: 'markdown', isSynced: true },
+    { name: 'headingStyle', value: 'underline', isSynced: true },
     { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
 ];
 
