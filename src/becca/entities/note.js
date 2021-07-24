@@ -20,8 +20,61 @@ class Note extends AbstractEntity {
     constructor(row) {
         super();
 
-        this.update(row);
+        if (!row) {
+            return;
+        }
 
+        this.update([
+            row.noteId,
+            row.title,
+            row.type,
+            row.mime,
+            row.isProtected,
+            row.dateCreated,
+            row.dateModified,
+            row.utcDateCreated,
+            row.utcDateModified
+        ]);
+
+        this.init();
+    }
+
+    update([noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified]) {
+        // ------ Database persisted attributes ------
+
+        /** @param {string} */
+        this.noteId = noteId;
+        /** @param {string} */
+        this.title = title;
+        /** @param {boolean} */
+        this.isProtected = !!isProtected;
+        /** @param {string} */
+        this.type = type;
+        /** @param {string} */
+        this.mime = mime;
+        /** @param {string} */
+        this.dateCreated = dateCreated || dateUtils.localNowDateTime();
+        /** @param {string} */
+        this.dateModified = dateModified;
+        /** @param {string} */
+        this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
+        /** @param {string} */
+        this.utcDateModified = utcDateModified;
+
+        // ------ Derived attributes ------
+
+        /** @param {boolean} */
+        this.isDecrypted = !this.isProtected;
+
+        this.decrypt();
+
+        /** @param {string|null} */
+        this.flatTextCache = null;
+
+        return this;
+    }
+
+    init() {
         /** @param {Branch[]} */
         this.parentBranches = [];
         /** @param {Note[]} */
@@ -52,39 +105,6 @@ class Note extends AbstractEntity {
         this.noteSize = null;
         /** @param {int} number of note revisions for this note */
         this.revisionCount = null;
-    }
-
-    update(row) {
-        // ------ Database persisted attributes ------
-
-        /** @param {string} */
-        this.noteId = row.noteId;
-        /** @param {string} */
-        this.title = row.title;
-        /** @param {boolean} */
-        this.isProtected = !!row.isProtected;
-        /** @param {string} */
-        this.type = row.type;
-        /** @param {string} */
-        this.mime = row.mime;
-        /** @param {string} */
-        this.dateCreated = row.dateCreated || dateUtils.localNowDateTime();
-        /** @param {string} */
-        this.dateModified = row.dateModified;
-        /** @param {string} */
-        this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
-        /** @param {string} */
-        this.utcDateModified = row.utcDateModified;
-
-        // ------ Derived attributes ------
-
-        /** @param {boolean} */
-        this.isDecrypted = !this.isProtected;
-
-        this.decrypt();
-
-        /** @param {string|null} */
-        this.flatTextCache = null;
     }
 
     isContentAvailable() {

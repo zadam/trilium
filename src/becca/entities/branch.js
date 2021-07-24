@@ -14,21 +14,43 @@ class Branch extends AbstractEntity {
     constructor(row) {
         super();
 
-        /** @param {string} */
-        this.branchId = row.branchId;
-        /** @param {string} */
-        this.noteId = row.noteId;
-        /** @param {string} */
-        this.parentNoteId = row.parentNoteId;
-        /** @param {string} */
-        this.prefix = row.prefix;
-        /** @param {int} */
-        this.notePosition = row.notePosition;
-        /** @param {boolean} */
-        this.isExpanded = !!row.isExpanded;
-        /** @param {string} */
-        this.utcDateModified = row.utcDateModified;
+        if (!row) {
+            return;
+        }
 
+        this.update([
+            row.branchId,
+            row.noteId,
+            row.parentNoteId,
+            row.prefix,
+            row.notePosition,
+            row.isExpanded,
+            row.utcDateModified
+        ]);
+
+        this.init();
+    }
+
+    update([branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified]) {
+        /** @param {string} */
+        this.branchId = branchId;
+        /** @param {string} */
+        this.noteId = noteId;
+        /** @param {string} */
+        this.parentNoteId = parentNoteId;
+        /** @param {string} */
+        this.prefix = prefix;
+        /** @param {int} */
+        this.notePosition = notePosition;
+        /** @param {boolean} */
+        this.isExpanded = !!isExpanded;
+        /** @param {string} */
+        this.utcDateModified = utcDateModified;
+
+        return this;
+    }
+
+    init() {
         if (this.branchId === 'root') {
             return;
         }

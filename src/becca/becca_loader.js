@@ -25,16 +25,19 @@ function load() {
     const start = Date.now();
     becca.reset();
 
-    for (const row of sql.iterateRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes`, [])) {
-        new Note(row);
+    // using raw query and passing arrays to avoid allocating new objects
+    // this is worth it for becca load since it happens every run and blocks the app until finished
+
+    for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`, [])) {
+        new Note().update(row).init();
     }
 
-    for (const row of sql.iterateRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`, [])) {
-        new Branch(row);
+    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`, [])) {
+        new Branch().update(row).init();
     }
 
-    for (const row of sql.iterateRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`, [])) {
-        new Attribute(row);
+    for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`, [])) {
+        new Attribute().update(row).init();
     }
 
     for (const row of sql.getRows(`SELECT name, value, isSynced, utcDateModified FROM options`)) {

@@ -14,23 +14,46 @@ class Attribute extends AbstractEntity {
     constructor(row) {
         super();
 
-        /** @param {string} */
-        this.attributeId = row.attributeId;
-        /** @param {string} */
-        this.noteId = row.noteId;
-        /** @param {string} */
-        this.type = row.type;
-        /** @param {string} */
-        this.name = row.name;
-        /** @param {int} */
-        this.position = row.position;
-        /** @param {string} */
-        this.value = row.value;
-        /** @param {boolean} */
-        this.isInheritable = !!row.isInheritable;
-        /** @param {string} */
-        this.utcDateModified = row.utcDateModified;
+        if (!row) {
+            return;
+        }
 
+        this.update([
+            row.attributeId,
+            row.noteId,
+            row.type,
+            row.name,
+            row.value,
+            row.isInheritable,
+            row.position,
+            row.utcDateModified
+        ]);
+
+        this.init();
+    }
+
+    update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]) {
+        /** @param {string} */
+        this.attributeId = attributeId;
+        /** @param {string} */
+        this.noteId = noteId;
+        /** @param {string} */
+        this.type = type;
+        /** @param {string} */
+        this.name = name;
+        /** @param {int} */
+        this.position = position;
+        /** @param {string} */
+        this.value = value;
+        /** @param {boolean} */
+        this.isInheritable = !!isInheritable;
+        /** @param {string} */
+        this.utcDateModified = utcDateModified;
+
+        return this;
+    }
+
+    init() {
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
         }
