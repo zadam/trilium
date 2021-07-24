@@ -200,12 +200,16 @@ span.fancytree-node.archived {
     font-size: 120%;
     cursor: pointer;
     position: relative;
-    left: 5px;
+    left: 3px;
     top: 2px;
+    margin-left: 5px;
+    padding: 1px;
+    border: 1px solid transparent;
 }
 
 .tree-item-button:hover {
-    border-color: var(--main-border-color);
+    border: 1px dotted var(--main-text-color);
+    border-radius: 5px;
 }
 
 .add-note-button {
