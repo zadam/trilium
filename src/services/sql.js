@@ -134,6 +134,10 @@ function getRows(query, params = []) {
     return wrap(query, s => s.all(params));
 }
 
+function getRawRows(query, params = []) {
+    return wrap(query, s => s.raw().all(params));
+}
+
 function iterateRows(query, params = []) {
     return stmt(query).iterate(params);
 }
@@ -314,6 +318,7 @@ module.exports = {
      * @return {object[]} - array of all rows, each row is a map of column name to column value
      */
     getRows,
+    getRawRows,
     iterateRows,
     getManyRows,
 

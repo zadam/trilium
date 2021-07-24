@@ -27,7 +27,7 @@ function getSectorHashes(tableName, primaryKeyName, whereBranch) {
 function getEntityHashes() {
     const startTime = new Date();
 
-    const hashRows = sql.getRows(`
+    const hashRows = sql.getRawRows(`
         SELECT entityName, 
                entityId, 
                hash 
@@ -37,11 +37,11 @@ function getEntityHashes() {
 
     // sorting is faster in memory
     // sorting by entityId is enough, hashes will be segmented by entityName later on anyway
-    hashRows.sort((a, b) => a.entityId < b.entityId ? -1 : 1);
+    hashRows.sort((a, b) => a[0] < b[0] ? -1 : 1);
 
     const hashMap = {};
 
-    for (const {entityName, entityId, hash} of hashRows) {
+    for (const [entityName, entityId, hash] of hashRows) {
         const entityHashMap = hashMap[entityName] = hashMap[entityName] || {};
 
         const sector = entityId[0];
