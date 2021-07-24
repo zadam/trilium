@@ -125,6 +125,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             }
         });
 
+        this.preventMathInputOverflow();
+
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         if (glob.isDev && ENABLE_INSPECTOR) {
@@ -292,5 +294,51 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
     async refreshIncludedNoteEvent({noteId}) {
         this.refreshIncludedNote(this.$editor, noteId);
+    }
+
+    preventMathInputOverflow() {
+        const balloon = editor.plugins.get('MathUI')._balloon;
+        const formView = editor.plugins.get('MathUI').formView;
+        
+        const defaultPositions = editor.plugins.get('ContextualBalloon').view.constructor.defaultPositions;
+        
+        const positions = [
+            defaultPositions.northArrowSouthWest,
+            defaultPositions.northArrowSouth,
+            defaultPositions.northArrowSouthEast,
+            defaultPositions.southArrowNorthWest,
+            defaultPositions.southArrowNorth,
+            defaultPositions.southArrowNorthEast
+        ];
+        
+        // Stop the math preview update because we will render that ourselves
+        formView.mathView.stopListening(formView.mathView, 'change');
+        
+        let isRendering = false;
+
+        formView.mathView.on('set:value', (info, name, newValue) => {
+            // Don't cause a stack overflow
+            if (isRendering) return;
+            isRendering = true;
+
+            // set is fired before value is changed, manually change it before rendering
+            formView.mathView.value = newValue;
+
+            // Render math once for dimensions
+            formView.mathView.updateMath();
+
+            const originalPos = formView.element.getBoundingClientRect();
+
+            balloon._idToStack.get('main').get(formView).position.positions = positions;
+            balloon.updatePosition();
+        
+            const newPos = formView.element.getBoundingClientRect();
+            if (newPos.x != originalPos.x || newPos.y != originalPos.y) {
+                // Re-render math in correct position
+                formView.mathView.updateMath();
+            }
+
+            isRendering = false;
+        });
     }
 }
