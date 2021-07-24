@@ -49,6 +49,7 @@ const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
+const AbstractEntity = require("../becca/entities/abstract_entity.js");
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -57,6 +58,17 @@ const csrfMiddleware = csurf({
 
 function apiResultHandler(req, res, result) {
     res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
+
+    if (result instanceof AbstractEntity) {
+        result = result.getPojo();
+    }
+    else if (Array.isArray(result)) {
+        for (const idx in result) {
+            if (result[idx] instanceof AbstractEntity) {
+                result[idx] = result[idx].getPojo();
+            }
+        }
+    }
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
