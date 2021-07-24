@@ -304,15 +304,9 @@ export default class TabManager extends Component {
         await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
 
         if (!noteContextToRemove.isMainContext()) {
-            const ntxId1 = noteContextToRemove.getMainContext().ntxId;
-
-            console.log(`Isn't main context, will try to activate ${ntxId1}`);
-
-            await this.activateNoteContext(ntxId1);
+            await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
         }
         else if (this.mainNoteContexts.length <= 1) {
-            console.log("No main context remaining, opening new one");
-
             await this.openAndActivateEmptyTab();
         }
         else if (ntxIdsToRemove.includes(this.activeNtxId)) {
@@ -363,19 +357,19 @@ export default class TabManager extends Component {
     }
 
     async activateNextTabCommand() {
-        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeNtxId);
-        const newActiveNtxId = this.mainNoteContexts[oldIdx === this.noteContexts.length - 1 ? 0 : oldIdx + 1].ntxId;
+        const activeMainNtxId = this.getActiveMainContext().ntxId;
 
-        console.log(`Activating next one ${newActiveNtxId}`);
+        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === activeMainNtxId);
+        const newActiveNtxId = this.mainNoteContexts[oldIdx === this.mainNoteContexts.length - 1 ? 0 : oldIdx + 1].ntxId;
 
         await this.activateNoteContext(newActiveNtxId);
     }
 
     async activatePreviousTabCommand() {
-        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === this.activeNtxId);
-        const newActiveNtxId = this.mainNoteContexts[oldIdx === 0 ? this.noteContexts.length - 1 : oldIdx - 1].ntxId;
+        const activeMainNtxId = this.getActiveMainContext().ntxId;
 
-        console.log(`Activating previous one ${newActiveNtxId}`);
+        const oldIdx = this.mainNoteContexts.findIndex(nc => nc.ntxId === activeMainNtxId);
+        const newActiveNtxId = this.mainNoteContexts[oldIdx === 0 ? this.mainNoteContexts.length - 1 : oldIdx - 1].ntxId;
 
         await this.activateNoteContext(newActiveNtxId);
     }
