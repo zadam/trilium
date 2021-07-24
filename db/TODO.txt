@@ -8,3 +8,4 @@
   * readOnly=auto - like without readOnly (used to override inherited readOnly)
   * readOnly=never - like autoReadOnlyDisabled
 - remove focusOnAttributesKeyboardShortcut
+- rename white theme to "light" theme (it's not completely white and matches well to dark theme)
