@@ -23,9 +23,12 @@ span.fancytree-node.fancytree-hide {
 }
 
 .fancytree-node {
+    display: flex;
+    align-items: center;
+    height: 38px;
     padding: 4px;
     border: 1px solid transparent;
-    display: block;
+    border-radius: 5px;
     cursor: pointer;
     overflow: hidden;
     white-space: nowrap;
@@ -124,14 +127,6 @@ ul.fancytree-container {
     font-size: 1.2em;
 }
 
-span.fancytree-title {
-    color: inherit !important;
-    background: inherit !important;
-    outline: none !important;
-    position: relative;
-    top: -2px;
-}
-
 span.fancytree-node.protected > span.fancytree-custom-icon {
     filter: drop-shadow(2px 2px 2px var(--main-text-color));
 }
@@ -179,7 +174,6 @@ span.fancytree-selected {
 }
 
 span.fancytree-node:hover {
-    border-radius: 5px;
     border: 1px solid var(--main-border-color);
 }
 
@@ -199,17 +193,14 @@ span.fancytree-node.archived {
     display: none;
     font-size: 120%;
     cursor: pointer;
-    position: relative;
-    left: 3px;
-    top: 2px;
-    margin-left: 5px;
+    margin-left: 8px;
     padding: 1px;
     border: 1px solid transparent;
+    border-radius: 5px;
 }
 
 .tree-item-button:hover {
     border: 1px dotted var(--main-text-color);
-    border-radius: 5px;
 }
 
 .add-note-button {
