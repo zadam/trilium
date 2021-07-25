@@ -297,6 +297,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     preventMathInputOverflow() {
+        const editor = this.textEditor;
+
         const balloon = editor.plugins.get('MathUI')._balloon;
         const formView = editor.plugins.get('MathUI').formView;
         
