@@ -11,7 +11,8 @@ span.fancytree-node.fancytree-hide {
 }
 
 .fancytree-title {
-    margin-left: 7px !important;
+    margin-left: 7px;
+    outline: none;
 }
 
 .fancytree-expander {
@@ -54,7 +55,7 @@ span.fancytree-node.fancytree-hide {
 }
 
 .fancytree-loading span.fancytree-expander {
-    background-image: none !important;
+    background-image: none;
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -119,8 +120,8 @@ span.fancytree-node.muted { opacity: 0.6; }
 }
 
 ul.fancytree-container {
-    outline: none !important;
-    background-color: inherit !important;
+    outline: none;
+    background-color: inherit;
 }
 
 .fancytree-custom-icon {

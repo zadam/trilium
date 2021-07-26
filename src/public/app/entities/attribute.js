@@ -22,6 +22,8 @@ class Attribute {
         this.position = row.position;
         /** @param {boolean} isInheritable */
         this.isInheritable = !!row.isInheritable;
+        /** @param {boolean} */
+        this.isDeleted = !!row.isDeleted;
     }
 
     /** @returns {NoteShort} */

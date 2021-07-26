@@ -455,6 +455,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
 
                 const note = await froca.getNote(node.data.noteId);
+
+                if (!note || note.isDeleted) {
+                    return;
+                }
+
                 const activeNoteContext = appContext.tabManager.getActiveContext();
 
                 const $span = $(node.span);
