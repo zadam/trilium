@@ -6,7 +6,7 @@ import libraryLoader from "../../services/library_loader.js";
 const TPL = `
 <div class="note-detail-image note-detail-printable">
     <style>
-        .type-image {
+        .type-image .note-detail {
             height: 100%;
         }
     
@@ -18,10 +18,9 @@ const TPL = `
             position: relative;
             display: flex;
             align-items: center;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
             justify-content: center;
+            height: 100%;
         }
         
         .note-detail-image-view {
