@@ -11,6 +11,7 @@ const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
 const utils = require('../../services/utils');
+const ws = require('../../services/ws');
 
 async function testSync() {
     try {
@@ -59,6 +60,9 @@ function checkSync() {
 
 function syncNow() {
     log.info("Received request to trigger sync now.");
+
+    // when explicitly asked for set in progress status immediatelly for faster user feedback
+    ws.syncPullInProgress();
 
     return syncService.sync();
 }

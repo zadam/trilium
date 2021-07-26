@@ -111,13 +111,6 @@ export default class SyncStatusWidget extends BasicWidget {
 
     processMessage(message) {
         if (message.type === 'sync-pull-in-progress') {
-            toastService.showPersistent({
-                id: 'sync',
-                title: "Sync status",
-                message: "Sync update in progress",
-                icon: "refresh"
-            });
-
             this.syncState = 'in-progress';
             this.lastSyncedPush = message.lastSyncedPush;
         }
@@ -126,9 +119,6 @@ export default class SyncStatusWidget extends BasicWidget {
             this.lastSyncedPush = message.lastSyncedPush;
         }
         else if (message.type === 'sync-finished') {
-            // this gives user a chance to see the toast in case of fast sync finish
-            setTimeout(() => toastService.closePersistent('sync'), 1000);
-
             this.syncState = 'connected';
             this.lastSyncedPush = message.lastSyncedPush;
         }
