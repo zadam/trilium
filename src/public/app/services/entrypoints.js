@@ -194,8 +194,7 @@ export default class Entrypoints extends Component {
     }
 
     async runActiveNoteCommand() {
-        const noteContext = appContext.tabManager.getActiveContext();
-        const note = noteContext.note;
+        const {ntxId, note} = appContext.tabManager.getActiveContext();
 
         // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
         if (!note || note.type !== 'code') {
@@ -208,9 +207,9 @@ export default class Entrypoints extends Component {
         } else if (note.mime.endsWith("env=backend")) {
             await server.post('script/run/' + note.noteId);
         } else if (note.mime === 'text/x-sqlite;schema=trilium') {
-            const result = await server.post("sql/execute/" + note.noteId);
+            const {results} = await server.post("sql/execute/" + note.noteId);
 
-            this.triggerEvent('sqlQueryResults', {ntxId: noteContext.ntxId, results: result.results});
+            await appContext.triggerEvent('sqlQueryResults', {ntxId: ntxId, results: results});
         }
 
         toastService.showMessage("Note executed");

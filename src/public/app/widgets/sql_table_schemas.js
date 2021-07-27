@@ -8,6 +8,10 @@ import toastService from "../services/toast.js";
 const TPL = `
 <div class="sql-table-schemas-widget">
     <style>
+    .sql-table-schemas-widget {
+        padding: 12px;
+    }
+    
     .sql-table-schemas button {
         padding: 0.25rem 0.4rem;
         font-size: 0.875rem;
@@ -42,6 +46,7 @@ export default class SqlTableSchemasWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
 
         this.$sqlConsoleTableSchemas = this.$widget.find('.sql-table-schemas');
     }

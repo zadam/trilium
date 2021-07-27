@@ -4,26 +4,6 @@ const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
 
-function getSectorHashes(tableName, primaryKeyName, whereBranch) {
-    const hashes = sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName}`
-        + (whereBranch ? ` WHERE ${whereBranch} ` : ''));
-
-    // sorting is faster in memory
-    hashes.sort((a, b) => a.id < b.id ? -1 : 1);
-
-    const map = {};
-
-    for (const {id, hash} of hashes) {
-        map[id[0]] = (map[id[0]] || "") + hash;
-    }
-
-    for (const key in map) {
-        map[key] = utils.hash(map[key]);
-    }
-
-    return map;
-}
-
 function getEntityHashes() {
     const startTime = new Date();
 
