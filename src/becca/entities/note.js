@@ -24,6 +24,11 @@ class Note extends AbstractEntity {
             return;
         }
 
+        this.updateFromRow(row);
+        this.init();
+    }
+
+    updateFromRow(row) {
         this.update([
             row.noteId,
             row.title,
@@ -35,8 +40,6 @@ class Note extends AbstractEntity {
             row.utcDateCreated,
             row.utcDateModified
         ]);
-
-        this.init();
     }
 
     update([noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified]) {
@@ -198,7 +201,7 @@ class Note extends AbstractEntity {
         return JSON.parse(content);
     }
 
-    setContent(content) {
+    setContent(content, ignoreMissingProtectedSession = false) {
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to note ${this.noteId}`);
         }
@@ -221,7 +224,7 @@ class Note extends AbstractEntity {
             if (protectedSessionService.isProtectedSessionAvailable()) {
                 pojo.content = protectedSessionService.encrypt(pojo.content);
             }
-            else {
+            else if (!ignoreMissingProtectedSession) {
                 throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
             }
         }

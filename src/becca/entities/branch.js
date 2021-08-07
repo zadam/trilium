@@ -18,6 +18,11 @@ class Branch extends AbstractEntity {
             return;
         }
 
+        this.updateFromRow(row);
+        this.init();
+    }
+
+    updateFromRow(row) {
         this.update([
             row.branchId,
             row.noteId,
@@ -27,8 +32,6 @@ class Branch extends AbstractEntity {
             row.isExpanded,
             row.utcDateModified
         ]);
-
-        this.init();
     }
 
     update([branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified]) {

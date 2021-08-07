@@ -460,26 +460,35 @@ class ConsistencyChecks {
 
     runEntityChangeChecks(entityName, key) {
         this.findAndFixIssues(`
-        SELECT 
-          ${key} as entityId
-        FROM 
-          ${entityName} 
-          LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
-                                  AND entity_changes.entityId = ${key} 
-        WHERE 
-          entity_changes.id IS NULL`,
+            SELECT 
+              ${key} as entityId
+            FROM 
+              ${entityName} 
+              LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
+                                      AND entity_changes.entityId = ${key} 
+            WHERE 
+              entity_changes.id IS NULL`,
             ({entityId}) => {
                 if (this.autoFix) {
-                    const entity = becca.getEntity(entityName, entityId);
+                    if (entityName === 'note_contents' || entityName === 'note_revision_contents') {
+                        const entity = entityName === 'note_contents'
+                            ? becca.getNote(entityId)
+                            : becca.getNoteRevision(entityId);
 
-                    entityChangesService.addEntityChange({
-                        entityName,
-                        entityId,
-                        hash: entity.generateHash(),
-                        isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged(),
-                        isSynced: entityName !== 'options' || entity.isSynced
-                    });
+                        entity.setContent(entity.getContent(), true);
+                    }
+                    else {
+                        const entity = becca.getEntity(entityName, entityId);
+
+                        entityChangesService.addEntityChange({
+                            entityName,
+                            entityId,
+                            hash: entity.generateHash(),
+                            isErased: false,
+                            utcDateChanged: entity.getUtcDateChanged(),
+                            isSynced: entityName !== 'options' || entity.isSynced
+                        });
+                    }
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {

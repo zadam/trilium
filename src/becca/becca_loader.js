@@ -1,15 +1,16 @@
 "use strict";
 
-const sql = require('../services/sql.js');
-const eventService = require('../services/events.js');
-const becca = require('./becca.js');
+const sql = require('../services/sql');
+const eventService = require('../services/events');
+const becca = require('./becca');
 const sqlInit = require('../services/sql_init');
 const log = require('../services/log');
-const Note = require('./entities/note.js');
-const Branch = require('./entities/branch.js');
-const Attribute = require('./entities/attribute.js');
-const Option = require('./entities/option.js');
-const cls = require("../services/cls.js");
+const Note = require('./entities/note');
+const Branch = require('./entities/branch');
+const Attribute = require('./entities/attribute');
+const Option = require('./entities/option');
+const cls = require("../services/cls");
+const entityConstructor = require("../becca/entity_constructor");
 
 const beccaLoaded = new Promise((res, rej) => {
     sqlInit.dbReady.then(() => {
@@ -49,11 +50,7 @@ function load() {
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
-eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entity}) => {
-    if (!becca.loaded) {
-        return;
-    }
-
+function postProcessEntityUpdate(entityName, entity) {
     if (entityName === 'branches') {
         branchUpdated(entity);
     } else if (entityName === 'attributes') {
@@ -61,6 +58,37 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_CHANGE_
     } else if (entityName === 'note_reordering') {
         noteReorderingUpdated(entity);
     }
+}
+
+eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entity}) => {
+    if (!becca.loaded) {
+        return;
+    }
+
+    if (["notes", "branches", "attributes"].includes(entityName)) {
+        const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
+        const primaryKeyName = EntityClass.primaryKeyName;
+
+        let entity = becca.getEntity(entityName, entity[primaryKeyName]);
+
+        if (entity) {
+            entity.updateFromRow(entity);
+        } else {
+            entity = new EntityClass();
+            entity.updateFromRow(entity);
+            entity.init();
+        }
+    }
+
+    postProcessEntityUpdate(entityName, entity);
+});
+
+eventService.subscribe(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
+    if (!becca.loaded) {
+        return;
+    }
+
+    postProcessEntityUpdate(entityName, entity);
 });
 
 eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {

@@ -108,7 +108,7 @@ class NoteRevision extends AbstractEntity {
         }
     }
 
-    setContent(content) {
+    setContent(content, ignoreMissingProtectedSession = false) {
         const pojo = {
             noteRevisionId: this.noteRevisionId,
             content: content,
@@ -119,14 +119,14 @@ class NoteRevision extends AbstractEntity {
             if (protectedSessionService.isProtectedSessionAvailable()) {
                 pojo.content = protectedSessionService.encrypt(pojo.content);
             }
-            else {
+            else if (!ignoreMissingProtectedSession) {
                 throw new Error(`Cannot update content of noteRevisionId=${this.noteRevisionId} since we're out of protected session.`);
             }
         }
 
         sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        const hash = utils.hash(this.noteRevisionId + "|" + content);
+        const hash = utils.hash(this.noteRevisionId + "|" + pojo.content.toString());
 
         entityChangesService.addEntityChange({
             entityName: 'note_revision_contents',
@@ -136,6 +136,17 @@ class NoteRevision extends AbstractEntity {
             utcDateChanged: this.getUtcDateChanged(),
             isSynced: true
         });
+    }
+
+    /** @returns {{contentLength, dateModified, utcDateModified}} */
+    getContentMetadata() {
+        return sql.getRow(`
+            SELECT 
+                LENGTH(content) AS contentLength, 
+                dateModified,
+                utcDateModified 
+            FROM note_revision_contents 
+            WHERE noteRevisionId = ?`, [this.noteRevisionId]);
     }
 
     beforeSaving() {

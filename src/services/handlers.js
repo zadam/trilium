@@ -124,7 +124,7 @@ function processInverseRelations(entityName, entity, handler) {
 
 eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
-        // we need to make sure that also target's inverse attribute exists and if note, then create it
+        // we need to make sure that also target's inverse attribute exists and if not, then create it
         // inverse attribute has to target our note as well
         const hasInverseAttribute = (targetNote.getRelations(definition.inverseRelation))
             .some(attr => attr.value === note.noteId);

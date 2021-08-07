@@ -102,6 +102,10 @@ class Becca {
             return null;
         }
 
+        if (entityName === 'note_revisions') {
+            return this.getNoteRevision(entityId);
+        }
+
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,
             group =>
                 group

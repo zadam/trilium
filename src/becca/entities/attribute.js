@@ -18,6 +18,11 @@ class Attribute extends AbstractEntity {
             return;
         }
 
+        this.updateFromRow(row);
+        this.init();
+    }
+
+    updateFromRow(row) {
         this.update([
             row.attributeId,
             row.noteId,
@@ -28,8 +33,6 @@ class Attribute extends AbstractEntity {
             row.position,
             row.utcDateModified
         ]);
-
-        this.init();
     }
 
     update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]) {
