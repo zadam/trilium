@@ -42,7 +42,7 @@ function checkDate(millisSinceMidnight) {
     if (millisSinceMidnight >= DAY) {
         initLogFile();
 
-        millisSinceMidnight =- DAY;
+        millisSinceMidnight -= DAY;
     }
 
     return millisSinceMidnight;
