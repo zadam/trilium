@@ -906,6 +906,8 @@ class Note extends AbstractEntity {
         const attributes = this.getOwnedAttributes();
         const attr = attributes.find(attr => attr.type === type && attr.name === name);
 
+        value = value !== null && value !== undefined ? value.toString() : "";
+
         if (attr) {
             if (attr.value !== value) {
                 attr.value = value;
@@ -919,7 +921,7 @@ class Note extends AbstractEntity {
                 noteId: this.noteId,
                 type: type,
                 name: name,
-                value: value !== undefined ? value : ""
+                value: value
             }).save();
         }
     }
