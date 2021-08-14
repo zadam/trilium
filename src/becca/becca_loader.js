@@ -69,14 +69,14 @@ eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entit
         const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
         const primaryKeyName = EntityClass.primaryKeyName;
 
-        let entity = becca.getEntity(entityName, entity[primaryKeyName]);
+        let beccaEntity = becca.getEntity(entityName, entity[primaryKeyName]);
 
-        if (entity) {
-            entity.updateFromRow(entity);
+        if (beccaEntity) {
+            beccaEntity.updateFromRow(entity);
         } else {
-            entity = new EntityClass();
-            entity.updateFromRow(entity);
-            entity.init();
+            beccaEntity = new EntityClass();
+            beccaEntity.updateFromRow(entity);
+            beccaEntity.init();
         }
     }
 

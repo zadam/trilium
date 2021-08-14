@@ -216,127 +216,39 @@ async function processEntityChanges(entityChanges) {
     const loadResults = new LoadResults(froca);
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'notes')) {
-        const note = froca.notes[ec.entityId];
-
-        if (note) {
-            if (ec.entity.isDeleted) {
-                delete froca.notes[ec.entityId];
-            }
-            else {
-                note.update(ec.entity);
-                loadResults.addNote(ec.entityId, ec.sourceId);
-            }
+        try {
+            processNoteChange(loadResults, ec);
+        }
+        catch (e) {
+            throw new Error(`Can't process note ${JSON.stringify(ec)} with error ${e.message} ${e.stack}`);
         }
     }
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'branches')) {
-        let branch = froca.branches[ec.entityId];
-        const childNote = froca.notes[ec.entity.noteId];
-        const parentNote = froca.notes[ec.entity.parentNoteId];
-
-        if (branch) {
-            branch.update(ec.entity);
-            loadResults.addBranch(ec.entityId, ec.sourceId);
-
-            if (ec.entity.isDeleted) {
-                if (childNote) {
-                    childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== ec.entity.parentNoteId);
-                    delete childNote.parentToBranch[ec.entity.parentNoteId];
-                }
-
-                if (parentNote) {
-                    parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== ec.entity.noteId);
-                    delete parentNote.childToBranch[ec.entity.noteId];
-                }
-            }
-            else {
-                if (childNote) {
-                    childNote.addParent(branch.parentNoteId, branch.branchId);
-                }
-
-                if (parentNote) {
-                    parentNote.addChild(branch.noteId, branch.branchId);
-                }
-            }
+        try {
+            processBranchChange(loadResults, ec);
         }
-        else if (!ec.entity.isDeleted) {
-            if (childNote || parentNote) {
-                branch = new Branch(froca, ec.entity);
-                froca.branches[branch.branchId] = branch;
-
-                loadResults.addBranch(ec.entityId, ec.sourceId);
-
-                if (childNote) {
-                    childNote.addParent(branch.parentNoteId, branch.branchId);
-                }
-
-                if (parentNote) {
-                    parentNote.addChild(branch.noteId, branch.branchId);
-                }
-            }
+        catch (e) {
+            throw new Error(`Can't process branch ${JSON.stringify(ec)} with error ${e.message} ${e.stack}`);
         }
     }
 
     for (const ec of entityChanges.filter(ec => ec.entityName === 'note_reordering')) {
-        const parentNoteIdsToSort = new Set();
-
-        for (const branchId in ec.positions) {
-            const branch = froca.branches[branchId];
-
-            if (branch) {
-                branch.notePosition = ec.positions[branchId];
-
-                parentNoteIdsToSort.add(branch.parentNoteId);
-            }
+        try {
+            processNoteReordering(loadResults, ec);
         }
-
-        for (const parentNoteId of parentNoteIdsToSort) {
-            const parentNote = froca.notes[parentNoteId];
-
-            if (parentNote) {
-                parentNote.sortChildren();
-            }
+        catch (e) {
+            throw new Error(`Can't process note reordering ${JSON.stringify(ec)} with error ${e.message} ${e.stack}`);
         }
-
-        loadResults.addNoteReordering(ec.entityId, ec.sourceId);
     }
 
     // missing reloading the relation target note
     for (const ec of entityChanges.filter(ec => ec.entityName === 'attributes')) {
-        let attribute = froca.attributes[ec.entityId];
-        const sourceNote = froca.notes[ec.entity.noteId];
-        const targetNote = ec.entity.type === 'relation' && froca.notes[ec.entity.value];
-
-        if (attribute) {
-            attribute.update(ec.entity);
-            loadResults.addAttribute(ec.entityId, ec.sourceId);
-
-            if (ec.entity.isDeleted) {
-                if (sourceNote) {
-                    sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
-                }
-
-                if (targetNote) {
-                    targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
-                }
-            }
+        try {
+            processAttributeChange(loadResults, ec);
         }
-        else if (!ec.entity.isDeleted) {
-            if (sourceNote || targetNote) {
-                attribute = new Attribute(froca, ec.entity);
-
-                froca.attributes[attribute.attributeId] = attribute;
-
-                loadResults.addAttribute(ec.entityId, ec.sourceId);
-
-                if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
-                    sourceNote.attributes.push(attribute.attributeId);
-                }
-
-                if (targetNote && !targetNote.targetRelations.includes(attribute.attributeId)) {
-                    targetNote.targetRelations.push(attribute.attributeId);
-                }
-            }
+        catch (e) {
+            throw new Error(`Can't process attribute ${JSON.stringify(ec)} with error ${e.message} ${e.stack}`);
         }
     }
 
@@ -363,6 +275,10 @@ async function processEntityChanges(entityChanges) {
     const missingNoteIds = [];
 
     for (const {entityName, entity} of entityChanges) {
+        if (!entity) { // if erased
+            continue;
+        }
+
         if (entityName === 'branches' && !(entity.parentNoteId in froca.notes)) {
             missingNoteIds.push(entity.parentNoteId);
         }
@@ -386,6 +302,136 @@ async function processEntityChanges(entityChanges) {
 
         const appContext = (await import("./app_context.js")).default;
         await appContext.triggerEvent('entitiesReloaded', {loadResults});
+    }
+}
+
+function processNoteChange(loadResults, ec) {
+    const note = froca.notes[ec.entityId];
+
+    if (!note) {
+        return;
+    }
+
+    if (ec.isErased || (ec.entity && ec.isDeleted)) {
+        delete froca.notes[ec.entityId];
+        return;
+    }
+
+    note.update(ec.entity);
+    loadResults.addNote(ec.entityId, ec.sourceId);
+}
+
+function processBranchChange(loadResults, ec) {
+    let branch = froca.branches[ec.entityId];
+
+    if (ec.isErased || ec.entity?.isDeleted) {
+        if (branch) {
+            const childNote = froca.notes[branch.noteId];
+            const parentNote = froca.notes[branch.parentNoteId];
+
+            if (childNote) {
+                childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== branch.parentNoteId);
+                delete childNote.parentToBranch[branch.parentNoteId];
+            }
+
+            if (parentNote) {
+                parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== branch.noteId);
+                delete parentNote.childToBranch[branch.noteId];
+            }
+
+            delete froca.branches[ec.entityId];
+        }
+
+        return;
+    }
+
+    const childNote = froca.notes[ec.entity.noteId];
+    const parentNote = froca.notes[ec.entity.parentNoteId];
+
+    if (branch) {
+        branch.update(ec.entity);
+    }
+    else if (childNote || parentNote) {
+        froca.branches[branch.branchId] = branch = new Branch(froca, ec.entity);
+    }
+
+    loadResults.addBranch(ec.entityId, ec.sourceId);
+
+    if (childNote) {
+        childNote.addParent(branch.parentNoteId, branch.branchId);
+    }
+
+    if (parentNote) {
+        parentNote.addChild(branch.noteId, branch.branchId);
+    }
+}
+
+function processNoteReordering(loadResults, ec) {
+    const parentNoteIdsToSort = new Set();
+
+    for (const branchId in ec.positions) {
+        const branch = froca.branches[branchId];
+
+        if (branch) {
+            branch.notePosition = ec.positions[branchId];
+
+            parentNoteIdsToSort.add(branch.parentNoteId);
+        }
+    }
+
+    for (const parentNoteId of parentNoteIdsToSort) {
+        const parentNote = froca.notes[parentNoteId];
+
+        if (parentNote) {
+            parentNote.sortChildren();
+        }
+    }
+
+    loadResults.addNoteReordering(ec.entityId, ec.sourceId);
+}
+
+function processAttributeChange(loadResults, ec) {
+    let attribute = froca.attributes[ec.entityId];
+
+    if (ec.isErased || ec.entity?.isDeleted) {
+        if (attribute) {
+            const sourceNote = froca.notes[attribute.noteId];
+            const targetNote = attribute.type === 'relation' && froca.notes[attribute.value];
+
+            if (sourceNote) {
+                sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
+            }
+
+            if (targetNote) {
+                targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
+            }
+
+            delete froca.attributes[ec.entityId];
+        }
+
+        return;
+    }
+
+    const sourceNote = froca.notes[ec.entity.noteId];
+    const targetNote = ec.entity.type === 'relation' && froca.notes[ec.entity.value];
+
+    if (attribute) {
+        attribute.update(ec.entity);
+        loadResults.addAttribute(ec.entityId, ec.sourceId);
+    } else if (sourceNote || targetNote) {
+        attribute = new Attribute(froca, ec.entity);
+
+        froca.attributes[attribute.attributeId] = attribute;
+
+        loadResults.addAttribute(ec.entityId, ec.sourceId);
+
+        if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
+            sourceNote.attributes.push(attribute.attributeId);
+        }
+
+        if (targetNote && !targetNote.targetRelations.includes(attribute.attributeId)) {
+            targetNote.targetRelations.push(attribute.attributeId);
+        }
     }
 }
 
