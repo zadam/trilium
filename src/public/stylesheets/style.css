@@ -164,16 +164,15 @@ div.ui-tooltip {
     visibility: hidden;
 }
 
-.dropdown-menu kbd
-{
+.dropdown-menu kbd {
+    float: right;
     color: var(--muted-text-color);
     border: none;
     background-color: transparent;
     box-shadow: none;
-}
-
-.dropdown-menu kbd {
-    float: right;
+    /* 0 padding needed otherwise this increases the size of dropdown after dynamic positioning (which is then screwed) */
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .dropdown-item {
