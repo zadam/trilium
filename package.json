@@ -56,7 +56,7 @@
     "is-svg": "4.3.1",
     "jimp": "0.16.1",
     "joplin-turndown-plugin-gfm": "1.0.12",
-    "jsdom": "16.7.0",
+    "jsdom": "17.0.0",
     "mime-types": "2.1.32",
     "multer": "1.4.3",
     "node-abi": "2.30.0",
@@ -76,22 +76,22 @@
     "tmp": "^0.2.1",
     "turndown": "7.1.1",
     "unescape": "1.0.1",
-    "ws": "8.1.0",
+    "ws": "8.2.0",
     "yauzl": "2.10.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "13.1.9",
+    "electron": "13.2.1",
     "electron-builder": "22.11.7",
     "electron-packager": "15.3.0",
-    "electron-rebuild": "3.1.1",
+    "electron-rebuild": "3.2.0",
     "esm": "3.2.25",
     "jasmine": "3.8.0",
     "jsdoc": "3.6.7",
     "lorem-ipsum": "2.0.3",
     "rcedit": "3.0.1",
-    "webpack": "5.50.0",
-    "webpack-cli": "4.7.2"
+    "webpack": "5.51.1",
+    "webpack-cli": "4.8.0"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"

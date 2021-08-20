@@ -1,6 +1,13 @@
 export default class LoadResults {
-    constructor(froca) {
-        this.froca = froca;
+    constructor(entityChanges) {
+        this.entities = {};
+
+        for (const {entityId, entityName, entity} of entityChanges) {
+            if (entity) {
+                this.entities[entityName] = this.entities[entityName] || [];
+                this.entities[entityName][entityId] = entity;
+            }
+        }
 
         this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
@@ -16,6 +23,10 @@ export default class LoadResults {
         this.contentNoteIdToSourceId = [];
 
         this.options = [];
+    }
+
+    getEntity(entityName, entityId) {
+        return this.entities[entityName]?.[entityId];
     }
 
     addNote(noteId, sourceId) {
@@ -38,7 +49,7 @@ export default class LoadResults {
 
     getBranches() {
         return this.branches
-            .map(row => this.froca.branches[row.branchId])
+            .map(row => this.getEntity("branches", row.branchId))
             .filter(branch => !!branch);
     }
 
@@ -58,7 +69,7 @@ export default class LoadResults {
     getAttributes(sourceId = 'none') {
         return this.attributes
             .filter(row => row.sourceId !== sourceId)
-            .map(row => this.froca.attributes[row.attributeId])
+            .map(row => this.getEntity("attributes", row.attributeId))
             .filter(attr => !!attr);
     }
 
