@@ -74,8 +74,16 @@ async function deleteNotes(branchIdsToDelete) {
         return false;
     }
 
-    const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-    const {proceed, deleteAllClones} = await deleteNotesDialog.showDialog(branchIdsToDelete);
+    let proceed, deleteAllClones;
+
+    if (utils.isMobile()) {
+        proceed = true;
+        deleteAllClones = false;
+    }
+    else {
+        const deleteNotesDialog = await import("../dialogs/delete_notes.js");
+        ({proceed, deleteAllClones} = await deleteNotesDialog.showDialog(branchIdsToDelete));
+    }
 
     if (!proceed) {
         return false;
