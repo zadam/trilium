@@ -658,11 +658,11 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     overflow: auto;
 }
 
-.include-note.box-size-medium .include-note-content.type-pdf {
+.include-note.box-size-medium .include-note-content.type-pdf .rendered-note-content {
     height: 20em; /* PDF is rendered in iframe and must be sized absolutely */
 }
 
-.include-note.box-size-full .include-note-content.type-pdf {
+.include-note.box-size-full .include-note-content.type-pdf .rendered-note-content {
     height: 50em; /* PDF is rendered in iframe and it's not possible to put full height so at least a large height */
 }
 
