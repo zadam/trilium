@@ -6,7 +6,7 @@ function sanitize(dirtyHtml) {
     return sanitizeHtml(dirtyHtml, {
         allowedTags: [
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
-            'li', 'b', 'i', 'strong', 'em', 'strike', 'abbr', 'code', 'hr', 'br', 'div',
+            'li', 'b', 'i', 'strong', 'em', 'strike', 's', 'del', 'abbr', 'code', 'hr', 'br', 'div',
             'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'section', 'img',
             'figure', 'figcaption', 'span', 'label', 'input'
         ],
