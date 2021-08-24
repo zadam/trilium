@@ -1,4 +1,4 @@
-function reloadApp() {
+function reloadFrontendApp() {
     window.location.reload(true);
 }
 
@@ -353,7 +353,7 @@ function isValidAttributeName(name) {
 }
 
 export default {
-    reloadApp,
+    reloadFrontendApp,
     parseDate,
     padNum,
     formatTime,

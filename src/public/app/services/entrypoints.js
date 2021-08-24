@@ -129,7 +129,7 @@ export default class Entrypoints extends Component {
     }
 
     reloadFrontendAppCommand() {
-        utils.reloadApp();
+        utils.reloadFrontendApp();
     }
 
     logoutCommand() {
@@ -169,7 +169,7 @@ export default class Entrypoints extends Component {
     async switchToDesktopVersionCommand() {
         utils.setCookie('trilium-device', 'desktop');
 
-        utils.reloadApp();
+        utils.reloadFrontendApp();
     }
 
     async openInWindowCommand({notePath, hoistedNoteId}) {

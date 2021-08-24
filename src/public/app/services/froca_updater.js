@@ -1,5 +1,6 @@
 import LoadResults from "./load_results.js";
 import froca from "./froca.js";
+import utils from "./utils.js";
 import options from "./options.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 import Branch from "../entities/branch.js";
@@ -84,6 +85,11 @@ function processNoteChange(loadResults, ec) {
 
     loadResults.addNote(ec.entityId, ec.sourceId);
 
+    if (ec.isErased && ec.entityId in froca.notes) {
+        utils.reloadFrontendApp();
+        return;
+    }
+
     if (ec.isErased || ec.entity?.isDeleted) {
         delete froca.notes[ec.entityId];
     }
@@ -93,6 +99,11 @@ function processNoteChange(loadResults, ec) {
 }
 
 function processBranchChange(loadResults, ec) {
+    if (ec.isErased && ec.entityId in froca.branches) {
+        utils.reloadFrontendApp();
+        return;
+    }
+
     let branch = froca.branches[ec.entityId];
 
     if (ec.isErased || ec.entity?.isDeleted) {
@@ -127,7 +138,7 @@ function processBranchChange(loadResults, ec) {
         branch.update(ec.entity);
     }
     else if (childNote || parentNote) {
-        froca.branches[branch.branchId] = branch = new Branch(froca, ec.entity);
+        froca.branches[ec.entityId] = branch = new Branch(froca, ec.entity);
     }
 
     if (childNote) {
@@ -165,6 +176,11 @@ function processNoteReordering(loadResults, ec) {
 
 function processAttributeChange(loadResults, ec) {
     let attribute = froca.attributes[ec.entityId];
+
+    if (ec.isErased && ec.entityId in froca.attributes) {
+        utils.reloadFrontendApp();
+        return;
+    }
 
     if (ec.isErased || ec.entity?.isDeleted) {
         if (attribute) {

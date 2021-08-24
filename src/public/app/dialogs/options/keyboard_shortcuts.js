@@ -37,7 +37,7 @@ export default class KeyboardShortcutsOptions {
     constructor() {
         $("#options-keyboard-shortcuts").html(TPL);
 
-        $("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadApp());
+        $("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
 
         const $table = $("#keyboard-shortcut-table tbody");
 

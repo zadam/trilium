@@ -1031,9 +1031,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     if (!found) {
                         // make sure it's loaded
                         await froca.getNote(branch.noteId);
+                        const frocaBranch = froca.getBranch(branch.branchId);
 
-                        // we're forcing lazy since it's not clear if the whole required subtree is in froca
-                        parentNode.addChildren([this.prepareNode(branch, true)]);
+                            // we're forcing lazy since it's not clear if the whole required subtree is in froca
+                        parentNode.addChildren([this.prepareNode(frocaBranch, true)]);
 
                         this.sortChildren(parentNode);
 

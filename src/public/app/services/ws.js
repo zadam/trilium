@@ -149,7 +149,7 @@ async function consumeFrontendUpdateData() {
             if (!glob.isDev && !options.is('debugModeEnabled')) {
                 // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
 
-                utils.reloadApp();
+                utils.reloadFrontendApp();
             }
             else {
                 console.log("nonProcessedEntityChanges causing the timeout", nonProcessedEntityChanges);
