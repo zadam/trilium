@@ -842,12 +842,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     /** @return {FancytreeNode[]} */
-    getNodesByBranchId(branchId) {
-        utils.assertArguments(branchId);
+    getNodesByBranch(branch) {
+        utils.assertArguments(branch);
 
-        const branch = froca.getBranch(branchId);
-
-        return this.getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
+        return this.getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branch.branchId);
     }
 
     /** @return {FancytreeNode[]} */
@@ -1002,7 +1000,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             // adding noteId itself to update all potential clones
             noteIdsToUpdate.add(branch.noteId);
 
-            for (const node of this.getNodesByBranchId(branch.branchId)) {
+            for (const node of this.getNodesByBranch(branch)) {
                 if (branch.isDeleted) {
                     if (node.isActive()) {
                         const newActiveNode = node.getNextSibling()

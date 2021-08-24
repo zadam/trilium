@@ -201,7 +201,7 @@ class NoteContext extends Component {
 
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
-            const note = await froca.getNote(this.noteId);
+            const note = loadResults.getEntity('notes', this.noteId);
 
             if (note.isDeleted) {
                 this.noteId = null;

@@ -82,13 +82,14 @@ function processNoteChange(loadResults, ec) {
         return;
     }
 
+    loadResults.addNote(ec.entityId, ec.sourceId);
+
     if (ec.isErased || ec.entity?.isDeleted) {
         delete froca.notes[ec.entityId];
-        return;
     }
-
-    note.update(ec.entity);
-    loadResults.addNote(ec.entityId, ec.sourceId);
+    else {
+        note.update(ec.entity);
+    }
 }
 
 function processBranchChange(loadResults, ec) {
@@ -109,11 +110,15 @@ function processBranchChange(loadResults, ec) {
                 delete parentNote.childToBranch[branch.noteId];
             }
 
+            loadResults.addBranch(ec.entityId, ec.sourceId);
+
             delete froca.branches[ec.entityId];
         }
 
         return;
     }
+
+    loadResults.addBranch(ec.entityId, ec.sourceId);
 
     const childNote = froca.notes[ec.entity.noteId];
     const parentNote = froca.notes[ec.entity.parentNoteId];
@@ -124,8 +129,6 @@ function processBranchChange(loadResults, ec) {
     else if (childNote || parentNote) {
         froca.branches[branch.branchId] = branch = new Branch(froca, ec.entity);
     }
-
-    loadResults.addBranch(ec.entityId, ec.sourceId);
 
     if (childNote) {
         childNote.addParent(branch.parentNoteId, branch.branchId);
@@ -176,24 +179,25 @@ function processAttributeChange(loadResults, ec) {
                 targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
             }
 
+            loadResults.addAttribute(ec.entityId, ec.sourceId);
+
             delete froca.attributes[ec.entityId];
         }
 
         return;
     }
 
+    loadResults.addAttribute(ec.entityId, ec.sourceId);
+
     const sourceNote = froca.notes[ec.entity.noteId];
     const targetNote = ec.entity.type === 'relation' && froca.notes[ec.entity.value];
 
     if (attribute) {
         attribute.update(ec.entity);
-        loadResults.addAttribute(ec.entityId, ec.sourceId);
     } else if (sourceNote || targetNote) {
         attribute = new Attribute(froca, ec.entity);
 
         froca.attributes[attribute.attributeId] = attribute;
-
-        loadResults.addAttribute(ec.entityId, ec.sourceId);
 
         if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
             sourceNote.attributes.push(attribute.attributeId);
