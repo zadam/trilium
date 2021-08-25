@@ -126,7 +126,7 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
         for (const attr of loadResults.getAttributes()) {
             if (attr.type === 'label'
                 && ['iconClass', 'workspaceIconClass'].includes(attr.name)
-                && attr.isAffecting(this.note)) {
+                && attributeService.isAffecting(attr, this.note)) {
 
                 this.refresh();
                 break;

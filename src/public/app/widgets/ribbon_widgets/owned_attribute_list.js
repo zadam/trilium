@@ -1,6 +1,7 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import AttributeDetailWidget from "../attribute_widgets/attribute_detail.js";
 import AttributeEditorWidget from "../attribute_widgets/attribute_editor.js";
+import attributeService from "../../services/attributes.js";
 
 const TPL = `
 <div class="attribute-list">
@@ -75,7 +76,7 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refreshWithNote(this.note, true);
 
             this.getTitle(this.note);

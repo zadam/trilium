@@ -1,5 +1,4 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
@@ -20,6 +19,7 @@ import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
+import attributeService from "../services/attributes.js";
 
 const TPL = `
 <div class="note-detail">
@@ -246,12 +246,12 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             const label = attrs.find(attr =>
                 attr.type === 'label'
                 && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'displayRelations'].includes(attr.name)
-                && attr.isAffecting(this.note));
+                && attributeService.isAffecting(attr, this.note));
 
             const relation = attrs.find(attr =>
                 attr.type === 'relation'
                 && ['template', 'renderNote'].includes(attr.name)
-                && attr.isAffecting(this.note));
+                && attributeService.isAffecting(attr, this.note));
 
             if (label || relation) {
                 // probably incorrect event

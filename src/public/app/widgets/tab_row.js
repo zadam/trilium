@@ -4,6 +4,7 @@ import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import appContext from "../services/app_context.js";
 import froca from "../services/froca.js";
+import attributeService from "../services/attributes.js";
 
 /*!
  * Draggabilly v2.3.0
@@ -668,7 +669,7 @@ export default class TabRowWidget extends BasicWidget {
             if (loadResults.isNoteReloaded(noteContext.noteId) ||
                 loadResults.getAttributes().find(attr =>
                     ['workspace', 'workspaceIconClass', 'workspaceTabBackgroundColor'].includes(attr.name)
-                    && attr.isAffecting(noteContext.note))
+                    && attributeService.isAffecting(attr, noteContext.note))
             ) {
                 const $tab = this.getTabById(noteContext.ntxId);
 

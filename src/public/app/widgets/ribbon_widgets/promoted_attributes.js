@@ -3,6 +3,7 @@ import ws from "../../services/ws.js";
 import treeService from "../../services/tree.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import attributeService from "../../services/attributes.js";
 
 const TPL = `
 <div>
@@ -294,7 +295,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refresh();
 
             this.getTitle(this.note);
