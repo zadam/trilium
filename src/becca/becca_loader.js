@@ -60,7 +60,7 @@ function postProcessEntityUpdate(entityName, entity) {
     }
 }
 
-eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entity}) => {
+eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
     if (!becca.loaded) {
         return;
     }
@@ -69,18 +69,18 @@ eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entit
         const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
         const primaryKeyName = EntityClass.primaryKeyName;
 
-        let beccaEntity = becca.getEntity(entityName, entity[primaryKeyName]);
+        let beccaEntity = becca.getEntity(entityName, entityRow[primaryKeyName]);
 
         if (beccaEntity) {
-            beccaEntity.updateFromRow(entity);
+            beccaEntity.updateFromRow(entityRow);
         } else {
             beccaEntity = new EntityClass();
-            beccaEntity.updateFromRow(entity);
+            beccaEntity.updateFromRow(entityRow);
             beccaEntity.init();
         }
     }
 
-    postProcessEntityUpdate(entityName, entity);
+    postProcessEntityUpdate(entityName, entityRow);
 });
 
 eventService.subscribe(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
