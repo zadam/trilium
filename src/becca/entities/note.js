@@ -567,6 +567,7 @@ class Note extends AbstractEntity {
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type, name) {
+        // it's a common mistake to include # or ~ into attribute name
         if (name && ["#", "~"].includes(name[0])) {
             name = name.substr(1);
         }
