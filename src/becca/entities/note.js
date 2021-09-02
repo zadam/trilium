@@ -567,6 +567,10 @@ class Note extends AbstractEntity {
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type, name) {
+        if (name && ["#", "~"].includes(name[0])) {
+            name = name.substr(1);
+        }
+
         if (type && name) {
             return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name);
         }
