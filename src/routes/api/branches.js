@@ -85,8 +85,6 @@ function moveBranchBeforeNote(req) {
         }
     }
 
-    entityChangesService.addNoteReorderingEntityChange(beforeBranch.parentNoteId);
-
     if (branchToMove.parentNoteId === beforeBranch.parentNoteId) {
         branchToMove.notePosition = originalBeforeNotePosition;
         branchToMove.save();
@@ -96,6 +94,13 @@ function moveBranchBeforeNote(req) {
         newBranch.save();
 
         branchToMove.markAsDeleted();
+    }
+
+    if (parentNote.hasLabel('sorted')) {
+        treeService.sortNotesByTitle(parentNote.noteId, false, false);
+    }
+    else {
+        entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
     }
 
     return { success: true };
@@ -129,8 +134,6 @@ function moveBranchAfterNote(req) {
         }
     }
 
-    entityChangesService.addNoteReorderingEntityChange(afterNote.parentNoteId);
-
     const movedNotePosition = originalAfterNotePosition + 10;
 
     if (branchToMove.parentNoteId === afterNote.parentNoteId) {
@@ -142,6 +145,13 @@ function moveBranchAfterNote(req) {
         newBranch.save();
 
         branchToMove.markAsDeleted();
+    }
+
+    if (parentNote.hasLabel('sorted')) {
+        treeService.sortNotesByTitle(parentNote.noteId, false, false);
+    }
+    else {
+        entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
     }
 
     return { success: true };
