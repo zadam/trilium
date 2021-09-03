@@ -108,58 +108,32 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
-    sql.transactional(() => {
-        const notes = sql.getRows(
-            `SELECT branches.branchId, notes.noteId, title, isProtected, 
-                          CASE WHEN COUNT(childBranches.noteId) > 0 THEN 1 ELSE 0 END AS hasChildren 
-                   FROM notes 
-                   JOIN branches ON branches.noteId = notes.noteId
-                   LEFT JOIN branches childBranches ON childBranches.parentNoteId = notes.noteId AND childBranches.isDeleted = 0
-                   WHERE branches.isDeleted = 0 AND branches.parentNoteId = ?
-                   GROUP BY notes.noteId`, [parentNoteId]);
+function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst = false) {
+    if (!sortBy) {
+        sortBy = 'title';
+    }
 
-        protectedSessionService.decryptNotes(notes);
-
-        notes.sort((a, b) => {
-            if (foldersFirst && ((a.hasChildren && !b.hasChildren) || (!a.hasChildren && b.hasChildren))) {
-                // exactly one note of the two is a directory so the sorting will be done based on this status
-                return a.hasChildren ? -1 : 1;
-            }
-            else {
-                return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
-            }
-        });
-
-        if (reverse) {
-            notes.reverse();
-        }
-
-        let position = 10;
-
-        for (const note of notes) {
-            sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
-                [position, note.branchId]);
-
-            if (note.branchId in becca.branches) {
-                becca.branches[note.branchId].notePosition = position;
-            }
-            else {
-                log.info(`Branch "${note.branchId}" was not found in becca.`);
-            }
-
-            position += 10;
-        }
-
-        entityChangesService.addNoteReorderingEntityChange(parentNoteId);
-    });
-}
-
-function sortNotes(parentNoteId, sortBy, reverse = false) {
     sql.transactional(() => {
         const notes = becca.getNote(parentNoteId).getChildNotes();
 
-        notes.sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1);
+        const normalize = obj => (obj && typeof obj === 'string') ? obj.toLowerCase() : obj;
+
+        notes.sort((a, b) => {
+            if (foldersFirst) {
+                const aHasChildren = a.hasChildren();
+                const bHasChildren = b.hasChildren();
+
+                if ((aHasChildren && !bHasChildren) || (!aHasChildren && bHasChildren)) {
+                    // exactly one note of the two is a directory so the sorting will be done based on this status
+                    return aHasChildren ? -1 : 1;
+                }
+            }
+
+            let aEl = normalize(a[sortBy]);
+            let bEl = normalize(b[sortBy]);
+
+            return aEl < bEl ? -1 : 1;
+        });
 
         if (reverse) {
             notes.reverse();
@@ -180,6 +154,22 @@ function sortNotes(parentNoteId, sortBy, reverse = false) {
 
         entityChangesService.addNoteReorderingEntityChange(parentNoteId);
     });
+}
+
+function sortNotesIfNeeded(parentNoteId) {
+    const parentNote = becca.getNote(parentNoteId);
+
+    if (!parentNote) {
+        return;
+    }
+
+    const sortedLabel = parentNote.getLabel('sorted');
+
+    if (!sortedLabel || sortedLabel.value === 'off') {
+        return;
+    }
+
+    sortNotes(parentNoteId, sortedLabel.value);
 }
 
 /**
@@ -233,7 +223,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 module.exports = {
     getNotes,
     validateParentChild,
-    sortNotesByTitle,
     sortNotes,
+    sortNotesIfNeeded,
     setNoteToParent
 };

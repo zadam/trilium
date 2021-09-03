@@ -96,12 +96,10 @@ function moveBranchBeforeNote(req) {
         branchToMove.markAsDeleted();
     }
 
-    if (parentNote.hasLabel('sorted')) {
-        treeService.sortNotesByTitle(parentNote.noteId, false, false);
-    }
-    else {
-        entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
-    }
+    treeService.sortNotesIfNeeded(parentNote.noteId);
+
+    // if sorting is not needed then still the ordering might have changed above manually
+    entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
 
     return { success: true };
 }
@@ -147,12 +145,10 @@ function moveBranchAfterNote(req) {
         branchToMove.markAsDeleted();
     }
 
-    if (parentNote.hasLabel('sorted')) {
-        treeService.sortNotesByTitle(parentNote.noteId, false, false);
-    }
-    else {
-        entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
-    }
+    treeService.sortNotesIfNeeded(parentNote.noteId);
+
+    // if sorting is not needed then still the ordering might have changed above manually
+    entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
 
     return { success: true };
 }

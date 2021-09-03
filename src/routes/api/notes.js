@@ -97,12 +97,7 @@ function sortChildNotes(req) {
 
     const reverse = sortDirection === 'desc';
 
-    if (sortBy === 'title') {
-        treeService.sortNotesByTitle(noteId, false, reverse);
-    }
-    else {
-        treeService.sortNotes(noteId, sortBy, reverse);
-    }
+    treeService.sortNotes(noteId, sortBy, reverse);
 }
 
 function protectNote(req) {

@@ -352,7 +352,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} parentNoteId - this note's child notes will be sorted
      */
-    this.sortNotesByTitle = treeService.sortNotesByTitle;
+    this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
 
     /**
      * This method finds note by its noteId and prefix and either sets it to the given parentNoteId

@@ -469,9 +469,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         noteService.scanForLinks(becca.getNote(noteId));
 
         if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that tar file but that
+            // if there's no meta file then the notes are created based on the order in that zip file but that
             // is usually quite random so we sort the notes in the way they would appear in the file manager
-            treeService.sortNotesByTitle(noteId, true);
+            treeService.sortNotes(noteId, 'title', false, true);
         }
 
         taskContext.increaseProgressCount();
