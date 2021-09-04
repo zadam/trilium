@@ -7,6 +7,8 @@ import froca from "../../services/froca.js";
 import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
+import link from "../../services/link.js";
+import appContext from "../../services/app_context.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -252,6 +254,21 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         }
 
         return text;
+    }
+
+    async followLinkUnderCursorCommand() {
+        await this.initialized;
+
+        const selection = this.textEditor.model.document.selection;
+        if (!selection.hasAttribute('linkHref')) return;
+
+        const selectedLinkUrl = selection.getAttribute('linkHref');
+        const notePath = link.getNotePathFromUrl(selectedLinkUrl);
+        if (notePath) {
+            await appContext.tabManager.getActiveContext().setNote(notePath);
+        } else {
+            window.open(selectedLinkUrl, '_blank');
+        }
     }
 
     addIncludeNoteToTextCommand() {
