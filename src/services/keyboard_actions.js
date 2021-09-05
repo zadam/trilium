@@ -285,6 +285,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "text-detail"
     },
     {
+        actionName: "followLinkUnderCursor",
+        defaultShortcuts: ["CommandOrControl+Enter"],
+        description: "Follow link within which the caret is placed",
+        scope: "text-detail"
+    },
+    {
         actionName: "insertDateTimeToText",
         defaultShortcuts: ["Alt+T"],
         scope: "text-detail"
