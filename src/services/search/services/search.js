@@ -83,9 +83,15 @@ function findResultsWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext);
 
     const searchResults = noteSet.notes
-        .map(note => new SearchResult(
-            executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note)
-        ));
+        .map(note => {
+            const notePathArray = executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note);
+
+            if (!notePathArray) {
+                throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
+            }
+
+            return new SearchResult(notePathArray);
+        });
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);

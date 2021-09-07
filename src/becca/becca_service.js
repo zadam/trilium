@@ -86,6 +86,10 @@ function getNoteTitle(childNoteId, parentNoteId) {
 }
 
 function getNoteTitleArrayForPath(notePathArray) {
+    if (!notePathArray || !Array.isArray(notePathArray)) {
+        throw new Error(`${notePathArray} is not an array.`);
+    }
+
     if (notePathArray.length === 1 && notePathArray[0] === cls.getHoistedNoteId()) {
         return [getNoteTitle(cls.getHoistedNoteId())];
     }
@@ -131,12 +135,12 @@ function getSomePath(note, path = []) {
         || getSomePathInner(note, path, false);
 }
 
-function getSomePathInner(note, path, respectHoistng) {
+function getSomePathInner(note, path, respectHoisting) {
     if (note.isRoot()) {
         path.push(note.noteId);
         path.reverse();
 
-        if (respectHoistng && !path.includes(cls.getHoistedNoteId())) {
+        if (respectHoisting && !path.includes(cls.getHoistedNoteId())) {
             return false;
         }
 
@@ -145,11 +149,13 @@ function getSomePathInner(note, path, respectHoistng) {
 
     const parents = note.parents;
     if (parents.length === 0) {
+        console.log(`Note ${note.noteId} - "${note.title}" has no parents.`);
+
         return false;
     }
 
     for (const parentNote of parents) {
-        const retPath = getSomePathInner(parentNote, path.concat([note.noteId]), respectHoistng);
+        const retPath = getSomePathInner(parentNote, path.concat([note.noteId]), respectHoisting);
 
         if (retPath) {
             return retPath;

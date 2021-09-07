@@ -7,15 +7,18 @@ const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function addEntityChange(entityChange) {
-    entityChange.sourceId = entityChange.sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId();
-    entityChange.isSynced = entityChange.isSynced ? 1 : 0;
-    entityChange.isErased = entityChange.isErased ? 1 : 0;
-    entityChange.id = sql.replace("entity_changes", entityChange);
+function addEntityChange(origEntityChange) {
+    const ec = {...origEntityChange};
 
-    maxEntityChangeId = Math.max(maxEntityChangeId, entityChange.id);
+    delete ec.id;
+    ec.sourceId = ec.sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId();
+    ec.isSynced = ec.isSynced ? 1 : 0;
+    ec.isErased = ec.isErased ? 1 : 0;
+    ec.id = sql.replace("entity_changes", ec);
 
-    cls.addEntityChange(entityChange);
+    maxEntityChangeId = Math.max(maxEntityChangeId, ec.id);
+
+    cls.addEntityChange(ec);
 }
 
 function addNoteReorderingEntityChange(parentNoteId, sourceId) {
