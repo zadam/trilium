@@ -9,7 +9,7 @@ function updateEntity(entityChange, entityRow) {
     if (!entityRow) {
         if (entityChange.isSynced) {
             if (entityChange.isErased) {
-                entityChangesService.addEntityChange(entityChange);
+                entityChangesService.addEntityChange(entityChange, true);
             }
             else {
                 log.info(`Encountered synced non-erased entity change without entity: ${JSON.stringify(entityChange)}`);
@@ -54,7 +54,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
 
             sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
-            entityChangesService.addEntityChange(remoteEntityChange);
+            entityChangesService.addEntityChange(remoteEntityChange, true);
         });
 
         return true;
@@ -71,7 +71,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
         sql.transactional(() => {
             sql.replace(remoteEntityChange.entityName, entity);
 
-            entityChangesService.addEntityChange(remoteEntityChange);
+            entityChangesService.addEntityChange(remoteEntityChange, true);
         });
 
         return true;
@@ -86,7 +86,7 @@ function updateNoteReordering(entityChange, entity) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
         }
 
-        entityChangesService.addEntityChange(entityChange);
+        entityChangesService.addEntityChange(entityChange, true);
     });
 
     return true;
