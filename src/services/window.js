@@ -108,8 +108,7 @@ async function createMainWindow() {
 }
 
 function getIcon() {
-//    return path.join(__dirname, '../../images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png');
-    return path.join(__dirname, '../../images/app-icons/png/new.png');
+    return path.join(__dirname, '../../images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png');
 }
 
 async function createSetupWindow() {
