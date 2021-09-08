@@ -156,7 +156,7 @@ class NoteRevision extends AbstractEntity {
     }
 
     getPojo() {
-        const pojo = {
+        return {
             noteRevisionId: this.noteRevisionId,
             noteId: this.noteId,
             type: this.type,
@@ -169,6 +169,10 @@ class NoteRevision extends AbstractEntity {
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified
         };
+    }
+
+    getPojoToSave() {
+        const pojo = this.getPojo();
 
         if (pojo.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {

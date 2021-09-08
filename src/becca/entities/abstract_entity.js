@@ -57,6 +57,10 @@ class AbstractEntity {
         });
     }
 
+    getPojoToSave() {
+        return this.getPojo();
+    }
+
     save() {
         const entityName = this.constructor.entityName;
         const primaryKeyName = this.constructor.primaryKeyName;
@@ -67,7 +71,7 @@ class AbstractEntity {
             this.beforeSaving();
         }
 
-        const pojo = this.getPojo();
+        const pojo = this.getPojoToSave();
 
         sql.transactional(() => {
             sql.upsert(entityName, primaryKeyName, pojo);

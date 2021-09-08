@@ -25,6 +25,8 @@ async function processEntityChanges(entityChanges) {
                 loadResults.addNoteContent(ec.entityId, ec.sourceId);
             } else if (ec.entityName === 'note_revisions') {
                 loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.sourceId);
+            } else if (ec.entityName === 'note_revision_contents') {
+                // this should change only when toggling isProtected, ignore
             } else if (ec.entityName === 'options') {
                 if (ec.entity.name === 'openTabs') {
                     continue; // only noise

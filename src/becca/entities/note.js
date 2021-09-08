@@ -1084,7 +1084,7 @@ class Note extends AbstractEntity {
     }
 
     getPojo() {
-        const pojo = {
+        return {
             noteId: this.noteId,
             title: this.title,
             isProtected: this.isProtected,
@@ -1096,6 +1096,10 @@ class Note extends AbstractEntity {
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified
         };
+    }
+
+    getPojoToSave() {
+        const pojo = this.getPojo();
 
         if (pojo.isProtected) {
             if (this.isDecrypted) {
