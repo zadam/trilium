@@ -2,7 +2,6 @@
 
 const optionService = require('../../services/options');
 const log = require('../../services/log');
-const attributes = require('../../services/attributes');
 const searchService = require('../../services/search/services/search');
 
 // options allowed to be updated directly in options dialog

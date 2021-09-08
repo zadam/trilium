@@ -52,11 +52,6 @@ async function createMainWindow() {
 
     const {BrowserWindow} = require('electron'); // should not be statically imported
 
-    const nativeImage = require('electron').nativeImage
-
-    const image = nativeImage.createFromPath(getIcon())
-    console.log(image)
-
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
         y: mainWindowState.y,
@@ -70,7 +65,7 @@ async function createMainWindow() {
             spellcheck: spellcheckEnabled
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
-        icon: image
+        icon: getIcon()
     });
 
     mainWindowState.manage(mainWindow);

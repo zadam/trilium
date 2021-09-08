@@ -460,35 +460,26 @@ class ConsistencyChecks {
 
     runEntityChangeChecks(entityName, key) {
         this.findAndFixIssues(`
-            SELECT 
+            SELECT
               ${key} as entityId
-            FROM 
+            FROM
               ${entityName} 
               LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
                                       AND entity_changes.entityId = ${key} 
             WHERE 
               entity_changes.id IS NULL`,
             ({entityId}) => {
+                const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+
                 if (this.autoFix) {
-                    if (entityName === 'note_contents' || entityName === 'note_revision_contents') {
-                        const entity = entityName === 'note_contents'
-                            ? becca.getNote(entityId)
-                            : becca.getNoteRevision(entityId);
-
-                        entity.setContent(entity.getContent(), true);
-                    }
-                    else {
-                        const entity = becca.getEntity(entityName, entityId);
-
-                        entityChangesService.addEntityChange({
-                            entityName,
-                            entityId,
-                            hash: entity.generateHash(),
-                            isErased: false,
-                            utcDateChanged: entity.getUtcDateChanged(),
-                            isSynced: entityName !== 'options' || entity.isSynced
-                        });
-                    }
+                    entityChangesService.addEntityChange({
+                        entityName,
+                        entityId,
+                        hash: utils.randomString(10), // doesn't matter, will force sync but that's OK
+                        isErased: !!entity.isErased,
+                        utcDateChanged: entity.utcDateModified || entity.utcDateCreated,
+                        isSynced: entityName !== 'options' || entity.isSynced
+                    });
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {
