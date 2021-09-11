@@ -282,39 +282,32 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT notes.noteId
+                    SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
                     FROM notes
                       LEFT JOIN note_contents USING (noteId)
                     WHERE note_contents.noteId IS NULL`,
-            ({noteId}) => {
+            ({noteId, isProtected, type, mime}) => {
                 if (this.autoFix) {
-                    const note = becca.getNote(noteId);
+                    const utcDateModified = dateUtils.utcNowDateTime();
 
-                    if (note.isProtected) {
-                        // this is wrong for non-erased notes but we cannot set a valid value for protected notes
-                        const utcDateModified = dateUtils.utcNowDateTime();
+                    // manually creating row since this can also affect deleted notes
+                    sql.upsert("note_contents", "noteId", {
+                        noteId: noteId,
+                        content: getBlankContent(isProtected, type, mime),
+                        utcDateModified: utcDateModified,
+                        dateModified: dateUtils.localNowDateTime()
+                    });
 
-                        sql.upsert("note_contents", "noteId", {
-                            noteId: noteId,
-                            content: null,
-                            utcDateModified: utcDateModified
-                        });
+                    const hash = utils.hash(utils.randomString(10));
 
-                        const hash = utils.hash(noteId + "|null");
-
-                        entityChangesService.addEntityChange({
-                            entityName: 'note_contents',
-                            entityId: noteId,
-                            hash: hash,
-                            isErased: false,
-                            utcDateChanged: utcDateModified,
-                            isSynced: true
-                        });
-                    }
-                    else {
-                        // empty string might be wrong choice for some note types but it's a best guess
-                        note.setContent('');
-                    }
+                    entityChangesService.addEntityChange({
+                        entityName: 'note_contents',
+                        entityId: noteId,
+                        hash: hash,
+                        isErased: false,
+                        utcDateChanged: utcDateModified,
+                        isSynced: true
+                    });
 
                     logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
                 } else {
@@ -323,17 +316,16 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteId
+                    SELECT notes.noteId, notes.type, notes.mime
                     FROM notes
                       JOIN note_contents USING (noteId)
                     WHERE isDeleted = 0
                       AND isProtected = 0
                       AND content IS NULL`,
-            ({noteId}) => {
+            ({noteId, type, mime}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
-                    // empty string might be wrong choice for some note types but it's a best guess
-                    note.setContent('');
+                    note.setContent(getBlankContent(false, type, mime));
 
                     logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
                 } else {
@@ -631,6 +623,18 @@ class ConsistencyChecks {
             log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);
         }
     }
+}
+
+function getBlankContent(isProtected, type, mime) {
+    if (isProtected) {
+        return null; // this is wrong for protected non-erased notes but we cannot create a valid value without password
+    }
+
+    if (mime === 'application/json') {
+        return '{}';
+    }
+
+    return ''; // empty string might be wrong choice for some note types but it's a best guess
 }
 
 function logFix(message) {
