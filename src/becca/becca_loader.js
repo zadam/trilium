@@ -50,6 +50,12 @@ function load() {
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
 }
 
+function reload() {
+    load();
+
+    require('../services/ws').reloadFrontend();
+}
+
 function postProcessEntityUpdate(entityName, entity) {
     if (entityName === 'branches') {
         branchUpdated(entity);
@@ -221,5 +227,6 @@ eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, load);
 
 module.exports = {
     load,
+    reload,
     beccaLoaded
 };

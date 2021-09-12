@@ -47,6 +47,42 @@ function logRows(entityChanges) {
     }
 }
 
+async function executeFrontendUpdate(entityChanges) {
+    lastPingTs = Date.now();
+
+    if (entityChanges.length > 0) {
+        logRows(entityChanges);
+
+        frontendUpdateDataQueue.push(...entityChanges);
+
+        // we set lastAcceptedEntityChangeId even before frontend update processing and send ping so that backend can start sending more updates
+        lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
+
+        const lastSyncEntityChange = entityChanges.slice().reverse().find(ec => ec.isSynced);
+
+        if (lastSyncEntityChange) {
+            lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, lastSyncEntityChange.id);
+        }
+
+        sendPing();
+
+        // first wait for all the preceding consumers to finish
+        while (consumeQueuePromise) {
+            await consumeQueuePromise;
+        }
+
+        try {
+            // it's my turn so start it up
+            consumeQueuePromise = consumeFrontendUpdateData();
+
+            await consumeQueuePromise;
+        } finally {
+            // finish and set to null to signal somebody else can pick it up
+            consumeQueuePromise = null;
+        }
+    }
+}
+
 async function handleMessage(event) {
     const message = JSON.parse(event.data);
 
@@ -54,42 +90,11 @@ async function handleMessage(event) {
         messageHandler(message);
     }
 
-    if (message.type === 'frontend-update') {
-        let {entityChanges} = message.data;
-        lastPingTs = Date.now();
-
-        if (entityChanges.length > 0) {
-            logRows(entityChanges);
-
-            frontendUpdateDataQueue.push(...entityChanges);
-
-            // we set lastAcceptedEntityChangeId even before frontend update processing and send ping so that backend can start sending more updates
-            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
-
-            const lastSyncEntityChange = entityChanges.slice().reverse().find(ec => ec.isSynced);
-
-            if (lastSyncEntityChange) {
-                lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, lastSyncEntityChange.id);
-            }
-
-            sendPing();
-
-            // first wait for all the preceding consumers to finish
-            while (consumeQueuePromise) {
-                await consumeQueuePromise;
-            }
-
-            try {
-                // it's my turn so start it up
-                consumeQueuePromise = consumeFrontendUpdateData();
-
-                await consumeQueuePromise;
-            }
-            finally {
-                // finish and set to null to signal somebody else can pick it up
-                consumeQueuePromise = null;
-            }
-        }
+    if (message.type === 'reload-frontend') {
+        utils.reloadFrontendApp();
+    }
+    else if (message.type === 'frontend-update') {
+        await executeFrontendUpdate(message.data.entityChanges);
     }
     else if (message.type === 'sync-hash-check-failed') {
         toastService.showError("Sync check failed!", 60000);
@@ -211,7 +216,6 @@ setTimeout(() => {
 export default {
     logError,
     subscribeToMessages,
-    waitForEntityChangeId,
     waitForMaxKnownEntityChangeId,
     getMaxKnownEntityChangeSyncId: () => lastAcceptedEntityChangeSyncId
 };

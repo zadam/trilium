@@ -178,6 +178,10 @@ function syncFailed() {
     sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
 }
 
+function reloadFrontend() {
+    sendMessageToAllClients({ type: 'reload-frontend' });
+}
+
 function setLastSyncedPush(entityChangeId) {
     lastSyncedPush = entityChangeId;
 }
@@ -190,5 +194,6 @@ module.exports = {
     syncFinished,
     syncFailed,
     sendTransactionEntityChangesToAllClients,
-    setLastSyncedPush
+    setLastSyncedPush,
+    reloadFrontend
 };

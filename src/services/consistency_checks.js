@@ -288,14 +288,17 @@ class ConsistencyChecks {
                     WHERE note_contents.noteId IS NULL`,
             ({noteId, isProtected, type, mime}) => {
                 if (this.autoFix) {
-                    const utcDateModified = dateUtils.utcNowDateTime();
+                    // it might be possible that the note_content is not available only because of the interrupted
+                    // sync and it will come later. It's therefore important to guarantee that this artifical
+                    // record won't overwrite the real one coming from the sync.
+                    const fakeDate = "2000-01-01 00:00:00Z";
 
                     // manually creating row since this can also affect deleted notes
                     sql.upsert("note_contents", "noteId", {
                         noteId: noteId,
                         content: getBlankContent(isProtected, type, mime),
-                        utcDateModified: utcDateModified,
-                        dateModified: dateUtils.localNowDateTime()
+                        utcDateModified: fakeDate,
+                        dateModified: fakeDate
                     });
 
                     const hash = utils.hash(utils.randomString(10));
@@ -305,7 +308,7 @@ class ConsistencyChecks {
                         entityId: noteId,
                         hash: hash,
                         isErased: false,
-                        utcDateChanged: utcDateModified,
+                        utcDateChanged: fakeDate,
                         isSynced: true
                     });
 
@@ -358,10 +361,11 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({parentNoteId}) => {
                 if (this.autoFix) {
-                    const branchIds = sql.getColumn(`SELECT branchId
-                                                                   FROM branches
-                                                                   WHERE isDeleted = 0
-                                                                     AND parentNoteId = ?`, [parentNoteId]);
+                    const branchIds = sql.getColumn(`
+                        SELECT branchId
+                        FROM branches
+                        WHERE isDeleted = 0
+                          AND parentNoteId = ?`, [parentNoteId]);
 
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
@@ -416,7 +420,7 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.noteId
                     FROM attributes
-                      JOIN notes ON attributes.noteId = notes.noteId
+                    JOIN notes ON attributes.noteId = notes.noteId
                     WHERE attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
             ({attributeId, noteId}) => {
@@ -434,7 +438,7 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.value AS targetNoteId
                     FROM attributes
-                      JOIN notes ON attributes.value = notes.noteId
+                    JOIN notes ON attributes.value = notes.noteId
                     WHERE attributes.type = 'relation'
                       AND attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
@@ -584,7 +588,7 @@ class ConsistencyChecks {
         }
 
         if (this.fixedIssues) {
-            require("../becca/becca_loader").load();
+            require("../becca/becca_loader").reload();
         }
 
         return !this.unrecoveredConsistencyErrors;
