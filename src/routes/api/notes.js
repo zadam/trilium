@@ -63,6 +63,7 @@ function updateNote(req) {
 function deleteNote(req) {
     const noteId = req.params.noteId;
     const taskId = req.query.taskId;
+    const eraseNotes = req.query.eraseNotes === 'true';
     const last = req.query.last === 'true';
 
     // note how deleteId is separate from taskId - single taskId produces separate deleteId for each "top level" deleted note
@@ -74,6 +75,10 @@ function deleteNote(req) {
 
     for (const branch of note.getBranches()) {
         noteService.deleteBranch(branch, deleteId, taskContext);
+    }
+
+    if (eraseNotes) {
+        noteService.eraseNotesWithDeleteId(deleteId);
     }
 
     if (last) {

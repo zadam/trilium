@@ -66,7 +66,7 @@
     "request": "^2.88.2",
     "rimraf": "3.0.2",
     "sanitize-filename": "1.6.3",
-    "sanitize-html": "2.5.0",
+    "sanitize-html": "2.5.1",
     "sax": "1.2.4",
     "semver": "7.3.5",
     "serve-favicon": "2.5.0",
@@ -81,7 +81,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "13.3.0",
+    "electron": "13.4.0",
     "electron-builder": "22.11.7",
     "electron-packager": "15.4.0",
     "electron-rebuild": "3.2.3",

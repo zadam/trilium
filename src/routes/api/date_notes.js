@@ -121,6 +121,22 @@ function getSearchRoot() {
     return searchRoot;
 }
 
+function getSpecialNoteRoot() {
+    let specialNoteRoot = becca.getNote('special');
+
+    if (!specialNoteRoot) {
+        specialNoteRoot = noteService.createNewNote({
+            noteId: 'special',
+            title: 'special',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return specialNoteRoot;
+}
+
 function getSqlConsoleRoot() {
     let sqlConsoleRoot = becca.getNote('sqlconsole');
 

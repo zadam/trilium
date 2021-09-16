@@ -74,7 +74,7 @@ async function deleteNotes(branchIdsToDelete) {
         return false;
     }
 
-    let proceed, deleteAllClones;
+    let proceed, deleteAllClones, eraseNotes;
 
     if (utils.isMobile()) {
         proceed = true;
@@ -82,7 +82,7 @@ async function deleteNotes(branchIdsToDelete) {
     }
     else {
         const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-        ({proceed, deleteAllClones} = await deleteNotesDialog.showDialog(branchIdsToDelete));
+        ({proceed, deleteAllClones, eraseNotes} = await deleteNotesDialog.showDialog(branchIdsToDelete));
     }
 
     if (!proceed) {
@@ -97,7 +97,7 @@ async function deleteNotes(branchIdsToDelete) {
         counter++;
 
         const last = counter === branchIdsToDelete.length;
-        const query = `?taskId=${taskId}&last=${last ? 'true' : 'false'}`;
+        const query = `?taskId=${taskId}&eraseNotes=${eraseNotes ? 'true' : 'false'}&last=${last ? 'true' : 'false'}`;
 
         const branch = froca.getBranch(branchIdToDelete);
 

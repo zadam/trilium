@@ -14,6 +14,7 @@ const $deleteNotesListWrapper = $("#delete-notes-list-wrapper");
 const $brokenRelationsListWrapper = $("#broken-relations-wrapper");
 const $brokenRelationsCount = $("#broke-relations-count");
 const $deleteAllClones = $("#delete-all-clones");
+const $eraseNotes = $("#erase-notes");
 
 let branchIds = null;
 let resolve = null;
@@ -63,11 +64,18 @@ export async function showDialog(branchIdsToDelete) {
 
     utils.openDialog($dialog);
 
+    $deleteAllClones.prop("checked", false);
+    $eraseNotes.prop("checked", false);
+
     return new Promise((res, rej) => resolve = res);
 }
 
 export function isDeleteAllClonesChecked() {
     return $deleteAllClones.is(":checked");
+}
+
+export function isEraseNotesChecked() {
+    return $eraseNotes.is(":checked");
 }
 
 $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
@@ -83,7 +91,8 @@ $okButton.on('click', () => {
 
     resolve({
         proceed: true,
-        deleteAllClones: isDeleteAllClonesChecked()
+        deleteAllClones: isDeleteAllClonesChecked(),
+        eraseNotes: isEraseNotesChecked()
     });
 });
 

@@ -205,11 +205,16 @@ function setExpandedForSubtree(req) {
 
 function deleteBranch(req) {
     const last = req.query.last === 'true';
+    const eraseNotes = req.query.eraseNotes === 'true';
     const branch = becca.getBranch(req.params.branchId);
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
     const deleteId = utils.randomString(10);
     const noteDeleted = noteService.deleteBranch(branch, deleteId, taskContext);
+
+    if (eraseNotes) {
+        noteService.eraseNotesWithDeleteId(deleteId);
+    }
 
     if (last) {
         taskContext.taskSucceeded();

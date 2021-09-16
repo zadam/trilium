@@ -743,6 +743,20 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
     eraseAttributes(attributeIdsToErase);
 }
 
+function eraseNotesWithDeleteId(deleteId) {
+    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE deleteId = ?", [deleteId]);
+
+    eraseNotes(noteIdsToErase);
+
+    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE deleteId = ?", [deleteId]);
+
+    eraseBranches(branchIdsToErase);
+
+    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE  deleteId = ?", [deleteId]);
+
+    eraseAttributes(attributeIdsToErase);
+}
+
 function eraseDeletedNotesNow() {
     eraseDeletedEntities(0);
 }
@@ -885,5 +899,6 @@ module.exports = {
     duplicateSubtreeWithoutRoot,
     getUndeletedParentBranchIds,
     triggerNoteTitleChanged,
-    eraseDeletedNotesNow
+    eraseDeletedNotesNow,
+    eraseNotesWithDeleteId
 };
