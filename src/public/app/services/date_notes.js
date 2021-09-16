@@ -4,7 +4,7 @@ import ws from "./ws.js";
 
 /** @return {NoteShort} */
 async function getInboxNote() {
-    const note = await server.get('date-notes/inbox/' + dayjs().format("YYYY-MM-DD"), "date-note");
+    const note = await server.get('special-notes/inbox/' + dayjs().format("YYYY-MM-DD"), "date-note");
 
     return await froca.getNote(note.noteId);
 }
@@ -16,7 +16,7 @@ async function getTodayNote() {
 
 /** @return {NoteShort} */
 async function getDateNote(date) {
-    const note = await server.get('date-notes/date/' + date, "date-note");
+    const note = await server.get('special-notes/date/' + date, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -25,7 +25,7 @@ async function getDateNote(date) {
 
 /** @return {NoteShort} */
 async function getMonthNote(month) {
-    const note = await server.get('date-notes/month/' + month, "date-note");
+    const note = await server.get('special-notes/month/' + month, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -34,7 +34,7 @@ async function getMonthNote(month) {
 
 /** @return {NoteShort} */
 async function getYearNote(year) {
-    const note = await server.get('date-notes/year/' + year, "date-note");
+    const note = await server.get('special-notes/year/' + year, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -43,7 +43,7 @@ async function getYearNote(year) {
 
 /** @return {NoteShort} */
 async function createSqlConsole() {
-    const note = await server.post('sql-console');
+    const note = await server.post('special-notes/sql-console');
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -52,7 +52,7 @@ async function createSqlConsole() {
 
 /** @return {NoteShort} */
 async function createSearchNote(opts = {}) {
-    const note = await server.post('search-note', opts);
+    const note = await server.post('special-notes/search-note', opts);
 
     await ws.waitForMaxKnownEntityChangeId();
 

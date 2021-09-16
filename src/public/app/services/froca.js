@@ -174,7 +174,7 @@ class Froca {
             return;
         }
 
-        const searchResultNoteIds = await server.get('search-note/' + note.noteId);
+        const searchResultNoteIds = await server.get('special-notes/search-note/' + note.noteId);
 
         if (!Array.isArray(searchResultNoteIds)) {
             throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);

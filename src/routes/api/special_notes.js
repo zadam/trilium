@@ -137,6 +137,22 @@ function getSpecialNoteRoot() {
     return specialNoteRoot;
 }
 
+function getGlobalLinkMapNote() {
+    let globalLinkMapNote = becca.getNote('global-link-map');
+
+    if (!globalLinkMapNote) {
+        globalLinkMapNote = noteService.createNewNote({
+            noteId: 'global-link-map',
+            title: 'global-link-map',
+            type: 'global-link-map',
+            content: '',
+            parentNoteId: getSpecialNoteRoot().noteId
+        }).note;
+    }
+
+    return globalLinkMapNote;
+}
+
 function getSqlConsoleRoot() {
     let sqlConsoleRoot = becca.getNote('sqlconsole');
 

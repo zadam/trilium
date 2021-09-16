@@ -40,7 +40,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         this.$executeButton = this.$widget.find('.execute-button');
         this.$saveToNoteButton = this.$widget.find('.save-to-note-button');
         this.$saveToNoteButton.on('click', async () => {
-            const {notePath} = await server.post("save-sql-console", {sqlConsoleNoteId: this.noteId});
+            const {notePath} = await server.post("special-notes/save-sql-console", {sqlConsoleNoteId: this.noteId});
 
             await ws.waitForMaxKnownEntityChangeId();
 

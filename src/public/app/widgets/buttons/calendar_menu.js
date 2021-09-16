@@ -145,7 +145,7 @@ export default class CalendarMenuWidget extends BasicWidget {
 
     async createMonth() {
         const month = utils.formatDateISO(this.date).substr(0, 7);
-        const dateNotesForMonth = await server.get('date-notes/notes-for-month/' + month);
+        const dateNotesForMonth = await server.get('special-notes/notes-for-month/' + month);
 
         this.$month.empty();
 

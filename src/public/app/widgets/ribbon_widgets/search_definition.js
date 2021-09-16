@@ -268,7 +268,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
         this.$saveToNoteButton = this.$widget.find('.save-to-note-button');
         this.$saveToNoteButton.on('click', async () => {
-            const {notePath} = await server.post("save-search-note", {searchNoteId: this.noteId});
+            const {notePath} = await server.post("special-notes/save-search-note", {searchNoteId: this.noteId});
 
             await ws.waitForMaxKnownEntityChangeId();
 

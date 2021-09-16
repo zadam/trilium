@@ -31,7 +31,7 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
-const dateNotesRoute = require('./api/date_notes');
+const specialNotesRoute = require('./api/special_notes.js');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
@@ -222,15 +222,15 @@ function register(app) {
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
 
-    apiRoute(GET, '/api/date-notes/inbox/:date', dateNotesRoute.getInboxNote);
-    apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
-    apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
-    apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
-    apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
-    apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
-    apiRoute(POST, '/api/save-sql-console', dateNotesRoute.saveSqlConsole);
-    apiRoute(POST, '/api/search-note', dateNotesRoute.createSearchNote);
-    apiRoute(POST, '/api/save-search-note', dateNotesRoute.saveSearchNote);
+    apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
+    apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
+    apiRoute(GET, '/api/special-notes/month/:month', specialNotesRoute.getMonthNote);
+    apiRoute(GET, '/api/special-notes/year/:year', specialNotesRoute.getYearNote);
+    apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDateNotesForMonth);
+    apiRoute(POST, '/api/special-notes/sql-console', specialNotesRoute.createSqlConsole);
+    apiRoute(POST, '/api/special-notes/save-sql-console', specialNotesRoute.saveSqlConsole);
+    apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
+    apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
