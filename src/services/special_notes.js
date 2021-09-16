@@ -82,13 +82,13 @@ function getSinglesNoteRoot() {
 }
 
 function getGlobalLinkMapNote() {
-    let globalLinkMapNote = becca.getNote('global-link-map');
+    let globalLinkMapNote = becca.getNote('globallinkmap');
 
     if (!globalLinkMapNote) {
         globalLinkMapNote = noteService.createNewNote({
-            noteId: 'global-link-map',
-            title: 'global-link-map',
-            type: 'global-link-map',
+            noteId: 'globallinkmap',
+            title: 'Global Link Map',
+            type: 'special',
             content: '',
             parentNoteId: getSinglesNoteRoot().noteId
         }).note;

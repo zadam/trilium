@@ -20,6 +20,7 @@ import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import attributeService from "../services/attributes.js";
+import GlobalLinkMapTypeWidget from "./type_widgets/global_link_map.js";
 
 const TPL = `
 <div class="note-detail">
@@ -45,7 +46,8 @@ const typeWidgetClasses = {
     'render': RenderTypeWidget,
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
-    'book': BookTypeWidget
+    'book': BookTypeWidget,
+    'globallinkmap': GlobalLinkMapTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -164,6 +166,10 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         if (type === 'code') {
             type = 'editable-code';
+        }
+
+        if (type === 'special') {
+            type = note.noteId;
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {

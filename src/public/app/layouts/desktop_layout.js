@@ -42,6 +42,7 @@ import RightPaneContainer from "../widgets/containers/right_pane_container.js";
 import EditButton from "../widgets/buttons/edit_button.js";
 import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
 import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
+import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -69,6 +70,10 @@ export default class DesktopLayout {
                     .icon("bx-send")
                     .title("Jump to note")
                     .command("jumpToNote"))
+                .child(new OpenNoteButtonWidget()
+                    .icon("bx-map-alt")
+                    .title("Global link map")
+                    .targetNote('globallinkmap'))
                 .child(new ButtonWidget()
                     .icon("bx-history")
                     .title("Show recent changes")

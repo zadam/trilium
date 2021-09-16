@@ -1,7 +1,5 @@
 import openService from "../../services/open.js";
 import TypeWidget from "./type_widget.js";
-import fileWatcher from "../../services/file_watcher.js";
-import server from "../../services/server.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
