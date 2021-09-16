@@ -43,7 +43,7 @@ async function importToBranch(req) {
     cls.disableEntityEvents();
 
     // eliminate flickering during import
-    cls.ignoreEntityChanges();
+    cls.ignoreEntityChangeIds();
 
     let note; // typically root of the import - client can show it after finishing the import
 

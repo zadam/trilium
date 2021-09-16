@@ -44,36 +44,37 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function clearEntityChanges() {
-    namespace.set('entityChanges', []);
+function clearEntityChangeIds() {
+    namespace.set('entityChangeIds', []);
 }
 
-function getAndClearEntityChanges() {
-    const entityChanges = namespace.get('entityChanges') || [];
+function getAndClearEntityChangeIds() {
+    const entityChangeIds = namespace.get('entityChangeIds') || [];
 
-    clearEntityChanges();
+    clearEntityChangeIds();
 
-    return entityChanges;
+    return entityChangeIds;
 }
 
 function addEntityChange(entityChange) {
-    if (namespace.get('ignoreEntityChanges')) {
+    if (namespace.get('ignoreEntityChangeIds')) {
         return;
     }
 
-    const entityChanges = namespace.get('entityChanges') || [];
+    const entityChangeIds = namespace.get('entityChangeIds') || [];
 
-    entityChanges.push(entityChange);
+    // store only ID since the record can be modified (e.g. in erase)
+    entityChangeIds.push(entityChange.id);
 
-    namespace.set('entityChanges', entityChanges);
+    namespace.set('entityChangeIds', entityChangeIds);
 }
 
 function reset() {
     clsHooked.reset();
 }
 
-function ignoreEntityChanges() {
-    namespace.set('ignoreEntityChanges', true);
+function ignoreEntityChangeIds() {
+    namespace.set('ignoreEntityChangeIds', true);
 }
 
 module.exports = {
@@ -88,8 +89,8 @@ module.exports = {
     disableEntityEvents,
     isEntityEventsDisabled,
     reset,
-    clearEntityChanges,
-    getAndClearEntityChanges,
+    clearEntityChangeIds,
+    getAndClearEntityChangeIds,
     addEntityChange,
-    ignoreEntityChanges
+    ignoreEntityChangeIds
 };

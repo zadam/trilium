@@ -134,7 +134,13 @@ function fillInAdditionalProperties(entityChange) {
     }
 }
 
-function sendPing(client, entityChanges = []) {
+function sendPing(client, entityChangeIds = []) {
+    if (entityChangeIds.length === 0) {
+        return;
+    }
+
+    const entityChanges = sql.getManyRows(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
+
     for (const entityChange of entityChanges) {
         try {
             fillInAdditionalProperties(entityChange);
@@ -156,9 +162,9 @@ function sendPing(client, entityChanges = []) {
 
 function sendTransactionEntityChangesToAllClients() {
     if (webSocketServer) {
-        const entityChanges = cls.getAndClearEntityChanges();
+        const entityChangeIds = cls.getAndClearEntityChangeIds();
 
-        webSocketServer.clients.forEach(client => sendPing(client, entityChanges));
+        webSocketServer.clients.forEach(client => sendPing(client, entityChangeIds));
     }
 }
 
