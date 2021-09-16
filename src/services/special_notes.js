@@ -65,20 +65,20 @@ function getSearchRoot() {
     return searchRoot;
 }
 
-function getSpecialNoteRoot() {
-    let specialNoteRoot = becca.getNote('special');
+function getSinglesNoteRoot() {
+    let singlesNoteRoot = becca.getNote('singles');
 
-    if (!specialNoteRoot) {
-        specialNoteRoot = noteService.createNewNote({
-            noteId: 'special',
-            title: 'special',
+    if (!singlesNoteRoot) {
+        singlesNoteRoot = noteService.createNewNote({
+            noteId: 'singles',
+            title: 'singles',
             type: 'text',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
     }
 
-    return specialNoteRoot;
+    return singlesNoteRoot;
 }
 
 function getGlobalLinkMapNote() {
@@ -90,7 +90,7 @@ function getGlobalLinkMapNote() {
             title: 'global-link-map',
             type: 'global-link-map',
             content: '',
-            parentNoteId: getSpecialNoteRoot().noteId
+            parentNoteId: getSinglesNoteRoot().noteId
         }).note;
     }
 
@@ -138,13 +138,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
     return sqlConsoleNote.cloneTo(sqlConsoleHome.noteId);
 }
 
-function getHoistedNote() {
-    return becca.getNote(cls.getHoistedNoteId());
-}
-
 function createSearchNote(searchString, ancestorNoteId) {
-    const hoistedNote = getHoistedNote();
-
     const {note} = noteService.createNewNote({
         parentNoteId: getSearchRoot().noteId,
         title: 'Search: ' + searchString,
@@ -183,10 +177,23 @@ function saveSearchNote(searchNoteId) {
     return searchNote.cloneTo(searchHome.noteId);
 }
 
+function getHoistedNote() {
+    return becca.getNote(cls.getHoistedNoteId());
+}
+
+function createMissingSpecialNotes() {
+    getSinglesNoteRoot();
+    getSqlConsoleRoot();
+    getSinglesNoteRoot();
+    getSinglesNoteRoot();
+    getGlobalLinkMapNote();
+}
+
 module.exports = {
     getInboxNote,
     createSqlConsole,
     saveSqlConsole,
     createSearchNote,
-    saveSearchNote
+    saveSearchNote,
+    createMissingSpecialNotes
 };

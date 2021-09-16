@@ -5,6 +5,7 @@ const config = require('./config');
 const log = require('./log');
 const sql = require("./sql");
 const becca = require("../becca/becca");
+const specialNotesService = require("../services/special_notes");
 
 function getRunAtHours(note) {
     try {
@@ -55,5 +56,7 @@ sqlInit.dbReady.then(() => {
         setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);
+
+        setTimeout(cls.wrap(() => specialNotesService.createMissingSpecialNotes()), 10 * 1000);
     }
 });
