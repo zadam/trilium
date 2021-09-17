@@ -88,7 +88,7 @@ function processNoteChange(loadResults, ec) {
     loadResults.addNote(ec.entityId, ec.sourceId);
 
     if (ec.isErased && ec.entityId in froca.notes) {
-        utils.reloadFrontendApp();
+        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
         return;
     }
 
@@ -102,7 +102,7 @@ function processNoteChange(loadResults, ec) {
 
 function processBranchChange(loadResults, ec) {
     if (ec.isErased && ec.entityId in froca.branches) {
-        utils.reloadFrontendApp();
+        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
         return;
     }
 
@@ -180,7 +180,7 @@ function processAttributeChange(loadResults, ec) {
     let attribute = froca.attributes[ec.entityId];
 
     if (ec.isErased && ec.entityId in froca.attributes) {
-        utils.reloadFrontendApp();
+        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
         return;
     }
 

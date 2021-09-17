@@ -79,6 +79,92 @@ function getLinkMap(req) {
     };
 }
 
+function buildDescendantCountMap() {
+    const noteIdToCountMap = {};
+
+    function getCount(noteId) {
+        if (!(noteId in noteIdToCountMap)) {
+            const note = becca.getNote(noteId);
+
+            noteIdToCountMap[noteId] = note.children.length;
+
+            for (const child of note.children) {
+                noteIdToCountMap[noteId] += getCount(child.noteId);
+            }
+        }
+
+        return noteIdToCountMap[noteId];
+    }
+
+    getCount('root');
+
+    return noteIdToCountMap;
+}
+
+function getGlobalLinkMap() {
+    const relations = Object.values(becca.attributes).filter(rel => {
+        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
+            return false;
+        }
+        else if (rel.name === 'imageLink') {
+            const parentNote = becca.getNote(rel.noteId);
+
+            return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
+        }
+        else {
+            return true;
+        }
+    });
+
+    const noteIdToLinkCountMap = {};
+
+    for (const noteId in becca.notes) {
+        noteIdToLinkCountMap[noteId] = getRelations(noteId).length;
+    }
+
+    let links = Array.from(relations).map(rel => ({
+        id: rel.noteId + "-" + rel.name + "-" + rel.value,
+        sourceNoteId: rel.noteId,
+        targetNoteId: rel.value,
+        name: rel.name
+    }));
+
+    links = [];
+
+    const noteIds = new Set();
+
+    const notes = Object.values(becca.notes)
+        .filter(note => !note.isArchived)
+        .map(note => [
+            note.noteId,
+            note.isContentAvailable() ? note.title : '[protected]',
+            note.type
+        ]);
+
+    notes.forEach(([noteId]) => noteIds.add(noteId));
+
+    for (const branch of Object.values(becca.branches)) {
+        if (!noteIds.has(branch.parentNoteId) || !noteIds.has(branch.noteId)) {
+            continue;
+        }
+
+        links.push({
+            id: branch.branchId,
+            sourceNoteId: branch.parentNoteId,
+            targetNoteId: branch.noteId,
+            name: 'branch'
+        });
+    }
+
+    return {
+        notes: notes,
+        noteIdToLinkCountMap,
+        noteIdToDescendantCountMap: buildDescendantCountMap(),
+        links: links
+    };
+}
+
 module.exports = {
-    getLinkMap
+    getLinkMap,
+    getGlobalLinkMap
 };

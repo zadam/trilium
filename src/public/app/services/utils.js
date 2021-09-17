@@ -1,4 +1,8 @@
-function reloadFrontendApp() {
+function reloadFrontendApp(reason) {
+    if (reason) {
+        logInfo("Frontend app reload: " + reason);
+    }
+
     window.location.reload(true);
 }
 

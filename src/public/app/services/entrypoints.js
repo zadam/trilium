@@ -169,7 +169,7 @@ export default class Entrypoints extends Component {
     async switchToDesktopVersionCommand() {
         utils.setCookie('trilium-device', 'desktop');
 
-        utils.reloadFrontendApp();
+        utils.reloadFrontendApp("Switching to desktop version");
     }
 
     async openInWindowCommand({notePath, hoistedNoteId}) {

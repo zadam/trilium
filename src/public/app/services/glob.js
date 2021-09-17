@@ -3,7 +3,6 @@ import appContext from "./app_context.js";
 import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";
-import protectedSessionHolder from "./protected_session_holder.js";
 import froca from "./froca.js";
 
 function setupGlobs() {

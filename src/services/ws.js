@@ -41,6 +41,9 @@ function init(httpServer, sessionParser) {
             if (message.type === 'log-error') {
                 log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
             }
+            else if (message.type === 'log-info') {
+                log.info('JS Info: ' + message.info);
+            }
             else if (message.type === 'ping') {
                 await syncMutexService.doExclusively(() => sendPing(ws));
             }

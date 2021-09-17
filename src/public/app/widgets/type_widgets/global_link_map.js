@@ -1,7 +1,6 @@
 import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
-import froca from "../../services/froca.js";
 
 const TPL = `<div class="note-detail-global-link-map note-detail-printable">
     <style>
@@ -56,7 +55,9 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
             .width(this.$container.width())
             .height(this.$container.height())
             .onZoom(zoom => this.setZoomLevel(zoom.k))
-            .nodeRelSize(7)
+            .d3AlphaDecay(0.01)
+            .d3VelocityDecay(0.08)
+            .nodeRelSize(node => this.noteIdToSizeMap[node.id])
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodeLabel(node => node.name)
@@ -70,19 +71,23 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
             .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
             .linkCanvasObject((link, ctx) => this.paintLink(link, ctx))
             .linkCanvasObjectMode(() => "after")
-            .linkDirectionalArrowLength(4)
+            .warmupTicks(10)
+//            .linkDirectionalArrowLength(5)
             .linkDirectionalArrowRelPos(1)
-            .linkWidth(2)
+            .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
-            .d3VelocityDecay(0.2)
+//            .d3VelocityDecay(0.2)
+//            .dagMode("radialout")
             .onNodeClick(node => this.nodeClicked(node));
 
-        this.graph.d3Force('link').distance(50);
-
-        this.graph.d3Force('center').strength(0.9);
-
+        this.graph.d3Force('link').distance(5);
+        //
+        this.graph.d3Force('center').strength(0.01);
+        //
         this.graph.d3Force('charge').strength(-30);
-        this.graph.d3Force('charge').distanceMax(400);
+
+
+        this.graph.d3Force('charge').distanceMax(1000);
 
         this.renderData(await this.loadNotesAndRelations());
     }
@@ -113,13 +118,18 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
 
     paintNode(node, color, ctx) {
         const {x, y} = node;
+        const size = this.noteIdToSizeMap[node.id];
 
         ctx.fillStyle = node.id === this.noteId ? 'red' : color;
         ctx.beginPath();
-        ctx.arc(x, y, node.id === this.noteId ? 8 : 4, 0, 2 * Math.PI, false);
+        ctx.arc(x, y, size, 0, 2 * Math.PI, false);
         ctx.fill();
 
-        if (this.zoomLevel < 2) {
+        const toRender = this.zoomLevel > 2
+            || (this.zoomLevel > 1 && size > 6)
+            || (this.zoomLevel > 0.3 && size > 10);
+
+        if (!toRender) {
             return;
         }
 
@@ -132,7 +142,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         }
 
         ctx.fillStyle = this.css.textColor;
-        ctx.font = 5 + 'px ' + this.css.fontFamily;
+        ctx.font = size + 'px ' + this.css.fontFamily;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -142,7 +152,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
             title = title.substr(0, 15) + "...";
         }
 
-        ctx.fillText(title, x, y + (node.id === this.noteId ? 11 : 7));
+        ctx.fillText(title, x, y + Math.round(size * 1.5));
     }
 
     paintLink(link, ctx) {
@@ -183,19 +193,15 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         this.linkIdToLinkMap = {};
         this.noteIdToLinkCountMap = {};
 
-        const resp = await server.post(`notes/root/link-map`, {
-            maxNotes: 1000,
-            maxDepth
-        });
+        const resp = await server.post(`global-link-map`);
 
-        this.noteIdToLinkCountMap = {...this.noteIdToLinkCountMap, ...resp.noteIdToLinkCountMap};
+        this.noteIdToLinkCountMap = resp.noteIdToLinkCountMap;
+
+        this.calculateSizes(resp.noteIdToDescendantCountMap);
 
         for (const link of resp.links) {
             this.linkIdToLinkMap[link.id] = link;
         }
-
-        // preload all notes
-        const notes = await froca.getNotes(Object.keys(this.noteIdToLinkCountMap), true);
 
         const noteIdToLinkIdMap = {};
         noteIdToLinkIdMap[this.noteId] = new Set(); // for case there are no relations
@@ -226,11 +232,11 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         }
 
         return {
-            nodes: notes.map(note => ({
-                id: note.noteId,
-                name: note.title,
-                type: note.type,
-                expanded: this.noteIdToLinkCountMap[note.noteId] === noteIdToLinkIdMap[note.noteId].size
+            nodes: resp.notes.map(([noteId, title, type]) => ({
+                id: noteId,
+                name: title,
+                type: type,
+                expanded: true
             })),
             links: Object.values(linksGroupedBySourceTarget).map(link => ({
                 id: link.id,
@@ -239,6 +245,20 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
                 name: link.names.join(", ")
             }))
         };
+    }
+
+    calculateSizes(noteIdToDescendantCountMap) {
+        this.noteIdToSizeMap = {};
+
+        for (const noteId in noteIdToDescendantCountMap) {
+            this.noteIdToSizeMap[noteId] = 4;
+
+            const count = noteIdToDescendantCountMap[noteId];
+
+            if (count > 0) {
+                this.noteIdToSizeMap[noteId] += 1 + Math.round(Math.log(count) / Math.log(1.5));
+            }
+        }
     }
 
     renderData(data, zoomToFit = true, zoomPadding = 10) {

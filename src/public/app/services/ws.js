@@ -25,7 +25,19 @@ function logError(message) {
     }
 }
 
+function logInfo(message) {
+    console.log(utils.now(), message);
+
+    if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({
+            type: 'log-info',
+            info: message
+        }));
+    }
+}
+
 window.logError = logError;
+window.logInfo = logInfo;
 
 function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);
@@ -91,7 +103,7 @@ async function handleMessage(event) {
     }
 
     if (message.type === 'reload-frontend') {
-        utils.reloadFrontendApp();
+        utils.reloadFrontendApp("received request from backend to reload frontend");
     }
     else if (message.type === 'frontend-update') {
         await executeFrontendUpdate(message.data.entityChanges);
