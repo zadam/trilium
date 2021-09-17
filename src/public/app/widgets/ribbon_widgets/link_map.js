@@ -11,7 +11,7 @@ const TPL = `
             position: relative;
         }
         
-        .link-map-container {
+        .link-map-widget .link-map-container {
             height: 300px;
         }
     
