@@ -328,9 +328,10 @@ class ConsistencyChecks {
             ({noteId, type, mime}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
-                    note.setContent(getBlankContent(false, type, mime));
+                    const blankContent = getBlankContent(false, type, mime);
+                    note.setContent(blankContent);
 
-                    logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
+                    logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
                 } else {
                     logError(`Note ${noteId} content is null even though it is not deleted`);
                 }

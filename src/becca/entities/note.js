@@ -233,6 +233,8 @@ class Note extends AbstractEntity {
             }
         }
 
+        console.log("POJO update", pojo);
+
         sql.upsert("note_contents", "noteId", pojo);
 
         const hash = utils.hash(this.noteId + "|" + pojo.content.toString());

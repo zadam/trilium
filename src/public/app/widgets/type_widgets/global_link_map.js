@@ -1,13 +1,31 @@
 import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
+import attributeService from "../../services/attributes.js";
 
-const TPL = `<div class="note-detail-global-link-map note-detail-printable">
+const TPL = `<div class="note-detail-global-link-map note-detail-printable" style="position: relative;">
     <style>
         .type-special .note-detail, .note-detail-global-link-map {
             height: 100%;
         }
+        
+        .map-switcher {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            background-color: var(--accented-background-color);
+            z-index: 1000;
+        }
+        
+        .map-switcher .bx {
+            font-size: x-large;
+        }
     </style>
+    
+    <div class="btn-group btn-group-sm map-switcher" role="group">
+      <button type="button" class="btn btn-secondary" title="Link Map" data-type="link"><span class="bx bx-network-chart"></span></button>
+      <button type="button" class="btn btn-secondary" title="Tree map" data-type="tree"><span class="bx bx-sitemap"></span></button>
+    </div>
 
     <div class="link-map-container"></div>
 </div>`;
@@ -21,6 +39,12 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         this.$container = this.$widget.find(".link-map-container");
 
         window.addEventListener('resize', () => this.setFullHeight(), false);
+
+        this.$widget.find(".map-switcher button").on("click",  async e => {
+            const type = $(e.target).closest("button").attr("data-type");
+
+            await attributeService.setLabel(this.noteId, 'mapType', type);
+        });
 
         super.doRender();
     }
@@ -46,6 +70,8 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
 
     async doRefresh(note) {
         this.$widget.show();
+
+        this.mapType = this.note.getLabelValue("mapType") === "tree" ? "tree" : "link";
 
         this.setFullHeight();
 
@@ -267,5 +293,9 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         if (zoomToFit && data.nodes.length > 1) {
             setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
         }
+    }
+
+    cleanup() {
+        this.$container.html('');
     }
 }
