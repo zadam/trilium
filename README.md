@@ -19,7 +19,7 @@ Use at your own risk in a safe environment! It might corrupt your notes so be ca
 - In reading mode the highlighting is messed up.
 
 # Screenshot Example:
-![Python Syntax Highlighting](/Untitled.png)
+![Python Syntax Highlighting](/Untitled2.png)
 
 # Trilium Notes
 
