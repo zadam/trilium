@@ -18,6 +18,8 @@ Use at your own risk in a safe environment! It might corrupt your notes so be ca
 - Opening notes with unsupported code-blocks will kill Trilium.
 - In reading mode the highlighting is messed up.
 
+# Screenshot Example:
+![Python Syntax Highlighting](/Untitled.png)
 
 # Trilium Notes
 
