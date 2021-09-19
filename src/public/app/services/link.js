@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
-import froca from "./froca.js";
+import treeCache from "./tree_cache.js";
 import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
@@ -81,17 +81,8 @@ function goToLink(e) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
-            const ntxId = $(e.target).closest("[data-ntx-id]").attr("data-ntx-id");
-
-            const noteContext = ntxId
-                ? appContext.tabManager.getNoteContextById(ntxId)
-                : appContext.tabManager.getActiveContext();
-
-            noteContext.setNote(notePath).then(() => {
-                if (noteContext !== appContext.tabManager.getActiveContext()) {
-                    appContext.tabManager.activateNoteContext(noteContext.ntxId);
-                }
-            });
+            const activeTabContext = appContext.tabManager.getActiveTabContext();
+            activeTabContext.setNote(notePath);
         }
     }
     else {
@@ -132,19 +123,12 @@ function linkContextMenu(e) {
         x: e.pageX,
         y: e.pageY,
         items: [
-            {title: "Open note in a new tab", command: "openNoteInNewTab", uiIcon: "empty"},
-            {title: "Open note in a new split", command: "openNoteInNewSplit", uiIcon: "dock-right"},
-            {title: "Open note in a new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
+            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "empty"},
+            {title: "Open note in new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
                 appContext.tabManager.openTabWithNoteWithHoisting(notePath);
-            }
-            else if (command === 'openNoteInNewSplit') {
-                const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
-                const {ntxId} = subContexts[subContexts.length - 1];
-
-                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath});
             }
             else if (command === 'openNoteInNewWindow') {
                 appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId: 'root'});
@@ -154,7 +138,7 @@ function linkContextMenu(e) {
 }
 
 async function loadReferenceLinkTitle(noteId, $el) {
-    const note = await froca.getNote(noteId, true);
+    const note = await treeCache.getNote(noteId, true);
 
     let title;
 

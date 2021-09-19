@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../../becca/becca');
+const noteCache = require('../../services/note_cache/note_cache');
 const log = require('../../services/log');
 
 function getNotesAndBranchesAndAttributes(noteIds) {
@@ -16,14 +16,14 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
         collectedNoteIds.add(note.noteId);
 
-        for (const branch of note.getParentBranches()) {
+        for (const branch of note.parentBranches) {
             collectedBranchIds.add(branch.branchId);
 
             collectEntityIds(branch.parentNote);
         }
 
         for (const childNote of note.children) {
-            const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, note.noteId);
+            const childBranch = noteCache.getBranch(childNote.noteId, note.noteId);
 
             collectedBranchIds.add(childBranch.branchId);
         }
@@ -38,7 +38,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     }
 
     for (const noteId of noteIds) {
-        const note = becca.notes[noteId];
+        const note = noteCache.notes[noteId];
 
         if (!note) {
             continue;
@@ -50,7 +50,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     const notes = [];
 
     for (const noteId of collectedNoteIds) {
-        const note = becca.notes[noteId];
+        const note = noteCache.notes[noteId];
 
         notes.push({
             noteId: note.noteId,
@@ -75,7 +75,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     }
 
     for (const branchId of collectedBranchIds) {
-        const branch = becca.branches[branchId];
+        const branch = noteCache.branches[branchId];
 
         if (!branch) {
             log.error(`Could not find branch for branchId=${branchId}`);
@@ -95,7 +95,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     const attributes = [];
 
     for (const attributeId of collectedAttributeIds) {
-        const attribute = becca.attributes[attributeId];
+        const attribute = noteCache.attributes[attributeId];
 
         attributes.push({
             attributeId: attribute.attributeId,
@@ -127,7 +127,7 @@ function getTree(req) {
         for (const childNote of parentNote.children) {
             collectedNoteIds.add(childNote.noteId);
 
-            const childBranch = becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId);
+            const childBranch = noteCache.getBranch(childNote.noteId, parentNote.noteId);
 
             if (childBranch.isExpanded) {
                 collect(childBranch.childNote);
@@ -135,11 +135,11 @@ function getTree(req) {
         }
     }
 
-    if (!(subTreeNoteId in becca.notes)) {
+    if (!(subTreeNoteId in noteCache.notes)) {
         return [404, `Note ${subTreeNoteId} not found in the cache`];
     }
 
-    collect(becca.notes[subTreeNoteId]);
+    collect(noteCache.notes[subTreeNoteId]);
 
     return getNotesAndBranchesAndAttributes(collectedNoteIds);
 }

@@ -139,7 +139,7 @@ async function checkOutstandingSyncs() {
             remote.app.exit(0);
         }
         else {
-            utils.reloadFrontendApp();
+            utils.reloadApp();
         }
     }
     else {

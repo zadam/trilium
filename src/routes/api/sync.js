@@ -2,7 +2,7 @@
 
 const syncService = require('../../services/sync');
 const syncUpdateService = require('../../services/sync_update');
-const entityChangesService = require('../../services/entity_changes');
+const entityChangesService = require('../../services/entity_changes.js');
 const sql = require('../../services/sql');
 const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
@@ -10,8 +10,8 @@ const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
+const entityConstructor = require('../../entities/entity_constructor');
 const utils = require('../../services/utils');
-const ws = require('../../services/ws');
 
 async function testSync() {
     try {
@@ -42,7 +42,7 @@ function getStats() {
     }
 
     const stats = {
-        initialized: sql.getValue("SELECT value FROM options WHERE name = 'initialized'") === 'true',
+        initialized: optionService.getOption('initialized') === 'true',
         outstandingPullCount: syncService.getOutstandingPullCount()
     };
 
@@ -60,9 +60,6 @@ function checkSync() {
 
 function syncNow() {
     log.info("Received request to trigger sync now.");
-
-    // when explicitly asked for set in progress status immediatelly for faster user feedback
-    ws.syncPullInProgress();
 
     return syncService.sync();
 }
@@ -174,10 +171,10 @@ function update(req) {
         }
     }
 
-    const {entities} = body;
+    const {sourceId, entities} = body;
 
     for (const {entityChange, entity} of entities) {
-        syncUpdateService.updateEntity(entityChange, entity);
+        syncUpdateService.updateEntity(entityChange, entity, sourceId);
     }
 }
 

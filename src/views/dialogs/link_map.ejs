@@ -1,0 +1,32 @@
+<div id="link-map-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" style="max-width: 90%;" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="width: auto;">Link map</h5>
+
+                <div style="vertical-align: middle;">
+                    <div style="display: inline-block; position: relative; top: -3px;">
+                        <label for="link-map-max-notes" title="Max number of displayed notes">
+                            <strong>max notes:</strong>
+                        </label>
+
+                        <input id="link-map-max-notes" type="number" value="20" min="5" max="1000" step="5"
+                               class="form-control form-control-sm"
+                               style="width: 80px; display: inline-block; text-align: right;"/>
+                    </div>
+                </div>
+
+                <div style="display: inline-block;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                    <button class="help-button" type="button" data-help-page="Link-map" title="Help on Link map">?</button>
+                </div>
+            </div>
+            <div class="modal-body" style="outline: none; overflow: hidden; height: 85vh;">
+                <div id="link-map-container" class="link-map-container"></div>
+            </div>
+        </div>
+    </div>
+</div>

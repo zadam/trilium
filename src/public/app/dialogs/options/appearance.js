@@ -34,7 +34,6 @@ const TPL = `
             <label for="heading-style">Heading style</label>
             <select class="form-control" id="heading-style">
                 <option value="plain">Plain</option>
-                <option value="underline">Underline</option>
                 <option value="markdown">Markdown-style</option>
             </select>
         </div>
@@ -159,7 +158,8 @@ export default class ApperanceOptions {
     async optionsLoaded(options) {
         const themes = [
             { val: 'white', title: 'White' },
-            { val: 'dark', title: 'Dark' }
+            { val: 'dark', title: 'Dark' },
+            { val: 'black', title: 'Black' }
         ].concat(await server.get('options/user-themes'));
 
         this.$themeSelect.empty();

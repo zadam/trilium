@@ -1,10 +1,9 @@
 "use strict";
 
-const searchService = require('./search/services/search');
+const repository = require('./repository');
 const sql = require('./sql');
-const becca = require('../becca/becca');
-const Attribute = require('../becca/entities/attribute');
-const {formatAttrForSearch} = require("./attribute_formatter");
+const noteCache = require('./note_cache/note_cache');
+const Attribute = require('../entities/attribute');
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
@@ -60,18 +59,23 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 function getNotesWithLabel(name, value) {
-    const query = formatAttrForSearch({type: 'label', name, value}, true);
-    return searchService.searchNotes(query, {
-        includeArchivedNotes: true,
-        ignoreHoistedNote: true
-    });
+    let valueCondition = "";
+    let params = [name];
+
+    if (value !== undefined) {
+        valueCondition = " AND attributes.value = ?";
+        params.push(value);
+    }
+
+    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 
 function getNoteIdsWithLabels(names) {
     const noteIds = new Set();
 
     for (const name of names) {
-        for (const attr of becca.findAttributes('label', name)) {
+        for (const attr of noteCache.findAttributes('label', name)) {
             noteIds.add(attr.noteId);
         }
     }
@@ -79,7 +83,6 @@ function getNoteIdsWithLabels(names) {
     return Array.from(noteIds);
 }
 
-// TODO: should be in search service
 function getNoteWithLabel(name, value) {
     const notes = getNotesWithLabel(name, value);
 

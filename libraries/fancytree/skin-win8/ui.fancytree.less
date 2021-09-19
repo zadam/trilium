@@ -1,0 +1,155 @@
+/*!
+ * Fancytree "Win8" skin.
+ *
+ * DON'T EDIT THE CSS FILE DIRECTLY, since it is automatically generated from
+ * the LESS templates.
+ */
+
+// Import common styles
+@import "../skin-common.less";
+
+
+/*******************************************************************************
+ * Styles specific to this skin.
+ *
+ * This section is automatically generated from the `ui-fancytree.less` template.
+ ******************************************************************************/
+
+// Borders have NO radius and NO gradients are used!
+
+// both:
+//    unselected background: white
+//    hover bar (unselected, inactive): #E5F3FB (border: #70C0E7) 'very light blue'
+//    active node: #CBE8F6 (border: #26A0DA)  'light blue'
+//    active node with hover: wie active node
+
+// Tree view:
+//    active node, tree inactive: #F7F7F7 (border: #DEDEDE) 'light gray, selected, but tree not active'
+
+// List view:
+//    selected bar: --> active bar
+//    focus  bar: transparent(white) + border 1px solid #3399FF  ()
+
+//    table left/right border: #EDEDED 'light gray'
+
+// Override the variable after the import.
+// NOTE: Variables are always resolved as the last definition, even if it is
+// after where it is used.
+@fancy-use-sprites: true;      // false: suppress all background images (i.e. icons)
+
+@fancy-line-height: 20px;      // height of a nodes selection bar including borders
+@fancy-node-v-spacing: 0px;    // gap between two node borders
+@fancy-icon-width: 16px;
+@fancy-icon-height: 16px;
+@fancy-icon-spacing: 3px;      // margin between icon/icon or icon/title
+@fancy-icon-ofs-top: 2px;      // extra vertical offset for expander, checkbox and icon
+@fancy-title-ofs-top: 0px;     // extra vertical offset for title
+@fancy-node-border-width: 1px;
+@fancy-node-border-radius: 0px;
+@fancy-node-outline-width: 1px;
+
+
+// @fancy-icon-width: 16px;
+// @fancy-icon-height: 16px;
+// @fancy-line-height: 16px;
+// @fancy-icon-spacing: 3px;
+
+// We need to define this variable here (not in skin-common.less) to make it
+// work with grunt and webpack:
+@fancy-image-prefix: "./skin-win8/";
+
+// Use 'data-uri(...)' to embed the image into CSS instead of linking to 'loading.gif':
+// @fancy-loading-url: data-uri("@{fancy-image-prefix}loading.gif");
+// Set to `true` to use `data-uri(...)` which will embed icons.gif into CSS
+// instead of linking to that file:
+// @fancy-inline-sprites: true;
+
+/*******************************************************************************
+ * Node titles
+ */
+.fancytree-plain  {
+	span.fancytree-title {
+		border: @fancy-node-border-width solid transparent;  // avoid jumping, when a border is added on hover
+	}
+	&.fancytree-container.fancytree-treefocus span.fancytree-focused span.fancytree-title {
+		border-color: #3399ff;
+	}
+	span.fancytree-active span.fancytree-title,
+	span.fancytree-selected span.fancytree-title { // active/selcted nodes inside inactive tree
+		background-color: #f7f7f7;
+		border-color: #dedede;
+	}
+	span.fancytree-node span.fancytree-selected span.fancytree-title {
+		font-style: italic;
+	}
+	span.fancytree-node:hover span.fancytree-title {
+		background-color: #eff9fe; // hover is always colored, even if tree is unfocused
+		border-color: #70c0e7;
+	}
+	&.fancytree-container.fancytree-treefocus {
+		span.fancytree-active span.fancytree-title,
+		span.fancytree-selected span.fancytree-title {
+			background-color: #cbe8f6;
+			border-color: #26a0da;
+		}
+	}
+}
+
+/*******************************************************************************
+ * 'table' extension
+ */
+table.fancytree-ext-table tbody {
+	tr td {
+	  border: 1px solid #EDEDED;
+	}
+	span.fancytree-node,
+	span.fancytree-node:hover { // undo standard tree css
+		border: none;
+		background: none;
+	}
+	// Title gets a white background, when hovered. Undo standard node formatting
+	// span.fancytree-title:hover {
+	//   border: none; //1px solid transparent;
+	//   background: inherit;
+	//   background: transparent;
+	//   background: none;
+	//   filter: none;
+	// }
+	tr:hover  {
+		background-color: #E5F3FB;
+	    outline: 1px solid #70C0E7;
+	}
+	// tr:hover td {
+	//   outline: 1px solid #D8F0FA;
+	// }
+	// tr.fancytree-focused {
+	// 	border-color: #3399FF;
+ //    	outline: 1px dotted black;
+	// }
+	tr.fancytree-focused span.fancytree-title {
+	  outline: 1px dotted black;
+	}
+
+	tr.fancytree-active:hover,
+	tr.fancytree-selected:hover {
+		background-color: #CBE8F6;
+	    outline: 1px solid #26A0DA;
+	}
+	tr.fancytree-active {  // dimmed, if inside inactive tree
+		background-color: #F7F7F7;
+	    outline: 1px solid #DEDEDE;
+	}
+	tr.fancytree-selected {  // dimmed, if inside inactive tree
+		background-color: #F7F7F7;
+	}
+}
+
+table.fancytree-ext-table.fancytree-treefocus tbody {
+	tr.fancytree-active {
+		background-color: #CBE8F6;
+	    outline: 1px solid #26A0DA;
+	}
+	tr.fancytree-selected {
+		background-color: #CBE8F6;
+	}
+}

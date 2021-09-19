@@ -1,170 +1,80 @@
 "use strict";
 
-const becca = require("../../becca/becca");
+const sql = require('../../services/sql');
 
-function getRelations(noteId) {
-    const note = becca.getNote(noteId);
+function getRelations(noteIds) {
+    noteIds = Array.from(noteIds);
 
-    if (!note) {
-        throw new Error(noteId);
-    }
-
-    const allRelations = note.getOwnedRelations().concat(note.getTargetRelations());
-
-    return allRelations.filter(rel => {
-        if (rel.name === 'relationMapLink' || rel.name === 'template') {
-            return false;
-        }
-        else if (rel.name === 'imageLink') {
-            const parentNote = becca.getNote(rel.noteId);
-
-            return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
-        }
-        else {
-            return true;
-        }
-    });
-}
-
-function collectRelations(noteId, relations, depth) {
-    if (depth === 0) {
-        return;
-    }
-
-    for (const relation of getRelations(noteId)) {
-        if (!relations.has(relation)) {
-            if (!relation.value) {
-                continue;
-            }
-
-            relations.add(relation);
-
-            if (relation.noteId !== noteId) {
-                collectRelations(relation.noteId, relations, depth - 1);
-            } else if (relation.value !== noteId) {
-                collectRelations(relation.value, relations, depth - 1);
-            }
-        }
-    }
+    return [
+        // first read all relations
+        // some "system" relations are not included since they are rarely useful to see (#1820)
+        ...sql.getManyRows(`
+            SELECT noteId, name, value AS targetNoteId
+            FROM attributes
+            WHERE (noteId IN (???) OR value IN (???))
+              AND type = 'relation'
+              AND name NOT IN ('imageLink', 'relationMapLink', 'template')
+              AND isDeleted = 0
+              AND noteId != ''
+              AND value != ''`, noteIds),
+        // ... then read only imageLink relations which are not connecting parent and child
+        // this is done to not show image links in the trivial case where they are direct children of the note to which they are included. Same heuristic as in note tree
+        ...sql.getManyRows(`
+            SELECT rel.noteId, rel.name, rel.value AS targetNoteId
+            FROM attributes AS rel
+            LEFT JOIN branches ON branches.parentNoteId = rel.noteId AND branches.noteId = rel.value AND branches.isDeleted = 0 
+            WHERE (rel.noteId IN (???) OR rel.value IN (???))
+              AND rel.type = 'relation'
+              AND rel.name = 'imageLink'
+              AND rel.isDeleted = 0
+              AND rel.noteId != ''
+              AND rel.value != ''
+              AND branches.branchId IS NULL`, noteIds)
+    ];
 }
 
 function getLinkMap(req) {
     const {noteId} = req.params;
-    const {maxDepth} = req.body;
+    const {maxNotes, maxDepth} = req.body;
 
-    let relations = new Set();
+    let noteIds = new Set([noteId]);
+    let relations;
 
-    collectRelations(noteId, relations, maxDepth);
+    let depth = 0;
 
-    relations = Array.from(relations);
+    while (noteIds.size < maxNotes) {
+        relations = getRelations(noteIds);
 
-    const noteIds = new Set(relations.map(rel => rel.noteId)
-        .concat(relations.map(rel => rel.targetNoteId))
-        .concat([noteId]));
+        if (depth === maxDepth) {
+            break;
+        }
 
-    const noteIdToLinkCountMap = {};
+        let newNoteIds = relations.map(rel => rel.noteId)
+                                  .concat(relations.map(rel => rel.targetNoteId))
+                                  .filter(noteId => !noteIds.has(noteId));
 
-    for (const noteId of noteIds) {
-        noteIdToLinkCountMap[noteId] = getRelations(noteId).length;
-    }
+        if (newNoteIds.length === 0) {
+            // no new note discovered, no need to search any further
+            break;
+        }
 
-    return {
-        noteIdToLinkCountMap,
-        links: Array.from(relations).map(rel => ({
-            id: rel.noteId + "-" + rel.name + "-" + rel.value,
-            sourceNoteId: rel.noteId,
-            targetNoteId: rel.value,
-            name: rel.name
-        }))
-    };
-}
+        for (const newNoteId of newNoteIds) {
+            noteIds.add(newNoteId);
 
-function buildDescendantCountMap() {
-    const noteIdToCountMap = {};
-
-    function getCount(noteId) {
-        if (!(noteId in noteIdToCountMap)) {
-            const note = becca.getNote(noteId);
-
-            noteIdToCountMap[noteId] = note.children.length;
-
-            for (const child of note.children) {
-                noteIdToCountMap[noteId] += getCount(child.noteId);
+            if (noteIds.size >= maxNotes) {
+                break;
             }
         }
 
-        return noteIdToCountMap[noteId];
+        depth++;
     }
 
-    getCount('root');
+    // keep only links coming from and targetting some note in the noteIds set
+    relations = relations.filter(rel => noteIds.has(rel.noteId) && noteIds.has(rel.targetNoteId));
 
-    return noteIdToCountMap;
-}
-
-function getGlobalLinkMap() {
-    const relations = Object.values(becca.attributes).filter(rel => {
-        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
-            return false;
-        }
-        else if (rel.name === 'imageLink') {
-            const parentNote = becca.getNote(rel.noteId);
-
-            return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
-        }
-        else {
-            return true;
-        }
-    });
-
-    const noteIdToLinkCountMap = {};
-
-    for (const noteId in becca.notes) {
-        noteIdToLinkCountMap[noteId] = getRelations(noteId).length;
-    }
-
-    let links = Array.from(relations).map(rel => ({
-        id: rel.noteId + "-" + rel.name + "-" + rel.value,
-        sourceNoteId: rel.noteId,
-        targetNoteId: rel.value,
-        name: rel.name
-    }));
-
-    links = [];
-
-    const noteIds = new Set();
-
-    const notes = Object.values(becca.notes)
-        .filter(note => !note.isArchived)
-        .map(note => [
-            note.noteId,
-            note.isContentAvailable() ? note.title : '[protected]',
-            note.type
-        ]);
-
-    notes.forEach(([noteId]) => noteIds.add(noteId));
-
-    for (const branch of Object.values(becca.branches)) {
-        if (!noteIds.has(branch.parentNoteId) || !noteIds.has(branch.noteId)) {
-            continue;
-        }
-
-        links.push({
-            id: branch.branchId,
-            sourceNoteId: branch.parentNoteId,
-            targetNoteId: branch.noteId,
-            name: 'branch'
-        });
-    }
-
-    return {
-        notes: notes,
-        noteIdToLinkCountMap,
-        noteIdToDescendantCountMap: buildDescendantCountMap(),
-        links: links
-    };
+    return relations;
 }
 
 module.exports = {
-    getLinkMap,
-    getGlobalLinkMap
+    getLinkMap
 };

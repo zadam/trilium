@@ -1,11 +1,11 @@
 import server from "../../services/server.js";
-import froca from "../../services/froca.js";
+import treeCache from "../../services/tree_cache.js";
 import treeService from "../../services/tree.js";
 import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js';
-import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
 
@@ -222,7 +222,7 @@ const ATTR_HELP = {
     }
 };
 
-export default class AttributeDetailWidget extends NoteContextAwareWidget {
+export default class AttributeDetailWidget extends TabAwareWidget {
     async refresh() {
         // switching note/tab should close the widget
 
@@ -237,6 +237,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
         utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
+        this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
 
@@ -428,7 +429,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
                 .setSelectedNotePath("");
 
             if (attribute.value) {
-                const targetNote = await froca.getNote(attribute.value);
+                const targetNote = await treeCache.getNote(attribute.value);
 
                 if (targetNote) {
                     this.$inputTargetNote
@@ -541,7 +542,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
             this.$relatedNotesList.empty();
 
             const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-            const displayedNotes = await froca.getNotes(displayedResults.map(res => res.noteId));
+            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
 
             for (const note of displayedNotes) {
                 const notePath = treeService.getSomeNotePath(note);

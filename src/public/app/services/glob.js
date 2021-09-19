@@ -3,7 +3,8 @@ import appContext from "./app_context.js";
 import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";
-import froca from "./froca.js";
+import protectedSessionHolder from "./protected_session_holder.js";
+import treeCache from "./tree_cache.js";
 
 function setupGlobs() {
     window.glob.PROFILING_LOG = false;
@@ -15,12 +16,11 @@ function setupGlobs() {
     window.glob.getHeaders = server.getHeaders;
 
     // required for ESLint plugin and CKEditor
-    window.glob.getActiveTabNote = () => appContext.tabManager.getActiveContextNote();
+    window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
     window.glob.requireLibrary = libraryLoader.requireLibrary;
     window.glob.ESLINT = libraryLoader.ESLINT;
     window.glob.appContext = appContext; // for debugging
-    window.glob.froca = froca;
-    window.glob.treeCache = froca; // compatibility for CKEditor builds for a while
+    window.glob.treeCache = treeCache;
 
     // for CKEditor integration (button on block toolbar)
     window.glob.importMarkdownInline = async () => {

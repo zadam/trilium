@@ -3,7 +3,6 @@ import appContext from "./app_context.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
 import openService from "./open.js";
-import protectedSessionService from "./protected_session.js";
 
 export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -14,6 +13,10 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/recent_changes.js").then(d => d.showDialog());
     }
 
+    showNoteInfoCommand() {
+        import("../dialogs/note_info.js").then(d => d.showDialog());
+    }
+
     showNoteRevisionsCommand() {
         import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
     }
@@ -22,24 +25,21 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/note_source.js").then(d => d.showDialog());
     }
 
+    showLinkMapCommand() {
+        import("../dialogs/link_map.js").then(d => d.showDialog());
+    }
+
     pasteMarkdownIntoTextCommand() {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
 
     async editBranchPrefixCommand() {
-        const notePath = appContext.tabManager.getActiveContextNotePath();
+        const notePath = appContext.tabManager.getActiveTabNotePath();
 
         if (notePath) {
             const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
             editBranchPrefixDialog.showDialog(notePath);
         }
-    }
-
-    editReadOnlyNoteCommand() {
-        const noteContext = appContext.tabManager.getActiveContext();
-        noteContext.readOnlyTemporarilyDisabled = true;
-
-        appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
     }
 
     async cloneNoteIdsToCommand({noteIds}) {
@@ -63,17 +63,17 @@ export default class RootCommandExecutor extends Component {
     async showSQLConsoleCommand() {
         const sqlConsoleNote = await dateNoteService.createSqlConsole();
 
-        const noteContext = await appContext.tabManager.openContextWithNote(sqlConsoleNote.noteId, true);
+        const tabContext = await appContext.tabManager.openTabWithNote(sqlConsoleNote.noteId, true);
 
-        appContext.triggerEvent('focusOnDetail', {ntxId: noteContext.ntxId});
+        appContext.triggerEvent('focusOnDetail', {tabId: tabContext.tabId});
     }
 
     async searchNotesCommand({searchString, ancestorNoteId}) {
         const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
 
-        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true);
+        const tabContext = await appContext.tabManager.openTabWithNote(searchNote.noteId, true);
 
-        appContext.triggerCommand('focusOnSearchDefinition', {ntxId: noteContext.ntxId});
+        appContext.triggerCommand('focusOnSearchDefinition', {tabId: tabContext.tabId});
     }
 
     async searchInSubtreeCommand({notePath}) {
@@ -87,18 +87,10 @@ export default class RootCommandExecutor extends Component {
     }
 
     openNoteExternallyCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
+        const noteId = appContext.tabManager.getActiveTabNoteId();
 
         if (noteId) {
             openService.openNoteExternally(noteId);
         }
-    }
-
-    enterProtectedSessionCommand() {
-        protectedSessionService.enterProtectedSession();
-    }
-
-    leaveProtectedSessionCommand() {
-        protectedSessionService.leaveProtectedSession();
     }
 }

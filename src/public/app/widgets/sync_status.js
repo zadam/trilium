@@ -5,27 +5,33 @@ import options from "../services/options.js";
 import syncService from "../services/sync.js";
 
 const TPL = `
-<div class="sync-status-widget icon-action">
+<div class="sync-status-widget">
     <style>
     .sync-status-widget {
+        height: 35px;
+        box-sizing: border-box;
+        border-bottom: 1px solid var(--main-border-color);
     }
     
     .sync-status {
+        height: 34px;
         box-sizing: border-box;
     }
     
     .sync-status .sync-status-icon {
+        height: 34px;
+        font-size: 180%;
         display: inline-block;
         position: relative;
-        top: -5px;
-        font-size: 110%;
+        padding-left: 10px;
+        padding-right: 10px;
     }
     
     .sync-status .sync-status-sub-icon {
         font-size: 40%; 
         position: absolute; 
-        left: 0;
-        top: 16px;
+        left: 7px; 
+        top: 20px;
     }
     
     .sync-status .sync-status-icon span {
@@ -39,37 +45,37 @@ const TPL = `
     </style>
 
     <div class="sync-status">
-        <span class="sync-status-icon sync-status-unknown bx bx-time" 
+        <span class="sync-status-icon sync-status-unknown" 
               data-toggle="tooltip" 
-              data-placement="right"
               title="<p>Sync status will be known once the next sync attempt starts.</p><p>Click to trigger sync now.</p>">
+            <span class="bx bx-time"></span>
         </span>
-        <span class="sync-status-icon sync-status-connected-with-changes bx-wifi"
+        <span class="sync-status-icon sync-status-connected-with-changes"
               data-toggle="tooltip" 
-              data-placement="right"
               title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
+            <span class="bx bx-wifi"></span>
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
-        <span class="sync-status-icon sync-status-connected-no-changes bx bx-wifi" 
+        <span class="sync-status-icon sync-status-connected-no-changes" 
               data-toggle="tooltip" 
-              data-placement="right"
               title="<p>Connected to the sync server.<br>All changes have been already synced.</p><p>Click to trigger sync.</p>">
+            <span class="bx bx-wifi"></span>
         </span>
-        <span class="sync-status-icon sync-status-disconnected-with-changes bx bx-wifi-off"
+        <span class="sync-status-icon sync-status-disconnected-with-changes"
               data-toggle="tooltip" 
-              data-placement="right"
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
+            <span class="bx bx-wifi-off"></span>
             <span class="bx bxs-star sync-status-sub-icon"></span>
         </span>
-        <span class="sync-status-icon sync-status-disconnected-no-changes bx bx-wifi-off" 
+        <span class="sync-status-icon sync-status-disconnected-no-changes" 
               data-toggle="tooltip"
-              data-placement="right"
               title="<p>Establishing the connection to the sync server was unsuccessful.<br>All known changes have been synced.</p><p>Click to trigger sync.</p>">
+            <span class="bx bx-wifi-off"></span>
         </span>
-        <span class="sync-status-icon sync-status-in-progress bx bx-analyse bx-spin" 
+        <span class="sync-status-icon sync-status-in-progress" 
               data-toggle="tooltip"
-              data-placement="right"
               title="Sync with the server is in progress.">
+            <span class="bx bx-analyse bx-spin"></span>
         </span>
     </div>
 </div>
@@ -96,6 +102,7 @@ export default class SyncStatusWidget extends BasicWidget {
         this.$widget.find('.sync-status-icon:not(.sync-status-in-progress)')
             .on('click', () => syncService.syncNow())
 
+        this.overflowing();
     }
 
     showIcon(className) {
@@ -111,6 +118,13 @@ export default class SyncStatusWidget extends BasicWidget {
 
     processMessage(message) {
         if (message.type === 'sync-pull-in-progress') {
+            toastService.showPersistent({
+                id: 'sync',
+                title: "Sync status",
+                message: "Sync update in progress",
+                icon: "refresh"
+            });
+
             this.syncState = 'in-progress';
             this.lastSyncedPush = message.lastSyncedPush;
         }
@@ -119,6 +133,9 @@ export default class SyncStatusWidget extends BasicWidget {
             this.lastSyncedPush = message.lastSyncedPush;
         }
         else if (message.type === 'sync-finished') {
+            // this gives user a chance to see the toast in case of fast sync finish
+            setTimeout(() => toastService.closePersistent('sync'), 1000);
+
             this.syncState = 'connected';
             this.lastSyncedPush = message.lastSyncedPush;
         }

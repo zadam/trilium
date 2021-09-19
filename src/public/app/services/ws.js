@@ -1,8 +1,12 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
 import server from "./server.js";
+import LoadResults from "./load_results.js";
+import Branch from "../entities/branch.js";
+import Attribute from "../entities/attribute.js";
 import options from "./options.js";
-import frocaUpdater from "./froca_updater.js";
+import treeCache from "./tree_cache.js";
+import noteAttributeCache from "./note_attribute_cache.js";
 
 const messageHandlers = [];
 
@@ -25,19 +29,7 @@ function logError(message) {
     }
 }
 
-function logInfo(message) {
-    console.log(utils.now(), message);
-
-    if (ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({
-            type: 'log-info',
-            info: message
-        }));
-    }
-}
-
 window.logError = logError;
-window.logInfo = logInfo;
 
 function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);
@@ -59,42 +51,6 @@ function logRows(entityChanges) {
     }
 }
 
-async function executeFrontendUpdate(entityChanges) {
-    lastPingTs = Date.now();
-
-    if (entityChanges.length > 0) {
-        logRows(entityChanges);
-
-        frontendUpdateDataQueue.push(...entityChanges);
-
-        // we set lastAcceptedEntityChangeId even before frontend update processing and send ping so that backend can start sending more updates
-        lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
-
-        const lastSyncEntityChange = entityChanges.slice().reverse().find(ec => ec.isSynced);
-
-        if (lastSyncEntityChange) {
-            lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, lastSyncEntityChange.id);
-        }
-
-        sendPing();
-
-        // first wait for all the preceding consumers to finish
-        while (consumeQueuePromise) {
-            await consumeQueuePromise;
-        }
-
-        try {
-            // it's my turn so start it up
-            consumeQueuePromise = consumeFrontendUpdateData();
-
-            await consumeQueuePromise;
-        } finally {
-            // finish and set to null to signal somebody else can pick it up
-            consumeQueuePromise = null;
-        }
-    }
-}
-
 async function handleMessage(event) {
     const message = JSON.parse(event.data);
 
@@ -102,11 +58,42 @@ async function handleMessage(event) {
         messageHandler(message);
     }
 
-    if (message.type === 'reload-frontend') {
-        utils.reloadFrontendApp("received request from backend to reload frontend");
-    }
-    else if (message.type === 'frontend-update') {
-        await executeFrontendUpdate(message.data.entityChanges);
+    if (message.type === 'frontend-update') {
+        let {entityChanges} = message.data;
+        lastPingTs = Date.now();
+
+        if (entityChanges.length > 0) {
+            logRows(entityChanges);
+
+            frontendUpdateDataQueue.push(...entityChanges);
+
+            // we set lastAcceptedEntityChangeId even before frontend update processing and send ping so that backend can start sending more updates
+            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
+
+            const lastSyncEntityChange = entityChanges.slice().reverse().find(ec => ec.isSynced);
+
+            if (lastSyncEntityChange) {
+                lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, lastSyncEntityChange.id);
+            }
+
+            sendPing();
+
+            // first wait for all the preceding consumers to finish
+            while (consumeQueuePromise) {
+                await consumeQueuePromise;
+            }
+
+            try {
+                // it's my turn so start it up
+                consumeQueuePromise = consumeFrontendUpdateData();
+
+                await consumeQueuePromise;
+            }
+            finally {
+                // finish and set to null to signal somebody else can pick it up
+                consumeQueuePromise = null;
+            }
+        }
     }
     else if (message.type === 'sync-hash-check-failed') {
         toastService.showError("Sync check failed!", 60000);
@@ -158,7 +145,7 @@ async function consumeFrontendUpdateData() {
         const nonProcessedEntityChanges = allEntityChanges.filter(ec => !processedEntityChangeIds.has(ec.id));
 
         try {
-            await utils.timeLimit(frocaUpdater.processEntityChanges(nonProcessedEntityChanges), 30000);
+            await utils.timeLimit(processEntityChanges(nonProcessedEntityChanges), 30000);
         }
         catch (e) {
             logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
@@ -166,7 +153,7 @@ async function consumeFrontendUpdateData() {
             if (!glob.isDev && !options.is('debugModeEnabled')) {
                 // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
 
-                utils.reloadFrontendApp();
+                utils.reloadApp();
             }
             else {
                 console.log("nonProcessedEntityChanges causing the timeout", nonProcessedEntityChanges);
@@ -225,9 +212,182 @@ setTimeout(() => {
     setInterval(sendPing, 1000);
 }, 0);
 
+async function processEntityChanges(entityChanges) {
+    const loadResults = new LoadResults(treeCache);
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'notes')) {
+        const note = treeCache.notes[ec.entityId];
+
+        if (note) {
+            note.update(ec.entity);
+            loadResults.addNote(ec.entityId, ec.sourceId);
+        }
+    }
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'branches')) {
+        let branch = treeCache.branches[ec.entityId];
+        const childNote = treeCache.notes[ec.entity.noteId];
+        const parentNote = treeCache.notes[ec.entity.parentNoteId];
+
+        if (branch) {
+            branch.update(ec.entity);
+            loadResults.addBranch(ec.entityId, ec.sourceId);
+
+            if (ec.entity.isDeleted) {
+                if (childNote) {
+                    childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== ec.entity.parentNoteId);
+                    delete childNote.parentToBranch[ec.entity.parentNoteId];
+                }
+
+                if (parentNote) {
+                    parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== ec.entity.noteId);
+                    delete parentNote.childToBranch[ec.entity.noteId];
+                }
+            }
+            else {
+                if (childNote) {
+                    childNote.addParent(branch.parentNoteId, branch.branchId);
+                }
+
+                if (parentNote) {
+                    parentNote.addChild(branch.noteId, branch.branchId);
+                }
+            }
+        }
+        else if (!ec.entity.isDeleted) {
+            if (childNote || parentNote) {
+                branch = new Branch(treeCache, ec.entity);
+                treeCache.branches[branch.branchId] = branch;
+
+                loadResults.addBranch(ec.entityId, ec.sourceId);
+
+                if (childNote) {
+                    childNote.addParent(branch.parentNoteId, branch.branchId);
+                }
+
+                if (parentNote) {
+                    parentNote.addChild(branch.noteId, branch.branchId);
+                }
+            }
+        }
+    }
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_reordering')) {
+        const parentNoteIdsToSort = new Set();
+
+        for (const branchId in ec.positions) {
+            const branch = treeCache.branches[branchId];
+
+            if (branch) {
+                branch.notePosition = ec.positions[branchId];
+
+                parentNoteIdsToSort.add(branch.parentNoteId);
+            }
+        }
+
+        for (const parentNoteId of parentNoteIdsToSort) {
+            const parentNote = treeCache.notes[parentNoteId];
+
+            if (parentNote) {
+                parentNote.sortChildren();
+            }
+        }
+
+        loadResults.addNoteReordering(ec.entityId, ec.sourceId);
+    }
+
+    // missing reloading the relation target note
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'attributes')) {
+        let attribute = treeCache.attributes[ec.entityId];
+        const sourceNote = treeCache.notes[ec.entity.noteId];
+        const targetNote = ec.entity.type === 'relation' && treeCache.notes[ec.entity.value];
+
+        if (attribute) {
+            attribute.update(ec.entity);
+            loadResults.addAttribute(ec.entityId, ec.sourceId);
+
+            if (ec.entity.isDeleted) {
+                if (sourceNote) {
+                    sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
+                }
+
+                if (targetNote) {
+                    targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
+                }
+            }
+        }
+        else if (!ec.entity.isDeleted) {
+            if (sourceNote || targetNote) {
+                attribute = new Attribute(treeCache, ec.entity);
+
+                treeCache.attributes[attribute.attributeId] = attribute;
+
+                loadResults.addAttribute(ec.entityId, ec.sourceId);
+
+                if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
+                    sourceNote.attributes.push(attribute.attributeId);
+                }
+
+                if (targetNote && !targetNote.targetRelations.includes(attribute.attributeId)) {
+                    targetNote.targetRelations.push(attribute.attributeId);
+                }
+            }
+        }
+    }
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_contents')) {
+        delete treeCache.noteComplementPromises[ec.entityId];
+
+        loadResults.addNoteContent(ec.entityId, ec.sourceId);
+    }
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'note_revisions')) {
+        loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.sourceId);
+    }
+
+    for (const ec of entityChanges.filter(ec => ec.entityName === 'options')) {
+        if (ec.entity.name === 'openTabs') {
+            continue; // only noise
+        }
+
+        options.set(ec.entity.name, ec.entity.value);
+
+        loadResults.addOption(ec.entity.name);
+    }
+
+    const missingNoteIds = [];
+
+    for (const {entityName, entity} of entityChanges) {
+        if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
+            missingNoteIds.push(entity.parentNoteId);
+        }
+        else if (entityName === 'attributes'
+            && entity.type === 'relation'
+            && entity.name === 'template'
+            && !(entity.value in treeCache.notes)) {
+
+            missingNoteIds.push(entity.value);
+        }
+    }
+
+    if (missingNoteIds.length > 0) {
+        await treeCache.reloadNotes(missingNoteIds);
+    }
+
+    if (!loadResults.isEmpty()) {
+        if (loadResults.hasAttributeRelatedChanges()) {
+            noteAttributeCache.invalidate();
+        }
+
+        const appContext = (await import("./app_context.js")).default;
+        await appContext.triggerEvent('entitiesReloaded', {loadResults});
+    }
+}
+
 export default {
     logError,
     subscribeToMessages,
+    waitForEntityChangeId,
     waitForMaxKnownEntityChangeId,
     getMaxKnownEntityChangeSyncId: () => lastAcceptedEntityChangeSyncId
 };

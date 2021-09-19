@@ -32,8 +32,8 @@
  * Represents full note, specifically including note's content.
  */
 class NoteFull extends NoteShort {
-    constructor(froca, row, noteShort) {
-        super(froca, row, []);
+    constructor(treeCache, row, noteShort) {
+        super(treeCache, row, []);
 
         /** @param {string} */
         this.content = row.content;

@@ -1,8 +1,4 @@
-function reloadFrontendApp(reason) {
-    if (reason) {
-        logInfo("Frontend app reload: " + reason);
-    }
-
+function reloadApp() {
     window.location.reload(true);
 }
 
@@ -357,7 +353,7 @@ function isValidAttributeName(name) {
 }
 
 export default {
-    reloadFrontendApp,
+    reloadApp,
     parseDate,
     padNum,
     formatTime,

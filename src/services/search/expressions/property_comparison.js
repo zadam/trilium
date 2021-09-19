@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const buildComparator = require("../services/build_comparator");
+const buildComparator = require("../services/build_comparator.js");
 
 /**
  * Search string is lower cased for case insensitive comparison. But when retrieving properties

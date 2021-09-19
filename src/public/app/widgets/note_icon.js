@@ -1,18 +1,16 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 import attributeService from "../services/attributes.js";
 
 const TPL = `
-<div class="note-icon-widget dropdown">
+<div class="note-icon-container dropdown">
     <style>
-    .note-icon-widget {
+    .note-icon-container {
         padding-top: 3px;
         padding-left: 7px;
         margin-right: 0;
-        width: 50px;
-        height: 50px;
     }
     
-    .note-icon-widget button.note-icon {
+    .note-icon-container button.note-icon {
         font-size: 180%;
         background-color: transparent;
         border: 1px solid transparent;
@@ -21,18 +19,18 @@ const TPL = `
         color: var(--main-text-color);
     }
     
-    .note-icon-widget button.note-icon:hover {
+    .note-icon-container button.note-icon:hover {
         border: 1px solid var(--main-border-color);
     }
     
-    .note-icon-widget .dropdown-menu {
+    .note-icon-container .dropdown-menu {
         border-radius: 10px;
         border-width: 2px;
         box-shadow: 10px 10px 93px -25px black;
         padding: 10px 15px 10px 15px !important;
     }
     
-    .note-icon-widget .filter-row {
+    .note-icon-container .filter-row {
         padding-top: 10px;
         padding-bottom: 10px;
         padding-right: 20px;
@@ -40,19 +38,19 @@ const TPL = `
         align-items: baseline;
     }
     
-    .note-icon-widget .filter-row span {
+    .note-icon-container .filter-row span {
         display: block;
         padding-left: 15px;
         padding-right: 15px;
         font-weight: bold;
     }
     
-    .note-icon-widget .icon-list {
+    .note-icon-container .icon-list {
         height: 500px;
         overflow: auto;
     }
     
-    .note-icon-widget .icon-list span {
+    .note-icon-container .icon-list span {
         display: inline-block;
         padding: 10px;
         cursor: pointer;
@@ -60,7 +58,7 @@ const TPL = `
         font-size: 180%;
     }
     
-    .note-icon-widget .icon-list span:hover {
+    .note-icon-container .icon-list span:hover {
         border: 1px solid var(--main-border-color);
     }
     </style>
@@ -77,9 +75,10 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteIconWidget extends NoteContextAwareWidget {
+export default class NoteIconWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
         this.$icon = this.$widget.find('button.note-icon');
         this.$iconList = this.$widget.find('.icon-list');
         this.$iconList.on('click', 'span', async e => {
@@ -126,7 +125,7 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
         for (const attr of loadResults.getAttributes()) {
             if (attr.type === 'label'
                 && ['iconClass', 'workspaceIconClass'].includes(attr.name)
-                && attributeService.isAffecting(attr, this.note)) {
+                && attr.isAffecting(this.note)) {
 
                 this.refresh();
                 break;

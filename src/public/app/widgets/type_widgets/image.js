@@ -6,7 +6,7 @@ import libraryLoader from "../../services/library_loader.js";
 const TPL = `
 <div class="note-detail-image note-detail-printable">
     <style>
-        .type-image .note-detail {
+        .type-image {
             height: 100%;
         }
     
@@ -18,9 +18,10 @@ const TPL = `
             position: relative;
             display: flex;
             align-items: center;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             justify-content: center;
-            height: 100%;
         }
         
         .note-detail-image-view {
@@ -42,6 +43,7 @@ class ImageTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$imageWrapper = this.$widget.find('.note-detail-image-wrapper');
         this.$imageView = this.$widget.find('.note-detail-image-view')
             .attr("id", "image-view-" + utils.randomString(10));
@@ -52,8 +54,6 @@ class ImageTypeWidget extends TypeWidget {
                 zoomOnClick: false
             });
         });
-
-        super.doRender();
     }
 
     async doRefresh(note) {
@@ -62,8 +62,8 @@ class ImageTypeWidget extends TypeWidget {
         this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}?${imageHash}`);
     }
 
-    copyImageToClipboardEvent({ntxId}) {
-        if (!this.isNoteContext(ntxId)) {
+    copyImageToClipboardEvent({tabId}) {
+        if (!this.isTab(tabId)) {
             return;
         }
 

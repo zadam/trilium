@@ -1,23 +1,23 @@
 "use strict";
 
-const lex = require('./lex');
-const handleParens = require('./handle_parens');
-const parse = require('./parse');
-const NoteSet = require("../note_set");
-const SearchResult = require("../search_result");
-const SearchContext = require("../search_context");
-const becca = require('../../../becca/becca');
-const beccaService = require('../../../becca/becca_service');
-const utils = require('../../utils');
-const log = require('../../log');
+const lex = require('./lex.js');
+const handleParens = require('./handle_parens.js');
+const parse = require('./parse.js');
+const NoteSet = require("../note_set.js");
+const SearchResult = require("../search_result.js");
+const SearchContext = require("../search_context.js");
+const noteCache = require('../../note_cache/note_cache.js');
+const noteCacheService = require('../../note_cache/note_cache_service.js');
+const utils = require('../../utils.js');
+const log = require('../../log.js');
 
 function loadNeededInfoFromDatabase() {
-    const sql = require('../../sql');
+    const sql = require('../../sql.js');
 
-    for (const noteId in becca.notes) {
-        becca.notes[noteId].contentSize = 0;
-        becca.notes[noteId].noteSize = 0;
-        becca.notes[noteId].revisionCount = 0;
+    for (const noteId in noteCache.notes) {
+        noteCache.notes[noteId].contentSize = 0;
+        noteCache.notes[noteId].noteSize = 0;
+        noteCache.notes[noteId].revisionCount = 0;
     }
 
     const noteContentLengths = sql.getRows(`
@@ -29,13 +29,13 @@ function loadNeededInfoFromDatabase() {
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteContentLengths) {
-        if (!(noteId in becca.notes)) {
-            log.error(`Note ${noteId} not found in becca.`);
+        if (!(noteId in noteCache.notes)) {
+            log.error(`Note ${noteId} not found in note cache.`);
             continue;
         }
 
-        becca.notes[noteId].contentSize = length;
-        becca.notes[noteId].noteSize = length;
+        noteCache.notes[noteId].contentSize = length;
+        noteCache.notes[noteId].noteSize = length;
     }
 
     const noteRevisionContentLengths = sql.getRows(`
@@ -48,13 +48,13 @@ function loadNeededInfoFromDatabase() {
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteRevisionContentLengths) {
-        if (!(noteId in becca.notes)) {
-            log.error(`Note ${noteId} not found in becca.`);
+        if (!(noteId in noteCache.notes)) {
+            log.error(`Note ${noteId} not found in note cache.`);
             continue;
         }
 
-        becca.notes[noteId].noteSize += length;
-        becca.notes[noteId].revisionCount++;
+        noteCache.notes[noteId].noteSize += length;
+        noteCache.notes[noteId].revisionCount++;
     }
 }
 
@@ -63,8 +63,8 @@ function loadNeededInfoFromDatabase() {
  * @param {SearchContext} searchContext
  * @return {SearchResult[]}
  */
-function findResultsWithExpression(expression, searchContext) {
-    let allNotes = Object.values(becca.notes);
+function findNotesWithExpression(expression, searchContext) {
+    let allNotes = Object.values(noteCache.notes);
 
     if (searchContext.dbLoadNeeded) {
         loadNeededInfoFromDatabase();
@@ -83,15 +83,9 @@ function findResultsWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext);
 
     const searchResults = noteSet.notes
-        .map(note => {
-            const notePathArray = executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note);
-
-            if (!notePathArray) {
-                throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
-            }
-
-            return new SearchResult(notePathArray);
-        });
+        .map(note => new SearchResult(
+            executionContext.noteIdToNotePath[note.noteId] || noteCacheService.getSomePath(note)
+        ));
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);
@@ -140,20 +134,10 @@ function parseQueryToExpression(query, searchContext) {
 
 /**
  * @param {string} query
- * @return {Note[]}
- */
-function searchNotes(query, params = {}) {
-    const searchResults = findResultsWithQuery(query, new SearchContext(params));
-
-    return searchResults.map(sr => becca.notes[sr.noteId]);
-}
-
-/**
- * @param {string} query
  * @param {SearchContext} searchContext
  * @return {SearchResult[]}
  */
-function findResultsWithQuery(query, searchContext) {
+function findNotesWithQuery(query, searchContext) {
     query = query || "";
     searchContext.originalQuery = query;
 
@@ -163,11 +147,11 @@ function findResultsWithQuery(query, searchContext) {
         return [];
     }
 
-    return findResultsWithExpression(expression, searchContext);
+    return findNotesWithExpression(expression, searchContext);
 }
 
 function searchTrimmedNotes(query, searchContext) {
-    const allSearchResults = findResultsWithQuery(query, searchContext);
+    const allSearchResults = findNotesWithQuery(query, searchContext);
     const trimmedSearchResults = allSearchResults.slice(0, 200);
 
     return {
@@ -190,7 +174,7 @@ function searchNotesForAutocomplete(query) {
     return results.map(result => {
         return {
             notePath: result.notePath,
-            noteTitle: beccaService.getNoteTitle(result.noteId),
+            noteTitle: noteCacheService.getNoteTitle(result.noteId),
             notePathTitle: result.notePathTitle,
             highlightedNotePathTitle: result.highlightedNotePathTitle
         }
@@ -210,7 +194,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     highlightedTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of searchResults) {
-        const note = becca.notes[result.noteId];
+        const note = noteCache.notes[result.noteId];
 
         result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
 
@@ -222,7 +206,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
             result.highlightedNotePathTitle += ` "mime: ${note.mime}'`;
         }
 
-        for (const attr of note.getAttributes()) {
+        for (const attr of note.attributes) {
             if (highlightedTokens.find(token => attr.name.toLowerCase().includes(token)
                 || attr.value.toLowerCase().includes(token))) {
 
@@ -268,6 +252,5 @@ function formatAttribute(attr) {
 module.exports = {
     searchTrimmedNotes,
     searchNotesForAutocomplete,
-    findResultsWithQuery,
-    searchNotes
+    findNotesWithQuery
 };

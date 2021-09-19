@@ -1,11 +1,11 @@
 const ScriptContext = require('./script_context');
+const repository = require('./repository');
 const cls = require('./cls');
 const log = require('./log');
-const becca = require("../becca/becca");
 
-function executeNote(note, apiParams) {
-    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
-        log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS frontend"`);
+async function executeNote(note, apiParams) {
+    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
+        log.info(`Cannot execute note ${note.noteId}`);
 
         return;
     }
@@ -15,16 +15,16 @@ function executeNote(note, apiParams) {
     return executeBundle(bundle, apiParams);
 }
 
-function executeNoteNoException(note, apiParams) {
+async function executeNoteNoException(note, apiParams) {
     try {
-        executeNote(note, apiParams);
+        await executeNote(note, apiParams);
     }
     catch (e) {
         // just swallow, exception is logged already in executeNote
     }
 }
 
-function executeBundle(bundle, apiParams = {}) {
+async function executeBundle(bundle, apiParams = {}) {
     if (!apiParams.startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         apiParams.startNote = bundle.note;
@@ -33,12 +33,12 @@ function executeBundle(bundle, apiParams = {}) {
     cls.set('sourceId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
-    const script = "function() {\r\n" + bundle.script + "\r\n}";
+    const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
-        return execute(ctx, script);
+        return await execute(ctx, script);
     }
     catch (e) {
         log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
@@ -48,28 +48,25 @@ function executeBundle(bundle, apiParams = {}) {
 }
 
 /**
- * THIS METHOD CANT BE ASYNC, OTHERWISE TRANSACTION WRAPPER WON'T BE EFFECTIVE AND WE WILL BE LOSING THE
- * ENTITY CHANGES IN CLS.
- *
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
-    const startNote = becca.getNote(startNoteId);
-    const currentNote = becca.getNote(currentNoteId);
-    const originEntity = becca.getEntity(originEntityName, originEntityId);
+async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
+    const startNote = repository.getNote(startNoteId);
+    const currentNote = repository.getNote(currentNoteId);
+    const originEntity = repository.getEntityFromName(originEntityName, originEntityId);
 
-    // we're just executing an excerpt of the original frontend script in the backend context so we must
-    // override normal note's content and it's mime type / script environment
-    const backendOverrideContent = `return (${script}\r\n)(${getParams(params)})`;
+    currentNote.content = `return (${script}\r\n)(${getParams(params)})`;
+    currentNote.type = 'code';
+    currentNote.mime = 'application/javascript;env=backend';
 
-    const bundle = getScriptBundle(currentNote, true, null, [], backendOverrideContent);
+    const bundle = getScriptBundle(currentNote);
 
-    return executeBundle(bundle, { startNote, originEntity });
+    return await executeBundle(bundle, { startNote, originEntity });
 }
 
-function execute(ctx, script) {
-    return function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx);
+async function execute(ctx, script) {
+    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
 }
 
 function getParams(params) {
@@ -104,8 +101,8 @@ function getScriptBundleForFrontend(note) {
     return bundle;
 }
 
-function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = [], backendOverrideContent = null) {
-    if (!note.isContentAvailable()) {
+function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
+    if (!note.isContentAvailable) {
         return;
     }
 
@@ -118,12 +115,10 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
     }
 
     if (root) {
-        scriptEnv = !!backendOverrideContent
-            ? 'backend'
-            : note.getScriptEnv();
+        scriptEnv = note.getScriptEnv();
     }
 
-    if (note.type !== 'file' && !root && scriptEnv !== note.getScriptEnv()) {
+    if (note.type !== 'file' && scriptEnv !== note.getScriptEnv()) {
         return;
     }
 
@@ -155,16 +150,13 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
 
     const moduleNoteIds = modules.map(mod => mod.noteId);
 
-    // only frontend scripts are async. Backend cannot be async because of transaction management.
-    const isFrontend = scriptEnv === 'frontend';
-
     if (note.isJavaScript()) {
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
-${root ? 'return ' : ''}${isFrontend ? 'await' : ''} ((${isFrontend ? 'async' : ''} function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
+${root ? 'return ' : ''}await ((async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
-${backendOverrideContent || note.getContent()};
+${note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];

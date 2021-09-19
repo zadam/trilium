@@ -7,7 +7,7 @@ import attributeAutocompleteService from "../../services/attribute_autocomplete.
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
-import froca from "../../services/froca.js";
+import treeCache from "../../services/tree_cache.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -75,7 +75,7 @@ const TPL = `
     <button type="button"
             class="relation-map-reset-pan-zoom btn icon-button floating-button bx bx-crop no-print"
             title="Reset pan & zoom to initial coordinates and magnification"
-            style="right: 100px;"></button>
+            style="right: 70px;"></button>
 
     <div class="btn-group floating-button no-print" style="right: 10px;">
         <button type="button"
@@ -99,6 +99,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$relationMapContainer = this.$widget.find(".relation-map-container");
         this.$createChildNote = this.$widget.find(".relation-map-create-child-note");
         this.$zoomInButton = this.$widget.find(".relation-map-zoom-in");
@@ -183,8 +184,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             jsPlumb.ready(res);
         });
-
-        super.doRender();
     }
 
     async contextMenuHandler(command, originalTarget) {
@@ -247,7 +246,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         };
 
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const noteComplement = await this.tabContext.getNoteComplement();
 
         if (noteComplement.content) {
             try {
@@ -533,7 +532,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             linkService.goToLink(e);
         });
 
-        const note = await froca.getNote(noteId);
+        const note = await treeCache.getNote(noteId);
 
         const $noteBox = $("<div>")
             .addClass("note-box")

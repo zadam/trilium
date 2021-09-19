@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
-import froca from "./froca.js";
+import treeCache from "./tree_cache.js";
 import treeService from "./tree.js";
 import toastService from "./toast.js";
 
@@ -20,7 +20,7 @@ async function createNote(parentNotePath, options = {}) {
         options.isProtected = false;
     }
 
-    if (appContext.tabManager.getActiveContextNoteType() !== 'text') {
+    if (appContext.tabManager.getActiveTabNoteType() !== 'text') {
         options.saveSelection = false;
     }
 
@@ -48,19 +48,19 @@ async function createNote(parentNotePath, options = {}) {
     await ws.waitForMaxKnownEntityChangeId();
 
     if (options.activate) {
-        const activeNoteContext = appContext.tabManager.getActiveContext();
-        await activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
+        const activeTabContext = appContext.tabManager.getActiveTabContext();
+        await activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
             appContext.triggerEvent('focusAndSelectTitle');
         }
         else if (options.focus === 'content') {
-            appContext.triggerEvent('focusOnDetail', {ntxId: activeNoteContext.ntxId});
+            appContext.triggerEvent('focusOnDetail', {tabId: activeTabContext.tabId});
         }
     }
 
-    const noteEntity = await froca.getNote(note.noteId);
-    const branchEntity = froca.getBranch(branch.branchId);
+    const noteEntity = await treeCache.getNote(note.noteId);
+    const branchEntity = treeCache.getBranch(branch.branchId);
 
     return {
         note: noteEntity,
@@ -90,10 +90,10 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    const activeNoteContext = appContext.tabManager.getActiveContext();
-    activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
+    activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
 
-    const origNote = await froca.getNote(noteId);
+    const origNote = await treeCache.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 

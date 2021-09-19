@@ -2,7 +2,8 @@ import server from '../services/server.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
-import froca from "../services/froca.js";
+import treeCache from "../services/tree_cache.js";
+import bundle from "../services/bundle.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -20,15 +21,15 @@ const NOTE_TYPE_ICONS = {
 /**
  * FIXME: since there's no "full note" anymore we can rename this to Note
  *
- * This note's representation is used in note tree and is kept in Froca.
+ * This note's representation is used in note tree and is kept in TreeCache.
  */
 class NoteShort {
     /**
-     * @param {Froca} froca
+     * @param {TreeCache} treeCache
      * @param {Object.<string, Object>} row
      */
-    constructor(froca, row) {
-        this.froca = froca;
+    constructor(treeCache, row) {
+        this.treeCache = treeCache;
 
         /** @type {string[]} */
         this.attributes = [];
@@ -61,6 +62,8 @@ class NoteShort {
         this.type = row.type;
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
+        /** @param {boolean} */
+        this.isDeleted = !!row.isDeleted;
     }
 
     addParent(parentNoteId, branchId) {
@@ -91,7 +94,7 @@ class NoteShort {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
-            branchIdPos[branchId] = this.froca.getBranch(branchId).notePosition;
+            branchIdPos[branchId] = this.treeCache.getBranch(branchId).notePosition;
         }
 
         this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] < branchIdPos[this.childToBranch[b]] ? -1 : 1);
@@ -103,7 +106,7 @@ class NoteShort {
     }
 
     async getContent() {
-        // we're not caching content since these objects are in froca and as such pretty long lived
+        // we're not caching content since these objects are in treeCache and as such pretty long lived
         const note = await server.get("notes/" + this.noteId);
 
         return note.content;
@@ -131,7 +134,7 @@ class NoteShort {
     getBranches() {
         const branchIds = Object.values(this.parentToBranch);
 
-        return this.froca.getBranches(branchIds);
+        return this.treeCache.getBranches(branchIds);
     }
 
     /** @returns {boolean} */
@@ -144,7 +147,7 @@ class NoteShort {
         // don't use Object.values() to guarantee order
         const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
 
-        return this.froca.getBranches(branchIds);
+        return this.treeCache.getBranches(branchIds);
     }
 
     /** @returns {string[]} */
@@ -154,7 +157,7 @@ class NoteShort {
 
     /** @returns {NoteShort[]} */
     getParentNotes() {
-        return this.froca.getNotesFromCache(this.parents);
+        return this.treeCache.getNotesFromCache(this.parents);
     }
 
     // will sort the parents so that non-search & non-archived are first and archived at the end
@@ -167,7 +170,7 @@ class NoteShort {
                 return 1;
             }
 
-            const aNote = this.froca.getNoteFromCache([aNoteId]);
+            const aNote = this.treeCache.getNoteFromCache([aNoteId]);
 
             if (aNote.hasLabel('archived')) {
                 return 1;
@@ -184,7 +187,7 @@ class NoteShort {
 
     /** @returns {Promise<NoteShort[]>} */
     async getChildNotes() {
-        return await this.froca.getNotes(this.children);
+        return await this.treeCache.getNotes(this.children);
     }
 
     /**
@@ -194,7 +197,7 @@ class NoteShort {
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
-            .map(attributeId => this.froca.attributes[attributeId])
+            .map(attributeId => this.treeCache.attributes[attributeId])
             .filter(Boolean); // filter out nulls;
 
         return this.__filterAttrs(attrs, type, name);
@@ -222,7 +225,7 @@ class NoteShort {
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.getParentNotes()) {
-                    // these virtual parent-child relationships are also loaded into froca
+                    // these virtual parent-child relationships are also loaded into frontend tree cache
                     if (parentNote.type !== 'search') {
                         attrArrs.push(parentNote.__getInheritableAttributes(newPath));
                     }
@@ -230,7 +233,7 @@ class NoteShort {
             }
 
             for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' && attr.name === 'template')) {
-                const templateNote = this.froca.notes[templateAttr.value];
+                const templateNote = this.treeCache.notes[templateAttr.value];
 
                 if (templateNote && templateNote.noteId !== this.noteId) {
                     attrArrs.push(templateNote.__getCachedAttributes(newPath));
@@ -250,10 +253,6 @@ class NoteShort {
         }
 
         return noteAttributeCache.attributes[this.noteId];
-    }
-
-    isRoot() {
-        return this.noted
     }
 
     getAllNotePaths(encounteredNoteIds = null) {
@@ -303,9 +302,8 @@ class NoteShort {
         const notePaths = this.getAllNotePaths().map(path => ({
             notePath: path,
             isInHoistedSubTree: path.includes(hoistedNotePath),
-            isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
-            isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
-            isHidden: path.includes("hidden")
+            isArchived: path.find(noteId => treeCache.notes[noteId].hasLabel('archived')),
+            isSearch: path.find(noteId => treeCache.notes[noteId].type === 'search')
         }));
 
         notePaths.sort((a, b) => {
@@ -583,7 +581,7 @@ class NoteShort {
         const targets = [];
 
         for (const relation of relations) {
-            targets.push(await this.froca.getNote(relation.value));
+            targets.push(await this.treeCache.getNote(relation.value));
         }
 
         return targets;
@@ -595,7 +593,7 @@ class NoteShort {
     getTemplateNotes() {
         const relations = this.getRelations('template');
 
-        return relations.map(rel => this.froca.notes[rel.value]);
+        return relations.map(rel => this.treeCache.notes[rel.value]);
     }
 
     getPromotedDefinitionAttributes() {
@@ -656,7 +654,7 @@ class NoteShort {
      */
     getTargetRelations() {
         return this.targetRelations
-            .map(attributeId => this.froca.attributes[attributeId]);
+            .map(attributeId => this.treeCache.attributes[attributeId]);
     }
 
     /**
@@ -667,7 +665,7 @@ class NoteShort {
     async getTargetRelationSourceNotes() {
         const targetRelations = this.getTargetRelations();
 
-        return await this.froca.getNotes(targetRelations.map(tr => tr.noteId));
+        return await this.treeCache.getNotes(targetRelations.map(tr => tr.noteId));
     }
 
     /**
@@ -676,7 +674,7 @@ class NoteShort {
      * @return {Promise<NoteComplement>}
      */
     async getNoteComplement() {
-        return await this.froca.getNoteComplement(this.noteId);
+        return await this.treeCache.getNoteComplement(this.noteId);
     }
 
     get toString() {
@@ -685,7 +683,7 @@ class NoteShort {
 
     get dto() {
         const dto = Object.assign({}, this);
-        delete dto.froca;
+        delete dto.treeCache;
 
         return dto;
     }

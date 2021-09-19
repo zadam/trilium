@@ -1,0 +1,45 @@
+<style>
+#note-info-table td, #note-info-table th {
+    padding: 15px;
+}
+</style>
+
+<div id="note-info-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Note info</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="note-info-table">
+                    <tr>
+                        <th>Note ID</th>
+                        <td id="note-info-note-id"></td>
+                    </tr>
+                    <tr>
+                        <th>Date created</th>
+                        <td id="note-info-date-created"></td>
+                    </tr>
+                    <tr>
+                        <th>Date modified</th>
+                        <td id="note-info-date-modified"></td>
+                    </tr>
+                    <tr>
+                        <th>Type</th>
+                        <td id="note-info-type"></td>
+                    </tr>
+                    <tr>
+                        <th>MIME</th>
+                        <td id="note-info-mime"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="note-info-ok-button">OK</button>
+            </div>
+        </div>
+    </div>
+</div>

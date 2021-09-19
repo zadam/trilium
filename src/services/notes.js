@@ -2,9 +2,13 @@ const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
-const entityChangesService = require('./entity_changes');
+const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
+const repository = require('./repository');
 const cls = require('../services/cls');
+const Note = require('../entities/note');
+const Branch = require('../entities/branch');
+const Attribute = require('../entities/attribute');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
@@ -13,22 +17,15 @@ const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
-const becca = require('../becca/becca');
-const Branch = require('../becca/entities/branch');
-const Note = require('../becca/entities/note');
-const Attribute = require('../becca/entities/attribute');
 
 function getNewNotePosition(parentNoteId) {
-    const note = becca.notes[parentNoteId];
+    const maxNotePos = sql.getValue(`
+            SELECT MAX(notePosition) 
+            FROM branches 
+            WHERE parentNoteId = ? 
+              AND isDeleted = 0`, [parentNoteId]);
 
-    if (!note) {
-        throw new Error(`Can't find note ${parentNoteId}`);
-    }
-
-    const maxNotePos = note.getChildBranches()
-        .reduce((max, note) => Math.max(max, note.notePosition), 0);
-
-    return maxNotePos + 10;
+    return maxNotePos === null ? 0 : maxNotePos + 10;
 }
 
 function triggerChildNoteCreated(childNote, parentNote) {
@@ -51,7 +48,7 @@ function deriveMime(type, mime) {
     if (type === 'text') {
         mime = 'text/html';
     } else if (type === 'code') {
-        mime = 'text/plain';
+        mime = 'plain';
     } else if (['relation-map', 'search'].includes(type)) {
         mime = 'application/json';
     } else if (['render', 'book'].includes(type)) {
@@ -74,6 +71,8 @@ function copyChildAttributes(parentNote, childNote) {
                 position: attr.position,
                 isInheritable: attr.isInheritable
             }).save();
+
+            childNote.invalidateAttributeCache();
         }
     }
 }
@@ -96,7 +95,7 @@ function copyChildAttributes(parentNote, childNote) {
  * @return {{note: Note, branch: Branch}}
  */
 function createNewNote(params) {
-    const parentNote = becca.notes[params.parentNoteId];
+    const parentNote = repository.getNote(params.parentNoteId);
 
     if (!parentNote) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
@@ -141,7 +140,7 @@ function createNewNote(params) {
 
 function createNewNoteWithTarget(target, targetBranchId, params) {
     if (!params.type) {
-        const parentNote = becca.notes[params.parentNoteId];
+        const parentNote = repository.getNote(params.parentNoteId);
 
         // code note type can be inherited, otherwise text is default
         params.type = parentNote.type === 'code' ? 'code' : 'text';
@@ -152,13 +151,13 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
         return createNewNote(params);
     }
     else if (target === 'after') {
-        const afterBranch = becca.branches[targetBranchId];
+        const afterNote = sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [targetBranchId]);
 
-        // not updating utcDateModified to avoid having to sync whole rows
+        // not updating utcDateModified to avoig having to sync whole rows
         sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
-            [params.parentNoteId, afterBranch.notePosition]);
+            [params.parentNoteId, afterNote.notePosition]);
 
-        params.notePosition = afterBranch.notePosition + 10;
+        params.notePosition = afterNote.notePosition + 10;
 
         const retObject = createNewNote(params);
 
@@ -316,7 +315,7 @@ function downloadImages(noteId, content) {
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
             if (url in imageUrlToNoteIdMapping) {
-                const imageNote = becca.getNote(imageUrlToNoteIdMapping[url]);
+                const imageNote = repository.getNote(imageUrlToNoteIdMapping[url]);
 
                 if (!imageNote || imageNote.isDeleted) {
                     delete imageUrlToNoteIdMapping[url];
@@ -359,15 +358,9 @@ function downloadImages(noteId, content) {
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
-                const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping));
+                const imageNotes = repository.getNotes(Object.values(imageUrlToNoteIdMapping));
 
-                const origNote = becca.getNote(noteId);
-
-                if (!origNote) {
-                    log.error(`Cannot find note ${noteId} to replace image link.`);
-                    return;
-                }
-
+                const origNote = repository.getNote(noteId);
                 const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
@@ -419,12 +412,11 @@ function saveLinks(note, content) {
         throw new Error("Unrecognized type " + note.type);
     }
 
-    const existingLinks = note.getRelations().filter(rel =>
-        ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(rel.name));
+    const existingLinks = note.getLinks();
 
     for (const foundLink of foundLinks) {
-        const targetNote = becca.notes[foundLink.value];
-        if (!targetNote) {
+        const targetNote = repository.getNote(foundLink.value);
+        if (!targetNote || targetNote.isDeleted) {
             continue;
         }
 
@@ -442,6 +434,10 @@ function saveLinks(note, content) {
 
             existingLinks.push(newLink);
         }
+        else if (existingLink.isDeleted) {
+            existingLink.isDeleted = false;
+            existingLink.save();
+        }
         // else the link exists so we don't need to do anything
     }
 
@@ -451,7 +447,8 @@ function saveLinks(note, content) {
                                     && existingLink.name === foundLink.name));
 
     for (const unusedLink of unusedLinks) {
-        unusedLink.markAsDeleted();
+        unusedLink.isDeleted = true;
+        unusedLink.save();
     }
 
     return content;
@@ -479,9 +476,9 @@ function saveNoteRevision(note) {
 }
 
 function updateNote(noteId, noteUpdates) {
-    const note = becca.getNote(noteId);
+    const note = repository.getNote(noteId);
 
-    if (!note.isContentAvailable()) {
+    if (!note.isContentAvailable) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 
@@ -526,7 +523,7 @@ function updateNote(noteId, noteUpdates) {
 function deleteBranch(branch, deleteId, taskContext) {
     taskContext.increaseProgressCount();
 
-    if (!branch) {
+    if (!branch || branch.isDeleted) {
         return false;
     }
 
@@ -534,10 +531,12 @@ function deleteBranch(branch, deleteId, taskContext) {
         || branch.noteId === 'root'
         || branch.noteId === cls.getHoistedNoteId()) {
 
-        throw new Error("Can't delete root or hoisted branch/note");
+        throw new Error("Can't delete root branch/note");
     }
 
-    branch.markAsDeleted(deleteId);
+    branch.isDeleted = true;
+    branch.deleteId = deleteId;
+    branch.save();
 
     const note = branch.getNote();
     const notDeletedBranches = note.getBranches();
@@ -549,17 +548,23 @@ function deleteBranch(branch, deleteId, taskContext) {
 
         // first delete children and then parent - this will show up better in recent changes
 
+        note.isDeleted = true;
+        note.deleteId = deleteId;
+        note.save();
+
         log.info("Deleting note " + note.noteId);
 
         for (const attribute of note.getOwnedAttributes()) {
-            attribute.markAsDeleted(deleteId);
+            attribute.isDeleted = true;
+            attribute.deleteId = deleteId;
+            attribute.save();
         }
 
         for (const relation of note.getTargetRelations()) {
-            relation.markAsDeleted(deleteId);
+            relation.isDeleted = true;
+            relation.deleteId = deleteId;
+            relation.save();
         }
-
-        note.markAsDeleted(deleteId);
 
         return true;
     }
@@ -569,84 +574,79 @@ function deleteBranch(branch, deleteId, taskContext) {
 }
 
 /**
- * @param {string} noteId
+ * @param {Note} note
+ * @param {string} deleteId
  * @param {TaskContext} taskContext
  */
-function undeleteNote(noteId, taskContext) {
-    const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+function undeleteNote(note, deleteId, taskContext) {
+    const undeletedParentBranches = getUndeletedParentBranches(note.noteId, deleteId);
 
-    if (!note.isDeleted) {
-        log.error(`Note ${noteId} is not deleted and thus cannot be undeleted.`);
-        return;
-    }
-
-    const undeletedParentBranchIds = getUndeletedParentBranchIds(noteId, note.deleteId);
-
-    if (undeletedParentBranchIds.length === 0) {
+    if (undeletedParentBranches.length === 0) {
         // cannot undelete if there's no undeleted parent
         return;
     }
 
-    for (const parentBranchId of undeletedParentBranchIds) {
-        undeleteBranch(parentBranchId, note.deleteId, taskContext);
+    for (const parentBranch of undeletedParentBranches) {
+        undeleteBranch(parentBranch, deleteId, taskContext);
     }
 }
 
 /**
- * @param {string} branchId
+ * @param {Branch} branch
  * @param {string} deleteId
  * @param {TaskContext} taskContext
  */
-function undeleteBranch(branchId, deleteId, taskContext) {
-    const branch = sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId])
-
+function undeleteBranch(branch, deleteId, taskContext) {
     if (!branch.isDeleted) {
         return;
     }
 
-    const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [branch.noteId]);
+    const note = branch.getNote();
 
     if (note.isDeleted && note.deleteId !== deleteId) {
         return;
     }
 
-    new Branch(branch).save();
+    branch.isDeleted = false;
+    branch.save();
 
     taskContext.increaseProgressCount();
 
     if (note.isDeleted && note.deleteId === deleteId) {
-        new Note(note).save();
+        note.isDeleted = false;
+        note.save();
 
-        const attributes = sql.getRows(`
+        const attrs = repository.getEntities(`
                 SELECT * FROM attributes 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
                   AND (noteId = ? 
                            OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
 
-        for (const attribute of attributes) {
-            new Attribute(attribute).save();
+        for (const attr of attrs) {
+            attr.isDeleted = false;
+            attr.save();
         }
 
-        const childBranchIds = sql.getColumn(`
-            SELECT branches.branchId
+        const childBranches = repository.getEntities(`
+            SELECT branches.*
             FROM branches
             WHERE branches.isDeleted = 1
               AND branches.deleteId = ?
               AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
 
-        for (const childBranchId of childBranchIds) {
-            undeleteBranch(childBranchId, deleteId, taskContext);
+        for (const childBranch of childBranches) {
+            undeleteBranch(childBranch, deleteId, taskContext);
         }
     }
 }
 
 /**
- * @return return deleted branchIds of an undeleted parent note
+ * @return return deleted branches of an undeleted parent note
  */
-function getUndeletedParentBranchIds(noteId, deleteId) {
-    return sql.getColumn(`
-                    SELECT branches.branchId
+function getUndeletedParentBranches(noteId, deleteId) {
+    return repository.getEntities(`
+                    SELECT branches.*
                     FROM branches
                     JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
                     WHERE branches.noteId = ?
@@ -743,20 +743,6 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
     eraseAttributes(attributeIdsToErase);
 }
 
-function eraseNotesWithDeleteId(deleteId) {
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE deleteId = ?", [deleteId]);
-
-    eraseNotes(noteIdsToErase);
-
-    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE deleteId = ?", [deleteId]);
-
-    eraseBranches(branchIdsToErase);
-
-    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE  deleteId = ?", [deleteId]);
-
-    eraseAttributes(attributeIdsToErase);
-}
-
 function eraseDeletedNotesNow() {
     eraseDeletedEntities(0);
 }
@@ -775,7 +761,7 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
 
     log.info(`Duplicating ${origNoteId} subtree into ${newParentNoteId}`);
 
-    const origNote = becca.notes[origNoteId];
+    const origNote = repository.getNote(origNoteId);
     // might be null if orig note is not in the target newParentNoteId
     const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === newParentNoteId);
 
@@ -797,7 +783,7 @@ function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
         throw new Error('Duplicating root is not possible');
     }
 
-    const origNote = becca.getNote(origNoteId);
+    const origNote = repository.getNote(origNoteId);
     const noteIdMapping = getNoteIdMapping(origNote);
 
     for (const childBranch of origNote.getChildBranches()) {
@@ -819,9 +805,9 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
 
-    const existingNote = becca.notes[newNoteId];
+    const existingNote = repository.getNote(newNoteId);
 
-    if (existingNote.title !== undefined) { // checking that it's not just note's skeleton created because of Branch above
+    if (existingNote) {
         // note has multiple clones and was already created from another placement in the tree
         // so a branch is all we need for this clone
         return {
@@ -897,8 +883,7 @@ module.exports = {
     scanForLinks,
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
-    getUndeletedParentBranchIds,
+    getUndeletedParentBranches,
     triggerNoteTitleChanged,
-    eraseDeletedNotesNow,
-    eraseNotesWithDeleteId
+    eraseDeletedNotesNow
 };

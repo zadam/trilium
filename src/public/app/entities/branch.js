@@ -1,7 +1,7 @@
 /** Represents mapping between note and parent note */
 class Branch {
-    constructor(froca, row) {
-        this.froca = froca;
+    constructor(treeCache, row) {
+        this.treeCache = treeCache;
 
         this.update(row);
     }
@@ -21,21 +21,23 @@ class Branch {
         this.isExpanded = !!row.isExpanded;
         /** @param {boolean} */
         this.fromSearchNote = !!row.fromSearchNote;
+        /** @param {boolean} */
+        this.isDeleted = !!row.isDeleted;
     }
 
     /** @returns {NoteShort} */
     async getNote() {
-        return this.froca.getNote(this.noteId);
+        return this.treeCache.getNote(this.noteId);
     }
 
     /** @returns {NoteShort} */
     getNoteFromCache() {
-        return this.froca.getNoteFromCache(this.noteId);
+        return this.treeCache.getNoteFromCache(this.noteId);
     }
 
     /** @returns {NoteShort} */
     async getParentNote() {
-        return this.froca.getNote(this.parentNoteId);
+        return this.treeCache.getNote(this.parentNoteId);
     }
 
     /** @returns {boolean} true if it's top level, meaning its parent is root note */

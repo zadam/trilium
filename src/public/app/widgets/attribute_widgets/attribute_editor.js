@@ -1,14 +1,13 @@
-import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import server from "../../services/server.js";
 import contextMenuService from "../../services/context_menu.js";
 import attributesParser from "../../services/attribute_parser.js";
 import libraryLoader from "../../services/library_loader.js";
-import froca from "../../services/froca.js";
+import treeCache from "../../services/tree_cache.js";
 import attributeRenderer from "../../services/attribute_renderer.js";
 import noteCreateService from "../../services/note_create.js";
 import treeService from "../../services/tree.js";
-import attributeService from "../../services/attributes.js";
 
 const HELP_TEXT = `
 <p>To add label, just type e.g. <code>#rock</code> or if you want to add also value then e.g. <code>#year = 2020</code></p> 
@@ -178,7 +177,7 @@ const editorConfig = {
     mention: mentionSetup
 };
 
-export default class AttributeEditorWidget extends NoteContextAwareWidget {
+export default class AttributeEditorWidget extends TabAwareWidget {
     constructor(attributeDetailWidget) {
         super();
 
@@ -187,6 +186,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$editor = this.$widget.find('.attribute-list-editor');
 
         this.initialized = this.initEditor();
@@ -227,15 +227,15 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     // triggered from keyboard shortcut
-    addNewLabelEvent({ntxId}) {
-        if (this.isNoteContext(ntxId)) {
+    addNewLabelEvent({tabId}) {
+        if (this.isTab(tabId)) {
             this.handleAddNewAttributeCommand('addNewLabel');
         }
     }
 
     // triggered from keyboard shortcut
-    addNewRelationEvent({ntxId}) {
-        if (this.isNoteContext(ntxId)) {
+    addNewRelationEvent({tabId}) {
+        if (this.isTab(tabId)) {
             this.handleAddNewAttributeCommand('addNewRelation');
         }
     }
@@ -447,7 +447,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async loadReferenceLinkTitle(noteId, $el) {
-        const note = await froca.getNote(noteId, true);
+        const note = await treeCache.getNote(noteId, true);
 
         let title;
 
@@ -483,8 +483,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         }
     }
 
-    async focusOnAttributesEvent({ntxId}) {
-        if (this.noteContext.ntxId === ntxId) {
+    async focusOnAttributesEvent({tabId}) {
+        if (this.tabContext.tabId === tabId) {
             if (this.$editor.is(":visible")) {
                 this.$editor.trigger('focus');
 
@@ -493,7 +493,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
                 });
             }
             else {
-                this.triggerEvent('focusOnDetail', {ntxId: this.noteContext.ntxId});
+                this.triggerEvent('focusOnDetail', {tabId: this.tabContext.tabId});
             }
         }
     }
@@ -512,7 +512,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.isAffecting(this.note))) {
             this.refresh();
         }
     }

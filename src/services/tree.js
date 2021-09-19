@@ -2,10 +2,11 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const Branch = require('../becca/entities/branch');
-const entityChangesService = require('./entity_changes');
+const repository = require('./repository');
+const Branch = require('../entities/branch');
+const entityChangesService = require('./entity_changes.js');
 const protectedSessionService = require('./protected_session');
-const becca = require('../becca/becca');
+const noteCache = require('./note_cache/note_cache');
 
 function getNotes(noteIds) {
     // we return also deleted notes which have been specifically asked for
@@ -59,9 +60,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 }
 
 function getExistingBranch(parentNoteId, childNoteId) {
-    const branchId = sql.getValue('SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
-
-    return becca.getBranch(branchId);
+    return repository.getEntity('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**
@@ -108,32 +107,58 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst = false) {
-    if (!sortBy) {
-        sortBy = 'title';
-    }
-
+function sortNotesByTitle(parentNoteId, foldersFirst = false, reverse = false) {
     sql.transactional(() => {
-        const notes = becca.getNote(parentNoteId).getChildNotes();
+        const notes = sql.getRows(
+            `SELECT branches.branchId, notes.noteId, title, isProtected, 
+                          CASE WHEN COUNT(childBranches.noteId) > 0 THEN 1 ELSE 0 END AS hasChildren 
+                   FROM notes 
+                   JOIN branches ON branches.noteId = notes.noteId
+                   LEFT JOIN branches childBranches ON childBranches.parentNoteId = notes.noteId AND childBranches.isDeleted = 0
+                   WHERE branches.isDeleted = 0 AND branches.parentNoteId = ?
+                   GROUP BY notes.noteId`, [parentNoteId]);
 
-        const normalize = obj => (obj && typeof obj === 'string') ? obj.toLowerCase() : obj;
+        protectedSessionService.decryptNotes(notes);
 
         notes.sort((a, b) => {
-            if (foldersFirst) {
-                const aHasChildren = a.hasChildren();
-                const bHasChildren = b.hasChildren();
+            if (foldersFirst && ((a.hasChildren && !b.hasChildren) || (!a.hasChildren && b.hasChildren))) {
+                // exactly one note of the two is a directory so the sorting will be done based on this status
+                return a.hasChildren ? -1 : 1;
+            }
+            else {
+                return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
+            }
+        });
 
-                if ((aHasChildren && !bHasChildren) || (!aHasChildren && bHasChildren)) {
-                    // exactly one note of the two is a directory so the sorting will be done based on this status
-                    return aHasChildren ? -1 : 1;
-                }
+        if (reverse) {
+            notes.reverse();
+        }
+
+        let position = 10;
+
+        for (const note of notes) {
+            sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
+                [position, note.branchId]);
+
+            if (note.branchId in noteCache.branches) {
+                noteCache.branches[note.branchId].notePosition = position;
+            }
+            else {
+                log.info(`Branch "${note.branchId}" was not found in note cache.`);
             }
 
-            let aEl = normalize(a[sortBy]);
-            let bEl = normalize(b[sortBy]);
+            position += 10;
+        }
 
-            return aEl < bEl ? -1 : 1;
-        });
+        entityChangesService.addNoteReorderingEntityChange(parentNoteId);
+    });
+}
+
+function sortNotes(parentNoteId, sortBy, reverse = false) {
+    sql.transactional(() => {
+        const notes = repository.getNote(parentNoteId).getChildNotes();
+
+        notes.sort((a, b) => a[sortBy] < b[sortBy] ? -1 : 1);
 
         if (reverse) {
             notes.reverse();
@@ -147,7 +172,7 @@ function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, branch.branchId]);
 
-            becca.branches[branch.branchId].notePosition = position;
+            noteCache.branches[branch.branchId].notePosition = position;
 
             position += 10;
         }
@@ -156,55 +181,38 @@ function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst
     });
 }
 
-function sortNotesIfNeeded(parentNoteId) {
-    const parentNote = becca.getNote(parentNoteId);
-
-    if (!parentNote) {
-        return;
-    }
-
-    const sortedLabel = parentNote.getLabel('sorted');
-
-    if (!sortedLabel || sortedLabel.value === 'off') {
-        return;
-    }
-
-    sortNotes(parentNoteId, sortedLabel.value);
-}
-
 /**
  * @deprecated - this will be removed in the future
  */
 function setNoteToParent(noteId, prefix, parentNoteId) {
-    const parentNote = becca.getNote(parentNoteId);
+    const parentNote = repository.getNote(parentNoteId);
 
     if (parentNote && parentNote.isDeleted) {
         throw new Error(`Cannot move note to deleted parent note ${parentNoteId}`);
     }
 
     // case where there might be more such branches is ignored. It's expected there should be just one
-    const branchId = sql.getValue("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
-    const branch = becca.getBranch(branchId);
+    const branch = repository.getEntity("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
 
     if (branch) {
         if (!parentNoteId) {
-            branch.markAsDeleted();
+            branch.isDeleted = true;
         }
         else {
             branch.parentNoteId = parentNoteId;
             branch.prefix = prefix;
-            branch.save();
         }
+
+        branch.save();
     }
     else if (parentNoteId) {
-        const note = becca.getNote(noteId);
+        const note = repository.getNote(noteId);
 
         if (note.isDeleted) {
             throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
         }
 
-        const branchId = sql.getValue('SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
-        const branch = becca.getBranch(branchId);
+        const branch = repository.getEntity('SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
 
         if (branch) {
             branch.prefix = prefix;
@@ -223,7 +231,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 module.exports = {
     getNotes,
     validateParentChild,
+    sortNotesByTitle,
     sortNotes,
-    sortNotesIfNeeded,
     setNoteToParent
 };

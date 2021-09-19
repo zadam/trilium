@@ -1,4 +1,4 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
 import fileWatcher from "../services/file_watcher.js";
 
@@ -19,7 +19,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteUpdateStatusWidget extends NoteContextAwareWidget {
+export default class NoteUpdateStatusWidget extends TabAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && !!fileWatcher.getFileModificationStatus(this.noteId);
@@ -27,6 +27,7 @@ export default class NoteUpdateStatusWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
         this.$filePath = this.$widget.find(".file-path");
         this.$fileLastModified = this.$widget.find(".file-last-modified");

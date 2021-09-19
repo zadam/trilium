@@ -1,6 +1,6 @@
 "use strict";
 
-const becca = require('../becca/becca');
+const repository = require('./repository');
 const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
@@ -9,7 +9,7 @@ const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
-const noteRevisionService = require('./note_revisions');
+const noteRevisionService = require('./note_revisions.js');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 
@@ -55,7 +55,7 @@ function getImageMimeFromExtension(ext) {
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
-    const note = becca.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     noteRevisionService.createNoteRevision(note);
     noteRevisionService.protectNoteRevisions(note);
@@ -78,7 +78,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
 
     const fileName = sanitizeFilename(originalName);
 
-    const parentNote = becca.getNote(parentNoteId);
+    const parentNote = repository.getNote(parentNoteId);
 
     const {note} = noteService.createNewNote({
         parentNoteId,

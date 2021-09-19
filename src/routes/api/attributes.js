@@ -3,11 +3,11 @@
 const sql = require('../../services/sql');
 const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
-const Attribute = require('../../becca/entities/attribute');
-const becca = require("../../becca/becca");
+const repository = require('../../services/repository');
+const Attribute = require('../../entities/attribute');
 
 function getEffectiveNoteAttributes(req) {
-    const note = becca.getNote(req.params.noteId);
+    const note = repository.getNote(req.params.noteId);
 
     return note.getAttributes();
 }
@@ -18,7 +18,7 @@ function updateNoteAttribute(req) {
 
     let attribute;
     if (body.attributeId) {
-        attribute = becca.getAttribute(body.attributeId);
+        attribute = repository.getAttribute(body.attributeId);
 
         if (attribute.noteId !== noteId) {
             return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
@@ -35,7 +35,8 @@ function updateNoteAttribute(req) {
                 newAttribute.save();
             }
 
-            attribute.markAsDeleted();
+            attribute.isDeleted = true;
+            attribute.save();
 
             return {
                 attributeId: newAttribute ? newAttribute.attributeId : null
@@ -47,19 +48,19 @@ function updateNoteAttribute(req) {
             return {};
         }
 
-        attribute = new Attribute({
-            noteId: noteId,
-            name: body.name,
-            type: body.type
-        });
+        attribute = new Attribute();
+        attribute.noteId = noteId;
+        attribute.name = body.name;
+        attribute.type = body.type;
     }
 
     if (attribute.type === 'label' || body.value.trim()) {
         attribute.value = body.value;
+        attribute.isDeleted = false;
     }
     else {
         // relations should never have empty target
-        attribute.markAsDeleted();
+        attribute.isDeleted = true;
     }
 
     attribute.save();
@@ -73,17 +74,16 @@ function setNoteAttribute(req) {
     const noteId = req.params.noteId;
     const body = req.body;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
+    let attr = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = ? AND name = ?`, [noteId, body.type, body.name]);
 
-    if (attributeId) {
-        const attr = becca.getAttribute(attributeId);
+    if (attr) {
         attr.value = body.value;
-        attr.save();
     } else {
-        const attr = new Attribute(body);
+        attr = new Attribute(body);
         attr.noteId = noteId;
-        attr.save();
     }
+
+    attr.save();
 }
 
 function addNoteAttribute(req) {
@@ -100,14 +100,15 @@ function deleteNoteAttribute(req) {
     const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
 
-    const attribute = becca.getAttribute(attributeId);
+    const attribute = repository.getAttribute(attributeId);
 
     if (attribute) {
         if (attribute.noteId !== noteId) {
             return [400, `Attribute ${attributeId} is not owned by ${noteId}`];
         }
 
-        attribute.markAsDeleted();
+        attribute.isDeleted = true;
+        attribute.save();
     }
 }
 
@@ -115,7 +116,7 @@ function updateNoteAttributes(req) {
     const noteId = req.params.noteId;
     const incomingAttributes = req.body;
 
-    const note = becca.getNote(noteId);
+    const note = repository.getNote(noteId);
 
     let existingAttrs = note.getOwnedAttributes();
 
@@ -142,7 +143,7 @@ function updateNoteAttributes(req) {
         }
 
         if (incAttr.type === 'relation') {
-            const targetNote = becca.getNote(incAttr.value);
+            const targetNote = repository.getNote(incAttr.value);
 
             if (!targetNote || targetNote.isDeleted) {
                 log.error(`Target note of relation ${JSON.stringify(incAttr)} does not exist or is deleted`);
@@ -173,7 +174,8 @@ function updateNoteAttributes(req) {
     // all the remaining existing attributes are not defined anymore and should be deleted
     for (const toDeleteAttr of existingAttrs) {
         if (!toDeleteAttr.isAutoLink()) {
-            toDeleteAttr.markAsDeleted();
+            toDeleteAttr.isDeleted = true;
+            toDeleteAttr.save();
         }
     }
 }
@@ -196,16 +198,16 @@ function createRelation(req) {
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
-    let attribute = becca.getAttribute(attributeId);
+    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
     if (!attribute) {
-        attribute = new Attribute({
-            noteId: sourceNoteId,
-            name: name,
-            type: 'relation',
-            value: targetNoteId
-        }).save();
+        attribute = new Attribute();
+        attribute.noteId = sourceNoteId;
+        attribute.name = name;
+        attribute.type = 'relation';
+        attribute.value = targetNoteId;
+
+        attribute.save();
     }
 
     return attribute;
@@ -216,11 +218,11 @@ function deleteRelation(req) {
     const targetNoteId = req.params.targetNoteId;
     const name = req.params.name;
 
-    const attributeId = sql.getValue(`SELECT attributeId FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+    let attribute = repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
-    if (attributeId) {
-        const attribute = becca.getAttribute(attributeId);
-        attribute.markAsDeleted();
+    if (attribute) {
+        attribute.isDeleted = true;
+        attribute.save();
     }
 }
 

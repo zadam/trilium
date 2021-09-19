@@ -1,4 +1,4 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
 
 const TPL = `
@@ -20,7 +20,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteListWidget extends NoteContextAwareWidget {
+export default class NoteListWidget extends TabAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && ['book', 'text', 'code'].includes(this.note.type)
@@ -31,8 +31,8 @@ export default class NoteListWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$content = this.$widget.find('.note-list-widget-content');
+        this.contentSized();
 
         const observer = new IntersectionObserver(entries => {
             this.isIntersecting = entries[0].isIntersecting;
@@ -77,8 +77,8 @@ export default class NoteListWidget extends NoteContextAwareWidget {
      * If it's evaluated before note detail then it's clearly intersected (visible) although after note detail load
      * it is not intersected (visible) anymore.
      */
-    noteDetailRefreshedEvent({ntxId}) {
-        if (!this.isNoteContext(ntxId)) {
+    noteDetailRefreshedEvent({tabId}) {
+        if (!this.isTab(tabId)) {
             return;
         }
 
@@ -90,14 +90,6 @@ export default class NoteListWidget extends NoteContextAwareWidget {
     notesReloadedEvent({noteIds}) {
         if (noteIds.includes(this.noteId)) {
             this.refresh();
-        }
-    }
-
-    entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && attr.name === 'viewType')) {
-            this.shownNoteId = null; // force render
-
-            this.checkRenderStatus();
         }
     }
 }

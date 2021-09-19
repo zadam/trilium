@@ -31,7 +31,7 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
-const specialNotesRoute = require('./api/special_notes.js');
+const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
@@ -45,11 +45,11 @@ const router = express.Router();
 const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
-const entityChangesService = require('../services/entity_changes');
+const protectedSessionService = require('../services/protected_session');
+const entityChangesService = require('../services/entity_changes.js');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
-const rateLimit = require("express-rate-limit");
-const AbstractEntity = require("../becca/entities/abstract_entity.js");
+
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -58,17 +58,6 @@ const csrfMiddleware = csurf({
 
 function apiResultHandler(req, res, result) {
     res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
-
-    if (result instanceof AbstractEntity) {
-        result = result.getPojo();
-    }
-    else if (Array.isArray(result)) {
-        for (const idx in result) {
-            if (result[idx] instanceof AbstractEntity) {
-                result[idx] = result[idx].getPojo();
-            }
-        }
-    }
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
@@ -145,13 +134,7 @@ const uploadMiddleware = multer.single('upload');
 function register(app) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
-
-    const loginRateLimiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 10 // limit each IP to 10 requests per windowMs
-    });
-
-    route(POST, '/login', [loginRateLimiter], loginRoute.login);
+    route(POST, '/login', [], loginRoute.login);
     route(POST, '/logout', [csrfMiddleware, auth.checkAuth], loginRoute.logout);
     route(GET, '/setup', [], setupRoute.setupPage);
 
@@ -221,17 +204,14 @@ function register(app) {
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
-    apiRoute(POST, '/api/global-link-map', linkMapRoute.getGlobalLinkMap);
 
-    apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
-    apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
-    apiRoute(GET, '/api/special-notes/month/:month', specialNotesRoute.getMonthNote);
-    apiRoute(GET, '/api/special-notes/year/:year', specialNotesRoute.getYearNote);
-    apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDateNotesForMonth);
-    apiRoute(POST, '/api/special-notes/sql-console', specialNotesRoute.createSqlConsole);
-    apiRoute(POST, '/api/special-notes/save-sql-console', specialNotesRoute.saveSqlConsole);
-    apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
-    apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
+    apiRoute(GET, '/api/date-notes/inbox/:date', dateNotesRoute.getInboxNote);
+    apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
+    apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
+    apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
+    apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
+    apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
+    apiRoute(POST, '/api/search-note', dateNotesRoute.createSearchNote);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);

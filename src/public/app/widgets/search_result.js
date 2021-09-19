@@ -1,4 +1,4 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
 
 const TPL = `
@@ -33,7 +33,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class SearchResultWidget extends NoteContextAwareWidget {
+export default class SearchResultWidget extends TabAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'search';
@@ -41,10 +41,10 @@ export default class SearchResultWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$content = this.$widget.find('.search-result-widget-content');
         this.$noResults = this.$widget.find('.search-no-results');
         this.$notExecutedYet = this.$widget.find('.search-not-executed-yet');
+        this.contentSized();
     }
 
     async refreshWithNote(note) {
@@ -56,8 +56,8 @@ export default class SearchResultWidget extends NoteContextAwareWidget {
         await noteListRenderer.renderList();
     }
 
-    searchRefreshedEvent({ntxId}) {
-        if (!this.isNoteContext(ntxId)) {
+    searchRefreshedEvent({tabId}) {
+        if (!this.isTab(tabId)) {
             return;
         }
 

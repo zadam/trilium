@@ -1,7 +1,7 @@
 "use strict";
 
 const NoteSet = require('../note_set');
-const becca = require('../../../becca/becca');
+const noteCache = require('../../note_cache/note_cache');
 const Expression = require('./expression');
 
 class AttributeExistsExp extends Expression {
@@ -15,8 +15,8 @@ class AttributeExistsExp extends Expression {
 
     execute(inputNoteSet) {
         const attrs = this.prefixMatch
-            ? becca.findAttributesWithPrefix(this.attributeType, this.attributeName)
-            : becca.findAttributes(this.attributeType, this.attributeName);
+            ? noteCache.findAttributesWithPrefix(this.attributeType, this.attributeName)
+            : noteCache.findAttributes(this.attributeType, this.attributeName);
 
         const resultNoteSet = new NoteSet();
 
@@ -25,10 +25,10 @@ class AttributeExistsExp extends Expression {
 
             if (inputNoteSet.hasNoteId(note.noteId)) {
                 if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
+                    resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
                 }
-                else if (note.isTemplate()) {
-                    resultNoteSet.addAll(note.getTemplatedNotes());
+                else if (note.isTemplate) {
+                    resultNoteSet.addAll(note.templatedNotes);
                 }
                 else {
                     resultNoteSet.add(note);

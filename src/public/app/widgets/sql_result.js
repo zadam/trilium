@@ -1,4 +1,4 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
 <div class="sql-result-widget">
@@ -8,14 +8,10 @@ const TPL = `
     }
     </style>
    
-    <div class="sql-query-no-rows alert alert-info" style="display: none;">
-        No rows have been returned for this query.
-    </div>
-   
     <div class="sql-console-result-container"></div>
 </div>`;
 
-export default class SqlResultWidget extends NoteContextAwareWidget {
+export default class SqlResultWidget extends TabAwareWidget {
     isEnabled() {
         return this.note
             && this.note.mime === 'text/x-sqlite;schema=trilium'
@@ -24,20 +20,17 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
-        this.$resultContainer = this.$widget.find('.sql-console-result-container');
-        this.$noRowsAlert = this.$widget.find('.sql-query-no-rows');
+        this.$sqlConsoleResultContainer = this.$widget.find('.sql-console-result-container');
     }
 
-    async sqlQueryResultsEvent({ntxId, results}) {
-        if (!this.isNoteContext(ntxId)) {
+    async sqlQueryResultsEvent({tabId, results}) {
+        if (!this.isTab(tabId)) {
             return;
         }
 
-        this.$noRowsAlert.toggle(results.length === 1 && results[0].length === 0);
-        this.$resultContainer.toggle(results.length > 1 || results[0].length > 0);
-
-        this.$resultContainer.empty();
+        this.$sqlConsoleResultContainer.empty();
 
         for (const rows of results) {
             if (!rows.length) {
@@ -45,7 +38,7 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
             }
 
             const $table = $('<table class="table table-striped">');
-            this.$resultContainer.append($table);
+            this.$sqlConsoleResultContainer.append($table);
 
             const result = rows[0];
             const $row = $("<tr>");

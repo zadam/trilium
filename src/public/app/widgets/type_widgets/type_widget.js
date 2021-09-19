@@ -1,14 +1,8 @@
-import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 
-export default class TypeWidget extends NoteContextAwareWidget {
+export default class TypeWidget extends TabAwareWidget {
     // for overriding
     static getType() {}
-
-    doRender() {
-        this.contentSized();
-
-        return super.doRender();
-    }
 
     /**
      * @param {NoteShort} note
@@ -29,7 +23,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
 
             await this.doRefresh(this.note);
 
-            this.triggerEvent('noteDetailRefreshed', {ntxId: this.noteContext.ntxId});
+            this.triggerEvent('noteDetailRefreshed', {tabId: this.tabContext.tabId});
         }
     }
 
@@ -41,11 +35,15 @@ export default class TypeWidget extends NoteContextAwareWidget {
 
     focus() {}
 
-    async readOnlyTemporarilyDisabledEvent({noteContext}) {
-        if (this.isNoteContext(noteContext.ntxId)) {
-            await this.refresh();
+    textPreviewDisabledEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
+            this.refresh();
+        }
+    }
 
-            this.focus();
+    codePreviewDisabledEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
+            this.refresh();
         }
     }
 }

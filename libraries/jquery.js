@@ -9313,7 +9313,7 @@ jQuery.extend( {
 
 		accepts: {
 			"*": allTypes,
-			text: "text/plain",
+			text: "plain",
 			html: "text/html",
 			xml: "application/xml, text/xml",
 			json: "application/json, text/javascript"

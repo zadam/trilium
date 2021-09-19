@@ -1,6 +1,6 @@
 "use strict";
 
-const ws = require('./ws');
+const ws = require('./ws.js');
 
 // taskId => TaskContext
 const taskContexts = {};

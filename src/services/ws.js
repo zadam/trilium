@@ -6,8 +6,6 @@ const cls = require('./cls');
 const config = require('./config');
 const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
-const becca = require("../becca/becca");
-const AbstractEntity = require("../becca/entities/abstract_entity.js");
 
 let webSocketServer;
 let lastSyncedPush = null;
@@ -40,9 +38,6 @@ function init(httpServer, sessionParser) {
 
             if (message.type === 'log-error') {
                 log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
-            }
-            else if (message.type === 'log-info') {
-                log.info('JS Info: ' + message.info);
             }
             else if (message.type === 'ping') {
                 await syncMutexService.doExclusively(() => sendPing(ws));
@@ -85,65 +80,29 @@ function fillInAdditionalProperties(entityChange) {
     }
 
     // fill in some extra data needed by the frontend
-    // first try to use becca which works for non-deleted entities
-    // only when that fails try to load from database
     if (entityChange.entityName === 'attributes') {
-        entityChange.entity = becca.getAttribute(entityChange.entityId);
-
-        if (!entityChange.entity) {
-            entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
-        }
+        entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'branches') {
-        entityChange.entity = becca.getBranch(entityChange.entityId);
-
-        if (!entityChange.entity) {
-            entityChange.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [entityChange.entityId]);
-        }
+        entityChange.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'notes') {
-        entityChange.entity = becca.getNote(entityChange.entityId);
+        entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
 
-        if (!entityChange.entity) {
-            entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
-
-            if (entityChange.entity.isProtected) {
-                entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
-            }
+        if (entityChange.entity.isProtected) {
+            entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
         }
     } else if (entityChange.entityName === 'note_revisions') {
         entityChange.noteId = sql.getValue(`SELECT noteId
                                           FROM note_revisions
                                           WHERE noteRevisionId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'note_reordering') {
-        entityChange.positions = {};
-
-        const parentNote = becca.getNote(entityChange.entityId);
-
-        if (parentNote) {
-            for (const childBranch of parentNote.getChildBranches()) {
-                entityChange.positions[childBranch.branchId] = childBranch.notePosition;
-            }
-        }
+        entityChange.positions = sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [entityChange.entityId]);
     }
     else if (entityChange.entityName === 'options') {
-        entityChange.entity = becca.getOption(entityChange.entityId);
-
-        if (!entityChange.entity) {
-            entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
-        }
-    }
-
-    if (entityChange.entity instanceof AbstractEntity) {
-        entityChange.entity = entityChange.entity.getPojo();
+        entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
     }
 }
 
-function sendPing(client, entityChangeIds = []) {
-    if (entityChangeIds.length === 0) {
-        return;
-    }
-
-    const entityChanges = sql.getManyRows(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
-
+function sendPing(client, entityChanges = []) {
     for (const entityChange of entityChanges) {
         try {
             fillInAdditionalProperties(entityChange);
@@ -165,9 +124,9 @@ function sendPing(client, entityChangeIds = []) {
 
 function sendTransactionEntityChangesToAllClients() {
     if (webSocketServer) {
-        const entityChangeIds = cls.getAndClearEntityChangeIds();
+        const entityChanges = cls.getAndClearEntityChanges();
 
-        webSocketServer.clients.forEach(client => sendPing(client, entityChangeIds));
+        webSocketServer.clients.forEach(client => sendPing(client, entityChanges));
     }
 }
 
@@ -187,10 +146,6 @@ function syncFailed() {
     sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
 }
 
-function reloadFrontend() {
-    sendMessageToAllClients({ type: 'reload-frontend' });
-}
-
 function setLastSyncedPush(entityChangeId) {
     lastSyncedPush = entityChangeId;
 }
@@ -203,6 +158,5 @@ module.exports = {
     syncFinished,
     syncFailed,
     sendTransactionEntityChangesToAllClients,
-    setLastSyncedPush,
-    reloadFrontend
+    setLastSyncedPush
 };

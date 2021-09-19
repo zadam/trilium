@@ -8,6 +8,7 @@ const TPL = `
 class CloseDetailButtonWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
         this.$widget.on('click', () => this.triggerCommand('setActiveScreen', {screen:'tree'}));
     }

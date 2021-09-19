@@ -51,7 +51,6 @@ async function createMainWindow() {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
     const {BrowserWindow} = require('electron'); // should not be statically imported
-
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
         y: mainWindowState.y,

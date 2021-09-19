@@ -2,7 +2,7 @@
 
 const optionService = require('../../services/options');
 const log = require('../../services/log');
-const searchService = require('../../services/search/services/search');
+const attributes = require('../../services/attributes');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = new Set([
@@ -91,7 +91,8 @@ function update(name, value) {
 }
 
 function getUserThemes() {
-    const notes = searchService.searchNotes("#appTheme");
+    const notes = attributes.getNotesWithLabel('appTheme');
+
     const ret = [];
 
     for (const note of notes) {

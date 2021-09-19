@@ -1,3 +1,24 @@
+# DANGER
+This is a **very experimental** fork of trilium with added syntax highlighting for code blocks.
+Use at your own risk in a safe environment! It might corrupt your notes so be cautious.
+
+## Usage:
+- Clone the repo
+- Run `npm install` then `npm run start-server`
+- Navigate to `localhost:8080` in a web-browser.
+- Add a new note and select the dropdown arrow next to the `code-block` icon
+- Choose a language to create a code-block
+
+# Tested/working languages so far
+- c,css,html,java,javascript,php,python
+
+# Issues:
+- Creating plain-text code blocks will kill Trilium.
+- Creating code-blocks with non-supported languages will kill Trilium.
+- Opening notes with unsupported code-blocks will kill Trilium.
+- In reading mode the highlighting is messed up.
+
+
 # Trilium Notes
 
 [English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md)

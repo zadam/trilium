@@ -4,7 +4,7 @@ import appContext from "../../services/app_context.js";
 
 export default class RootContainer extends FlexContainer {
     constructor() {
-        super('row');
+        super('column');
 
         this.id('root-widget');
         this.css('height', '100vh');
@@ -12,7 +12,7 @@ export default class RootContainer extends FlexContainer {
 
     refresh() {
         this.$widget.removeClass(); // remove all classes
-        const note = appContext.tabManager.getActiveContextNote();
+        const note = appContext.tabManager.getActiveTabNote();
 
         if (note) {
             this.$widget.addClass(note.getCssClass());
@@ -22,17 +22,34 @@ export default class RootContainer extends FlexContainer {
 
             this.$widget.toggleClass("protected", note.isProtected);
         }
+
+        this.setZenMode(this.isZenModeActive);
     }
 
-    noteSwitchedEvent() {
+    setZenMode(active) {
+        this.isZenModeActive = active;
+
+        if (this.isZenModeActive) {
+            $("#root-widget").addClass("zen-mode");
+        }
+        else {
+            $("#root-widget").removeClass("zen-mode");
+        }
+    }
+
+    toggleZenModeEvent() {
+        this.setZenMode(!this.isZenModeActive);
+    }
+
+    tabNoteSwitchedEvent() {
         this.refresh();
     }
 
-    activeContextChangedEvent() {
+    activeTabChangedEvent() {
         this.refresh();
     }
 
-    noteSwitchedAndActivatedEvent() {
+    tabNoteSwitchedAndActivatedEvent() {
         this.refresh();
     }
 

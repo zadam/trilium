@@ -385,7 +385,7 @@
     return external;
   });
 
-  CodeMirror.defineMIME("text/x-python", "python");
+  CodeMirror.defineMIME("python", "python");
 
   var words = function(str) { return str.split(" "); };
 

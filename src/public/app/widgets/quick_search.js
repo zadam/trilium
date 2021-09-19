@@ -2,21 +2,16 @@ import BasicWidget from "./basic_widget.js";
 import server from "../services/server.js";
 import linkService from "../services/link.js";
 import dateNotesService from "../services/date_notes.js";
-import froca from "../services/froca.js";
+import treeCache from "../services/tree_cache.js";
 import utils from "../services/utils.js";
 import appContext from "../services/app_context.js";
 
 const TPL = `
-<div class="quick-search input-group input-group-sm">
+<div class="quick-search input-group input-group-sm" style="width: 250px;">
   <style>
     .quick-search {
-        padding: 10px 10px 10px 0px;
-        height: 50px;
-    }
-    
-    .quick-search button, .quick-search input {
-        border: 0;
-        font-size: 100% !important;
+        margin-left: 5px;
+        margin-right: 5px;
     }
   
     .quick-search .dropdown-menu {
@@ -29,13 +24,13 @@ const TPL = `
     }
   </style>
   
-  <div class="input-group-prepend">
+  <input type="text" class="form-control form-control-sm search-string" placeholder="Quick search">
+  <div class="input-group-append">
     <button class="btn btn-outline-secondary search-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="bx bx-search"></span>
     </button>
-    <div class="dropdown-menu dropdown-menu-left"></div>
+    <div class="dropdown-menu dropdown-menu-right"></div>
   </div>
-  <input type="text" class="form-control form-control-sm search-string" placeholder="Quick search">
   </div>
 </div>`;
 
@@ -44,13 +39,14 @@ const MAX_DISPLAYED_NOTES = 15;
 export default class QuickSearchWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.overflowing();
 
         this.$searchString = this.$widget.find('.search-string');
         this.$dropdownMenu = this.$widget.find('.dropdown-menu');
         this.$dropdownToggle = this.$widget.find('.search-button');
         this.$dropdownToggle.dropdown();
 
-        this.$widget.find('.input-group-prepend').on('shown.bs.dropdown', () => this.search());
+        this.$widget.find('.input-group-append').on('shown.bs.dropdown', () => this.search());
 
         utils.bindElShortcut(this.$searchString, 'return', () => {
             if (this.$dropdownMenu.is(":visible")) {
@@ -94,7 +90,7 @@ export default class QuickSearchWidget extends BasicWidget {
             this.$dropdownMenu.append('<span class="dropdown-item disabled">No results found</span>');
         }
 
-        for (const note of await froca.getNotes(displayedNoteIds)) {
+        for (const note of await treeCache.getNotes(displayedNoteIds)) {
             const $link = await linkService.createNoteLink(note.noteId, {showNotePath: true});
             $link.addClass('dropdown-item');
             $link.attr("tabIndex", "0");
@@ -103,13 +99,13 @@ export default class QuickSearchWidget extends BasicWidget {
 
                 if (!e.target || e.target.nodeName !== 'A') {
                     // click on the link is handled by link handling but we want the whole item clickable
-                    appContext.tabManager.getActiveContext().setNote(note.noteId);
+                    appContext.tabManager.getActiveTabContext().setNote(note.noteId);
                 }
             });
             utils.bindElShortcut($link, 'return', () => {
                 this.$dropdownToggle.dropdown("hide");
 
-                appContext.tabManager.getActiveContext().setNote(note.noteId);
+                appContext.tabManager.getActiveTabContext().setNote(note.noteId);
             });
 
             this.$dropdownMenu.append($link);
@@ -136,9 +132,7 @@ export default class QuickSearchWidget extends BasicWidget {
     async showInFullSearch() {
         const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
 
-        await froca.loadSearchNote(searchNote.noteId);
-
-        await appContext.tabManager.getActiveContext().setNote(searchNote.noteId);
+        await appContext.tabManager.getActiveTabContext().setNote(searchNote.noteId);
     }
 
     quickSearchEvent() {

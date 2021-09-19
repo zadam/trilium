@@ -421,7 +421,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       CodeMirror.defineMIME(mimes[i], mode);
   }
 
-  def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
+  def(["c", "c", "text/x-chdr"], {
     name: "clike",
     keywords: words(cKeywords),
     types: cTypes,
@@ -437,7 +437,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     modeProps: {fold: ["brace", "include"]}
   });
 
-  def(["text/x-c++src", "text/x-c++hdr"], {
+  def(["c++", "text/x-c++hdr"], {
     name: "clike",
     keywords: words(cKeywords + " " + cppKeywords),
     types: cTypes,
@@ -477,7 +477,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     modeProps: {fold: ["brace", "include"]}
   });
 
-  def("text/x-java", {
+  def("java", {
     name: "clike",
     keywords: words("abstract assert break case catch class const continue default " +
                     "do else enum extends final finally for goto if implements import " +
@@ -503,7 +503,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     modeProps: {fold: ["brace", "import"]}
   });
 
-  def("text/x-csharp", {
+  def("cs", {
     name: "clike",
     keywords: words("abstract as async await base break case catch checked class const continue" +
                     " default delegate do else enum event explicit extern finally fixed for" +
@@ -647,7 +647,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     }
   }
 
-  def("text/x-kotlin", {
+  def("kotlin", {
     name: "clike",
     keywords: words(
       /*keywords*/

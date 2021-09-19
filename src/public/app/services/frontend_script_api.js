@@ -2,7 +2,7 @@ import server from './server.js';
 import utils from './utils.js';
 import toastService from './toast.js';
 import linkService from './link.js';
-import froca from './froca.js';
+import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
@@ -10,8 +10,8 @@ import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import appContext from "./app_context.js";
-import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
-import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
+import TabAwareWidget from "../widgets/tab_aware_widget.js";
+import TabCachingWidget from "../widgets/tab_caching_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 
 /**
@@ -39,11 +39,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
 
-    /** @property {NoteContextAwareWidget} */
-    this.TabAwareWidget = NoteContextAwareWidget;
+    /** @property {TabAwareWidget} */
+    this.TabAwareWidget = TabAwareWidget;
 
-    /** @property {NoteContextCachingWidget} */
-    this.TabCachingWidget = NoteContextCachingWidget;
+    /** @property {TabCachingWidget} */
+    this.TabCachingWidget = TabCachingWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;
@@ -56,7 +56,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<void>}
      */
     this.activateNote = async notePath => {
-        await appContext.tabManager.getActiveContext().setNote(notePath);
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
     };
 
     /**
@@ -68,7 +68,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.getActiveContext().setNote(notePath);
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
         appContext.triggerEvent('focusAndSelectTitle');
     };
 
@@ -82,7 +82,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.openTabWithNote = async (notePath, activate) => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.openContextWithNote(notePath, activate);
+        await appContext.tabManager.openTabWithNote(notePath, activate);
 
         if (activate) {
             appContext.triggerEvent('focusAndSelectTitle');
@@ -112,22 +112,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
                 .on('click', () => {
                     setTimeout(() => $pluginButtons.dropdown('hide'), 0);
                 });
-
-            if (opts.icon) {
-                button.append($("<span>").addClass("bx bx-" + opts.icon))
-                    .append("&nbsp;");
-            }
-
-            button.append($("<span>").text(opts.title));
         } else {
-            button = $('<span class="button-widget icon-action bx" data-toggle="tooltip" title="" data-placement="right"></span>')
-                .addClass("bx bx-" + (opts.icon || "question-mark"));
+            button = $('<button class="noborder">')
+                .addClass("btn btn-sm");
+        }
+        button = button.on('click', opts.action);
 
-            button.attr("title", opts.title);
-            button.tooltip({html: true});
+        if (opts.icon) {
+            button.append($("<span>").addClass("bx bx-" + opts.icon))
+                  .append("&nbsp;");
         }
 
-        button = button.on('click', opts.action);
+        button.append($("<span>").text(opts.title));
 
         button.attr('id', buttonId);
 
@@ -227,7 +223,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string} noteId
      * @return {Promise<NoteShort>}
      */
-    this.getNote = async noteId => await froca.getNote(noteId);
+    this.getNote = async noteId => await treeCache.getNote(noteId);
 
     /**
      * Returns list of notes. If note is missing from cache, it's loaded.
@@ -239,7 +235,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {boolean} [silentNotFoundError] - don't report error if the note is not found
      * @return {Promise<NoteShort[]>}
      */
-    this.getNotes = async (noteIds, silentNotFoundError = false) => await froca.getNotes(noteIds, silentNotFoundError);
+    this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
 
     /**
      * Update frontend tree (note) cache from the backend.
@@ -247,7 +243,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string[]} noteIds
      * @method
      */
-    this.reloadNotes = async noteIds => await froca.reloadNotes(noteIds);
+    this.reloadNotes = async noteIds => await treeCache.reloadNotes(noteIds);
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts
@@ -317,7 +313,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = () => appContext.tabManager.getActiveContextNote();
+    this.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -331,7 +327,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = () => appContext.tabManager.getActiveContextNotePath();
+    this.getActiveTabNotePath = () => appContext.tabManager.getActiveTabNotePath();
 
     /**
      * @method
@@ -344,7 +340,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      */
     this.protectActiveNote = async () => {
-        const activeNote = appContext.tabManager.getActiveContextNote();
+        const activeNote = appContext.tabManager.getActiveTabNote();
 
         await protectedSessionService.protectNote(activeNote.noteId, true, false);
     };
@@ -410,10 +406,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @return {Promise}
      */
     this.setHoistedNoteId = (noteId) => {
-        const activeNoteContext = appContext.tabManager.getActiveContext();
+        const activeTabContext = appContext.tabManager.getActiveTabContext();
 
-        if (activeNoteContext) {
-            activeNoteContext.setHoistedNoteId(noteId);
+        if (activeTabContext) {
+            activeTabContext.setHoistedNoteId(noteId);
         }
     };
 

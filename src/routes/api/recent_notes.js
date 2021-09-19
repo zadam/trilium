@@ -1,6 +1,6 @@
 "use strict";
 
-const RecentNote = require('../../becca/entities/recent_note');
+const RecentNote = require('../../entities/recent_note');
 const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 

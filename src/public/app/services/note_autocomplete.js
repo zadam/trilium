@@ -3,7 +3,7 @@ import appContext from "./app_context.js";
 import utils from './utils.js';
 import noteCreateService from './note_create.js';
 import treeService from './tree.js';
-import froca from "./froca.js";
+import treeCache from "./tree_cache.js";
 
 // this key needs to have this value so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
@@ -31,7 +31,7 @@ async function autocompleteSourceForCKEditor(queryText) {
 }
 
 async function autocompleteSource(term, cb, options = {}) {
-    const activeNoteId = appContext.tabManager.getActiveContextNoteId();
+    const activeNoteId = appContext.tabManager.getActiveTabNoteId();
 
     let results = await server.get('autocomplete'
             + '?query=' + encodeURIComponent(term)
@@ -252,7 +252,7 @@ function init() {
     }
 
     $.fn.setNote = async function (noteId) {
-        const note = noteId ? await froca.getNote(noteId, true) : null;
+        const note = noteId ? await treeCache.getNote(noteId, true) : null;
 
         $(this)
             .val(note ? note.title : "")

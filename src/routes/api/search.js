@@ -1,12 +1,11 @@
 "use strict";
 
-const becca = require('../../becca/becca');
-const SearchContext = require('../../services/search/search_context');
+const repository = require('../../services/repository');
+const SearchContext = require('../../services/search/search_context.js');
 const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
-const noteRevisionService = require("../../services/note_revisions");
-const {formatAttrForSearch} = require("../../services/attribute_formatter");
+const noteRevisionService = require("../../services/note_revisions.js");
 
 async function searchFromNoteInt(note) {
     let searchResultNoteIds;
@@ -29,7 +28,7 @@ async function searchFromNoteInt(note) {
             fuzzyAttributeSearch: false
         });
 
-        searchResultNoteIds = searchService.findResultsWithQuery(searchString, searchContext)
+        searchResultNoteIds = searchService.findNotesWithQuery(searchString, searchContext)
             .map(sr => sr.noteId);
     }
 
@@ -39,7 +38,7 @@ async function searchFromNoteInt(note) {
 }
 
 async function searchFromNote(req) {
-    const note = becca.getNote(req.params.noteId);
+    const note = repository.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} has not been found.`];
@@ -59,19 +58,22 @@ async function searchFromNote(req) {
 
 const ACTION_HANDLERS = {
     deleteNote: (action, note) => {
-        note.markAsDeleted();
+        note.isDeleted = true;
+        note.save();
     },
     deleteNoteRevisions: (action, note) => {
-        noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
+        noteRevisionService.eraseNoteRevisions(note.getRevisions().map(rev => rev.noteRevisionId));
     },
     deleteLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.labelName)) {
-            label.markAsDeleted();
+            label.isDeleted = true;
+            label.save();
         }
     },
     deleteRelation: (action, note) => {
         for (const relation of note.getOwnedRelations(action.relationName)) {
-            relation.markAsDeleted();
+            relation.isDeleted = true;
+            relation.save();
         }
     },
     renameLabel: (action, note) => {
@@ -128,7 +130,7 @@ function getActions(note) {
 }
 
 async function searchAndExecute(req) {
-    const note = becca.getNote(req.params.noteId);
+    const note = repository.getNote(req.params.noteId);
 
     if (!note) {
         return [404, `Note ${req.params.noteId} has not been found.`];
@@ -148,7 +150,7 @@ async function searchAndExecute(req) {
     const actions = getActions(note);
 
     for (const resultNoteId of searchResultNoteIds) {
-        const resultNote = becca.getNote(resultNoteId);
+        const resultNote = repository.getNote(resultNoteId);
 
         if (!resultNote || resultNote.isDeleted) {
             continue;
@@ -167,7 +169,7 @@ async function searchAndExecute(req) {
     }
 }
 
-function searchFromRelation(note, relationName) {
+async function searchFromRelation(note, relationName) {
     const scriptNote = note.getRelationTarget(relationName);
 
     if (!scriptNote) {
@@ -182,13 +184,13 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    if (!note.isContentAvailable()) {
+    if (!note.isContentAvailable) {
         log.info(`Note ${scriptNote.noteId} is not available outside of protected session.`);
 
         return [];
     }
 
-    const result = scriptService.executeNote(scriptNote, { originEntity: note });
+    const result = await scriptService.executeNote(scriptNote, { originEntity: note });
 
     if (!Array.isArray(result)) {
         log.info(`Result from ${scriptNote.noteId} is not an array.`);
@@ -213,7 +215,7 @@ function quickSearch(req) {
         fuzzyAttributeSearch: false
     });
 
-    return searchService.findResultsWithQuery(searchString, searchContext)
+    return searchService.findNotesWithQuery(searchString, searchContext)
         .map(sr => sr.noteId);
 }
 
@@ -227,7 +229,7 @@ function search(req) {
         ignoreHoistedNote: true
     });
 
-    return searchService.findResultsWithQuery(searchString, searchContext)
+    return searchService.findNotesWithQuery(searchString, searchContext)
         .map(sr => sr.noteId);
 }
 
@@ -240,8 +242,8 @@ function getRelatedNotes(req) {
         fuzzyAttributeSearch: false
     };
 
-    const matchingNameAndValue = searchService.findResultsWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
-    const matchingName = searchService.findResultsWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
+    const matchingNameAndValue = searchService.findNotesWithQuery(formatAttrForSearch(attr, true), new SearchContext(searchSettings));
+    const matchingName = searchService.findNotesWithQuery(formatAttrForSearch(attr, false), new SearchContext(searchSettings));
 
     const results = [];
 
@@ -263,6 +265,51 @@ function getRelatedNotes(req) {
         count: allResults.length,
         results
     };
+}
+
+function formatAttrForSearch(attr, searchWithValue) {
+    let searchStr = '';
+
+    if (attr.type === 'label') {
+        searchStr += '#';
+    }
+    else if (attr.type === 'relation') {
+        searchStr += '~';
+    }
+    else {
+        throw new Error(`Unrecognized attribute type ${JSON.stringify(attr)}`);
+    }
+
+    searchStr += attr.name;
+
+    if (searchWithValue && attr.value) {
+        if (attr.type === 'relation') {
+            searchStr += ".noteId";
+        }
+
+        searchStr += '=';
+        searchStr += formatValue(attr.value);
+    }
+
+    return searchStr;
+}
+
+function formatValue(val) {
+    if (!/[^\w_-]/.test(val)) {
+        return val;
+    }
+    else if (!val.includes('"')) {
+        return '"' + val + '"';
+    }
+    else if (!val.includes("'")) {
+        return "'" + val + "'";
+    }
+    else if (!val.includes("`")) {
+        return "`" + val + "`";
+    }
+    else {
+        return '"' + val.replace(/"/g, '\\"') + '"';
+    }
 }
 
 module.exports = {

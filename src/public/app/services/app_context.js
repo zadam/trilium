@@ -1,4 +1,4 @@
-import froca from "./froca.js";
+import treeCache from "./tree_cache.js";
 import bundleService from "./bundle.js";
 import RootCommandExecutor from "./root_command_executor.js";
 import Entrypoints from "./entrypoints.js";
@@ -28,7 +28,7 @@ class AppContext extends Component {
     }
 
     async start() {
-        await Promise.all([froca.initializedPromise, options.initializedPromise]);
+        await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
 
         this.showWidgets();
 
@@ -145,23 +145,23 @@ $(window).on('beforeunload', () => {
 });
 
 function isNotePathInAddress() {
-    const [notePath, ntxId] = treeService.getHashValueFromAddress();
+    const [notePath, tabId] = treeService.getHashValueFromAddress();
 
     return notePath.startsWith("root")
         // empty string is for empty/uninitialized tab
-        || (notePath === '' && !!ntxId);
+        || (notePath === '' && !!tabId);
 }
 
 $(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
-        const [notePath, ntxId] = treeService.getHashValueFromAddress();
+        const [notePath, tabId] = treeService.getHashValueFromAddress();
 
         if (!notePath) {
             console.log(`Invalid hash value "${document.location.hash}", ignoring.`);
             return;
         }
 
-        appContext.tabManager.switchToNoteContext(ntxId, notePath);
+        appContext.tabManager.switchToTab(tabId, notePath);
     }
 });
 

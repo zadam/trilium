@@ -27,7 +27,7 @@ let note;
 let noteRevisionId;
 
 export async function showCurrentNoteRevisions() {
-    await showNoteRevisionsDialog(appContext.tabManager.getActiveContextNoteId());
+    await showNoteRevisionsDialog(appContext.tabManager.getActiveTabNoteId());
 }
 
 export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
@@ -41,7 +41,7 @@ async function loadNoteRevisions(noteId, noteRevId) {
     $content.empty();
     $titleButtons.empty();
 
-    note = appContext.tabManager.getActiveContextNote();
+    note = appContext.tabManager.getActiveTabNote();
     revisionItems = await server.get(`notes/${noteId}/revisions`);
 
     for (const item of revisionItems) {

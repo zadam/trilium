@@ -2,8 +2,9 @@ const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const becca = require('../becca/becca');
-const Attribute = require('../becca/entities/attribute');
+const repository = require('./repository');
+const noteCache = require('./note_cache/note_cache');
+const Attribute = require('../entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
     // same script note can get here with multiple ways, but execute only once
@@ -22,7 +23,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
     runAttachedRelations(note, 'runOnNoteTitleChange', note);
 
     if (!note.isRoot()) {
-        const noteFromCache = becca.notes[note.noteId];
+        const noteFromCache = noteCache.notes[note.noteId];
 
         if (!noteFromCache) {
             return;
@@ -30,7 +31,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
 
         for (const parentNote of noteFromCache.parents) {
             if (parentNote.hasLabel("sorted")) {
-                treeService.sortNotesIfNeeded(parentNote.noteId);
+                treeService.sortNotesByTitle(parentNote.noteId);
             }
         }
     }
@@ -50,9 +51,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         runAttachedRelations(entity.getNote(), 'runOnAttributeCreation', entity);
 
         if (entity.type === 'relation' && entity.name === 'template') {
-            const note = becca.getNote(entity.noteId);
+            const note = repository.getNote(entity.noteId);
 
-            const templateNote = becca.getNote(entity.value);
+            const templateNote = repository.getNote(entity.value);
 
             if (!templateNote) {
                 return;
@@ -83,14 +84,14 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             }
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
-            treeService.sortNotesIfNeeded(entity.noteId);
+            treeService.sortNotesByTitle(entity.noteId);
 
             if (entity.isInheritable) {
-                const note = becca.notes[entity.noteId];
+                const note = noteCache.notes[entity.noteId];
 
                 if (note) {
-                    for (const noteId of note.getSubtreeNoteIds()) {
-                        treeService.sortNotesIfNeeded(noteId);
+                    for (const noteId of note.subtreeNoteIds) {
+                        treeService.sortNotesByTitle(noteId);
                     }
                 }
             }
@@ -124,7 +125,7 @@ function processInverseRelations(entityName, entity, handler) {
 
 eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
-        // we need to make sure that also target's inverse attribute exists and if not, then create it
+        // we need to make sure that also target's inverse attribute exists and if note, then create it
         // inverse attribute has to target our note as well
         const hasInverseAttribute = (targetNote.getRelations(definition.inverseRelation))
             .some(attr => attr.value === note.noteId);
@@ -153,7 +154,8 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
                 note.invalidateAttributeCache();
                 targetNote.invalidateAttributeCache();
 
-                relation.markAsDeleted();
+                relation.isDeleted = true;
+                relation.save();
             }
         }
     });

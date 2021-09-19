@@ -11,8 +11,8 @@ const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
-const ApiToken = require('../../becca/entities/api_token');
-const ws = require("../../services/ws");
+const ApiToken = require('../../entities/api_token');
+const ws = require("../../services/ws.js");
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {

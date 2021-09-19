@@ -1,10 +1,8 @@
-const becca = require('../becca/becca');
-
 function getOption(name) {
-    const option = require('../becca/becca').getOption(name);
+    const option = require('./repository').getOption(name);
 
     if (!option) {
-        throw new Error(`Option "${name}" doesn't exist`);
+        throw new Error(`Option ${name} doesn't exist`);
     }
 
     return option.value;
@@ -39,7 +37,7 @@ function getOptionBool(name) {
 }
 
 function setOption(name, value) {
-    const option = becca.getOption(name);
+    const option = require('./repository').getOption(name);
 
     if (value === true || value === false) {
         value = value.toString();
@@ -57,7 +55,7 @@ function setOption(name, value) {
 
 function createOption(name, value, isSynced) {
     // to avoid circular dependency, need to find better solution
-    const Option = require('../becca/entities/option');
+    const Option = require('../entities/option');
 
     new Option({
         name: name,
@@ -67,17 +65,11 @@ function createOption(name, value, isSynced) {
 }
 
 function getOptions() {
-    return Object.values(becca.options);
+    return require('./repository').getEntities("SELECT * FROM options ORDER BY name");
 }
 
 function getOptionsMap() {
-    const map = {};
-
-    for (const option of Object.values(becca.options)) {
-        map[option.name] = option.value;
-    }
-
-    return map;
+    return require('./sql').getMap("SELECT name, value FROM options ORDER BY name");
 }
 
 module.exports = {

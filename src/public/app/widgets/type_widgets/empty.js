@@ -2,6 +2,7 @@ import noteAutocompleteService from '../../services/note_autocomplete.js';
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import searchService from "../../services/search.js";
+import linkService from "../../services/link.js";
 
 const TPL = `
 <div class="note-detail-empty note-detail-printable">
@@ -49,6 +50,7 @@ export default class EmptyTypeWidget extends TypeWidget {
         // FIXME: this might be optimized - cleaned up after use since it's always used only for new tab
 
         this.$widget = $(TPL);
+        this.contentSized();
         this.$autoComplete = this.$widget.find(".note-autocomplete");
 
         noteAutocompleteService.initNoteAutocomplete(this.$autoComplete, {
@@ -60,14 +62,12 @@ export default class EmptyTypeWidget extends TypeWidget {
                     return false;
                 }
 
-                appContext.tabManager.getActiveContext().setNote(suggestion.notePath);
+                appContext.tabManager.getActiveTabContext().setNote(suggestion.notePath);
             });
 
         noteAutocompleteService.showRecentNotes(this.$autoComplete);
 
         this.$workspaceNotes = this.$widget.find('.workspace-notes');
-
-        super.doRender();
     }
 
     async doRefresh(note) {

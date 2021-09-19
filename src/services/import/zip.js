@@ -1,11 +1,12 @@
 "use strict";
 
-const Attribute = require('../../becca/entities/attribute');
+const Attribute = require('../../entities/attribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
+const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const Branch = require('../../becca/entities/branch');
+const Branch = require('../../entities/branch');
 const path = require('path');
 const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');
@@ -13,7 +14,6 @@ const mimeService = require("./mime");
 const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
-const becca = require("../../becca/becca");
 
 /**
  * @param {TaskContext} taskContext
@@ -171,7 +171,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
-        let note = becca.getNote(noteId);
+        let note = repository.getNote(noteId);
 
         if (note) {
             return;
@@ -348,7 +348,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
-        let note = becca.getNote(noteId);
+        let note = repository.getNote(noteId);
 
         if (note) {
             note.setContent(content);
@@ -466,12 +466,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        noteService.scanForLinks(becca.getNote(noteId));
+        noteService.scanForLinks(repository.getNote(noteId));
 
         if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that zip file but that
+            // if there's no meta file then the notes are created based on the order in that tar file but that
             // is usually quite random so we sort the notes in the way they would appear in the file manager
-            treeService.sortNotes(noteId, 'title', false, true);
+            treeService.sortNotesByTitle(noteId, true);
         }
 
         taskContext.increaseProgressCount();

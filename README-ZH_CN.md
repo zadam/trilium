@@ -37,8 +37,6 @@ Trilium是作为桌面应用程序（Linux和Windows）或服务器上托管的W
 
 [有关文档页面的完整列表，请参见Wiki。](https://github.com/zadam/trilium/wiki/)
 
-[中文Wiki在这里](https://github.com/baddate/trilium/wiki/)
-
 您还可以阅读[个人知识库模式](https://github.com/zadam/trilium/wiki/Patterns-of-personal-knowledge-base)，以获取有关如何使用Trilium的灵感。
 
 ## 贡献

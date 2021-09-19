@@ -7,7 +7,5 @@ export default class NoneTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-
-        super.doRender();
     }
 }

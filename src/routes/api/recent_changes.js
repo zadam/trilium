@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
-const beccaService = require('../../becca/becca_service');
+const noteCacheService = require('../../services/note_cache/note_cache_service');
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
@@ -25,7 +25,7 @@ function getRecentChanges(req) {
             JOIN notes USING(noteId)`);
 
     for (const noteRevision of noteRevisions) {
-        if (beccaService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
+        if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
             recentChanges.push(noteRevision);
         }
     }
@@ -58,7 +58,7 @@ function getRecentChanges(req) {
             WHERE notes.isDeleted = 1`);
 
     for (const note of notes) {
-        if (beccaService.isInAncestor(note.noteId, ancestorNoteId)) {
+        if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
             recentChanges.push(note);
         }
     }
@@ -81,10 +81,10 @@ function getRecentChanges(req) {
         if (change.current_isDeleted) {
             const deleteId = change.current_deleteId;
 
-            const undeletedParentBranchIds = noteService.getUndeletedParentBranchIds(change.noteId, deleteId);
+            const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
 
             // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
-            change.canBeUndeleted = undeletedParentBranchIds.length > 0;
+            change.canBeUndeleted = undeletedParentBranches.length > 0;
         }
     }
 

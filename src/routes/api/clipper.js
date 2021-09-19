@@ -6,22 +6,15 @@ const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
 const appInfo = require('../../services/app_info');
-const ws = require('../../services/ws');
+const ws = require('../../services/ws.js');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const Attribute = require('../../becca/entities/attribute');
+const Attribute = require('../../entities/attribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
-const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.searchNoteInSubtree(
-        formatAttrForSearch({
-            type: 'label',
-            name: "pageUrl",
-            value: pageUrl
-        }, true)
-    );
+    const notes = todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
 
     for (const note of notes) {
         if (note.getOwnedLabelValue('clipType') === 'clippings') {

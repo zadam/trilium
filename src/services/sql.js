@@ -134,10 +134,6 @@ function getRows(query, params = []) {
     return wrap(query, s => s.all(params));
 }
 
-function getRawRows(query, params = []) {
-    return wrap(query, s => s.raw().all(params));
-}
-
 function iterateRows(query, params = []) {
     return stmt(query).iterate(params);
 }
@@ -242,19 +238,13 @@ function transactional(func) {
         const ret = dbConnection.transaction(func).deferred();
 
         if (!dbConnection.inTransaction) { // i.e. transaction was really committed (and not just savepoint released)
-            require('./ws').sendTransactionEntityChangesToAllClients();
+            require('./ws.js').sendTransactionEntityChangesToAllClients();
         }
 
         return ret;
     }
     catch (e) {
-        const entityChanges = cls.getAndClearEntityChangeIds();
-
-        if (entityChanges.length > 0) {
-            log.info("Transaction rollback dirtied the becca, forcing reload.");
-
-            require('../becca/becca_loader').load();
-        }
+        cls.clearEntityChanges();
 
         throw e;
     }
@@ -318,7 +308,6 @@ module.exports = {
      * @return {object[]} - array of all rows, each row is a map of column name to column value
      */
     getRows,
-    getRawRows,
     iterateRows,
     getManyRows,
 

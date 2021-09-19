@@ -17,10 +17,9 @@ export default class RenderTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.contentSized();
         this.$noteDetailRenderHelp = this.$widget.find('.note-detail-render-help');
         this.$noteDetailRenderContent = this.$widget.find('.note-detail-render-content');
-
-        super.doRender();
     }
 
     async doRefresh(note) {
@@ -39,7 +38,7 @@ export default class RenderTypeWidget extends TypeWidget {
     }
 
     renderActiveNoteEvent() {
-        if (this.noteContext.isActive()) {
+        if (this.tabContext.isActive()) {
             this.refresh();
         }
     }

@@ -1,15 +1,15 @@
 const sql = require('./sql');
 const log = require('./log');
-const entityChangesService = require('./entity_changes');
+const entityChangesService = require('./entity_changes.js');
 const eventService = require('./events');
-const entityConstructor = require("../becca/entity_constructor");
+const entityConstructor = require('../entities/entity_constructor');
 
-function updateEntity(entityChange, entityRow) {
+function updateEntity(entityChange, entity, sourceId) {
     // can be undefined for options with isSynced=false
-    if (!entityRow) {
+    if (!entity) {
         if (entityChange.isSynced) {
             if (entityChange.isErased) {
-                entityChangesService.addEntityChange(entityChange, true);
+                entityChangesService.addEntityChange(entityChange, sourceId);
             }
             else {
                 log.info(`Encountered synced non-erased entity change without entity: ${JSON.stringify(entityChange)}`);
@@ -23,26 +23,18 @@ function updateEntity(entityChange, entityRow) {
     }
 
     const updated = entityChange.entityName === 'note_reordering'
-        ? updateNoteReordering(entityChange, entityRow)
-        : updateNormalEntity(entityChange, entityRow);
+        ? updateNoteReordering(entityChange, entity, sourceId)
+        : updateNormalEntity(entityChange, entity, sourceId);
 
-    if (updated) {
-        if (entityRow.isDeleted) {
-            eventService.emit(eventService.ENTITY_DELETE_SYNCED, {
-                entityName: entityChange.entityName,
-                entityId: entityChange.entityId
-            });
-        }
-        else if (!entityChange.isErased) {
-            eventService.emit(eventService.ENTITY_CHANGE_SYNCED, {
-                entityName: entityChange.entityName,
-                entityRow
-            });
-        }
+    if (updated && !entityChange.isErased) {
+        eventService.emit(eventService.ENTITY_SYNCED, {
+            entityName: entityChange.entityName,
+            entity
+        });
     }
 }
 
-function updateNormalEntity(remoteEntityChange, entity) {
+function updateNormalEntity(remoteEntityChange, entity, sourceId) {
     const localEntityChange = sql.getRow(`
         SELECT utcDateChanged, hash, isErased
         FROM entity_changes 
@@ -54,7 +46,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
 
             sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
-            entityChangesService.addEntityChange(remoteEntityChange, true);
+            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
         });
 
         return true;
@@ -71,7 +63,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
         sql.transactional(() => {
             sql.replace(remoteEntityChange.entityName, entity);
 
-            entityChangesService.addEntityChange(remoteEntityChange, true);
+            entityChangesService.addEntityChange(remoteEntityChange, sourceId);
         });
 
         return true;
@@ -80,13 +72,13 @@ function updateNormalEntity(remoteEntityChange, entity) {
     return false;
 }
 
-function updateNoteReordering(entityChange, entity) {
+function updateNoteReordering(entityChange, entity, sourceId) {
     sql.transactional(() => {
         for (const key in entity) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
         }
 
-        entityChangesService.addEntityChange(entityChange, true);
+        entityChangesService.addEntityChange(entityChange, sourceId);
     });
 
     return true;
