@@ -87,6 +87,8 @@ const defaultOptions = [
     { name: 'debugModeEnabled', value: 'false', isSynced: false },
     { name: 'headingStyle', value: 'underline', isSynced: true },
     { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
+    { name: 'autoReadonlySize', value: '10000', isSynced: false },
+    { name: 'autoCodeReadonlySize', value: '30000', isSynced: false },
 ];
 
 function initStartupOptions() {
