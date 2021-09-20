@@ -221,7 +221,8 @@ function register(app) {
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
-    apiRoute(POST, '/api/global-link-map', linkMapRoute.getGlobalLinkMap);
+    apiRoute(POST, '/api/note-map/tree', linkMapRoute.getGlobalTreeMap);
+    apiRoute(POST, '/api/note-map/link', linkMapRoute.getGlobalLinkMap);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
     apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);

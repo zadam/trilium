@@ -102,35 +102,6 @@ function buildDescendantCountMap() {
 }
 
 function getGlobalLinkMap() {
-    const relations = Object.values(becca.attributes).filter(rel => {
-        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
-            return false;
-        }
-        else if (rel.name === 'imageLink') {
-            const parentNote = becca.getNote(rel.noteId);
-
-            return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
-        }
-        else {
-            return true;
-        }
-    });
-
-    const noteIdToLinkCountMap = {};
-
-    for (const noteId in becca.notes) {
-        noteIdToLinkCountMap[noteId] = getRelations(noteId).length;
-    }
-
-    let links = Array.from(relations).map(rel => ({
-        id: rel.noteId + "-" + rel.name + "-" + rel.value,
-        sourceNoteId: rel.noteId,
-        targetNoteId: rel.value,
-        name: rel.name
-    }));
-
-    links = [];
-
     const noteIds = new Set();
 
     const notes = Object.values(becca.notes)
@@ -142,6 +113,51 @@ function getGlobalLinkMap() {
         ]);
 
     notes.forEach(([noteId]) => noteIds.add(noteId));
+
+    const links = Object.values(becca.attributes).filter(rel => {
+        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
+            return false;
+        }
+        else if (!noteIds.has(rel.noteId) || !noteIds.has(rel.value)) {
+            return false;
+        }
+        else if (rel.name === 'imageLink') {
+            const parentNote = becca.getNote(rel.noteId);
+
+            return !parentNote.getChildNotes().find(childNote => childNote.noteId === rel.value);
+        }
+        else {
+            return true;
+        }
+    })
+        .map(rel => ({
+        id: rel.noteId + "-" + rel.name + "-" + rel.value,
+        sourceNoteId: rel.noteId,
+        targetNoteId: rel.value,
+        name: rel.name
+    }));
+
+    return {
+        notes: notes,
+        noteIdToDescendantCountMap: buildDescendantCountMap(),
+        links: links
+    };
+}
+
+function getGlobalTreeMap() {
+    const noteIds = new Set();
+
+    const notes = Object.values(becca.notes)
+        .filter(note => !note.isArchived)
+        .map(note => [
+            note.noteId,
+            note.isContentAvailable() ? note.title : '[protected]',
+            note.type
+        ]);
+
+    notes.forEach(([noteId]) => noteIds.add(noteId));
+
+    const links = [];
 
     for (const branch of Object.values(becca.branches)) {
         if (!noteIds.has(branch.parentNoteId) || !noteIds.has(branch.noteId)) {
@@ -158,7 +174,6 @@ function getGlobalLinkMap() {
 
     return {
         notes: notes,
-        noteIdToLinkCountMap,
         noteIdToDescendantCountMap: buildDescendantCountMap(),
         links: links
     };
@@ -166,5 +181,6 @@ function getGlobalLinkMap() {
 
 module.exports = {
     getLinkMap,
-    getGlobalLinkMap
+    getGlobalLinkMap,
+    getGlobalTreeMap
 };

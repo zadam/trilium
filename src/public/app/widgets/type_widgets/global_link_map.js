@@ -219,7 +219,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         this.linkIdToLinkMap = {};
         this.noteIdToLinkCountMap = {};
 
-        const resp = await server.post(`global-link-map`);
+        const resp = await server.post(`note-map/${this.mapType}`);
 
         this.noteIdToLinkCountMap = resp.noteIdToLinkCountMap;
 
@@ -291,11 +291,17 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         this.graph.graphData(data);
 
         if (zoomToFit && data.nodes.length > 1) {
-            setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
+            setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 3000);
         }
     }
 
     cleanup() {
         this.$container.html('');
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes(this.componentId).find(attr => attr.name === 'mapType' && attributeService.isAffecting(attr, this.note))) {
+            this.refresh();
+        }
     }
 }
