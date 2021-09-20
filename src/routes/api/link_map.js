@@ -101,11 +101,12 @@ function buildDescendantCountMap() {
     return noteIdToCountMap;
 }
 
-function getGlobalLinkMap() {
+function getGlobalLinkMap(req) {
+    const mapRootNote = becca.getNote(req.params.noteId);
+
     const noteIds = new Set();
 
-    const notes = Object.values(becca.notes)
-        .filter(note => !note.isArchived)
+    const notes = mapRootNote.getSubtreeNotes(false)
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',
@@ -144,11 +145,12 @@ function getGlobalLinkMap() {
     };
 }
 
-function getGlobalTreeMap() {
+function getGlobalTreeMap(req) {
+    const mapRootNote = becca.getNote(req.params.noteId);
     const noteIds = new Set();
 
-    const notes = Object.values(becca.notes)
-        .filter(note => !note.isArchived && !note.hasLabel('excludeFromTreeMap'))
+    const notes = mapRootNote.getSubtreeNotes(false)
+        .filter(note => !note.hasLabel('excludeFromTreeMap'))
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',

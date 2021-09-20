@@ -745,11 +745,15 @@ class Note extends AbstractEntity {
     }
 
     /** @return {Note[]} */
-    getSubtreeNotes() {
+    getSubtreeNotes(includeArchived = true) {
+        if (this.isArchived) {
+            return [];
+        }
+
         const arr = [[this]];
 
         for (const childNote of this.children) {
-            arr.push(childNote.getSubtreeNotes());
+            arr.push(childNote.getSubtreeNotes(includeArchived));
         }
 
         return arr.flat();

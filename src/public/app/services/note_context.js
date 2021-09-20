@@ -39,7 +39,7 @@ class NoteContext extends Component {
         utils.closeActiveDialog();
 
         this.notePath = resolvedNotePath;
-        this.noteId = treeService.getNoteIdFromNotePath(resolvedNotePath);
+        ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
         this.readOnlyTemporarilyDisabled = false;
 

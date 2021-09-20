@@ -81,20 +81,22 @@ function getSinglesNoteRoot() {
     return singlesNoteRoot;
 }
 
-function getGlobalLinkMapNote() {
-    let globalLinkMapNote = becca.getNote('globalnotemap');
+function getGlobalNoteMap() {
+    let globalNoteMap = becca.getNote('globalnotemap');
 
-    if (!globalLinkMapNote) {
-        globalLinkMapNote = noteService.createNewNote({
+    if (!globalNoteMap) {
+        globalNoteMap = noteService.createNewNote({
             noteId: 'globalnotemap',
             title: 'Global Note Map',
             type: 'note-map',
             content: '',
             parentNoteId: getSinglesNoteRoot().noteId
         }).note;
+
+        globalNoteMap.addLabel('mapRootNoteId', 'hoisted');
     }
 
-    return globalLinkMapNote;
+    return globalNoteMap;
 }
 
 function getSqlConsoleRoot() {
@@ -186,7 +188,7 @@ function createMissingSpecialNotes() {
     getSqlConsoleRoot();
     getSinglesNoteRoot();
     getSinglesNoteRoot();
-    getGlobalLinkMapNote();
+    getGlobalNoteMap();
 }
 
 module.exports = {

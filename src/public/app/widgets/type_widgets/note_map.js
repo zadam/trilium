@@ -2,6 +2,8 @@ import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
 import attributeService from "../../services/attributes.js";
+import hoistedNoteService from "../../services/hoisted_note.js";
+import appContext from "../../services/app_context.js";
 
 const TPL = `<div class="note-detail-note-map note-detail-printable" style="position: relative;">
     <style>
@@ -114,7 +116,16 @@ export default class NoteMapTypeWidget extends TypeWidget {
 
         this.graph.d3Force('charge').distanceMax(1000);
 
-        const data = await this.loadNotesAndRelations();
+        let mapRootNoteId = this.note.getLabelValue("mapRootNoteId");
+
+        if (mapRootNoteId === 'hoisted') {
+            mapRootNoteId = hoistedNoteService.getHoistedNoteId();
+        }
+        else if (!mapRootNoteId) {
+            mapRootNoteId = appContext.tabManager.getActiveContext().parentNoteId;
+        }
+
+        const data = await this.loadNotesAndRelations(mapRootNoteId);
 
         this.renderData(data);
     }
@@ -216,11 +227,11 @@ export default class NoteMapTypeWidget extends TypeWidget {
         ctx.restore();
     }
 
-    async loadNotesAndRelations() {
+    async loadNotesAndRelations(mapRootNoteId) {
         this.linkIdToLinkMap = {};
         this.noteIdToLinkCountMap = {};
 
-        const resp = await server.post(`note-map/${this.mapType}`);
+        const resp = await server.post(`note-map/${mapRootNoteId}/${this.mapType}`);
 
         this.noteIdToLinkCountMap = resp.noteIdToLinkCountMap;
 

@@ -46,6 +46,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'datePattern' },
     { type: 'label', name: 'pageSize' },
     { type: 'label', name: 'viewType' },
+    { type: 'label', name: 'mapRootNoteId' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
