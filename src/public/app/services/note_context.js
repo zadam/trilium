@@ -193,12 +193,12 @@ class NoteContext extends Component {
 
         const noteComplement = await this.getNoteComplement();
 
-        const SIZE_LIMIT = this.note.type === 'text' ?
-            options.getInt('autoReadonlySize')
-                : options.getInt('autoCodeReadonlySize');
+        const sizeLimit = this.note.type === 'text' ?
+            options.getInt('autoReadonlySizeText')
+                : options.getInt('autoReadonlySizeCode');
 
         return noteComplement.content
-            && noteComplement.content.length > SIZE_LIMIT
+            && noteComplement.content.length > sizeLimit
             && !this.note.hasLabel('autoReadOnlyDisabled');
     }
 

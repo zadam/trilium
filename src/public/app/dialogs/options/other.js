@@ -85,16 +85,16 @@ const TPL = `
 <div>
     <h4>Automatic readonly size</h4>
 
-    <p>Automatic readonly note size is the size after which notes will be readonly if automatic readonly is enabled.</p>
+    <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
 
     <div class="form-group">
-        <label for="automatic-readonly-size">Automatic readonly size (text notes)</label>
-        <input class="form-control" id="automatic-readonly-size-text" type="number">
+        <label for="auto-readonly-size-text">Automatic readonly size (text notes)</label>
+        <input class="form-control" id="auto-readonly-size-text" type="number">
     </div>
 
     <div class="form-group">
-        <label for="automatic-readonly-size">Automatic readonly size (code notes)</label>
-        <input class="form-control" id="automatic-readonly-size-code" type="number">
+        <label for="auto-readonly-size-code">Automatic readonly size (code notes)</label>
+        <input class="form-control" id="auto-readonly-size-code" type="number">
     </div>
 </div>`;
 
@@ -184,19 +184,19 @@ export default class ProtectedSessionOptions {
             return false;
         });
 
-        this.$autoReadonlySize = $("#automatic-readonly-size-text");
+        this.$autoReadonlySizeText = $("#auto-readonly-size-text");
 
-        this.$autoReadonlySize.on('change', () => {
-            const opts = { 'autoReadonlySize': this.$autoReadonlySize.val() };
+        this.$autoReadonlySizeText.on('change', () => {
+            const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
-        this.$autoCodeReadonlySize = $("#automatic-readonly-size-code");
+        this.$autoReadonlySizeCode = $("#auto-readonly-size-code");
 
-        this.$autoCodeReadonlySize.on('change', () => {
-            const opts = { 'autoCodeReadonlySize': this.$autoReadonlySize.val() };
+        this.$autoReadonlySizeCode.on('change', () => {
+            const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeText.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
@@ -214,7 +214,7 @@ export default class ProtectedSessionOptions {
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
 
-        this.$autoReadonlySize.val(options['autoReadonlySize']);
-        this.$autoCodeReadonlySize.val(options['autoCodeReadonlySize']);
+        this.$autoReadonlySizeText.val(options['autoReadonlySizeText']);
+        this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
     }
 }
