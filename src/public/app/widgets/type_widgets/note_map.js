@@ -3,13 +3,13 @@ import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
 import attributeService from "../../services/attributes.js";
 
-const TPL = `<div class="note-detail-global-link-map note-detail-printable" style="position: relative;">
+const TPL = `<div class="note-detail-note-map note-detail-printable" style="position: relative;">
     <style>
-        .type-special .note-detail, .note-detail-global-link-map {
+        .type-special .note-detail, .note-detail-note-map {
             height: 100%;
         }
         
-        .map-switcher {
+        .map-type-switcher {
             position: absolute; 
             top: 10px; 
             right: 10px; 
@@ -17,30 +17,30 @@ const TPL = `<div class="note-detail-global-link-map note-detail-printable" styl
             z-index: 1000;
         }
         
-        .map-switcher .bx {
+        .map-type-switcher .bx {
             font-size: x-large;
         }
     </style>
     
-    <div class="btn-group btn-group-sm map-switcher" role="group">
+    <div class="btn-group btn-group-sm map-type-switcher" role="group">
       <button type="button" class="btn btn-secondary" title="Link Map" data-type="link"><span class="bx bx-network-chart"></span></button>
       <button type="button" class="btn btn-secondary" title="Tree map" data-type="tree"><span class="bx bx-sitemap"></span></button>
     </div>
 
-    <div class="link-map-container"></div>
+    <div class="note-map-container"></div>
 </div>`;
 
-export default class GlobalLinkMapTypeWidget extends TypeWidget {
-    static getType() { return "globallinkmap"; }
+export default class NoteMapTypeWidget extends TypeWidget {
+    static getType() { return "note-map"; }
 
     doRender() {
         this.$widget = $(TPL);
 
-        this.$container = this.$widget.find(".link-map-container");
+        this.$container = this.$widget.find(".note-map-container");
 
         window.addEventListener('resize', () => this.setFullHeight(), false);
 
-        this.$widget.find(".map-switcher button").on("click",  async e => {
+        this.$widget.find(".map-type-switcher button").on("click",  async e => {
             const type = $(e.target).closest("button").attr("data-type");
 
             await attributeService.setLabel(this.noteId, 'mapType', type);
@@ -59,7 +59,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         const height = $(window).height() - top;
         const width = this.$widget.width();
 
-        this.$widget.find('.link-map-container')
+        this.$widget.find('.note-map-container')
             .css("height", height)
             .css("width", this.$widget.width());
 
@@ -83,7 +83,6 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
             .onZoom(zoom => this.setZoomLevel(zoom.k))
             .d3AlphaDecay(0.01)
             .d3VelocityDecay(0.08)
-            .nodeRelSize(node => this.noteIdToSizeMap[node.id])
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodeLabel(node => node.name)
@@ -91,7 +90,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI, false);
+                ctx.arc(node.x, node.y, this.noteIdToSizeMap[node.id], 0, 2 * Math.PI, false);
                 ctx.fill();
             })
             .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
@@ -106,7 +105,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
 //            .dagMode("radialout")
             .onNodeClick(node => this.nodeClicked(node));
 
-        this.graph.d3Force('link').distance(5);
+        this.graph.d3Force('link').distance(40);
         //
         this.graph.d3Force('center').strength(0.01);
         //
@@ -115,7 +114,9 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
 
         this.graph.d3Force('charge').distanceMax(1000);
 
-        this.renderData(await this.loadNotesAndRelations());
+        const data = await this.loadNotesAndRelations();
+
+        this.renderData(data);
     }
 
     stringToColor(str) {
@@ -215,7 +216,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         ctx.restore();
     }
 
-    async loadNotesAndRelations(noteId, maxDepth) {
+    async loadNotesAndRelations() {
         this.linkIdToLinkMap = {};
         this.noteIdToLinkCountMap = {};
 
@@ -291,7 +292,7 @@ export default class GlobalLinkMapTypeWidget extends TypeWidget {
         this.graph.graphData(data);
 
         if (zoomToFit && data.nodes.length > 1) {
-            setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 3000);
+            setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
         }
     }
 

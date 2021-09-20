@@ -148,7 +148,7 @@ function getGlobalTreeMap() {
     const noteIds = new Set();
 
     const notes = Object.values(becca.notes)
-        .filter(note => !note.isArchived)
+        .filter(note => !note.isArchived && !note.hasLabel('excludeFromTreeMap'))
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',

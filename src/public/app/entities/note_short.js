@@ -14,7 +14,8 @@ const NOTE_TYPE_ICONS = {
     "render": "bx bx-extension",
     "search": "bx bx-file-find",
     "relation-map": "bx bx-map-alt",
-    "book": "bx bx-book"
+    "book": "bx bx-book",
+    "note-map": "bx bx-map-alt"
 };
 
 /**
