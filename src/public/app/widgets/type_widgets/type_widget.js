@@ -41,7 +41,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
 
     focus() {}
 
-    async readOnlyTemporarilyDisabledEvent({noteContext}) {
+    async readOnlyTemporarilyChangedEvent({noteContext}) {
         if (this.isNoteContext(noteContext.ntxId)) {
             await this.refresh();
 

@@ -276,7 +276,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         return this.spacedUpdate.isAllSavedAndTriggerUpdate();
     }
 
-    readOnlyTemporarilyDisabledEvent({noteContext}) {
+    readOnlyTemporarilyChangedEvent({noteContext}) {
         if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }

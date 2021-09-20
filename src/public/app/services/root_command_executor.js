@@ -37,9 +37,18 @@ export default class RootCommandExecutor extends Component {
 
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
-        noteContext.readOnlyTemporarilyDisabled = true;
+        noteContext.overrideDefaultReadOnly = true;
+        noteContext.overriddenReadOnlyEnabled = false;
 
-        appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
+        appContext.triggerEvent("readOnlyTemporarilyChanged", { noteContext });
+    }
+
+    toggleReadOnlyNoteCommand() {
+        const noteContext = appContext.tabManager.getActiveContext();
+        noteContext.overrideDefaultReadOnly = true;
+        noteContext.overriddenReadOnlyEnabled = !noteContext.overriddenReadOnlyEnabled;
+
+        appContext.triggerEvent("readOnlyTemporarilyChanged", { noteContext });
     }
 
     async cloneNoteIdsToCommand({noteIds}) {

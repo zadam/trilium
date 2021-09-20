@@ -319,6 +319,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Edit a read-only note",
         scope: "window"
     },
+    {
+        actionName: "toggleReadOnlyNote",
+        defaultShortcuts: [],
+        description: "Toggle read-only mode on the current note",
+        scope: "window"
+    },
 
     {
         separator: "Attributes (labels & relations)"

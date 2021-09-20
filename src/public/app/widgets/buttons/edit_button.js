@@ -13,9 +13,10 @@ export default class EditButton extends ButtonWidget {
             .title("Edit this note")
             .titlePlacement("bottom")
             .onClick(widget => {
-                this.noteContext.readOnlyTemporarilyDisabled = true;
+                this.noteContext.overrideDefaultReadOnly = true;
+                this.noteContext.overriddenReadOnlyEnabled = false;
 
-                appContext.triggerEvent('readOnlyTemporarilyDisabled', {noteContext: this.noteContext});
+                appContext.triggerEvent('readOnlyTemporarilyChanged', {noteContext: this.noteContext});
 
                 this.refresh();
             });
@@ -26,5 +27,11 @@ export default class EditButton extends ButtonWidget {
         this.toggleInt(await this.noteContext.isReadOnly());
 
         await super.refreshWithNote(note);
+    }
+
+    async readOnlyTemporarilyChangedEvent({ noteContext }) {
+        if (this.isNote(noteContext.noteId)) {
+            this.toggleInt(await this.noteContext.isReadOnly());
+        }
     }
 }

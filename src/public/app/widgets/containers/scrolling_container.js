@@ -27,7 +27,7 @@ export default class ScrollingContainer extends Container {
     }
 
     handleEventInChildren(name, data) {
-        if (name === 'readOnlyTemporarilyDisabled'
+        if (name === 'readOnlyTemporarilyChanged'
                 && this.noteContext
                 && this.noteContext.ntxId === data.noteContext.ntxId) {
 

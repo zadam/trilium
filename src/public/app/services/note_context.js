@@ -40,7 +40,8 @@ class NoteContext extends Component {
         this.notePath = resolvedNotePath;
         this.noteId = treeService.getNoteIdFromNotePath(resolvedNotePath);
 
-        this.readOnlyTemporarilyDisabled = false;
+        this.overrideDefaultReadOnly = false;
+        this.overriddenReadOnlyEnabled = await this.isReadOnly(); // Default might be enabled or disabled
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -177,8 +178,8 @@ class NoteContext extends Component {
     }
 
     async isReadOnly() {
-        if (this.readOnlyTemporarilyDisabled) {
-            return false;
+        if (this.overrideDefaultReadOnly) {
+            return this.overriddenReadOnlyEnabled;
         }
 
         // "readOnly" is a state valid only for text/code notes
