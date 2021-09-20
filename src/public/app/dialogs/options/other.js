@@ -80,6 +80,22 @@ const TPL = `
         <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
         <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
     </div>
+</div>
+
+<div>
+    <h4>Automatic readonly size</h4>
+
+    <p>Automatic readonly note size is the size after which notes will be readonly if automatic readonly is enabled.</p>
+
+    <div class="form-group">
+        <label for="automatic-readonly-size">Automatic readonly size (text notes)</label>
+        <input class="form-control" id="automatic-readonly-size-text" type="number">
+    </div>
+
+    <div class="form-group">
+        <label for="automatic-readonly-size">Automatic readonly size (code notes)</label>
+        <input class="form-control" id="automatic-readonly-size-code" type="number">
+    </div>
 </div>`;
 
 export default class ProtectedSessionOptions {
@@ -167,6 +183,24 @@ export default class ProtectedSessionOptions {
 
             return false;
         });
+
+        this.$autoReadonlySize = $("#automatic-readonly-size-text");
+
+        this.$autoReadonlySize.on('change', () => {
+            const opts = { 'autoReadonlySize': this.$autoReadonlySize.val() };
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+
+            return false;
+        });
+
+        this.$autoCodeReadonlySize = $("#automatic-readonly-size-code");
+
+        this.$autoCodeReadonlySize.on('change', () => {
+            const opts = { 'autoCodeReadonlySize': this.$autoReadonlySize.val() };
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+
+            return false;
+        });
     }
 
     optionsLoaded(options) {
@@ -179,5 +213,8 @@ export default class ProtectedSessionOptions {
 
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
+
+        this.$autoReadonlySize.val(options['autoReadonlySize']);
+        this.$autoCodeReadonlySize.val(options['autoCodeReadonlySize']);
     }
 }

@@ -6,6 +6,7 @@ import treeService from "./tree.js";
 import Component from "../widgets/component.js";
 import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
+import options from "./options.js";
 
 class NoteContext extends Component {
     /**
@@ -192,7 +193,9 @@ class NoteContext extends Component {
 
         const noteComplement = await this.getNoteComplement();
 
-        const SIZE_LIMIT = this.note.type === 'text' ? 10000 : 30000;
+        const SIZE_LIMIT = this.note.type === 'text' ?
+            options.getInt('autoReadonlySize')
+                : options.getInt('autoCodeReadonlySize');
 
         return noteComplement.content
             && noteComplement.content.length > SIZE_LIMIT

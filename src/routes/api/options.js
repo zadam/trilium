@@ -42,7 +42,9 @@ const ALLOWED_OPTIONS = new Set([
     'promotedAttributesExpanded',
     'similarNotesExpanded',
     'headingStyle',
-    'autoCollapseNoteTree'
+    'autoCollapseNoteTree',
+    'autoReadonlySize',
+    'autoCodeReadonlySize'
 ]);
 
 function getOptions() {
