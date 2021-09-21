@@ -151,6 +151,19 @@ function getGlobalTreeMap(req) {
 
     const notes = mapRootNote.getSubtreeNotes(false)
         .filter(note => !note.hasLabel('excludeFromTreeMap'))
+        .filter(note => {
+            if (note.type !== 'image' || note.getChildNotes().length > 0) {
+                return true;
+            }
+
+            const imageLinkRelation = note.getTargetRelations().find(rel => rel.name === 'imageLink');
+
+            if (!imageLinkRelation) {
+                return true;
+            }
+
+            return !note.getParentNotes().find(parentNote => parentNote.noteId === imageLinkRelation.noteId);
+        })
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',
@@ -169,8 +182,7 @@ function getGlobalTreeMap(req) {
         links.push({
             id: branch.branchId,
             sourceNoteId: branch.parentNoteId,
-            targetNoteId: branch.noteId,
-            name: 'branch'
+            targetNoteId: branch.noteId
         });
     }
 

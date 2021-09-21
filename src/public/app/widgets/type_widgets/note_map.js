@@ -87,33 +87,31 @@ export default class NoteMapTypeWidget extends TypeWidget {
             .d3VelocityDecay(0.08)
             .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
             .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
-            .nodeLabel(node => node.name)
-            .maxZoom(7)
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.arc(node.x, node.y, this.noteIdToSizeMap[node.id], 0, 2 * Math.PI, false);
                 ctx.fill();
             })
-            .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
-            .linkCanvasObject((link, ctx) => this.paintLink(link, ctx))
-            .linkCanvasObjectMode(() => "after")
+            .nodeLabel(node => node.name)
+            .maxZoom(7)
             .warmupTicks(10)
-//            .linkDirectionalArrowLength(5)
+            .linkDirectionalArrowLength(5)
             .linkDirectionalArrowRelPos(1)
             .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
-//            .d3VelocityDecay(0.2)
-//            .dagMode("radialout")
             .onNodeClick(node => this.nodeClicked(node));
 
+        if (this.mapType === 'link') {
+            this.graph
+                .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
+                .linkCanvasObject((link, ctx) => this.paintLink(link, ctx))
+                .linkCanvasObjectMode(() => "after");
+        }
+
         this.graph.d3Force('link').distance(40);
-        //
         this.graph.d3Force('center').strength(0.01);
-        //
         this.graph.d3Force('charge').strength(-30);
-
-
         this.graph.d3Force('charge').distanceMax(1000);
 
         let mapRootNoteId = this.note.getLabelValue("mapRootNoteId");
