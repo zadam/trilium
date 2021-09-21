@@ -123,6 +123,11 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
+            return;
+        }
+
         for (const attr of loadResults.getAttributes()) {
             if (attr.type === 'label'
                 && ['iconClass', 'workspaceIconClass'].includes(attr.name)
