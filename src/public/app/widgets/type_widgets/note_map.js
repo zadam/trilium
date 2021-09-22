@@ -9,7 +9,7 @@ export default class NoteMapTypeWidget extends TypeWidget {
     constructor() {
         super();
 
-        this.noteMapWidget = new NoteMapWidget();
+        this.noteMapWidget = new NoteMapWidget('type');
         this.child(this.noteMapWidget);
     }
 
@@ -21,8 +21,6 @@ export default class NoteMapTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        console.log("isEnabled", this.noteMapWidget.isEnabled());
-
         await this.noteMapWidget.refresh();
     }
 }

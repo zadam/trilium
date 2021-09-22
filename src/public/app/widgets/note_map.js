@@ -29,16 +29,25 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
       <button type="button" class="btn btn-secondary" title="Tree map" data-type="tree"><span class="bx bx-sitemap"></span></button>
     </div>
 
+    <div class="style-resolver"></div>
+
     <div class="note-map-container"></div>
 </div>`;
 
 export default class NoteMapWidget extends NoteContextAwareWidget {
+    constructor(widgetMode) {
+        super();
+
+        this.widgetMode = widgetMode; // 'type' or 'ribbon'
+    }
+
     doRender() {
         this.$widget = $(TPL);
 
         this.$container = this.$widget.find(".note-map-container");
+        this.$styleResolver = this.$widget.find('.style-resolver');
 
-        window.addEventListener('resize', () => this.setFullHeight(), false);
+        window.addEventListener('resize', () => this.setHeight(), false);
 
         this.$widget.find(".map-type-switcher button").on("click",  async e => {
             const type = $(e.target).closest("button").attr("data-type");
@@ -49,31 +58,30 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         super.doRender();
     }
 
-    setFullHeight() {
+    setHeight() {
         if (!this.graph) { // no graph has been even rendered
             return;
         }
 
-        const {top} = this.$widget[0].getBoundingClientRect();
-
-        const height = $(window).height() - top;
-        const width = this.$widget.width();
-
-        this.$widget.find('.note-map-container')
-            .css("height", height)
-            .css("width", this.$widget.width());
+        const $parent = this.$widget.parent();
 
         this.graph
-            .height(height)
-            .width(width);
+            .height($parent.height())
+            .width($parent.width());
     }
 
     async refreshWithNote() {
         this.$widget.show();
 
+        this.css = {
+            fontFamily: this.$container.css("font-family"),
+            textColor: this.rgb2hex(this.$container.css("color")),
+            mutedTextColor: this.rgb2hex(this.$styleResolver.css("color"))
+        };
+
         this.mapType = this.note.getLabelValue("mapType") === "tree" ? "tree" : "link";
 
-        this.setFullHeight();
+        this.setHeight();
 
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
@@ -98,7 +106,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .linkDirectionalArrowRelPos(1)
             .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
-            .onNodeClick(node => this.nodeClicked(node));
+            .onNodeClick(node => appContext.tabManager.getActiveContext().setNote(node.id));
 
         if (this.mapType === 'link') {
             this.graph
@@ -112,18 +120,27 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         this.graph.d3Force('charge').strength(-30);
         this.graph.d3Force('charge').distanceMax(1000);
 
-        let mapRootNoteId = this.note.getLabelValue("mapRootNoteId");
-
-        if (mapRootNoteId === 'hoisted') {
-            mapRootNoteId = hoistedNoteService.getHoistedNoteId();
-        }
-        else if (!mapRootNoteId) {
-            mapRootNoteId = appContext.tabManager.getActiveContext().parentNoteId;
-        }
+        let mapRootNoteId = this.getMapRootNoteId();
 
         const data = await this.loadNotesAndRelations(mapRootNoteId);
 
         this.renderData(data);
+    }
+
+    getMapRootNoteId() {
+        if (this.widgetMode === 'ribbon') {
+            return this.noteId;
+        }
+
+        let mapRootNoteId = this.note.getLabelValue("mapRootNoteId");
+
+        if (mapRootNoteId === 'hoisted') {
+            mapRootNoteId = hoistedNoteService.getHoistedNoteId();
+        } else if (!mapRootNoteId) {
+            mapRootNoteId = appContext.tabManager.getActiveContext().parentNoteId;
+        }
+
+        return mapRootNoteId;
     }
 
     stringToColor(str) {
@@ -165,14 +182,6 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         if (!toRender) {
             return;
-        }
-
-        if (!node.expanded) {
-            ctx.fillStyle =  this.css.textColor;
-            ctx.font = 10 + 'px ' + this.css.fontFamily;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText("+", x, y + 0.5);
         }
 
         ctx.fillStyle = this.css.textColor;
@@ -265,13 +274,14 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             }
         }
 
+        this.nodes = resp.notes.map(([noteId, title, type]) => ({
+            id: noteId,
+            name: title,
+            type: type,
+        }));
+
         return {
-            nodes: resp.notes.map(([noteId, title, type]) => ({
-                id: noteId,
-                name: title,
-                type: type,
-                expanded: true
-            })),
+            nodes: this.nodes,
             links: Object.values(linksGroupedBySourceTarget).map(link => ({
                 id: link.id,
                 source: link.sourceNoteId,
@@ -295,11 +305,20 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         }
     }
 
-    renderData(data, zoomToFit = true, zoomPadding = 10) {
+    renderData(data) {
         this.graph.graphData(data);
 
-        if (zoomToFit && data.nodes.length > 1) {
-            setTimeout(() => this.graph.zoomToFit(400, zoomPadding), 1000);
+        if (this.widgetMode === 'ribbon') {
+            setTimeout(() => {
+                const node = this.nodes.find(node => node.id === this.noteId);
+
+                this.graph.centerAt(node.x, node.y, 500);
+            }, 1000);
+        }
+        else if (this.widgetMode === 'type') {
+            if (data.nodes.length > 1) {
+                setTimeout(() => this.graph.zoomToFit(400, 10), 1000);
+            }
         }
     }
 
