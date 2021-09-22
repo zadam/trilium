@@ -233,46 +233,11 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     }
 
     async loadNotesAndRelations(mapRootNoteId) {
-        this.linkIdToLinkMap = {};
-        this.noteIdToLinkCountMap = {};
-
         const resp = await server.post(`note-map/${mapRootNoteId}/${this.mapType}`);
 
-        this.noteIdToLinkCountMap = resp.noteIdToLinkCountMap;
+        this.calculateSizes(resp);
 
-        this.calculateSizes(resp.noteIdToDescendantCountMap);
-
-        for (const link of resp.links) {
-            this.linkIdToLinkMap[link.id] = link;
-        }
-
-        const noteIdToLinkIdMap = {};
-        noteIdToLinkIdMap[this.noteId] = new Set(); // for case there are no relations
-        const linksGroupedBySourceTarget = {};
-
-        for (const link of Object.values(this.linkIdToLinkMap)) {
-            noteIdToLinkIdMap[link.sourceNoteId] = noteIdToLinkIdMap[link.sourceNoteId] || new Set();
-            noteIdToLinkIdMap[link.sourceNoteId].add(link.id);
-
-            noteIdToLinkIdMap[link.targetNoteId] = noteIdToLinkIdMap[link.targetNoteId] || new Set();
-            noteIdToLinkIdMap[link.targetNoteId].add(link.id);
-
-            const key = `${link.sourceNoteId}-${link.targetNoteId}`;
-
-            if (key in linksGroupedBySourceTarget) {
-                if (!linksGroupedBySourceTarget[key].names.includes(link.name)) {
-                    linksGroupedBySourceTarget[key].names.push(link.name);
-                }
-            }
-            else {
-                linksGroupedBySourceTarget[key] = {
-                    id: key,
-                    sourceNoteId: link.sourceNoteId,
-                    targetNoteId: link.targetNoteId,
-                    names: [link.name]
-                }
-            }
-        }
+        const links = this.getGroupedLinks(resp.links);
 
         this.nodes = resp.notes.map(([noteId, title, type]) => ({
             id: noteId,
@@ -282,7 +247,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         return {
             nodes: this.nodes,
-            links: Object.values(linksGroupedBySourceTarget).map(link => ({
+            links: links.map(link => ({
                 id: link.id,
                 source: link.sourceNoteId,
                 target: link.targetNoteId,
@@ -291,7 +256,32 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         };
     }
 
-    calculateSizes(noteIdToDescendantCountMap) {
+    getGroupedLinks(links) {
+        const linksGroupedBySourceTarget = {};
+
+        for (const link of links) {
+            const key = `${link.sourceNoteId}-${link.targetNoteId}`;
+
+            if (key in linksGroupedBySourceTarget) {
+                if (!linksGroupedBySourceTarget[key].names.includes(link.name)) {
+                    linksGroupedBySourceTarget[key].names.push(link.name);
+                }
+            } else {
+                linksGroupedBySourceTarget[key] = {
+                    id: key,
+                    sourceNoteId: link.sourceNoteId,
+                    targetNoteId: link.targetNoteId,
+                    names: [link.name]
+                }
+            }
+        }
+
+        return Object.values(linksGroupedBySourceTarget);
+    }
+
+    calculateSizes(resp) {
+        const {noteIdToDescendantCountMap} = resp;
+
         this.noteIdToSizeMap = {};
 
         for (const noteId in noteIdToDescendantCountMap) {
