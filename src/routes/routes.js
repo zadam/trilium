@@ -32,7 +32,7 @@ const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
 const specialNotesRoute = require('./api/special_notes.js');
-const linkMapRoute = require('./api/link_map');
+const noteMapRoute = require('./api/note_map.js');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
@@ -220,9 +220,8 @@ function register(app) {
     apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
-    apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
-    apiRoute(POST, '/api/note-map/:noteId/tree', linkMapRoute.getGlobalTreeMap);
-    apiRoute(POST, '/api/note-map/:noteId/link', linkMapRoute.getGlobalLinkMap);
+    apiRoute(POST, '/api/note-map/:noteId/tree', noteMapRoute.getTreeMap);
+    apiRoute(POST, '/api/note-map/:noteId/link', noteMapRoute.getLinkMap);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
     apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);

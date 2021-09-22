@@ -171,7 +171,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         const {x, y} = node;
         const size = this.noteIdToSizeMap[node.id];
 
-        ctx.fillStyle = node.id === this.noteId ? 'red' : color;
+        ctx.fillStyle = (this.widgetMode === 'ribbon' && node.id === this.noteId) ? 'red' : color;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, 2 * Math.PI, false);
         ctx.fill();
@@ -235,7 +235,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     async loadNotesAndRelations(mapRootNoteId) {
         const resp = await server.post(`note-map/${mapRootNoteId}/${this.mapType}`);
 
-        this.calculateSizes(resp);
+        this.calculateNodeSizes(resp);
 
         const links = this.getGroupedLinks(resp.links);
 
@@ -279,18 +279,35 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         return Object.values(linksGroupedBySourceTarget);
     }
 
-    calculateSizes(resp) {
-        const {noteIdToDescendantCountMap} = resp;
-
+    calculateNodeSizes(resp) {
         this.noteIdToSizeMap = {};
 
-        for (const noteId in noteIdToDescendantCountMap) {
-            this.noteIdToSizeMap[noteId] = 4;
+        if (this.mapType === 'tree') {
+            const {noteIdToDescendantCountMap} = resp;
 
-            const count = noteIdToDescendantCountMap[noteId];
+            for (const noteId in noteIdToDescendantCountMap) {
+                this.noteIdToSizeMap[noteId] = 4;
 
-            if (count > 0) {
-                this.noteIdToSizeMap[noteId] += 1 + Math.round(Math.log(count) / Math.log(1.5));
+                const count = noteIdToDescendantCountMap[noteId];
+
+                if (count > 0) {
+                    this.noteIdToSizeMap[noteId] += 1 + Math.round(Math.log(count) / Math.log(1.5));
+                }
+            }
+        }
+        else if (this.mapType === 'link') {
+            const noteIdToLinkCount = {};
+
+            for (const link of resp.links) {
+                noteIdToLinkCount[link.targetNoteId] = 1 + (noteIdToLinkCount[link.targetNoteId] || 0);
+            }
+
+            for (const [noteId] of resp.notes) {
+                this.noteIdToSizeMap[noteId] = 4;
+
+                if (noteId in noteIdToLinkCount) {
+                    this.noteIdToSizeMap[noteId] += Math.min(Math.pow(noteIdToLinkCount[noteId], 0.5), 15);
+                }
             }
         }
     }
