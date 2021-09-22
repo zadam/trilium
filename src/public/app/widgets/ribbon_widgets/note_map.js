@@ -5,13 +5,13 @@ import server from "../../services/server.js";
 import appContext from "../../services/app_context.js";
 
 const TPL = `
-<div class="link-map-widget">
+<div class="note-map-ribbon-widget">
     <style>
-        .link-map-widget {
+        .note-map-ribbon-widget {
             position: relative;
         }
         
-        .link-map-widget .link-map-container {
+        .note-map-ribbon-widget .note-map-container {
             height: 300px;
         }
     
@@ -32,18 +32,18 @@ const TPL = `
     <button class="bx bx-arrow-to-bottom icon-action open-full-button" title="Open full"></button>
     <button class="bx bx-arrow-to-top icon-action collapse-button" style="display: none;" title="Collapse to normal size"></button>
 
-    <div class="link-map-container"></div>
+    <div class="note-map-container"></div>
     
     <div class="style-resolver"></div>
 </div>`;
 
-export default class LinkMapWidget extends NoteContextAwareWidget {
+export default class NoteMapRibbonWidget extends NoteContextAwareWidget {
     get name() {
-        return "linkMap";
+        return "noteMap";
     }
 
     get toggleCommand() {
-        return "toggleRibbonTabLinkMap";
+        return "toggleRibbonTabNoteMap";
     }
 
     isEnabled() {
@@ -53,15 +53,15 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
     getTitle() {
         return {
             show: this.isEnabled(),
-            title: 'Link Map',
-            icon: 'bx bx-network-chart'
+            title: 'Note Map',
+            icon: 'bx bx-map-alt'
         };
     }
 
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
-        this.$container = this.$widget.find(".link-map-container");
+        this.$container = this.$widget.find(".note-map-container");
 
         this.openState = 'small';
 
@@ -106,7 +106,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         const SMALL_SIZE_HEIGHT = 300;
         const width = this.$widget.width();
 
-        this.$widget.find('.link-map-container')
+        this.$widget.find('.note-map-container')
             .css("height", SMALL_SIZE_HEIGHT)
             .css("width", width);
 
@@ -121,7 +121,7 @@ export default class LinkMapWidget extends NoteContextAwareWidget {
         const height = $(window).height() - top;
         const width = this.$widget.width();
 
-        this.$widget.find('.link-map-container')
+        this.$widget.find('.note-map-container')
             .css("height", height)
             .css("width", this.$widget.width());
 

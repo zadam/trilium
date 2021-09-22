@@ -384,7 +384,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "toggleRibbonTabLinkMap",
+        actionName: "toggleRibbonTabNoteMap",
         defaultShortcuts: [],
         description: "Toggle Link Map",
         scope: "window"

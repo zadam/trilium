@@ -35,7 +35,7 @@ import ClosePaneButton from "../widgets/buttons/close_pane_button.js";
 import BasicPropertiesWidget from "../widgets/ribbon_widgets/basic_properties.js";
 import NoteInfoWidget from "../widgets/ribbon_widgets/note_info_widget.js";
 import BookPropertiesWidget from "../widgets/ribbon_widgets/book_properties.js";
-import LinkMapWidget from "../widgets/ribbon_widgets/link_map.js";
+import NoteMapRibbonWidget from "../widgets/ribbon_widgets/note_map.js";
 import NotePathsWidget from "../widgets/ribbon_widgets/note_paths.js";
 import SimilarNotesWidget from "../widgets/ribbon_widgets/similar_notes.js";
 import RightPaneContainer from "../widgets/containers/right_pane_container.js";
@@ -135,7 +135,7 @@ export default class DesktopLayout {
                                         .ribbon(new OwnedAttributeListWidget())
                                         .ribbon(new InheritedAttributesWidget())
                                         .ribbon(new NotePathsWidget())
-                                        .ribbon(new LinkMapWidget())
+                                        .ribbon(new NoteMapRibbonWidget())
                                         .ribbon(new SimilarNotesWidget())
                                         .ribbon(new NoteInfoWidget())
                                         .button(new EditButton())
