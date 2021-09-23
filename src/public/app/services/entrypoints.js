@@ -80,7 +80,7 @@ export default class Entrypoints extends Component {
 
         await appContext.tabManager.openContextWithNote(note.noteId, true, null, hoistedNoteId);
 
-        appContext.triggerEvent('focusAndSelectTitle');
+        appContext.triggerEvent('focusAndSelectTitle', {isNewNote: true});
     }
 
     async toggleNoteHoistingCommand() {
