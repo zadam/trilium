@@ -1027,7 +1027,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
             }
 
-            if (!ecBranch.isDeleted) {
+            if (!ecBranch.isDeleted && ecBranch.noteId !== 'hidden') {
                 for (const parentNode of this.getNodesByNoteId(ecBranch.parentNoteId)) {
                     if (parentNode.isFolder() && !parentNode.isLoaded()) {
                         continue;
@@ -1040,7 +1040,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         await froca.getNote(ecBranch.noteId);
                         const frocaBranch = froca.getBranch(ecBranch.branchId);
 
-                            // we're forcing lazy since it's not clear if the whole required subtree is in froca
+                        // we're forcing lazy since it's not clear if the whole required subtree is in froca
                         parentNode.addChildren([this.prepareNode(frocaBranch, true)]);
 
                         this.sortChildren(parentNode);

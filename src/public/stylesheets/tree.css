@@ -13,6 +13,8 @@ span.fancytree-node.fancytree-hide {
 .fancytree-title {
     margin-left: 7px;
     outline: none;
+    position: relative;
+    top: 2px;
 }
 
 .fancytree-expander {
