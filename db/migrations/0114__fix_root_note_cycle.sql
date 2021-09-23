@@ -1,1 +1,0 @@
-update branches set parentNoteId = 'none' where branchId = 'root'

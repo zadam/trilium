@@ -1,1 +1,0 @@
-UPDATE attributes SET isDeleted = 1 WHERE noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1);

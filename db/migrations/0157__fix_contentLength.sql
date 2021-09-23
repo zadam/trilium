@@ -1,1 +1,0 @@
-UPDATE notes SET contentLength = COALESCE((SELECT COALESCE(LENGTH(content), 0) FROM note_contents WHERE note_contents.noteId = notes.noteId), -1);
