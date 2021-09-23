@@ -32,7 +32,14 @@ async function migrate() {
     // backup before attempting migration
     await backupService.backupNow("before-migration");
 
-    const currentDbVersion = parseInt(optionService.getOption('dbVersion'));
+    const currentDbVersion = getDbVersion();
+
+    if (currentDbVersion < 183) {
+        log.error("Direct migration from your current version is not supported. Please upgrade to the latest v0.47.X first and only then to this version.");
+
+        utils.crash();
+        return;
+    }
 
     fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
