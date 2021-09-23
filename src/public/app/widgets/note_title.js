@@ -4,6 +4,7 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import appContext from "../services/app_context.js";
+import branchService from "../services/branches.js";
 
 const TPL = `
 <div class="note-title-widget">
@@ -40,6 +41,8 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
             await server.put(`notes/${this.noteId}/change-title`, {title}, this.componentId);
         });
 
+        this.deleteNoteOnEscape = false;
+
         appContext.addBeforeUnloadListener(this);
     }
 
@@ -48,6 +51,14 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
         this.$noteTitle = this.$widget.find(".note-title");
 
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
+
+        this.$noteTitle.on('blur', () => { this.deleteNoteOnEscape = false });
+
+        utils.bindElShortcut(this.$noteTitle, 'esc', () => {
+            if (this.deleteNoteOnEscape && this.noteContext.isActive()) {
+                branchService.deleteNotes(Object.values(this.noteContext.note.parentToBranch));
+            }
+        });
 
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
             this.triggerCommand('focusOnAttributes', {ntxId: this.noteContext.ntxId});
@@ -84,11 +95,13 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
         }
     }
 
-    focusAndSelectTitleEvent() {
+    focusAndSelectTitleEvent({isNewNote} = {isNewNote: false}) {
         if (this.noteContext && this.noteContext.isActive()) {
             this.$noteTitle
                 .trigger('focus')
                 .trigger('select');
+
+            this.deleteNoteOnEscape = isNewNote;
         }
     }
 
