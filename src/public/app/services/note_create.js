@@ -52,7 +52,7 @@ async function createNote(parentNotePath, options = {}) {
         await activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
-            appContext.triggerEvent('focusAndSelectTitle',{isNewNote: true});
+            appContext.triggerEvent('focusAndSelectTitle', {isNewNote: true});
         }
         else if (options.focus === 'content') {
             appContext.triggerEvent('focusOnDetail', {ntxId: activeNoteContext.ntxId});
