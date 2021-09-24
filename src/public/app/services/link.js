@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import contextMenu from "./context_menu.js";
+import linkContextMenuService from "./link_context_menu.js";
 import appContext from "./app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
@@ -128,29 +128,7 @@ function linkContextMenu(e) {
 
     e.preventDefault();
 
-    contextMenu.show({
-        x: e.pageX,
-        y: e.pageY,
-        items: [
-            {title: "Open note in a new tab", command: "openNoteInNewTab", uiIcon: "empty"},
-            {title: "Open note in a new split", command: "openNoteInNewSplit", uiIcon: "dock-right"},
-            {title: "Open note in a new window", command: "openNoteInNewWindow", uiIcon: "window-open"}
-        ],
-        selectMenuItemHandler: ({command}) => {
-            if (command === 'openNoteInNewTab') {
-                appContext.tabManager.openTabWithNoteWithHoisting(notePath);
-            }
-            else if (command === 'openNoteInNewSplit') {
-                const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
-                const {ntxId} = subContexts[subContexts.length - 1];
-
-                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath});
-            }
-            else if (command === 'openNoteInNewWindow') {
-                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId: 'root'});
-            }
-        }
-    });
+    linkContextMenuService.openContextMenu(notePath, e);
 }
 
 async function loadReferenceLinkTitle(noteId, $el) {

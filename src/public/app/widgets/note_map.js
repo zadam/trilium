@@ -4,6 +4,7 @@ import attributeService from "../services/attributes.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 import appContext from "../services/app_context.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import linkContextMenuService from "../services/link_context_menu.js";
 
 const TPL = `<div class="note-map-widget" style="position: relative;">
     <style>
@@ -106,7 +107,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .linkDirectionalArrowRelPos(1)
             .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
-            .onNodeClick(node => appContext.tabManager.getActiveContext().setNote(node.id));
+            .onNodeClick(node => appContext.tabManager.getActiveContext().setNote(node.id))
+            .onNodeRightClick((node, e) => linkContextMenuService.openContextMenu(node.id, e));
 
         if (this.mapType === 'link') {
             this.graph
