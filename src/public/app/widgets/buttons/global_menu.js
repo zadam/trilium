@@ -14,7 +14,7 @@ const TPL = `
     }
     
     .global-menu-button {
-        background-image: url("images/icon-bw.png");
+        background-image: url("images/icon-color.png");
         background-repeat: no-repeat;
         background-position: 50% 45%;
         width: 100%;

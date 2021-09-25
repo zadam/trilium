@@ -110,10 +110,10 @@ body.theme-dark {
     --modal-backdrop-color: #444;
 
     --left-pane-background-color: #1f1f1f;
-    --left-pane-text-color: #ADAAAA;
+    --left-pane-text-color: #AAAAAA;
 
     --launcher-pane-background-color: #1f1f1f;
-    --launcher-pane-text-color: #ADAAAA;
+    --launcher-pane-text-color: #AAAAAA;
 
     --active-tab-background-color: #666;
     --active-tab-text-color: #ccc;
@@ -124,6 +124,10 @@ body.theme-dark {
     --scrollbar-border-color: #888;
     --tooltip-background-color: #333;
     --link-color: lightskyblue;
+}
+
+body.theme-dark .global-menu-button {
+    background-image: url("../images/icon-grey.png");
 }
 
 body.theme-dark ::-webkit-calendar-picker-indicator {
