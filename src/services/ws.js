@@ -139,6 +139,8 @@ function fillInAdditionalProperties(entityChange) {
 
 function sendPing(client, entityChangeIds = []) {
     if (entityChangeIds.length === 0) {
+        sendMessage(client, { type: 'ping' });
+
         return;
     }
 

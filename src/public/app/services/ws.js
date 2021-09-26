@@ -102,7 +102,10 @@ async function handleMessage(event) {
         messageHandler(message);
     }
 
-    if (message.type === 'reload-frontend') {
+    if (message.type === 'ping') {
+        lastPingTs = Date.now();
+    }
+    else if (message.type === 'reload-frontend') {
         utils.reloadFrontendApp("received request from backend to reload frontend");
     }
     else if (message.type === 'frontend-update') {
