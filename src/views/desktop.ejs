@@ -5,7 +5,7 @@
     <link rel="shortcut icon" href="favicon.ico">
     <title>Trilium Notes</title>
 </head>
-<body class="desktop theme-<%= theme %> heading-style-<%= headingStyle %>" style="--main-font-size: <%= mainFontSize %>%; --tree-font-size: <%= treeFontSize %>%; --detail-font-size: <%= detailFontSize %>%;">
+<body class="desktop heading-style-<%= headingStyle %>" style="--main-font-size: <%= mainFontSize %>%; --tree-font-size: <%= treeFontSize %>%; --detail-font-size: <%= detailFontSize %>%;">
 <noscript>Trilium requires JavaScript to be enabled.</noscript>
 
 <script>
@@ -78,7 +78,13 @@
 
 <script src="libraries/split.min.js"></script>
 
-<link href="stylesheets/themes.css" rel="stylesheet">
+<link href="stylesheets/ckeditor-theme.css" rel="stylesheet">
+<link href="stylesheets/theme-light.css" rel="stylesheet">
+
+<% if (themeCssUrl) { %>
+<link href="<%= themeCssUrl %>" rel="stylesheet">
+<% } %>
+
 <link href="stylesheets/style.css" rel="stylesheet">
 
 <script>

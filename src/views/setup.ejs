@@ -6,15 +6,6 @@
     <title>Setup</title>
 
     <style>
-        @font-face {
-            font-family: MontserratLight;
-            src: url(../fonts/Montserrat-Light.ttf);
-        }
-
-        body {
-            font-family: MontserratLight;
-        }
-
         .lds-ring {
             display: inline-block;
             position: relative;
@@ -101,8 +92,8 @@
 
                 <div style="display: flex; justify-content: space-around;">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="theme" id="theme-white" value="white" data-bind="checked: theme" checked>
-                        <label class="form-check-label" for="theme-white">white</label>
+                        <input class="form-check-input" type="radio" name="theme" id="theme-light" value="light" data-bind="checked: theme" checked>
+                        <label class="form-check-label" for="theme-light">light</label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="theme" id="theme-dark" value="dark" data-bind="checked: theme">
@@ -217,6 +208,6 @@
 <script src="libraries/knockout.min.js"></script>
 
 <script src="app/setup.js" crossorigin type="module"></script>
-<link href="stylesheets/themes.css" rel="stylesheet">
+<link href="stylesheets/theme-light.css" rel="stylesheet">
 </body>
 </html>

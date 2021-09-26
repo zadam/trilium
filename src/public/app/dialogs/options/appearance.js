@@ -95,20 +95,12 @@ export default class ApperanceOptions {
         this.$detailFontSize = $("#detail-font-size");
         this.$body = $("body");
 
-        this.$themeSelect.on('change', () => {
+        this.$themeSelect.on('change', async () => {
             const newTheme = this.$themeSelect.val();
 
-            this.toggleBodyClass("theme-", newTheme);
+            await server.put('options/theme/' + newTheme);
 
-            const noteId = $(this).find(":selected").attr("data-note-id");
-
-            if (noteId) {
-                // make sure the CSS is loaded
-                // if the CSS has been loaded and then updated then the changes won't take effect though
-                libraryLoader.requireCss(`api/notes/download/${noteId}`);
-            }
-
-            server.put('options/theme/' + newTheme);
+            utils.reloadFrontendApp("theme change");
         });
 
         this.$zoomFactorSelect.on('change', () => { appContext.triggerCommand('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });

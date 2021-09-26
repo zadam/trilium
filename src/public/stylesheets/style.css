@@ -18,6 +18,39 @@ body {
        on the last line of the editor. */
     position: fixed;
     width: 100%;
+    background-color: var(--main-background-color);
+    color: var(--main-text-color);
+    font-family: var(--main-font-family);
+}
+
+a, a:visited, a:hover {
+    color: var(--link-color);
+}
+
+input, select, textarea {
+    color: var(--input-text-color) !important;
+    background: var(--input-background-color) !important;
+}
+
+#left-pane input, select, textarea {
+    color: var(--left-pane-text-color) !important;
+    background: var(--left-pane-background-color) !important;
+}
+
+input::placeholder {
+    color: var(--muted-text-color);
+}
+
+table td, table th {
+    color: var(--main-text-color);
+}
+
+.ck .todo-list__checkmark {
+    top: 10px !important;
+}
+
+.modal-backdrop {
+    background-color: var(--modal-backdrop-color) !important;
 }
 
 .component {

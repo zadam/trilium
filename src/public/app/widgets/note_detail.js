@@ -229,7 +229,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
                 "libraries/katex/katex.min.css",
                 "stylesheets/print.css",
                 "stylesheets/relation_map.css",
-                "stylesheets/themes.css"
+                "stylesheets/ckeditor-theme.css"
             ],
             debug: true
         });

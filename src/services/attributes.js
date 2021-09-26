@@ -69,18 +69,6 @@ function getNotesWithLabel(name, value) {
     });
 }
 
-function getNoteIdsWithLabels(names) {
-    const noteIds = new Set();
-
-    for (const name of names) {
-        for (const attr of becca.findAttributes('label', name)) {
-            noteIds.add(attr.noteId);
-        }
-    }
-
-    return Array.from(noteIds);
-}
-
 // TODO: should be in search service
 function getNoteWithLabel(name, value) {
     const notes = getNotesWithLabel(name, value);
@@ -179,7 +167,6 @@ function sanitizeAttributeName(origName) {
 
 module.exports = {
     getNotesWithLabel,
-    getNoteIdsWithLabels,
     getNoteWithLabel,
     createLabel,
     createRelation,
