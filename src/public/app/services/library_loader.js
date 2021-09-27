@@ -50,6 +50,10 @@ const FORCE_GRAPH = {
     js: [ "libraries/force-graph.min.js"]
 };
 
+const MERMAID = {
+    js: [ "libraries/mermaid.min.js" ]
+}
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -99,5 +103,6 @@ export default {
     CALENDAR_WIDGET,
     KATEX,
     WHEEL_ZOOM,
-    FORCE_GRAPH
+    FORCE_GRAPH,
+    MERMAID
 }
