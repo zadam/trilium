@@ -1,4 +1,4 @@
-# Trilium注意事项
+# Trilium笔记
 
 [English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md)
 
