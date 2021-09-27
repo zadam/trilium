@@ -58,7 +58,7 @@ table td, table th {
 }
 
 code, kbd, pre, samp {
-    font-family: var(--font-family-monospace);
+    font-family: var(--monospace-font-family);
 }
 
 .input-group-text {
@@ -227,7 +227,7 @@ div.ui-tooltip {
 }
 
 .CodeMirror * {
-    font-family: var(--font-family-monospace) !important;
+    font-family: var(--monospace-font-family) !important;
 }
 
 .CodeMirror-gutters {

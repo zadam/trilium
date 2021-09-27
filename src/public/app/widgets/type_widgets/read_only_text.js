@@ -31,7 +31,7 @@ const TPL = `
     .note-detail-readonly-text {
         padding-left: 24px;
         padding-top: 10px;
-        font-family: var(--detail-text-font-family);
+        font-family: var(--detail-font-family);
         min-height: 50px;
     }
         

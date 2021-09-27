@@ -33,7 +33,7 @@ const TPL = `
 <div class="note-detail-editable-text note-detail-printable">
     <style>
     .note-detail-editable-text {
-        font-family: var(--detail-text-font-family);
+        font-family: var(--detail-font-family);
         padding-left: 14px;
         padding-top: 10px;
     }

@@ -17,8 +17,13 @@ const ALLOWED_OPTIONS = new Set([
     'syncProxy',
     'hoistedNoteId',
     'mainFontSize',
+    'mainFontFamily',
     'treeFontSize',
+    'treeFontFamily',
     'detailFontSize',
+    'detailFontFamily',
+    'monospaceFontSize',
+    'monospaceFontFamily',
     'openTabs',
     'noteInfoWidget',
     'attributesWidget',
@@ -44,7 +49,8 @@ const ALLOWED_OPTIONS = new Set([
     'headingStyle',
     'autoCollapseNoteTree',
     'autoReadonlySizeText',
-    'autoReadonlySizeCode'
+    'autoReadonlySizeCode',
+    'overrideThemeFonts'
 ]);
 
 function getOptions() {

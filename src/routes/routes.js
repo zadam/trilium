@@ -38,6 +38,7 @@ const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
 const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
+const fontsRoute = require('./api/fonts');
 
 const log = require('../services/log');
 const express = require('express');
@@ -325,6 +326,8 @@ function register(app) {
     apiRoute(GET, '/api/stats/subtree-size/:noteId', statsRoute.getSubtreeSize);
 
     apiRoute(POST, '/api/delete-notes-preview', notesApiRoute.getDeleteNotesPreview);
+
+    route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
 
     app.use('', router);
 }
