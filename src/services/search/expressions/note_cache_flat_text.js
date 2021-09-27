@@ -3,8 +3,9 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const becca = require('../../../becca/becca');
+const utils = require("../../utils");
 
-class BeccaFlatTextExp extends Expression {
+class NoteFlatTextExp extends Expression {
     constructor(tokens) {
         super();
 
@@ -44,15 +45,15 @@ class BeccaFlatTextExp extends Expression {
 
             for (const attribute of note.ownedAttributes) {
                 for (const token of tokens) {
-                    if (attribute.name.toLowerCase().includes(token)
-                        || attribute.value.toLowerCase().includes(token)) {
+                    if (utils.normalize(attribute.name).includes(token)
+                        || utils.normalize(attribute.value).includes(token)) {
                         foundAttrTokens.push(token);
                     }
                 }
             }
 
             for (const parentNote of note.parents) {
-                const title = beccaService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const title = utils.normalize(beccaService.getNoteTitle(note.noteId, parentNote.noteId));
                 const foundTokens = foundAttrTokens.slice();
 
                 for (const token of tokens) {
@@ -89,8 +90,8 @@ class BeccaFlatTextExp extends Expression {
                 }
 
                 for (const attribute of note.ownedAttributes) {
-                    if (attribute.name.toLowerCase().includes(token)
-                        || attribute.value.toLowerCase().includes(token)) {
+                    if (utils.normalize(attribute.name).includes(token)
+                        || utils.normalize(attribute.value).includes(token)) {
 
                         foundAttrTokens.push(token);
                     }
@@ -98,7 +99,7 @@ class BeccaFlatTextExp extends Expression {
             }
 
             for (const parentNote of note.parents) {
-                const title = beccaService.getNoteTitle(note.noteId, parentNote.noteId).toLowerCase();
+                const title = utils.normalize(beccaService.getNoteTitle(note.noteId, parentNote.noteId));
                 const foundTokens = foundAttrTokens.slice();
 
                 for (const token of this.tokens) {
@@ -140,4 +141,4 @@ class BeccaFlatTextExp extends Expression {
     }
 }
 
-module.exports = BeccaFlatTextExp;
+module.exports = NoteFlatTextExp;

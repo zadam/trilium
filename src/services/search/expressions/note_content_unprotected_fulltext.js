@@ -4,6 +4,7 @@ const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const becca = require('../../../becca/becca');
 const striptags = require('striptags');
+const utils = require("../../utils");
 
 class NoteContentUnprotectedFulltextExp extends Expression {
     constructor(operator, tokens, raw) {
@@ -31,7 +32,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
                 continue;
             }
 
-            content = content.toString().toLowerCase();
+            content = utils.normalize(content.toString());
 
             if (type === 'text' && mime === 'text/html') {
                 if (!this.raw && content.length < 20000) { // striptags is slow for very large notes

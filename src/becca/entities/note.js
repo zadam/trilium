@@ -649,7 +649,7 @@ class Note extends AbstractEntity {
                 this.flatTextCache += ' ';
             }
 
-            this.flatTextCache = this.flatTextCache.toLowerCase();
+            this.flatTextCache = utils.removeDiacritic(this.flatTextCache.toLowerCase());
         }
 
         return this.flatTextCache;

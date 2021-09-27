@@ -18,9 +18,10 @@ const OrderByAndLimitExp = require('../expressions/order_by_and_limit');
 const AncestorExp = require("../expressions/ancestor");
 const buildComparator = require('./build_comparator');
 const ValueExtractor = require('../value_extractor');
+const utils = require("../../utils");
 
 function getFulltext(tokens, searchContext) {
-    tokens = tokens.map(t => t.token);
+    tokens = tokens.map(t => utils.removeDiacritic(t.token));
 
     searchContext.highlightedTokens.push(...tokens);
 

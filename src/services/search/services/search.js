@@ -223,8 +223,8 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         }
 
         for (const attr of note.getAttributes()) {
-            if (highlightedTokens.find(token => attr.name.toLowerCase().includes(token)
-                || attr.value.toLowerCase().includes(token))) {
+            if (highlightedTokens.find(token => utils.normalize(attr.name).includes(token)
+                || utils.normalize(attr.value).includes(token))) {
 
                 result.highlightedNotePathTitle += ` "${formatAttribute(attr)}'`;
             }
@@ -232,6 +232,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 
     for (const token of highlightedTokens) {
+        // this approach won't work for strings with diacritics
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of searchResults) {

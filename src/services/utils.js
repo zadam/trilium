@@ -290,6 +290,14 @@ function deferred() {
     })();
 }
 
+function removeDiacritic(str) {
+    return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+function normalize(str) {
+    return removeDiacritic(str).toLowerCase();
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -321,5 +329,7 @@ module.exports = {
     removeTextFileExtension,
     formatDownloadTitle,
     timeLimit,
-    deferred
+    deferred,
+    removeDiacritic,
+    normalize
 };
