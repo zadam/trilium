@@ -55,7 +55,6 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
     }
 
     isEnabled() {
-        // Temporary while there is no edit solution for mermaid diagrams
         return this.note && (this.note.type === 'text' || this.note.type === 'code' || this.note.type == 'mermaid');
     }
 
