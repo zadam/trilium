@@ -263,7 +263,7 @@ export default class ApperanceOptions {
         this.$headingStyle.val(options.headingStyle);
 
         const themes = [
-            { val: 'white', title: 'White' },
+            { val: 'light', title: 'Light' },
             { val: 'dark', title: 'Dark' }
         ].concat(await server.get('options/user-themes'));
 
