@@ -117,14 +117,14 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 .linkCanvasObjectMode(() => "after");
         }
 
+        let mapRootNoteId = this.getMapRootNoteId();
+        const data = await this.loadNotesAndRelations(mapRootNoteId);
+        const nodeLinkRatio = data.nodes.length / data.links.length;
+
         this.graph.d3Force('link').distance(40);
         this.graph.d3Force('center').strength(0.01);
-        this.graph.d3Force('charge').strength(-30);
+        this.graph.d3Force('charge').strength(-20 / nodeLinkRatio);
         this.graph.d3Force('charge').distanceMax(1000);
-
-        let mapRootNoteId = this.getMapRootNoteId();
-
-        const data = await this.loadNotesAndRelations(mapRootNoteId);
 
         this.renderData(data);
     }

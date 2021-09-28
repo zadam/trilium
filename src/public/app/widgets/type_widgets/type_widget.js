@@ -48,4 +48,15 @@ export default class TypeWidget extends NoteContextAwareWidget {
             this.focus();
         }
     }
+
+    // events should be propagated manually to the children widgets
+    handleEventInChildren(name, data) {
+        if (['activeContextChanged', 'setNoteContext'].includes(name)) {
+            // won't trigger .refresh();
+            return super.handleEventInChildren('setNoteContext', data);
+        }
+        else {
+            return Promise.resolve();
+        }
+    }
 }
