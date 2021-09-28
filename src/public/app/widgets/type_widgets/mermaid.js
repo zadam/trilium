@@ -1,12 +1,11 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import froca from "../../services/froca.js";
-import options from "../../services/options.js";
 
 const TPL = `<div>
     <div class="mermaid-error alert alert-warning">
         <p><strong>The diagram could not displayed.</strong></p>
-        <p class="error-content"></p>
+        <p class="error-content">Rendering diagram...</p>
     </div>
 
     <div class="mermaid-renderer"></div>
@@ -29,11 +28,11 @@ export default class MermaidTypeWidget extends TypeWidget {
 
     async initRenderer() {
         await libraryLoader.requireLibrary(libraryLoader.MERMAID);
-        await options.initializedPromise;
 
-        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: options.get('theme') == 'dark' ? 'dark' : 'default' });
+        const documentStyle = window.getComputedStyle(document.documentElement);
+        const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
 
-        this.update("");
+        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim() });
 
         this.$widget.show();
     }
@@ -53,7 +52,7 @@ export default class MermaidTypeWidget extends TypeWidget {
 
         this.$display.empty();
 
-        this.$errorContainer.text('Rendering diagram...');
+        this.$errorMessage.text('Rendering diagram...');
 
         try {
             mermaid.mermaidAPI.render('graphDiv', graph, updateWithContent);

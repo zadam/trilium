@@ -60,6 +60,8 @@
     --scrollbar-border-color: #888;
     --tooltip-background-color: #333;
     --link-color: lightskyblue;
+
+    --mermaid-theme: dark;
 }
 
 body .global-menu-button {
