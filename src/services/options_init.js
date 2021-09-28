@@ -56,7 +56,7 @@ const defaultOptions = [
     { name: 'noteRevisionSnapshotTimeInterval', value: '600', isSynced: true },
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
     { name: 'zoomFactor', value: '1.0', isSynced: false },
-    { name: 'overrideThemeFont', value: 'false', isSynced: false },
+    { name: 'overrideThemeFonts', value: 'false', isSynced: false },
     { name: 'mainFontFamily', value: 'sans-serif', isSynced: false },
     { name: 'mainFontSize', value: '100', isSynced: false },
     { name: 'treeFontFamily', value: 'sans-serif', isSynced: false },
