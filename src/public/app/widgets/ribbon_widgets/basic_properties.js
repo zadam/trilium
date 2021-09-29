@@ -55,7 +55,7 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
     }
 
     isEnabled() {
-        return this.note && (this.note.type === 'text' || this.note.type === 'code');
+        return this.note && (this.note.type === 'text' || this.note.type === 'code' || this.note.type == 'mermaid');
     }
 
     getTitle() {

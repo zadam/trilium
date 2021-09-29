@@ -63,4 +63,6 @@ html {
     --scrollbar-border-color: #ddd;
     --tooltip-background-color: #f8f8f8;
     --link-color: blue;
+
+    --mermaid-theme: default;
 }

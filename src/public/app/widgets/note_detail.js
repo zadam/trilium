@@ -21,6 +21,7 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import attributeService from "../services/attributes.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
+import MermaidTypeWidget from "./type_widgets/mermaid.js"
 
 const TPL = `
 <div class="note-detail">
@@ -47,7 +48,8 @@ const typeWidgetClasses = {
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget
+    'note-map': NoteMapTypeWidget,
+    'mermaid': MermaidTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {

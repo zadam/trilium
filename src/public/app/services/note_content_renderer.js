@@ -82,6 +82,24 @@ async function getRenderedContent(note, options = {}) {
 
         $renderedContent.append($content);
     }
+    else if (type === 'mermaid') {
+        await libraryLoader.requireLibrary(libraryLoader.MERMAID);
+
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const graph = noteComplement.content || "";
+
+        const updateWithContent = (content) => {
+            $renderedContent.append($(content))
+        }
+
+        try {
+            mermaid.mermaidAPI.render('graphDiv', graph, updateWithContent);
+        } catch (e) {
+            const $error = $("<p>The diagram could not displayed.</p>");
+
+            $renderedContent.append($error);
+        }
+    }
     else if (type === 'render') {
         const $content = $('<div>');
 
