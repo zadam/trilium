@@ -75,6 +75,8 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
             if (!this.note.hasLabel('expanded')) {
                 await attributeService.addLabel(this.noteId, 'expanded');
             }
+
+            this.triggerCommand('refreshNoteList', {noteId: this.noteId});
         });
 
         this.$collapseAllButton = this.$widget.find('.collapse-all-button');
@@ -83,6 +85,8 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
             for (const expandedAttr of this.note.getOwnedLabels('expanded')) {
                 await attributeService.removeAttributeById(this.noteId, expandedAttr.attributeId);
             }
+
+            this.triggerCommand('refreshNoteList', {noteId: this.noteId});
         });
     }
 

@@ -53,8 +53,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$importNoteButton = this.$widget.find('.import-files-button');
         this.$importNoteButton.on("click", () => import('../../dialogs/import.js').then(d => d.showDialog(this.noteId)));
 
-        this.$widget.on('click', '.dropdown-item',
-            () => this.$widget.find('.dropdown-toggle').dropdown('toggle'));
+        this.$widget.on('click', '.dropdown-item', () => this.$widget.find('.dropdown-menu').dropdown('toggle'));
 
         this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
     }

@@ -10,8 +10,8 @@ export default class ProtectedSessionStatusWidget extends ButtonWidget {
 
     updateSettings() {
         this.settings.icon = protectedSessionHolder.isProtectedSessionAvailable()
-            ? "bx-shield-quarter"
-            : "bx-log-in";
+            ? "bx-check-shield"
+            : "bx-shield-quarter";
 
         this.settings.title = protectedSessionHolder.isProtectedSessionAvailable()
             ? "Protected session is active. Click to leave protected session."

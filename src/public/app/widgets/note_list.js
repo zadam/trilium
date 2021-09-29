@@ -66,10 +66,15 @@ export default class NoteListWidget extends NoteContextAwareWidget {
     }
 
     async refresh() {
-        this.$content.empty();
         this.shownNoteId = null;
 
         await super.refresh();
+    }
+
+    async refreshNoteListEvent({noteId}) {
+        if (this.isNote(noteId)) {
+            await this.renderNoteList(this.note);
+        }
     }
 
     /**
@@ -94,7 +99,7 @@ export default class NoteListWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && attr.name === 'viewType')) {
+        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && ['viewType', 'expanded'].includes(attr.name))) {
             this.shownNoteId = null; // force render
 
             this.checkRenderStatus();
