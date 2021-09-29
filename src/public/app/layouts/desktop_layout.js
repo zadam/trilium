@@ -43,6 +43,7 @@ import EditButton from "../widgets/buttons/edit_button.js";
 import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
 import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
 import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js";
+import MermaidWidget from "../widgets/mermaid.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -151,6 +152,7 @@ export default class DesktopLayout {
                                     new ScrollingContainer()
                                         .filling()
                                         .child(new SqlTableSchemasWidget())
+                                        .child(new MermaidWidget())
                                         .child(new NoteDetailWidget())
                                         .child(new NoteListWidget())
                                         .child(new SearchResultWidget())

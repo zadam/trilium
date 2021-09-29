@@ -48,8 +48,7 @@ const typeWidgetClasses = {
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget,
-    'mermaid': MermaidTypeWidget
+    'note-map': NoteMapTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -163,7 +162,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             type = 'read-only-text';
         }
 
-        if (type === 'code' && await this.noteContext.isReadOnly()) {
+        if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
             type = 'read-only-code';
         }
 
@@ -171,7 +170,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             type = 'editable-text';
         }
 
-        if (type === 'code') {
+        if (type === 'code' || type === 'mermaid') {
             type = 'editable-code';
         }
 

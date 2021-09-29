@@ -33,11 +33,12 @@ export default class MermaidTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$display = this.$widget.find('.mermaid-render');
+        this.$errorContainer = this.$widget.find(".mermaid-error");
+        this.$errorMessage = this.$errorContainer.find(".error-content");
 
         this.$editor = this.$widget.find('.note-detail-code-editor');
 
-        this.$errorContainer = this.$widget.find(".mermaid-error");
-        this.$errorMessage = this.$errorContainer.find(".error-content");
+
 
         this.initialized = Promise.all( [this.initRenderer(), this.initEditor()]);
 
