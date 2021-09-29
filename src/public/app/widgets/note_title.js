@@ -61,7 +61,7 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
         });
 
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
-            this.triggerCommand('focusOnAttributes', {ntxId: this.noteContext.ntxId});
+            this.triggerCommand('focusOnDetail', {ntxId: this.noteContext.ntxId});
         });
     }
 

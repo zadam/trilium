@@ -55,6 +55,9 @@ export default class TypeWidget extends NoteContextAwareWidget {
             // won't trigger .refresh();
             return super.handleEventInChildren('setNoteContext', data);
         }
+        else if (name === 'entitiesReloaded') {
+            return super.handleEventInChildren(name, data);
+        }
         else {
             return Promise.resolve();
         }

@@ -70,10 +70,13 @@ function getLinkMap(req) {
 
 function getTreeMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
+    // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
+    // we'll just ignore it
+    const ignoreExcludeFromTreeMap = mapRootNote.hasLabel('excludeFromTreeMap');
     const noteIds = new Set();
 
     const notes = mapRootNote.getSubtreeNotes(false)
-        .filter(note => !note.hasLabel('excludeFromTreeMap'))
+        .filter(note => ignoreExcludeFromTreeMap || !note.hasLabel('excludeFromTreeMap'))
         .filter(note => {
             if (note.type !== 'image' || note.getChildNotes().length > 0) {
                 return true;

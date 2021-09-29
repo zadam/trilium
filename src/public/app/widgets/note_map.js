@@ -21,13 +21,13 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
         }
         
         .map-type-switcher .bx {
-            font-size: x-large;
+            font-size: 120%;
         }
     </style>
     
-    <div class="btn-group btn-group-sm map-type-switcher" role="group">
-      <button type="button" class="btn btn-secondary" title="Link Map" data-type="link"><span class="bx bx-network-chart"></span></button>
-      <button type="button" class="btn btn-secondary" title="Tree map" data-type="tree"><span class="bx bx-sitemap"></span></button>
+    <div class="btn-group btn-group-sm map-type-switcher floating-button" role="group">
+      <button type="button" class="btn icon-button bx bx-network-chart" title="Link Map" data-type="link"></button>
+      <button type="button" class="btn icon-button bx bx-sitemap" title="Tree map" data-type="tree"></button>
     </div>
 
     <div class="style-resolver"></div>
@@ -102,7 +102,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             })
             .nodeLabel(node => node.name)
             .maxZoom(7)
-            .warmupTicks(10)
+            .warmupTicks(30)
             .linkDirectionalArrowLength(5)
             .linkDirectionalArrowRelPos(1)
             .linkWidth(1)
@@ -122,8 +122,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         const nodeLinkRatio = data.nodes.length / data.links.length;
 
         this.graph.d3Force('link').distance(40);
-        this.graph.d3Force('center').strength(0.01);
-        this.graph.d3Force('charge').strength(-20 / nodeLinkRatio);
+        this.graph.d3Force('center').strength(0.2);
+        this.graph.d3Force('charge').strength(-20 / Math.pow(nodeLinkRatio, 1.5));
         this.graph.d3Force('charge').distanceMax(1000);
 
         this.renderData(data);

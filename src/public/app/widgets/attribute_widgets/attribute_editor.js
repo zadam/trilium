@@ -483,21 +483,6 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         }
     }
 
-    async focusOnAttributesEvent({ntxId}) {
-        if (this.noteContext.ntxId === ntxId) {
-            if (this.$editor.is(":visible")) {
-                this.$editor.trigger('focus');
-
-                this.textEditor.model.change(writer => { // put focus to the end of the content
-                    writer.setSelection(writer.createPositionAt(this.textEditor.model.document.getRoot(), 'end'));
-                });
-            }
-            else {
-                this.triggerEvent('focusOnDetail', {ntxId: this.noteContext.ntxId});
-            }
-        }
-    }
-
     async createNoteForReferenceLink(title) {
         const {note} = await noteCreateService.createNote(this.notePath, {
             activate: false,
