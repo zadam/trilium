@@ -268,7 +268,7 @@ class ConsistencyChecks {
                     SELECT noteId, type
                     FROM notes
                     WHERE isDeleted = 0
-                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book', 'note-map')`,
+                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book', 'note-map', 'mermaid')`,
             ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
