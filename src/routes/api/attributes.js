@@ -80,9 +80,10 @@ function setNoteAttribute(req) {
         attr.value = body.value;
         attr.save();
     } else {
-        const attr = new Attribute(body);
-        attr.noteId = noteId;
-        attr.save();
+        const params = {...body};
+        params.noteId = noteId; // noteId must be set before calling constructor for proper initialization
+
+        new Attribute(params).save();
     }
 }
 
