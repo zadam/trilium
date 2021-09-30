@@ -63,7 +63,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
             this.$errorContainer.hide();
         } catch (e) {
-            this.$errorMessage.text(e.message);
+            this.$errorMessage.text(e.message).append(`<br/><br/><p>See <a href="https://mermaid-js.github.io/mermaid/#/flowchart?id=graph">help and examples</a>.</p>`);
             this.$errorContainer.show();
         }
     }

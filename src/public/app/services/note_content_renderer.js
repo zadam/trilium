@@ -86,14 +86,15 @@ async function getRenderedContent(note, options = {}) {
         await libraryLoader.requireLibrary(libraryLoader.MERMAID);
 
         const noteComplement = await froca.getNoteComplement(note.noteId);
-        const graph = noteComplement.content || "";
+        const content = noteComplement.content || "";
 
-        const updateWithContent = (content) => {
-            $renderedContent.append($(content))
-        }
+        $renderedContent
+            .css("display", "flex")
+            .css("justify-content", "space-around");
 
         try {
-            mermaid.mermaidAPI.render('graphDiv', graph, updateWithContent);
+            mermaid.mermaidAPI.render("mermaid-graph", content,
+                    content => $renderedContent.append($(content)));
         } catch (e) {
             const $error = $("<p>The diagram could not displayed.</p>");
 

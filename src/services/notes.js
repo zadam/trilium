@@ -50,7 +50,7 @@ function deriveMime(type, mime) {
 
     if (type === 'text') {
         mime = 'text/html';
-    } else if (type === 'code') {
+    } else if (type === 'code' || type === 'mermaid') {
         mime = 'text/plain';
     } else if (['relation-map', 'search'].includes(type)) {
         mime = 'application/json';
@@ -114,6 +114,8 @@ function createNewNote(params) {
             type: params.type,
             mime: deriveMime(params.type, params.mime)
         }).save();
+
+        console.log(params);
 
         note.setContent(params.content);
 
