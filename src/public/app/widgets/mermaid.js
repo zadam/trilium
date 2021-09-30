@@ -54,6 +54,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         mermaid.mermaidAPI.initialize({
             startOnLoad: false,
             theme: mermaidTheme.trim(),
+            securityLevel: 'antiscript',
             flow: { useMaxWidth: false },
             sequence: { useMaxWidth: false },
             gantt: { useMaxWidth: false },
