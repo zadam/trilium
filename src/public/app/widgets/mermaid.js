@@ -3,6 +3,19 @@ import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import froca from "../services/froca.js";
 
 const TPL = `<div class="mermaid-widget">
+    <style>
+        .mermaid-widget {
+            flex-grow: 2;
+            overflow: auto;
+            min-height: 200px;
+            border-bottom: 1px solid var(--main-border-color);
+            padding: 20px;
+            display: flex;
+            justify-content: space-around; /* centering rendered SVG */
+            flex-basis: 0;
+        }
+    </style>
+
     <div class="mermaid-error alert alert-warning">
         <p><strong>The diagram could not displayed.</strong></p>
         <p class="error-content">Rendering diagram...</p>
@@ -12,6 +25,12 @@ const TPL = `<div class="mermaid-widget">
 </div>`;
 
 export default class MermaidWidget extends NoteContextAwareWidget {
+    constructor() {
+        super();
+
+        this.idCounter = 1;
+    }
+
     isEnabled() {
         return super.isEnabled() && this.note && this.note.type === 'mermaid';
     }
@@ -40,7 +59,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         this.$errorMessage.text('Rendering diagram...');
 
         try {
-            mermaid.mermaidAPI.render('graphDiv', content, content => this.$display.html(content));
+            mermaid.mermaidAPI.render('graphDiv-' + this.idCounter++, content, content => this.$display.html(content));
 
             this.$errorContainer.hide();
         } catch (e) {

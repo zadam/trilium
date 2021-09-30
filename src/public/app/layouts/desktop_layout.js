@@ -148,11 +148,11 @@ export default class DesktopLayout {
                                         .button(new NoteActionsWidget())
                                 )
                                 .child(new NoteUpdateStatusWidget())
+                                .child(new MermaidWidget())
                                 .child(
                                     new ScrollingContainer()
                                         .filling()
                                         .child(new SqlTableSchemasWidget())
-                                        .child(new MermaidWidget())
                                         .child(new NoteDetailWidget())
                                         .child(new NoteListWidget())
                                         .child(new SearchResultWidget())
