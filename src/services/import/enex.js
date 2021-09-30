@@ -221,6 +221,17 @@ function importEnex(taskContext, file, parentNote) {
 
         content = extractContent(content);
 
+        // This boilerplate is added by the Evernote import of OneNote notes (and preserved in ENEX export)
+        const replaced = content.replace(/<div>\s*<p>\s*<\/p>\s*<p>\s*Created with OneNote.\s*<\/p>\s*<\/div>\s*$/m, "");
+        if (replaced != content) {
+            content = replaced;
+            attributes.push({
+                type: 'label',
+                name: 'createdWithOneNote',
+                value: ''
+            });
+        }
+
         const noteEntity = noteService.createNewNote({
             parentNoteId: rootNote.noteId,
             title,
