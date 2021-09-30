@@ -278,7 +278,7 @@ export default class ApperanceOptions {
 
         this.$themeSelect.val(options.theme);
 
-        this.$overrideThemeFonts.prop('checked', options.overrideThemeFonts);
+        this.$overrideThemeFonts.prop('checked', options.overrideThemeFonts === 'true');
         this.$overridenFontSettings.toggle(options.overrideThemeFonts === 'true');
 
         this.$mainFontSize.val(options.mainFontSize);
@@ -289,8 +289,6 @@ export default class ApperanceOptions {
 
         this.$detailFontSize.val(options.detailFontSize);
         this.fillFontFamilyOptions(this.$detailFontFamily, options.detailFontFamily);
-
-        console.log(options);
 
         this.$monospaceFontSize.val(options.monospaceFontSize);
         this.fillFontFamilyOptions(this.$monospaceFontFamily, options.monospaceFontFamily);

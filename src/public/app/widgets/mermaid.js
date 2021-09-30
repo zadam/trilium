@@ -48,6 +48,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         const documentStyle = window.getComputedStyle(document.documentElement);
         const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
 
+        console.log(mermaidTheme, "mermaidTheme");
+
         mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim() });
 
         const noteComplement = await froca.getNoteComplement(note.noteId);

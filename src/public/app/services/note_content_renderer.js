@@ -94,6 +94,11 @@ async function getRenderedContent(note, options = {}) {
             .css("display", "flex")
             .css("justify-content", "space-around");
 
+        const documentStyle = window.getComputedStyle(document.documentElement);
+        const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
+
+        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim() });
+
         try {
             mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content,
                     content => $renderedContent.append($(content)));
