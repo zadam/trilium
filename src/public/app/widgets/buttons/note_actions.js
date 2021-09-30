@@ -35,6 +35,10 @@ const TPL = `
 </div>`;
 
 export default class NoteActionsWidget extends NoteContextAwareWidget {
+    isEnabled() {
+        return true;
+    }
+
     doRender() {
         this.$widget = $(TPL);
 

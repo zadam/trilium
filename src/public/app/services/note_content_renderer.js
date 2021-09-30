@@ -6,6 +6,8 @@ import libraryLoader from "./library_loader.js";
 import openService from "./open.js";
 import froca from "./froca.js";
 
+let idCounter = 1;
+
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
         trim: false,
@@ -93,7 +95,7 @@ async function getRenderedContent(note, options = {}) {
             .css("justify-content", "space-around");
 
         try {
-            mermaid.mermaidAPI.render("mermaid-graph", content,
+            mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content,
                     content => $renderedContent.append($(content)));
         } catch (e) {
             const $error = $("<p>The diagram could not displayed.</p>");

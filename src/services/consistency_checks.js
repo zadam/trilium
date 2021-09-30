@@ -624,7 +624,8 @@ class ConsistencyChecks {
 
             ws.sendMessageToAllClients({type: 'consistency-checks-failed'});
         } else {
-            log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);
+            log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)` +
+                (this.fixedIssues ? " after some fixes" : "with no errors detected"));
         }
     }
 }

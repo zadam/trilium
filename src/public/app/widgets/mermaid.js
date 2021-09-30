@@ -18,20 +18,16 @@ const TPL = `<div class="mermaid-widget">
     </style>
 
     <div class="mermaid-error alert alert-warning">
-        <p><strong>The diagram could not displayed.</strong></p>
-        <p class="error-content">Rendering diagram...</p>
+        <p><strong>The diagram could not displayed. See <a href="https://mermaid-js.github.io/mermaid/#/flowchart?id=graph">help and examples</a>.</strong></p>
+        <p class="error-content"></p>
     </div>
 
     <div class="mermaid-render"></div>
 </div>`;
 
+let idCounter = 1;
+
 export default class MermaidWidget extends NoteContextAwareWidget {
-    constructor() {
-        super();
-
-        this.idCounter = 1;
-    }
-
     isEnabled() {
         return super.isEnabled() && this.note && this.note.type === 'mermaid';
     }
@@ -45,6 +41,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
+        this.$errorContainer.hide();
+
         await libraryLoader.requireLibrary(libraryLoader.MERMAID);
 
         const documentStyle = window.getComputedStyle(document.documentElement);
@@ -57,14 +55,12 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
         this.$display.empty();
 
-        this.$errorMessage.text('Rendering diagram...');
-
         try {
-            mermaid.mermaidAPI.render('graphDiv-' + this.idCounter++, content, content => this.$display.html(content));
+            mermaid.mermaidAPI.render('mermaid-graph-' + idCounter++, content, content => this.$display.html(content));
 
             this.$errorContainer.hide();
         } catch (e) {
-            this.$errorMessage.text(e.message).append(`<br/><br/><p>See <a href="https://mermaid-js.github.io/mermaid/#/flowchart?id=graph">help and examples</a>.</p>`);
+            this.$errorMessage.text(e.message);
             this.$errorContainer.show();
         }
     }
