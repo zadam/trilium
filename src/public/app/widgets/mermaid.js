@@ -11,9 +11,12 @@ const TPL = `<div class="mermaid-widget">
             border-bottom: 1px solid var(--main-border-color);
             padding: 20px;
             margin-bottom: 10px;
-            display: flex;
-            justify-content: space-around; /* centering rendered SVG */
             flex-basis: 0;
+        }
+        
+        .mermaid-render {
+            overflow: auto;
+            height: 100%;
         }
     </style>
 
@@ -48,9 +51,18 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         const documentStyle = window.getComputedStyle(document.documentElement);
         const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
 
-        console.log(mermaidTheme, "mermaidTheme");
-
-        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim() });
+        mermaid.mermaidAPI.initialize({
+            startOnLoad: false,
+            theme: mermaidTheme.trim(),
+            flow: { useMaxWidth: false },
+            sequence: { useMaxWidth: false },
+            gantt: { useMaxWidth: false },
+            "class": { useMaxWidth: false },
+            state: { useMaxWidth: false },
+            pie: { useMaxWidth: false },
+            journey: { useMaxWidth: false },
+            git: { useMaxWidth: false },
+        });
 
         const noteComplement = await froca.getNoteComplement(note.noteId);
         const content = noteComplement.content || "";
