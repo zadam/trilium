@@ -97,7 +97,7 @@ async function getRenderedContent(note, options = {}) {
         const documentStyle = window.getComputedStyle(document.documentElement);
         const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
 
-        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim() });
+        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim(), securityLevel: 'antiscript' });
 
         try {
             mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content,
