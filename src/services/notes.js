@@ -115,8 +115,6 @@ function createNewNote(params) {
             mime: deriveMime(params.type, params.mime)
         }).save();
 
-        console.log(params);
-
         note.setContent(params.content);
 
         const branch = new Branch({

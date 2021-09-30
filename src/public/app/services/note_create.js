@@ -32,8 +32,6 @@ async function createNote(parentNotePath, options = {}) {
 
     const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
 
-    console.log(options);
-
     if (options.type === 'mermaid' && !options.content) {
         options.content = `graph TD;
     A-->B;

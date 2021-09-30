@@ -624,8 +624,10 @@ class ConsistencyChecks {
 
             ws.sendMessageToAllClients({type: 'consistency-checks-failed'});
         } else {
-            log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)` +
-                (this.fixedIssues ? " after some fixes" : "with no errors detected"));
+            log.info(`All consistency checks passed ` +
+                (this.fixedIssues ? "after some fixes" : "with no errors detected") +
+                ` (took ${elapsedTimeMs}ms)`
+            );
         }
     }
 }
@@ -666,7 +668,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runPeriodicChecks), 60 * 60 * 1000);
 
     // kickoff checks soon after startup (to not block the initial load)
-    setTimeout(cls.wrap(runPeriodicChecks), 20 * 1000);
+    setTimeout(cls.wrap(runPeriodicChecks), 10 * 1000);
 });
 
 module.exports = {
