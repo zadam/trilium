@@ -10,6 +10,7 @@ const TPL = `<div class="mermaid-widget">
             min-height: 200px;
             border-bottom: 1px solid var(--main-border-color);
             padding: 20px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-around; /* centering rendered SVG */
             flex-basis: 0;

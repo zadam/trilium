@@ -39,11 +39,23 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
 
-    /** @property {NoteContextAwareWidget} */
+    /**
+     * @property {NoteContextAwareWidget}
+     * @deprecated use NoteContextAwareWidget instead
+     */
     this.TabAwareWidget = NoteContextAwareWidget;
 
-    /** @property {NoteContextCachingWidget} */
+    /** @property {NoteContextAwareWidget} */
+    this.NoteContextAwareWidget = NoteContextAwareWidget;
+
+    /**
+     * @property {NoteContextCachingWidget}
+     * @deprecated use NoteContextCachingWidget instead
+     */
     this.TabCachingWidget = NoteContextCachingWidget;
+
+    /** @property {NoteContextAwareWidget} */
+    this.NoteContextCachingWidget = NoteContextCachingWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;

@@ -167,12 +167,14 @@ class NoteRevision extends AbstractEntity {
             dateCreated: this.dateCreated,
             utcDateLastEdited: this.utcDateLastEdited,
             utcDateCreated: this.utcDateCreated,
-            utcDateModified: this.utcDateModified
+            utcDateModified: this.utcDateModified,
+            contentLength: this.contentLength
         };
     }
 
     getPojoToSave() {
         const pojo = this.getPojo();
+        delete pojo.contentLength; // not getting persisted
 
         if (pojo.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
