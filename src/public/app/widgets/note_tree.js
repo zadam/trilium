@@ -1433,4 +1433,13 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             noteCreateService.duplicateSubtree(nodeToDuplicate.data.noteId, branch.parentNoteId);
         }
     }
+
+    copyNoteIdCommand({node}) {
+        // Use "real" clipboard to copy note ID as a string
+        navigator.permissions.query({name: "clipboard-write"}).then(result => {
+            if (result.state == "granted" || result.state == "prompt") {
+                navigator.clipboard.writeText(node.data.noteId);
+            }
+          });
+    }
 }

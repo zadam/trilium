@@ -102,7 +102,9 @@ class TreeContextMenu {
             { title: "Export", command: "exportNote", uiIcon: "empty",
                 enabled: notSearch && noSelectedNotes },
             { title: "Import into note", command: "importIntoNote", uiIcon: "empty",
-                enabled: notSearch && noSelectedNotes }
+                enabled: notSearch && noSelectedNotes },
+            { title: "----" },
+            { title: "Copy note ID", command: "copyNoteId", enabled: noSelectedNotes, uiIcon: "hash" }
         ].filter(row => row !== null);
     }
 
