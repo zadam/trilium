@@ -812,61 +812,71 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
     const newNoteId = noteIdMapping[origNote.noteId];
 
-    const newBranch = new Branch({
-        noteId: newNoteId,
-        parentNoteId: newParentNoteId,
-        // here increasing just by 1 to make sure it's directly after original
-        notePosition: origBranch ? origBranch.notePosition + 1 : null
-    }).save();
+    function createDuplicatedBranch() {
+        return new Branch({
+            noteId: newNoteId,
+            parentNoteId: newParentNoteId,
+            // here increasing just by 1 to make sure it's directly after original
+            notePosition: origBranch ? origBranch.notePosition + 1 : null
+        }).save();
+    }
+
+    function createDuplicatedNote() {
+        const newNote = new Note({
+            ...origNote,
+            noteId: newNoteId,
+            dateCreated: dateUtils.localNowDateTime(),
+            utcDateCreated: dateUtils.utcNowDateTime()
+        }).save();
+
+        let content = origNote.getContent();
+
+        if (['text', 'relation-map', 'search'].includes(origNote.type)) {
+            // fix links in the content
+            content = replaceByMap(content, noteIdMapping);
+        }
+
+        newNote.setContent(content);
+
+        for (const attribute of origNote.getOwnedAttributes()) {
+            const attr = new Attribute({
+                ...attribute,
+                attributeId: undefined,
+                noteId: newNote.noteId
+            });
+
+            // if relation points to within the duplicated tree then replace the target to the duplicated note
+            // if it points outside of duplicated tree then keep the original target
+            if (attr.type === 'relation' && attr.value in noteIdMapping) {
+                attr.value = noteIdMapping[attr.value];
+            }
+
+            attr.save();
+        }
+
+        for (const childBranch of origNote.getChildBranches()) {
+            duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
+        }
+        return newNote;
+    }
 
     const existingNote = becca.notes[newNoteId];
 
-    if (existingNote.title !== undefined) { // checking that it's not just note's skeleton created because of Branch above
+    if (existingNote && existingNote.title !== undefined) { // checking that it's not just note's skeleton created because of Branch above
         // note has multiple clones and was already created from another placement in the tree
         // so a branch is all we need for this clone
         return {
             note: existingNote,
-            branch: newBranch
+            branch: createDuplicatedBranch()
         }
     }
-
-    const newNote = new Note(origNote);
-    newNote.noteId = newNoteId;
-    newNote.dateCreated = dateUtils.localNowDateTime();
-    newNote.utcDateCreated = dateUtils.utcNowDateTime();
-    newNote.save();
-
-    let content = origNote.getContent();
-
-    if (['text', 'relation-map', 'search'].includes(origNote.type)) {
-        // fix links in the content
-        content = replaceByMap(content, noteIdMapping);
-    }
-
-    newNote.setContent(content);
-
-    for (const attribute of origNote.getOwnedAttributes()) {
-        const attr = new Attribute(attribute);
-        attr.attributeId = undefined; // force creation of new attribute
-        attr.noteId = newNote.noteId;
-
-        // if relation points to within the duplicated tree then replace the target to the duplicated note
-        // if it points outside of duplicated tree then keep the original target
-        if (attr.type === 'relation' && attr.value in noteIdMapping) {
-            attr.value = noteIdMapping[attr.value];
+    else {
+        return {
+            // order here is important, note needs to be created first to not mess up the becca
+            note: createDuplicatedNote(),
+            branch: createDuplicatedBranch()
         }
-
-        attr.save();
     }
-
-    for (const childBranch of origNote.getChildBranches()) {
-        duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
-    }
-
-    return {
-        note: newNote,
-        branch: newBranch
-    };
 }
 
 function getNoteIdMapping(origNote) {

@@ -310,7 +310,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
             // won't trigger .refresh();
             await super.handleEventInChildren('setNoteContext', data);
         }
-        else {
+        else if (this.isEnabled()) {
             const activeRibbonWidget = this.getActiveRibbonWidget();
 
             // forward events only to active ribbon tab, inactive ones don't need to be updated

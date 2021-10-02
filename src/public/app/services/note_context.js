@@ -91,13 +91,6 @@ class NoteContext extends Component {
     }
 
     async getResolvedNotePath(inputNotePath) {
-        const noteId = treeService.getNoteIdFromNotePath(inputNotePath);
-
-        if ((await froca.getNote(noteId)).isDeleted) {
-            // no point in trying to resolve canonical notePath
-            return inputNotePath;
-        }
-
         const resolvedNotePath = await treeService.resolveNotePath(inputNotePath, this.hoistedNoteId);
 
         if (!resolvedNotePath) {
@@ -112,9 +105,6 @@ class NoteContext extends Component {
         if (await hoistedNoteService.checkNoteAccess(resolvedNotePath, this) === false) {
             return; // note is outside of hoisted subtree and user chose not to unhoist
         }
-
-        // if user choise to unhoist, cache was reloaded, but might not contain this note (since it's on unexpanded path)
-        await froca.getNote(noteId);
 
         return resolvedNotePath;
     }

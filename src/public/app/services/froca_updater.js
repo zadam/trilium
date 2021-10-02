@@ -82,6 +82,8 @@ function processNoteChange(loadResults, ec) {
     const note = froca.notes[ec.entityId];
 
     if (!note) {
+        // if this note has not been requested before then it's not part of froca's cached subset and
+        // we're not interested in it
         return;
     }
 

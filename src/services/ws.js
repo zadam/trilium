@@ -137,6 +137,19 @@ function fillInAdditionalProperties(entityChange) {
     }
 }
 
+// entities with higher number can reference the entities with lower number
+const ORDERING = {
+    "api_tokens": 0,
+    "attributes": 1,
+    "branches": 1,
+    "note_contents": 1,
+    "note_reordering": 1,
+    "note_revision_contents": 2,
+    "note_revisions": 1,
+    "notes": 0,
+    "options": 0
+};
+
 function sendPing(client, entityChangeIds = []) {
     if (entityChangeIds.length === 0) {
         sendMessage(client, { type: 'ping' });
@@ -145,6 +158,11 @@ function sendPing(client, entityChangeIds = []) {
     }
 
     const entityChanges = sql.getManyRows(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
+
+    // sort entity changes since froca expects "referential order", i.e. referenced entities should already exist
+    // in froca.
+    // Froca needs this since it is incomplete copy, it can't create "skeletons" like becca.
+    entityChanges.sort((a, b) => ORDERING[a.entityName] - ORDERING[b.entityName]);
 
     for (const entityChange of entityChanges) {
         try {

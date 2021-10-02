@@ -26,7 +26,7 @@
   "dependencies": {
     "archiver": "5.3.0",
     "async-mutex": "0.3.2",
-    "axios": "0.21.4",
+    "axios": "0.22.0",
     "better-sqlite3": "7.4.3",
     "body-parser": "1.19.0",
     "chokidar": "3.5.2",
@@ -42,7 +42,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-partial-content": "^1.0.2",
-    "express-rate-limit": "5.3.0",
+    "express-rate-limit": "5.4.0",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
     "helmet": "4.6.0",
@@ -57,7 +57,7 @@
     "jimp": "0.16.1",
     "joplin-turndown-plugin-gfm": "1.0.12",
     "jsdom": "17.0.0",
-    "mime-types": "2.1.32",
+    "mime-types": "2.1.33",
     "multer": "1.4.3",
     "node-abi": "3.2.0",
     "open": "8.2.1",
@@ -76,7 +76,7 @@
     "tmp": "^0.2.1",
     "turndown": "7.1.1",
     "unescape": "1.0.1",
-    "ws": "8.2.2",
+    "ws": "8.2.3",
     "yauzl": "2.10.0"
   },
   "devDependencies": {
@@ -90,7 +90,7 @@
     "jsdoc": "3.6.7",
     "lorem-ipsum": "2.0.4",
     "rcedit": "3.0.1",
-    "webpack": "5.55.1",
+    "webpack": "5.56.0",
     "webpack-cli": "4.8.0"
   },
   "optionalDependencies": {
