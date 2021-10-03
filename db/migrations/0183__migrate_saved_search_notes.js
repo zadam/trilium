@@ -13,7 +13,7 @@ module.exports = () => {
 
             note.setContent('');
 
-            note.mime = 'plain';
+            note.mime = 'plaintext';
             note.save();
 
             console.log(`Migrated search note ${note.noteId}`);

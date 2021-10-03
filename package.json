@@ -45,7 +45,6 @@
     "express-session": "1.17.1",
     "fs-extra": "9.1.0",
     "helmet": "4.5.0",
-    "highlight.js": "^11.2.0",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.1",

@@ -48,7 +48,7 @@ function deriveMime(type, mime) {
     if (type === 'text') {
         mime = 'text/html';
     } else if (type === 'code') {
-        mime = 'plain';
+        mime = 'plaintext';
     } else if (['relation-map', 'search'].includes(type)) {
         mime = 'application/json';
     } else if (['render', 'book'].includes(type)) {

@@ -15,13 +15,13 @@
     script: [
       ["lang", /(javascript|babel)/i, "javascript"],
       ["type", /^(?:text|application)\/(?:x-)?(?:java|ecma)script$|^module$|^$/i, "javascript"],
-      ["type", /./, "plain"],
+      ["type", /./, "plaintext"],
       [null, null, "javascript"]
     ],
     style:  [
       ["lang", /^css$/i, "css"],
       ["type", /^(text\/)?(x-)?(stylesheet|css)$/i, "css"],
-      ["type", /./, "plain"],
+      ["type", /./, "plaintext"],
       [null, null, "css"]
     ]
   };

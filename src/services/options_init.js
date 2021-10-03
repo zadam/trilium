@@ -72,7 +72,7 @@ const defaultOptions = [
     { name: 'imageMaxWidthHeight', value: '1200', isSynced: true },
     { name: 'imageJpegQuality', value: '75', isSynced: true },
     { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
-    { name: 'codeNotesMimeTypes', value: '["c","c++","cs","css","go","groovy","haskell","html","http","java","javascript;env=frontend","javascript;env=backend","json","kotlin","text/x-markdown","perl","php","python","ruby",null,"sql","sqlite;schema=trilium","swift","xml","yaml"]', isSynced: true },
+    { name: 'codeNotesMimeTypes', value: '["c","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","php","python","text/x-ruby",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml"]', isSynced: true },
     { name: 'leftPaneWidth', value: '25', isSynced: false },
     { name: 'leftPaneVisible', value: 'true', isSynced: false },
     { name: 'rightPaneWidth', value: '25', isSynced: false },

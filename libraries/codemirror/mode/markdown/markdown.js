@@ -49,7 +49,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     modeCfg.fencedCodeBlockHighlighting = true;
 
   if (modeCfg.fencedCodeBlockDefaultMode === undefined)
-    modeCfg.fencedCodeBlockDefaultMode = 'plain';
+    modeCfg.fencedCodeBlockDefaultMode = 'plaintext';
 
   if (modeCfg.xml === undefined)
     modeCfg.xml = true;
