@@ -141,7 +141,7 @@ export default class DesktopLayout {
                                         .ribbon(new NoteInfoWidget())
                                         .button(new EditButton())
                                         .button(new ButtonWidget()
-                                            .icon('bx bx-history')
+                                            .icon('bx-history')
                                             .title("Note Revisions")
                                             .command("showNoteRevisions")
                                             .titlePlacement("bottom"))

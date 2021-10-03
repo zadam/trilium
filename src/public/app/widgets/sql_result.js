@@ -40,6 +40,15 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
         this.$resultContainer.empty();
 
         for (const rows of results) {
+            if (typeof rows === 'object' && !Array.isArray(rows)) {
+                // inserts, updates
+                this.$resultContainer.empty().show().append(
+                    $("<pre>").text(JSON.stringify(rows, null, '\t'))
+                );
+
+                continue;
+            }
+
             if (!rows.length) {
                 continue;
             }
