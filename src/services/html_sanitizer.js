@@ -3,6 +3,24 @@ const sanitizeHtml = require('sanitize-html');
 // intended mainly as protection against XSS via import
 // secondarily it (partly) protects against "CSS takeover"
 function sanitize(dirtyHtml) {
+
+    // avoid H1 per https://github.com/zadam/trilium/issues/1552
+    // demote H1, and if that conflicts with existing H2, demote that, etc
+    let transformTags = {};
+    const loweraseHtml = dirtyHtml.toLowerCase();
+    for (let i = 1; i < 6; ++i)
+    {
+        if (loweraseHtml.includes(`<h${i}`))
+        {
+            transformTags[`h${i}`] = `h${i+1}`;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // to minimize document changes, compress H
     return sanitizeHtml(dirtyHtml, {
         allowedTags: [
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
@@ -20,7 +38,8 @@ function sanitize(dirtyHtml) {
             'input': [ 'class', 'type', 'disabled' ],
             'code': [ 'class' ]
         },
-        allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data', 'evernote']
+        allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data', 'evernote'],
+        transformTags,
     });
 }
 

@@ -104,10 +104,7 @@ function createNote(req) {
 }
 
 function processContent(images, note, content) {
-    let rewrittenContent = htmlSanitizer.sanitize(content)
-        // H1 is not supported so convert it to H2
-        .replace(/<h1/ig, "<h2")
-        .replace(/<\/h1/ig, "</h2");
+    let rewrittenContent = htmlSanitizer.sanitize(content);
 
     if (images) {
         for (const {src, dataUrl, imageId} of images) {
