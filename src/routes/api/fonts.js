@@ -11,21 +11,27 @@ function getFontCss(req, res) {
 
     const optionsMap = optionService.getOptionsMap();
 
+    const mainFontFamilyOverridden = optionsMap.mainFontFamily != 'theme';
+    const treeFontFamilyOverridden = optionsMap.treeFontFamily != 'theme';
+    const detailFontFamilyOverridden = optionsMap.detailFontFamily != 'theme';
+    const monospaceFontFamilyOverridden = optionsMap.monospaceFontFamily != 'theme';
+
     // using body to be more specific than themes' :root
-    res.send(`
-body {
-    --main-font-family: ${optionsMap.mainFontFamily};
-    --main-font-size: ${optionsMap.mainFontSize}%;
-     
-    --tree-font-family: ${optionsMap.treeFontFamily};
-    --tree-font-size: ${optionsMap.treeFontSize}%; 
-    
-    --detail-font-family: ${optionsMap.detailFontFamily};
-    --detail-font-size: ${optionsMap.detailFontSize}%;
-    
-    --monospace-font-family: ${optionsMap.monospaceFontFamily};
-    --monospace-font-size: ${optionsMap.monospaceFontSize};
-}`);
+    let style = 'body {';
+
+    if (mainFontFamilyOverridden) style += `--main-font-family: ${optionsMap.mainFontFamily};`;
+    if (treeFontFamilyOverridden) style += `--tree-font-family: ${optionsMap.treeFontFamily};`;
+    if (detailFontFamilyOverridden) style += `--detail-font-family: ${optionsMap.detailFontFamily};`;
+    if (monospaceFontFamilyOverridden) style += `--monospace-font-family: ${optionsMap.monospaceFontFamily};`;
+
+    style += `--main-font-size: ${optionsMap.mainFontSize}%;`;
+    style += `--tree-font-size: ${optionsMap.treeFontSize}%;`;
+    style += `--detail-font-size: ${optionsMap.detailFontSize}%;`;
+    style += `--monospace-font-size: ${optionsMap.monospaceFontSize};`;
+
+    style += '}';
+
+    res.send(style);
 }
 
 module.exports = {
