@@ -26,10 +26,14 @@ function buildDescendantCountMap() {
 
 function getLinkMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
+    // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
+    // we'll just ignore it
+    const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
 
     const noteIds = new Set();
 
     const notes = mapRootNote.getSubtreeNotes(false)
+        .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',
@@ -72,11 +76,11 @@ function getTreeMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
-    const ignoreExcludeFromTreeMap = mapRootNote.hasLabel('excludeFromTreeMap');
+    const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
     const noteIds = new Set();
 
     const notes = mapRootNote.getSubtreeNotes(false)
-        .filter(note => ignoreExcludeFromTreeMap || !note.hasLabel('excludeFromTreeMap'))
+        .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
         .filter(note => {
             if (note.type !== 'image' || note.getChildNotes().length > 0) {
                 return true;

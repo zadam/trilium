@@ -119,11 +119,15 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         let mapRootNoteId = this.getMapRootNoteId();
         const data = await this.loadNotesAndRelations(mapRootNoteId);
+
         const nodeLinkRatio = data.nodes.length / data.links.length;
+        const magnifiedRatio = Math.pow(nodeLinkRatio, 1.5);
+        const charge = -20 / magnifiedRatio;
+        const boundedCharge = Math.min(-3, charge);
 
         this.graph.d3Force('link').distance(40);
         this.graph.d3Force('center').strength(0.2);
-        this.graph.d3Force('charge').strength(-20 / Math.pow(nodeLinkRatio, 1.5));
+        this.graph.d3Force('charge').strength(boundedCharge);
         this.graph.d3Force('charge').distanceMax(1000);
 
         this.renderData(data);

@@ -47,7 +47,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'pageSize' },
     { type: 'label', name: 'viewType' },
     { type: 'label', name: 'mapRootNoteId' },
-    { type: 'label', name: 'excludeFromTreeMap' },
+    { type: 'label', name: 'excludeFromNoteMap' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

@@ -8,7 +8,7 @@ module.exports = () => {
 
         for (const note of Object.values(becca.notes)) {
             if (note.hasLabel('calendarRoot')) {
-                note.addLabel('excludeFromTreeMap', "", true);
+                note.addLabel('excludeFromNoteMap', "", true);
             }
         }
     });
