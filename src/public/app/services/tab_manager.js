@@ -389,13 +389,13 @@ export default class TabManager extends Component {
     }
 
     async removeAllTabsCommand() {
-        for (const ntxIdToRemove of this.noteContexts.map(nc => nc.ntxId)) {
+        for (const ntxIdToRemove of this.mainNoteContexts.map(nc => nc.ntxId)) {
             await this.removeNoteContext(ntxIdToRemove);
         }
     }
 
     async removeAllTabsExceptForThisCommand({ntxId}) {
-        for (const ntxIdToRemove of this.noteContexts.map(nc => nc.ntxId)) {
+        for (const ntxIdToRemove of this.mainNoteContexts.map(nc => nc.ntxId)) {
             if (ntxIdToRemove !== ntxId) {
                 await this.removeNoteContext(ntxIdToRemove);
             }

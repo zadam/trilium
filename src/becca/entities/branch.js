@@ -61,10 +61,17 @@ class Branch extends AbstractEntity {
         const childNote = this.childNote;
         const parentNote = this.parentNote;
 
-        childNote.parents.push(parentNote);
-        childNote.parentBranches.push(this);
+        if (!childNote.parents.includes(parentNote)) {
+            childNote.parents.push(parentNote);
+        }
 
-        parentNote.children.push(childNote);
+        if (!childNote.parentBranches.includes(this)) {
+            childNote.parentBranches.push(this);
+        }
+
+        if (!parentNote.children.includes(childNote)) {
+            parentNote.children.push(childNote);
+        }
 
         this.becca.branches[this.branchId] = this;
         this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
