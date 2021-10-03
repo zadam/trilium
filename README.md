@@ -32,6 +32,7 @@ What this does is simply looks up every occurrence of `text/x-python` (the mime 
 
 # Screenshot Example:
 ![Python Syntax Highlighting](/Untitled2.png)
+![Python Syntax Highlighting dark theme](/dark_example.png)
 
 # Overall description of how this thing works
 The overall process of adding syntax highlighting to trilium is as follows:
