@@ -1,26 +1,40 @@
 # DANGER
 This is a **very experimental** fork of trilium with added syntax highlighting for code blocks.
 Use at your own risk in a safe environment! It might corrupt your notes so be cautious.
+---
+The highlighting is done using `highlight.js` and is implemented using the [CKEditor5-CodeBlock-With-Syntax-Highlight](https://github.com/regischen/CKEditor5-CodeBlock-With-Syntax-Highlight) plugin (created by regischen).
 
 ## Usage:
-- Clone the repo
-- Run `npm install` then `npm run start-server`
-- Navigate to `localhost:8080` in a web-browser.
-- Add a new note and select the dropdown arrow next to the `code-block` icon
-- Choose a language to create a code-block
+The repository contains a `build.sh` script that automatically downloads the requirements and builds syntax highlighting into the latest trilium source. Every other file in the repo is part of an already integrated version that has some example languages enabled for code blocks. The included demo version can be ran from the `trilium` directory using the `npm run start-server` command. The other way of getting a working build is by running the `build.sh` .
 
-# Tested/working languages so far
-- c,css,html,java,javascript,php,python
+### Install from source
+- Clone this repository
+- Run the `build.sh` script
+
+### "Install" / Run the demo
+- Clone this repository
+- `cd trilium` && `npm run start-server`
+
+## Adding new languages to the code-blocks dropdown
+Adding a new language essentially consists of "fixing" the mime type definition within trilium's source code. This fix is needed because the mime type returned by the code-block function differs from the required ones from highlight.js
+
+# Included code-block languages in this demo repository
+- plaintext, c, python and php
 
 # Issues:
-- Creating plain-text code blocks will kill Trilium.
 - Creating code-blocks with non-supported languages will kill Trilium.
 - Opening notes with unsupported code-blocks will kill Trilium.
-- In reading mode the highlighting is messed up.
+- In reading mode the highlighting is not applied correctly.
 
 # Screenshot Example:
 ![Python Syntax Highlighting](/Untitled2.png)
 
+# Overall description of how this thing works
+The overall process of adding syntax highlighting to trilium is as follows:
+- Download trilium-ckeditor5, trilium, and the ckeditor5-code-block plugin
+- Combine ckeditor5-code-block and trilium-ckeditor5, replacing the original codeblock src
+- Combine the new custom trilium-ckeditor5 with trilium (swap out the default ckeditor)
+- Parse trough every file in the trilium source code and make the correct modifications for any language you want to use and replace `text/x-language` with the correct alias of the language from the [highlight.js supported languages](https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md) list
 # Trilium Notes
 
 [English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md)
