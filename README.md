@@ -9,6 +9,7 @@ The repository contains a `build.sh` script that automatically downloads the req
 
 ### Install from source
 - Clone this repository
+- Move the `build.sh` , `mime_fix.sh` and `mime_types_trilium_shortlist.txt` files into a seperate folder
 - Run the `build.sh` script
 
 ### "Install" / Run the demo
