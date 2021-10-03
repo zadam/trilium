@@ -16,7 +16,10 @@ The repository contains a `build.sh` script that automatically downloads the req
 - `cd trilium` && `npm run start-server`
 
 ## Adding new languages to the code-blocks dropdown
-Adding a new language essentially consists of "fixing" the mime type definition within trilium's source code. This fix is needed because the mime type returned by the code-block function differs from the required ones from highlight.js
+Adding a new language essentially consists of "fixing" the mime type definition within trilium's source code. This fix is needed because the mime type returned by the code-block function differs from the required ones from highlight.js.
+Adding / fixing a language can be done fairly easily using `sed`. The following command is an example that will make the `python` language compatible with code-blocks:
+- `grep -rl "text/x-python" ./trilium | xargs sed -i "s+text\/x-python+python+g"`
+What this does is simply looks up every occurrence of `text/x-python` (the mime definition of python used by trilium) and replaces it with the string `python`. This allows the highlighter plugin to correcly receive the mime type when creating a code-block and as such does not crash the application.
 
 # Included code-block languages in this demo repository
 - plaintext, c, python and php
