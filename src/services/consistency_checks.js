@@ -19,6 +19,7 @@ class ConsistencyChecks {
         this.autoFix = autoFix;
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
+        this.reloadNeeded = false;
     }
 
     findAndFixIssues(query, fixerCb) {
@@ -104,6 +105,8 @@ class ConsistencyChecks {
                     const branch = becca.getBranch(branchId);
                     branch.markAsDeleted();
 
+                    this.reloadNeeded = true;
+
                     logFix(`Branch ${branchId} has been deleted since it references missing note ${noteId}`);
                 } else {
                     logError(`Branch ${branchId} references missing note ${noteId}`);
@@ -123,6 +126,8 @@ class ConsistencyChecks {
                     branch.parentNoteId = 'root';
                     branch.save();
 
+                    this.reloadNeeded = true;
+
                     logFix(`Branch ${branchId} was set to root parent since it was referencing missing parent note ${parentNoteId}`);
                 } else {
                     logError(`Branch ${branchId} references missing parent note ${parentNoteId}`);
@@ -139,6 +144,8 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
                     attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Attribute ${attributeId} has been deleted since it references missing source note ${noteId}`);
                 } else {
@@ -157,6 +164,8 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
                     attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Relation ${attributeId} has been deleted since it references missing note ${noteId}`)
                 } else {
@@ -183,6 +192,8 @@ class ConsistencyChecks {
                     const branch = becca.getBranch(branchId);
                     branch.markAsDeleted();
 
+                    this.reloadNeeded = true;
+
                     logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
                 } else {
                     logError(`Branch ${branchId} is not deleted even though associated note ${noteId} is deleted.`)
@@ -200,6 +211,8 @@ class ConsistencyChecks {
             if (this.autoFix) {
                 const branch = becca.getBranch(branchId);
                 branch.markAsDeleted();
+
+                this.reloadNeeded = true;
 
                 logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
             } else {
@@ -220,6 +233,8 @@ class ConsistencyChecks {
                     noteId: noteId,
                     prefix: 'recovered'
                 }).save();
+
+                this.reloadNeeded = true;
 
                 logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
             } else {
@@ -256,6 +271,8 @@ class ConsistencyChecks {
 
                         logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
                     }
+
+                    this.reloadNeeded = true;
                 } else {
                     logError(`Duplicate branches for note ${noteId} and parent ${parentNoteId}`);
                 }
@@ -273,6 +290,8 @@ class ConsistencyChecks {
                     const note = becca.getNote(noteId);
                     note.type = 'file'; // file is a safe option to recover notes if type is not known
                     note.save();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Note ${noteId} type has been change to file since it had invalid type=${type}`)
                 } else {
@@ -311,6 +330,8 @@ class ConsistencyChecks {
                         isSynced: true
                     });
 
+                    this.reloadNeeded = true;
+
                     logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
                 } else {
                     logError(`Note ${noteId} content row does not exist`);
@@ -330,6 +351,8 @@ class ConsistencyChecks {
                     const blankContent = getBlankContent(false, type, mime);
                     note.setContent(blankContent);
 
+                    this.reloadNeeded = true;
+
                     logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
                 } else {
                     logError(`Note ${noteId} content is null even though it is not deleted`);
@@ -345,6 +368,8 @@ class ConsistencyChecks {
             ({noteRevisionId}) => {
                 if (this.autoFix) {
                     noteRevisionService.eraseNoteRevisions([noteRevisionId]);
+
+                    this.reloadNeeded = true;
 
                     logFix(`Note revision content ${noteRevisionId} was created and set to erased since it did not exist.`);
                 } else {
@@ -375,6 +400,8 @@ class ConsistencyChecks {
 
                         logFix(`Child branch ${branch.branchId} has been moved to root since it was a child of a search note ${parentNoteId}`)
                     }
+
+                    this.reloadNeeded = true;
                 } else {
                     logError(`Search note ${parentNoteId} has children`);
                 }
@@ -390,6 +417,8 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const relation = becca.getAttribute(attributeId);
                     relation.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
                 } else {
@@ -410,6 +439,8 @@ class ConsistencyChecks {
                     attribute.type = 'label';
                     attribute.save();
 
+                    this.reloadNeeded = true;
+
                     logFix(`Attribute ${attributeId} type was changed to label since it had invalid type '${type}'`);
                 } else {
                     logError(`Attribute ${attributeId} has invalid type '${type}'`);
@@ -427,6 +458,8 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
                     attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
                 } else {
@@ -446,6 +479,8 @@ class ConsistencyChecks {
                 if (this.autoFix) {
                     const attribute = becca.getAttribute(attributeId);
                     attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
                 } else {
@@ -530,6 +565,7 @@ class ConsistencyChecks {
                     sql.execute('UPDATE attributes SET name = ? WHERE name = ?', [fixedName, origName]);
 
                     this.fixedIssues = true;
+                    this.reloadNeeded = true;
 
                     logFix(`Renamed incorrectly named attributes "${origName}" to ${fixedName}`);
                 }
@@ -565,6 +601,7 @@ class ConsistencyChecks {
     runAllChecksAndFixers() {
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
+        this.reloadNeeded = false;
 
         this.findBrokenReferenceIssues();
 
@@ -587,7 +624,7 @@ class ConsistencyChecks {
             this.checkTreeCycles();
         }
 
-        if (this.fixedIssues) {
+        if (this.reloadNeeded) {
             require("../becca/becca_loader").reload();
         }
 
