@@ -1166,7 +1166,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         const newActiveNode = this.getActiveNode();
 
                         // return focus if the previously active node was also focused
-                        if (newActiveNode && activeNodeFocused) {console.log("FOCUSING!!!");
+                        if (newActiveNode && activeNodeFocused) {
                             newActiveNode.setFocus(true);
                         }
                     });
