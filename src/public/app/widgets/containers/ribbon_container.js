@@ -26,7 +26,7 @@ const TPL = `
         border-bottom: 1px solid var(--main-border-color); 
         min-width: 24px;
         flex-basis: 24px;
-        max-width: fit-content;
+        max-width: max-content;
         flex-grow: 10;
     }
 

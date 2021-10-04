@@ -1,4 +1,5 @@
 import BasicWidget from "./basic_widget.js";
+import appContext from "../services/app_context.js";
 
 export default class NoteContextAwareWidget extends BasicWidget {
     isNoteContext(ntxId) {
@@ -8,6 +9,10 @@ export default class NoteContextAwareWidget extends BasicWidget {
         else {
             return this.noteContext && this.noteContext.ntxId === ntxId;
         }
+    }
+
+    isActiveNoteContext() {
+        return appContext.tabManager.getActiveContext() === this.noteContext;
     }
 
     isNote(noteId) {
