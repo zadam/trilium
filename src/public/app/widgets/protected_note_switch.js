@@ -5,7 +5,7 @@ const TPL = `
 <div class="protected-note-switch">
     <style>    
     /* The switch - the box around the slider */
-    .switch {
+    .protected-note-switch .switch {
         position: relative;
         display: inline-block;
         width: 50px;
@@ -14,7 +14,7 @@ const TPL = `
     }
     
     /* The slider */
-    .slider {
+    .protected-note-switch .slider {
         border-radius: 24px;
         position: absolute;
         cursor: pointer;
@@ -26,7 +26,7 @@ const TPL = `
         transition: .4s;
     }
     
-    .slider:before {
+    .protected-note-switch .slider:before {
         border-radius: 50%;
         position: absolute;
         content: "";
@@ -39,11 +39,11 @@ const TPL = `
         transition: .4s;
     }
     
-    .slider.checked {
+    .protected-note-switch .slider.checked {
         background-color: var(--main-text-color);
     }
     
-    .slider.checked:before {
+    .protected-note-switch .slider.checked:before {
         transform: translateX(26px);
     }
     </style>

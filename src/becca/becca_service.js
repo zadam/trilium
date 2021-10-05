@@ -140,6 +140,10 @@ function getSomePathInner(note, path, respectHoisting) {
         path.push(note.noteId);
         path.reverse();
 
+        if (path.includes("hidden")) {
+            return false;
+        }
+
         if (respectHoisting && !path.includes(cls.getHoistedNoteId())) {
             return false;
         }

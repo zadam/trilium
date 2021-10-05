@@ -44,6 +44,7 @@ import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
 import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
 import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js";
 import MermaidWidget from "../widgets/mermaid.js";
+import BookmarkButtons from "../widgets/bookmark_buttons.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -72,8 +73,6 @@ export default class DesktopLayout {
                     .title("Jump to note")
                     .command("jumpToNote"))
                 .child(new OpenNoteButtonWidget()
-                    .icon("bx-map-alt")
-                    .title("Global note map")
                     .targetNote('globalnotemap'))
                 .child(new ButtonWidget()
                     .icon("bx-history")
@@ -84,6 +83,7 @@ export default class DesktopLayout {
                 .child(new FlexContainer("column")
                     .id("plugin-buttons")
                     .contentSized())
+                .child(new BookmarkButtons())
                 .child(new SpacerWidget(0, 1000))
                 .child(new ProtectedSessionStatusWidget())
                 .child(new SyncStatusWidget())
