@@ -747,7 +747,7 @@
   function getMode(options, spec) {
     spec = resolveMode(spec);
     var mfactory = modes[spec.name];
-    if (!mfactory) { return getMode(options, "text/plain") }
+    if (!mfactory) { return getMode(options, "plaintext") }
     var modeObj = mfactory(options, spec);
     if (modeExtensions.hasOwnProperty(spec.name)) {
       var exts = modeExtensions[spec.name];
@@ -9779,7 +9779,7 @@
 
   // Minimal default mode.
   CodeMirror.defineMode("null", function () { return ({token: function (stream) { return stream.skipToEnd(); }}); });
-  CodeMirror.defineMIME("text/plain", "null");
+  CodeMirror.defineMIME("plaintext", "null");
 
   // EXTENSIONS
 

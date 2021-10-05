@@ -16,7 +16,7 @@ function importSingleFile(taskContext, file, parentNote) {
             return importHtml(taskContext, file, parentNote);
         } else if (['text/markdown', 'text/x-markdown'].includes(mime)) {
             return importMarkdown(taskContext, file, parentNote);
-        } else if (mime === 'text/plain') {
+        } else if (mime === 'plaintext') {
             return importPlainText(taskContext, file, parentNote);
         }
     }

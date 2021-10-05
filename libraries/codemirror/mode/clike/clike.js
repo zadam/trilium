@@ -421,7 +421,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       CodeMirror.defineMIME(mimes[i], mode);
   }
 
-  def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
+  def(["c", "text/x-c", "text/x-chdr"], {
     name: "clike",
     keywords: words(cKeywords),
     types: cTypes,

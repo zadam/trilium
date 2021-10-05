@@ -10082,7 +10082,7 @@ var uniqueId = $.fn.extend( {
 				try {
 					dataTransfer.setData(nodeMimeType, json);
 					dataTransfer.setData("text/html", $(node.span).html());
-					dataTransfer.setData("text/plain", node.title);
+					dataTransfer.setData("plaintext", node.title);
 				} catch (ex) {
 					// IE only accepts 'text' type
 					tree.warn(

@@ -31,7 +31,7 @@ function exec(opts) {
         try {
             const headers = {
                 Cookie: (opts.cookieJar && opts.cookieJar.header) || "",
-                'Content-Type': opts.paging.pageCount === 1 ? 'application/json' : 'text/plain',
+                'Content-Type': opts.paging.pageCount === 1 ? 'application/json' : 'plaintext',
                 pageCount: opts.paging.pageCount,
                 pageIndex: opts.paging.pageIndex,
                 requestId: opts.paging.requestId

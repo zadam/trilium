@@ -53,7 +53,7 @@
   });
 
   CodeMirror.defineMode("soy", function(config) {
-    var textMode = CodeMirror.getMode(config, "text/plain");
+    var textMode = CodeMirror.getMode(config, "plaintext");
     var modes = {
       html: CodeMirror.getMode(config, {name: "text/html", multilineTagIndentFactor: 2, multilineTagIndentPastTag: false, allowMissingTagName: true}),
       attributes: textMode,

@@ -4,8 +4,8 @@ const mimeTypes = require('mime-types');
 const path = require('path');
 
 const CODE_MIME_TYPES = {
-    'text/plain': true,
-    'text/x-csrc': true,
+    'plaintext': true,
+    'c': true,
     'text/x-c++src': true,
     'text/x-csharp': true,
     'text/x-clojure': true,
@@ -31,8 +31,8 @@ const CODE_MIME_TYPES = {
     'text/x-objectivec': true,
     'text/x-pascal': true,
     'text/x-perl': true,
-    'text/x-php': true,
-    'text/x-python': true,
+    'php': true,
+    'python': true,
     'text/x-ruby': true,
     'text/x-rustsrc': true,
     'text/x-scala': true,
@@ -45,7 +45,7 @@ const CODE_MIME_TYPES = {
 
 // extensions missing in mime-db
 const EXTENSION_TO_MIME = {
-    ".c": "text/x-csrc",
+    ".c": "c",
     ".cs": "text/x-csharp",
     ".clj": "text/x-clojure",
     ".erl": "text/x-erlang",
@@ -58,7 +58,7 @@ const EXTENSION_TO_MIME = {
     ".http": "message/http",
     ".kt": "text/x-kotlin",
     ".m": "text/x-objectivec",
-    ".py": "text/x-python",
+    ".py": "python",
     ".rb": "text/x-ruby",
     ".scala": "text/x-scala",
     ".swift": "text/x-swift"

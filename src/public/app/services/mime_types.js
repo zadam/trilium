@@ -1,13 +1,13 @@
 import options from "./options.js";
 
 const MIME_TYPES_DICT = [
-    { default: true, title: "Plain text", mime: "text/plain" },
+    { default: true, title: "Plain text", mime: "plaintext" },
     { title: "APL", mime: "text/apl" },
     { title: "PGP", mime: "application/pgp" },
     { title: "ASN.1", mime: "text/x-ttcn-asn" },
     { title: "Asterisk", mime: "text/x-asterisk" },
     { title: "Brainfuck", mime: "text/x-brainfuck" },
-    { default: true, title: "C", mime: "text/x-csrc" },
+    { default: true, title: "C", mime: "c" },
     { default: true, title: "C++", mime: "text/x-c++src" },
     { title: "Cobol", mime: "text/x-cobol" },
     { default: true, title: "C#", mime: "text/x-csharp" },
@@ -90,14 +90,14 @@ const MIME_TYPES_DICT = [
     { title: "Pascal", mime: "text/x-pascal" },
     { title: "PEG.js", mime: "null" },
     { default: true, title: "Perl", mime: "text/x-perl" },
-    { default: true, title: "PHP", mime: "text/x-php" },
+    { default: true, title: "PHP", mime: "php" },
     { title: "Pig", mime: "text/x-pig" },
     { title: "PLSQL", mime: "text/x-plsql" },
     { title: "PostgreSQL", mime: "text/x-pgsql" },
     { title: "PowerShell", mime: "application/x-powershell" },
     { title: "Properties files", mime: "text/x-properties" },
     { title: "ProtoBuf", mime: "text/x-protobuf" },
-    { default: true, title: "Python", mime: "text/x-python" },
+    { default: true, title: "Python", mime: "python" },
     { title: "Puppet", mime: "text/x-puppet" },
     { title: "Q", mime: "text/x-q" },
     { title: "R", mime: "text/x-rsrc" },
@@ -169,7 +169,7 @@ function loadMimeTypes() {
         || MIME_TYPES_DICT.filter(mt => mt.default).map(mt => mt.mime);
 
     for (const mt of mimeTypes) {
-        mt.enabled = enabledMimeTypes.includes(mt.mime) || mt.mime === 'text/plain'; // text/plain is always enabled
+        mt.enabled = enabledMimeTypes.includes(mt.mime) || mt.mime === 'plaintext'; // plaintext is always enabled
     }
 }
 

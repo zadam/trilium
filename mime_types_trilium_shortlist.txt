@@ -1,0 +1,4 @@
+Plain text,plaintext,text/plain
+C,c,text/x-csrc 
+Python,python,text/x-python 
+PHP,php,text/x-php 
