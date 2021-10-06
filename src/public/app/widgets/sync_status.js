@@ -44,7 +44,7 @@ const TPL = `
               data-placement="right"
               title="<p>Sync status will be known once the next sync attempt starts.</p><p>Click to trigger sync now.</p>">
         </span>
-        <span class="sync-status-icon sync-status-connected-with-changes bx-wifi"
+        <span class="sync-status-icon sync-status-connected-with-changes bx bx-wifi"
               data-toggle="tooltip" 
               data-placement="right"
               title="<p>Connected to the sync server. <br>There are some outstanding changes yet to be synced.</p><p>Click to trigger sync.</p>">
