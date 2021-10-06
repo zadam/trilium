@@ -10,10 +10,24 @@ import treeService from "../../services/tree.js";
 const TPL = `
 <div class="note-detail-code note-detail-printable">
     <style>
+    .note-detail-code {
+        position: relative;
+    }
+    
+    .trilium-api-docs-button {
+        /*display: none;*/
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
     .note-detail-code-editor {
         min-height: 50px;
     }
     </style>
+    
+    <button class="btn bx bx-help-circle trilium-api-docs-button icon-button floating-button" 
+            title="Open Trilium API docs"></button>
 
     <div class="note-detail-code-editor"></div>
 
@@ -36,6 +50,16 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$openTriliumApiDocsButton = this.$widget.find(".trilium-api-docs-button");
+        this.$openTriliumApiDocsButton.on("click", () => {
+            if (this.note.mime.endsWith("frontend")) {
+                window.open("https://zadam.github.io/trilium/frontend_api/FrontendScriptApi.html", "_blank");
+            }
+            else {
+                window.open("https://zadam.github.io/trilium/backend_api/BackendScriptApi.html", "_blank");
+            }
+        });
+
         this.$editor = this.$widget.find('.note-detail-code-editor');
         this.$executeButton = this.$widget.find('.execute-button');
         this.$saveToNoteButton = this.$widget.find('.save-to-note-button');
@@ -98,6 +122,8 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             note.mime === 'text/x-sqlite;schema=trilium'
             && !note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden"))
         );
+
+        this.$openTriliumApiDocsButton.toggle(note.mime.startsWith('application/javascript;env='));
 
         const noteComplement = await this.noteContext.getNoteComplement();
 

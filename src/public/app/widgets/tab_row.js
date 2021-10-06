@@ -186,6 +186,7 @@ const TAB_ROW_TPL = `
         font-size: 24px;
         position: relative;
         top: -6px;
+        cursor: pointer;
     }
     
     .tab-row-widget .note-tab .note-tab-close:hover {
