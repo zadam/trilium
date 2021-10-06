@@ -156,6 +156,10 @@ if (utils.isElectron()) {
         }
 
         if (arg.statusCode >= 200 && arg.statusCode < 300) {
+            if (arg.headers['Content-Type'] === 'application/json') {
+                arg.body = JSON.parse(arg.body);
+            }
+
             reqResolves[arg.requestId]({
                 body: arg.body,
                 headers: arg.headers

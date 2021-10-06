@@ -57,9 +57,8 @@ const csrfMiddleware = csurf({
     path: '' // nothing so cookie is valid only for current path
 });
 
-function apiResultHandler(req, res, result) {
-    res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
-
+/** Handling common patterns. If entity is not caught, serialization to JSON will fail */
+function convertEntitiesToPojo(result) {
     if (result instanceof AbstractEntity) {
         result = result.getPojo();
     }
@@ -70,22 +69,55 @@ function apiResultHandler(req, res, result) {
             }
         }
     }
+    else {
+        if (result && result.note instanceof AbstractEntity) {
+            result.note = result.note.getPojo();
+        }
+
+        if (result && result.branch instanceof AbstractEntity) {
+            result.branch = result.branch.getPojo();
+        }
+    }
+
+    return result;
+}
+
+function apiResultHandler(req, res, result) {
+    res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
+
+    result = convertEntitiesToPojo(result);
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
         const [statusCode, response] = result;
 
-        res.status(statusCode).send(response);
-
         if (statusCode !== 200 && statusCode !== 201 && statusCode !== 204) {
             log.info(`${req.method} ${req.originalUrl} returned ${statusCode} with response ${JSON.stringify(response)}`);
         }
+
+        return send(res, statusCode, response);
     }
     else if (result === undefined) {
-        res.status(204).send();
+        return send(res, 204, "");
     }
     else {
-        res.send(result);
+        return send(res, 200, result);
+    }
+}
+
+function send(res, statusCode, response) {
+    if (typeof response === 'string') {
+        res.status(statusCode, response);
+
+        return response.length;
+    }
+    else {
+        const json = JSON.stringify(response);
+
+        res.setHeader("Content-Type", "application/json");
+        res.status(statusCode).send(json);
+
+        return json.length;
     }
 }
 
@@ -115,9 +147,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                 if (result && result.then) {
                     result
                         .then(actualResult => {
-                            resultHandler(req, res, actualResult);
+                            const responseLength = resultHandler(req, res, actualResult);
 
-                            log.request(req, res, Date.now() - start);
+                            log.request(req, res, Date.now() - start, responseLength);
                         })
                         .catch(e => {
                             log.error(`${method} ${path} threw exception: ` + e.stack);
@@ -126,9 +158,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                         });
                 }
                 else {
-                    resultHandler(req, res, result);
+                    const responseLength = resultHandler(req, res, result);
 
-                    log.request(req, res, Date.now() - start);
+                    log.request(req, res, Date.now() - start, responseLength);
                 }
             }
         }
