@@ -3,6 +3,7 @@
 const sql = require("../services/sql.js");
 const NoteRevision = require("./entities/note_revision.js");
 const RecentNote = require("./entities/recent_note.js");
+const NoteSet = require("../services/search/note_set");
 
 class Becca {
     constructor() {
@@ -49,6 +50,11 @@ class Becca {
         for (const note of Object.values(this.notes)) {
             note.decrypt();
         }
+    }
+
+    addNote(noteId, note) {
+        this.notes[noteId] = note;
+        this.dirtyNoteSetCache();
     }
 
     getNote(noteId) {
@@ -126,6 +132,32 @@ class Becca {
         const rows = sql.getRows(query, params);
 
         return rows.map(row => new NoteRevision(row));
+    }
+
+    /** Should be called when the set of all non-skeleton notes changes (added/removed) */
+    dirtyNoteSetCache() {
+        this.allNoteSetCache = null;
+    }
+
+    getAllNoteSet() {
+        // caching this since it takes 10s of milliseconds to fill this initial NoteSet for many notes
+        if (!this.allNoteSetCache) {
+            const allNotes = [];
+
+            for (const noteId in becca.notes) {
+                const note = becca.notes[noteId];
+
+                // in the process of loading data sometimes we create "skeleton" note instances which are expected to be filled later
+                // in case of inconsistent data this might not work and search will then crash on these
+                if (note.type !== undefined) {
+                    allNotes.push(note);
+                }
+            }
+
+            this.allNoteSet = new NoteSet(allNotes);
+        }
+
+        return this.allNoteSet;
     }
 }
 

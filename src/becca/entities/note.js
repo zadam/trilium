@@ -95,7 +95,7 @@ class Note extends AbstractEntity {
         /** @param {Attribute[]} */
         this.targetRelations = [];
 
-        this.becca.notes[this.noteId] = this;
+        this.becca.addNote(this.noteId, this);
 
         /** @param {Note[]|null} */
         this.ancestorCache = null;
@@ -1087,7 +1087,7 @@ class Note extends AbstractEntity {
     beforeSaving() {
         super.beforeSaving();
 
-        this.becca.notes[this.noteId] = this;
+        this.becca.addNote(this.noteId, this);
 
         this.dateModified = dateUtils.localNowDateTime();
         this.utcDateModified = dateUtils.utcNowDateTime();

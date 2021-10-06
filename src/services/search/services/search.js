@@ -64,17 +64,11 @@ function loadNeededInfoFromDatabase() {
  * @return {SearchResult[]}
  */
 function findResultsWithExpression(expression, searchContext) {
-    let allNotes = Object.values(becca.notes);
-
     if (searchContext.dbLoadNeeded) {
         loadNeededInfoFromDatabase();
     }
 
-    // in the process of loading data sometimes we create "skeleton" note instances which are expected to be filled later
-    // in case of inconsistent data this might not work and search will then crash on these
-    allNotes = allNotes.filter(note => note.type !== undefined);
-
-    const allNoteSet = new NoteSet(allNotes);
+    const allNoteSet = becca.getAllNoteSet();
 
     const executionContext = {
         noteIdToNotePath: {}

@@ -113,6 +113,8 @@ eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_
 
 function noteDeleted(noteId) {
     delete becca.notes[noteId];
+
+    becca.dirtyNoteSetCache();
 }
 
 function branchDeleted(branchId) {
