@@ -47,7 +47,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'pageSize' },
     { type: 'label', name: 'viewType' },
     { type: 'label', name: 'mapRootNoteId' },
-    { type: 'label', name: 'excludeFromNoteMap' },
+    { type: 'label', name: 'bookmarked' },
+    { type: 'label', name: 'bookmarkFolder' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

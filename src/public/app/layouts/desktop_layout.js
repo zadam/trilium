@@ -40,7 +40,7 @@ import NotePathsWidget from "../widgets/ribbon_widgets/note_paths.js";
 import SimilarNotesWidget from "../widgets/ribbon_widgets/similar_notes.js";
 import RightPaneContainer from "../widgets/containers/right_pane_container.js";
 import EditButton from "../widgets/buttons/edit_button.js";
-import CalendarMenuWidget from "../widgets/buttons/calendar_menu.js";
+import CalendarWidget from "../widgets/buttons/calendar.js";
 import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
 import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js";
 import MermaidWidget from "../widgets/mermaid.js";
@@ -78,7 +78,7 @@ export default class DesktopLayout {
                     .icon("bx-history")
                     .title("Show recent changes")
                     .command("showRecentChanges"))
-                .child(new CalendarMenuWidget())
+                .child(new CalendarWidget())
                 .child(new SpacerWidget(40, 0))
                 .child(new FlexContainer("column")
                     .id("plugin-buttons")

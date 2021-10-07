@@ -6,9 +6,9 @@ import appContext from "../../services/app_context.js";
 import RightDropdownButtonWidget from "./right_dropdown_button.js";
 
 const DROPDOWN_TPL = `
-<div class="calendar-menu">
+<div class="calendar-dropdown-widget">
   <style>
-  .calendar-menu {
+  .calendar-dropdown-widget {
       width: 350px;
   }
   </style>
@@ -27,7 +27,7 @@ const DROPDOWN_TPL = `
   <div class="calendar-body" data-calendar-area="month"></div>
 </div>`;
 
-export default class CalendarMenuWidget extends RightDropdownButtonWidget {
+export default class CalendarWidget extends RightDropdownButtonWidget {
     constructor() {
         super("bx-calendar", "Calendar", DROPDOWN_TPL);
     }
@@ -67,7 +67,7 @@ export default class CalendarMenuWidget extends RightDropdownButtonWidget {
         });
     }
 
-    async dropdown() {
+    async dropdownShown() {
         await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
 
         const activeNote = appContext.tabManager.getActiveContextNote();

@@ -1,6 +1,7 @@
 import FlexContainer from "./containers/flex_container.js";
 import searchService from "../services/search.js";
 import OpenNoteButtonWidget from "./buttons/open_note_button_widget.js";
+import BookmarkFolderWidget from "./buttons/bookmark_folder.js";
 
 export default class BookmarkButtons extends FlexContainer {
     constructor() {
@@ -10,7 +11,7 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     async refresh() {
-        const bookmarkedNotes = await searchService.searchForNotes("#bookmarked");
+        const bookmarkedNotes = await searchService.searchForNotes("#bookmarked or #bookmarkFolder");
 
         this.$widget.empty();
         this.children = [];
@@ -19,7 +20,9 @@ export default class BookmarkButtons extends FlexContainer {
         for (const note of bookmarkedNotes) {
             this.noteIds.push(note.noteId);
 
-            const buttonWidget = new OpenNoteButtonWidget().targetNote(note.noteId);
+            const buttonWidget = note.hasLabel("bookmarkFolder")
+                ? new BookmarkFolderWidget(note)
+                : new OpenNoteButtonWidget().targetNote(note.noteId);
 
             this.child(buttonWidget);
 
@@ -34,7 +37,7 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'bookmarked')) {
+        if (loadResults.getAttributes().find(attr => attr.type === 'label' && ['bookmarked', 'bookmarkFolder'].includes(attr.name))) {
             this.refresh();
         }
 

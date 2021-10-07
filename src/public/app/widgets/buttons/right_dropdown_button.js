@@ -28,6 +28,7 @@ export default class RightDropdownButtonWidget extends BasicWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$dropdownMenu = this.$widget.find(".dropdown-menu");
 
         const $button = this.$widget.find(".right-dropdown-button")
             .addClass(this.iconClass)
@@ -35,16 +36,26 @@ export default class RightDropdownButtonWidget extends BasicWidget {
             .tooltip({ trigger: "hover" })
             .on("click", () => $button.tooltip("hide"));
 
-        this.$widget.on('show.bs.dropdown', () => this.dropdown());
+        this.$widget.on('show.bs.dropdown', async () => {
+            await this.dropdownShown();
+
+            const rect = this.$dropdownMenu[0].getBoundingClientRect();
+            const pixelsToBottom = $(window).height() - rect.bottom;
+
+            if (pixelsToBottom < 0) {
+                this.$dropdownMenu.css("top", pixelsToBottom);
+            }
+        });
 
         this.$dropdownContent = $(this.dropdownTpl);
         this.$widget.find(".dropdown-menu").append(this.$dropdownContent);
     }
 
     // to be overriden
-    dropdown() {}
+    async dropdownShow() {}
 
     hideDropdown() {
         this.$widget.dropdown("hide");
+        this.$dropdownMenu.removeClass("show");
     }
 }
