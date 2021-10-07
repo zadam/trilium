@@ -71,9 +71,16 @@ function getNotesWithLabel(name, value) {
 
 // TODO: should be in search service
 function getNoteWithLabel(name, value) {
-    const notes = getNotesWithLabel(name, value);
+    // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
+    const attrs = becca.findAttributes('label', name);
 
-    return notes.length > 0 ? notes[0] : null;
+    for (const attr of attrs) {
+        if (attr.value === value) {
+            return attr.getNote();
+        }
+    }
+
+    return null;
 }
 
 function createLabel(noteId, name, value = "") {

@@ -154,10 +154,10 @@ class Becca {
                 }
             }
 
-            this.allNoteSet = new NoteSet(allNotes);
+            this.allNoteSetCache = new NoteSet(allNotes);
         }
 
-        return this.allNoteSet;
+        return this.allNoteSetCache;
     }
 }
 
