@@ -107,7 +107,7 @@ function apiResultHandler(req, res, result) {
 
 function send(res, statusCode, response) {
     if (typeof response === 'string') {
-        res.status(statusCode, response);
+        res.status(statusCode).send(response);
 
         return response.length;
     }
