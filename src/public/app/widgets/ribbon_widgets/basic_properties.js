@@ -64,7 +64,7 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
     }
 
     isEnabled() {
-        return this.note && (this.note.type === 'text' || this.note.type === 'code' || this.note.type === 'mermaid');
+        return this.note;
     }
 
     getTitle() {
@@ -83,5 +83,11 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
         this.$widget.find(".protected-note-switch-container").append(this.protectedNoteSwitchWidget.render());
         this.$widget.find(".editability-select-container").append(this.editabilitySelectWidget.render());
         this.$widget.find(".bookmark-switch-container").append(this.bookmarkSwitchWidget.render());
+    }
+
+    async refreshWithNote(note) {
+        await super.refreshWithNote(note);
+
+        this.$widget.find(".editability-select-container").toggle(this.note && ['text', 'code'].includes(this.note.type))
     }
 }

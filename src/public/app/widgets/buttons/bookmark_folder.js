@@ -5,9 +5,9 @@ const DROPDOWN_TPL = `
 <div class="bookmark-folder-widget">
     <style>
         .bookmark-folder-widget {
-            min-width: 200px;
+            min-width: 400px;
             max-height: 500px;
-            padding: 10px 20px 10px 20px;
+            padding: 7px 15px 0 15px;
             font-size: 110%;
             overflow: auto;
         }
@@ -54,8 +54,6 @@ export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
 
         this.$parentNote = this.$dropdownContent.find('.parent-note');
         this.$childrenNotes = this.$dropdownContent.find('.children-notes');
-
-        // this.$dropdownContent.on("click", "a", () => this.hideDropdown());
     }
 
     async dropdownShown() {
