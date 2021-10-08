@@ -79,6 +79,10 @@ function convertEntitiesToPojo(result) {
         }
     }
 
+    if (result && result.executionResult) { // from runOnBackend()
+        result.executionResult = convertEntitiesToPojo(result.executionResult);
+    }
+
     return result;
 }
 

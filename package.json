@@ -42,7 +42,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-partial-content": "^1.0.2",
-    "express-rate-limit": "5.4.0",
+    "express-rate-limit": "5.4.1",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
     "helmet": "4.6.0",
@@ -60,7 +60,7 @@
     "mime-types": "2.1.33",
     "multer": "1.4.3",
     "node-abi": "3.2.0",
-    "open": "8.2.1",
+    "open": "8.3.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
     "request": "^2.88.2",
@@ -90,8 +90,8 @@
     "jsdoc": "3.6.7",
     "lorem-ipsum": "2.0.4",
     "rcedit": "3.0.1",
-    "webpack": "5.57.0",
-    "webpack-cli": "4.8.0"
+    "webpack": "5.58.0",
+    "webpack-cli": "4.9.0"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"

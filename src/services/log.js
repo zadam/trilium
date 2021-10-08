@@ -66,7 +66,7 @@ function error(message) {
     log("ERROR: " + message);
 }
 
-const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets" ];
+const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets", "/api/recent-notes" ];
 
 function request(req, res, timeMs, responseLength = "?") {
     for (const bl of requestBlacklist) {
