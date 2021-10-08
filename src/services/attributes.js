@@ -75,8 +75,14 @@ function getNoteWithLabel(name, value) {
     // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
     const attrs = becca.findAttributes('label', name);
 
+    if (value === undefined) {
+        return attrs[0]?.getNote();
+    }
+
+    value = value?.toLowerCase();
+
     for (const attr of attrs) {
-        if (attr.value === value) {
+        if (attr.value.toLowerCase() === value) {
             return attr.getNote();
         }
     }

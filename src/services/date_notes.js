@@ -36,7 +36,6 @@ function getNoteStartingWith(parentNoteId, startsWith) {
 
 /** @return {Note} */
 function getRootCalendarNote() {
-    // some caching here could be useful (e.g. in CLS)
     let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {

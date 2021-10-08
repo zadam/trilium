@@ -29,7 +29,13 @@ class Becca {
 
     /** @return {Attribute[]} */
     findAttributes(type, name) {
-        return this.attributeIndex[`${type}-${name.toLowerCase()}`] || [];
+        name = name.trim().toLowerCase();
+
+        if (name.startsWith('#') || name.startsWith('~')) {
+            name = name.substr(1);
+        }
+
+        return this.attributeIndex[`${type}-${name}`] || [];
     }
 
     /** @return {Attribute[]} */

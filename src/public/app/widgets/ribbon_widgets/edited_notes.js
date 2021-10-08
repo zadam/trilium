@@ -33,7 +33,8 @@ export default class EditedNotesWidget extends CollapsibleWidget {
     getTitle() {
         return {
             show: this.isEnabled(),
-            activate: true,
+            // promoted attributes have priority over edited notes
+            activate: this.note.getPromotedDefinitionAttributes().length === 0,
             title: 'Edited Notes',
             icon: 'bx bx-calendar-edit'
         };

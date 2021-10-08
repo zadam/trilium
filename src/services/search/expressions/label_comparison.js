@@ -19,7 +19,7 @@ class LabelComparisonExp extends Expression {
 
         for (const attr of attrs) {
             const note = attr.note;
-            const value = attr.value ? attr.value.toLowerCase() : attr.value;
+            const value = attr.value?.toLowerCase();
 
             if (inputNoteSet.hasNoteId(note.noteId) && this.comparator(value)) {
                 if (attr.isInheritable) {
