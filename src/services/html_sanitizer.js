@@ -32,7 +32,9 @@ function sanitize(dirtyHtml) {
             'span': [ 'class', 'style' ],
             'label': [ 'class' ],
             'input': [ 'class', 'type', 'disabled' ],
-            'code': [ 'class' ]
+            'code': [ 'class' ],
+            'ul': [ 'class' ],
+            'table': [ 'class' ],
         },
         allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data', 'evernote'],
         transformTags,
