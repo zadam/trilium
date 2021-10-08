@@ -4,12 +4,6 @@
     display: none;
 }
 
-/*
- * CKEditor 5 (v29.2.0) content styles.
- * Generated on Fri, 10 Sep 2021 10:54:09 GMT.
- * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/content-styles.html
- */
-
 :root {
     --ck-color-image-caption-background: hsl(0, 0%, 97%);
     --ck-color-image-caption-text: hsl(0, 0%, 20%);
@@ -28,16 +22,31 @@
     --ck-todo-list-checkmark-size: 16px;
 }
 
-/* ckeditor5-image/theme/imagecaption.css */
-.ck-content .image > figcaption {
-    display: table-caption;
-    caption-side: bottom;
-    word-break: break-word;
-    color: var(--ck-color-image-caption-text);
-    background-color: var(--ck-color-image-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-yellow {
+    background-color: var(--ck-highlight-marker-yellow);
+}
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-green {
+    background-color: var(--ck-highlight-marker-green);
+}
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-pink {
+    background-color: var(--ck-highlight-marker-pink);
+}
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-blue {
+    background-color: var(--ck-highlight-marker-blue);
+}
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-red {
+    color: var(--ck-highlight-pen-red);
+    background-color: transparent;
+}
+/* ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-green {
+    color: var(--ck-highlight-pen-green);
+    background-color: transparent;
 }
 /* ckeditor5-font/theme/fontsize.css */
 .ck-content .text-tiny {
@@ -116,38 +125,16 @@
 .ck-content .image-inline.image-style-align-right {
     margin-left: var(--ck-inline-image-style-spacing);
 }
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-yellow {
-    background-color: var(--ck-highlight-marker-yellow);
-}
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-green {
-    background-color: var(--ck-highlight-marker-green);
-}
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-pink {
-    background-color: var(--ck-highlight-marker-pink);
-}
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-blue {
-    background-color: var(--ck-highlight-marker-blue);
-}
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-red {
-    color: var(--ck-highlight-pen-red);
-    background-color: transparent;
-}
-/* ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-green {
-    color: var(--ck-highlight-pen-green);
-    background-color: transparent;
-}
-/* ckeditor5-horizontal-line/theme/horizontalline.css */
-.ck-content hr {
-    margin: 15px 0;
-    height: 4px;
-    background: hsl(0, 0%, 87%);
-    border: 0;
+/* ckeditor5-image/theme/imagecaption.css */
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: var(--ck-color-image-caption-text);
+    background-color: var(--ck-color-image-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
 }
 /* ckeditor5-image/theme/image.css */
 .ck-content .image {
@@ -200,6 +187,33 @@
 .ck-content .image.image_resized > figcaption {
     display: block;
 }
+/* ckeditor5-code-block/theme/codeblock.css */
+.ck-content pre {
+    padding: 1em;
+    color: hsl(0, 0%, 20.8%);
+    background: hsla(0, 0%, 78%, 0.3);
+    border: 1px solid hsl(0, 0%, 77%);
+    border-radius: 2px;
+    text-align: left;
+    direction: ltr;
+    tab-size: 4;
+    white-space: pre-wrap;
+    font-style: normal;
+    min-width: 200px;
+}
+/* ckeditor5-code-block/theme/codeblock.css */
+.ck-content pre code {
+    background: unset;
+    padding: 0;
+    border-radius: 0;
+}
+/* ckeditor5-horizontal-line/theme/horizontalline.css */
+.ck-content hr {
+    margin: 15px 0;
+    height: 4px;
+    background: hsl(0, 0%, 87%);
+    border: 0;
+}
 /* ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
     overflow: hidden;
@@ -220,18 +234,6 @@
     background-color: hsla(0, 0%, 78%, 0.3);
     padding: .15em;
     border-radius: 2px;
-}
-/* ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-table-caption-text);
-    background-color: var(--ck-color-table-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
 }
 /* ckeditor5-table/theme/table.css */
 .ck-content .table {
@@ -265,6 +267,18 @@
 /* ckeditor5-table/theme/table.css */
 .ck-content[dir="ltr"] .table th {
     text-align: left;
+}
+/* ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-table-caption-text);
+    background-color: var(--ck-color-table-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
 }
 /* ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
@@ -379,26 +393,6 @@
 /* ckeditor5-language/theme/language.css */
 .ck-content span[lang] {
     font-style: italic;
-}
-/* ckeditor5-code-block/theme/codeblock.css */
-.ck-content pre {
-    padding: 1em;
-    color: hsl(0, 0%, 20.8%);
-    background: hsla(0, 0%, 78%, 0.3);
-    border: 1px solid hsl(0, 0%, 77%);
-    border-radius: 2px;
-    text-align: left;
-    direction: ltr;
-    tab-size: 4;
-    white-space: pre-wrap;
-    font-style: normal;
-    min-width: 200px;
-}
-/* ckeditor5-code-block/theme/codeblock.css */
-.ck-content pre code {
-    background: unset;
-    padding: 0;
-    border-radius: 0;
 }
 /* ckeditor5-mention/theme/mention.css */
 .ck-content .mention {
