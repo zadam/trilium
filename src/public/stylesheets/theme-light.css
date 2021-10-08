@@ -2,6 +2,9 @@
    value from this theme will be used. For this reason this theme uses "html" instead of ":root"
    since it's less "specific" and thus serves as default */
 html {
+    /* either light or dark, colored theme with darker tones are also dark, used e.g. for note map node colors */
+    --theme-style: light;
+
     --main-font-family: MontserratLight;
     --main-font-size: normal;
 

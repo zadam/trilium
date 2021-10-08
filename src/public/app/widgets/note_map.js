@@ -45,6 +45,9 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        const documentStyle = window.getComputedStyle(document.documentElement);
+        this.themeStyle = documentStyle.getPropertyValue('--theme-style')?.trim();
+
         this.$container = this.$widget.find(".note-map-container");
         this.$styleResolver = this.$widget.find('.style-resolver');
 
@@ -156,7 +159,14 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         }
         let colour = '#';
         for (let i = 0; i < 3; i++) {
-            const value = (hash >> (i * 8)) & 0xFF;
+            let value = (hash >> (i * 8)) & 0xFF;
+
+            console.log("this.themeStyle", this.themeStyle);
+
+            if (this.themeStyle === "dark" && value < 128) {
+                value += 128; // lighten up the colors
+            }
+
             colour += ('00' + value.toString(16)).substr(-2);
         }
         return colour;
