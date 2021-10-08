@@ -153,23 +153,22 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     }
 
     stringToColor(str) {
+        if (this.themeStyle === "dark") {
+            str = "0" + str; // magic lightening modifier
+        }
+
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        let colour = '#';
+
+        let color = '#';
         for (let i = 0; i < 3; i++) {
-            let value = (hash >> (i * 8)) & 0xFF;
+            const value = (hash >> (i * 8)) & 0xFF;
 
-            console.log("this.themeStyle", this.themeStyle);
-
-            if (this.themeStyle === "dark" && value < 128) {
-                value += 128; // lighten up the colors
-            }
-
-            colour += ('00' + value.toString(16)).substr(-2);
+            color += ('00' + value.toString(16)).substr(-2);
         }
-        return colour;
+        return color;
     }
 
     rgb2hex(rgb) {
