@@ -14,6 +14,7 @@ export default class TabManager extends Component {
 
         this.activeNtxId = null;
 
+        // elements are arrays of note contexts for each tab (one main context + subcontexts [splits])
         this.recentlyClosedTabs = [];
 
         this.tabsUpdate = new SpacedUpdate(async () => {
@@ -301,11 +302,10 @@ export default class TabManager extends Component {
         // close dangling autocompletes after closing the tab
         $(".aa-input").autocomplete("close");
 
-        const ntxIdsToRemove = noteContextToRemove.getSubContexts().map(nc => nc.ntxId);
+        const noteContextsToRemove = noteContextToRemove.getSubContexts();
+        const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
         await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
-
-        this.recentlyClosedTabs.push(noteContextToRemove);
 
         if (!noteContextToRemove.isMainContext()) {
             await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
@@ -325,6 +325,8 @@ export default class TabManager extends Component {
         }
 
         this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
+
+        this.recentlyClosedTabs.push(noteContextsToRemove);
 
         this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
 
@@ -416,17 +418,23 @@ export default class TabManager extends Component {
 
     async reopenLastTabCommand() {
         if (this.recentlyClosedTabs.length > 0) {
-            const noteContext = this.recentlyClosedTabs.pop();
-    
-            this.child(noteContext);
-    
-            await this.triggerEvent('newNoteContextCreated', {noteContext});
-            
-            this.activateNoteContext(noteContext.ntxId);
+            const noteContexts = this.recentlyClosedTabs.pop();
+
+            for (const noteContext of noteContexts) {
+                this.child(noteContext);
+
+                await this.triggerEvent('newNoteContextCreated', {noteContext});
+            }
+
+            const noteContextToActivate = noteContexts.length === 1
+                ? noteContexts[0]
+                : noteContexts.find(nc => nc.isMainContext());
+
+            this.activateNoteContext(noteContextToActivate.ntxId);
 
             await this.triggerEvent('noteSwitched', {
-                noteContext: noteContext,
-                notePath: noteContext.notePath
+                noteContext: noteContextToActivate,
+                notePath: noteContextToActivate.notePath
             });
         }
     }
