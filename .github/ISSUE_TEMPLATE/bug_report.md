@@ -10,8 +10,8 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Confirm that you have searched for duplicates in the issue tracker**
-- [] I have searched for duplicate bugs in the issue tracker
+**Confirm that you have searched for duplicates in the issue tracker by adding an "x" between the brackets below**
+- [ ] I have searched for duplicate bugs in the issue tracker
 
 **To Reproduce**
 Steps to reproduce the behavior:
