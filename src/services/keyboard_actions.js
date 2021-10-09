@@ -208,6 +208,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "reopenLastTab",
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+T"] : [],
+        description: "Repoens the last closed tab",
+        scope: "window"
+    },
+    {
         actionName: "activateNextTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : [],
         description: "Activates tab on the right",
