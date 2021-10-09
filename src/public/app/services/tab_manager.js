@@ -14,6 +14,8 @@ export default class TabManager extends Component {
 
         this.activeNtxId = null;
 
+        this.recentlyClosedTabs = [];
+
         this.tabsUpdate = new SpacedUpdate(async () => {
             if (!appContext.isMainWindow) {
                 return;
@@ -303,6 +305,8 @@ export default class TabManager extends Component {
 
         await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
 
+        this.recentlyClosedTabs.push(noteContextToRemove);
+
         if (!noteContextToRemove.isMainContext()) {
             await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
         }
@@ -408,6 +412,23 @@ export default class TabManager extends Component {
         this.removeNoteContext(ntxId);
 
         this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+    }
+
+    async reopenLastTabCommand() {
+        if (this.recentlyClosedTabs.length > 0) {
+            const noteContext = this.recentlyClosedTabs.pop();
+    
+            this.child(noteContext);
+    
+            await this.triggerEvent('newNoteContextCreated', {noteContext});
+            
+            this.activateNoteContext(noteContext.ntxId);
+
+            await this.triggerEvent('noteSwitched', {
+                noteContext: noteContext,
+                notePath: noteContext.notePath
+            });
+        }
     }
 
     hoistedNoteChangedEvent() {
