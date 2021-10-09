@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+**Confirm that you have searched for existing issues in the issue tracker by adding an "x" between the brackets below**
+- [ ] I have searched for duplicate bugs in the issue tracker
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
