@@ -60,8 +60,13 @@ export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
         this.$parentNote.empty();
         this.$childrenNotes.empty();
 
+        const linkOptions = {
+            showTooltip: false,
+            showNoteIcon: true
+        };
+
         this.$parentNote.append(
-            (await linkService.createNoteLink(this.note.noteId, {showTooltip: false}))
+            (await linkService.createNoteLink(this.note.noteId, linkOptions))
                 .addClass("note-link")
         );
 
@@ -69,7 +74,7 @@ export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
             this.$childrenNotes.append(
                 $("<li>")
                     .append(
-                        (await linkService.createNoteLink(childNote.noteId, {showTooltip: false}))
+                        (await linkService.createNoteLink(childNote.noteId, linkOptions))
                             .addClass("note-link")
                     )
             );
