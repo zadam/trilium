@@ -20,11 +20,22 @@ async function createNoteLink(notePath, options = {}) {
     let noteTitle = options.title;
     const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
+    const showNoteIcon = options.showNoteIcon === undefined ? false : options.showNoteIcon;
+
+    const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
     if (!noteTitle) {
-        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
-
         noteTitle = await treeService.getNoteTitle(noteId, parentNoteId);
+    }
+
+    const $container = $("<span>");
+
+    if (showNoteIcon) {
+        const note = await froca.getNote(noteId);
+
+        $container
+            .append($("<span>").addClass("bx " + note.getIcon()))
+            .append(" ");
     }
 
     const $noteLink = $("<a>", {
@@ -37,7 +48,7 @@ async function createNoteLink(notePath, options = {}) {
         $noteLink.addClass("no-tooltip-preview");
     }
 
-    const $container = $("<span>").append($noteLink);
+    $container.append($noteLink);
 
     if (showNotePath) {
         const resolvedNotePathSegments = await treeService.resolveNotePathToSegments(notePath);

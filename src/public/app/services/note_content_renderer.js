@@ -5,6 +5,8 @@ import protectedSessionHolder from "./protected_session_holder.js";
 import libraryLoader from "./library_loader.js";
 import openService from "./open.js";
 import froca from "./froca.js";
+import utils from "./utils.js";
+import linkService from "./link.js";
 
 let idCounter = 1;
 
@@ -21,12 +23,35 @@ async function getRenderedContent(note, options = {}) {
     if (type === 'text') {
         const noteComplement = await froca.getNoteComplement(note.noteId);
 
-        $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
+        if (!utils.isHtmlEmpty(noteComplement.content)) {
+            $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
 
-        if ($renderedContent.find('span.math-tex').length > 0) {
-            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+            if ($renderedContent.find('span.math-tex').length > 0) {
+                await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement($renderedContent[0], {trust: true});
+                renderMathInElement($renderedContent[0], {trust: true});
+            }
+        }
+        else {
+            $renderedContent.css("padding", "10px");
+
+            let childNoteIds = note.getChildNoteIds();
+
+            if (childNoteIds.length > 10) {
+                childNoteIds = childNoteIds.substr(0, 10);
+            }
+
+            // just load the first 10 child notes
+            const childNotes = await froca.getNotes(childNoteIds);
+
+            for (const childNote of childNotes) {
+                $renderedContent.append(await linkService.createNoteLink(`${note.noteId}/${childNote.noteId}`, {
+                    showTooltip: false,
+                    showNoteIcon: true
+                }));
+
+                $renderedContent.append("<br>");
+            }
         }
     }
     else if (type === 'code') {
