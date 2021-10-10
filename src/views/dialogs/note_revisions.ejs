@@ -1,4 +1,16 @@
 <div id="note-revisions-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+    <style>
+        #note-revision-content {
+            overflow: auto;
+            word-break: break-word;
+        }
+
+        #note-revision-content img {
+            max-width: 100%;
+            object-fit: contain;
+        }
+    </style>
+
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -29,7 +41,7 @@
                         <div id="note-revision-title-buttons"></div>
                     </div>
 
-                    <div id="note-revision-content" style="overflow: auto; word-break: break-word;"></div>
+                    <div id="note-revision-content"></div>
                 </div>
             </div>
         </div>
