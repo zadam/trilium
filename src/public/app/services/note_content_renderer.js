@@ -34,6 +34,7 @@ async function getRenderedContent(note, options = {}) {
         }
         else {
             $renderedContent.css("padding", "10px");
+            $renderedContent.addClass("text-with-ellipsis");
 
             let childNoteIds = note.getChildNoteIds();
 

@@ -944,3 +944,9 @@ input {
     padding-left: 25px;
     margin-bottom: 5px;
 }
+
+.text-with-ellipsis {
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
