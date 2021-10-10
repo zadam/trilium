@@ -39,7 +39,7 @@ async function getRenderedContent(note, options = {}) {
             let childNoteIds = note.getChildNoteIds();
 
             if (childNoteIds.length > 10) {
-                childNoteIds = childNoteIds.substr(0, 10);
+                childNoteIds = childNoteIds.slice(0, 10);
             }
 
             // just load the first 10 child notes
