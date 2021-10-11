@@ -83,14 +83,22 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             this.$notePathIntro.text("This note is not yet placed into the note tree.");
         }
 
+        const printedNotePaths = new Set();
+
         for (const notePathRecord of sortedNotePaths) {
-            await this.addPath(notePathRecord);
+            const notePath = notePathRecord.notePath.join('/');
+
+            if (printedNotePaths.has(notePath)) {
+                continue;
+            }
+
+            printedNotePaths.add(notePath);
+
+            await this.addPath(notePath, notePathRecord);
         }
     }
 
-    async addPath(notePathRecord) {
-        const notePath = notePathRecord.notePath.join('/');
-
+    async addPath(notePath, notePathRecord) {
         const title = await treeService.getNotePathTitle(notePath);
 
         const $noteLink = await linkService.createNoteLink(notePath, {title});
