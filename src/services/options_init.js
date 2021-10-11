@@ -87,6 +87,9 @@ const defaultOptions = [
     { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
     { name: 'autoReadonlySizeText', value: '10000', isSynced: false },
     { name: 'autoReadonlySizeCode', value: '30000', isSynced: false },
+    { name: 'dailyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'weeklyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'monthlyBackupEnabled', value: 'true', isSynced: false }
 ];
 
 function initStartupOptions() {

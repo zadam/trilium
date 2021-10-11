@@ -24,12 +24,6 @@ const TPL = `
 
 <button id="anonymize-button" class="btn">Save anonymized database</button><br/><br/>
 
-<h4>Backup database</h4>
-
-<p>Trilium has automatic backup (daily, weekly, monthly), but you can also trigger a manual backup here.</p>
-
-<button id="backup-database-button" class="btn">Backup database now</button><br/><br/>
-
 <h4>Vacuum database</h4>
 
 <p>This will rebuild the database which will typically result in a smaller database file. No data will be actually changed.</p>
@@ -68,12 +62,6 @@ export default class AdvancedOptions {
             else {
                 toastService.showMessage(`Created anonymized database in ${resp.anonymizedFilePath}`, 10000);
             }
-        });
-
-        this.$backupDatabaseButton.on('click', async () => {
-            const {backupFile} = await server.post('database/backup-database');
-
-            toastService.showMessage("Database has been backed up to " + backupFile, 10000);
         });
 
         this.$vacuumDatabaseButton.on('click', async () => {

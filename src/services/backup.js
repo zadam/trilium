@@ -20,12 +20,22 @@ function regularBackup() {
     });
 }
 
-function periodBackup(optionName, fileName, periodInSeconds) {
-    const now = new Date();
-    const lastDailyBackupDate = dateUtils.parseDateTime(optionService.getOption(optionName));
+function isBackupEnabled(backupType) {
+    const optionName = `${backupType}BackupEnabled`;
 
-    if (now.getTime() - lastDailyBackupDate.getTime() > periodInSeconds * 1000) {
-        backupNow(fileName);
+    return optionService.getOptionBool(optionName);
+}
+
+function periodBackup(optionName, backupType, periodInSeconds) {
+    if (!isBackupEnabled(backupType)) {
+        return;
+    }
+
+    const now = new Date();
+    const lastBackupDate = dateUtils.parseDateTime(optionService.getOption(optionName));
+
+    if (now.getTime() - lastBackupDate.getTime() > periodInSeconds * 1000) {
+        backupNow(backupType);
 
         optionService.setOption(optionName, dateUtils.utcNowDateTime());
     }

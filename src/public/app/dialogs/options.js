@@ -11,13 +11,14 @@ export async function showDialog() {
     utils.openDialog($dialog);
 
     (await Promise.all([
-        import('./options/advanced.js'),
         import('./options/appearance.js'),
+        import('./options/shortcuts.js'),
         import('./options/code_notes.js'),
         import('./options/credentials.js'),
-        import('./options/other.js'),
+        import('./options/backup.js'),
         import('./options/sync.js'),
-        import('./options/keyboard_shortcuts.js'),
+        import('./options/other.js'),
+        import('./options/advanced.js')
     ]))
         .map(m => new m.default)
         .forEach(tab => {
