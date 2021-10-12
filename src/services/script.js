@@ -30,11 +30,12 @@ function executeBundle(bundle, apiParams = {}) {
         apiParams.startNote = bundle.note;
     }
 
+    const originalSourceId = cls.get('sourceId');
+
     cls.set('sourceId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "function() {\r\n" + bundle.script + "\r\n}";
-
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
@@ -44,6 +45,9 @@ function executeBundle(bundle, apiParams = {}) {
         log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
 
         throw e;
+    }
+    finally {
+        cls.set('sourceId', originalSourceId);
     }
 }
 
