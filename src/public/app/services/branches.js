@@ -109,6 +109,10 @@ async function deleteNotes(branchIdsToDelete) {
         }
     }
 
+    if (eraseNotes) {
+        utils.reloadFrontendApp("erasing notes requires reload");
+    }
+
     return true;
 }
 
