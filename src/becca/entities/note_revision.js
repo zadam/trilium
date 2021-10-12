@@ -49,7 +49,7 @@ class NoteRevision extends AbstractEntity {
                 this.title = protectedSessionService.decryptString(this.title);
             }
             else {
-                this.title = "[Protected]";
+                this.title = "[protected]";
             }
         }
     }

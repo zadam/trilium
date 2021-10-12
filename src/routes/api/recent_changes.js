@@ -74,7 +74,7 @@ function getRecentChanges(req) {
                 change.current_title = protectedSessionService.decryptString(change.current_title);
             }
             else {
-                change.title = change.current_title = "[Protected]";
+                change.title = change.current_title = "[protected]";
             }
         }
 

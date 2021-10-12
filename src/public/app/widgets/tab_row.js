@@ -33,9 +33,9 @@ const TAB_SIZE_MINI = 48;
 const TAB_TPL = `
 <div class="note-tab">
   <div class="note-tab-wrapper">
+    <div class="note-tab-drag-handle"></div>
     <div class="note-tab-icon"></div>
     <div class="note-tab-title"></div>
-    <div class="note-tab-drag-handle"></div>
     <div class="note-tab-close" title="Close tab" data-trigger-command="closeActiveTab"><span>×</span></div>
   </div>
 </div>`;
@@ -169,8 +169,6 @@ const TAB_ROW_TPL = `
         bottom: 0;
         right: 0;
         left: 0;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
     }
     
     .tab-row-widget .note-tab .note-tab-close {
