@@ -299,6 +299,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "insertDateTimeToText",
         defaultShortcuts: ["Alt+T"],
+        description: "Insert current date & time into text",
         scope: "text-detail"
     },
     {
@@ -456,11 +457,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "reloadFrontendApp",
         defaultShortcuts: ["F5", "CommandOrControl+R"],
+        description: "Reload frontend App",
         scope: "window"
     },
     {
         actionName: "openDevTools",
         defaultShortcuts: isElectron ? ["CommandOrControl+Shift+I"] : [],
+        description: "Open dev tools",
         scope: "window"
     },
     {
@@ -469,23 +472,33 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "toggleLeftPane",
+        defaultShortcuts: [],
+        description: "Toggle left (note tree) panel",
+        scope: "window"
+    },
+    {
         actionName: "toggleFullscreen",
         defaultShortcuts: ["F11"],
+        description: "Toggle full screen",
         scope: "window"
     },
     {
         actionName: "zoomOut",
         defaultShortcuts: isElectron ? ["CommandOrControl+-"] : [],
+        description: "Zoom Out",
         scope: "window"
     },
     {
         actionName: "zoomIn",
+        description: "Zoom In",
         defaultShortcuts: isElectron ? ["CommandOrControl+="] : [],
         scope: "window"
     },
     {
         actionName: "copyWithoutFormatting",
         defaultShortcuts: ["CommandOrControl+Alt+C"],
+        description: "Copy selected text without formatting",
         scope: "text-detail"
     }
 ];

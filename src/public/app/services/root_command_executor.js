@@ -4,6 +4,7 @@ import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
 import openService from "./open.js";
 import protectedSessionService from "./protected_session.js";
+import options from "./options.js";
 
 export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -100,5 +101,17 @@ export default class RootCommandExecutor extends Component {
 
     leaveProtectedSessionCommand() {
         protectedSessionService.leaveProtectedSession();
+    }
+
+    hideLeftPaneCommand() {
+        options.save(`leftPaneVisible`, "false");
+    }
+
+    showLeftPaneCommand() {
+        options.save(`leftPaneVisible`, "true");
+    }
+
+    toggleLeftPaneCommand() {
+        options.toggle('leftPaneVisible');
     }
 }

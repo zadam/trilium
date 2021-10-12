@@ -11,24 +11,16 @@ export default class LeftPaneToggleWidget extends ButtonWidget {
             : "bx-chevrons-right";
 
         this.settings.title = isLeftPaneVisible
-            ? "Hide sidebar."
-            : "Open sidebar.";
+            ? "Hide panel."
+            : "Open panel.";
 
         this.settings.command = isLeftPaneVisible
-            ? "hideSidebar"
-            : "showSidebar";
+            ? "hideLeftPane"
+            : "showLeftPane";
 
         super.refreshIcon();
 
         splitService.setupLeftPaneResizer(isLeftPaneVisible);
-    }
-
-    hideSidebarCommand() {
-        options.save(`leftPaneVisible`, "false");
-    }
-
-    showSidebarCommand() {
-        options.save(`leftPaneVisible`, "true");
     }
 
     entitiesReloadedEvent({loadResults}) {
