@@ -1,37 +1,77 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: '(Bug report)'
-labels: 'bug'
-assignees: ''
-
----
-
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**Confirm that you have searched for existing issues in the issue tracker by adding an "x" between the brackets below**
-- [ ] I have searched for duplicate bugs in the issue tracker
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Platform (please complete the following information):**
-<!--Mac is unsupported as per https://github.com/zadam/trilium/wiki/FAQ#user-content-mac-os-support!!! -->
- - What operating system?: [Windows, Linux]
- - Are you using the standalone desktop version (no syncing)? Or the standalone server version (only accessing through the web browser)? Or a combination of server and desktop, where the desktop syncs to the server? 
- - Version [e.g. 22]
- - If you're using the server version, are you using the Docker or the binary from the releases page?
-
-**Additional context**
-Add any other context about the problem here. 
+name: Bug Report
+description: Report an Electron bug
+title: "[Bug]: "
+labels: "bug :beetle:"
+body:
+- type: checkboxes
+  attributes:
+    label: Preflight Checklist
+    description: Please ensure you've completed all of the following.
+    options:
+      - label: I have read the [Contributing Guidelines](https://github.com/electron/electron/blob/main/CONTRIBUTING.md) for this project.
+        required: true
+      - label: I agree to follow the [Code of Conduct](https://github.com/electron/electron/blob/main/CODE_OF_CONDUCT.md) that this project adheres to.
+        required: true
+      - label: I have searched the [issue tracker](https://www.github.com/electron/electron/issues) for a feature request that matches the one I want to file, without success.
+        required: true
+- type: input
+  attributes:
+    label: Electron Version
+    description: What version of Electron are you using?
+    placeholder: 12.0.0
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: What operating system are you using?
+    options:
+      - Windows
+      - macOS
+      - Ubuntu
+      - Other Linux
+      - Other (specify below)
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Operating System Version
+    description: What operating system version are you using? On Windows, click Start button > Settings > System > About. On macOS, click the Apple Menu > About This Mac. On Linux, use lsb_release or uname -a.
+    placeholder: "e.g. Windows 10 version 1909, macOS Catalina 10.15.7, or Ubuntu 20.04"
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: What arch are you using?
+    options:
+      - x64
+      - ia32
+      - arm64 (including Apple Silicon)
+      - Other (specify below)
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Last Known Working Electron version
+    description: What is the last version of Electron this worked in, if applicable?
+    placeholder: 11.0.0
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A clear and concise description of what you expected to happen.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Actual Behavior
+    description: A clear description of what actually happens.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Testcase Gist URL
+    description: If you can reproduce the issue in a standalone test case, please use [Electron Fiddle](https://github.com/electron/fiddle) to create one and to publish it as a [GitHub gist](https://gist.github.com) and put the gist URL here. This is **the best way** to ensure this issue is triaged quickly.
+    placeholder: https://gist.github.com/...
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: If your problem needs further explanation, or if the issue you're seeing cannot be reproduced in a gist, please add more information here.
