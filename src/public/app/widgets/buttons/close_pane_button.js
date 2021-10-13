@@ -13,6 +13,12 @@ export default class ClosePaneButton extends ButtonWidget {
         this.icon("bx-x")
             .title("Close this pane")
             .titlePlacement("bottom")
-            .onClick(widget => widget.triggerCommand("closeThisNoteSplit", { ntxId: widget.getNtxId() }));
+            .onClick((widget, e) => {
+                // to avoid split pane container detecting click within the pane which would try to activate this
+                // pane (which is being removed)
+                e.stopPropagation();
+
+                widget.triggerCommand("closeThisNoteSplit", { ntxId: widget.getNtxId() });
+            });
     }
 }

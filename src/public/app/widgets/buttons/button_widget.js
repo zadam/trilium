@@ -26,16 +26,16 @@ export default class ButtonWidget extends NoteContextAwareWidget {
         this.$widget = $(TPL);
 
         if (this.settings.onClick) {
-            this.$widget.on("click", () => {
+            this.$widget.on("click", e => {
                 this.$widget.tooltip("hide");
 
-                this.settings.onClick(this)
+                this.settings.onClick(this, e);
             });
         } else {
             this.$widget.on("click", () => {
                 this.$widget.tooltip("hide");
 
-                this.triggerCommand(this.settings.command)
+                this.triggerCommand(this.settings.command);
             });
         }
 
