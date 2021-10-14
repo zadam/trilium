@@ -69,13 +69,3 @@ gh release create "$TAG" \
     "dist/$WINDOWS_X64_BUILD" \
     "dist/$MAC_X64_BUILD" \
     "dist/$SERVER_BUILD"
-
-echo "Building docker image"
-
-bin/build-docker.sh $VERSION
-
-echo "Pushing docker image to dockerhub"
-
-bin/push-docker-image.sh $VERSION
-
-echo "Release finished!"
