@@ -43,7 +43,7 @@ function getClipperInboxNote() {
 }
 
 function addClipping(req) {
-    const {title, content, pageUrl, images} = req.body;
+    const {title, content, pageUrl, images, origin} = req.body;
 
     const clipperInbox = getClipperInboxNote();
 
@@ -59,6 +59,10 @@ function addClipping(req) {
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
+        if (origin) {
+            clippingNote.setLabel('origin', origin);
+
+        }
     }
 
     const rewrittenContent = processContent(images, clippingNote, content);
@@ -73,7 +77,7 @@ function addClipping(req) {
 }
 
 function createNote(req) {
-    let {title, content, pageUrl, images, clipType} = req.body;
+    let {title, content, pageUrl, images, clipType, origin} = req.body;
 
     if (!title || !title.trim()) {
         title = "Clipped note from " + pageUrl;
@@ -92,6 +96,9 @@ function createNote(req) {
 
     if (pageUrl) {
         note.setLabel('pageUrl', pageUrl);
+    }
+    if (origin) {
+        note.setLabel('origin', origin);
     }
 
     const rewrittenContent = processContent(images, note, content);
