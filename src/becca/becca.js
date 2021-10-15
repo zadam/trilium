@@ -1,8 +1,6 @@
 "use strict";
 
 const sql = require("../services/sql.js");
-const NoteRevision = require("./entities/note_revision.js");
-const RecentNote = require("./entities/recent_note.js");
 const NoteSet = require("../services/search/note_set");
 
 class Becca {
@@ -102,6 +100,7 @@ class Becca {
     getNoteRevision(noteRevisionId) {
         const row = sql.getRow("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
 
+        const NoteRevision = require("./entities/note_revision.js"); // avoiding circular dependency problems
         return row ? new NoteRevision(row) : null;
     }
 
@@ -131,12 +130,14 @@ class Becca {
     getRecentNotesFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
+        const RecentNote = require("./entities/recent_note.js"); // avoiding circular dependency problems
         return rows.map(row => new RecentNote(row));
     }
 
     getNoteRevisionsFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
+        const NoteRevision = require("./entities/note_revision.js"); // avoiding circular dependency problems
         return rows.map(row => new NoteRevision(row));
     }
 
