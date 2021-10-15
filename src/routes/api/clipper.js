@@ -61,7 +61,6 @@ function addClipping(req) {
         clippingNote.setLabel('pageUrl', pageUrl);
         if (origin) {
             clippingNote.setLabel('origin', origin);
-
         }
     }
 
