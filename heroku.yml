@@ -1,0 +1,5 @@
+build:
+  docker:
+    web: heroku.dockerfile
+run:
+  web: /bin/sh -c "mkdir ~/trilium-data && sed -r 's/@PORT/'$PORT'/' config-heroku.ini > ~/trilium-data/config.ini && node ./src/www"

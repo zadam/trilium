@@ -1,0 +1,7 @@
+{
+    "name": "trilium",
+    "description": "A barebones Node.js app using Express",
+    "repository": "https://github.com/zadam/trilium",
+    "logo": "https://github.com/zadam/trilium/raw/master/images/app-icons/png/512x512.png",
+    "keywords": ["node", "trilium", "trilium-server"]
+}

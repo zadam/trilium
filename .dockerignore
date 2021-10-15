@@ -5,3 +5,6 @@
 /docs
 /npm-debug.log
 node_modules
+/heroku.dockerfile
+/app.json
+/heroku.yml
