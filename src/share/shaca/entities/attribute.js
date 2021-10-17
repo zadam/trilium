@@ -1,27 +1,11 @@
 "use strict";
 
-const Note = require('./note.js');
-const sql = require("../sql.js");
+const AbstractEntity = require('./abstract_entity');
 
-class Attribute {
-    constructor(row) {
-        this.updateFromRow(row);
-        this.init();
-    }
+class Attribute extends AbstractEntity {
+    constructor([attributeId, noteId, type, name, value, isInheritable, position]) {
+        super();
 
-    updateFromRow(row) {
-        this.update([
-            row.attributeId,
-            row.noteId,
-            row.type,
-            row.name,
-            row.value,
-            row.isInheritable,
-            row.position
-        ]);
-    }
-
-    update([attributeId, noteId, type, name, value, isInheritable, position]) {
         /** @param {string} */
         this.attributeId = attributeId;
         /** @param {string} */
@@ -37,24 +21,8 @@ class Attribute {
         /** @param {boolean} */
         this.isInheritable = !!isInheritable;
 
-        return this;
-    }
-
-    init() {
-        if (this.attributeId) {
-            this.becca.attributes[this.attributeId] = this;
-        }
-
-        if (!(this.noteId in this.becca.notes)) {
-            // entities can come out of order in sync, create skeleton which will be filled later
-            this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
-        }
-
-        this.becca.notes[this.noteId].ownedAttributes.push(this);
-
-        const key = `${this.type}-${this.name.toLowerCase()}`;
-        this.becca.attributeIndex[key] = this.becca.attributeIndex[key] || [];
-        this.becca.attributeIndex[key].push(this);
+        this.shaca.attributes[this.attributeId] = this;
+        this.shaca.notes[this.noteId].ownedAttributes.push(this);
 
         const targetNote = this.targetNote;
 
@@ -77,12 +45,12 @@ class Attribute {
     }
 
     get note() {
-        return this.becca.notes[this.noteId];
+        return this.shaca.notes[this.noteId];
     }
 
     get targetNote() {
         if (this.type === 'relation') {
-            return this.becca.notes[this.value];
+            return this.shaca.notes[this.value];
         }
     }
 
@@ -90,7 +58,7 @@ class Attribute {
      * @returns {Note|null}
      */
     getNote() {
-        return this.becca.getNote(this.noteId);
+        return this.shaca.getNote(this.noteId);
     }
 
     /**
@@ -105,7 +73,7 @@ class Attribute {
             return null;
         }
 
-        return this.becca.getNote(this.value);
+        return this.shaca.getNote(this.value);
     }
 }
 

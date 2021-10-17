@@ -1,27 +1,16 @@
 "use strict";
 
-const sql = require('../sql');
-const utils = require('../../services/utils');
+const sql = require('../../sql');
+const utils = require('../../../services/utils');
+const AbstractEntity = require('./abstract_entity');
 
 const LABEL = 'label';
 const RELATION = 'relation';
 
-class Note {
-    constructor(row) {
-        this.updateFromRow(row);
-        this.init();
-    }
+class Note extends AbstractEntity {
+    constructor([noteId, title, type, mime]) {
+        super();
 
-    updateFromRow(row) {
-        this.update([
-            row.noteId,
-            row.title,
-            row.type,
-            row.mime
-        ]);
-    }
-
-    update([noteId, title, type, mime]) {
         /** @param {string} */
         this.noteId = noteId;
         /** @param {string} */
@@ -31,10 +20,6 @@ class Note {
         /** @param {string} */
         this.mime = mime;
 
-        return this;
-    }
-
-    init() {
         /** @param {Branch[]} */
         this.parentBranches = [];
         /** @param {Note[]} */
@@ -52,7 +37,7 @@ class Note {
         /** @param {Attribute[]} */
         this.targetRelations = [];
 
-        this.becca.addNote(this.noteId, this);
+        this.shaca.notes[this.noteId] = this;
 
         /** @param {Note[]|null} */
         this.ancestorCache = null;
@@ -79,7 +64,7 @@ class Note {
     }
 
     getChildBranches() {
-        return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
+        return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
     getContent(silentNotFoundError = false) {
@@ -182,7 +167,7 @@ class Note {
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
                 if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
-                    const templateNote = this.becca.notes[ownedAttr.value];
+                    const templateNote = this.shaca.notes[ownedAttr.value];
 
                     if (templateNote) {
                         templateAttributes.push(...templateNote.__getAttributes(newPath));
