@@ -29,6 +29,16 @@ class Attribute extends AbstractEntity {
         if (targetNote) {
             targetNote.targetRelations.push(this);
         }
+
+        if (this.type === 'relation' && this.name === 'imageLink') {
+            const linkedChildNote = this.note.getChildNotes().find(childNote => childNote.noteId === this.value);
+
+            if (linkedChildNote) {
+                this.note.children = this.note.children.filter(childNote => childNote.noteId !== this.value);
+
+                linkedChildNote.parents = linkedChildNote.parents.filter(parentNote => parentNote.noteId !== this.noteId);
+            }
+        }
     }
 
     get isAffectingSubtree() {

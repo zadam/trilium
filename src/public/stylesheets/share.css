@@ -1,0 +1,81 @@
+html {
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+#layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+}
+
+#menu {
+    padding: 20px;
+    flex-basis: 0;
+    flex-grow: 1;
+    background-color: #ccc;
+    overflow: auto;
+}
+
+#main {
+    flex-basis: 0;
+    flex-grow: 3;
+    background-color:#eee;
+}
+
+#title, #content {
+    padding: 20px;
+}
+
+#menuLink {
+    position: fixed;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 1.4em;
+    background: #000;
+    background: rgba(0,0,0,0.7);
+    font-size: 2rem;
+    z-index: 10;
+    height: auto;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 48em) {
+    #layout.active #menu {
+        display: block;
+    }
+
+    #layout.active #main {
+        display: none;
+    }
+
+    #layout.active #menuLink::after {
+        content: "«";
+    }
+
+    #menu {
+        display: none;
+    }
+
+    #menuLink::after {
+        content: "»";
+    }
+}
