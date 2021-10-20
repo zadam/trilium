@@ -59,7 +59,6 @@ function addClipping(req) {
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
-        clippingNote.setLabel('iconClass', 'bx bx-globe');
     }
 
     const rewrittenContent = processContent(images, clippingNote, content);
@@ -90,7 +89,7 @@ function createNote(req) {
     });
 
     note.setLabel('clipType', clipType);
-
+    note.setLabel('iconClass', 'bx bx-globe');
     if (pageUrl) {
         note.setLabel('pageUrl', pageUrl);
     }
