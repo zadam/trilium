@@ -262,6 +262,7 @@ function register(app) {
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
     apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
+    apiRoute(GET, '/api/special-notes/week/:date', specialNotesRoute.getWeekNote);
     apiRoute(GET, '/api/special-notes/month/:month', specialNotesRoute.getMonthNote);
     apiRoute(GET, '/api/special-notes/year/:year', specialNotesRoute.getYearNote);
     apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDateNotesForMonth);

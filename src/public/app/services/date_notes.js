@@ -24,6 +24,15 @@ async function getDateNote(date) {
 }
 
 /** @return {NoteShort} */
+async function getWeekNote(date) {
+    const note = await server.get('special-notes/week/' + date, "date-note");
+
+    await ws.waitForMaxKnownEntityChangeId();
+
+    return await froca.getNote(note.noteId);
+}
+
+/** @return {NoteShort} */
 async function getMonthNote(month) {
     const note = await server.get('special-notes/month/' + month, "date-note");
 
@@ -63,6 +72,7 @@ export default {
     getInboxNote,
     getTodayNote,
     getDateNote,
+    getWeekNote,
     getMonthNote,
     getYearNote,
     createSqlConsole,
