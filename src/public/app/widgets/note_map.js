@@ -17,7 +17,7 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
             top: 10px; 
             right: 10px; 
             background-color: var(--accented-background-color);
-            z-index: 1000;
+            z-index: 10; /* should be below dropdown (note actions) */
         }
         
         .map-type-switcher .bx {
