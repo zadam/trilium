@@ -93,6 +93,7 @@ function createNote(req) {
 
     if (pageUrl) {
         note.setLabel('pageUrl', pageUrl);
+        note.setLabel('iconClass', 'bx bx-globe');
     }
 
     const rewrittenContent = processContent(images, note, content);
