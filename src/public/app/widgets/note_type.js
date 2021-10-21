@@ -5,7 +5,8 @@ import NoteContextAwareWidget from "./note_context_aware_widget.js";
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
     { type: "image", title: "Image", selectable: false },
-    { type: "search", title: "Saved search", selectable: false },
+    { type: "search", title: "Saved Search", selectable: false },
+    { type: "note-map", mime: '', title: "Note Map", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
@@ -14,6 +15,8 @@ const NOTE_TYPES = [
     { type: "mermaid", mime: 'text/mermaid', title: "Mermaid Diagram", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
+
+const NOT_SELECTABLE_NOTE_TYPES = NOTE_TYPES.filter(nt => !nt.selectable).map(nt => nt.type);
 
 const TPL = `
 <div class="dropdown note-type-widget">
@@ -48,7 +51,7 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
 
     async refreshWithNote(note) {
         this.$noteTypeButton.prop("disabled",
-            () => ["file", "image", "search"].includes(note.type));
+            () => NOT_SELECTABLE_NOTE_TYPES.includes(note.type));
 
         this.$noteTypeDesc.text(await this.findTypeTitle(note.type, note.mime));
 
