@@ -14,6 +14,10 @@ function getDateNote(req) {
     return dateNoteService.getDateNote(req.params.date);
 }
 
+function getWeekNote(req) {
+    return dateNoteService.getWeekNote(req.params.date);
+}
+
 function getMonthNote(req) {
     return dateNoteService.getMonthNote(req.params.month);
 }
@@ -65,6 +69,7 @@ function getHoistedNote() {
 module.exports = {
     getInboxNote,
     getDateNote,
+    getWeekNote,
     getMonthNote,
     getYearNote,
     getDateNotesForMonth,
