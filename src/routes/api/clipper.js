@@ -15,7 +15,7 @@ const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.searchNoteInSubtree(
+    const notes = todayNote.searchNotesInSubtree(
         formatAttrForSearch({
             type: 'label',
             name: "pageUrl",
