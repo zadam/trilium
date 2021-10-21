@@ -69,7 +69,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         this.$notePathList.empty();
 
         if (this.noteId === 'root') {
-            await this.addPath('root');
+            await this.getRenderedPath('root');
             return;
         }
 
@@ -83,22 +83,18 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             this.$notePathIntro.text("This note is not yet placed into the note tree.");
         }
 
-        const printedNotePaths = new Set();
+        const renderedPaths = [];
 
         for (const notePathRecord of sortedNotePaths) {
             const notePath = notePathRecord.notePath.join('/');
 
-            if (printedNotePaths.has(notePath)) {
-                continue;
-            }
-
-            printedNotePaths.add(notePath);
-
-            await this.addPath(notePath, notePathRecord);
+            renderedPaths.push(await this.getRenderedPath(notePath, notePathRecord));
         }
+
+        this.$notePathList.empty().append(...renderedPaths);
     }
 
-    async addPath(notePath, notePathRecord) {
+    async getRenderedPath(notePath, notePathRecord) {
         const title = await treeService.getNotePathTitle(notePath);
 
         const $noteLink = await linkService.createNoteLink(notePath, {title});
@@ -136,7 +132,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             $noteLink.append(` ${icons.join(' ')}`);
         }
 
-        this.$notePathList.append($("<li>").append($noteLink));
+        return $("<li>").append($noteLink);
     }
 
     entitiesReloadedEvent({loadResults}) {
