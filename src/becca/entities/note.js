@@ -764,8 +764,8 @@ class Note extends AbstractEntity {
     }
 
     /** @return {String[]} */
-    getSubtreeNoteIds() {
-        return this.getSubtreeNotes().map(note => note.noteId);
+    getSubtreeNoteIds(includeArchived = true) {
+        return this.getSubtreeNotes(includeArchived).map(note => note.noteId);
     }
 
     getDescendantNoteIds() {

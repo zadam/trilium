@@ -332,9 +332,9 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         if (this.widgetMode === 'ribbon') {
             setTimeout(() => {
-                const node = this.nodes.find(node => node.id === this.noteId);
+                const subGraphNoteIds = this.getSubGraphConnectedToCurrentNote(data);
 
-                this.graph.centerAt(node.x, node.y, 500);
+                this.graph.zoomToFit(400, 50, node => subGraphNoteIds.has(node.id));
             }, 1000);
         }
         else if (this.widgetMode === 'type') {
@@ -342,6 +342,39 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 setTimeout(() => this.graph.zoomToFit(400, 10), 1000);
             }
         }
+    }
+
+    getSubGraphConnectedToCurrentNote(data) {
+        function getGroupedLinksBySource(links) {
+            const map = {};
+
+            for (const link of links) {
+                const key = link.source.id;
+                map[key] = map[key] || [];
+                map[key].push(link);
+            }
+
+            return map;
+        }
+
+        const linksBySource = getGroupedLinksBySource(data.links);
+
+        const subGraphNoteIds = new Set();
+
+        function traverseGraph(noteId) {
+            if (subGraphNoteIds.has(noteId)) {
+                return;
+            }
+
+            subGraphNoteIds.add(noteId);
+
+            for (const link of linksBySource[noteId] || []) {
+                traverseGraph(link.target.id);
+            }
+        }
+
+        traverseGraph(this.noteId);
+        return subGraphNoteIds;
     }
 
     cleanup() {

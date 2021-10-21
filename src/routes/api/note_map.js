@@ -24,23 +24,54 @@ function buildDescendantCountMap() {
     return noteIdToCountMap;
 }
 
+function getNeighbors(note, depth) {
+    if (depth === 0) {
+        return [];
+    }
+
+    const retNoteIds = [];
+
+    for (const relation of note.getRelations()) {
+        if (['relationMapLink', 'template', 'image'].includes(relation.name)) {
+            continue;
+        }
+
+        const targetNote = relation.getTargetNote();
+        retNoteIds.push(targetNote.noteId);
+
+        for (const noteId of getNeighbors(targetNote, depth - 1)) {
+            retNoteIds.push(noteId);
+        }
+    }
+
+    return retNoteIds;
+}
+
 function getLinkMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
 
-    const noteIds = new Set();
+    const noteIds = new Set(
+        mapRootNote.getSubtreeNotes(false)
+            .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
+            .map(note => note.noteId)
+    );
 
-    const notes = mapRootNote.getSubtreeNotes(false)
-        .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
-        .map(note => [
+    for (const noteId of getNeighbors(mapRootNote, 3)) {
+        noteIds.add(noteId);
+    }
+
+    const notes = Array.from(noteIds).map(noteId => {
+        const note = becca.getNote(noteId);
+
+        return [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',
             note.type
-        ]);
-
-    notes.forEach(([noteId]) => noteIds.add(noteId));
+        ];
+    });
 
     const links = Object.values(becca.attributes).filter(rel => {
         if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
