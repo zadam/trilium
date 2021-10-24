@@ -153,7 +153,7 @@ class NoteListRenderer {
         this.parentNote = parentNote;
         const includedNoteIds = this.getIncludedNoteIds();
 
-        this.noteIds = noteIds.filter(noteId => !includedNoteIds.has(noteId));
+        this.noteIds = noteIds.filter(noteId => !includedNoteIds.has(noteId) && noteId !== 'hidden');
 
         if (this.noteIds.length === 0) {
             return;

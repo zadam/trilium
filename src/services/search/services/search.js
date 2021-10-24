@@ -3,7 +3,6 @@
 const lex = require('./lex');
 const handleParens = require('./handle_parens');
 const parse = require('./parse');
-const NoteSet = require("../note_set");
 const SearchResult = require("../search_result");
 const SearchContext = require("../search_context");
 const becca = require('../../../becca/becca');

@@ -125,7 +125,7 @@ function getNoteTitleForPath(notePathArray) {
 
 /**
  * Returns notePath for noteId from cache. Note hoisting is respected.
- * Archived notes are also returned, but non-archived paths are preferred if available
+ * Archived (and hidden) notes are also returned, but non-archived paths are preferred if available
  * - this means that archived paths is returned only if there's no non-archived path
  * - you can check whether returned path is archived using isArchived
  */
@@ -139,10 +139,6 @@ function getSomePathInner(note, path, respectHoisting) {
     if (note.isRoot()) {
         path.push(note.noteId);
         path.reverse();
-
-        if (path.includes("hidden")) {
-            return false;
-        }
 
         if (respectHoisting && !path.includes(cls.getHoistedNoteId())) {
             return false;

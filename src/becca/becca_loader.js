@@ -45,6 +45,10 @@ function load() {
         new Option(row);
     }
 
+    for (const noteId in becca.notes) {
+        becca.notes[noteId].sortParents();
+    }
+
     becca.loaded = true;
 
     log.info(`Becca (note cache) load took ${Date.now() - start}ms`);
@@ -151,7 +155,7 @@ function branchUpdated(branch) {
 
     if (childNote) {
         childNote.flatTextCache = null;
-        childNote.resortParents();
+        childNote.sortParents();
     }
 }
 

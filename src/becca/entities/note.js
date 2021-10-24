@@ -611,7 +611,7 @@ class Note extends AbstractEntity {
 
     // will sort the parents so that non-search & non-archived are first and archived at the end
     // this is done so that non-search & non-archived paths are always explored as first when looking for note path
-    resortParents() {
+    sortParents() {
         this.parentBranches.sort((a, b) =>
             a.branchId.startsWith('virt-')
             || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
