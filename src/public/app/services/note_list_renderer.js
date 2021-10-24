@@ -180,7 +180,7 @@ class NoteListRenderer {
         this.showNotePath = showNotePath;
     }
 
-    /** @return {Set<string>} list of noteIds included (images, included notes) into a parent note and which
+    /** @returns {Set<string>} list of noteIds included (images, included notes) into a parent note and which
      *                        don't have to be shown in the note list. */
     getIncludedNoteIds() {
         const includedLinks = this.parentNote

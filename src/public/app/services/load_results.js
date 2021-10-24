@@ -65,7 +65,7 @@ export default class LoadResults {
         this.attributes.push({attributeId, sourceId});
     }
 
-    /** @return {Attribute[]} */
+    /** @returns {Attribute[]} */
     getAttributes(sourceId = 'none') {
         return this.attributes
             .filter(row => row.sourceId !== sourceId)

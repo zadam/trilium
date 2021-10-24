@@ -393,7 +393,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    /** @return {string} path without leading or trailing slash and backslashes converted to forward ones*/
+    /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones*/
     function normalizeFilePath(filePath) {
         filePath = filePath.replace(/\\/g, "/");
 

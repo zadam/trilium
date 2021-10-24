@@ -79,12 +79,12 @@ class AppContext extends Component {
         this.triggerEvent('initialRenderComplete');
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     triggerEvent(name, data) {
         return this.handleEvent(name, data);
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     triggerCommand(name, data = {}) {
         for (const executor of this.executors) {
             const fun = executor[name + "Command"];

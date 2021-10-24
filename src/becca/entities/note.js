@@ -116,26 +116,32 @@ class Note extends AbstractEntity {
             || protectedSessionService.isProtectedSessionAvailable()
     }
 
+    /** @returns {Branch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
+    /** @returns {Branch[]} */
     getBranches() {
         return this.parentBranches;
     }
 
+    /** @returns {Note[]} */
     getParentNotes() {
         return this.parents;
     }
 
+    /** @returns {Note[]} */
     getChildNotes() {
         return this.children;
     }
 
+    /** @returns {boolean} */
     hasChildren() {
         return this.children && this.children.length > 0;
     }
 
+    /** @returns {Branch[]} */
     getChildBranches() {
         return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
@@ -370,7 +376,7 @@ class Note extends AbstractEntity {
         return this.__attributeCache;
     }
 
-    /** @return {Attribute[]} */
+    /** @returns {Attribute[]} */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
@@ -721,7 +727,7 @@ class Note extends AbstractEntity {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
-    /** @return {Note[]} */
+    /** @returns {Note[]} */
     getSubtreeNotesIncludingTemplated() {
         const arr = [[this]];
 
@@ -742,7 +748,7 @@ class Note extends AbstractEntity {
         return arr.flat();
     }
 
-    /** @return {Note[]} */
+    /** @returns {Note[]} */
     getSubtreeNotes(includeArchived = true) {
         const noteSet = new Set();
 
@@ -763,7 +769,7 @@ class Note extends AbstractEntity {
         return Array.from(noteSet);
     }
 
-    /** @return {String[]} */
+    /** @returns {String[]} */
     getSubtreeNoteIds(includeArchived = true) {
         return this.getSubtreeNotes(includeArchived).map(note => note.noteId);
     }
@@ -820,6 +826,7 @@ class Note extends AbstractEntity {
         return this.getAttributes().length;
     }
 
+    /** @returns {Note[]} */
     getAncestors() {
         if (!this.ancestorCache) {
             const noteIds = new Set();
@@ -843,11 +850,22 @@ class Note extends AbstractEntity {
         return this.ancestorCache;
     }
 
+    /** @returns {boolean} */
+    hasAncestor(ancestorNoteId) {
+        for (const ancestorNote of this.getAncestors()) {
+            if (ancestorNote.noteId === ancestorNoteId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     getTargetRelations() {
         return this.targetRelations;
     }
 
-    /** @return {Note[]} - returns only notes which are templated, does not include their subtrees
+    /** @returns {Note[]} - returns only notes which are templated, does not include their subtrees
      *                     in effect returns notes which are influenced by note's non-inheritable attributes */
     getTemplatedNotes() {
         const arr = [this];

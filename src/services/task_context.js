@@ -22,7 +22,7 @@ class TaskContext {
         this.increaseProgressCount();
     }
 
-    /** @return {TaskContext} */
+    /** @returns {TaskContext} */
     static getInstance(taskId, taskType, data) {
         if (!taskContexts[taskId]) {
             taskContexts[taskId] = new TaskContext(taskId, taskType, data);

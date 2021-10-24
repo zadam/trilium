@@ -25,7 +25,7 @@ class Becca {
         this.loaded = false;
     }
 
-    /** @return {Attribute[]} */
+    /** @returns {Attribute[]} */
     findAttributes(type, name) {
         name = name.trim().toLowerCase();
 
@@ -36,7 +36,7 @@ class Becca {
         return this.attributeIndex[`${type}-${name}`] || [];
     }
 
-    /** @return {Attribute[]} */
+    /** @returns {Attribute[]} */
     findAttributesWithPrefix(type, name) {
         const resArr = [];
         const key = `${type}-${name}`;

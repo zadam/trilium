@@ -207,7 +207,7 @@ class Froca {
         froca.notes[note.noteId].searchResultsLoaded = true;
     }
 
-    /** @return {NoteShort[]} */
+    /** @returns {NoteShort[]} */
     getNotesFromCache(noteIds, silentNotFoundError = false) {
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
@@ -221,7 +221,7 @@ class Froca {
         }).filter(note => !!note);
     }
 
-    /** @return {Promise<NoteShort[]>} */
+    /** @returns {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
         const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
 
@@ -238,14 +238,14 @@ class Froca {
         }).filter(note => !!note);
     }
 
-    /** @return {Promise<boolean>} */
+    /** @returns {Promise<boolean>} */
     async noteExists(noteId) {
         const notes = await this.getNotes([noteId], true);
 
         return notes.length === 1;
     }
 
-    /** @return {Promise<NoteShort>} */
+    /** @returns {Promise<NoteShort>} */
     async getNote(noteId, silentNotFoundError = false) {
         if (noteId === 'none') {
             console.trace(`No 'none' note.`);
@@ -273,7 +273,7 @@ class Froca {
             .filter(b => !!b);
     }
 
-    /** @return {Branch} */
+    /** @returns {Branch} */
     getBranch(branchId, silentNotFoundError = false) {
         if (!(branchId in this.branches)) {
             if (!silentNotFoundError) {

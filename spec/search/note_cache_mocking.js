@@ -4,7 +4,7 @@ const Attribute = require('../../src/becca/entities/attribute.js');
 const becca = require('../../src/becca/becca.js');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
-/** @return {Note} */
+/** @returns {Note} */
 function findNoteByTitle(searchResults, title) {
     return searchResults
         .map(sr => becca.notes[sr.noteId])

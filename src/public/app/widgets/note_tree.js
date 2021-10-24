@@ -681,12 +681,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         return extraClasses.join(" ");
     }
 
-    /** @return {FancytreeNode[]} */
+    /** @returns {FancytreeNode[]} */
     getSelectedNodes(stopOnParents = false) {
         return this.tree.getSelectedNodes(stopOnParents);
     }
 
-    /** @return {FancytreeNode[]} */
+    /** @returns {FancytreeNode[]} */
     getSelectedOrActiveNodes(node = null) {
         const nodes = this.getSelectedNodes(true);
 
@@ -771,7 +771,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
     }
 
-    /** @return {FancytreeNode} */
+    /** @returns {FancytreeNode} */
     async getNodeFromPath(notePath, expand = false, logErrors = true) {
         utils.assertArguments(notePath);
         /** @let {FancytreeNode} */
@@ -838,24 +838,24 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         return parentNode;
     }
 
-    /** @return {FancytreeNode} */
+    /** @returns {FancytreeNode} */
     findChildNode(parentNode, childNoteId) {
         return parentNode.getChildren().find(childNode => childNode.data.noteId === childNoteId);
     }
 
-    /** @return {FancytreeNode} */
+    /** @returns {FancytreeNode} */
     async expandToNote(notePath, logErrors = true) {
         return this.getNodeFromPath(notePath, true, logErrors);
     }
 
-    /** @return {FancytreeNode[]} */
+    /** @returns {FancytreeNode[]} */
     getNodesByBranch(branch) {
         utils.assertArguments(branch);
 
         return this.getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branch.branchId);
     }
 
-    /** @return {FancytreeNode[]} */
+    /** @returns {FancytreeNode[]} */
     getNodesByNoteId(noteId) {
         utils.assertArguments(noteId);
 

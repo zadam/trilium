@@ -123,7 +123,7 @@ class NoteContext extends Component {
         return this.notePath ? this.notePath.split('/') : [];
     }
 
-    /** @return {NoteComplement} */
+    /** @returns {NoteComplement} */
     async getNoteComplement() {
         if (!this.noteId) {
             return null;

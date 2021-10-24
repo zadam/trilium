@@ -34,7 +34,7 @@ function getNoteStartingWith(parentNoteId, startsWith) {
     return becca.getNote(noteId);
 }
 
-/** @return {Note} */
+/** @returns {Note} */
 function getRootCalendarNote() {
     let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
@@ -57,7 +57,7 @@ function getRootCalendarNote() {
     return rootNote;
 }
 
-/** @return {Note} */
+/** @returns {Note} */
 function getYearNote(dateStr, rootNote) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -97,7 +97,7 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
         .replace(/{month}/g, monthName);
 }
 
-/** @return {Note} */
+/** @returns {Note} */
 function getMonthNote(dateStr, rootNote) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -152,7 +152,7 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
-/** @return {Note} */
+/** @returns {Note} */
 function getDateNote(dateStr) {
     let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
