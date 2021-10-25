@@ -7,6 +7,7 @@ const TPL = `
     <style>
         .note-update-status-widget {
             margin: 10px;
+            contain: none;
         }
     </style>
     
