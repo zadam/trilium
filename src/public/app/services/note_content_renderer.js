@@ -23,6 +23,8 @@ async function getRenderedContent(note, options = {}) {
     if (type === 'text') {
         const noteComplement = await froca.getNoteComplement(note.noteId);
 
+        console.log(noteComplement.content);
+
         if (!utils.isHtmlEmpty(noteComplement.content)) {
             $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
 
@@ -169,7 +171,7 @@ function trim(text, doTrim) {
         return text;
     }
     else {
-        return text.substr(0, Math.min(text.length, 1000));
+        return text.substr(0, Math.min(text.length, 2000));
     }
 }
 
