@@ -125,11 +125,13 @@ function updateNoteAttributes(req) {
     for (const incAttr of incomingAttributes) {
         position += 10;
 
+        const value = incAttr.value || "";
+
         const perfectMatchAttr = existingAttrs.find(attr =>
             attr.type === incAttr.type &&
             attr.name === incAttr.name &&
             attr.isInheritable === incAttr.isInheritable &&
-            attr.value === incAttr.value);
+            attr.value === value);
 
         if (perfectMatchAttr) {
             existingAttrs = existingAttrs.filter(attr => attr.attributeId !== perfectMatchAttr.attributeId);
