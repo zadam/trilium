@@ -68,12 +68,13 @@ async function executeFrontendUpdate(entityChanges) {
         frontendUpdateDataQueue.push(...entityChanges);
 
         // we set lastAcceptedEntityChangeId even before frontend update processing and send ping so that backend can start sending more updates
-        lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChanges[entityChanges.length - 1].id);
 
-        const lastSyncEntityChange = entityChanges.slice().reverse().find(ec => ec.isSynced);
+        for (const entityChange of entityChanges) {
+            lastAcceptedEntityChangeId = Math.max(lastAcceptedEntityChangeId, entityChange.id);
 
-        if (lastSyncEntityChange) {
-            lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, lastSyncEntityChange.id);
+            if (entityChange.isSynced) {
+                lastAcceptedEntityChangeSyncId = Math.max(lastAcceptedEntityChangeSyncId, entityChange.id);
+            }
         }
 
         sendPing();
