@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import keyboardActionsService from "../../services/keyboard_actions.js";
+import attributeService from "../../services/attributes.js";
 
 const TPL = `
 <div class="ribbon-container">
@@ -261,10 +262,6 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         return $ribbonComponent.hasClass("active");
     }
 
-    refreshRibbonContainerCommand() {
-        this.refreshWithNote(this.note, true);
-    }
-
     ensureOwnedAttributesAreOpen(ntxId) {
         if (this.isNoteContext(ntxId) && !this.isRibbonTabActive('ownedAttributes')) {
             this.toggleRibbonTabWithName('ownedAttributes', ntxId);
@@ -331,6 +328,9 @@ export default class RibbonContainer extends NoteContextAwareWidget {
             this.lastNoteType = this.note.type;
 
             this.refresh();
+        }
+        else if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
+            this.refreshWithNote(this.note, true);
         }
     }
 

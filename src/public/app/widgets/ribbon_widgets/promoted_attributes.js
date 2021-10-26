@@ -297,9 +297,6 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refresh();
-
-            this.getTitle(this.note);
-            this.triggerCommand('refreshRibbonContainer');
         }
     }
 }
