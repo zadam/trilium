@@ -137,8 +137,6 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
                 value: note.noteId,
                 isInheritable: entity.isInheritable
             }).save();
-
-            targetNote.invalidateAttributeCache();
         }
     });
 });
@@ -150,9 +148,6 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
         for (const relation of relations) {
             if (relation.value === note.noteId) {
-                note.invalidateAttributeCache();
-                targetNote.invalidateAttributeCache();
-
                 relation.markAsDeleted();
             }
         }

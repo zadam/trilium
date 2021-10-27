@@ -644,12 +644,9 @@ class NoteShort {
     }
 
     /**
-     * Clear note's attributes cache to force fresh reload for next attribute request.
-     * Cache is note instance scoped.
+     * @deprecated NOOP
      */
-    invalidateAttributeCache() {
-        this.__attributeCache = null;
-    }
+    invalidateAttributeCache() {}
 
     /**
      * Get relations which target this note
