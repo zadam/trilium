@@ -137,6 +137,9 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
                 value: note.noteId,
                 isInheritable: entity.isInheritable
             }).save();
+
+            // becca will not be updated before we'll check from the other side which would create infinite relation creation (#2269)
+            targetNote.invalidateThisCache();
         }
     });
 });
