@@ -71,7 +71,13 @@ class NoteContext extends Component {
 
     getMainContext() {
         if (this.mainNtxId) {
-            return appContext.tabManager.getNoteContextById(this.mainNtxId);
+            try {
+                return appContext.tabManager.getNoteContextById(this.mainNtxId);
+            }
+            catch (e) {
+                this.mainNtxId = null;
+                return this;
+            }
         }
         else {
             return this;

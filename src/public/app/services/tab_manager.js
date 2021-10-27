@@ -353,7 +353,7 @@ export default class TabManager extends Component {
         const order = {};
         let i = 0;
 
-        for (const ntxId in ntxIdsInOrder) {
+        for (const ntxId of ntxIdsInOrder) {
             order[ntxId] = i++;
         }
 

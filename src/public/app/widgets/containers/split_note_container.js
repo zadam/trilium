@@ -37,6 +37,12 @@ export default class SplitNoteContainer extends FlexContainer {
     }
 
     async openNewNoteSplitEvent({ntxId, notePath}) {
+        if (!ntxId) {
+            logError("empty ntxId!");
+
+            ntxId = appContext.tabManager.getActiveMainContext().ntxId;
+        }
+
         const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveMainContext().ntxId);
 
         // remove the original position of newly created note context
@@ -46,7 +52,7 @@ export default class SplitNoteContainer extends FlexContainer {
         // insert the note context after the originating note context
         ntxIds.splice(ntxIds.indexOf(ntxId) + 1, 0, noteContext.ntxId);
 
-        this.triggerCommand("noteContextReorder", ntxIds);
+        this.triggerCommand("noteContextReorder", {ntxIdsInOrder: ntxIds});
 
         // move the note context rendered widget after the originating widget
         this.$widget.find(`[data-ntx-id="${noteContext.ntxId}"]`)
