@@ -298,6 +298,10 @@ function normalize(str) {
     return removeDiacritic(str).toLowerCase();
 }
 
+function filterAttributeName(name) {
+    return name.replace(/[^\p{L}\p{N}_:]/ug, "");
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -331,5 +335,6 @@ module.exports = {
     timeLimit,
     deferred,
     removeDiacritic,
-    normalize
+    normalize,
+    filterAttributeName
 };

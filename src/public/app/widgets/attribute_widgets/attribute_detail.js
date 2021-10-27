@@ -626,7 +626,9 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
                 props.push('precision=' + this.$inputNumberPrecision.val());
             }
         } else if (this.attrType === 'relation-definition' && this.$inputInverseRelation.val().trim().length > 0) {
-            props.push("inverse=" + this.$inputInverseRelation.val());
+            const inverseRelationName = this.$inputInverseRelation.val();
+
+            props.push("inverse=" + utils.filterAttributeName(inverseRelationName));
         }
 
         this.$rowNumberPrecision.toggle(
