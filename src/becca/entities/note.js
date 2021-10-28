@@ -67,7 +67,7 @@ class Note extends AbstractEntity {
         // ------ Derived attributes ------
 
         /** @param {boolean} */
-        this.isDecrypted = !this.isProtected;
+        this.isDecrypted = !this.noteId || !this.isProtected;
 
         this.decrypt();
 
