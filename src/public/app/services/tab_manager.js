@@ -299,6 +299,16 @@ export default class TabManager extends Component {
     async removeNoteContext(ntxId) {
         const noteContextToRemove = this.getNoteContextById(ntxId);
 
+        if (noteContextToRemove.isMainContext()) {
+            // forbid removing last main note context
+            // this was previously allowed (was replaced with empty tab) but this proved to be prone to race conditions
+            const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
+
+            if (mainNoteContexts.length === 1) {
+                return;
+            }
+        }
+
         // close dangling autocompletes after closing the tab
         $(".aa-input").autocomplete("close");
 
