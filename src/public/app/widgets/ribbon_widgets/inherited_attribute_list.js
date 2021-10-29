@@ -34,7 +34,10 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
         super();
 
         /** @type {AttributeDetailWidget} */
-        this.attributeDetailWidget = new AttributeDetailWidget().setParent(this);
+        this.attributeDetailWidget = new AttributeDetailWidget()
+            .contentSized()
+            .setParent(this);
+
         this.child(this.attributeDetailWidget);
     }
 
