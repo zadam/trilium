@@ -36,21 +36,21 @@ class Attribute extends AbstractEntity {
     }
 
     update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]) {
-        /** @param {string} */
+        /** @type {string} */
         this.attributeId = attributeId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.type = type;
-        /** @param {string} */
+        /** @type {string} */
         this.name = name;
-        /** @param {int} */
+        /** @type {int} */
         this.position = position;
-        /** @param {string} */
+        /** @type {string} */
         this.value = value;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isInheritable = !!isInheritable;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = utcDateModified;
 
         return this;

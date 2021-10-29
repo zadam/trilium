@@ -19,29 +19,29 @@ class NoteRevision extends AbstractEntity {
     constructor(row) {
         super();
 
-        /** @param {string} */
+        /** @type {string} */
         this.noteRevisionId = row.noteRevisionId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.type = row.type;
-        /** @param {string} */
+        /** @type {string} */
         this.mime = row.mime;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @param {string} */
+        /** @type {string} */
         this.title = row.title;
-        /** @param {string} */
+        /** @type {string} */
         this.dateLastEdited = row.dateLastEdited;
-        /** @param {string} */
+        /** @type {string} */
         this.dateCreated = row.dateCreated;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateLastEdited = row.utcDateLastEdited;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @param {number} */
+        /** @type {number} */
         this.contentLength = row.contentLength;
 
         if (this.isProtected) {

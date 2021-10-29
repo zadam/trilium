@@ -7,19 +7,19 @@ class Branch {
     }
 
     update(row) {
-        /** @param {string} primary key */
+        /** @type {string} primary key */
         this.branchId = row.branchId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.parentNoteId = row.parentNoteId;
-        /** @param {int} */
+        /** @type {int} */
         this.notePosition = row.notePosition;
-        /** @param {string} */
+        /** @type {string} */
         this.prefix = row.prefix;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isExpanded = !!row.isExpanded;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.fromSearchNote = !!row.fromSearchNote;
     }
 

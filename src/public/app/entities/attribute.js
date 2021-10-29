@@ -8,19 +8,19 @@ class Attribute {
     }
 
     update(row) {
-        /** @param {string} attributeId */
+        /** @type {string} attributeId */
         this.attributeId = row.attributeId;
-        /** @param {string} noteId */
+        /** @type {string} noteId */
         this.noteId = row.noteId;
-        /** @param {string} type */
+        /** @type {string} type */
         this.type = row.type;
-        /** @param {string} name */
+        /** @type {string} name */
         this.name = row.name;
-        /** @param {string} value */
+        /** @type {string} value */
         this.value = row.value;
-        /** @param {int} position */
+        /** @type {int} position */
         this.position = row.position;
-        /** @param {boolean} isInheritable */
+        /** @type {boolean} isInheritable */
         this.isInheritable = !!row.isInheritable;
     }
 
