@@ -45,33 +45,33 @@ class Note extends AbstractEntity {
     update([noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified]) {
         // ------ Database persisted attributes ------
 
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.title = title;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isProtected = !!isProtected;
-        /** @param {string} */
+        /** @type {string} */
         this.type = type;
-        /** @param {string} */
+        /** @type {string} */
         this.mime = mime;
-        /** @param {string} */
+        /** @type {string} */
         this.dateCreated = dateCreated || dateUtils.localNowDateTime();
-        /** @param {string} */
+        /** @type {string} */
         this.dateModified = dateModified;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = utcDateModified;
 
         // ------ Derived attributes ------
 
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isDecrypted = !this.noteId || !this.isProtected;
 
         this.decrypt();
 
-        /** @param {string|null} */
+        /** @type {string|null} */
         this.flatTextCache = null;
 
         return this;
@@ -729,23 +729,33 @@ class Note extends AbstractEntity {
 
     /** @returns {Note[]} */
     getSubtreeNotesIncludingTemplated() {
-        const arr = [[this]];
+        const set = new Set();
 
-        for (const childNote of this.children) {
-            arr.push(childNote.getSubtreeNotesIncludingTemplated());
-        }
+        function inner(note) {
+            if (set.has(note)) {
+                return;
+            }
 
-        for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
-                const note = targetRelation.note;
+            set.add(note);
 
-                if (note) {
-                    arr.push(note.getSubtreeNotesIncludingTemplated());
+            for (const childNote of note.children) {
+                inner(childNote);
+            }
+
+            for (const targetRelation of note.targetRelations) {
+                if (targetRelation.name === 'template') {
+                    const targetNote = targetRelation.note;
+
+                    if (targetNote) {
+                        inner(targetNote);
+                    }
                 }
             }
         }
 
-        return arr.flat();
+        inner(this);
+
+        return Array.from(set);
     }
 
     /** @returns {Note[]} */
