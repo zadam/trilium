@@ -247,6 +247,12 @@ function getRelatedNotes(req) {
 
     const allResults = matchingNameAndValue.concat(matchingName);
 
+    const allResultNoteIds = new Set();
+
+    for (const record of allResults) {
+        allResultNoteIds.add(record.noteId);
+    }
+
     for (const record of allResults) {
         if (results.length >= 20) {
             break;
@@ -260,7 +266,7 @@ function getRelatedNotes(req) {
     }
 
     return {
-        count: allResults.length,
+        count: allResultNoteIds.size,
         results
     };
 }
