@@ -193,7 +193,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
         this.$editor.on('keydown', async e => {
             if (e.which === 13) {
-                await this.save();
+                // allow autocomplete to fill the result textarea
+                setTimeout(() => this.save(), 100);
             }
 
             this.attributeDetailWidget.hide();

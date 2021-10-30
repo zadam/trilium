@@ -167,7 +167,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         });
     }
 
-    toggleRibbonTab($ribbonTitle) {
+    toggleRibbonTab($ribbonTitle, refreshActiveTab = true) {
         const activate = !$ribbonTitle.hasClass("active");
 
         this.$tabContainer.find('.ribbon-tab-title').removeClass("active");
@@ -183,7 +183,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
 
             const activeChild = this.getActiveRibbonWidget();
 
-            if (activeChild) {
+            if (activeChild && refreshActiveTab) {
                 activeChild.handleEvent('noteSwitched', {noteContext: this.noteContext, notePath: this.notePath});
             }
         } else {
@@ -249,7 +249,7 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         }
 
         if ($ribbonTabToActivate) {
-            $ribbonTabToActivate.trigger('click');
+            this.toggleRibbonTab($ribbonTabToActivate, false);
         }
         else {
             this.$bodyContainer.find('.ribbon-body').removeClass("active");
