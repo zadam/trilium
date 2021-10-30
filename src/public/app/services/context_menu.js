@@ -97,7 +97,7 @@ class ContextMenu {
                     .append($link)
                     // important to use mousedown instead of click since the former does not change focus
                     // (especially important for focused text for spell check)
-                    .on('mousedown', (e) => {
+                    .on('mousedown', e => {
                         e.stopPropagation();
 
                         this.hide();
