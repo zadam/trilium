@@ -27,7 +27,7 @@ function getFontCss(req, res) {
     style += `--main-font-size: ${optionsMap.mainFontSize}%;`;
     style += `--tree-font-size: ${optionsMap.treeFontSize}%;`;
     style += `--detail-font-size: ${optionsMap.detailFontSize}%;`;
-    style += `--monospace-font-size: ${optionsMap.monospaceFontSize};`;
+    style += `--monospace-font-size: ${optionsMap.monospaceFontSize}%;`;
 
     style += '}';
 

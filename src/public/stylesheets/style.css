@@ -226,8 +226,8 @@ div.ui-tooltip {
     background: inherit;
 }
 
-.CodeMirror * {
-    font-family: var(--monospace-font-family) !important;
+body .CodeMirror {
+    font-size: var(--monospace-font-size);
 }
 
 .CodeMirror-gutters {
