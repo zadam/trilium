@@ -43,7 +43,7 @@ async function autocompleteSource(term, cb, options = {}) {
                 action: 'create-note',
                 noteTitle: term,
                 parentNoteId: activeNoteId || 'root',
-                highlightedNotePathTitle: `Create and link child note "${term}"`
+                highlightedNotePathTitle: `Create and link child note "${utils.escapeHtml(term)}"`
             }
         ].concat(results);
     }
@@ -53,7 +53,7 @@ async function autocompleteSource(term, cb, options = {}) {
             {
                 action: 'external-link',
                 externalLink: term,
-                highlightedNotePathTitle: `Insert external link to "${term}"`
+                highlightedNotePathTitle: `Insert external link to "${utils.escapeHtml(term)}"`
             }
         ].concat(results);
     }
