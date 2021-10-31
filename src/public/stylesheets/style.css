@@ -950,3 +950,9 @@ input {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
+.note-split {
+    flex-basis: 0; /* so that each split has same width */
+    margin-left: auto;
+    margin-right: auto;
+}

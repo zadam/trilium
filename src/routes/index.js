@@ -35,7 +35,8 @@ function index(req, res) {
         isDev: env.isDev(),
         isMainWindow: !req.query.extra,
         extraHoistedNoteId: req.query.extraHoistedNoteId,
-        isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable()
+        isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
+        maxContentWidth: parseInt(options.maxContentWidth)
     });
 }
 

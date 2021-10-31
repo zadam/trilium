@@ -163,7 +163,23 @@ const TPL = `
     
     <p>
         To apply font changes, click on 
-        <button class="btn btn-micro" id="reload-frontend-button">reload frontend</button>
+        <button class="btn btn-micro reload-frontend-button">reload frontend</button>
+    </p>
+    
+    <h4>Content width</h4>
+    
+    <p>Trilium by default limits max content width to improve readability for maximized screens on wide screens.</p>
+
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="max-content-width">Max content width in pixels</label>
+            <input type="number" min="200" step="10" class="form-control" id="max-content-width">
+        </div>
+    </div>
+    
+    <p>
+        To content width changes, click on 
+        <button class="btn btn-micro reload-frontend-button">reload frontend</button>
     </p>
 </form>`;
 
@@ -192,7 +208,7 @@ export default class ApperanceOptions {
         this.$monospaceFontSize = $("#monospace-font-size");
         this.$monospaceFontFamily = $("#monospace-font-family");
 
-        $("#reload-frontend-button").on("click", () => utils.reloadFrontendApp("font changes"));
+        $(".reload-frontend-button").on("click", () => utils.reloadFrontendApp("changes from appearance options"));
 
         this.$body = $("body");
 
@@ -238,6 +254,14 @@ export default class ApperanceOptions {
         for (const optionName of optionsToSave) {
             this['$' + optionName].on('change', () => server.put(`options/${optionName}/${this['$' + optionName].val()}`));
         }
+
+        this.$maxContentWidth = $("#max-content-width");
+
+        this.$maxContentWidth.on('change', async () => {
+            const maxContentWidth = this.$maxContentWidth.val();
+
+            await server.put('options/maxContentWidth/' + maxContentWidth);
+        })
     }
 
     toggleBodyClass(prefix, value) {
@@ -292,6 +316,8 @@ export default class ApperanceOptions {
 
         this.$monospaceFontSize.val(options.monospaceFontSize);
         this.fillFontFamilyOptions(this.$monospaceFontFamily, options.monospaceFontFamily);
+
+        this.$maxContentWidth.val(options.maxContentWidth);
     }
 
     fillFontFamilyOptions($select, currentValue) {

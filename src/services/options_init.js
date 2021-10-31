@@ -89,7 +89,8 @@ const defaultOptions = [
     { name: 'autoReadonlySizeCode', value: '30000', isSynced: false },
     { name: 'dailyBackupEnabled', value: 'true', isSynced: false },
     { name: 'weeklyBackupEnabled', value: 'true', isSynced: false },
-    { name: 'monthlyBackupEnabled', value: 'true', isSynced: false }
+    { name: 'monthlyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'maxContentWidth', value: '1200', isSynced: false },
 ];
 
 function initStartupOptions() {
