@@ -145,6 +145,10 @@ class Attribute extends AbstractEntity {
         }
     }
 
+    get isDeleted() {
+        return !(this.attributeId in this.becca.attributes);
+    }
+
     beforeSaving() {
         if (!this.value) {
             if (this.type === 'relation') {

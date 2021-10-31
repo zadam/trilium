@@ -1112,6 +1112,10 @@ class Note extends AbstractEntity {
         }
     }
 
+    get isDeleted() {
+        return !(this.noteId in this.becca.notes);
+    }
+
     beforeSaving() {
         super.beforeSaving();
 

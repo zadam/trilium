@@ -70,7 +70,7 @@ function postProcessEntityUpdate(entityName, entity) {
     }
 }
 
-eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entityRow}) => {
     if (!becca.loaded) {
         return;
     }
@@ -93,7 +93,7 @@ eventService.subscribe([eventService.ENTITY_CHANGE_SYNCED],  ({entityName, entit
     postProcessEntityUpdate(entityName, entityRow);
 });
 
-eventService.subscribe(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
+eventService.subscribeBeccaLoader(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
     if (!becca.loaded) {
         return;
     }
@@ -101,7 +101,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED,  ({entityName, entity}) => {
     postProcessEntityUpdate(entityName, entity);
 });
 
-eventService.subscribe([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
+eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED],  ({entityName, entityId}) => {
     if (!becca.loaded) {
         return;
     }
@@ -220,7 +220,7 @@ function noteReorderingUpdated(branchIdList) {
     }
 }
 
-eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
+eventService.subscribeBeccaLoader(eventService.ENTER_PROTECTED_SESSION, () => {
     try {
         becca.decryptProtectedNotes();
     }
@@ -229,7 +229,7 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     }
 });
 
-eventService.subscribe(eventService.LEAVE_PROTECTED_SESSION, load);
+eventService.subscribeBeccaLoader(eventService.LEAVE_PROTECTED_SESSION, load);
 
 module.exports = {
     load,

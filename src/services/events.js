@@ -27,6 +27,19 @@ function subscribe(eventTypes, listener) {
     }
 }
 
+function subscribeBeccaLoader(eventTypes, listener) {
+    if (!Array.isArray(eventTypes)) {
+        eventTypes = [ eventTypes ];
+    }
+
+    for (const eventType of eventTypes) {
+        eventListeners[eventType] = eventListeners[eventType] || [];
+        // becca loader should be the first listener so that other listeners can already work
+        // with updated becca
+        eventListeners[eventType] = [listener, ...eventListeners[eventType]];
+    }
+}
+
 function emit(eventType, data) {
     const listeners = eventListeners[eventType];
 
@@ -45,6 +58,7 @@ function emit(eventType, data) {
 
 module.exports = {
     subscribe,
+    subscribeBeccaLoader,
     emit,
     // event types:
     NOTE_TITLE_CHANGED,

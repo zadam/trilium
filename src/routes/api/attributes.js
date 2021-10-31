@@ -147,7 +147,7 @@ function updateNoteAttributes(req) {
         if (incAttr.type === 'relation') {
             const targetNote = becca.getNote(incAttr.value);
 
-            if (!targetNote || targetNote.isDeleted) {
+            if (!targetNote) {
                 log.error(`Target note of relation ${JSON.stringify(incAttr)} does not exist or is deleted`);
                 continue;
             }

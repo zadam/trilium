@@ -101,6 +101,10 @@ class Branch extends AbstractEntity {
         return this.becca.notes[this.parentNoteId];
     }
 
+    get isDeleted() {
+        return !(this.branchId in this.becca.branches);
+    }
+
     beforeSaving() {
         if (this.notePosition === undefined || this.notePosition === null) {
             // TODO finding new position can be refactored into becca
