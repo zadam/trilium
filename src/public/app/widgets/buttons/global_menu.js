@@ -60,6 +60,11 @@ const TPL = `
             <kbd data-command="showBackendLog"></kbd>
         </a>
 
+        <a class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
+            <span class="bx bx-empty"></span>
+            Switch to mobile version
+        </a>
+
         <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
             title="Reload can help with some visual glitches without restarting the whole app.">
             <span class="bx bx-empty"></span>
@@ -103,9 +108,11 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".show-about-dialog-button").on('click',
             () => import("../../dialogs/about.js").then(d => d.showDialog()));
 
-        this.$widget.find(".logout-button").toggle(!utils.isElectron());
+        const isElectron = utils.isElectron();
 
-        this.$widget.find(".open-dev-tools-button").toggle(utils.isElectron());
+        this.$widget.find(".logout-button").toggle(!isElectron);
+        this.$widget.find(".open-dev-tools-button").toggle(isElectron);
+        this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
 
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));

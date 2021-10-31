@@ -172,6 +172,12 @@ export default class Entrypoints extends Component {
         utils.reloadFrontendApp("Switching to desktop version");
     }
 
+    async switchToMobileVersionCommand() {
+        utils.setCookie('trilium-device', 'mobile');
+
+        utils.reloadFrontendApp("Switching to mobile version");
+    }
+
     async openInWindowCommand({notePath, hoistedNoteId}) {
         if (!hoistedNoteId) {
             hoistedNoteId = 'root';
