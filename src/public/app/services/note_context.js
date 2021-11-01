@@ -21,6 +21,10 @@ class NoteContext extends Component {
     }
 
     setEmpty() {
+        this.notePath = null;
+        this.noteId = null;
+        this.parentNoteId = null;
+
         this.triggerEvent('noteSwitched', {
             noteContext: this,
             notePath: this.notePath

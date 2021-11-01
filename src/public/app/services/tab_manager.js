@@ -305,6 +305,7 @@ export default class TabManager extends Component {
             const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
 
             if (mainNoteContexts.length === 1) {
+                mainNoteContexts[0].setEmpty();
                 return;
             }
         }
