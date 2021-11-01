@@ -31,8 +31,13 @@ function getNeighbors(note, depth) {
 
     const retNoteIds = [];
 
+    function isIgnoredRelation(relation) {
+        return ['relationMapLink', 'template', 'image'].includes(relation.name);
+    }
+
+    // forward links
     for (const relation of note.getRelations()) {
-        if (['relationMapLink', 'template', 'image'].includes(relation.name)) {
+        if (isIgnoredRelation(relation)) {
             continue;
         }
 
@@ -40,6 +45,20 @@ function getNeighbors(note, depth) {
         retNoteIds.push(targetNote.noteId);
 
         for (const noteId of getNeighbors(targetNote, depth - 1)) {
+            retNoteIds.push(noteId);
+        }
+    }
+
+    // backward links
+    for (const relation of note.getTargetRelations()) {
+        if (isIgnoredRelation(relation)) {
+            continue;
+        }
+
+        const sourceNote = relation.getNote();
+        retNoteIds.push(sourceNote.noteId);
+
+        for (const noteId of getNeighbors(sourceNote, depth - 1)) {
             retNoteIds.push(noteId);
         }
     }
@@ -125,6 +144,7 @@ function getTreeMap(req) {
 
             return !note.getParentNotes().find(parentNote => parentNote.noteId === imageLinkRelation.noteId);
         })
+        .concat(...mapRootNote.getParentNotes())
         .map(note => [
             note.noteId,
             note.isContentAvailable() ? note.title : '[protected]',
