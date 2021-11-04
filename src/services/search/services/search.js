@@ -159,16 +159,6 @@ function findResultsWithQuery(query, searchContext) {
     return findResultsWithExpression(expression, searchContext);
 }
 
-function searchTrimmedNotes(query, searchContext) {
-    const allSearchResults = findResultsWithQuery(query, searchContext);
-    const trimmedSearchResults = allSearchResults.slice(0, 200);
-
-    return {
-        count: allSearchResults.length,
-        results: trimmedSearchResults
-    };
-}
-
 function searchNotesForAutocomplete(query) {
     const searchContext = new SearchContext({
         fastSearch: true,
@@ -176,11 +166,14 @@ function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    const {results} = searchTrimmedNotes(query, searchContext);
+    const allSearchResults = findResultsWithQuery(query, searchContext)
+        .filter(res => !res.notePathArray.includes("hidden"));
 
-    highlightSearchResults(results, searchContext.highlightedTokens);
+    const trimmed = allSearchResults.slice(0, 200);
 
-    return results.map(result => {
+    highlightSearchResults(trimmed, searchContext.highlightedTokens);
+
+    return trimmed.map(result => {
         return {
             notePath: result.notePath,
             noteTitle: beccaService.getNoteTitle(result.noteId),
@@ -260,7 +253,6 @@ function formatAttribute(attr) {
 }
 
 module.exports = {
-    searchTrimmedNotes,
     searchNotesForAutocomplete,
     findResultsWithQuery,
     searchNotes
