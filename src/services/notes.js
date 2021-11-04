@@ -270,7 +270,7 @@ async function downloadImage(noteId, imageUrl) {
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image');
-        const {note} = imageService.saveImage(noteId, imageBuffer, title, true);
+        const {note} = imageService.saveImage(noteId, imageBuffer, title, true, true);
 
         note.addLabel('imageUrl', imageUrl);
 
@@ -305,7 +305,7 @@ function downloadImages(noteId, content) {
             const imageBuffer = Buffer.from(imageBase64, 'base64');
 
             const imageService = require('../services/image');
-            const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true);
+            const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true, true);
 
             content = content.substr(0, imageMatch.index)
                 + `<img src="api/images/${note.noteId}/${note.title}"`

@@ -73,11 +73,15 @@ function updateImage(noteId, uploadBuffer, originalName) {
     });
 }
 
-function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
+function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
     log.info(`Saving image ${originalName}`);
 
-    const fileName = sanitizeFilename(originalName);
+    if (trimFilename && originalName.length > 40) {
+        // https://github.com/zadam/trilium/issues/2307
+        originalName = "image";
+    }
 
+    const fileName = sanitizeFilename(originalName);
     const parentNote = becca.getNote(parentNoteId);
 
     const {note} = noteService.createNewNote({
@@ -95,6 +99,14 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             note.mime = getImageMimeFromExtension(imageFormat.ext);
+
+            if (!originalName.includes(".")) {
+                originalName += "." + imageFormat.ext;
+
+                note.setLabel('originalFileName', originalName);
+                note.title = sanitizeFilename(originalName);
+            }
+
             note.save();
 
             note.setContent(buffer);

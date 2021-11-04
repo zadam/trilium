@@ -38,7 +38,7 @@ function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true);
+    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true, true);
 
     return {
         uploaded: true,
