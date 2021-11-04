@@ -30,6 +30,10 @@ function pad(num) {
     return num <= 9 ? `0${num}` : `${num}`;
 }
 
+function utcDateStr(date) {
+    return date.toISOString().split('T')[0];
+}
+
 function utcDateTimeStr(date) {
     return date.toISOString().replace('T', ' ');
 }
@@ -68,6 +72,7 @@ module.exports = {
     utcNowDateTime,
     localNowDateTime,
     localNowDate,
+    utcDateStr,
     utcDateTimeStr,
     parseDate,
     parseDateTime,
