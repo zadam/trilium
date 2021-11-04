@@ -466,7 +466,7 @@ function saveNoteRevision(note) {
     const now = new Date();
     const noteRevisionSnapshotTimeInterval = parseInt(optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
-    const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
+    const revisionCutoff = dateUtils.utcDateTimeStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = sql.getValue(
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
@@ -730,15 +730,15 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
 
     const cutoffDate = new Date(Date.now() - eraseEntitiesAfterTimeInSeconds * 1000);
 
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
     eraseNotes(noteIdsToErase);
 
-    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
     eraseBranches(branchIdsToErase);
 
-    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
     eraseAttributes(attributeIdsToErase);
 }

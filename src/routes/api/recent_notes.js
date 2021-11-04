@@ -12,7 +12,7 @@ function addRecentNote(req) {
 
     if (Math.random() < 0.05) {
         // it's not necessary to run this everytime ...
-        const cutOffDate = dateUtils.utcDateStr(new Date(Date.now() - 24 * 3600 * 1000));
+        const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - 24 * 3600 * 1000));
 
         sql.execute(`DELETE FROM recent_notes WHERE utcDateCreated < ?`, [cutOffDate]);
     }
