@@ -64,7 +64,7 @@ ws.subscribeToMessages(async message => {
         toastService.showPersistent(toast);
 
         if (message.result.importedNoteId) {
-            await appContext.tabManager.getActiveTabContext().setNote(message.result.importedNoteId);
+            await appContext.tabManager.getActiveContext().setNote(message.result.importedNoteId);
         }
     }
 });

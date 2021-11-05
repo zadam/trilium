@@ -1,3 +1,13 @@
+@font-face {
+    font-family: MontserratLight;
+    src: url(../fonts/Montserrat-Light.ttf);
+}
+
+@font-face {
+    font-family: JetBrainsLight;
+    src: url(../fonts/JetBrainsMono-Light.woff2) format('woff');
+}
+
 html {
     /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
     height: 100%;
@@ -8,14 +18,47 @@ body {
        on the last line of the editor. */
     position: fixed;
     width: 100%;
+    background-color: var(--main-background-color);
+    color: var(--main-text-color);
+    font-family: var(--main-font-family);
 }
 
-button.btn, button.btn-sm {
-    font-size: inherit;
+a, a:visited, a:hover {
+    color: var(--link-color);
 }
 
-.btn-micro {
-    padding: 0 10px 0 10px;
+input, select, textarea {
+    color: var(--input-text-color) !important;
+    background: var(--input-background-color) !important;
+}
+
+#left-pane input, select, textarea {
+    color: var(--left-pane-text-color) !important;
+    background: var(--left-pane-background-color) !important;
+}
+
+input::placeholder {
+    color: var(--muted-text-color);
+}
+
+table td, table th {
+    color: var(--main-text-color);
+}
+
+.ck .todo-list__checkmark {
+    top: 10px !important;
+}
+
+.modal-backdrop {
+    background-color: var(--modal-backdrop-color) !important;
+}
+
+.component {
+    contain: size;
+}
+
+code, kbd, pre, samp {
+    font-family: var(--monospace-font-family);
 }
 
 .input-group-text {
@@ -40,95 +83,12 @@ button.close:hover {
     color: var(--main-text-color) !important;
 }
 
-ul.fancytree-container {
-    /* override specific size from fancytree.css */
-    font-family: inherit !important;
-    font-size: inherit !important;
-}
-
-.fancytree-title {
-    margin-left: 7px !important;
-}
-
-.fancytree-node:not(.fancytree-loading) .fancytree-expander {
-    background: none;
-    width: 21px;
-    height: auto;
-    text-align: center;
-}
-
-.fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
-    font-family: 'boxicons' !important;
-    speak: none;
-    font-size: x-large;
-    text-transform: none;
-    line-height: 1;
-    content: "\e9b2";
-    position: relative;
-    top: -2px;
-    margin-right: 5px;
-}
-
-/* this is done to preserve correct indentation. Better solution would be preferable */
-.fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
-    color: var(--main-background-color); /* setting to background color makes this invisible */
-}
-
-.fancytree-node.fancytree-expanded .fancytree-expander:before {
-    font-family: 'boxicons' !important;
-    content: "\e9ac";
-}
-
-/** some common text styling for cssClass label */
-span.fancytree-node.underline .fancytree-title { text-decoration: underline; }
-span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
-span.fancytree-node.bold .fancytree-title { font-weight: bold; }
-span.fancytree-node.muted { opacity: 0.6; }
-
-/** following will hide ancestors of hoisted (filtered) note */
-.fancytree-submatch:not(.fancytree-match) {
-    display: none !important;
-}
-
-/** resets indent of hoisted note */
-.fancytree-submatch:not(.fancytree-match) + ul {
-    padding: 0 !important;
-}
-
 .note-title[readonly] {
     background: inherit;
 }
 
 .tdialog {
     display: none;
-}
-
-.note-tab-content-template {
-    display: none !important;
-}
-
-.note-tab-content {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    width: 100%;
-}
-
-/** we disable shield background when in zen mode because I couldn't get it to stay static
-    (it kept growing with content) */
-#root-widget:not(.zen-mode) .note-tab-content.protected {
-    /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
-    background: url('../images/shield.svg') no-repeat;
-    background-size: contain;
-    background-position: center;
-}
-
-.zen-mode #center-pane {
-    width: 100% !important;
-    /* limit max width to improve readability */
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .ui-autocomplete {
@@ -138,18 +98,21 @@ span.fancytree-node.muted { opacity: 0.6; }
     overflow-x: hidden;
 }
 
-.icon-action:hover:not(.disabled) {
-    text-decoration: none;
-    border-color: var(--button-border-color);
-}
-
 .icon-action {
     border: 1px solid transparent;
     border-radius: 3px;
     padding: 5px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
     font-size: 1.5em;
-    color: var(--main-text-color);
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+}
+
+.icon-action:hover:not(.disabled) {
+    text-decoration: none;
+    border-color: var(--button-border-color);
 }
 
 .icon-action.disabled {
@@ -234,16 +197,15 @@ div.ui-tooltip {
     visibility: hidden;
 }
 
-.dropdown-menu kbd
-{
+.dropdown-menu kbd {
+    float: right;
     color: var(--muted-text-color);
     border: none;
     background-color: transparent;
     box-shadow: none;
-}
-
-.dropdown-menu kbd {
-    float: right;
+    /* 0 padding needed otherwise this increases the size of dropdown after dynamic positioning (which is then screwed) */
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .dropdown-item {
@@ -264,8 +226,8 @@ div.ui-tooltip {
     background: inherit;
 }
 
-.CodeMirror * {
-    font-family: var(--font-family-monospace) !important;
+body .CodeMirror {
+    font-size: var(--monospace-font-size);
 }
 
 .CodeMirror-gutters {
@@ -294,6 +256,15 @@ div.ui-tooltip {
 
 .btn {
     border-radius: var(--button-border-radius);
+    border-color: var(--button-border-color);
+}
+
+button.btn, button.btn-sm {
+    font-size: inherit;
+}
+
+.btn-micro {
+    padding: 0 10px 0 10px;
 }
 
 .btn.btn-primary {
@@ -313,20 +284,18 @@ div.ui-tooltip {
 }
 
 .btn:not(.btn-primary) {
-    border-color: var(--button-border-color);
     background-color: var(--button-background-color);
     color: var(--button-text-color);
+}
+
+#left-pane .btn:not(.btn-primary) {
+    background-color: var(--button-background-color);
+    color: var(--left-pane-text-color);
 }
 
 .btn.active:not(.btn-primary) {
     background-color: var(--button-disabled-background-color) !important;
     opacity: 0.4;
-}
-
-button.icon-button {
-    font-size: 1.5em;
-    padding: 2px;
-    max-height: 34px;
 }
 
 .ck.ck-block-toolbar-button {
@@ -341,6 +310,7 @@ button.icon-button {
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
     white-space: pre-wrap;
+    font-size: 100%;
 }
 
 .pointer {
@@ -593,29 +563,6 @@ div[data-notify="container"] {
     background-color: var(--accented-background-color);
 }
 
-.fancytree-loading span.fancytree-expander {
-    background-image: none !important;
-    display: inline-block;
-}
-
-.fancytree-loading span.fancytree-expander:after {
-    content: " ";
-    color: inherit !important;
-    display: block;
-    border-radius: 50%;
-    border-color: #000 transparent #000 transparent;
-    animation: lds-dual-ring 1.2s linear infinite;
-}
-
-@keyframes lds-dual-ring {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
 .ck-content .image > figcaption {
     color: var(--main-text-color) !important;
     background-color: var(--accented-background-color) !important;
@@ -661,7 +608,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .modal-header {
-    padding: 0.7rem 1rem !important; /* make modal header padding slightly smaller */
+    padding: 0.7rem 1rem 0 1rem !important; /* make modal header padding slightly smaller */
 }
 
 .floating-button {
@@ -674,10 +621,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     width: 100%;
     top: 20px;
     pointer-events: none;
-}
-
-.component {
-    contain: size;
 }
 
 .toast {
@@ -748,11 +691,11 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     overflow: auto;
 }
 
-.include-note.box-size-medium .include-note-content.type-pdf {
+.include-note.box-size-medium .include-note-content.type-pdf .rendered-note-content {
     height: 20em; /* PDF is rendered in iframe and must be sized absolutely */
 }
 
-.include-note.box-size-full .include-note-content.type-pdf {
+.include-note.box-size-full .include-note-content.type-pdf .rendered-note-content {
     height: 50em; /* PDF is rendered in iframe and it's not possible to put full height so at least a large height */
 }
 
@@ -773,10 +716,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 
 body {
     font-size: var(--main-font-size);
-}
-
-.hidden-by-zen-mode {
-    display: none !important;
 }
 
 .gutter {
@@ -835,21 +774,6 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     transform: rotate(-90deg);
 }
 
-.fancytree-loading span.fancytree-expander {
-    width: 16px;
-    height: 16px;
-    margin-left: 4px;
-}
-
-.fancytree-loading span.fancytree-expander:after {
-    width: 12px;
-    height: 12px;
-    margin-top: 4px;
-    margin-left: 1px;
-    border-width: 1px;
-    border-style: solid;
-}
-
 body {
     /* FF basic styling */
     scrollbar-color: var(--active-item-background-color) var(--main-background-color);
@@ -862,13 +786,14 @@ body {
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
     border: 1px solid var(--scrollbar-border-color);
+    background-color: var(--main-background-color);
 }
 
 ::-webkit-scrollbar-corner {
     background-color: inherit;
 }
 
-[data-toggle="tooltip"] span {
+[data-toggle="tooltip"]:not(.button-widget) span {
     padding-bottom: 0;
     border-bottom: 1px dotted;
 }
@@ -884,10 +809,6 @@ body {
 .ck.ck-mentions > .ck-list__item .ck-button {
     /* wrap text for very long note path title */
     white-space: normal !important;
-}
-
-ul.fancytree-container li {
-    contain: layout paint;
 }
 
 /**
@@ -947,4 +868,91 @@ ul.fancytree-container li {
     background-color: var(--accented-background-color);
     padding: 10px;
     margin: 10px;
+}
+
+#launcher-pane .icon-action {
+    font-size: 150%;
+    display: inline-block;
+    padding: 15px 15px;
+    cursor: pointer;
+    border: none;
+    color: var(--launcher-pane-text-color);
+    width: 53px;
+    height: 53px;
+}
+
+#launcher-pane .icon-action:hover {
+    background-color: var(--hover-item-background-color);
+}
+
+#left-pane {
+    color: var(--left-pane-text-color);
+    background-color: var(--left-pane-background-color);
+}
+
+#launcher-pane {
+    color: var(--launcher-pane-text-color);
+    background-color: var(--launcher-pane-background-color);
+}
+
+input {
+    background-color: transparent !important;
+}
+
+
+#right-pane {
+    overflow: auto;
+}
+
+#right-pane .card {
+    border: 0;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+}
+
+#right-pane .card-header {
+    background: inherit;
+    padding: 6px 10px 3px 0;
+    width: 99%; /* to give minimal right margin */
+    background-color: var(--button-background-color);
+    border-color: var(--button-border-color);
+    border-width: 0 0 1px 0;
+    border-radius: 4px;
+    border-style: solid;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--muted-text-color) !important;
+}
+
+#right-pane .body-wrapper {
+    overflow: auto;
+}
+
+#right-pane .card-body {
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    height: 100%;
+    overflow: auto;
+    max-height: 300px;
+}
+
+#right-pane .card-body ul {
+    padding-left: 25px;
+    margin-bottom: 5px;
+}
+
+.text-with-ellipsis {
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.note-split {
+    flex-basis: 0; /* so that each split has same width */
+    margin-left: auto;
+    margin-right: auto;
 }

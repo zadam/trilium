@@ -1,4 +1,4 @@
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import treeService from "../../services/tree.js";
 import libraryLoader from "../../services/library_loader.js";
@@ -7,24 +7,31 @@ const TPL = `
 <div class="note-detail-readonly-text note-detail-printable">
     <style>
     /* h1 should not be used at all since semantically that's a note title */
-    .note-detail-readonly-text h1 { font-size: 2.0em; }
-    .note-detail-readonly-text h2 { font-size: 1.8em; }
-    .note-detail-readonly-text h3 { font-size: 1.6em; }
-    .note-detail-readonly-text h4 { font-size: 1.4em; }
-    .note-detail-readonly-text h5 { font-size: 1.2em; }
-    .note-detail-readonly-text h6 { font-size: 1.1em; }
+    .note-detail-readonly-text h1 { font-size: 1.8em; }
+    .note-detail-readonly-text h2 { font-size: 1.6em; }
+    .note-detail-readonly-text h3 { font-size: 1.4em; }
+    .note-detail-readonly-text h4 { font-size: 1.2em; }
+    .note-detail-readonly-text h5 { font-size: 1.1em; }
+    .note-detail-readonly-text h6 { font-size: 1.0em; }
     
+    body.heading-style-markdown .note-detail-readonly-text h1::before { content: "#\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-readonly-text h2::before { content: "##\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-readonly-text h3::before { content: "###\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-readonly-text h4:not(.include-note-title)::before { content: "####\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-readonly-text h5::before { content: "#####\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-readonly-text h6::before { content: "######\\2004"; color: var(--muted-text-color); }
+
+    body.heading-style-underline .note-detail-readonly-text h1 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-readonly-text h2 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-readonly-text h3 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-readonly-text h4:not(.include-note-title) { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-readonly-text h5 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-readonly-text h6 { border-bottom: 1px solid var(--main-border-color); }
     
     .note-detail-readonly-text {
-        padding-left: 22px;
+        padding-left: 24px;
         padding-top: 10px;
-        font-family: var(--detail-text-font-family);
-        position: relative;
+        font-family: var(--detail-font-family);
         min-height: 50px;
     }
         
@@ -41,13 +48,17 @@ const TPL = `
         position: absolute; 
         top: 5px;
         right: 10px;
-        font-size: 130%;
+        font-size: 150%;
+        padding: 5px;
         cursor: pointer;
+        border: 1px solid transparent;
+        border-radius: 5px;
+    }
+    
+    .edit-text-note-button:hover {
+        border-color: var(--main-border-color);
     }
     </style>
-
-    <div class="alert alert-warning no-print edit-text-note-button bx bx-edit-alt"
-         title="Edit this note"></div>
 
     <div class="note-detail-readonly-text-content ck-content"></div>
 </div>
@@ -58,15 +69,8 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
 
         this.$content = this.$widget.find('.note-detail-readonly-text-content');
-
-        this.$widget.find('.edit-text-note-button').on('click', () => {
-            this.tabContext.textPreviewDisabled = true;
-
-            this.triggerEvent('textPreviewDisabled', {tabContext: this.tabContext});
-        });
 
         this.setupImageOpening(true);
 
@@ -83,7 +87,7 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         // (see https://github.com/zadam/trilium/issues/1590 for example of such conflict)
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
         this.$content.html(noteComplement.content);
 

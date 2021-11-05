@@ -1,12 +1,12 @@
 "use strict";
 
 const imageService = require('../../services/image');
-const repository = require('../../services/repository');
+const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 function returnImage(req, res) {
-    const image = repository.getNote(req.params.noteId);
+    const image = becca.getNote(req.params.noteId);
 
     if (!image) {
         return res.sendStatus(404);
@@ -28,17 +28,17 @@ function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
     }
 
-    if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
+    if (!["image/png", "image/jpg", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true);
+    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true, true);
 
     return {
         uploaded: true,
@@ -50,7 +50,7 @@ function updateImage(req) {
     const {noteId} = req.params;
     const {file} = req;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];

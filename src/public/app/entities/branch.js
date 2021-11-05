@@ -1,43 +1,41 @@
 /** Represents mapping between note and parent note */
 class Branch {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
 
         this.update(row);
     }
 
     update(row) {
-        /** @param {string} primary key */
+        /** @type {string} primary key */
         this.branchId = row.branchId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.parentNoteId = row.parentNoteId;
-        /** @param {int} */
+        /** @type {int} */
         this.notePosition = row.notePosition;
-        /** @param {string} */
+        /** @type {string} */
         this.prefix = row.prefix;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isExpanded = !!row.isExpanded;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.fromSearchNote = !!row.fromSearchNote;
-        /** @param {boolean} */
-        this.isDeleted = !!row.isDeleted;
     }
 
     /** @returns {NoteShort} */
     async getNote() {
-        return this.treeCache.getNote(this.noteId);
+        return this.froca.getNote(this.noteId);
     }
 
     /** @returns {NoteShort} */
     getNoteFromCache() {
-        return this.treeCache.getNoteFromCache(this.noteId);
+        return this.froca.getNoteFromCache(this.noteId);
     }
 
     /** @returns {NoteShort} */
     async getParentNote() {
-        return this.treeCache.getNote(this.parentNoteId);
+        return this.froca.getNote(this.parentNoteId);
     }
 
     /** @returns {boolean} true if it's top level, meaning its parent is root note */

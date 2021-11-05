@@ -3,22 +3,23 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const log = require('./log');
-const ws = require('./ws.js');
+const ws = require('./ws');
 const syncMutexService = require('./sync_mutex');
-const repository = require('./repository');
 const cls = require('./cls');
-const entityChangesService = require('./entity_changes.js');
+const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
-const Branch = require('../entities/branch');
-const dateUtils = require('./date_utils');
+const Branch = require('../becca/entities/branch');
 const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
+const becca = require("../becca/becca");
+const utils = require("../services/utils");
 
 class ConsistencyChecks {
     constructor(autoFix) {
         this.autoFix = autoFix;
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
+        this.reloadNeeded = false;
     }
 
     findAndFixIssues(query, fixerCb) {
@@ -101,9 +102,10 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, noteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
-                    branch.isDeleted = true;
-                    branch.save();
+                    const branch = becca.getBranch(branchId);
+                    branch.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Branch ${branchId} has been deleted since it references missing note ${noteId}`);
                 } else {
@@ -120,9 +122,11 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
+                    const branch = becca.getBranch(branchId);
                     branch.parentNoteId = 'root';
                     branch.save();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Branch ${branchId} was set to root parent since it was referencing missing parent note ${parentNoteId}`);
                 } else {
@@ -138,9 +142,10 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    const attribute = becca.getAttribute(attributeId);
+                    attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Attribute ${attributeId} has been deleted since it references missing source note ${noteId}`);
                 } else {
@@ -157,9 +162,10 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    const attribute = becca.getAttribute(attributeId);
+                    attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Relation ${attributeId} has been deleted since it references missing note ${noteId}`)
                 } else {
@@ -183,9 +189,10 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({branchId, noteId}) => {
                 if (this.autoFix) {
-                    const branch = repository.getBranch(branchId);
-                    branch.isDeleted = true;
-                    branch.save();
+                    const branch = becca.getBranch(branchId);
+                    branch.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
                 } else {
@@ -202,9 +209,10 @@ class ConsistencyChecks {
               AND branches.isDeleted = 0
         `, ({branchId, parentNoteId}) => {
             if (this.autoFix) {
-                const branch = repository.getBranch(branchId);
-                branch.isDeleted = true;
-                branch.save();
+                const branch = becca.getBranch(branchId);
+                branch.markAsDeleted();
+
+                this.reloadNeeded = true;
 
                 logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
             } else {
@@ -226,6 +234,8 @@ class ConsistencyChecks {
                     prefix: 'recovered'
                 }).save();
 
+                this.reloadNeeded = true;
+
                 logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
             } else {
                 logError(`No undeleted branch found for note ${noteId}`);
@@ -243,23 +253,26 @@ class ConsistencyChecks {
                     HAVING COUNT(1) > 1`,
             ({noteId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branches = repository.getEntities(
-                            `SELECT *
+                    const branchIds = sql.getColumn(
+                            `SELECT branchId
                              FROM branches
                              WHERE noteId = ?
                                and parentNoteId = ?
                                and isDeleted = 0`, [noteId, parentNoteId]);
+
+                    const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     // it's not necessarily "original" branch, it's just the only one which will survive
                     const origBranch = branches[0];
 
                     // delete all but the first branch
                     for (const branch of branches.slice(1)) {
-                        branch.isDeleted = true;
-                        branch.save();
+                        branch.markAsDeleted();
 
                         logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
                     }
+
+                    this.reloadNeeded = true;
                 } else {
                     logError(`Duplicate branches for note ${noteId} and parent ${parentNoteId}`);
                 }
@@ -271,12 +284,14 @@ class ConsistencyChecks {
                     SELECT noteId, type
                     FROM notes
                     WHERE isDeleted = 0
-                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book')`,
+                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book', 'note-map', 'mermaid')`,
             ({noteId, type}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
+                    const note = becca.getNote(noteId);
                     note.type = 'file'; // file is a safe option to recover notes if type is not known
                     note.save();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Note ${noteId} type has been change to file since it had invalid type=${type}`)
                 } else {
@@ -285,28 +300,37 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT notes.noteId
+                    SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
                     FROM notes
                       LEFT JOIN note_contents USING (noteId)
                     WHERE note_contents.noteId IS NULL`,
-            ({noteId}) => {
+            ({noteId, isProtected, type, mime}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
+                    // it might be possible that the note_content is not available only because of the interrupted
+                    // sync and it will come later. It's therefore important to guarantee that this artifical
+                    // record won't overwrite the real one coming from the sync.
+                    const fakeDate = "2000-01-01 00:00:00Z";
 
-                    if (note.isProtected) {
-                        // this is wrong for non-erased notes but we cannot set a valid value for protected notes
-                        sql.upsert("note_contents", "noteId", {
-                            noteId: noteId,
-                            content: null,
-                            utcDateModified: dateUtils.utcNowDateTime()
-                        });
+                    // manually creating row since this can also affect deleted notes
+                    sql.upsert("note_contents", "noteId", {
+                        noteId: noteId,
+                        content: getBlankContent(isProtected, type, mime),
+                        utcDateModified: fakeDate,
+                        dateModified: fakeDate
+                    });
 
-                        entityChangesService.addEntityChange('note_contents', noteId, "consistency_checks");
-                    }
-                    else {
-                        // empty string might be wrong choice for some note types but it's a best guess
-                        note.setContent('');
-                    }
+                    const hash = utils.hash(utils.randomString(10));
+
+                    entityChangesService.addEntityChange({
+                        entityName: 'note_contents',
+                        entityId: noteId,
+                        hash: hash,
+                        isErased: false,
+                        utcDateChanged: fakeDate,
+                        isSynced: true
+                    });
+
+                    this.reloadNeeded = true;
 
                     logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
                 } else {
@@ -315,19 +339,21 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteId
+                    SELECT notes.noteId, notes.type, notes.mime
                     FROM notes
                       JOIN note_contents USING (noteId)
                     WHERE isDeleted = 0
                       AND isProtected = 0
                       AND content IS NULL`,
-            ({noteId}) => {
+            ({noteId, type, mime}) => {
                 if (this.autoFix) {
-                    const note = repository.getNote(noteId);
-                    // empty string might be wrong choice for some note types but it's a best guess
-                    note.setContent('');
+                    const note = becca.getNote(noteId);
+                    const blankContent = getBlankContent(false, type, mime);
+                    note.setContent(blankContent);
 
-                    logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
+                    this.reloadNeeded = true;
+
+                    logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
                 } else {
                     logError(`Note ${noteId} content is null even though it is not deleted`);
                 }
@@ -342,6 +368,8 @@ class ConsistencyChecks {
             ({noteRevisionId}) => {
                 if (this.autoFix) {
                     noteRevisionService.eraseNoteRevisions([noteRevisionId]);
+
+                    this.reloadNeeded = true;
 
                     logFix(`Note revision content ${noteRevisionId} was created and set to erased since it did not exist.`);
                 } else {
@@ -358,10 +386,13 @@ class ConsistencyChecks {
                       AND branches.isDeleted = 0`,
             ({parentNoteId}) => {
                 if (this.autoFix) {
-                    const branches = repository.getEntities(`SELECT *
-                                                                   FROM branches
-                                                                   WHERE isDeleted = 0
-                                                                     AND parentNoteId = ?`, [parentNoteId]);
+                    const branchIds = sql.getColumn(`
+                        SELECT branchId
+                        FROM branches
+                        WHERE isDeleted = 0
+                          AND parentNoteId = ?`, [parentNoteId]);
+
+                    const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     for (const branch of branches) {
                         branch.parentNoteId = 'root';
@@ -369,6 +400,8 @@ class ConsistencyChecks {
 
                         logFix(`Child branch ${branch.branchId} has been moved to root since it was a child of a search note ${parentNoteId}`)
                     }
+
+                    this.reloadNeeded = true;
                 } else {
                     logError(`Search note ${parentNoteId} has children`);
                 }
@@ -382,9 +415,10 @@ class ConsistencyChecks {
                       AND value = ''`,
             ({attributeId}) => {
                 if (this.autoFix) {
-                    const relation = repository.getAttribute(attributeId);
-                    relation.isDeleted = true;
-                    relation.save();
+                    const relation = becca.getAttribute(attributeId);
+                    relation.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
                 } else {
@@ -401,9 +435,11 @@ class ConsistencyChecks {
                       AND type != 'relation'`,
             ({attributeId, type}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
+                    const attribute = becca.getAttribute(attributeId);
                     attribute.type = 'label';
                     attribute.save();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Attribute ${attributeId} type was changed to label since it had invalid type '${type}'`);
                 } else {
@@ -415,14 +451,15 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.noteId
                     FROM attributes
-                      JOIN notes ON attributes.noteId = notes.noteId
+                    JOIN notes ON attributes.noteId = notes.noteId
                     WHERE attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
             ({attributeId, noteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    const attribute = becca.getAttribute(attributeId);
+                    attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
                 } else {
@@ -434,15 +471,16 @@ class ConsistencyChecks {
                     SELECT attributeId,
                            attributes.value AS targetNoteId
                     FROM attributes
-                      JOIN notes ON attributes.value = notes.noteId
+                    JOIN notes ON attributes.value = notes.noteId
                     WHERE attributes.type = 'relation'
                       AND attributes.isDeleted = 0
                       AND notes.isDeleted = 1`,
             ({attributeId, targetNoteId}) => {
                 if (this.autoFix) {
-                    const attribute = repository.getAttribute(attributeId);
-                    attribute.isDeleted = true;
-                    attribute.save();
+                    const attribute = becca.getAttribute(attributeId);
+                    attribute.markAsDeleted();
+
+                    this.reloadNeeded = true;
 
                     logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
                 } else {
@@ -453,25 +491,26 @@ class ConsistencyChecks {
 
     runEntityChangeChecks(entityName, key) {
         this.findAndFixIssues(`
-        SELECT 
-          ${key} as entityId
-        FROM 
-          ${entityName} 
-          LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
-                                  AND entity_changes.entityId = ${key} 
-        WHERE 
-          entity_changes.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
+            SELECT
+              ${key} as entityId
+            FROM
+              ${entityName} 
+              LEFT JOIN entity_changes ON entity_changes.entityName = '${entityName}' 
+                                      AND entity_changes.entityId = ${key} 
+            WHERE 
+              entity_changes.id IS NULL`,
             ({entityId}) => {
-                if (this.autoFix) {
-                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+                const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${key} = ?`, [entityId]);
 
+                if (this.autoFix) {
                     entityChangesService.addEntityChange({
                         entityName,
                         entityId,
-                        hash: entity.generateHash(),
-                        isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged()
-                    }, null);
+                        hash: utils.randomString(10), // doesn't matter, will force sync but that's OK
+                        isErased: !!entity.isErased,
+                        utcDateChanged: entity.utcDateModified || entity.utcDateCreated,
+                        isSynced: entityName !== 'options' || entity.isSynced
+                    });
 
                     logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
                 } else {
@@ -526,6 +565,7 @@ class ConsistencyChecks {
                     sql.execute('UPDATE attributes SET name = ? WHERE name = ?', [fixedName, origName]);
 
                     this.fixedIssues = true;
+                    this.reloadNeeded = true;
 
                     logFix(`Renamed incorrectly named attributes "${origName}" to ${fixedName}`);
                 }
@@ -561,6 +601,7 @@ class ConsistencyChecks {
     runAllChecksAndFixers() {
         this.unrecoveredConsistencyErrors = false;
         this.fixedIssues = false;
+        this.reloadNeeded = false;
 
         this.findBrokenReferenceIssues();
 
@@ -581,6 +622,10 @@ class ConsistencyChecks {
             // we run this only if basic checks passed since this assumes basic data consistency
 
             this.checkTreeCycles();
+        }
+
+        if (this.reloadNeeded) {
+            require("../becca/becca_loader").reload();
         }
 
         return !this.unrecoveredConsistencyErrors;
@@ -616,9 +661,24 @@ class ConsistencyChecks {
 
             ws.sendMessageToAllClients({type: 'consistency-checks-failed'});
         } else {
-            log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);
+            log.info(`All consistency checks passed ` +
+                (this.fixedIssues ? "after some fixes" : "with no errors detected") +
+                ` (took ${elapsedTimeMs}ms)`
+            );
         }
     }
+}
+
+function getBlankContent(isProtected, type, mime) {
+    if (isProtected) {
+        return null; // this is wrong for protected non-erased notes but we cannot create a valid value without password
+    }
+
+    if (mime === 'application/json') {
+        return '{}';
+    }
+
+    return ''; // empty string might be wrong choice for some note types but it's a best guess
 }
 
 function logFix(message) {
@@ -645,7 +705,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runPeriodicChecks), 60 * 60 * 1000);
 
     // kickoff checks soon after startup (to not block the initial load)
-    setTimeout(cls.wrap(runPeriodicChecks), 20 * 1000);
+    setTimeout(cls.wrap(runPeriodicChecks), 10 * 1000);
 });
 
 module.exports = {

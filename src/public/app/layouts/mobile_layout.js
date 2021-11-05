@@ -36,6 +36,7 @@ const FANCYTREE_CSS = `
     margin-top: 55px;
     overflow-y: auto;
     contain: content;
+    padding-left: 10px;
 }
 
 .fancytree-custom-icon {
@@ -57,6 +58,7 @@ const FANCYTREE_CSS = `
 
 span.fancytree-expander {
     width: 24px !important;
+    margin-right: 5px;
 }
 
 .fancytree-loading span.fancytree-expander {
@@ -98,21 +100,24 @@ export default class MobileLayout {
             .child(new ScreenContainer("detail", "column")
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
                 .css('max-height', '100%')
-                .child(new FlexContainer('row').overflowing()
+                .child(new FlexContainer('row').overflowing().contentSized()
                     .css('font-size', 'larger')
                     .css('align-items', 'center')
-                    .css('position', 'fixed')
-                    .css('top', 0)
-                    .child(new MobileDetailMenuWidget())
-                    .child(new NoteTitleWidget())
-                    .child(new CloseDetailButtonWidget()))
+                    .child(new MobileDetailMenuWidget().contentSized())
+                    .child(new NoteTitleWidget()
+                        .contentSized()
+                        .css("position: relative;")
+                        .css("top: 5px;")
+                    )
+                    .child(new CloseDetailButtonWidget().contentSized()))
                 .child(
                     new ScrollingContainer()
+                        .filling()
+                        .overflowing()
+                        .contentSized()
                         .child(
                             new NoteDetailWidget()
                                 .css('padding', '5px 20px 10px 0')
-                                .css('margin-top', '55px')
-                                .css('contain', 'content')
                         )
                 )
             );

@@ -7,19 +7,22 @@ const config = require('../services/config');
 const optionService = require('../services/options');
 const log = require('../services/log');
 const env = require('../services/env');
-const protectedSessionService = require("../services/protected_session.js");
+const utils = require('../services/utils');
+const protectedSessionService = require("../services/protected_session");
 
 function index(req, res) {
     const options = optionService.getOptionsMap();
 
-    let view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
+    let view = (!utils.isElectron() && req.cookies['trilium-device'] === 'mobile')
+        ? 'mobile'
+        : 'desktop';
 
     const csrfToken = req.csrfToken();
     log.info(`Generated CSRF token ${csrfToken} with secret ${res.getHeader('set-cookie')}`);
 
     res.render(view, {
         csrfToken: csrfToken,
-        theme: options.theme,
+        themeCssUrl: getThemeCssUrl(options.theme),
         headingStyle: options.headingStyle,
         mainFontSize: parseInt(options.mainFontSize),
         treeFontSize: parseInt(options.treeFontSize),
@@ -32,12 +35,33 @@ function index(req, res) {
         isDev: env.isDev(),
         isMainWindow: !req.query.extra,
         extraHoistedNoteId: req.query.extraHoistedNoteId,
-        isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable()
+        isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
+        maxContentWidth: parseInt(options.maxContentWidth)
     });
 }
 
+function getThemeCssUrl(theme) {
+    if (theme === 'light') {
+        return false; // light theme is always loaded as baseline
+    }
+
+    if (theme === 'dark') {
+        return `stylesheets/theme-dark.css`;
+    }
+    else {
+        const themeNote = attributeService.getNoteWithLabel('appTheme', theme);
+
+        if (themeNote) {
+            return `api/notes/download/${themeNote.noteId}`;
+        }
+        else {
+            return false; // baseline light theme
+        }
+    }
+}
+
 function getAppCssNoteIds() {
-    return attributeService.getNoteIdsWithLabels(['appCss', 'appTheme']);
+    return attributeService.getNotesWithLabel('appCss').map(note => note.noteId);
 }
 
 module.exports = {

@@ -1,11 +1,11 @@
 "use strict";
 
-const noteCacheService = require('../../services/note_cache/note_cache_service');
-const searchService = require('../../services/search/services/search.js');
-const repository = require('../../services/repository');
+const beccaService = require('../../becca/becca_service');
+const searchService = require('../../services/search/services/search');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const cls = require('../../services/cls');
+const becca = require("../../becca/becca");
 
 function getAutocomplete(req) {
     const query = req.query.query.trim();
@@ -41,7 +41,7 @@ function getRecentNotes(activeNoteId) {
         params.push('%' + hoistedNoteId + '%');
     }
 
-    const recentNotes = repository.getEntities(`
+    const recentNotes = becca.getRecentNotesFromQuery(`
       SELECT 
         recent_notes.* 
       FROM 
@@ -58,8 +58,8 @@ function getRecentNotes(activeNoteId) {
     return recentNotes.map(rn => {
         const notePathArray = rn.notePath.split('/');
 
-        const noteTitle = noteCacheService.getNoteTitle(notePathArray[notePathArray.length - 1]);
-        const notePathTitle = noteCacheService.getNoteTitleForPath(notePathArray);
+        const noteTitle = beccaService.getNoteTitle(notePathArray[notePathArray.length - 1]);
+        const notePathTitle = beccaService.getNoteTitleForPath(notePathArray);
 
         return {
             notePath: rn.notePath,

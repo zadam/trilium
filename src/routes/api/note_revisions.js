@@ -1,15 +1,15 @@
 "use strict";
 
-const repository = require('../../services/repository');
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const beccaService = require('../../becca/becca_service');
 const protectedSessionService = require('../../services/protected_session');
 const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const path = require('path');
+const becca = require("../../becca/becca");
 
 function getNoteRevisions(req) {
-    return repository.getEntities(`
+    return becca.getNoteRevisionsFromQuery(`
         SELECT note_revisions.*,
                LENGTH(note_revision_contents.content) AS contentLength
         FROM note_revisions
@@ -19,11 +19,11 @@ function getNoteRevisions(req) {
 }
 
 function getNoteRevision(req) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.type === 'file') {
         if (noteRevision.isStringNote()) {
-            noteRevision.content = (noteRevision.getContent()).substr(0, 10000);
+            noteRevision.content = noteRevision.getContent().substr(0, 10000);
         }
     }
     else {
@@ -62,7 +62,7 @@ function getRevisionFilename(noteRevision) {
 }
 
 function downloadNoteRevision(req, res) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.noteId !== req.params.noteId) {
         return res.status(400).send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
@@ -92,7 +92,7 @@ function eraseNoteRevision(req) {
 }
 
 function restoreNoteRevision(req) {
-    const noteRevision = repository.getNoteRevision(req.params.noteRevisionId);
+    const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision) {
         const note = noteRevision.getNote();
@@ -106,7 +106,7 @@ function restoreNoteRevision(req) {
 }
 
 function getEditedNotesOnDate(req) {
-    const notes = repository.getEntities(`
+    const noteIds = sql.getColumn(`
         SELECT notes.*
         FROM notes
         WHERE noteId IN (
@@ -120,8 +120,11 @@ function getEditedNotesOnDate(req) {
         ORDER BY isDeleted
         LIMIT 50`, {date: req.params.date + '%'});
 
+    const notes = becca.getNotes(noteIds, true)
+        .map(note => note.getPojo());
+
     for (const note of notes) {
-        const notePath = note.isDeleted ? null : noteCacheService.getNotePath(note.noteId);
+        const notePath = note.isDeleted ? null : beccaService.getNotePath(note.noteId);
 
         note.notePath = notePath ? notePath.notePath : null;
     }

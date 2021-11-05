@@ -3,10 +3,12 @@ import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import utils from "../../services/utils.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
+import link from "../../services/link.js";
+import appContext from "../../services/app_context.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -31,8 +33,8 @@ const TPL = `
 <div class="note-detail-editable-text note-detail-printable">
     <style>
     .note-detail-editable-text {
-        font-family: var(--detail-text-font-family);
-        padding-left: 12px;
+        font-family: var(--detail-font-family);
+        padding-left: 14px;
         padding-top: 10px;
     }
     
@@ -48,17 +50,23 @@ const TPL = `
         margin-top: 0 !important;
     }
          
-    .note-detail-editable-text h2 { font-size: 1.8em; } 
-    .note-detail-editable-text h3 { font-size: 1.6em; }
-    .note-detail-editable-text h4 { font-size: 1.4em; }
-    .note-detail-editable-text h5 { font-size: 1.2em; }
-    .note-detail-editable-text h6 { font-size: 1.1em; }
+    .note-detail-editable-text h2 { font-size: 1.6em; } 
+    .note-detail-editable-text h3 { font-size: 1.4em; }
+    .note-detail-editable-text h4 { font-size: 1.2em; }
+    .note-detail-editable-text h5 { font-size: 1.1em; }
+    .note-detail-editable-text h6 { font-size: 1.0em; }
     
     body.heading-style-markdown .note-detail-editable-text h2::before { content: "##\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-editable-text h3::before { content: "###\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-editable-text h4:not(.include-note-title)::before { content: "####\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-editable-text h5::before { content: "#####\\2004"; color: var(--muted-text-color); }
     body.heading-style-markdown .note-detail-editable-text h6::before { content: "######\\2004"; color: var(--muted-text-color); }
+    
+    body.heading-style-underline .note-detail-editable-text h2 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-editable-text h3 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-editable-text h4:not(.include-note-title) { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-editable-text h5 { border-bottom: 1px solid var(--main-border-color); }
+    body.heading-style-underline .note-detail-editable-text h6 { border-bottom: 1px solid var(--main-border-color); }
     
     .note-detail-editable-text-editor {
         padding-top: 10px;
@@ -77,7 +85,6 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$editor = this.$widget.find('.note-detail-editable-text-editor');
 
         this.initialized = this.initEditor();
@@ -129,7 +136,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async doRefresh(note) {
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             this.textEditor.setData(noteComplement.content || "");
@@ -249,6 +256,21 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         return text;
     }
 
+    async followLinkUnderCursorCommand() {
+        await this.initialized;
+
+        const selection = this.textEditor.model.document.selection;
+        if (!selection.hasAttribute('linkHref')) return;
+
+        const selectedLinkUrl = selection.getAttribute('linkHref');
+        const notePath = link.getNotePathFromUrl(selectedLinkUrl);
+        if (notePath) {
+            await appContext.tabManager.getActiveContext().setNote(notePath);
+        } else {
+            window.open(selectedLinkUrl, '_blank');
+        }
+    }
+
     addIncludeNoteToTextCommand() {
         import("../../dialogs/include_note.js").then(d => d.showDialog(this));
     }
@@ -265,7 +287,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async addImage(noteId) {
-        const note = await treeCache.getNote(noteId);
+        const note = await froca.getNote(noteId);
 
         this.textEditor.model.change( writer => {
             const src = `api/images/${note.noteId}/${note.title}`;

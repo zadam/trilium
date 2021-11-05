@@ -22,8 +22,9 @@ export default class BookTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$helpNoChildren = this.$widget.find('.note-detail-book-empty-help');
+
+        super.doRender();
     }
 
     async doRefresh(note) {

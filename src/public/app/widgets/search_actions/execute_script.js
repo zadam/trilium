@@ -24,7 +24,7 @@ const TPL = `
                 
                 More complex example would be deleting all matched note's attributes:
                 
-                <pre>for (const attr of note.getOwnedAttributes) { attr.isDeleted = true; attr.save(); }</pre>
+                <pre>for (const attr of note.getOwnedAttributes) { attr.markAsDeleted(); }</pre>
               </div>
             </div>
         

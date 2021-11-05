@@ -1,14 +1,14 @@
 import FrontendScriptApi from './frontend_script_api.js';
 import utils from './utils.js';
-import treeCache from './tree_cache.js';
+import froca from './froca.js';
 
 async function ScriptContext(startNoteId, allNoteIds, originEntity = null, $container = null) {
     const modules = {};
 
-    await treeCache.initializedPromise;
+    await froca.initializedPromise;
 
-    const startNote = await treeCache.getNote(startNoteId);
-    const allNotes = await treeCache.getNotes(allNoteIds);
+    const startNote = await froca.getNote(startNoteId);
+    const allNotes = await froca.getNotes(allNoteIds);
 
     return {
         modules: modules,

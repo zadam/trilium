@@ -6,26 +6,32 @@ const TPL = `
 <div class="title-bar-buttons">
     <style>
     .title-bar-buttons {
-        margin-top: 4px;
         flex-shrink: 0;
     }
-    
-    .title-bar-buttons button {
+
+    .title-bar-buttons div button.icon-action {
         border: none !important;
         background: none !important;
         font-size: 150%;
-        padding-left: 10px;
-        padding-right: 10px;
+        height: 40px;
+        width: 40px;
     }
     
-    .title-bar-buttons button:hover {
+    .title-bar-buttons div:hover button {
         background-color: var(--accented-background-color) !important;
+    }
+
+    .title-bar-buttons div {
+        display: inline-block;
+        height: 40px;
+        width: 40px;
     }
     </style>
 
-    <button class="btn icon-action bx bx-minus minimize-btn"></button>
-    <button class="btn icon-action bx bx-checkbox maximize-btn"></button>
-    <button class="btn icon-action bx bx-x close-btn"></button>
+    <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
+    <div class="minimize-btn"><button class="btn icon-action bx bx-minus"></button></div>
+    <div class="maximize-btn"><button class="btn icon-action bx bx-checkbox"></button></div>
+    <div class="close-btn"><button class="btn icon-action bx bx-x"></button></div>
 </div>`;
 
 export default class TitleBarButtonsWidget extends BasicWidget {

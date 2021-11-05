@@ -4,7 +4,11 @@ import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import libraryLoader from "./library_loader.js";
 import openService from "./open.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
+import utils from "./utils.js";
+import linkService from "./link.js";
+
+let idCounter = 1;
 
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
@@ -17,14 +21,38 @@ async function getRenderedContent(note, options = {}) {
     const $renderedContent = $('<div class="rendered-note-content">');
 
     if (type === 'text') {
-        const noteComplement = await treeCache.getNoteComplement(note.noteId);
+        const noteComplement = await froca.getNoteComplement(note.noteId);
 
-        $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
+        if (!utils.isHtmlEmpty(noteComplement.content)) {
+            $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
 
-        if ($renderedContent.find('span.math-tex').length > 0) {
-            await libraryLoader.requireLibrary(libraryLoader.KATEX);
+            if ($renderedContent.find('span.math-tex').length > 0) {
+                await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-            renderMathInElement($renderedContent[0], {trust: true});
+                renderMathInElement($renderedContent[0], {trust: true});
+            }
+        }
+        else {
+            $renderedContent.css("padding", "10px");
+            $renderedContent.addClass("text-with-ellipsis");
+
+            let childNoteIds = note.getChildNoteIds();
+
+            if (childNoteIds.length > 10) {
+                childNoteIds = childNoteIds.slice(0, 10);
+            }
+
+            // just load the first 10 child notes
+            const childNotes = await froca.getNotes(childNoteIds);
+
+            for (const childNote of childNotes) {
+                $renderedContent.append(await linkService.createNoteLink(`${note.noteId}/${childNote.noteId}`, {
+                    showTooltip: false,
+                    showNoteIcon: true
+                }));
+
+                $renderedContent.append("<br>");
+            }
         }
     }
     else if (type === 'code') {
@@ -82,6 +110,30 @@ async function getRenderedContent(note, options = {}) {
 
         $renderedContent.append($content);
     }
+    else if (type === 'mermaid') {
+        await libraryLoader.requireLibrary(libraryLoader.MERMAID);
+
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const content = noteComplement.content || "";
+
+        $renderedContent
+            .css("display", "flex")
+            .css("justify-content", "space-around");
+
+        const documentStyle = window.getComputedStyle(document.documentElement);
+        const mermaidTheme = documentStyle.getPropertyValue('--mermaid-theme');
+
+        mermaid.mermaidAPI.initialize({ startOnLoad: false, theme: mermaidTheme.trim(), securityLevel: 'antiscript' });
+
+        try {
+            mermaid.mermaidAPI.render("in-mermaid-graph-" + idCounter++, content,
+                    content => $renderedContent.append($(content)));
+        } catch (e) {
+            const $error = $("<p>The diagram could not displayed.</p>");
+
+            $renderedContent.append($error);
+        }
+    }
     else if (type === 'render') {
         const $content = $('<div>');
 
@@ -117,7 +169,7 @@ function trim(text, doTrim) {
         return text;
     }
     else {
-        return text.substr(0, Math.min(text.length, 1000));
+        return text.substr(0, Math.min(text.length, 2000));
     }
 }
 

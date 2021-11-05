@@ -1,7 +1,5 @@
 import openService from "../../services/open.js";
 import TypeWidget from "./type_widget.js";
-import fileWatcher from "../../services/file_watcher.js";
-import server from "../../services/server.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
@@ -42,18 +40,19 @@ export default class FileTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
         this.$previewContent = this.$widget.find(".file-preview-content");
         this.$previewNotAvailable = this.$widget.find(".file-preview-not-available");
         this.$pdfPreview = this.$widget.find(".pdf-preview");
         this.$videoPreview = this.$widget.find(".video-preview");
         this.$audioPreview = this.$widget.find(".audio-preview");
+
+        super.doRender();
     }
 
     async doRefresh(note) {
         this.$widget.show();
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$previewContent.empty().hide();
         this.$pdfPreview.attr('src', '').empty().hide();

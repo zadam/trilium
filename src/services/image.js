@@ -1,6 +1,6 @@
 "use strict";
 
-const repository = require('./repository');
+const becca = require('../becca/becca');
 const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
@@ -9,7 +9,7 @@ const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
-const noteRevisionService = require('./note_revisions.js');
+const noteRevisionService = require('./note_revisions');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 
@@ -55,7 +55,7 @@ function getImageMimeFromExtension(ext) {
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     noteRevisionService.createNoteRevision(note);
     noteRevisionService.protectNoteRevisions(note);
@@ -73,12 +73,16 @@ function updateImage(noteId, uploadBuffer, originalName) {
     });
 }
 
-function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
+function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
     log.info(`Saving image ${originalName}`);
 
-    const fileName = sanitizeFilename(originalName);
+    if (trimFilename && originalName.length > 40) {
+        // https://github.com/zadam/trilium/issues/2307
+        originalName = "image";
+    }
 
-    const parentNote = repository.getNote(parentNoteId);
+    const fileName = sanitizeFilename(originalName);
+    const parentNote = becca.getNote(parentNoteId);
 
     const {note} = noteService.createNewNote({
         parentNoteId,
@@ -95,6 +99,14 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) 
     processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
         sql.transactional(() => {
             note.mime = getImageMimeFromExtension(imageFormat.ext);
+
+            if (!originalName.includes(".")) {
+                originalName += "." + imageFormat.ext;
+
+                note.setLabel('originalFileName', originalName);
+                note.title = sanitizeFilename(originalName);
+            }
+
             note.save();
 
             note.setContent(buffer);

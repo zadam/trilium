@@ -33,17 +33,6 @@ const RELATION_MAP = {
     ]
 };
 
-const LINK_MAP = {
-    js: [
-        "libraries/jsplumb.js",
-        "libraries/panzoom.js",
-        "libraries/springy.js"
-    ],
-    css: [
-        "stylesheets/link_map.css"
-    ]
-};
-
 const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
 const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
@@ -56,6 +45,14 @@ const KATEX = {
 const WHEEL_ZOOM = {
     js: [ "libraries/wheel-zoom.min.js"]
 };
+
+const FORCE_GRAPH = {
+    js: [ "libraries/force-graph.min.js"]
+};
+
+const MERMAID = {
+    js: [ "libraries/mermaid.min.js" ]
+}
 
 async function requireLibrary(library) {
     if (library.css) {
@@ -102,9 +99,10 @@ export default {
     ESLINT,
     COMMONMARK,
     RELATION_MAP,
-    LINK_MAP,
     PRINT_THIS,
     CALENDAR_WIDGET,
     KATEX,
-    WHEEL_ZOOM
+    WHEEL_ZOOM,
+    FORCE_GRAPH,
+    MERMAID
 }

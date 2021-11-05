@@ -1,9 +1,11 @@
 const scriptService = require('./script');
-const repository = require('./repository');
 const cls = require('./cls');
 const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
+const sql = require("./sql");
+const becca = require("../becca/becca");
+const specialNotesService = require("../services/special_notes");
 
 function getRunAtHours(note) {
     try {
@@ -17,8 +19,9 @@ function getRunAtHours(note) {
 }
 
 function runNotesWithLabel(runAttrValue) {
-    const notes = repository.getEntities(`
-        SELECT notes.* 
+    // TODO: should be refactored into becca search
+    const noteIds = sql.getColumn(`
+        SELECT notes.noteId 
         FROM notes 
         JOIN attributes ON attributes.noteId = notes.noteId
                        AND attributes.isDeleted = 0
@@ -28,6 +31,8 @@ function runNotesWithLabel(runAttrValue) {
         WHERE
           notes.type = 'code'
           AND notes.isDeleted = 0`, [runAttrValue]);
+
+    const notes = becca.getNotes(noteIds);
 
     const instanceName = config.General ? config.General.instanceName : null;
     const currentHours = new Date().getHours();
@@ -51,5 +56,7 @@ sqlInit.dbReady.then(() => {
         setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);
+
+        setTimeout(cls.wrap(() => specialNotesService.createMissingSpecialNotes()), 10 * 1000);
     }
 });

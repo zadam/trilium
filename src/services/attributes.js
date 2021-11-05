@@ -1,9 +1,10 @@
 "use strict";
 
-const repository = require('./repository');
+const searchService = require('./search/services/search');
 const sql = require('./sql');
-const noteCache = require('./note_cache/note_cache');
-const Attribute = require('../entities/attribute');
+const becca = require('../becca/becca');
+const Attribute = require('../becca/entities/attribute');
+const {formatAttrForSearch} = require("./attribute_formatter");
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
@@ -45,6 +46,9 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'datePattern' },
     { type: 'label', name: 'pageSize' },
     { type: 'label', name: 'viewType' },
+    { type: 'label', name: 'mapRootNoteId' },
+    { type: 'label', name: 'bookmarked' },
+    { type: 'label', name: 'bookmarkFolder' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
@@ -59,34 +63,31 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 function getNotesWithLabel(name, value) {
-    let valueCondition = "";
-    let params = [name];
-
-    if (value !== undefined) {
-        valueCondition = " AND attributes.value = ?";
-        params.push(value);
-    }
-
-    return repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
+    const query = formatAttrForSearch({type: 'label', name, value}, true);
+    return searchService.searchNotes(query, {
+        includeArchivedNotes: true,
+        ignoreHoistedNote: true
+    });
 }
 
-function getNoteIdsWithLabels(names) {
-    const noteIds = new Set();
+// TODO: should be in search service
+function getNoteWithLabel(name, value) {
+    // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
+    const attrs = becca.findAttributes('label', name);
 
-    for (const name of names) {
-        for (const attr of noteCache.findAttributes('label', name)) {
-            noteIds.add(attr.noteId);
+    if (value === undefined) {
+        return attrs[0]?.getNote();
+    }
+
+    value = value?.toLowerCase();
+
+    for (const attr of attrs) {
+        if (attr.value.toLowerCase() === value) {
+            return attr.getNote();
         }
     }
 
-    return Array.from(noteIds);
-}
-
-function getNoteWithLabel(name, value) {
-    const notes = getNotesWithLabel(name, value);
-
-    return notes.length > 0 ? notes[0] : null;
+    return null;
 }
 
 function createLabel(noteId, name, value = "") {
@@ -180,7 +181,6 @@ function sanitizeAttributeName(origName) {
 
 module.exports = {
     getNotesWithLabel,
-    getNoteIdsWithLabels,
     getNoteWithLabel,
     createLabel,
     createRelation,

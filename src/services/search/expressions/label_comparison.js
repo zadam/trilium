@@ -2,7 +2,7 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../../becca/becca');
 
 class LabelComparisonExp extends Expression {
     constructor(attributeType, attributeName, comparator) {
@@ -14,19 +14,19 @@ class LabelComparisonExp extends Expression {
     }
 
     execute(inputNoteSet) {
-        const attrs = noteCache.findAttributes(this.attributeType, this.attributeName);
+        const attrs = becca.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 
         for (const attr of attrs) {
             const note = attr.note;
-            const value = attr.value ? attr.value.toLowerCase() : attr.value;
+            const value = attr.value?.toLowerCase();
 
             if (inputNoteSet.hasNoteId(note.noteId) && this.comparator(value)) {
                 if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.subtreeNotesIncludingTemplated);
+                    resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
                 }
-                else if (note.isTemplate) {
-                    resultNoteSet.addAll(note.templatedNotes);
+                else if (note.isTemplate()) {
+                    resultNoteSet.addAll(note.getTemplatedNotes());
                 }
                 else {
                     resultNoteSet.add(note);

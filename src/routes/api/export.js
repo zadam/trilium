@@ -3,13 +3,13 @@
 const zipExportService = require('../../services/export/zip');
 const singleExportService = require('../../services/export/single');
 const opmlExportService = require('../../services/export/opml');
-const repository = require("../../services/repository");
+const becca = require('../../becca/becca');
 const TaskContext = require("../../services/task_context");
 const log = require("../../services/log");
 
 function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;
-    const branch = repository.getBranch(branchId);
+    const branch = becca.getBranch(branchId);
 
     if (!branch) {
         const message = `Cannot export branch ${branchId} since it does not exist.`;

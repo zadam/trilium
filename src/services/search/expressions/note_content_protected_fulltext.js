@@ -3,9 +3,10 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const log = require('../../log');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../../becca/becca');
 const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
+const utils = require("../../utils");
 
 class NoteContentProtectedFulltextExp extends Expression {
     constructor(operator, tokens, raw) {
@@ -33,7 +34,7 @@ class NoteContentProtectedFulltextExp extends Expression {
                 FROM notes JOIN note_contents USING (noteId) 
                 WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 1`)) {
 
-            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in noteCache.notes)) {
+            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
             }
 
@@ -45,7 +46,7 @@ class NoteContentProtectedFulltextExp extends Expression {
                 continue;
             }
 
-            content = content.toLowerCase();
+            content = utils.normalize(content);
 
             if (type === 'text' && mime === 'text/html') {
                 if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
@@ -56,7 +57,7 @@ class NoteContentProtectedFulltextExp extends Expression {
             }
 
             if (!this.tokens.find(token => !content.includes(token))) {
-                resultNoteSet.add(noteCache.notes[noteId]);
+                resultNoteSet.add(becca.notes[noteId]);
             }
         }
 

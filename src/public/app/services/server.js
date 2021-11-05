@@ -4,14 +4,14 @@ const REQUEST_LOGGING_ENABLED = false;
 
 async function getHeaders(headers) {
     const appContext = (await import('./app_context.js')).default;
-    const activeTabContext = appContext.tabManager ? appContext.tabManager.getActiveTabContext() : null;
+    const activeNoteContext = appContext.tabManager ? appContext.tabManager.getActiveContext() : null;
 
     // headers need to be lowercase because node.js automatically converts them to lower case
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     const allHeaders = {
         'trilium-source-id': glob.sourceId,
         'trilium-local-now-datetime': utils.localNowDateTime(),
-        'trilium-hoisted-note-id': activeTabContext ? activeTabContext.hoistedNoteId : null,
+        'trilium-hoisted-note-id': activeNoteContext ? activeNoteContext.hoistedNoteId : null,
         'x-csrf-token': glob.csrfToken
     };
 
@@ -156,6 +156,10 @@ if (utils.isElectron()) {
         }
 
         if (arg.statusCode >= 200 && arg.statusCode < 300) {
+            if (arg.headers['Content-Type'] === 'application/json') {
+                arg.body = JSON.parse(arg.body);
+            }
+
             reqResolves[arg.requestId]({
                 body: arg.body,
                 headers: arg.headers

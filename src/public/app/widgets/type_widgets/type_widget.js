@@ -1,8 +1,14 @@
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
-export default class TypeWidget extends TabAwareWidget {
+export default class TypeWidget extends NoteContextAwareWidget {
     // for overriding
     static getType() {}
+
+    doRender() {
+        this.contentSized();
+
+        return super.doRender();
+    }
 
     /**
      * @param {NoteShort} note
@@ -23,7 +29,7 @@ export default class TypeWidget extends TabAwareWidget {
 
             await this.doRefresh(this.note);
 
-            this.triggerEvent('noteDetailRefreshed', {tabId: this.tabContext.tabId});
+            this.triggerEvent('noteDetailRefreshed', {ntxId: this.noteContext.ntxId});
         }
     }
 
@@ -35,15 +41,25 @@ export default class TypeWidget extends TabAwareWidget {
 
     focus() {}
 
-    textPreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
+    async readOnlyTemporarilyDisabledEvent({noteContext}) {
+        if (this.isNoteContext(noteContext.ntxId)) {
+            await this.refresh();
+
+            this.focus();
         }
     }
 
-    codePreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
+    // events should be propagated manually to the children widgets
+    handleEventInChildren(name, data) {
+        if (['activeContextChanged', 'setNoteContext'].includes(name)) {
+            // won't trigger .refresh();
+            return super.handleEventInChildren('setNoteContext', data);
+        }
+        else if (name === 'entitiesReloaded') {
+            return super.handleEventInChildren(name, data);
+        }
+        else {
+            return Promise.resolve();
         }
     }
 }

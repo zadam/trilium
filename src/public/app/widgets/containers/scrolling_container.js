@@ -4,13 +4,44 @@ export default class ScrollingContainer extends Container {
     constructor() {
         super();
 
-        this.css('height: 100%; overflow: auto;');
+        this.css('overflow', 'auto');
     }
 
-    async tabNoteSwitchedEvent({tabContext, notePath}) {
-        // if notePath does not match then the tabContext has been switched to another note in the mean time
-        if (tabContext.notePath === notePath) {
-            this.$widget.scrollTop(0);
+    setNoteContextEvent({noteContext}) {
+        /** @var {NoteContext} */
+        this.noteContext = noteContext;
+    }
+
+    async noteSwitchedEvent({noteContext, notePath}) {
+        this.$widget.scrollTop(0);
+    }
+
+    async noteSwitchedAndActivatedEvent({noteContext, notePath}) {
+        this.noteContext = noteContext;
+
+        this.$widget.scrollTop(0);
+    }
+
+    async activeContextChangedEvent({noteContext}) {
+        this.noteContext = noteContext;
+    }
+
+    handleEventInChildren(name, data) {
+        if (name === 'readOnlyTemporarilyDisabled'
+                && this.noteContext
+                && this.noteContext.ntxId === data.noteContext.ntxId) {
+
+            const scrollTop = this.$widget.scrollTop();
+
+            const promise = super.handleEventInChildren(name, data);
+
+            // there seems to be some asynchronicity and we need to wait a bit before scrolling
+            promise.then(() => setTimeout(() => this.$widget.scrollTop(scrollTop), 500));
+
+            return promise;
+        }
+        else {
+            return super.handleEventInChildren(name, data);
         }
     }
 }

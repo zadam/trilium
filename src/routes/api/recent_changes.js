@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
-const noteCacheService = require('../../services/note_cache/note_cache_service');
+const beccaService = require('../../becca/becca_service');
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
@@ -25,7 +25,7 @@ function getRecentChanges(req) {
             JOIN notes USING(noteId)`);
 
     for (const noteRevision of noteRevisions) {
-        if (noteCacheService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
+        if (beccaService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
             recentChanges.push(noteRevision);
         }
     }
@@ -58,7 +58,7 @@ function getRecentChanges(req) {
             WHERE notes.isDeleted = 1`);
 
     for (const note of notes) {
-        if (noteCacheService.isInAncestor(note.noteId, ancestorNoteId)) {
+        if (beccaService.isInAncestor(note.noteId, ancestorNoteId)) {
             recentChanges.push(note);
         }
     }
@@ -74,17 +74,17 @@ function getRecentChanges(req) {
                 change.current_title = protectedSessionService.decryptString(change.current_title);
             }
             else {
-                change.title = change.current_title = "[Protected]";
+                change.title = change.current_title = "[protected]";
             }
         }
 
         if (change.current_isDeleted) {
             const deleteId = change.current_deleteId;
 
-            const undeletedParentBranches = noteService.getUndeletedParentBranches(change.noteId, deleteId);
+            const undeletedParentBranchIds = noteService.getUndeletedParentBranchIds(change.noteId, deleteId);
 
             // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
-            change.canBeUndeleted = undeletedParentBranches.length > 0;
+            change.canBeUndeleted = undeletedParentBranchIds.length > 0;
         }
     }
 

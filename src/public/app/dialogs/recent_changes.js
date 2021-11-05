@@ -2,7 +2,7 @@ import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 import treeService from "../services/tree.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import appContext from "../services/app_context.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 
@@ -19,7 +19,7 @@ export async function showDialog(ancestorNoteId) {
     const recentChangesRows = await server.get('recent-changes/' + ancestorNoteId);
 
     // preload all notes into cache
-    await treeCache.getNotes(recentChangesRows.map(r => r.noteId), true);
+    await froca.getNotes(recentChangesRows.map(r => r.noteId), true);
 
     $content.empty();
 
@@ -54,9 +54,9 @@ export async function showDialog(ancestorNoteId) {
 
                                 $dialog.modal('hide');
 
-                                await treeCache.reloadNotes([change.noteId]);
+                                await froca.reloadNotes([change.noteId]);
 
-                                appContext.tabManager.getActiveTabContext().setNote(change.noteId);
+                                appContext.tabManager.getActiveContext().setNote(change.noteId);
                             }
                         });
 
@@ -67,7 +67,7 @@ export async function showDialog(ancestorNoteId) {
                 }
             }
             else {
-                const note = await treeCache.getNote(change.noteId);
+                const note = await froca.getNote(change.noteId);
                 const notePath = treeService.getSomeNotePath(note);
 
                 if (notePath) {

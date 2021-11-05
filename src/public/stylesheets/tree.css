@@ -1,0 +1,235 @@
+ul.fancytree-container {
+    padding-left: 0;
+}
+
+ul.fancytree-container li {
+    list-style: none;
+}
+
+span.fancytree-node.fancytree-hide {
+    display: none;
+}
+
+.fancytree-title {
+    margin-left: 7px;
+    outline: none;
+    position: relative;
+    top: 2px;
+}
+
+.fancytree-expander {
+    visibility: hidden;
+}
+
+.fancytree-folder .fancytree-expander {
+    visibility: visible;
+}
+
+.fancytree-node {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    padding: 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.fancytree-node:not(.fancytree-loading) .fancytree-expander {
+    background: none;
+    height: auto;
+    text-align: center;
+}
+
+.fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
+    font-family: 'boxicons' !important;
+    speak: none;
+    font-size: x-large;
+    text-transform: none;
+    line-height: 1;
+    content: "\e9b2";
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
+}
+
+.fancytree-loading span.fancytree-expander {
+    background-image: none;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    margin-right: 8px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.fancytree-loading span.fancytree-expander:after {
+    content: " ";
+    color: inherit !important;
+    display: block;
+    border-radius: 50%;
+    border-color: #000 transparent #000 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    margin-left: 1px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+ul.fancytree-container li {
+    contain: layout paint;
+}
+
+/* this is done to preserve correct indentation. Better solution would be preferable */
+.fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
+    color: var(--main-background-color); /* setting to background color makes this invisible */
+}
+
+.fancytree-node.fancytree-expanded .fancytree-expander:before {
+    font-family: 'boxicons' !important;
+    content: "\e9ac";
+}
+
+/** some common text styling for cssClass label */
+span.fancytree-node.underline .fancytree-title { text-decoration: underline; }
+span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
+span.fancytree-node.bold .fancytree-title { font-weight: bold; }
+span.fancytree-node.muted { opacity: 0.6; }
+
+/** following will hide ancestors of hoisted (filtered) note */
+.fancytree-submatch:not(.fancytree-match) {
+    display: none !important;
+}
+
+/** resets indent of hoisted note */
+.fancytree-submatch:not(.fancytree-match) + ul {
+    padding: 0 !important;
+}
+
+ul.fancytree-container {
+    outline: none;
+    background-color: inherit;
+}
+
+.fancytree-custom-icon {
+    font-size: 1.2em;
+}
+
+span.fancytree-node.protected > span.fancytree-custom-icon {
+    filter: drop-shadow(2px 2px 2px var(--main-text-color));
+}
+
+span.fancytree-node.multiple-parents .fancytree-title::after {
+    content: " *"
+}
+
+span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {
+    font-weight: bold;
+}
+
+/* first nesting level has lower left padding to avoid extra left padding. Other levels are not affected */
+.ui-fancytree > li > ul {
+    padding-left: 5px;
+}
+
+.ui-fancytree ul {
+    padding-left: 20px;
+}
+
+span.fancytree-active .fancytree-title {
+    font-weight: bold;
+    border: 0;
+}
+
+span.fancytree-active {
+    border-color: var(--main-border-color) !important;
+    border-radius: 5px;
+}
+
+span.fancytree-active, span.fancytree-active.fancytree-selected {
+    color: var(--active-item-text-color) !important;
+    background-color: var(--active-item-background-color) !important;
+    border-color: var(--main-background-color) !important; /* invisible border */
+    border-radius: 5px;
+}
+
+span.fancytree-selected {
+    color: var(--hover-item-text-color) !important;
+    background-color: var(--hover-item-background-color) !important;
+    border-color: var(--main-background-color) !important; /* invisible border */
+    border-radius: 5px;
+    font-style: italic;
+}
+
+span.fancytree-node:hover {
+    border: 1px solid var(--main-border-color);
+}
+
+.fancytree-title:hover, span.fancytree-node:hover .fancytree-title {
+    border: 0;
+}
+
+span.fancytree-node.archived {
+    opacity: 0.6;
+}
+
+.fancytree-node:hover .bx.tree-item-button {
+    display: inline-block;
+}
+
+.bx.tree-item-button {
+    display: none;
+    font-size: 120%;
+    cursor: pointer;
+    margin-left: 8px;
+    padding: 1px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+
+.tree-item-button:hover {
+    border: 1px dotted var(--main-text-color);
+}
+
+.add-note-button {
+    display: none;
+}
+
+span.fancytree-node:hover .add-note-button {
+    display: inline-block;
+}
+
+.fancytree-drop-accept {
+    border: 1px solid var(--main-border-color);
+}
+
+#fancytree-drop-marker.fancytree-drop-after, #fancytree-drop-marker.fancytree-drop-before {
+    width: 100px;
+    /* marker is by default position: relative which doesn't make sense */
+    position: absolute !important;
+    /* heaving a height helps with positioning since the algorithm calculating "top" takes it into account */
+    height: 19px;
+}
+
+#fancytree-drop-marker.fancytree-drop-after {
+    border-bottom: 1px solid var(--muted-text-color);
+}
+
+#fancytree-drop-marker.fancytree-drop-before {
+    border-top: 1px solid var(--muted-text-color);
+}

@@ -1,15 +1,18 @@
-const repository = require('../services/repository');
 const log = require('../services/log');
-const fileUploadService = require('./api/files.js');
+const fileUploadService = require('./api/files');
 const scriptService = require('../services/script');
 const cls = require('../services/cls');
+const sql = require("../services/sql");
+const becca = require("../becca/becca");
 
-async function handleRequest(req, res) {
+function handleRequest(req, res) {
     // express puts content after first slash into 0 index element
 
     const path = req.params.path + req.params[0];
 
-    const attrs = repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+    const attributeIds = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name IN ('customRequestHandler', 'customResourceProvider')");
+
+    const attrs = attributeIds.map(attrId => becca.getAttribute(attrId));
 
     for (const attr of attrs) {
         if (!attr.value.trim()) {
@@ -68,7 +71,7 @@ async function handleRequest(req, res) {
 function register(router) {
     // explicitly no CSRF middleware since it's meant to allow integration from external services
 
-    router.all('/custom/:path*', async (req, res, next) => {
+    router.all('/custom/:path*', (req, res, next) => {
         cls.namespace.bindEmitter(req);
         cls.namespace.bindEmitter(res);
 

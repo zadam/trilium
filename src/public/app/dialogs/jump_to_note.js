@@ -20,7 +20,7 @@ export async function showDialog() {
                 return false;
             }
 
-            appContext.tabManager.getActiveTabContext().setNote(suggestion.notePath);
+            appContext.tabManager.getActiveContext().setNote(suggestion.notePath);
         });
 
     // if you open the Jump To dialog soon after using it previously it can often mean that you

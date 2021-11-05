@@ -1,0 +1,71 @@
+/* Light theme is special since it's also baseline/default so when a theme does not define some variable then
+   value from this theme will be used. For this reason this theme uses "html" instead of ":root"
+   since it's less "specific" and thus serves as default */
+html {
+    /* either light or dark, colored theme with darker tones are also dark, used e.g. for note map node colors */
+    --theme-style: light;
+
+    --main-font-family: MontserratLight;
+    --main-font-size: normal;
+
+    --tree-font-family: MontserratLight;
+    --tree-font-size: normal;
+
+    --detail-font-family: MontserratLight;
+    --detail-font-size: normal;
+
+    --monospace-font-family: JetBrainsLight;
+    --monospace-font-size: normal;
+
+    --main-background-color: white;
+    --main-text-color: black;
+    --main-border-color: #ccc;
+
+    --accented-background-color: #f5f5f5;
+    --more-accented-background-color: #ddd;
+
+    --button-background-color: transparent;
+    --button-disabled-background-color: #ddd;
+    --button-border-color: #ddd;
+    --button-text-color: black;
+    --button-border-radius: 5px;
+
+    --primary-button-background-color: #6c757d;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #6c757d;
+
+    --muted-text-color: #666;
+
+    --input-text-color: black;
+    --input-background-color: transparent;
+
+    --hover-item-text-color: black;
+    --hover-item-background-color: #ddd;
+
+    --active-item-text-color: black;
+    --active-item-background-color: #ddd;
+
+    --menu-text-color: black;
+    --menu-background-color: white;
+
+    --modal-background-color: white;
+    --modal-backdrop-color: black;
+
+    --left-pane-background-color: #F3F3F3;
+    --left-pane-text-color: #333;
+
+    --launcher-pane-background-color: #F3F3F3;
+    --launcher-pane-text-color: #333;
+
+    --active-tab-background-color: #ddd;
+    --active-tab-text-color: black;
+
+    --inactive-tab-background-color: #f0f0f0;
+    --inactive-tab-text-color: #666;
+
+    --scrollbar-border-color: #ddd;
+    --tooltip-background-color: #f8f8f8;
+    --link-color: blue;
+
+    --mermaid-theme: default;
+}

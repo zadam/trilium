@@ -73,6 +73,11 @@ function importEnex(taskContext, file, parentNote) {
         content = content.replace(/<en-todo\s+checked="true"\/>/g, "\u2611 ");
         content = content.replace(/<en-todo(\s+checked="false")?\/>/g, "\u2610 ");
 
+        // Replace OneNote converted checkboxes with unicode ballot box based
+        // on known hash of checkboxes for regular, p1, and p2 checkboxes
+        content = content.replace(/<en-media alt="To Do( priority [12])?" hash="(74de5d3d1286f01bac98d32a09f601d9|4a19d3041585e11643e808d68dd3e72f|8e17580123099ac6515c3634b1f6f9a1)"( type="[a-z\/]*"| width="\d+"| height="\d+")*\/>/g, "\u2610 ");
+        content = content.replace(/<en-media alt="To Do( priority [12])?" hash="(5069b775461e471a47ce04ace6e1c6ae|7912ee9cec35fc3dba49edb63a9ed158|3a05f4f006a6eaf2627dae5ed8b8013b)"( type="[a-z\/]*"| width="\d+"| height="\d+")*\/>/g, "\u2611 ");
+
         content = htmlSanitizer.sanitize(content);
 
         return content;
@@ -242,6 +247,16 @@ function importEnex(taskContext, file, parentNote) {
             }
 
             const hash = utils.md5(resource.content);
+
+            // skip all checked/unchecked checkboxes from OneNote
+            if (['74de5d3d1286f01bac98d32a09f601d9',
+                '4a19d3041585e11643e808d68dd3e72f',
+                '8e17580123099ac6515c3634b1f6f9a1',
+                '5069b775461e471a47ce04ace6e1c6ae',
+                '7912ee9cec35fc3dba49edb63a9ed158',
+                '3a05f4f006a6eaf2627dae5ed8b8013b'].includes(hash)) {
+                continue;
+            }
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
 

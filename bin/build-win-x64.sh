@@ -27,6 +27,7 @@ rm -r $BUILD_DIR/swiftshader
 
 cp bin/tpl/trilium-portable.bat $BUILD_DIR/
 cp bin/tpl/trilium-no-cert-check.bat $BUILD_DIR/
+cp bin/tpl/trilium-safe-mode.bat $BUILD_DIR/
 
 echo "Zipping windows x64 electron distribution..."
 VERSION=`jq -r ".version" package.json`

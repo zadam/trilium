@@ -1,12 +1,12 @@
 const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
-const repository = require('./repository');
 const optionService = require('./options');
 const syncOptions = require('./sync_options');
 const request = require('./request');
 const appInfo = require('./app_info');
 const utils = require('./utils');
+const becca = require("../becca/becca");
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
@@ -107,8 +107,8 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
 
 function getSyncSeedOptions() {
     return [
-        repository.getOption('documentId'),
-        repository.getOption('documentSecret')
+        becca.getOption('documentId'),
+        becca.getOption('documentSecret')
     ];
 }
 

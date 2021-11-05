@@ -2,7 +2,7 @@ const dayjs = require('dayjs');
 const cls = require('./cls');
 
 function utcNowDateTime() {
-    return utcDateStr(new Date());
+    return utcDateTimeStr(new Date());
 }
 
 // CLS date time is important in web deployments - server often runs in different time zone than user is located in
@@ -31,6 +31,10 @@ function pad(num) {
 }
 
 function utcDateStr(date) {
+    return date.toISOString().split('T')[0];
+}
+
+function utcDateTimeStr(date) {
     return date.toISOString().replace('T', ' ');
 }
 
@@ -69,6 +73,7 @@ module.exports = {
     localNowDateTime,
     localNowDate,
     utcDateStr,
+    utcDateTimeStr,
     parseDate,
     parseDateTime,
     parseLocalDate,

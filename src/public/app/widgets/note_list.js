@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import NoteListRenderer from "../services/note_list_renderer.js";
 
 const TPL = `
@@ -20,7 +20,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class NoteListWidget extends TabAwareWidget {
+export default class NoteListWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && ['book', 'text', 'code'].includes(this.note.type)
@@ -31,8 +31,8 @@ export default class NoteListWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$content = this.$widget.find('.note-list-widget-content');
         this.contentSized();
+        this.$content = this.$widget.find('.note-list-widget-content');
 
         const observer = new IntersectionObserver(entries => {
             this.isIntersecting = entries[0].isIntersecting;
@@ -66,10 +66,15 @@ export default class NoteListWidget extends TabAwareWidget {
     }
 
     async refresh() {
-        this.$content.empty();
         this.shownNoteId = null;
 
         await super.refresh();
+    }
+
+    async refreshNoteListEvent({noteId}) {
+        if (this.isNote(noteId)) {
+            await this.renderNoteList(this.note);
+        }
     }
 
     /**
@@ -77,8 +82,8 @@ export default class NoteListWidget extends TabAwareWidget {
      * If it's evaluated before note detail then it's clearly intersected (visible) although after note detail load
      * it is not intersected (visible) anymore.
      */
-    noteDetailRefreshedEvent({tabId}) {
-        if (!this.isTab(tabId)) {
+    noteDetailRefreshedEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 
@@ -90,6 +95,14 @@ export default class NoteListWidget extends TabAwareWidget {
     notesReloadedEvent({noteIds}) {
         if (noteIds.includes(this.noteId)) {
             this.refresh();
+        }
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId && ['viewType', 'expanded'].includes(attr.name))) {
+            this.shownNoteId = null; // force render
+
+            this.checkRenderStatus();
         }
     }
 }

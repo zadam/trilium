@@ -1,5 +1,5 @@
 import server from "./server.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 
 async function searchForNoteIds(searchString) {
     return await server.get('search/' + encodeURIComponent(searchString));
@@ -8,7 +8,7 @@ async function searchForNoteIds(searchString) {
 async function searchForNotes(searchString) {
     const noteIds = await searchForNoteIds(searchString);
 
-    return await treeCache.getNotes(noteIds);
+    return await froca.getNotes(noteIds);
 }
 
 export default {

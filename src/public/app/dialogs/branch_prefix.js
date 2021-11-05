@@ -1,6 +1,6 @@
 import treeService from '../services/tree.js';
 import server from '../services/server.js';
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 
@@ -18,14 +18,14 @@ export async function showDialog(notePath) {
         return;
     }
 
-    branchId = await treeCache.getBranchId(parentNoteId, noteId);
-    const branch = treeCache.getBranch(branchId);
+    branchId = await froca.getBranchId(parentNoteId, noteId);
+    const branch = froca.getBranch(branchId);
 
     if (!branch || branch.noteId === 'root') {
         return;
     }
 
-    const parentNote = await treeCache.getNote(branch.parentNoteId);
+    const parentNote = await froca.getNote(branch.parentNoteId);
 
     if (parentNote.type === 'search') {
         return;

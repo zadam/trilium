@@ -1,5 +1,5 @@
 import ws from "./ws.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 
 async function renderAttribute(attribute, renderIsInheritable) {
     const isInheritable = renderIsInheritable && attribute.isInheritable ? `(inheritable)` : '';
@@ -48,7 +48,7 @@ function formatValue(val) {
 }
 
 async function createNoteLink(noteId) {
-    const note = await treeCache.getNote(noteId);
+    const note = await froca.getNote(noteId);
 
     if (!note) {
         return;

@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 import clipboard from './clipboard.js';
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
@@ -30,17 +30,19 @@ class TreeContextMenu {
             { title: "Code", command: command, type: "code", uiIcon: "code" },
             { title: "Saved search", command: command, type: "search", uiIcon: "file-find" },
             { title: "Relation Map", command: command, type: "relation-map", uiIcon: "map-alt" },
+            { title: "Note Map", command: command, type: "note-map", uiIcon: "map-alt" },
             { title: "Render HTML note", command: command, type: "render", uiIcon: "extension" },
-            { title: "Book", command: command, type: "book", uiIcon: "book" }
+            { title: "Book", command: command, type: "book", uiIcon: "book" },
+            { title: "Mermaid diagram", command: command, type: "mermaid", uiIcon: "selection" }
         ];
     }
 
     async getMenuItems() {
-        const note = await treeCache.getNote(this.node.data.noteId);
-        const branch = treeCache.getBranch(this.node.data.branchId);
+        const note = await froca.getNote(this.node.data.noteId);
+        const branch = froca.getBranch(this.node.data.branchId);
         const isNotRoot = note.noteId !== 'root';
-        const isHoisted = note.noteId === appContext.tabManager.getActiveTabContext().hoistedNoteId;
-        const parentNote = isNotRoot ? await treeCache.getNote(branch.parentNoteId) : null;
+        const isHoisted = note.noteId === appContext.tabManager.getActiveContext().hoistedNoteId;
+        const parentNote = isNotRoot ? await froca.getNote(branch.parentNoteId) : null;
 
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
@@ -55,7 +57,7 @@ class TreeContextMenu {
 
         return [
             { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
-            { title: 'Open in a new window', command: "openInWindow", uiIcon: "window-open", enabled: noSelectedNotes },
+            { title: 'Open in a new split', command: "openNoteInSplit", uiIcon: "dock-right", enabled: noSelectedNotes },
             { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "plus",
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
@@ -129,6 +131,12 @@ class TreeContextMenu {
                 type: type,
                 isProtected: this.node.data.isProtected
             });
+        }
+        else if (command === 'openNoteInSplit') {
+            const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
+            const {ntxId} = subContexts[subContexts.length - 1];
+
+            this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
         }
         else {
             this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});

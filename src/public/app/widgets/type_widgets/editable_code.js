@@ -1,21 +1,46 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
+import server from "../../services/server.js";
+import ws from "../../services/ws.js";
+import appContext from "../../services/app_context.js";
+import toastService from "../../services/toast.js";
+import treeService from "../../services/tree.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
     <style>
+    .note-detail-code {
+        position: relative;
+    }
+    
+    .trilium-api-docs-button {
+        /*display: none;*/
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
     .note-detail-code-editor {
         min-height: 50px;
     }
     </style>
+    
+    <button class="btn bx bx-help-circle trilium-api-docs-button icon-button floating-button" 
+            title="Open Trilium API docs"></button>
 
     <div class="note-detail-code-editor"></div>
 
-    <div style="text-align: center">    
+    <div style="display: flex; justify-content: space-evenly;">
         <button data-trigger-command="runActiveNote"
                 class="no-print execute-button btn btn-sm">
             Execute <kbd data-command="runActiveNote"></kbd>
+        </button>
+        
+        <button class="no-print save-to-note-button btn btn-sm">
+            
+            <span class="bx bx-save"></span>
+            Save to note</kbd>
         </button>
     </div>
 </div>`;
@@ -25,11 +50,32 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.contentSized();
+        this.$openTriliumApiDocsButton = this.$widget.find(".trilium-api-docs-button");
+        this.$openTriliumApiDocsButton.on("click", () => {
+            if (this.note.mime.endsWith("frontend")) {
+                window.open("https://zadam.github.io/trilium/frontend_api/FrontendScriptApi.html", "_blank");
+            }
+            else {
+                window.open("https://zadam.github.io/trilium/backend_api/BackendScriptApi.html", "_blank");
+            }
+        });
+
         this.$editor = this.$widget.find('.note-detail-code-editor');
         this.$executeButton = this.$widget.find('.execute-button');
+        this.$saveToNoteButton = this.$widget.find('.save-to-note-button');
+        this.$saveToNoteButton.on('click', async () => {
+            const {notePath} = await server.post("special-notes/save-sql-console", {sqlConsoleNoteId: this.noteId});
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            await appContext.tabManager.getActiveContext().setNote(notePath);
+
+            toastService.showMessage("SQL Console note has been saved into " + await treeService.getNotePathTitle(notePath));
+        });
 
         keyboardActionService.setupActionsForElement('code-detail', this.$widget, this);
+
+        super.doRender();
 
         this.initialized = this.initEditor();
     }
@@ -72,7 +118,14 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             || note.mime === 'text/x-sqlite;schema=trilium'
         );
 
-        const noteComplement = await this.tabContext.getNoteComplement();
+        this.$saveToNoteButton.toggle(
+            note.mime === 'text/x-sqlite;schema=trilium'
+            && !note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden"))
+        );
+
+        this.$openTriliumApiDocsButton.toggle(note.mime.startsWith('application/javascript;env='));
+
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
@@ -104,6 +157,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
     }
 
     focus() {
+        this.$editor.focus();
         this.codeEditor.focus();
     }
 

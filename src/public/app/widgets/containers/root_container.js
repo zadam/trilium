@@ -4,7 +4,7 @@ import appContext from "../../services/app_context.js";
 
 export default class RootContainer extends FlexContainer {
     constructor() {
-        super('column');
+        super('row');
 
         this.id('root-widget');
         this.css('height', '100vh');
@@ -12,7 +12,7 @@ export default class RootContainer extends FlexContainer {
 
     refresh() {
         this.$widget.removeClass(); // remove all classes
-        const note = appContext.tabManager.getActiveTabNote();
+        const note = appContext.tabManager.getActiveContextNote();
 
         if (note) {
             this.$widget.addClass(note.getCssClass());
@@ -24,15 +24,15 @@ export default class RootContainer extends FlexContainer {
         }
     }
 
-    tabNoteSwitchedEvent() {
+    noteSwitchedEvent() {
         this.refresh();
     }
 
-    activeTabChangedEvent() {
+    activeContextChangedEvent() {
         this.refresh();
     }
 
-    tabNoteSwitchedAndActivatedEvent() {
+    noteSwitchedAndActivatedEvent() {
         this.refresh();
     }
 

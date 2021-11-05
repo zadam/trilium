@@ -1,4 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import treeService from "../services/tree.js";
 import linkService from "../services/link.js";
 import hoistedNoteService from "../services/hoisted_note.js";
@@ -8,6 +8,10 @@ import toastService from "../services/toast.js";
 const TPL = `
 <div class="sql-table-schemas-widget">
     <style>
+    .sql-table-schemas-widget {
+        padding: 12px;
+    }
+    
     .sql-table-schemas button {
         padding: 0.25rem 0.4rem;
         font-size: 0.875rem;
@@ -33,7 +37,7 @@ const TPL = `
     <span class="sql-table-schemas"></span>
 </div>`;
 
-export default class SqlTableSchemasWidget extends TabAwareWidget {
+export default class SqlTableSchemasWidget extends NoteContextAwareWidget {
     isEnabled() {
         return this.note
             && this.note.mime === 'text/x-sqlite;schema=trilium'
@@ -42,7 +46,7 @@ export default class SqlTableSchemasWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
+        this.contentSized();
 
         this.$sqlConsoleTableSchemas = this.$widget.find('.sql-table-schemas');
     }

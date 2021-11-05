@@ -1,12 +1,12 @@
 "use strict";
 
-const similarityService = require('../../services/note_cache/similarity.js');
-const repository = require('../../services/repository');
+const similarityService = require('../../becca/similarity');
+const becca = require("../../becca/becca");
 
 async function getSimilarNotes(req) {
     const noteId = req.params.noteId;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} not found.`];

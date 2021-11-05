@@ -25,21 +25,46 @@ class ContextMenu {
     positionMenu() {
         // code below tries to detect when dropdown would overflow from page
         // in such case we'll position it above click coordinates so it will fit into client
+
+        const CONTEXT_MENU_PADDING = 5; // How many pixels to pad context menu from edge of screen
+        const CONTEXT_MENU_OFFSET = 10; // How many pixels to offset context menu by relative to cursor
+
         const clientHeight = document.documentElement.clientHeight;
-        const contextMenuHeight = this.$widget.outerHeight() + 30;
+        const clientWidth = document.documentElement.clientWidth;
+        const contextMenuHeight = this.$widget.outerHeight();
+        const contextMenuWidth = this.$widget.outerWidth();
         let top, left;
 
-        if (this.options.y + contextMenuHeight > clientHeight) {
-            top = clientHeight - contextMenuHeight - 10;
+        if (this.options.y + contextMenuHeight - CONTEXT_MENU_OFFSET > clientHeight - CONTEXT_MENU_PADDING) {
+            // Overflow: bottom
+            top = clientHeight - contextMenuHeight - CONTEXT_MENU_PADDING;
+        } else if (this.options.y - CONTEXT_MENU_OFFSET < CONTEXT_MENU_PADDING) {
+            // Overflow: top
+            top = CONTEXT_MENU_PADDING;
         } else {
-            top = this.options.y - 10;
+            top = this.options.y - CONTEXT_MENU_OFFSET;
         }
 
         if (this.options.orientation === 'left') {
-            left = this.options.x - this.$widget.outerWidth() + 20;
-        }
-        else {
-            left = this.options.x - 20;
+            if (this.options.x + CONTEXT_MENU_OFFSET > clientWidth - CONTEXT_MENU_PADDING) {
+                // Overflow: right
+                left = clientWidth - contextMenuWidth - CONTEXT_MENU_OFFSET;
+            } else if (this.options.x - contextMenuWidth + CONTEXT_MENU_OFFSET < CONTEXT_MENU_PADDING) {
+                // Overflow: left
+                left = CONTEXT_MENU_PADDING;
+            } else {
+                left = this.options.x - contextMenuWidth + CONTEXT_MENU_OFFSET;
+            }
+        } else {
+            if (this.options.x + contextMenuWidth - CONTEXT_MENU_OFFSET > clientWidth - CONTEXT_MENU_PADDING) {
+                // Overflow: right
+                left = clientWidth - contextMenuWidth - CONTEXT_MENU_PADDING;
+            } else if (this.options.x - CONTEXT_MENU_OFFSET < CONTEXT_MENU_PADDING) {
+                // Overflow: left
+                left = CONTEXT_MENU_PADDING;
+            } else {
+                left = this.options.x - CONTEXT_MENU_OFFSET;
+            }
         }
 
         this.$widget.css({
@@ -72,7 +97,7 @@ class ContextMenu {
                     .append($link)
                     // important to use mousedown instead of click since the former does not change focus
                     // (especially important for focused text for spell check)
-                    .on('mousedown', (e) => {
+                    .on('mousedown', e => {
                         e.stopPropagation();
 
                         this.hide();

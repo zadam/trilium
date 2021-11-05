@@ -26,41 +26,19 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import TabAwareWidget from "./tab_aware_widget.js";
-import options from "../services/options.js";
+            <pre class="prettyprint source linenums"><code>import NoteContextAwareWidget from "./note_context_aware_widget.js";
 
 const WIDGET_TPL = `
 &lt;div class="card widget">
-    &lt;div class="card-header">    
-        &lt;div>           
-            &lt;a class="widget-toggle-button no-arrow" 
-                title="Minimize/maximize widget"
-                data-toggle="collapse" data-target="#[to be set]">
-                
-                &lt;span class="widget-toggle-icon bx">&lt;/span>
-                
-                &lt;span class="widget-title">
-                    Collapsible Group Item
-                &lt;/span>    
-            &lt;/a>
-        
-            &lt;span class="widget-header-actions">&lt;/span>
-        &lt;/div>
-        
-        &lt;div>
-            &lt;a class="widget-help external no-arrow bx bx-info-circle">&lt;/a>
-        &lt;/div>
-    &lt;/div>
+    &lt;div class="card-header">&lt;/div>
 
-    &lt;div id="[to be set]" class="collapse body-wrapper" style="transition: none; ">
+    &lt;div id="[to be set]" class="body-wrapper">
         &lt;div class="card-body">&lt;/div>
     &lt;/div>
 &lt;/div>`;
 
-export default class CollapsibleWidget extends TabAwareWidget {
+export default class CollapsibleWidget extends NoteContextAwareWidget {
     get widgetTitle() { return "Untitled widget"; }
-
-    get headerActions() { return []; }
 
     get help() { return {}; }
 
@@ -72,84 +50,13 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', this.componentId); // for toggle to work we need id
 
-        // not using constructor name because of webpack mangling class names ...
-        this.widgetName = this.widgetTitle.replace(/[^[a-zA-Z0-9]/g, "_");
-
-        this.$toggleButton = this.$widget.find('.widget-toggle-button');
-        this.$toggleIcon = this.$widget.find('.widget-toggle-icon');
-
-        const collapsed = options.is(this.widgetName + 'Collapsed');
-        if (!collapsed) {
-            this.$bodyWrapper.collapse("show");
-        }
-
-        this.updateToggleIcon(collapsed);
-
-        // using immediate variants of the event so that the previous collapse is not caught
-        this.$bodyWrapper.on('hide.bs.collapse', () => this.toggleCollapsed(true));
-        this.$bodyWrapper.on('show.bs.collapse', () => this.toggleCollapsed(false));
-
         this.$body = this.$bodyWrapper.find('.card-body');
 
-        this.$title = this.$widget.find('.widget-title');
+        this.$title = this.$widget.find('.card-header');
         this.$title.text(this.widgetTitle);
 
-        this.$help = this.$widget.find('.widget-help');
-
-        if (this.help.title) {
-            this.$help.attr("title", this.help.title);
-            this.$help.attr("href", this.help.url || "javascript:");
-
-            if (!this.help.url) {
-                this.$help.addClass('no-link');
-            }
-        }
-        else {
-            this.$help.hide();
-        }
-
-        this.$headerActions = this.$widget.find('.widget-header-actions');
-        this.$headerActions.append(this.headerActions);
-
         this.initialized = this.doRenderBody();
-
-        this.decorateWidget();
     }
-
-    toggleCollapsed(collapse) {
-        this.updateToggleIcon(collapse);
-
-        options.save(this.widgetName + 'Collapsed', collapse.toString());
-
-        this.triggerEvent(`widgetCollapsedStateChanged`, {widgetName: this.widgetName, collapse});
-    }
-
-    updateToggleIcon(collapse) {
-        if (collapse) {
-            this.$toggleIcon
-                .addClass("bx-chevron-right")
-                .removeClass("bx-chevron-down")
-                .attr("title", "Show");
-        } else {
-            this.$toggleIcon
-                .addClass("bx-chevron-down")
-                .removeClass("bx-chevron-right")
-                .attr("title", "Hide");
-        }
-    }
-
-    /**
-     * This event is used to synchronize collapsed state of all the tab-cached widgets since they are all rendered
-     * separately but should behave uniformly for the user.
-     */
-    widgetCollapsedStateChangedEvent({widgetName, collapse}) {
-        if (widgetName === this.widgetName) {
-            this.$bodyWrapper.toggleClass('show', !collapse);
-        }
-    }
-
-    /** for overriding */
-    decorateWidget() {}
 
     /** for overriding */
     async doRenderBody() {}
@@ -168,13 +75,13 @@ export default class CollapsibleWidget extends TabAwareWidget {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#decorateWidget">decorateWidget</a></li><li><a href="global.html#doRenderBody">doRenderBody</a></li><li><a href="global.html#widgetCollapsedStateChangedEvent">widgetCollapsedStateChangedEvent</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a>
 </footer>
 
 <script> prettyPrint(); </script>

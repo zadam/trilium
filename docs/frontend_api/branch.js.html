@@ -28,8 +28,8 @@
         <article>
             <pre class="prettyprint source linenums"><code>/** Represents mapping between note and parent note */
 class Branch {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
         /** @param {string} primary key */
         this.branchId = row.branchId;
         /** @param {string} */
@@ -47,7 +47,7 @@ class Branch {
 
     /** @returns {NoteShort} */
     async getNote() {
-        return await this.treeCache.getNote(this.noteId);
+        return await this.froca.getNote(this.noteId);
     }
 
     /** @returns {boolean} true if it's top level, meaning its parent is root note */

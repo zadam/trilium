@@ -2,8 +2,9 @@
 
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../../becca/becca');
 const striptags = require('striptags');
+const utils = require("../../utils");
 
 class NoteContentUnprotectedFulltextExp extends Expression {
     constructor(operator, tokens, raw) {
@@ -27,11 +28,11 @@ class NoteContentUnprotectedFulltextExp extends Expression {
                 FROM notes JOIN note_contents USING (noteId) 
                 WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 0`)) {
 
-            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in noteCache.notes)) {
+            if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
             }
 
-            content = content.toString().toLowerCase();
+            content = utils.normalize(content.toString());
 
             if (type === 'text' && mime === 'text/html') {
                 if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
@@ -42,7 +43,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
             }
 
             if (!this.tokens.find(token => !content.includes(token))) {
-                resultNoteSet.add(noteCache.notes[noteId]);
+                resultNoteSet.add(becca.notes[noteId]);
             }
         }
 

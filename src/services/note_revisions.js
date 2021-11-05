@@ -1,6 +1,6 @@
 "use strict";
 
-const NoteRevision = require('../entities/note_revision');
+const NoteRevision = require('../becca/entities/note_revision');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const sql = require('./sql');
@@ -9,7 +9,7 @@ const sql = require('./sql');
  * @param {Note} note
  */
 function protectNoteRevisions(note) {
-    for (const revision of note.getRevisions()) {
+    for (const revision of note.getNoteRevisions()) {
         if (note.isProtected !== revision.isProtected) {
             try {
                 const content = revision.getContent();

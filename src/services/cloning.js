@@ -1,16 +1,17 @@
 "use strict";
 
 const sql = require('./sql');
-const eventChangesService = require('./entity_changes.js');
+const eventChangesService = require('./entity_changes');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const repository = require('./repository');
-const Branch = require('../entities/branch');
-const TaskContext = require("./task_context.js");
+const Branch = require('../becca/entities/branch');
+const TaskContext = require("./task_context");
 const utils = require('./utils');
+const becca = require("../becca/becca");
+const beccaService = require("../becca/becca_service");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
-    const parentBranch = repository.getBranch(parentBranchId);
+    const parentBranch = becca.getBranch(parentBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(parentBranch.noteId)) {
         return { success: false, message: 'Note is deleted.' };
@@ -32,7 +33,11 @@ function cloneNoteToParent(noteId, parentBranchId, prefix) {
     parentBranch.isExpanded = true; // the new target should be expanded so it immediately shows up to the user
     parentBranch.save();
 
-    return { success: true, branchId: branch.branchId };
+    return {
+        success: true,
+        branchId: branch.branchId,
+        notePath: beccaService.getNotePath(parentBranch.noteId).path + "/" + noteId
+    };
 }
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
@@ -55,7 +60,8 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
 }
 
 function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
-    const branch = repository.getEntity(`SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
+    const branchId = sql.getValue(`SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
+    const branch = becca.getBranch(branchId);
 
     if (branch) {
         const deleteId = utils.randomString(10);
@@ -73,7 +79,7 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 }
 
 function cloneNoteAfter(noteId, afterBranchId) {
-    const afterNote = repository.getBranch(afterBranchId);
+    const afterNote = becca.getBranch(afterBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(afterNote.parentNoteId)) {
         return { success: false, message: 'Note is deleted.' };
@@ -103,7 +109,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
 }
 
 function isNoteDeleted(noteId) {
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     return note.isDeleted;
 }

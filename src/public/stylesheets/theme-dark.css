@@ -1,0 +1,79 @@
+:root {
+    --theme-style: dark;
+
+    --main-font-family: MontserratLight;
+    --main-font-size: normal;
+
+    --tree-font-family: MontserratLight;
+    --tree-font-size: normal;
+
+    --detail-font-family: MontserratLight;
+    --detail-font-size: normal;
+
+    --monospace-font-family: JetBrainsLight;
+    --monospace-font-size: normal;
+
+    --main-background-color: #333;
+    --main-text-color: #ccc;
+    --main-border-color: #aaa;
+
+    --accented-background-color: #555;
+    --more-accented-background-color: #777;
+
+    --button-background-color: transparent;
+    --button-disabled-background-color: #222;
+    --button-border-color: #ccc;
+    --button-text-color: currentColor;
+    --button-border-radius: 5px;
+
+    --primary-button-background-color: #888;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #999;
+
+    --muted-text-color: #bbb;
+
+    --input-text-color: #ccc;
+    --input-background-color: #333;
+
+    --hover-item-text-color: black;
+    --hover-item-background-color: #777;
+
+    --active-item-text-color: black;
+    --active-item-background-color: #777;
+
+    --menu-text-color: white;
+    --menu-background-color: #222;
+
+    --modal-background-color: #333;
+    --modal-backdrop-color: #444;
+
+    --left-pane-background-color: #1f1f1f;
+    --left-pane-text-color: #AAAAAA;
+
+    --launcher-pane-background-color: #1f1f1f;
+    --launcher-pane-text-color: #AAAAAA;
+
+    --active-tab-background-color: #666;
+    --active-tab-text-color: #ccc;
+
+    --inactive-tab-background-color: #444;
+    --inactive-tab-text-color: #bbb;
+
+    --scrollbar-border-color: #888;
+    --tooltip-background-color: #333;
+    --link-color: lightskyblue;
+
+    --mermaid-theme: dark;
+}
+
+body .global-menu-button {
+    background-image: url("../images/icon-grey.png");
+}
+
+body ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+body .CodeMirror {
+    filter: invert(90%) hue-rotate(180deg);
+}

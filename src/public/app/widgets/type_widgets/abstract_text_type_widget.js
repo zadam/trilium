@@ -1,6 +1,6 @@
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
 
@@ -23,7 +23,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         const noteId = this.getNoteIdFromImage(imgSrc);
 
         if (noteId) {
-            appContext.tabManager.getActiveTabContext().setNote(noteId);
+            appContext.tabManager.getActiveContext().setNote(noteId);
         } else {
             window.open(imgSrc, '_blank');
         }
@@ -47,7 +47,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
     }
 
     async loadIncludedNote(noteId, $el) {
-        const note = await treeCache.getNote(noteId);
+        const note = await froca.getNote(noteId);
 
         if (note) {
             const $link = await linkService.createNoteLink(note.noteId, {

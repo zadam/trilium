@@ -26,27 +26,25 @@ class BasicWidget extends Component {
     }
 
     contentSized() {
-        this.css('contain', 'layout paint');
+        this.css("contain", "none");
+
         return this;
     }
 
     overflowing() {
-        this.css('contain', 'none !important');
+        console.log("Using overflowing() is deprecated NOOP and it is recommended to remove its use.");
+
         return this;
     }
 
     collapsible() {
         this.css('min-height', '0');
+        this.css('min-width', '0');
         return this;
     }
 
     filling() {
         this.css('flex-grow', '1');
-        return this;
-    }
-
-    hideInZenMode() {
-        this.class('hide-in-zen-mode');
         return this;
     }
 
@@ -120,6 +118,15 @@ class BasicWidget extends Component {
     remove() {
         if (this.$widget) {
             this.$widget.remove();
+        }
+    }
+
+    getNtxId() {
+        if (this.$widget) {
+            return this.$widget.closest("[data-ntx-id]").attr("data-ntx-id");
+        }
+        else {
+            return null;
         }
     }
 

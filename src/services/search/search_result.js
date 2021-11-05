@@ -1,11 +1,11 @@
 "use strict";
 
-const noteCacheService = require('../note_cache/note_cache_service');
+const beccaService = require('../../becca/becca_service');
 
 class SearchResult {
     constructor(notePathArray) {
         this.notePathArray = notePathArray;
-        this.notePathTitle = noteCacheService.getNoteTitleForPath(notePathArray);
+        this.notePathTitle = beccaService.getNoteTitleForPath(notePathArray);
     }
 
     get notePath() {

@@ -27,20 +27,25 @@ export default class MainTreeExecutors extends Component {
     }
 
     async createNoteIntoCommand() {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
+        const activeNoteContext = appContext.tabManager.getActiveContext();
 
-        if (!activeTabContext) {
+        if (!activeNoteContext) {
             return;
         }
 
-        await noteCreateService.createNote(activeTabContext.notePath, {
-            isProtected: activeTabContext.note.isProtected,
+        await noteCreateService.createNote(activeNoteContext.notePath, {
+            isProtected: activeNoteContext.note.isProtected,
             saveSelection: false
         });
     }
 
     async createNoteAfterCommand() {
         const node = this.tree.getActiveNode();
+
+        if (!node) {
+            return;
+        }
+
         const parentNotePath = treeService.getNotePath(node.getParent());
         const isProtected = await treeService.getParentProtectedStatus(node);
 

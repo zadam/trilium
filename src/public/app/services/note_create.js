@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 import treeService from "./tree.js";
 import toastService from "./toast.js";
 
@@ -20,7 +20,7 @@ async function createNote(parentNotePath, options = {}) {
         options.isProtected = false;
     }
 
-    if (appContext.tabManager.getActiveTabNoteType() !== 'text') {
+    if (appContext.tabManager.getActiveContextNoteType() !== 'text') {
         options.saveSelection = false;
     }
 
@@ -31,6 +31,14 @@ async function createNote(parentNotePath, options = {}) {
     const newNoteName = options.title || "new note";
 
     const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
+
+    if (options.type === 'mermaid' && !options.content) {
+        options.content = `graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;`
+    }
 
     const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${options.target}&targetBranchId=${options.targetBranchId}`, {
         title: newNoteName,
@@ -48,19 +56,19 @@ async function createNote(parentNotePath, options = {}) {
     await ws.waitForMaxKnownEntityChangeId();
 
     if (options.activate) {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
-        await activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
+        const activeNoteContext = appContext.tabManager.getActiveContext();
+        await activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
         if (options.focus === 'title') {
-            appContext.triggerEvent('focusAndSelectTitle');
+            appContext.triggerEvent('focusAndSelectTitle', {isNewNote: true});
         }
         else if (options.focus === 'content') {
-            appContext.triggerEvent('focusOnDetail', {tabId: activeTabContext.tabId});
+            appContext.triggerEvent('focusOnDetail', {ntxId: activeNoteContext.ntxId});
         }
     }
 
-    const noteEntity = await treeCache.getNote(note.noteId);
-    const branchEntity = treeCache.getBranch(branch.branchId);
+    const noteEntity = await froca.getNote(note.noteId);
+    const branchEntity = froca.getBranch(branch.branchId);
 
     return {
         note: noteEntity,
@@ -90,10 +98,10 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
     await ws.waitForMaxKnownEntityChangeId();
 
-    const activeTabContext = appContext.tabManager.getActiveTabContext();
-    activeTabContext.setNote(`${parentNotePath}/${note.noteId}`);
+    const activeNoteContext = appContext.tabManager.getActiveContext();
+    activeNoteContext.setNote(`${parentNotePath}/${note.noteId}`);
 
-    const origNote = await treeCache.getNote(noteId);
+    const origNote = await froca.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 

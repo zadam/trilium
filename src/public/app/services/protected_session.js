@@ -3,7 +3,7 @@ import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 import utils from "./utils.js";
 
 let protectedSessionDeferred = null;
@@ -32,12 +32,12 @@ function enterProtectedSession() {
 }
 
 async function reloadData() {
-    const allNoteIds = Object.keys(treeCache.notes);
+    const allNoteIds = Object.keys(froca.notes);
 
-    await treeCache.loadInitialTree();
+    await froca.loadInitialTree();
 
     // make sure that all notes used in the application are loaded, including the ones not shown in the tree
-    await treeCache.reloadNotes(allNoteIds, true);
+    await froca.reloadNotes(allNoteIds, true);
 }
 
 async function setupProtectedSession(password) {
@@ -55,7 +55,7 @@ ws.subscribeToMessages(async message => {
     if (message.type === 'protectedSessionLogin') {
         await reloadData();
 
-        await appContext.triggerEvent('treeCacheReloaded');
+    await appContext.triggerEvent('frocaReloaded');
 
         appContext.triggerEvent('protectedSessionStarted');
 
@@ -69,7 +69,7 @@ ws.subscribeToMessages(async message => {
         toastService.showMessage("Protected session has been started.");
     }
     else if (message.type === 'protectedSessionLogout') {
-        utils.reloadApp();
+        utils.reloadFrontendApp(`Protected session logout`);
     }
 });
 

@@ -41,13 +41,17 @@ function initLogFile() {
 function checkDate(millisSinceMidnight) {
     if (millisSinceMidnight >= DAY) {
         initLogFile();
+
+        millisSinceMidnight -= DAY;
     }
+
+    return millisSinceMidnight;
 }
 
 function log(str) {
-    const millisSinceMidnight = Date.now() - todaysMidnight.getTime();
+    let millisSinceMidnight = Date.now() - todaysMidnight.getTime();
 
-    checkDate(millisSinceMidnight);
+    millisSinceMidnight = checkDate(millisSinceMidnight);
 
     logFile.write(formatTime(millisSinceMidnight) + ' ' + str + NEW_LINE);
 
@@ -62,9 +66,9 @@ function error(message) {
     log("ERROR: " + message);
 }
 
-const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets" ];
+const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets", "/api/recent-notes" ];
 
-function request(req, res, timeMs) {
+function request(req, res, timeMs, responseLength = "?") {
     for (const bl of requestBlacklist) {
         if (req.url.startsWith(bl)) {
             return;
@@ -76,7 +80,7 @@ function request(req, res, timeMs) {
     }
 
     info((timeMs >= 10 ? "Slow " : "") +
-        res.statusCode + " " + req.method + " " + req.url + " took " + timeMs + "ms");
+        `${res.statusCode} ${req.method} ${req.url} with ${responseLength} bytes took ${timeMs}ms`);
 }
 
 function pad(num) {

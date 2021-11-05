@@ -13,6 +13,12 @@ class ZoomService extends Component {
             options.initializedPromise.then(() => {
                 this.setZoomFactor(options.getFloat('zoomFactor'));
             });
+
+            window.addEventListener("wheel", event => {
+                if (event.ctrlKey) {
+                    this.setZoomFactorAndSave(this.getCurrentZoom() + event.deltaY * 0.001);
+                }
+            });
         }
     }
 
@@ -25,7 +31,7 @@ class ZoomService extends Component {
 
     async setZoomFactorAndSave(zoomFactor) {
         if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
-            zoomFactor = Math.round(zoomFactor * 10) / 10;
+            zoomFactor = Math.round(zoomFactor * 1000) / 1000;
 
             this.setZoomFactor(zoomFactor);
 

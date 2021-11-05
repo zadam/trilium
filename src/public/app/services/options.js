@@ -50,6 +50,10 @@ class Options {
 
         await server.put(`options`, payload);
     }
+
+    async toggle(key) {
+        await this.save(key, (!this.is(key)).toString());
+    }
 }
 
 const options = new Options();

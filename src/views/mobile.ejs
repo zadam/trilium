@@ -95,7 +95,7 @@
         }
     </style>
 </head>
-<body class="mobile theme-<%= theme %> heading-style-<%= headingStyle %>">
+<body class="mobile heading-style-<%= headingStyle %>">
 <noscript>Trilium requires JavaScript to be enabled.</noscript>
 
 <div id="toast-container" class="d-flex flex-column justify-content-center align-items-center"></div>
@@ -123,7 +123,7 @@
 
 <script src="libraries/dayjs.min.js"></script>
 
-<link href="libraries/fancytree/skin-win8/ui.fancytree.min.css" rel="stylesheet">
+<link href="stylesheets/tree.css" rel="stylesheet">
 <script src="libraries/fancytree/jquery.fancytree-all-deps.min.js"></script>
 
 <link href="libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -131,7 +131,12 @@
 
 <script src="app/mobile.js" crossorigin type="module"></script>
 
-<link href="stylesheets/themes.css" rel="stylesheet">
+<link href="api/fonts" rel="stylesheet">
+<link href="stylesheets/ckeditor-theme.css" rel="stylesheet">
+<link href="stylesheets/theme-light.css" rel="stylesheet">
+<% if (themeCssUrl) { %>
+    <link href="<%= themeCssUrl %>" rel="stylesheet">
+<% } %>
 <link href="stylesheets/style.css" rel="stylesheet">
 
 <link rel="stylesheet" type="text/css" href="libraries/boxicons/css/boxicons.min.css">

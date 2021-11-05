@@ -4,8 +4,8 @@ const build = require('./build');
 const packageJson = require('../../package');
 const {TRILIUM_DATA_DIR} = require('./data_dir');
 
-const APP_DB_VERSION = 183;
-const SYNC_VERSION = 20;
+const APP_DB_VERSION = 185;
+const SYNC_VERSION = 21;
 const CLIPPER_PROTOCOL_VERSION = "1.0";
 
 module.exports = {

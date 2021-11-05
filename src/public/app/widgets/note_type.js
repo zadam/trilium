@@ -1,21 +1,25 @@
 import server from '../services/server.js';
 import mimeTypesService from '../services/mime_types.js';
-import TabAwareWidget from "./tab_aware_widget.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
     { type: "image", title: "Image", selectable: false },
-    { type: "search", title: "Saved search", selectable: false },
+    { type: "search", title: "Saved Search", selectable: false },
+    { type: "note-map", mime: '', title: "Note Map", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
     { type: "render", mime: '', title: "Render Note", selectable: true },
     { type: "book", mime: '', title: "Book", selectable: true },
+    { type: "mermaid", mime: 'text/mermaid', title: "Mermaid Diagram", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 
+const NOT_SELECTABLE_NOTE_TYPES = NOTE_TYPES.filter(nt => !nt.selectable).map(nt => nt.type);
+
 const TPL = `
-<div class="dropdown note-type">
+<div class="dropdown note-type-widget">
     <style>
     .note-type-dropdown {
         max-height: 500px;
@@ -24,17 +28,16 @@ const TPL = `
     }
     </style>
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle note-type-button">
-        Type: <span class="note-type-desc"></span>
+        <span class="note-type-desc"></span>
         <span class="caret"></span>
     </button>
-    <div class="note-type-dropdown dropdown-menu dropdown-menu-right"></div>
+    <div class="note-type-dropdown dropdown-menu dropdown-menu-left"></div>
 </div>
 `;
 
-export default class NoteTypeWidget extends TabAwareWidget {
+export default class NoteTypeWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
 
@@ -48,9 +51,11 @@ export default class NoteTypeWidget extends TabAwareWidget {
 
     async refreshWithNote(note) {
         this.$noteTypeButton.prop("disabled",
-            () => ["file", "image", "search"].includes(note.type));
+            () => NOT_SELECTABLE_NOTE_TYPES.includes(note.type));
 
         this.$noteTypeDesc.text(await this.findTypeTitle(note.type, note.mime));
+
+        this.$noteTypeButton.dropdown('hide');
     }
 
     /** actual body is rendered lazily on note-type button click */
@@ -93,8 +98,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     const $link = $(e.target).closest('.dropdown-item');
 
                     this.save('code', $link.attr('data-mime-type'));
-
-                    this.$noteTypeButton.dropdown('hide');
                 });
 
             if (this.note.type === 'code' && this.note.mime === mimeType.mime) {
@@ -136,7 +139,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async confirmChangeIfContent() {
-        const noteComplement = await this.tabContext.getNoteComplement();
+        const noteComplement = await this.noteContext.getNoteComplement();
 
         if (!noteComplement.content || !noteComplement.content.trim().length) {
             return true;
@@ -147,7 +150,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
             this.refresh();
         }
     }

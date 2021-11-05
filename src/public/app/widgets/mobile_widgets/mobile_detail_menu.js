@@ -10,10 +10,9 @@ const TPL = `<button type="button" class="action-button bx bx-menu" style="paddi
 class MobileDetailMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-        this.overflowing();
 
         this.$widget.on("click", async e => {
-            const note = appContext.tabManager.getActiveTabNote();
+            const note = appContext.tabManager.getActiveContextNote();
 
             contextMenu.show({
                 x: e.pageX,
@@ -26,10 +25,10 @@ class MobileDetailMenuWidget extends BasicWidget {
                 ],
                 selectMenuItemHandler: async ({command}) => {
                     if (command === "insertChildNote") {
-                        noteCreateService.createNote(appContext.tabManager.getActiveTabNotePath());
+                        noteCreateService.createNote(appContext.tabManager.getActiveContextNotePath());
                     }
                     else if (command === "delete") {
-                        const notePath = appContext.tabManager.getActiveTabNotePath();
+                        const notePath = appContext.tabManager.getActiveContextNotePath();
                         const branchId = await treeService.getBranchIdFromNotePath(notePath);
 
                         if (!branchId) {

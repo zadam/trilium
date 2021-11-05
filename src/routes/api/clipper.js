@@ -6,15 +6,22 @@ const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
 const appInfo = require('../../services/app_info');
-const ws = require('../../services/ws.js');
+const ws = require('../../services/ws');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const Attribute = require('../../entities/attribute');
+const Attribute = require('../../becca/entities/attribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
+const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
+    const notes = todayNote.searchNotesInSubtree(
+        formatAttrForSearch({
+            type: 'label',
+            name: "pageUrl",
+            value: pageUrl
+        }, true)
+    );
 
     for (const note of notes) {
         if (note.getOwnedLabelValue('clipType') === 'clippings') {
@@ -52,6 +59,7 @@ function addClipping(req) {
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
+        clippingNote.setLabel('iconClass', 'bx bx-globe');
     }
 
     const rewrittenContent = processContent(images, clippingNote, content);
@@ -85,6 +93,7 @@ function createNote(req) {
 
     if (pageUrl) {
         note.setLabel('pageUrl', pageUrl);
+        note.setLabel('iconClass', 'bx bx-globe');
     }
 
     const rewrittenContent = processContent(images, note, content);
@@ -97,10 +106,7 @@ function createNote(req) {
 }
 
 function processContent(images, note, content) {
-    let rewrittenContent = htmlSanitizer.sanitize(content)
-        // H1 is not supported so convert it to H2
-        .replace(/<h1/ig, "<h2")
-        .replace(/<\/h1/ig, "</h2");
+    let rewrittenContent = htmlSanitizer.sanitize(content);
 
     if (images) {
         for (const {src, dataUrl, imageId} of images) {

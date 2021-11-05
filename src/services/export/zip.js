@@ -1,7 +1,6 @@
 "use strict";
 
 const html = require('html');
-const repository = require('../repository');
 const dateUtils = require('../date_utils');
 const path = require('path');
 const mimeTypes = require('mime-types');
@@ -11,6 +10,7 @@ const utils = require('../utils');
 const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
+const becca = require("../../becca/becca");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const archiver = require('archiver');
 
@@ -77,7 +77,7 @@ function exportToZip(taskContext, branch, format, res) {
             fileName = fileName.substr(0, 30);
         }
 
-        // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
+        // if the note is already named with extension (e.g. "jquery"), then it's silly to append exact same extension again
         if (newExtension && existingExtension !== "." + newExtension.toLowerCase()) {
             fileName += "." + newExtension;
         }
@@ -279,7 +279,7 @@ ${content}
             return;
         }
 
-        const note = repository.getNote(noteMeta.noteId);
+        const note = becca.getNote(noteMeta.noteId);
 
         notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
 

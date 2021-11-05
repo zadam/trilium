@@ -1,13 +1,13 @@
 const {note} = require('./note_cache_mocking.js');
 const ValueExtractor = require('../../src/services/search/value_extractor.js');
-const noteCache = require('../../src/services/note_cache/note_cache.js');
+const becca = require('../../src/becca/becca.js');
 const SearchContext = require("../../src/services/search/search_context.js");
 
 const dsc = new SearchContext();
 
 describe("Value extractor", () => {
     beforeEach(() => {
-        noteCache.reset();
+        becca.reset();
     });
 
     it("simple title extraction", async () => {

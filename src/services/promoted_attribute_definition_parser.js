@@ -20,7 +20,7 @@ function parse(value) {
         else if (token.startsWith('inverse')) {
             const chunks = token.split('=');
 
-            defObj.inverseRelation = chunks[1];
+            defObj.inverseRelation = chunks[1].replace(/[^\p{L}\p{N}_:]/ug, "")
         }
         else {
             console.log("Unrecognized attribute definition token:", token);

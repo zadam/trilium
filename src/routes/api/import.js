@@ -1,15 +1,15 @@
 "use strict";
 
-const repository = require('../../services/repository');
 const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const zipImportService = require('../../services/import/zip');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
-const noteCacheLoader = require('../../services/note_cache/note_cache_loader.js');
+const becca = require('../../becca/becca');
+const beccaLoader = require('../../becca/becca_loader');
 const log = require('../../services/log');
-const TaskContext = require('../../services/task_context.js');
+const TaskContext = require('../../services/task_context');
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;
@@ -30,7 +30,7 @@ async function importToBranch(req) {
         return [400, "No file has been uploaded"];
     }
 
-    const parentNote = repository.getNote(parentNoteId);
+    const parentNote = becca.getNote(parentNoteId);
 
     if (!parentNote) {
         return [404, `Note ${parentNoteId} doesn't exist.`];
@@ -43,7 +43,7 @@ async function importToBranch(req) {
     cls.disableEntityEvents();
 
     // eliminate flickering during import
-    cls.ignoreEntityChanges();
+    cls.ignoreEntityChangeIds();
 
     let note; // typically root of the import - client can show it after finishing the import
 
@@ -77,12 +77,12 @@ async function importToBranch(req) {
         }), 1000);
     }
 
-    // import has deactivated note events so note cache is not updated
+    // import has deactivated note events so becca is not updated
     // instead we force it to reload (can be async)
 
-    noteCacheLoader.load();
+    beccaLoader.load();
 
-    return note;
+    return note.getPojo();
 }
 
 module.exports = {

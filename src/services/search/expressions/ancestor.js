@@ -3,7 +3,7 @@
 const Expression = require('./expression');
 const NoteSet = require('../note_set');
 const log = require('../../log');
-const noteCache = require('../../note_cache/note_cache');
+const becca = require('../../../becca/becca');
 
 class AncestorExp extends Expression {
     constructor(ancestorNoteId, ancestorDepth) {
@@ -15,7 +15,7 @@ class AncestorExp extends Expression {
     }
 
     execute(inputNoteSet, executionContext) {
-        const ancestorNote = noteCache.notes[this.ancestorNoteId];
+        const ancestorNote = becca.notes[this.ancestorNoteId];
 
         if (!ancestorNote) {
             log.error(`Subtree note '${this.ancestorNoteId}' was not not found.`);
@@ -23,7 +23,7 @@ class AncestorExp extends Expression {
             return new NoteSet([]);
         }
 
-        const subTreeNoteSet = new NoteSet(ancestorNote.subtreeNotes).intersection(inputNoteSet);
+        const subTreeNoteSet = new NoteSet(ancestorNote.getSubtreeNotes()).intersection(inputNoteSet);
 
         if (!this.ancestorDepthComparator) {
             return subTreeNoteSet;

@@ -2,7 +2,7 @@ import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import toastService from "../services/toast.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import openService from "../services/open.js";
 
 const $dialog = $("#export-dialog");
@@ -42,7 +42,7 @@ export async function showDialog(notePath, defaultType) {
 
     const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
-    branchId = await treeCache.getBranchId(parentNoteId, noteId);
+    branchId = await froca.getBranchId(parentNoteId, noteId);
 
     const noteTitle = await treeService.getNoteTitle(noteId);
 

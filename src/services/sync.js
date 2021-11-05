@@ -2,7 +2,6 @@
 
 const log = require('./log');
 const sql = require('./sql');
-const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const utils = require('./utils');
 const sourceIdService = require('./source_id');
@@ -15,8 +14,9 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
-const entityChangesService = require('./entity_changes.js');
-const entityConstructor = require('../entities/entity_constructor');
+const entityChangesService = require('./entity_changes');
+const entityConstructor = require('../becca/entity_constructor');
+const becca = require("../becca/becca");
 
 let proxyToggle = true;
 
@@ -156,7 +156,7 @@ async function pullChanges(syncContext) {
                         atLeastOnePullApplied = true;
                     }
 
-                    syncUpdateService.updateEntity(entityChange, entity, syncContext.sourceId);
+                    syncUpdateService.updateEntity(entityChange, entity);
                 }
 
                 outstandingPullCount = Math.max(0, resp.maxEntityChangeId - entityChange.id);
@@ -334,6 +334,7 @@ function getEntityChangesRecords(entityChanges) {
         const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
 
         if (entityChange.entityName === 'options' && !entity.isSynced) {
+            // if non-synced entities should count towards "lastSyncedPush"
             records.push({entityChange});
 
             continue;
@@ -358,7 +359,11 @@ function getLastSyncedPull() {
 }
 
 function setLastSyncedPull(entityChangeId) {
-    optionService.setOption('lastSyncedPull', entityChangeId);
+    const lastSyncedPullOption = becca.getOption('lastSyncedPull');
+    lastSyncedPullOption.value = entityChangeId + '';
+
+    // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
+    sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPull']);
 }
 
 function getLastSyncedPush() {
@@ -372,7 +377,11 @@ function getLastSyncedPush() {
 function setLastSyncedPush(entityChangeId) {
     ws.setLastSyncedPush(entityChangeId);
 
-    optionService.setOption('lastSyncedPush', entityChangeId);
+    const lastSyncedPushOption = becca.getOption('lastSyncedPush');
+    lastSyncedPushOption.value = entityChangeId + '';
+
+    // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
+    sql.execute("UPDATE options SET value = ? WHERE name = ?", [entityChangeId, 'lastSyncedPush']);
 }
 
 function getMaxEntityChangeId() {
@@ -383,17 +392,15 @@ function getOutstandingPullCount() {
     return outstandingPullCount;
 }
 
-sqlInit.dbReady.then(() => {
+require("../becca/becca_loader").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
     // kickoff initial sync immediately
-    setTimeout(cls.wrap(sync), 5000);
-});
+    setTimeout(cls.wrap(sync), 2000);
 
-if (sqlInit.isDbInitialized()) {
     // called just so ws.setLastSyncedPush() is called
     getLastSyncedPush();
-}
+});
 
 module.exports = {
     sync,

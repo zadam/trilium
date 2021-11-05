@@ -3,31 +3,25 @@ const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
+const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function insertEntityChange(entityName, entityId, hash, isErased, utcDateChanged, sourceId = null, isSynced = true) {
-    const entityChange = {
-        entityName: entityName,
-        entityId: entityId,
-        hash: hash,
-        sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
-        isSynced: isSynced ? 1 : 0,
-        isErased: isErased ? 1 : 0,
-        utcDateChanged: utcDateChanged
-    };
+function addEntityChange(origEntityChange, keepOriginalId = false) {
+    const ec = {...origEntityChange};
 
-    entityChange.id = sql.replace("entity_changes", entityChange);
+    if (!keepOriginalId) {
+        delete ec.id;
+    }
 
-    maxEntityChangeId = Math.max(maxEntityChangeId, entityChange.id);
+    ec.sourceId = ec.sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId();
+    ec.isSynced = ec.isSynced ? 1 : 0;
+    ec.isErased = ec.isErased ? 1 : 0;
+    ec.id = sql.replace("entity_changes", ec);
 
-    return entityChange;
-}
+    maxEntityChangeId = Math.max(maxEntityChangeId, ec.id);
 
-function addEntityChange(entityChange, sourceId, isSynced) {
-    const localEntityChange = insertEntityChange(entityChange.entityName, entityChange.entityId, entityChange.hash, entityChange.isErased, entityChange.utcDateChanged, sourceId, isSynced);
-
-    cls.addEntityChange(localEntityChange);
+    cls.addEntityChange(ec);
 }
 
 function addNoteReorderingEntityChange(parentNoteId, sourceId) {
@@ -36,8 +30,10 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
         entityId: parentNoteId,
         hash: 'N/A',
         isErased: false,
-        utcDateChanged: dateUtils.utcNowDateTime()
-    }, sourceId);
+        utcDateChanged: dateUtils.utcNowDateTime(),
+        isSynced: true,
+        sourceId
+    });
 
     const eventService = require('./events');
 
@@ -48,9 +44,9 @@ function addNoteReorderingEntityChange(parentNoteId, sourceId) {
 }
 
 function moveEntityChangeToTop(entityName, entityId) {
-    const [hash, isSynced] = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
+    const ec = sql.getRow(`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [entityName, entityId]);
 
-    addEntityChange(entityName, entityId, hash, null, isSynced);
+    addEntityChange(ec);
 }
 
 function addEntityChangesForSector(entityName, sector) {
@@ -60,7 +56,7 @@ function addEntityChangesForSector(entityName, sector) {
 
     sql.transactional(() => {
         for (const ec of entityChanges) {
-            insertEntityChange(entityName, ec.entityId, ec.hash, ec.isErased, ec.utcDateChanged, ec.sourceId, ec.isSynced);
+            addEntityChange(ec);
         }
     });
 
@@ -80,7 +76,6 @@ function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
     try {
         cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
-        const repository = require("./repository.js");
 
         sql.transactional(() => {
             const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
@@ -95,15 +90,16 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                 if (existingRows === 0) {
                     createdCount++;
 
-                    const entity = repository.getEntity(`SELECT * FROM ${entityName} WHERE ${entityPrimaryKey} = ?`, [entityId]);
+                    const entity = becca.getEntity(entityName, entityId);
 
                     addEntityChange({
                         entityName,
                         entityId,
                         hash: entity.generateHash(),
                         isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged()
-                    }, null);
+                        utcDateChanged: entity.getUtcDateChanged(),
+                        isSynced: entityName !== 'options' || !!entity.isSynced
+                    });
                 }
             }
 

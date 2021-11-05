@@ -1,11 +1,11 @@
 import server from "../../services/server.js";
-import treeCache from "../../services/tree_cache.js";
+import froca from "../../services/froca.js";
 import treeService from "../../services/tree.js";
 import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import promotedAttributeDefinitionParser from '../../services/promoted_attribute_definition_parser.js';
-import TabAwareWidget from "../tab_aware_widget.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
 
@@ -222,7 +222,7 @@ const ATTR_HELP = {
     }
 };
 
-export default class AttributeDetailWidget extends TabAwareWidget {
+export default class AttributeDetailWidget extends NoteContextAwareWidget {
     async refresh() {
         // switching note/tab should close the widget
 
@@ -237,7 +237,6 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
         utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
-        this.contentSized();
 
         this.$title = this.$widget.find('.attr-detail-title');
 
@@ -335,7 +334,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
         this.$relatedNotesList = this.$relatedNotesContainer.find('.related-notes-list');
         this.$relatedNotesMoreNotes = this.$relatedNotesContainer.find('.related-notes-more-notes');
 
-        $(window).on('mouseup', e => {
+        $(window).on('mousedown', e => {
             if (!$(e.target).closest(this.$widget[0]).length
                 && !$(e.target).closest(".algolia-autocomplete").length
                 && !$(e.target).closest("#context-menu-container").length) {
@@ -429,7 +428,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 .setSelectedNotePath("");
 
             if (attribute.value) {
-                const targetNote = await treeCache.getNote(attribute.value);
+                const targetNote = await froca.getNote(attribute.value);
 
                 if (targetNote) {
                     this.$inputTargetNote
@@ -542,7 +541,7 @@ export default class AttributeDetailWidget extends TabAwareWidget {
             this.$relatedNotesList.empty();
 
             const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
-            const displayedNotes = await treeCache.getNotes(displayedResults.map(res => res.noteId));
+            const displayedNotes = await froca.getNotes(displayedResults.map(res => res.noteId));
 
             for (const note of displayedNotes) {
                 const notePath = treeService.getSomeNotePath(note);
@@ -627,7 +626,9 @@ export default class AttributeDetailWidget extends TabAwareWidget {
                 props.push('precision=' + this.$inputNumberPrecision.val());
             }
         } else if (this.attrType === 'relation-definition' && this.$inputInverseRelation.val().trim().length > 0) {
-            props.push("inverse=" + this.$inputInverseRelation.val());
+            const inverseRelationName = this.$inputInverseRelation.val();
+
+            props.push("inverse=" + utils.filterAttributeName(inverseRelationName));
         }
 
         this.$rowNumberPrecision.toggle(

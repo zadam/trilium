@@ -5,8 +5,8 @@ const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options');
 const port = require('./port');
-const Option = require('../entities/option');
-const TaskContext = require('./task_context.js');
+const Option = require('../becca/entities/option');
+const TaskContext = require('./task_context');
 const migrationService = require('./migration');
 const cls = require('./cls');
 const config = require('./config');
@@ -32,14 +32,13 @@ function isDbInitialized() {
 
 async function initDbConnection() {
     if (!isDbInitialized()) {
-        log.info(`DB not initialized, please visit setup page` + (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
+        log.info(`DB not initialized, please visit setup page` +
+            (utils.isElectron() ? '' : ` - http://[your-server-host]:${await port} to see instructions on how to initialize Trilium.`));
 
         return;
     }
 
     await migrationService.migrateIfNecessary();
-
-    require('./options_init').initStartupOptions();
 
     sql.execute('CREATE TEMP TABLE "param_list" (`paramId` TEXT NOT NULL PRIMARY KEY)');
 
@@ -47,7 +46,7 @@ async function initDbConnection() {
 }
 
 async function createInitialDatabase(username, password, theme) {
-    log.info("Creating initial database ...");
+    log.info("Creating database schema ...");
 
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
@@ -58,11 +57,15 @@ async function createInitialDatabase(username, password, theme) {
 
     let rootNote;
 
+    log.info("Creating root note ...");
+
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        const Note = require("../entities/note");
-        const Branch = require("../entities/branch");
+        require("../becca/becca_loader").load();
+
+        const Note = require("../becca/entities/note");
+        const Branch = require("../becca/entities/branch");
 
         rootNote = new Note({
             noteId: 'root',
@@ -80,7 +83,16 @@ async function createInitialDatabase(username, password, theme) {
             isExpanded: true,
             notePosition: 10
         }).save();
+
+        const optionsInitService = require('./options_init');
+
+        optionsInitService.initDocumentOptions();
+        optionsInitService.initSyncedOptions(username, password);
+        optionsInitService.initNotSyncedOptions(true, { theme });
+        optionsInitService.initStartupOptions();
     });
+
+    log.info("Importing demo content ...");
 
     const dummyTaskContext = new TaskContext("initial-demo-import", 'import', false);
 
@@ -88,13 +100,19 @@ async function createInitialDatabase(username, password, theme) {
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
+        // this needs to happen after ZIP import
+        // previous solution was to move option initialization here but then the important parts of initialization
+        // are not all in one transaction (because ZIP import is async and thus not transactional)
+
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        const optionsInitService = require('./options_init');
-
-        optionsInitService.initDocumentOptions();
-        optionsInitService.initSyncedOptions(username, password);
-        optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
+        const optionService = require("./options");
+        optionService.setOption('openTabs', JSON.stringify([
+            {
+                notePath: startNoteId,
+                active: true
+            }
+        ]));
     });
 
     log.info("Schema and initial content generated.");
@@ -114,7 +132,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     sql.transactional(() => {
         sql.executeScript(schema);
 
-        require('./options_init').initNotSyncedOptions(false, 'root', { syncServerHost, syncProxy });
+        require('./options_init').initNotSyncedOptions(false,  { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {

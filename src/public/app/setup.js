@@ -23,19 +23,7 @@ function SetupModel() {
     this.password1 = ko.observable();
     this.password2 = ko.observable();
 
-    this.theme = ko.observable("white");
-    this.theme.subscribe(function(newTheme) {
-        const $body = $("body");
-
-        for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz.startsWith("theme-")) {
-                $body.removeClass(clazz);
-            }
-        }
-
-        $body.addClass("theme-" + newTheme);
-    });
-
+    this.theme = ko.observable("light");
     this.syncServerHost = ko.observable();
     this.syncProxy = ko.observable();
 
@@ -139,7 +127,7 @@ async function checkOutstandingSyncs() {
             remote.app.exit(0);
         }
         else {
-            utils.reloadApp();
+            utils.reloadFrontendApp();
         }
     }
     else {

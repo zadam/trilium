@@ -2,9 +2,8 @@ const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
-const repository = require('./repository');
-const noteCache = require('./note_cache/note_cache');
-const Attribute = require('../entities/attribute');
+const becca = require('../becca/becca');
+const Attribute = require('../becca/entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
     // same script note can get here with multiple ways, but execute only once
@@ -23,7 +22,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
     runAttachedRelations(note, 'runOnNoteTitleChange', note);
 
     if (!note.isRoot()) {
-        const noteFromCache = noteCache.notes[note.noteId];
+        const noteFromCache = becca.notes[note.noteId];
 
         if (!noteFromCache) {
             return;
@@ -31,7 +30,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
 
         for (const parentNote of noteFromCache.parents) {
             if (parentNote.hasLabel("sorted")) {
-                treeService.sortNotesByTitle(parentNote.noteId);
+                treeService.sortNotesIfNeeded(parentNote.noteId);
             }
         }
     }
@@ -51,9 +50,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         runAttachedRelations(entity.getNote(), 'runOnAttributeCreation', entity);
 
         if (entity.type === 'relation' && entity.name === 'template') {
-            const note = repository.getNote(entity.noteId);
+            const note = becca.getNote(entity.noteId);
 
-            const templateNote = repository.getNote(entity.value);
+            const templateNote = becca.getNote(entity.value);
 
             if (!templateNote) {
                 return;
@@ -84,14 +83,14 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             }
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
-            treeService.sortNotesByTitle(entity.noteId);
+            treeService.sortNotesIfNeeded(entity.noteId);
 
             if (entity.isInheritable) {
-                const note = noteCache.notes[entity.noteId];
+                const note = becca.notes[entity.noteId];
 
                 if (note) {
-                    for (const noteId of note.subtreeNoteIds) {
-                        treeService.sortNotesByTitle(noteId);
+                    for (const noteId of note.getSubtreeNoteIds()) {
+                        treeService.sortNotesIfNeeded(noteId);
                     }
                 }
             }
@@ -125,7 +124,7 @@ function processInverseRelations(entityName, entity, handler) {
 
 eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
-        // we need to make sure that also target's inverse attribute exists and if note, then create it
+        // we need to make sure that also target's inverse attribute exists and if not, then create it
         // inverse attribute has to target our note as well
         const hasInverseAttribute = (targetNote.getRelations(definition.inverseRelation))
             .some(attr => attr.value === note.noteId);
@@ -139,7 +138,8 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
                 isInheritable: entity.isInheritable
             }).save();
 
-            targetNote.invalidateAttributeCache();
+            // becca will not be updated before we'll check from the other side which would create infinite relation creation (#2269)
+            targetNote.invalidateThisCache();
         }
     });
 });
@@ -151,11 +151,7 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
         for (const relation of relations) {
             if (relation.value === note.noteId) {
-                note.invalidateAttributeCache();
-                targetNote.invalidateAttributeCache();
-
-                relation.isDeleted = true;
-                relation.save();
+                relation.markAsDeleted();
             }
         }
     });

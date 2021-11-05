@@ -17,6 +17,14 @@
                     </label>
                 </div>
 
+                <div class="checkbox">
+                    <label title="Normal (soft) deletion only marks the notes as deleted and they can be undeleted (in recent changes dialog) within a period of time. Checking this option will erase the notes immediatelly and it won't be possible to undelete the notes.">
+                        <input id="erase-notes" value="1" type="checkbox">
+
+                        erase notes permanently (can't be undone). This will force application reload.
+                    </label>
+                </div>
+
                 <div id="delete-notes-list-wrapper">
                     <h4>Following notes will be deleted (<span id="deleted-notes-count"></span>)</h4>
 

@@ -31,13 +31,14 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
-const dateNotesRoute = require('./api/date_notes');
-const linkMapRoute = require('./api/link_map');
+const specialNotesRoute = require('./api/special_notes.js');
+const noteMapRoute = require('./api/note_map.js');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
 const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
+const fontsRoute = require('./api/fonts');
 
 const log = require('../services/log');
 const express = require('express');
@@ -45,35 +46,82 @@ const router = express.Router();
 const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
-const protectedSessionService = require('../services/protected_session');
-const entityChangesService = require('../services/entity_changes.js');
+const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
-
+const rateLimit = require("express-rate-limit");
+const AbstractEntity = require("../becca/entities/abstract_entity.js");
 
 const csrfMiddleware = csurf({
     cookie: true,
     path: '' // nothing so cookie is valid only for current path
 });
 
+/** Handling common patterns. If entity is not caught, serialization to JSON will fail */
+function convertEntitiesToPojo(result) {
+    if (result instanceof AbstractEntity) {
+        result = result.getPojo();
+    }
+    else if (Array.isArray(result)) {
+        for (const idx in result) {
+            if (result[idx] instanceof AbstractEntity) {
+                result[idx] = result[idx].getPojo();
+            }
+        }
+    }
+    else {
+        if (result && result.note instanceof AbstractEntity) {
+            result.note = result.note.getPojo();
+        }
+
+        if (result && result.branch instanceof AbstractEntity) {
+            result.branch = result.branch.getPojo();
+        }
+    }
+
+    if (result && result.executionResult) { // from runOnBackend()
+        result.executionResult = convertEntitiesToPojo(result.executionResult);
+    }
+
+    return result;
+}
+
 function apiResultHandler(req, res, result) {
     res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
+
+    result = convertEntitiesToPojo(result);
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
         const [statusCode, response] = result;
 
-        res.status(statusCode).send(response);
-
         if (statusCode !== 200 && statusCode !== 201 && statusCode !== 204) {
             log.info(`${req.method} ${req.originalUrl} returned ${statusCode} with response ${JSON.stringify(response)}`);
         }
+
+        return send(res, statusCode, response);
     }
     else if (result === undefined) {
-        res.status(204).send();
+        return send(res, 204, "");
     }
     else {
-        res.send(result);
+        return send(res, 200, result);
+    }
+}
+
+function send(res, statusCode, response) {
+    if (typeof response === 'string') {
+        res.status(statusCode).send(response);
+
+        return response.length;
+    }
+    else {
+        const json = JSON.stringify(response);
+
+        res.setHeader("Content-Type", "application/json");
+        res.status(statusCode).send(json);
+
+        return json.length;
     }
 }
 
@@ -101,7 +149,12 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 
             if (resultHandler) {
                 if (result && result.then) {
-                    result.then(actualResult => resultHandler(req, res, actualResult))
+                    result
+                        .then(actualResult => {
+                            const responseLength = resultHandler(req, res, actualResult);
+
+                            log.request(req, res, Date.now() - start, responseLength);
+                        })
                         .catch(e => {
                             log.error(`${method} ${path} threw exception: ` + e.stack);
 
@@ -109,7 +162,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                         });
                 }
                 else {
-                    resultHandler(req, res, result);
+                    const responseLength = resultHandler(req, res, result);
+
+                    log.request(req, res, Date.now() - start, responseLength);
                 }
             }
         }
@@ -118,8 +173,6 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 
             res.status(500).send(e.message);
         }
-
-        log.request(req, res, Date.now() - start);
     });
 }
 
@@ -129,7 +182,13 @@ const uploadMiddleware = multer.single('upload');
 function register(app) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
-    route(POST, '/login', [], loginRoute.login);
+
+    const loginRateLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 10 // limit each IP to 10 requests per windowMs
+    });
+
+    route(POST, '/login', [loginRateLimiter], loginRoute.login);
     route(POST, '/logout', [csrfMiddleware, auth.checkAuth], loginRoute.logout);
     route(GET, '/setup', [], setupRoute.setupPage);
 
@@ -198,15 +257,19 @@ function register(app) {
     apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
-    apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
+    apiRoute(POST, '/api/note-map/:noteId/tree', noteMapRoute.getTreeMap);
+    apiRoute(POST, '/api/note-map/:noteId/link', noteMapRoute.getLinkMap);
 
-    apiRoute(GET, '/api/date-notes/inbox/:date', dateNotesRoute.getInboxNote);
-    apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
-    apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
-    apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
-    apiRoute(GET, '/api/date-notes/notes-for-month/:month', dateNotesRoute.getDateNotesForMonth);
-    apiRoute(POST, '/api/sql-console', dateNotesRoute.createSqlConsole);
-    apiRoute(POST, '/api/search-note', dateNotesRoute.createSearchNote);
+    apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
+    apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
+    apiRoute(GET, '/api/special-notes/week/:date', specialNotesRoute.getWeekNote);
+    apiRoute(GET, '/api/special-notes/month/:month', specialNotesRoute.getMonthNote);
+    apiRoute(GET, '/api/special-notes/year/:year', specialNotesRoute.getYearNote);
+    apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDateNotesForMonth);
+    apiRoute(POST, '/api/special-notes/sql-console', specialNotesRoute.createSqlConsole);
+    apiRoute(POST, '/api/special-notes/save-sql-console', specialNotesRoute.saveSqlConsole);
+    apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
+    apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
@@ -239,7 +302,7 @@ function register(app) {
 
     // group of services below are meant to be executed from outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
-    route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
+    route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler, false);
     route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
     route(GET, '/api/setup/sync-seed', [auth.checkCredentials], setupApiRoute.getSyncSeed, apiResultHandler);
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);
@@ -300,6 +363,8 @@ function register(app) {
     apiRoute(GET, '/api/stats/subtree-size/:noteId', statsRoute.getSubtreeSize);
 
     apiRoute(POST, '/api/delete-notes-preview', notesApiRoute.getDeleteNotesPreview);
+
+    route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
 
     app.use('', router);
 }

@@ -7,7 +7,7 @@ const $noteSource = $("#note-source");
 export async function showDialog() {
     utils.openDialog($dialog);
 
-    const noteCompletement = await appContext.tabManager.getActiveTabContext().getNoteComplement();
+    const noteCompletement = await appContext.tabManager.getActiveContext().getNoteComplement();
 
     $noteSource.text(formatHtml(noteCompletement.content));
 }

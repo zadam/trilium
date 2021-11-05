@@ -1,0 +1,63 @@
+name: Bug Report
+description: Report a bug
+title: "(Bug report) "
+labels: "Type: Bug"
+body:
+- type: checkboxes
+  attributes:
+    label: Preflight Checklist
+    description: Please ensure you've completed all of the following.
+    options:
+      - label: I have searched the [issue tracker](https://www.github.com/zadam/trilium/issues) for a bug report that matches the one I want to file, without success.
+        required: true
+- type: input
+  attributes:
+    label: Trilium Version
+    description: What version of Trilium are you using?
+    placeholder: 0.48.0-beta
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: What operating system are you using?
+    options:
+      - Windows
+      - macOS
+      - Ubuntu
+      - Other Linux
+      - Other (specify below)
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: What is your setup? 
+    description: https://github.com/zadam/trilium/wiki#choose-the-setup
+    options:
+      - Local (no sync)
+      - Local + server sync
+      - Server access only
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Operating System Version
+    description: What operating system version are you using? On Windows, click Start button > Settings > System > About. On macOS, click the Apple Menu > About This Mac. On Linux, use lsb_release or uname -a.
+    placeholder: "e.g. Windows 10 version 1909, macOS Catalina 10.15.7, or Ubuntu 20.04"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A clear and concise description of what you expected to happen.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Actual Behavior
+    description: A clear description of what actually happens.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: If your problem needs further explanation, or if the issue you're seeing cannot be reproduced in a gist, please add more information here.

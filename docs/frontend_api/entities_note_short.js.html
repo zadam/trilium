@@ -30,7 +30,7 @@
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -42,21 +42,23 @@ const NOTE_TYPE_ICONS = {
     "render": "bx bx-extension",
     "search": "bx bx-file-find",
     "relation-map": "bx bx-map-alt",
-    "book": "bx bx-book"
+    "book": "bx bx-book",
+    "note-map": "bx bx-map-alt",
+    "mermaid": "bx bx-selection"
 };
 
 /**
  * FIXME: since there's no "full note" anymore we can rename this to Note
  *
- * This note's representation is used in note tree and is kept in TreeCache.
+ * This note's representation is used in note tree and is kept in Froca.
  */
 class NoteShort {
     /**
-     * @param {TreeCache} treeCache
+     * @param {Froca} froca
      * @param {Object.&lt;string, Object>} row
      */
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
 
         /** @type {string[]} */
         this.attributes = [];
@@ -89,8 +91,6 @@ class NoteShort {
         this.type = row.type;
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
-        /** @param {boolean} */
-        this.isDeleted = !!row.isDeleted;
     }
 
     addParent(parentNoteId, branchId) {
@@ -121,7 +121,7 @@ class NoteShort {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
-            branchIdPos[branchId] = this.treeCache.getBranch(branchId).notePosition;
+            branchIdPos[branchId] = this.froca.getBranch(branchId).notePosition;
         }
 
         this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] &lt; branchIdPos[this.childToBranch[b]] ? -1 : 1);
@@ -133,7 +133,7 @@ class NoteShort {
     }
 
     async getContent() {
-        // we're not caching content since these objects are in treeCache and as such pretty long lived
+        // we're not caching content since these objects are in froca and as such pretty long lived
         const note = await server.get("notes/" + this.noteId);
 
         return note.content;
@@ -161,7 +161,7 @@ class NoteShort {
     getBranches() {
         const branchIds = Object.values(this.parentToBranch);
 
-        return this.treeCache.getBranches(branchIds);
+        return this.froca.getBranches(branchIds);
     }
 
     /** @returns {boolean} */
@@ -174,7 +174,7 @@ class NoteShort {
         // don't use Object.values() to guarantee order
         const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
 
-        return this.treeCache.getBranches(branchIds);
+        return this.froca.getBranches(branchIds);
     }
 
     /** @returns {string[]} */
@@ -184,7 +184,7 @@ class NoteShort {
 
     /** @returns {NoteShort[]} */
     getParentNotes() {
-        return this.treeCache.getNotesFromCache(this.parents);
+        return this.froca.getNotesFromCache(this.parents);
     }
 
     // will sort the parents so that non-search &amp; non-archived are first and archived at the end
@@ -197,7 +197,7 @@ class NoteShort {
                 return 1;
             }
 
-            const aNote = this.treeCache.getNoteFromCache([aNoteId]);
+            const aNote = this.froca.getNoteFromCache([aNoteId]);
 
             if (aNote.hasLabel('archived')) {
                 return 1;
@@ -214,7 +214,7 @@ class NoteShort {
 
     /** @returns {Promise&lt;NoteShort[]>} */
     async getChildNotes() {
-        return await this.treeCache.getNotes(this.children);
+        return await this.froca.getNotes(this.children);
     }
 
     /**
@@ -224,7 +224,7 @@ class NoteShort {
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
-            .map(attributeId => this.treeCache.attributes[attributeId])
+            .map(attributeId => this.froca.attributes[attributeId])
             .filter(Boolean); // filter out nulls;
 
         return this.__filterAttrs(attrs, type, name);
@@ -252,7 +252,7 @@ class NoteShort {
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.getParentNotes()) {
-                    // these virtual parent-child relationships are also loaded into frontend tree cache
+                    // these virtual parent-child relationships are also loaded into froca
                     if (parentNote.type !== 'search') {
                         attrArrs.push(parentNote.__getInheritableAttributes(newPath));
                     }
@@ -260,7 +260,7 @@ class NoteShort {
             }
 
             for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' &amp;&amp; attr.name === 'template')) {
-                const templateNote = this.treeCache.notes[templateAttr.value];
+                const templateNote = this.froca.notes[templateAttr.value];
 
                 if (templateNote &amp;&amp; templateNote.noteId !== this.noteId) {
                     attrArrs.push(templateNote.__getCachedAttributes(newPath));
@@ -280,6 +280,10 @@ class NoteShort {
         }
 
         return noteAttributeCache.attributes[this.noteId];
+    }
+
+    isRoot() {
+        return this.noted
     }
 
     getAllNotePaths(encounteredNoteIds = null) {
@@ -329,8 +333,9 @@ class NoteShort {
         const notePaths = this.getAllNotePaths().map(path => ({
             notePath: path,
             isInHoistedSubTree: path.includes(hoistedNotePath),
-            isArchived: path.find(noteId => treeCache.notes[noteId].hasLabel('archived')),
-            isSearch: path.find(noteId => treeCache.notes[noteId].type === 'search')
+            isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
+            isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
+            isHidden: path.includes("hidden")
         }));
 
         notePaths.sort((a, b) => {
@@ -608,7 +613,7 @@ class NoteShort {
         const targets = [];
 
         for (const relation of relations) {
-            targets.push(await this.treeCache.getNote(relation.value));
+            targets.push(await this.froca.getNote(relation.value));
         }
 
         return targets;
@@ -620,7 +625,7 @@ class NoteShort {
     getTemplateNotes() {
         const relations = this.getRelations('template');
 
-        return relations.map(rel => this.treeCache.notes[rel.value]);
+        return relations.map(rel => this.froca.notes[rel.value]);
     }
 
     getPromotedDefinitionAttributes() {
@@ -681,7 +686,7 @@ class NoteShort {
      */
     getTargetRelations() {
         return this.targetRelations
-            .map(attributeId => this.treeCache.attributes[attributeId]);
+            .map(attributeId => this.froca.attributes[attributeId]);
     }
 
     /**
@@ -692,7 +697,7 @@ class NoteShort {
     async getTargetRelationSourceNotes() {
         const targetRelations = this.getTargetRelations();
 
-        return await this.treeCache.getNotes(targetRelations.map(tr => tr.noteId));
+        return await this.froca.getNotes(targetRelations.map(tr => tr.noteId));
     }
 
     /**
@@ -701,7 +706,7 @@ class NoteShort {
      * @return {Promise&lt;NoteComplement>}
      */
     async getNoteComplement() {
-        return await this.treeCache.getNoteComplement(this.noteId);
+        return await this.froca.getNoteComplement(this.noteId);
     }
 
     get toString() {
@@ -710,7 +715,7 @@ class NoteShort {
 
     get dto() {
         const dto = Object.assign({}, this);
-        delete dto.treeCache;
+        delete dto.froca;
 
         return dto;
     }
@@ -729,6 +734,55 @@ class NoteShort {
         const labels = this.getLabels('workspaceTabBackgroundColor');
         return labels.length > 0 ? labels[0].value : "";
     }
+
+    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    isJavaScript() {
+        return (this.type === "code" || this.type === "file")
+            &amp;&amp; (this.mime.startsWith("application/javascript")
+                || this.mime === "application/x-javascript"
+                || this.mime === "text/javascript");
+    }
+
+    /** @returns {boolean} true if this note is HTML */
+    isHtml() {
+        return (this.type === "code" || this.type === "file" || this.type === "render") &amp;&amp; this.mime === "text/html";
+    }
+
+    /** @returns {string|null} JS script environment - either "frontend" or "backend" */
+    getScriptEnv() {
+        if (this.isHtml() || (this.isJavaScript() &amp;&amp; this.mime.endsWith('env=frontend'))) {
+            return "frontend";
+        }
+
+        if (this.type === 'render') {
+            return "frontend";
+        }
+
+        if (this.isJavaScript() &amp;&amp; this.mime.endsWith('env=backend')) {
+            return "backend";
+        }
+
+        return null;
+    }
+
+    async executeScript() {
+        if (!this.isJavaScript()) {
+            throw new Error(`Note ${this.noteId} is of type ${this.type} and mime ${this.mime} and thus cannot be executed`);
+        }
+
+        const env = this.getScriptEnv();
+
+        if (env === "frontend") {
+            const bundleService = (await import("../services/bundle.js")).default;
+            await bundleService.getAndExecuteBundle(this.noteId);
+        }
+        else if (env === "backend") {
+            await server.post('script/run/' + this.noteId);
+        }
+        else {
+            throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
+        }
+    }
 }
 
 export default NoteShort;
@@ -742,13 +796,13 @@ export default NoteShort;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#decorateWidget">decorateWidget</a></li><li><a href="global.html#doRenderBody">doRenderBody</a></li><li><a href="global.html#widgetCollapsedStateChangedEvent">widgetCollapsedStateChangedEvent</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a>
 </footer>
 
 <script> prettyPrint(); </script>

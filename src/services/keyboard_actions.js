@@ -208,6 +208,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
+        actionName: "reopenLastTab",
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+T"] : [],
+        description: "Repoens the last closed tab",
+        scope: "window"
+    },
+    {
         actionName: "activateNextTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : [],
         description: "Activates tab on the right",
@@ -231,21 +237,9 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         separator: "Dialogs"
     },
     {
-        actionName: "showNoteInfo",
-        defaultShortcuts: [],
-        description: "Shows Note Info dialog",
-        scope: "window"
-    },
-    {
         actionName: "showNoteSource",
         defaultShortcuts: [],
         description: "Shows Note Source dialog",
-        scope: "window"
-    },
-    {
-        actionName: "showLinkMap",
-        defaultShortcuts: [],
-        description: "Shows Link Map dialog",
         scope: "window"
     },
     {
@@ -297,8 +291,15 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "text-detail"
     },
     {
+        actionName: "followLinkUnderCursor",
+        defaultShortcuts: ["CommandOrControl+Enter"],
+        description: "Follow link within which the caret is placed",
+        scope: "text-detail"
+    },
+    {
         actionName: "insertDateTimeToText",
         defaultShortcuts: ["Alt+T"],
+        description: "Insert current date & time into text",
         scope: "text-detail"
     },
     {
@@ -319,17 +320,17 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Opens the dialog to include a note",
         scope: "text-detail"
     },
+    {
+        actionName: "editReadOnlyNote",
+        defaultShortcuts: [],
+        description: "Edit a read-only note",
+        scope: "window"
+    },
 
     {
         separator: "Attributes (labels & relations)"
     },
 
-    {
-        actionName: "focusOnAttributes",
-        defaultShortcuts: ["Alt+A"],
-        description: "Put focus into attribute editor",
-        scope: "window"
-    },
     {
         actionName: "addNewLabel",
         defaultShortcuts: ["Alt+L"],
@@ -340,6 +341,77 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "addNewRelation",
         defaultShortcuts: ["Alt+R"],
         description: "Create new relation",
+        scope: "window"
+    },
+
+    {
+        separator: "Ribbon tabs"
+    },
+
+    {
+        actionName: "toggleRibbonTabBasicProperties",
+        defaultShortcuts: [],
+        description: "Toggle Basic Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabBookProperties",
+        defaultShortcuts: [],
+        description: "Toggle Book Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabFileProperties",
+        defaultShortcuts: [],
+        description: "Toggle File Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabImageProperties",
+        defaultShortcuts: [],
+        description: "Toggle Image Properties",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabOwnedAttributes",
+        defaultShortcuts: ["Alt+A"],
+        description: "Toggle Owned Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabInheritedAttributes",
+        defaultShortcuts: [],
+        description: "Toggle Inherited Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabPromotedAttributes",
+        defaultShortcuts: [],
+        description: "Toggle Promoted Attributes",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabNoteMap",
+        defaultShortcuts: [],
+        description: "Toggle Link Map",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabNoteInfo",
+        defaultShortcuts: [],
+        description: "Toggle Note Info",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabNotePaths",
+        defaultShortcuts: [],
+        description: "Toggle Note Paths",
+        scope: "window"
+    },
+    {
+        actionName: "toggleRibbonTabSimilarNotes",
+        defaultShortcuts: [],
+        description: "Toggle Similar Notes",
         scope: "window"
     },
 
@@ -385,11 +457,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "reloadFrontendApp",
         defaultShortcuts: ["F5", "CommandOrControl+R"],
+        description: "Reload frontend App",
         scope: "window"
     },
     {
         actionName: "openDevTools",
         defaultShortcuts: isElectron ? ["CommandOrControl+Shift+I"] : [],
+        description: "Open dev tools",
         scope: "window"
     },
     {
@@ -398,28 +472,33 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "toggleFullscreen",
-        defaultShortcuts: ["F11"],
+        actionName: "toggleLeftPane",
+        defaultShortcuts: [],
+        description: "Toggle left (note tree) panel",
         scope: "window"
     },
     {
-        actionName: "toggleZenMode",
-        defaultShortcuts: ["Alt+M"],
+        actionName: "toggleFullscreen",
+        defaultShortcuts: ["F11"],
+        description: "Toggle full screen",
         scope: "window"
     },
     {
         actionName: "zoomOut",
         defaultShortcuts: isElectron ? ["CommandOrControl+-"] : [],
+        description: "Zoom Out",
         scope: "window"
     },
     {
         actionName: "zoomIn",
+        description: "Zoom In",
         defaultShortcuts: isElectron ? ["CommandOrControl+="] : [],
         scope: "window"
     },
     {
         actionName: "copyWithoutFormatting",
         defaultShortcuts: ["CommandOrControl+Alt+C"],
+        description: "Copy selected text without formatting",
         scope: "text-detail"
     }
 ];

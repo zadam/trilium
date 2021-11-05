@@ -2,8 +2,7 @@ import server from '../services/server.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
-import treeCache from "../services/tree_cache.js";
-import bundle from "../services/bundle.js";
+import froca from "../services/froca.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -15,21 +14,23 @@ const NOTE_TYPE_ICONS = {
     "render": "bx bx-extension",
     "search": "bx bx-file-find",
     "relation-map": "bx bx-map-alt",
-    "book": "bx bx-book"
+    "book": "bx bx-book",
+    "note-map": "bx bx-map-alt",
+    "mermaid": "bx bx-selection"
 };
 
 /**
  * FIXME: since there's no "full note" anymore we can rename this to Note
  *
- * This note's representation is used in note tree and is kept in TreeCache.
+ * This note's representation is used in note tree and is kept in Froca.
  */
 class NoteShort {
     /**
-     * @param {TreeCache} treeCache
+     * @param {Froca} froca
      * @param {Object.<string, Object>} row
      */
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
+    constructor(froca, row) {
+        this.froca = froca;
 
         /** @type {string[]} */
         this.attributes = [];
@@ -52,18 +53,16 @@ class NoteShort {
     }
 
     update(row) {
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.title = row.title;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @param {string} one of 'text', 'code', 'file' or 'render' */
+        /** @type {string} one of 'text', 'code', 'file' or 'render' */
         this.type = row.type;
-        /** @param {string} content-type, e.g. "application/json" */
+        /** @type {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
-        /** @param {boolean} */
-        this.isDeleted = !!row.isDeleted;
     }
 
     addParent(parentNoteId, branchId) {
@@ -94,7 +93,7 @@ class NoteShort {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
-            branchIdPos[branchId] = this.treeCache.getBranch(branchId).notePosition;
+            branchIdPos[branchId] = this.froca.getBranch(branchId).notePosition;
         }
 
         this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] < branchIdPos[this.childToBranch[b]] ? -1 : 1);
@@ -106,7 +105,7 @@ class NoteShort {
     }
 
     async getContent() {
-        // we're not caching content since these objects are in treeCache and as such pretty long lived
+        // we're not caching content since these objects are in froca and as such pretty long lived
         const note = await server.get("notes/" + this.noteId);
 
         return note.content;
@@ -134,7 +133,7 @@ class NoteShort {
     getBranches() {
         const branchIds = Object.values(this.parentToBranch);
 
-        return this.treeCache.getBranches(branchIds);
+        return this.froca.getBranches(branchIds);
     }
 
     /** @returns {boolean} */
@@ -147,7 +146,7 @@ class NoteShort {
         // don't use Object.values() to guarantee order
         const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
 
-        return this.treeCache.getBranches(branchIds);
+        return this.froca.getBranches(branchIds);
     }
 
     /** @returns {string[]} */
@@ -157,7 +156,7 @@ class NoteShort {
 
     /** @returns {NoteShort[]} */
     getParentNotes() {
-        return this.treeCache.getNotesFromCache(this.parents);
+        return this.froca.getNotesFromCache(this.parents);
     }
 
     // will sort the parents so that non-search & non-archived are first and archived at the end
@@ -170,7 +169,7 @@ class NoteShort {
                 return 1;
             }
 
-            const aNote = this.treeCache.getNoteFromCache([aNoteId]);
+            const aNote = this.froca.getNoteFromCache([aNoteId]);
 
             if (aNote.hasLabel('archived')) {
                 return 1;
@@ -187,7 +186,7 @@ class NoteShort {
 
     /** @returns {Promise<NoteShort[]>} */
     async getChildNotes() {
-        return await this.treeCache.getNotes(this.children);
+        return await this.froca.getNotes(this.children);
     }
 
     /**
@@ -197,7 +196,7 @@ class NoteShort {
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
-            .map(attributeId => this.treeCache.attributes[attributeId])
+            .map(attributeId => this.froca.attributes[attributeId])
             .filter(Boolean); // filter out nulls;
 
         return this.__filterAttrs(attrs, type, name);
@@ -225,7 +224,7 @@ class NoteShort {
 
             if (this.noteId !== 'root') {
                 for (const parentNote of this.getParentNotes()) {
-                    // these virtual parent-child relationships are also loaded into frontend tree cache
+                    // these virtual parent-child relationships are also loaded into froca
                     if (parentNote.type !== 'search') {
                         attrArrs.push(parentNote.__getInheritableAttributes(newPath));
                     }
@@ -233,7 +232,7 @@ class NoteShort {
             }
 
             for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' && attr.name === 'template')) {
-                const templateNote = this.treeCache.notes[templateAttr.value];
+                const templateNote = this.froca.notes[templateAttr.value];
 
                 if (templateNote && templateNote.noteId !== this.noteId) {
                     attrArrs.push(templateNote.__getCachedAttributes(newPath));
@@ -253,6 +252,10 @@ class NoteShort {
         }
 
         return noteAttributeCache.attributes[this.noteId];
+    }
+
+    isRoot() {
+        return this.noted
     }
 
     getAllNotePaths(encounteredNoteIds = null) {
@@ -302,8 +305,9 @@ class NoteShort {
         const notePaths = this.getAllNotePaths().map(path => ({
             notePath: path,
             isInHoistedSubTree: path.includes(hoistedNotePath),
-            isArchived: path.find(noteId => treeCache.notes[noteId].hasLabel('archived')),
-            isSearch: path.find(noteId => treeCache.notes[noteId].type === 'search')
+            isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
+            isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
+            isHidden: path.includes("hidden")
         }));
 
         notePaths.sort((a, b) => {
@@ -581,7 +585,7 @@ class NoteShort {
         const targets = [];
 
         for (const relation of relations) {
-            targets.push(await this.treeCache.getNote(relation.value));
+            targets.push(await this.froca.getNote(relation.value));
         }
 
         return targets;
@@ -593,7 +597,7 @@ class NoteShort {
     getTemplateNotes() {
         const relations = this.getRelations('template');
 
-        return relations.map(rel => this.treeCache.notes[rel.value]);
+        return relations.map(rel => this.froca.notes[rel.value]);
     }
 
     getPromotedDefinitionAttributes() {
@@ -640,12 +644,9 @@ class NoteShort {
     }
 
     /**
-     * Clear note's attributes cache to force fresh reload for next attribute request.
-     * Cache is note instance scoped.
+     * @deprecated NOOP
      */
-    invalidateAttributeCache() {
-        this.__attributeCache = null;
-    }
+    invalidateAttributeCache() {}
 
     /**
      * Get relations which target this note
@@ -654,7 +655,7 @@ class NoteShort {
      */
     getTargetRelations() {
         return this.targetRelations
-            .map(attributeId => this.treeCache.attributes[attributeId]);
+            .map(attributeId => this.froca.attributes[attributeId]);
     }
 
     /**
@@ -665,7 +666,7 @@ class NoteShort {
     async getTargetRelationSourceNotes() {
         const targetRelations = this.getTargetRelations();
 
-        return await this.treeCache.getNotes(targetRelations.map(tr => tr.noteId));
+        return await this.froca.getNotes(targetRelations.map(tr => tr.noteId));
     }
 
     /**
@@ -674,16 +675,16 @@ class NoteShort {
      * @return {Promise<NoteComplement>}
      */
     async getNoteComplement() {
-        return await this.treeCache.getNoteComplement(this.noteId);
+        return await this.froca.getNoteComplement(this.noteId);
     }
 
-    get toString() {
+    toString() {
         return `Note(noteId=${this.noteId}, title=${this.title})`;
     }
 
     get dto() {
         const dto = Object.assign({}, this);
-        delete dto.treeCache;
+        delete dto.froca;
 
         return dto;
     }

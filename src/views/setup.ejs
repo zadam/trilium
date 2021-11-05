@@ -92,16 +92,12 @@
 
                 <div style="display: flex; justify-content: space-around;">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="theme" id="theme-white" value="white" data-bind="checked: theme" checked>
-                        <label class="form-check-label" for="theme-white">white</label>
+                        <input class="form-check-input" type="radio" name="theme" id="theme-light" value="light" data-bind="checked: theme" checked>
+                        <label class="form-check-label" for="theme-light">light</label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="theme" id="theme-dark" value="dark" data-bind="checked: theme">
                         <label class="form-check-label" for="theme-dark">dark</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="theme" id="theme-black" value="black" data-bind="checked: theme">
-                        <label class="form-check-label" for="theme-black">black</label>
                     </div>
                 </div>
 
@@ -138,12 +134,12 @@
             <p>This setup needs to be initiated from the desktop instance:</p>
 
             <ol>
-                <li>please open your desktop instance of Trilium Notes</li>
-                <li>click on Options button in the top right</li>
-                <li>click on Sync tab</li>
-                <li>configure server instance address to the: <span id="current-host"></span> and click save.</li>
-                <li>click on "Test sync" button</li>
-                <li>once you've done all this, click <a href="/">here</a></li>
+                <li>Open your desktop instance of Trilium Notes.</li>
+                <li>From the Trilium Menu, click Options.</li>
+                <li>Click on Sync tab.</li>
+                <li>Change server instance address to: <span id="current-host"></span> and click save.</li>
+                <li>Click "Test sync" button to verify connection is successfull.</li>
+                <li>Once you've completed these steps, click <a href="/">here</a>.</li>
             </ol>
 
             <button type="button" data-bind="click: back" class="btn btn-secondary">Back</button>
@@ -212,6 +208,6 @@
 <script src="libraries/knockout.min.js"></script>
 
 <script src="app/setup.js" crossorigin type="module"></script>
-<link href="stylesheets/themes.css" rel="stylesheet">
+<link href="stylesheets/theme-light.css" rel="stylesheet">
 </body>
 </html>

@@ -40,7 +40,7 @@ export default class Component {
         return this;
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     handleEvent(name, data) {
         return Promise.all([
             this.initialized.then(() => this.callMethod(this[name + 'Event'], data)),
@@ -48,12 +48,12 @@ export default class Component {
         ]);
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     triggerEvent(name, data) {
         return this.parent.triggerEvent(name, data);
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     handleEventInChildren(name, data) {
         const promises = [];
 
@@ -64,7 +64,7 @@ export default class Component {
         return Promise.all(promises);
     }
 
-    /** @return {Promise} */
+    /** @returns {Promise} */
     triggerCommand(name, data = {}) {
         const fun = this[name + 'Command'];
 

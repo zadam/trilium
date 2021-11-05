@@ -6,6 +6,8 @@ const cls = require('./cls');
 const config = require('./config');
 const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
+const becca = require("../becca/becca");
+const AbstractEntity = require("../becca/entities/abstract_entity.js");
 
 let webSocketServer;
 let lastSyncedPush = null;
@@ -38,6 +40,9 @@ function init(httpServer, sessionParser) {
 
             if (message.type === 'log-error') {
                 log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
+            }
+            else if (message.type === 'log-info') {
+                log.info('JS Info: ' + message.info);
             }
             else if (message.type === 'ping') {
                 await syncMutexService.doExclusively(() => sendPing(ws));
@@ -75,30 +80,90 @@ function sendMessageToAllClients(message) {
 }
 
 function fillInAdditionalProperties(entityChange) {
-    // fill in some extra data needed by the frontend
-    if (entityChange.entityName === 'attributes') {
-        entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
-    } else if (entityChange.entityName === 'branches') {
-        entityChange.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [entityChange.entityId]);
-    } else if (entityChange.entityName === 'notes') {
-        entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
+    if (entityChange.isErased) {
+        return;
+    }
 
-        if (entityChange.entity.isProtected) {
-            entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
+    // fill in some extra data needed by the frontend
+    // first try to use becca which works for non-deleted entities
+    // only when that fails try to load from database
+    if (entityChange.entityName === 'attributes') {
+        entityChange.entity = becca.getAttribute(entityChange.entityId);
+
+        if (!entityChange.entity) {
+            entityChange.entity = sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [entityChange.entityId]);
+        }
+    } else if (entityChange.entityName === 'branches') {
+        entityChange.entity = becca.getBranch(entityChange.entityId);
+
+        if (!entityChange.entity) {
+            entityChange.entity = sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [entityChange.entityId]);
+        }
+    } else if (entityChange.entityName === 'notes') {
+        entityChange.entity = becca.getNote(entityChange.entityId);
+
+        if (!entityChange.entity) {
+            entityChange.entity = sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [entityChange.entityId]);
+
+            if (entityChange.entity.isProtected) {
+                entityChange.entity.title = protectedSessionService.decryptString(entityChange.entity.title);
+            }
         }
     } else if (entityChange.entityName === 'note_revisions') {
         entityChange.noteId = sql.getValue(`SELECT noteId
                                           FROM note_revisions
                                           WHERE noteRevisionId = ?`, [entityChange.entityId]);
     } else if (entityChange.entityName === 'note_reordering') {
-        entityChange.positions = sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [entityChange.entityId]);
+        entityChange.positions = {};
+
+        const parentNote = becca.getNote(entityChange.entityId);
+
+        if (parentNote) {
+            for (const childBranch of parentNote.getChildBranches()) {
+                entityChange.positions[childBranch.branchId] = childBranch.notePosition;
+            }
+        }
     }
     else if (entityChange.entityName === 'options') {
-        entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
+        entityChange.entity = becca.getOption(entityChange.entityId);
+
+        if (!entityChange.entity) {
+            entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
+        }
+    }
+
+    if (entityChange.entity instanceof AbstractEntity) {
+        entityChange.entity = entityChange.entity.getPojo();
     }
 }
 
-function sendPing(client, entityChanges = []) {
+// entities with higher number can reference the entities with lower number
+const ORDERING = {
+    "api_tokens": 0,
+    "attributes": 1,
+    "branches": 1,
+    "note_contents": 1,
+    "note_reordering": 1,
+    "note_revision_contents": 2,
+    "note_revisions": 1,
+    "notes": 0,
+    "options": 0
+};
+
+function sendPing(client, entityChangeIds = []) {
+    if (entityChangeIds.length === 0) {
+        sendMessage(client, { type: 'ping' });
+
+        return;
+    }
+
+    const entityChanges = sql.getManyRows(`SELECT * FROM entity_changes WHERE id IN (???)`, entityChangeIds);
+
+    // sort entity changes since froca expects "referential order", i.e. referenced entities should already exist
+    // in froca.
+    // Froca needs this since it is incomplete copy, it can't create "skeletons" like becca.
+    entityChanges.sort((a, b) => ORDERING[a.entityName] - ORDERING[b.entityName]);
+
     for (const entityChange of entityChanges) {
         try {
             fillInAdditionalProperties(entityChange);
@@ -120,26 +185,30 @@ function sendPing(client, entityChanges = []) {
 
 function sendTransactionEntityChangesToAllClients() {
     if (webSocketServer) {
-        const entityChanges = cls.getAndClearEntityChanges();
+        const entityChangeIds = cls.getAndClearEntityChangeIds();
 
-        webSocketServer.clients.forEach(client => sendPing(client, entityChanges));
+        webSocketServer.clients.forEach(client => sendPing(client, entityChangeIds));
     }
 }
 
 function syncPullInProgress() {
-    sendMessageToAllClients({ type: 'sync-pull-in-progress' });
+    sendMessageToAllClients({ type: 'sync-pull-in-progress', lastSyncedPush });
 }
 
 function syncPushInProgress() {
-    sendMessageToAllClients({ type: 'sync-push-in-progress' });
+    sendMessageToAllClients({ type: 'sync-push-in-progress', lastSyncedPush });
 }
 
 function syncFinished() {
-    sendMessageToAllClients({ type: 'sync-finished' });
+    sendMessageToAllClients({ type: 'sync-finished', lastSyncedPush });
 }
 
 function syncFailed() {
-    sendMessageToAllClients({ type: 'sync-failed' });
+    sendMessageToAllClients({ type: 'sync-failed', lastSyncedPush });
+}
+
+function reloadFrontend() {
+    sendMessageToAllClients({ type: 'reload-frontend' });
 }
 
 function setLastSyncedPush(entityChangeId) {
@@ -154,5 +223,6 @@ module.exports = {
     syncFinished,
     syncFailed,
     sendTransactionEntityChangesToAllClients,
-    setLastSyncedPush
+    setLastSyncedPush,
+    reloadFrontend
 };

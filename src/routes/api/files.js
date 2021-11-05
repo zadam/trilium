@@ -1,7 +1,6 @@
 "use strict";
 
 const protectedSessionService = require('../../services/protected_session');
-const repository = require('../../services/repository');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteRevisionService = require('../../services/note_revisions');
@@ -10,12 +9,13 @@ const fs = require('fs');
 const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws');
+const becca = require("../../becca/becca");
 
 function updateFile(req) {
     const {noteId} = req.params;
     const file = req.file;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];
@@ -44,7 +44,7 @@ function getFilename(note) {
 }
 
 function downloadNoteFile(noteId, res, contentDisposition = true) {
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);
@@ -79,7 +79,7 @@ function openFile(req, res) {
 
 function fileContentProvider(req) {
     // Read file name from route params.
-    const note = repository.getNote(req.params.noteId);
+    const note = becca.getNote(req.params.noteId);
     const fileName = getFilename(note);
     let content = note.getContent();
 
@@ -112,7 +112,7 @@ function fileContentProvider(req) {
 function saveToTmpDir(req) {
     const noteId = req.params.noteId;
 
-    const note = repository.getNote(noteId);
+    const note = becca.getNote(noteId);
 
     if (!note) {
         return [404,`Note ${noteId} doesn't exist.`];

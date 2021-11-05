@@ -1,12 +1,11 @@
 "use strict";
 
-const Attribute = require('../../entities/attribute');
+const Attribute = require('../../becca/entities/attribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
-const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const Branch = require('../../entities/branch');
+const Branch = require('../../becca/entities/branch');
 const path = require('path');
 const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');
@@ -14,6 +13,7 @@ const mimeService = require("./mime");
 const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
+const becca = require("../../becca/becca");
 
 /**
  * @param {TaskContext} taskContext
@@ -171,7 +171,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
-        let note = repository.getNote(noteId);
+        let note = becca.getNote(noteId);
 
         if (note) {
             return;
@@ -186,6 +186,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
             isExpanded: noteMeta ? noteMeta.isExpanded : false,
+            notePosition: (noteMeta && firstNote) ? noteMeta.notePosition : undefined,
             isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }));
 
@@ -307,6 +308,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 return `href="#root/${targetNoteId}"`;
             });
 
+            content = content.replace(/data-note-path="([^"]*)"/g, (match, notePath) => {
+                const noteId = notePath.split("/").pop();
+
+                const targetNoteId = noteIdMap[noteId];
+
+                return `data-note-path="root/${targetNoteId}"`;
+            });
+
             if (noteMeta) {
                 const includeNoteLinks = (noteMeta.attributes || [])
                     .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
@@ -340,7 +349,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
-        let note = repository.getNote(noteId);
+        let note = becca.getNote(noteId);
 
         if (note) {
             note.setContent(content);
@@ -384,7 +393,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    /** @return {string} path without leading or trailing slash and backslashes converted to forward ones*/
+    /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones*/
     function normalizeFilePath(filePath) {
         filePath = filePath.replace(/\\/g, "/");
 
@@ -458,12 +467,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        noteService.scanForLinks(repository.getNote(noteId));
+        noteService.scanForLinks(becca.getNote(noteId));
 
         if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that tar file but that
+            // if there's no meta file then the notes are created based on the order in that zip file but that
             // is usually quite random so we sort the notes in the way they would appear in the file manager
-            treeService.sortNotesByTitle(noteId, true);
+            treeService.sortNotes(noteId, 'title', false, true);
         }
 
         taskContext.increaseProgressCount();

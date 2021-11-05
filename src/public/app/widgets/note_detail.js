@@ -1,5 +1,4 @@
-import TabAwareWidget from "./tab_aware_widget.js";
-import utils from "../services/utils.js";
+import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
@@ -20,6 +19,8 @@ import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
+import attributeService from "../services/attributes.js";
+import NoteMapTypeWidget from "./type_widgets/note_map.js";
 
 const TPL = `
 <div class="note-detail">
@@ -45,21 +46,27 @@ const typeWidgetClasses = {
     'render': RenderTypeWidget,
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
-    'book': BookTypeWidget
+    'book': BookTypeWidget,
+    'note-map': NoteMapTypeWidget
 };
 
-export default class NoteDetailWidget extends TabAwareWidget {
+export default class NoteDetailWidget extends NoteContextAwareWidget {
     constructor() {
         super();
 
         this.typeWidgets = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const {note} = this.tabContext;
+            const {note} = this.noteContext;
             const {noteId} = note;
 
             const dto = note.dto;
             dto.content = this.getTypeWidget().getContent();
+
+            // for read only notes
+            if (dto.content === undefined) {
+                return;
+            }
 
             protectedSessionHolder.touchProtectedSessionIfNecessary(note);
 
@@ -82,7 +89,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.on("dragleave", e => e.preventDefault());
 
         this.$widget.on("drop", async e => {
-            const activeNote = appContext.tabManager.getActiveTabNote();
+            const activeNote = appContext.tabManager.getActiveContextNote();
 
             if (!activeNote) {
                 return;
@@ -119,12 +126,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             this.$widget.append($renderedWidget);
 
-            await typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
+            await typeWidget.handleEvent('setNoteContext', {noteContext: this.noteContext});
 
             // this is happening in update() so note has been already set and we need to reflect this
-            await typeWidget.handleEvent('tabNoteSwitched', {
-                tabContext: this.tabContext,
-                notePath: this.tabContext.notePath
+            await typeWidget.handleEvent('noteSwitched', {
+                noteContext: this.noteContext,
+                notePath: this.noteContext.notePath
             });
 
             this.child(typeWidget);
@@ -150,33 +157,19 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !this.tabContext.textPreviewDisabled) {
-            const noteComplement = await this.tabContext.getNoteComplement();
-
-            if (note.hasLabel('readOnly') ||
-                (noteComplement.content
-                    && noteComplement.content.length > 10000)
-                    && !note.hasLabel('autoReadOnlyDisabled')) {
-                type = 'read-only-text';
-            }
+        if (type === 'text' && await this.noteContext.isReadOnly()) {
+            type = 'read-only-text';
         }
 
-        if (type === 'code' && !this.tabContext.codePreviewDisabled) {
-            const noteComplement = await this.tabContext.getNoteComplement();
-
-            if (note.hasLabel('readOnly') ||
-                (noteComplement.content
-                    && noteComplement.content.length > 30000)
-                    && !note.hasLabel('autoReadOnlyDisabled')) {
-                type = 'read-only-code';
-            }
+        if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
+            type = 'read-only-code';
         }
 
         if (type === 'text') {
             type = 'editable-text';
         }
 
-        if (type === 'code') {
+        if (type === 'code' || type === 'mermaid') {
             type = 'editable-code';
         }
 
@@ -187,29 +180,30 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return type;
     }
 
-    async focusOnDetailEvent({tabId}) {
-        if (this.tabContext.tabId === tabId) {
+    async focusOnDetailEvent({ntxId}) {
+        if (this.noteContext.ntxId === ntxId) {
             await this.refresh();
 
             const widget = this.getTypeWidget();
+            await widget.initialized;
             widget.focus();
         }
     }
 
-    async beforeNoteSwitchEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    async beforeNoteSwitchEvent({noteContext}) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async beforeTabRemoveEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    async beforeTabRemoveEvent({ntxIds}) {
+        if (this.isNoteContext(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
     async printActiveNoteEvent() {
-        if (!this.tabContext.isActive()) {
+        if (!this.noteContext.isActive()) {
             return;
         }
 
@@ -235,14 +229,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
                 "libraries/katex/katex.min.css",
                 "stylesheets/print.css",
                 "stylesheets/relation_map.css",
-                "stylesheets/themes.css"
+                "stylesheets/ckeditor-theme.css"
             ],
             debug: true
         });
     }
 
-    hoistedNoteChangedEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    hoistedNoteChangedEvent({ntxId}) {
+        if (this.isNoteContext(ntxId)) {
             this.refresh();
         }
     }
@@ -259,12 +253,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
             const label = attrs.find(attr =>
                 attr.type === 'label'
                 && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'displayRelations'].includes(attr.name)
-                && attr.isAffecting(this.note));
+                && attributeService.isAffecting(attr, this.note));
 
             const relation = attrs.find(attr =>
                 attr.type === 'relation'
                 && ['template', 'renderNote'].includes(attr.name)
-                && attr.isAffecting(this.note));
+                && attributeService.isAffecting(attr, this.note));
 
             if (label || relation) {
                 // probably incorrect event
@@ -278,27 +272,21 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.spacedUpdate.isAllSavedAndTriggerUpdate();
     }
 
-    textPreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
-            this.refresh();
-        }
-    }
-
-    codePreviewDisabledEvent({tabContext}) {
-        if (this.isTab(tabContext.tabId)) {
+    readOnlyTemporarilyDisabledEvent({noteContext}) {
+        if (this.isNoteContext(noteContext.ntxId)) {
             this.refresh();
         }
     }
 
     async cutIntoNoteCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
+        const note = appContext.tabManager.getActiveContextNote();
 
         if (!note) {
             return;
         }
 
         // without await as this otherwise causes deadlock through component mutex
-        noteCreateService.createNote(appContext.tabManager.getActiveTabNotePath(), {
+        noteCreateService.createNote(appContext.tabManager.getActiveContextNotePath(), {
             isProtected: note.isProtected,
             saveSelection: true
         });
@@ -310,7 +298,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     renderActiveNoteEvent() {
-        if (this.tabContext.isActive()) {
+        if (this.noteContext.isActive()) {
             this.refresh();
         }
     }

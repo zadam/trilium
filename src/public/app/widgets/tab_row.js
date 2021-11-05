@@ -3,7 +3,8 @@ import contextMenu from "../services/context_menu.js";
 import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import appContext from "../services/app_context.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
+import attributeService from "../services/attributes.js";
 
 /*!
  * Draggabilly v2.3.0
@@ -23,6 +24,7 @@ const TAB_CONTAINER_MIN_WIDTH = 24;
 const TAB_CONTAINER_MAX_WIDTH = 240;
 const NEW_TAB_WIDTH = 32;
 const MIN_FILLER_WIDTH = 50;
+const MARGIN_WIDTH = 5;
 
 const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
@@ -31,47 +33,42 @@ const TAB_SIZE_MINI = 48;
 const TAB_TPL = `
 <div class="note-tab">
   <div class="note-tab-wrapper">
+    <div class="note-tab-drag-handle"></div>
     <div class="note-tab-icon"></div>
     <div class="note-tab-title"></div>
-    <div class="note-tab-drag-handle"></div>
     <div class="note-tab-close" title="Close tab" data-trigger-command="closeActiveTab"><span>×</span></div>
   </div>
 </div>`;
 
 const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab" data-trigger-command="openNewTab" title="Add new tab">+</div>`;
-const FILLER_TPL = `<div class="tab-row-filler">
-    <div class="tab-row-border"></div>
-</div>`;
+const FILLER_TPL = `<div class="tab-row-filler"></div>`;
 
 const TAB_ROW_TPL = `
-<div class="note-tab-row">
+<div class="tab-row-widget">
     <style>
-    .note-tab-row {
+    .tab-row-widget {
         box-sizing: border-box;
         position: relative;
-        height: 36px;
         width: 100%;
         background: var(--main-background-color);
         overflow: hidden;
-        margin-top: 2px;
     }
     
-    .note-tab-row * {
+    .tab-row-widget * {
         box-sizing: inherit;
         font: inherit;
     }
     
-    .note-tab-row .note-tab-row-container {
+    .tab-row-widget .tab-row-widget-container {
         box-sizing: border-box;
         position: relative;
         width: 100%;
         height: 100%;
     }
     
-    .note-tab-row .note-tab {
+    .tab-row-widget .note-tab {
         position: absolute;
         left: 0;
-        height: 33px;
         width: 240px;
         border: 0;
         margin: 0;
@@ -82,15 +79,15 @@ const TAB_ROW_TPL = `
     .note-new-tab {
         position: absolute;
         left: 0;
-        height: 33px;
-        width: 32px;
+        width: 36px;
+        height: 36px;
+        padding: 1px;
         border: 0;
         margin: 0;
         z-index: 1;
         text-align: center;
         font-size: 24px;
         cursor: pointer;
-        border-bottom: 1px solid var(--main-border-color);
         box-sizing: border-box;
     }
     
@@ -104,118 +101,104 @@ const TAB_ROW_TPL = `
         -webkit-app-region: drag;
         position: absolute;
         left: 0;
-        height: 36px;
+        height: 100%;
     }
-    
-    .tab-row-filler .tab-row-border {
-        background: linear-gradient(to right, var(--main-border-color), transparent);
-        height: 1px;
-        margin-top: 32px;
-    }
-    
-    .note-tab-row .note-tab[active] {
+        
+    .tab-row-widget .note-tab[active] {
         z-index: 5;
     }
     
-    .note-tab-row .note-tab,
-    .note-tab-row .note-tab * {
+    .tab-row-widget .note-tab,
+    .tab-row-widget .note-tab * {
         user-select: none;
         cursor: default;
     }
     
-    .note-tab-row .note-tab.note-tab-was-just-added {
+    .tab-row-widget .note-tab.note-tab-was-just-added {
         top: 10px;
         animation: note-tab-was-just-added 120ms forwards ease-in-out;
     }
     
-    .note-tab-row .note-tab .note-tab-wrapper {
+    .tab-row-widget .note-tab .note-tab-wrapper {
         position: absolute;
         display: flex;
         top: 0;
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 5px 8px;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
+        height: 36px;
+        padding: 7px 5px 7px 11px;
+        border-radius: 8px;
         overflow: hidden;
         pointer-events: all;
-        background-color: var(--accented-background-color);
-        border-bottom: 1px solid var(--main-border-color);
+        color: var(--inactive-tab-text-color);
+        background-color: var(--inactive-tab-background-color);
     }
     
-    .note-tab-row .note-tab[active] .note-tab-wrapper {
-        background-color: var(--main-background-color);
-        border: 1px solid var(--main-border-color);
-        border-bottom: 0;
+    .tab-row-widget .note-tab[active] .note-tab-wrapper {
         font-weight: bold;
+        color: var(--active-tab-text-color);
+        background-color : var(--active-tab-background-color);
     }
     
-    .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
+    .tab-row-widget .note-tab[is-mini] .note-tab-wrapper {
         padding-left: 2px;
         padding-right: 2px;
     }
     
-    .note-tab-row .note-tab .note-tab-title {
+    .tab-row-widget .note-tab .note-tab-title {
         flex: 1;
         vertical-align: top;
         overflow: hidden;
         white-space: nowrap;
-        color: var(--muted-text-color);
     }
     
-    .note-tab-row .note-tab .note-tab-icon {
+    .tab-row-widget .note-tab .note-tab-icon {
         position: relative;
         top: -1px;
         padding-right: 3px;
     }
     
-    .note-tab-row .note-tab[is-small] .note-tab-title {
+    .tab-row-widget .note-tab[is-small] .note-tab-title {
         margin-left: 0;
     }
     
-    .note-tab-row .note-tab[active] .note-tab-title {
-        color: var(--main-text-color);
-    }
-    
-    .note-tab-row .note-tab .note-tab-drag-handle {
+    .tab-row-widget .note-tab .note-tab-drag-handle {
         position: absolute;
         top: 0;
         bottom: 0;
         right: 0;
         left: 0;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
     }
     
-    .note-tab-row .note-tab .note-tab-close {
+    .tab-row-widget .note-tab .note-tab-close {
         flex-grow: 0;
         flex-shrink: 0;
         border-radius: 50%;
         z-index: 100;
-        width: 24px;
-        height: 24px;
         text-align: center;
+        width: 22px;
     }
     
-    .note-tab-row .note-tab .note-tab-close span {
+    .tab-row-widget .note-tab .note-tab-close span {
         font-size: 24px;
         position: relative;
         top: -6px;
+        cursor: pointer;
     }
     
-    .note-tab-row .note-tab .note-tab-close:hover {
+    .tab-row-widget .note-tab .note-tab-close:hover {
         background-color: var(--hover-item-background-color);
         color: var(--hover-item-text-color);
     }
     
-    .note-tab-row .note-tab[is-smaller] .note-tab-close {
+    .tab-row-widget .note-tab[is-smaller] .note-tab-close {
         margin-left: auto;
     }
-    .note-tab-row .note-tab[is-mini]:not([active]) .note-tab-close {
+    .tab-row-widget .note-tab[is-mini]:not([active]) .note-tab-close {
         display: none;
     }
-    .note-tab-row .note-tab[is-mini][active] .note-tab-close {
+    .tab-row-widget .note-tab[is-mini][active] .note-tab-close {
         margin-left: auto;
         margin-right: auto;
     }
@@ -239,13 +222,13 @@ const TAB_ROW_TPL = `
             top: 0;
         }
     }
-    .note-tab-row.note-tab-row-is-sorting .note-tab:not(.note-tab-is-dragging),
-    .note-tab-row:not(.note-tab-row-is-sorting) .note-tab.note-tab-was-just-dragged {
+    .tab-row-widget.tab-row-widget-is-sorting .note-tab:not(.note-tab-is-dragging),
+    .tab-row-widget:not(.tab-row-widget-is-sorting) .note-tab.note-tab-was-just-dragged {
         transition: transform 120ms ease-in-out;
     }
     </style>
 
-    <div class="note-tab-row-container"></div>
+    <div class="tab-row-widget-container"></div>
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
@@ -253,7 +236,6 @@ export default class TabRowWidget extends BasicWidget {
         this.$widget = $(TAB_ROW_TPL);
 
         this.draggabillies = [];
-        this.eventListeners = {};
 
         this.setupStyle();
         this.setupEvents();
@@ -266,7 +248,7 @@ export default class TabRowWidget extends BasicWidget {
         this.$widget.on('contextmenu', '.note-tab', e => {
             e.preventDefault();
 
-            const tabId = $(e.target).closest(".note-tab").attr('data-tab-id');
+            const ntxId = $(e.target).closest(".note-tab").attr('data-ntx-id');
 
             contextMenu.show({
                 x: e.pageX,
@@ -277,7 +259,7 @@ export default class TabRowWidget extends BasicWidget {
                     {title: "Close all tabs except for this", command: "removeAllTabsExceptForThis", uiIcon: "x"},
                 ],
                 selectMenuItemHandler: ({command}) => {
-                    this.triggerCommand(command, {tabId});
+                    this.triggerCommand(command, {ntxId});
                 }
             });
         });
@@ -315,16 +297,17 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     get $tabContainer() {
-        return this.$widget.find('.note-tab-row-container');
+        return this.$widget.find('.tab-row-widget-container');
     }
 
     get tabWidths() {
         const numberOfTabs = this.tabEls.length;
         const tabsContainerWidth = this.$tabContainer[0].clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
-        const targetWidth = tabsContainerWidth / numberOfTabs;
+        const marginWidth = (numberOfTabs - 1) * MARGIN_WIDTH;
+        const targetWidth = (tabsContainerWidth - marginWidth) / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTAINER_MIN_WIDTH, Math.min(TAB_CONTAINER_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
-        const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs;
+        const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs + marginWidth;
         const totalExtraWidthDueToFlooring = tabsContainerWidth - totalTabsWidthUsingTarget;
 
         const widths = [];
@@ -332,8 +315,12 @@ export default class TabRowWidget extends BasicWidget {
 
         for (let i = 0; i < numberOfTabs; i += 1) {
             const extraWidth = flooredClampedTargetWidth < TAB_CONTAINER_MAX_WIDTH && extraWidthRemaining > 0 ? 1 : 0;
+
             widths.push(flooredClampedTargetWidth + extraWidth);
-            if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
+
+            if (extraWidthRemaining > 0) {
+                extraWidthRemaining -= 1;
+            }
         }
 
         if (this.$filler) {
@@ -349,8 +336,10 @@ export default class TabRowWidget extends BasicWidget {
         let position = 0;
         this.tabWidths.forEach(width => {
             tabPositions.push(position);
-            position += width;
+            position += width + MARGIN_WIDTH;
         });
+
+        position -= MARGIN_WIDTH; // last margin should not be applied
 
         const newTabPosition = position;
         const fillerPosition = position + 32;
@@ -388,8 +377,8 @@ export default class TabRowWidget extends BasicWidget {
         this.$style.html(styleHTML);
     }
 
-    addTab(tabId) {
-        const $tab = $(TAB_TPL).attr('data-tab-id', tabId);
+    addTab(ntxId) {
+        const $tab = $(TAB_TPL).attr('data-ntx-id', ntxId);
 
         keyboardActionService.updateDisplayedShortcuts($tab);
 
@@ -407,15 +396,15 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     closeActiveTabCommand({$el}) {
-        const tabId = $el.closest(".note-tab").attr('data-tab-id');
+        const ntxId = $el.closest(".note-tab").attr('data-ntx-id');
 
-        appContext.tabManager.removeTab(tabId);
+        appContext.tabManager.removeNoteContext(ntxId);
     }
 
     setTabCloseEvent($tab) {
         $tab.on('mousedown', e => {
             if (e.which === 2) {
-                appContext.tabManager.removeTab($tab.attr('data-tab-id'));
+                appContext.tabManager.removeNoteContext($tab.attr('data-ntx-id'));
 
                 return true; // event has been handled
             }
@@ -426,26 +415,32 @@ export default class TabRowWidget extends BasicWidget {
         return this.$widget.find('.note-tab[active]')[0];
     }
 
-    activeTabChangedEvent() {
-        const activeTabContext = appContext.tabManager.getActiveTabContext();
+    activeContextChangedEvent() {
+        let activeNoteContext = appContext.tabManager.getActiveContext();
 
-        if (!activeTabContext) {
+        if (!activeNoteContext) {
             return;
         }
 
-        const tabEl = this.getTabById(activeTabContext.tabId)[0];
+        if (activeNoteContext.mainNtxId) {
+            activeNoteContext = appContext.tabManager.getNoteContextById(activeNoteContext.mainNtxId);
+        }
+
+        const tabEl = this.getTabById(activeNoteContext.ntxId)[0];
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');
         if (tabEl) tabEl.setAttribute('active', '');
     }
 
-    newTabOpenedEvent({tabContext}) {
-        this.addTab(tabContext.tabId);
+    newNoteContextCreatedEvent({noteContext}) {
+        if (!noteContext.mainNtxId) {
+            this.addTab(noteContext.ntxId);
+        }
     }
 
-    removeTab(tabId) {
-        const tabEl = this.getTabById(tabId)[0];
+    removeTab(ntxId) {
+        const tabEl = this.getTabById(ntxId)[0];
 
         if (tabEl) {
             tabEl.parentNode.removeChild(tabEl);
@@ -456,24 +451,26 @@ export default class TabRowWidget extends BasicWidget {
         }
     }
 
-    getTabIdsInOrder() {
-        return this.tabEls.map(el => el.getAttribute('data-tab-id'));
+    getNtxIdsInOrder() {
+        return this.tabEls.map(el => el.getAttribute('data-ntx-id'));
     }
 
     updateTitle($tab, title) {
         $tab.find('.note-tab-title').text(title);
     }
 
-    getTabById(tabId) {
-        return this.$widget.find(`[data-tab-id='${tabId}']`);
+    getTabById(ntxId) {
+        return this.$widget.find(`[data-ntx-id='${ntxId}']`);
     }
 
     getTabId($tab) {
-        return $tab.attr('data-tab-id');
+        return $tab.attr('data-ntx-id');
     }
 
-    tabRemovedEvent({tabId}) {
-        this.removeTab(tabId);
+    noteContextRemovedEvent({ntxIds}) {
+        for (const ntxId of ntxIds) {
+            this.removeTab(ntxId);
+        }
     }
 
     cleanUpPreviouslyDraggedTabs() {
@@ -486,7 +483,7 @@ export default class TabRowWidget extends BasicWidget {
 
         if (this.isDragging) {
             this.isDragging = false;
-            this.$widget.removeClass('note-tab-row-is-sorting');
+            this.$widget.removeClass('tab-row-widget-is-sorting');
             this.draggabillyDragging.element.classList.remove('note-tab-is-dragging');
             this.draggabillyDragging.element.style.transform = '';
             this.draggabillyDragging.dragEnd();
@@ -509,14 +506,14 @@ export default class TabRowWidget extends BasicWidget {
             this.draggabillies.push(draggabilly);
 
             draggabilly.on('pointerDown', _ => {
-                appContext.tabManager.activateTab(tabEl.getAttribute('data-tab-id'));
+                appContext.tabManager.activateNoteContext(tabEl.getAttribute('data-ntx-id'));
             });
 
             draggabilly.on('dragStart', _ => {
                 this.isDragging = true;
                 this.draggabillyDragging = draggabilly;
                 tabEl.classList.add('note-tab-is-dragging');
-                this.$widget.addClass('note-tab-row-is-sorting');
+                this.$widget.addClass('tab-row-widget-is-sorting');
             });
 
             draggabilly.on('dragEnd', _ => {
@@ -531,7 +528,7 @@ export default class TabRowWidget extends BasicWidget {
 
                     requestAnimationFrame(_ => {
                         tabEl.classList.remove('note-tab-is-dragging');
-                        this.$widget.removeClass('note-tab-row-is-sorting');
+                        this.$widget.removeClass('tab-row-widget-is-sorting');
 
                         tabEl.classList.add('note-tab-was-just-dragged');
 
@@ -559,7 +556,7 @@ export default class TabRowWidget extends BasicWidget {
                 }
 
                 if (Math.abs(moveVector.y) > 100) {
-                    this.triggerCommand('moveTabToNewWindow', {tabId: this.getTabId($(tabEl))});
+                    this.triggerCommand('moveTabToNewWindow', {ntxId: this.getTabId($(tabEl))});
                 }
             });
         });
@@ -573,7 +570,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        this.triggerEvent('tabReorder', {tabIdsInOrder: this.getTabIdsInOrder()});
+        this.triggerEvent('tabReorder', {ntxIdsInOrder: this.getNtxIdsInOrder()});
         this.layoutTabs();
     }
 
@@ -603,20 +600,20 @@ export default class TabRowWidget extends BasicWidget {
         return closestIndex;
     };
 
-    tabNoteSwitchedAndActivatedEvent({tabContext}) {
-        this.activeTabChangedEvent();
+    noteSwitchedAndActivatedEvent({noteContext}) {
+        this.activeContextChangedEvent();
 
-        this.updateTabById(tabContext.tabId);
+        this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    tabNoteSwitchedEvent({tabContext}) {
-        this.updateTabById(tabContext.tabId);
+    noteSwitchedEvent({noteContext}) {
+        this.updateTabById(noteContext.mainNtxId || noteContext.ntxId);
     }
 
-    updateTabById(tabId) {
-        const $tab = this.getTabById(tabId);
+    updateTabById(ntxId) {
+        const $tab = this.getTabById(ntxId);
 
-        const {note} = appContext.tabManager.getTabContextById(tabId);
+        const {note} = appContext.tabManager.getNoteContextById(ntxId);
 
         this.updateTab($tab, note);
     }
@@ -632,10 +629,10 @@ export default class TabRowWidget extends BasicWidget {
             }
         }
 
-        const tabContext = appContext.tabManager.getTabContextById(this.getTabId($tab));
+        const noteContext = appContext.tabManager.getNoteContextById(this.getTabId($tab));
 
-        if (tabContext) {
-            const hoistedNote = treeCache.getNoteFromCache(tabContext.hoistedNoteId);
+        if (noteContext) {
+            const hoistedNote = froca.getNoteFromCache(noteContext.hoistedNoteId);
 
             if (hoistedNote) {
                 $tab.find('.note-tab-icon')
@@ -663,38 +660,38 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        for (const tabContext of appContext.tabManager.tabContexts) {
-            if (!tabContext.noteId) {
+        for (const noteContext of appContext.tabManager.noteContexts) {
+            if (!noteContext.noteId) {
                 continue;
             }
 
-            if (loadResults.isNoteReloaded(tabContext.noteId) ||
+            if (loadResults.isNoteReloaded(noteContext.noteId) ||
                 loadResults.getAttributes().find(attr =>
                     ['workspace', 'workspaceIconClass', 'workspaceTabBackgroundColor'].includes(attr.name)
-                    && attr.isAffecting(tabContext.note))
+                    && attributeService.isAffecting(attr, noteContext.note))
             ) {
-                const $tab = this.getTabById(tabContext.tabId);
+                const $tab = this.getTabById(noteContext.ntxId);
 
-                this.updateTab($tab, tabContext.note);
+                this.updateTab($tab, noteContext.note);
             }
         }
     }
 
-    treeCacheReloadedEvent() {
-        for (const tabContext of appContext.tabManager.tabContexts) {
-            const $tab = this.getTabById(tabContext.tabId);
+    frocaReloadedEvent() {
+        for (const noteContext of appContext.tabManager.noteContexts) {
+            const $tab = this.getTabById(noteContext.ntxId);
 
-            this.updateTab($tab, tabContext.note);
+            this.updateTab($tab, noteContext.note);
         }
     }
 
-    hoistedNoteChangedEvent({tabId}) {
-        const $tab = this.getTabById(tabId);
+    hoistedNoteChangedEvent({ntxId}) {
+        const $tab = this.getTabById(ntxId);
 
         if ($tab) {
-            const tabContext = appContext.tabManager.getTabContextById(tabId);
+            const noteContext = appContext.tabManager.getNoteContextById(ntxId);
 
-            this.updateTab($tab, tabContext.note);
+            this.updateTab($tab, noteContext.note);
         }
     }
 }

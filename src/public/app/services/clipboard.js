@@ -1,7 +1,7 @@
 import branchService from "./branches.js";
 import toastService from "./toast.js";
 import hoistedNoteService from "./hoisted_note.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 
 let clipboardBranchIds = [];
 let clipboardMode = null;
@@ -18,7 +18,7 @@ async function pasteAfter(afterBranchId) {
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
-        const clipboardBranches = clipboardBranchIds.map(branchId => treeCache.getBranch(branchId));
+        const clipboardBranches = clipboardBranchIds.map(branchId => froca.getBranch(branchId));
 
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
@@ -45,7 +45,7 @@ async function pasteInto(parentBranchId) {
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
-        const clipboardBranches = clipboardBranchIds.map(branchId => treeCache.getBranch(branchId));
+        const clipboardBranches = clipboardBranchIds.map(branchId => froca.getBranch(branchId));
 
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
@@ -78,7 +78,7 @@ function cut(branchIds) {
 }
 
 function isClipboardEmpty() {
-    clipboardBranchIds = clipboardBranchIds.filter(branchId => !!treeCache.getBranch(branchId));
+    clipboardBranchIds = clipboardBranchIds.filter(branchId => !!froca.getBranch(branchId));
 
     return clipboardBranchIds.length === 0;
 }

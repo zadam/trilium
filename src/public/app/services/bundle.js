@@ -1,7 +1,7 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
 import toastService from "./toast.js";
-import treeCache from "./tree_cache.js";
+import froca from "./froca.js";
 import utils from "./utils.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
@@ -19,7 +19,7 @@ async function executeBundle(bundle, originEntity, $container) {
         }.call(apiContext));
     }
     catch (e) {
-        const note = await treeCache.getNote(bundle.noteId);
+        const note = await froca.getNote(bundle.noteId);
 
         toastService.showAndLogError(`Execution of JS note "${note.title}" with ID ${bundle.noteId} failed with error: ${e.message}`);
     }

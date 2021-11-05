@@ -5,7 +5,7 @@
     <link rel="shortcut icon" href="favicon.ico">
     <title>Trilium Notes</title>
 </head>
-<body class="desktop theme-<%= theme %> heading-style-<%= headingStyle %>" style="--main-font-size: <%= mainFontSize %>%; --tree-font-size: <%= treeFontSize %>%; --detail-font-size: <%= detailFontSize %>%;">
+<body class="desktop heading-style-<%= headingStyle %>">
 <noscript>Trilium requires JavaScript to be enabled.</noscript>
 
 <script>
@@ -33,8 +33,6 @@
 <%- include('dialogs/prompt.ejs') %>
 <%- include('dialogs/confirm.ejs') %>
 <%- include('dialogs/help.ejs') %>
-<%- include('dialogs/note_info.ejs') %>
-<%- include('dialogs/link_map.ejs') %>
 <%- include('dialogs/clone_to.ejs') %>
 <%- include('dialogs/move_to.ejs') %>
 <%- include('dialogs/backend_log.ejs') %>
@@ -60,6 +58,12 @@
     };
 </script>
 
+<style>
+    .note-split {
+        max-width: <%= maxContentWidth %>px;
+    }
+</style>
+
 <!-- Required for correct loading of scripts in Electron -->
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
@@ -68,8 +72,8 @@
 <link href="libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 <script src="libraries/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<!-- Include Fancytree skin and library -->
-<link href="libraries/fancytree/skin-win8/ui.fancytree.min.css" rel="stylesheet">
+<!-- Include Fancytree library and skip -->
+<link href="stylesheets/tree.css" rel="stylesheet">
 <script src="libraries/fancytree/jquery.fancytree-all-deps.min.js"></script>
 
 <script src="libraries/jquery.hotkeys.js"></script>
@@ -80,7 +84,14 @@
 
 <script src="libraries/split.min.js"></script>
 
-<link href="stylesheets/themes.css" rel="stylesheet">
+<link href="stylesheets/ckeditor-theme.css" rel="stylesheet">
+<link href="api/fonts" rel="stylesheet">
+<link href="stylesheets/theme-light.css" rel="stylesheet">
+
+<% if (themeCssUrl) { %>
+<link href="<%= themeCssUrl %>" rel="stylesheet">
+<% } %>
+
 <link href="stylesheets/style.css" rel="stylesheet">
 
 <script>

@@ -1,5 +1,5 @@
 import server from "../services/server.js";
-import treeCache from "../services/tree_cache.js";
+import froca from "../services/froca.js";
 import linkService from "../services/link.js";
 import utils from "../services/utils.js";
 
@@ -14,6 +14,7 @@ const $deleteNotesListWrapper = $("#delete-notes-list-wrapper");
 const $brokenRelationsListWrapper = $("#broken-relations-wrapper");
 const $brokenRelationsCount = $("#broke-relations-count");
 const $deleteAllClones = $("#delete-all-clones");
+const $eraseNotes = $("#erase-notes");
 
 let branchIds = null;
 let resolve = null;
@@ -30,7 +31,7 @@ async function renderDeletePreview() {
     $deleteNotesListWrapper.toggle(response.noteIdsToBeDeleted.length > 0);
     $noNoteToDeleteWrapper.toggle(response.noteIdsToBeDeleted.length === 0);
 
-    for (const note of await treeCache.getNotes(response.noteIdsToBeDeleted)) {
+    for (const note of await froca.getNotes(response.noteIdsToBeDeleted)) {
         $deleteNotesList.append(
             $("<li>").append(
                 await linkService.createNoteLink(note.noteId, {showNotePath: true})
@@ -43,7 +44,7 @@ async function renderDeletePreview() {
     $brokenRelationsListWrapper.toggle(response.brokenRelations.length > 0);
     $brokenRelationsCount.text(response.brokenRelations.length);
 
-    await treeCache.getNotes(response.brokenRelations.map(br => br.noteId));
+    await froca.getNotes(response.brokenRelations.map(br => br.noteId));
 
     for (const attr of response.brokenRelations) {
         $brokenRelationsList.append(
@@ -63,11 +64,18 @@ export async function showDialog(branchIdsToDelete) {
 
     utils.openDialog($dialog);
 
+    $deleteAllClones.prop("checked", false);
+    $eraseNotes.prop("checked", false);
+
     return new Promise((res, rej) => resolve = res);
 }
 
 export function isDeleteAllClonesChecked() {
     return $deleteAllClones.is(":checked");
+}
+
+export function isEraseNotesChecked() {
+    return $eraseNotes.is(":checked");
 }
 
 $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
@@ -83,7 +91,8 @@ $okButton.on('click', () => {
 
     resolve({
         proceed: true,
-        deleteAllClones: isDeleteAllClonesChecked()
+        deleteAllClones: isDeleteAllClonesChecked(),
+        eraseNotes: isEraseNotesChecked()
     });
 });
 

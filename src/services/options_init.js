@@ -27,10 +27,10 @@ function initSyncedOptions(username, password) {
     passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
-function initNotSyncedOptions(initialized, startNotePath = 'root', opts = {}) {
+function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('openTabs', JSON.stringify([
         {
-            notePath: startNotePath,
+            notePath: 'root',
             active: true
         }
     ]), false);
@@ -56,20 +56,18 @@ const defaultOptions = [
     { name: 'noteRevisionSnapshotTimeInterval', value: '600', isSynced: true },
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
     { name: 'zoomFactor', value: '1.0', isSynced: false },
+    { name: 'overrideThemeFonts', value: 'false', isSynced: false },
+    { name: 'mainFontFamily', value: 'theme', isSynced: false },
     { name: 'mainFontSize', value: '100', isSynced: false },
+    { name: 'treeFontFamily', value: 'theme', isSynced: false },
     { name: 'treeFontSize', value: '100', isSynced: false },
+    { name: 'detailFontFamily', value: 'theme', isSynced: false },
     { name: 'detailFontSize', value: '110', isSynced: false },
-    { name: 'calendarWidget', value: '{"enabled":true,"expanded":true,"position":20}', isSynced: false },
-    { name: 'editedNotesWidget', value: '{"enabled":true,"expanded":true,"position":50}', isSynced: false },
-    { name: 'noteInfoWidget', value: '{"enabled":true,"expanded":true,"position":100}', isSynced: false },
-    { name: 'attributesWidget', value: '{"enabled":true,"expanded":true,"position":200}', isSynced: false },
-    { name: 'linkMapWidget', value: '{"enabled":true,"expanded":true,"position":300}', isSynced: false },
-    { name: 'noteRevisionsWidget', value: '{"enabled":true,"expanded":true,"position":400}', isSynced: false },
-    { name: 'whatLinksHereWidget', value: '{"enabled":false,"expanded":true,"position":500}', isSynced: false },
-    { name: 'similarNotesWidget', value: '{"enabled":true,"expanded":true,"position":600}', isSynced: false },
+    { name: 'monospaceFontFamily', value: 'theme', isSynced: false },
+    { name: 'monospaceFontSize', value: '110', isSynced: false },
     { name: 'spellCheckEnabled', value: 'true', isSynced: false },
     { name: 'spellCheckLanguageCode', value: 'en-US', isSynced: false },
-    { name: 'imageMaxWidthHeight', value: '1200', isSynced: true },
+    { name: 'imageMaxWidthHeight', value: '2000', isSynced: true },
     { name: 'imageJpegQuality', value: '75', isSynced: true },
     { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
     { name: 'codeNotesMimeTypes', value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml"]', isSynced: true },
@@ -85,8 +83,14 @@ const defaultOptions = [
     { name: 'promotedAttributesExpanded', value: 'true', isSynced: true },
     { name: 'similarNotesExpanded', value: 'true', isSynced: true },
     { name: 'debugModeEnabled', value: 'false', isSynced: false },
-    { name: 'headingStyle', value: 'markdown', isSynced: true },
+    { name: 'headingStyle', value: 'underline', isSynced: true },
     { name: 'autoCollapseNoteTree', value: 'true', isSynced: true },
+    { name: 'autoReadonlySizeText', value: '10000', isSynced: false },
+    { name: 'autoReadonlySizeCode', value: '30000', isSynced: false },
+    { name: 'dailyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'weeklyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'monthlyBackupEnabled', value: 'true', isSynced: false },
+    { name: 'maxContentWidth', value: '1200', isSynced: false },
 ];
 
 function initStartupOptions() {
@@ -98,7 +102,7 @@ function initStartupOptions() {
         if (!(name in optionsMap)) {
             optionService.createOption(name, value, isSynced);
 
-            log.info(`Created missing option "${name}" with default value "${value}"`);
+            log.info(`Created option "${name}" with default value "${value}"`);
         }
     }
 

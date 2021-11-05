@@ -9,7 +9,6 @@ const noteService = require('../services/notes');
 const attributeService = require('../services/attributes');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning');
-const repository = require('../services/repository');
 const noteRevisionService = require('../services/note_revisions');
 const loremIpsum = require('lorem-ipsum').loremIpsum;
 
@@ -84,7 +83,7 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        noteRevisionService.createNoteRevision(await repository.getNote(getRandomNoteId()));
+        noteRevisionService.createNoteRevision(await becca.getNote(getRandomNoteId()));
 
         notes.push(note.noteId);
     }

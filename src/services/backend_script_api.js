@@ -6,14 +6,14 @@ const attributeService = require('./attributes');
 const dateNoteService = require('./date_notes');
 const treeService = require('./tree');
 const config = require('./config');
-const repository = require('./repository');
 const axios = require('axios');
 const dayjs = require('dayjs');
 const xml2js = require('xml2js');
 const cloningService = require('./cloning');
 const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
-const SearchContext = require("./search/search_context.js");
+const SearchContext = require("./search/search_context");
+const becca = require("../becca/becca");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -58,39 +58,21 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} noteId
      * @returns {Note|null}
      */
-    this.getNote = repository.getNote;
+    this.getNote = noteId => becca.getNote(noteId);
 
     /**
      * @method
      * @param {string} branchId
      * @returns {Branch|null}
      */
-    this.getBranch = repository.getBranch;
+    this.getBranch = branchId => becca.getBranch(branchId);
 
     /**
      * @method
      * @param {string} attributeId
      * @returns {Attribute|null}
      */
-    this.getAttribute = repository.getAttribute;
-
-    /**
-     * Retrieves first entity from the SQL's result set.
-     *
-     * @method
-     * @param {string} SQL query
-     * @param {Array.<?>} array of params
-     * @returns {Entity|null}
-     */
-    this.getEntity = repository.getEntity;
-
-    /**
-     * @method
-     * @param {string} SQL query
-     * @param {Array.<?>} array of params
-     * @returns {Entity[]}
-     */
-    this.getEntities = repository.getEntities;
+    this.getAttribute = attributeId => becca.getAttribute(attributeId);
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
@@ -110,10 +92,10 @@ function BackendScriptApi(currentNote, apiParams) {
             searchParams.ignoreHoistedNote = true;
         }
 
-        const noteIds = searchService.findNotesWithQuery(query, new SearchContext(searchParams))
+        const noteIds = searchService.findResultsWithQuery(query, new SearchContext(searchParams))
             .map(sr => sr.noteId);
 
-        return repository.getNotes(noteIds);
+        return becca.getNotes(noteIds);
     };
 
     /**
@@ -274,7 +256,7 @@ function BackendScriptApi(currentNote, apiParams) {
         extraOptions.parentNoteId = parentNoteId;
         extraOptions.title = title;
 
-        const parentNote = repository.getNote(parentNoteId);
+        const parentNote = becca.getNote(parentNoteId);
 
         // code note type can be inherited, otherwise text is default
         extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
@@ -370,7 +352,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} parentNoteId - this note's child notes will be sorted
      */
-    this.sortNotesByTitle = treeService.sortNotesByTitle;
+    this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
 
     /**
      * This method finds note by its noteId and prefix and either sets it to the given parentNoteId
