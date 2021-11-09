@@ -37,17 +37,27 @@ const TPL = `
         padding-top: 5px;
     }
     
+    .tree-actions {
+        padding: 4px 0;
+        background-color: var(--launcher-pane-background-color);
+        z-index: 100;
+        position: absolute;
+        bottom: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        right: 11.77px;
+    }
+    
     button.tree-floating-button {
         font-size: 1.5em;
-        padding: 2px;
+        padding: 5px;
+        margin-right: 5px;
         max-height: 34px;
         color: var(--launcher-pane-text-color);
         background-color: var(--button-background-color);
         border-radius: var(--button-border-radius);
         border: 1px solid transparent;
-        z-index: 100;
-        position: absolute;
-        bottom: 13px;
     }
     
     button.tree-floating-button:hover {
@@ -80,16 +90,19 @@ const TPL = `
     
     <div class="tree"></div>
     
-    <button class="tree-floating-button bx bx-layer-minus collapse-tree-button" 
-            title="Collapse note tree" 
-            data-trigger-command="collapseTree"></button>
+    <div class="tree-actions">
+        <button class="tree-floating-button bx bx-layer-minus collapse-tree-button" 
+                title="Collapse note tree" 
+                data-trigger-command="collapseTree"></button>
+        
+        <button class="tree-floating-button bx bx-crosshair scroll-to-active-note-button" 
+                title="Scroll to active note" 
+                data-trigger-command="scrollToActiveNote"></button>
+        
+        <button class="tree-floating-button bx bx-cog tree-settings-button" 
+                title="Tree settings"></button>
+    </div>
     
-    <button class="tree-floating-button bx bx-crosshair scroll-to-active-note-button" 
-            title="Scroll to active note" 
-            data-trigger-command="scrollToActiveNote"></button>
-    
-    <button class="tree-floating-button bx bx-cog tree-settings-button" 
-            title="Tree settings"></button>
     
     <div class="tree-settings-popup">
         <div class="form-check">
