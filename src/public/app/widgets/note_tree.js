@@ -39,7 +39,6 @@ const TPL = `
     
     .tree-actions {
         padding: 4px 0;
-        width: 100%;
         background-color: var(--launcher-pane-background-color);
         z-index: 100;
         position: absolute;
