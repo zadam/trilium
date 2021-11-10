@@ -79,8 +79,12 @@ function reject(req, res, message) {
 }
 
 function checkCredentials(req, res, next) {
+    if (!sqlInit.isDbInitialized()) {
+        res.status(400).send('Database is not initialized yet.');
+    }
+
     const header = req.headers['trilium-cred'] || '';
-    const auth = new Buffer.from(header, 'base64').toString();console.log("auth", auth);
+    const auth = new Buffer.from(header, 'base64').toString();
     const [username, password] = auth.split(/:/);
 
     const dbUsername = optionService.getOption('username');
