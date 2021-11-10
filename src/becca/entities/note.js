@@ -12,6 +12,9 @@ const NoteRevision = require("./note_revision.js");
 const LABEL = 'label';
 const RELATION = 'relation';
 
+/**
+ * Trilium's main entity which can represent text note, image, code note, file attachment etc.
+ */
 class Note extends AbstractEntity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
@@ -78,35 +81,47 @@ class Note extends AbstractEntity {
     }
 
     init() {
-        /** @param {Branch[]} */
+        /** @type {Branch[]} */
         this.parentBranches = [];
-        /** @param {Note[]} */
+        /** @type {Note[]} */
         this.parents = [];
-        /** @param {Note[]} */
+        /** @type {Note[]} */
         this.children = [];
-        /** @param {Attribute[]} */
+        /** @type {Attribute[]} */
         this.ownedAttributes = [];
 
-        /** @param {Attribute[]|null} */
+        /** @type {Attribute[]|null}
+         * @private */
         this.__attributeCache = null;
-        /** @param {Attribute[]|null} */
+        /** @type {Attribute[]|null}
+         * @private*/
         this.inheritableAttributeCache = null;
 
-        /** @param {Attribute[]} */
+        /** @type {Attribute[]} */
         this.targetRelations = [];
 
         this.becca.addNote(this.noteId, this);
 
-        /** @param {Note[]|null} */
+        /** @type {Note[]|null}
+         * @private */
         this.ancestorCache = null;
 
         // following attributes are filled during searching from database
 
-        /** @param {int} size of the content in bytes */
+        /**
+         * size of the content in bytes
+         * @type {int|null}
+         */
         this.contentSize = null;
-        /** @param {int} size of the content and note revision contents in bytes */
+        /**
+         * size of the content and note revision contents in bytes
+         * @type {int|null}
+         */
         this.noteSize = null;
-        /** @param {int} number of note revisions for this note */
+        /**
+         * number of note revisions for this note
+         * @type {int|null}
+         */
         this.revisionCount = null;
     }
 

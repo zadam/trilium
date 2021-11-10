@@ -26,7 +26,10 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** Represents mapping between note and parent note */
+            <pre class="prettyprint source linenums"><code>/**
+ * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
+ * parents.
+ */
 class Branch {
     constructor(froca, row) {
         this.froca = froca;
@@ -35,19 +38,22 @@ class Branch {
     }
 
     update(row) {
-        /** @param {string} primary key */
+        /**
+         * primary key
+         * @type {string}
+         */
         this.branchId = row.branchId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.parentNoteId = row.parentNoteId;
-        /** @param {int} */
+        /** @type {int} */
         this.notePosition = row.notePosition;
-        /** @param {string} */
+        /** @type {string} */
         this.prefix = row.prefix;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isExpanded = !!row.isExpanded;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.fromSearchNote = !!row.fromSearchNote;
     }
 
@@ -87,7 +93,7 @@ export default Branch;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

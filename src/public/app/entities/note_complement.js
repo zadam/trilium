@@ -7,7 +7,8 @@ class NoteComplement {
         this.noteId = row.noteId;
 
         /**
-         * @type {string} - can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         * can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         * @type {string}
          */
         this.content = row.content;
 

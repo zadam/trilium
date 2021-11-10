@@ -34,6 +34,10 @@ const sql = require("../../services/sql.js");
 const dateUtils = require("../../services/date_utils.js");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 
+/**
+ * Attribute is an abstract concept which has two real uses - label (key - value pair)
+ * and relation (representing named relationship between source and target note)
+ */
 class Attribute extends AbstractEntity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
@@ -64,21 +68,21 @@ class Attribute extends AbstractEntity {
     }
 
     update([attributeId, noteId, type, name, value, isInheritable, position, utcDateModified]) {
-        /** @param {string} */
+        /** @type {string} */
         this.attributeId = attributeId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.type = type;
-        /** @param {string} */
+        /** @type {string} */
         this.name = name;
-        /** @param {int} */
+        /** @type {int} */
         this.position = position;
-        /** @param {string} */
+        /** @type {string} */
         this.value = value;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isInheritable = !!isInheritable;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = utcDateModified;
 
         return this;
@@ -91,7 +95,7 @@ class Attribute extends AbstractEntity {
 
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.becca.notes[this.noteId] = new Note({noteId: this.noteId});
+            this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
         }
 
         this.becca.notes[this.noteId].ownedAttributes.push(this);
@@ -173,6 +177,10 @@ class Attribute extends AbstractEntity {
         }
     }
 
+    get isDeleted() {
+        return !(this.attributeId in this.becca.attributes);
+    }
+
     beforeSaving() {
         if (!this.value) {
             if (this.type === 'relation') {
@@ -237,7 +245,7 @@ module.exports = Attribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

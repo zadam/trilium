@@ -28,6 +28,10 @@
         <article>
             <pre class="prettyprint source linenums"><code>import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
+/**
+ * Attribute is an abstract concept which has two real uses - label (key - value pair)
+ * and relation (representing named relationship between source and target note)
+ */
 class Attribute {
     constructor(froca, row) {
         this.froca = froca;
@@ -36,19 +40,19 @@ class Attribute {
     }
 
     update(row) {
-        /** @param {string} attributeId */
+        /** @type {string} */
         this.attributeId = row.attributeId;
-        /** @param {string} noteId */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} type */
+        /** @type {string} */
         this.type = row.type;
-        /** @param {string} name */
+        /** @type {string} */
         this.name = row.name;
-        /** @param {string} value */
+        /** @type {string} */
         this.value = row.value;
-        /** @param {int} position */
+        /** @type {int} */
         this.position = row.position;
-        /** @param {boolean} isInheritable */
+        /** @type {boolean} */
         this.isInheritable = !!row.isInheritable;
     }
 
@@ -100,7 +104,7 @@ export default Attribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

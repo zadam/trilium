@@ -30,7 +30,8 @@
     
         <h2><span class="attribs"><span class="type-signature"></span></span>Branch<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Represents mapping between note and parent note</div>
+            <div class="class-description">Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
+parents.</div>
         
     
 </header>
@@ -93,7 +94,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line2">line 2</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line5">line 5</a>
     </li></ul></dd>
     
 
@@ -143,244 +144,26 @@
 
         
             
-<h4 class="name" id="branchId"><span class="type-signature"></span>branchId<span class="type-signature"></span></h4>
+<h4 class="name" id="branchId"><span class="type-signature"></span>branchId<span class="type-signature"> :string</span></h4>
 
 
 
 
+<div class="description">
+    primary key
+</div>
 
 
 
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line11">line 11</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
+    <h5>Type:</h5>
+    <ul>
+        <li>
             
-<h4 class="name" id="fromSearchNote"><span class="type-signature"></span>fromSearchNote<span class="type-signature"></span></h4>
+<span class="param-type">string</span>
 
 
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line23">line 23</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="isExpanded"><span class="type-signature"></span>isExpanded<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line21">line 21</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="noteId"><span class="type-signature"></span>noteId<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line13">line 13</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="notePosition"><span class="type-signature"></span>notePosition<span class="type-signature"></span></h4>
-
-
-
-
-
+        </li>
+    </ul>
 
 
 
@@ -433,12 +216,22 @@
 
         
             
-<h4 class="name" id="parentNoteId"><span class="type-signature"></span>parentNoteId<span class="type-signature"></span></h4>
+<h4 class="name" id="fromSearchNote"><span class="type-signature"></span>fromSearchNote<span class="type-signature"> :boolean</span></h4>
 
 
 
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -473,7 +266,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line15">line 15</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -491,12 +284,90 @@
 
         
             
-<h4 class="name" id="prefix"><span class="type-signature"></span>prefix<span class="type-signature"></span></h4>
+<h4 class="name" id="isExpanded"><span class="type-signature"></span>isExpanded<span class="type-signature"> :boolean</span></h4>
 
 
 
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="noteId"><span class="type-signature"></span>noteId<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -532,6 +403,210 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line19">line 19</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="notePosition"><span class="type-signature"></span>notePosition<span class="type-signature"> :int</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">int</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line23">line 23</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="parentNoteId"><span class="type-signature"></span>parentNoteId<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="prefix"><span class="type-signature"></span>prefix<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -607,7 +682,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line27">line 27</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -709,7 +784,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line32">line 32</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line38">line 38</a>
     </li></ul></dd>
     
 
@@ -811,7 +886,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line37">line 37</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -913,7 +988,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line42">line 42</a>
+        <a href="entities_branch.js.html">entities/branch.js</a>, <a href="entities_branch.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -981,7 +1056,7 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

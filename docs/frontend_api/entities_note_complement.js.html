@@ -31,35 +31,36 @@
  */
 class NoteComplement {
     constructor(row) {
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
 
         /**
-         * @param {string} - can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         * can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
+         * @type {string}
          */
         this.content = row.content;
 
-        /** @param {int} */
+        /** @type {int} */
         this.contentLength = row.contentLength;
 
-        /** @param {string} */
+        /** @type {string} */
         this.dateCreated = row.dateCreated;
 
-        /** @param {string} */
+        /** @type {string} */
         this.dateModified = row.dateModified;
 
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated;
 
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
 
         // "combined" date modified give larger out of note's and note_content's dateModified
 
-        /** @param {string} */
+        /** @type {string} */
         this.combinedDateModified = row.combinedDateModified;
 
-        /** @param {string} */
+        /** @type {string} */
         this.combinedUtcDateModified = row.combinedUtcDateModified;
     }
 }
@@ -75,7 +76,7 @@ export default NoteComplement;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

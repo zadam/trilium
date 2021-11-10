@@ -59,9 +59,15 @@ class NoteShort {
         this.title = row.title;
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @type {string} one of 'text', 'code', 'file' or 'render' */
+        /**
+         * one of 'text', 'code', 'file' or 'render'
+         * @type {string}
+         */
         this.type = row.type;
-        /** @type {string} content-type, e.g. "application/json" */
+        /**
+         * content-type, e.g. "application/json"
+         * @type {string}
+         */
         this.mime = row.mime;
     }
 

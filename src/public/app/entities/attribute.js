@@ -1,5 +1,9 @@
 import promotedAttributeDefinitionParser from '../services/promoted_attribute_definition_parser.js';
 
+/**
+ * Attribute is an abstract concept which has two real uses - label (key - value pair)
+ * and relation (representing named relationship between source and target note)
+ */
 class Attribute {
     constructor(froca, row) {
         this.froca = froca;
@@ -8,19 +12,19 @@ class Attribute {
     }
 
     update(row) {
-        /** @type {string} attributeId */
+        /** @type {string} */
         this.attributeId = row.attributeId;
-        /** @type {string} noteId */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @type {string} type */
+        /** @type {string} */
         this.type = row.type;
-        /** @type {string} name */
+        /** @type {string} */
         this.name = row.name;
-        /** @type {string} value */
+        /** @type {string} */
         this.value = row.value;
-        /** @type {int} position */
+        /** @type {int} */
         this.position = row.position;
-        /** @type {boolean} isInheritable */
+        /** @type {boolean} */
         this.isInheritable = !!row.isInheritable;
     }
 

@@ -14,9 +14,13 @@ class Option extends AbstractEntity {
     constructor(row) {
         super();
 
+        /** @type {string} */
         this.name = row.name;
+        /** @type {string} */
         this.value = row.value;
+        /** @type {boolean} */
         this.isSynced = !!row.isSynced;
+        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
 
         this.becca.options[this.name] = this;

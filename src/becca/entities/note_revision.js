@@ -9,7 +9,8 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity.js");
 
 /**
- * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
+ * NoteRevision represents snapshot of note's title and content at some point in the past.
+ * It's used for seamless note versioning.
  */
 class NoteRevision extends AbstractEntity {
     static get entityName() { return "note_revisions"; }

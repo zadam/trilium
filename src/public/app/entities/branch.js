@@ -1,4 +1,7 @@
-/** Represents mapping between note and parent note */
+/**
+ * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
+ * parents.
+ */
 class Branch {
     constructor(froca, row) {
         this.froca = froca;
@@ -7,7 +10,10 @@ class Branch {
     }
 
     update(row) {
-        /** @type {string} primary key */
+        /**
+         * primary key
+         * @type {string}
+         */
         this.branchId = row.branchId;
         /** @type {string} */
         this.noteId = row.noteId;

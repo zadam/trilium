@@ -37,7 +37,8 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity.js");
 
 /**
- * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
+ * NoteRevision represents snapshot of note's title and content at some point in the past.
+ * It's used for seamless note versioning.
  */
 class NoteRevision extends AbstractEntity {
     static get entityName() { return "note_revisions"; }
@@ -47,29 +48,29 @@ class NoteRevision extends AbstractEntity {
     constructor(row) {
         super();
 
-        /** @param {string} */
+        /** @type {string} */
         this.noteRevisionId = row.noteRevisionId;
-        /** @param {string} */
+        /** @type {string} */
         this.noteId = row.noteId;
-        /** @param {string} */
+        /** @type {string} */
         this.type = row.type;
-        /** @param {string} */
+        /** @type {string} */
         this.mime = row.mime;
-        /** @param {boolean} */
+        /** @type {boolean} */
         this.isProtected = !!row.isProtected;
-        /** @param {string} */
+        /** @type {string} */
         this.title = row.title;
-        /** @param {string} */
+        /** @type {string} */
         this.dateLastEdited = row.dateLastEdited;
-        /** @param {string} */
+        /** @type {string} */
         this.dateCreated = row.dateCreated;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateLastEdited = row.utcDateLastEdited;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated;
-        /** @param {string} */
+        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @param {number} */
+        /** @type {number} */
         this.contentLength = row.contentLength;
 
         if (this.isProtected) {
@@ -77,7 +78,7 @@ class NoteRevision extends AbstractEntity {
                 this.title = protectedSessionService.decryptString(this.title);
             }
             else {
-                this.title = "[Protected]";
+                this.title = "[protected]";
             }
         }
     }
@@ -194,12 +195,14 @@ class NoteRevision extends AbstractEntity {
             utcDateLastEdited: this.utcDateLastEdited,
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified,
+            content: this.content,
             contentLength: this.contentLength
         };
     }
 
     getPojoToSave() {
         const pojo = this.getPojo();
+        delete pojo.content; // not getting persisted
         delete pojo.contentLength; // not getting persisted
 
         if (pojo.isProtected) {
@@ -227,7 +230,7 @@ module.exports = NoteRevision;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

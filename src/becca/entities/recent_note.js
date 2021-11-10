@@ -13,8 +13,11 @@ class RecentNote extends AbstractEntity {
     constructor(row) {
         super();
 
+        /** @type {string} */
         this.noteId = row.noteId;
+        /** @type {string} */
         this.notePath = row.notePath;
+        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
 

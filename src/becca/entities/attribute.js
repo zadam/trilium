@@ -6,6 +6,10 @@ const sql = require("../../services/sql.js");
 const dateUtils = require("../../services/date_utils.js");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 
+/**
+ * Attribute is an abstract concept which has two real uses - label (key - value pair)
+ * and relation (representing named relationship between source and target note)
+ */
 class Attribute extends AbstractEntity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }

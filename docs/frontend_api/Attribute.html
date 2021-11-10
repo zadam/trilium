@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: NoteComplement</title>
+    <title>JSDoc: Class: Attribute</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: NoteComplement</h1>
+    <h1 class="page-title">Class: Attribute</h1>
 
     
 
@@ -28,9 +28,10 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>NoteComplement<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Attribute<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Complements the NoteShort with the main note content and other extra attributes</div>
+            <div class="class-description">Attribute is an abstract concept which has two real uses - label (key - value pair)
+and relation (representing named relationship between source and target note)</div>
         
     
 </header>
@@ -45,7 +46,7 @@
     
 
     
-    <h4 class="name" id="NoteComplement"><span class="type-signature"></span>new NoteComplement<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Attribute"><span class="type-signature"></span>new Attribute<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -93,7 +94,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line4">line 4</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line7">line 7</a>
     </li></ul></dd>
     
 
@@ -143,7 +144,7 @@
 
         
             
-<h4 class="name" id="combinedDateModified"><span class="type-signature"></span>combinedDateModified<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="attributeId"><span class="type-signature"></span>attributeId<span class="type-signature"> :string</span></h4>
 
 
 
@@ -193,7 +194,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line33">line 33</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
@@ -211,7 +212,75 @@
 
         
             
-<h4 class="name" id="combinedUtcDateModified"><span class="type-signature"></span>combinedUtcDateModified<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="isInheritable"><span class="type-signature"></span>isInheritable<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="name"><span class="type-signature"></span>name<span class="type-signature"> :string</span></h4>
 
 
 
@@ -261,283 +330,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line36">line 36</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="content"><span class="type-signature"></span>content<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    can either contain the whole content (in e.g. string notes), only part (large text notes) or nothing at all (binary notes, images)
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">string</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line13">line 13</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="contentLength"><span class="type-signature"></span>contentLength<span class="type-signature"> :int</span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">int</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line16">line 16</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="dateCreated"><span class="type-signature"></span>dateCreated<span class="type-signature"> :string</span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">string</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line19">line 19</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="dateModified"><span class="type-signature"></span>dateModified<span class="type-signature"> :string</span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">string</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line22">line 22</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -605,7 +398,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line7">line 7</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -623,7 +416,75 @@
 
         
             
-<h4 class="name" id="utcDateCreated"><span class="type-signature"></span>utcDateCreated<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="position"><span class="type-signature"></span>position<span class="type-signature"> :int</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">int</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="type"><span class="type-signature"></span>type<span class="type-signature"> :string</span></h4>
 
 
 
@@ -673,7 +534,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line25">line 25</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line20">line 20</a>
     </li></ul></dd>
     
 
@@ -691,7 +552,7 @@
 
         
             
-<h4 class="name" id="utcDateModified"><span class="type-signature"></span>utcDateModified<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="value"><span class="type-signature"></span>value<span class="type-signature"> :string</span></h4>
 
 
 
@@ -741,7 +602,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_complement.js.html">entities/note_complement.js</a>, <a href="entities_note_complement.js.html#line28">line 28</a>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line24">line 24</a>
     </li></ul></dd>
     
 
@@ -760,6 +621,112 @@
         
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNote"><span class="type-signature"></span>getNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="NoteShort.html">NoteShort</a>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_attribute.js.html">entities/attribute.js</a>, <a href="entities_attribute.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="NoteShort.html">NoteShort</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
     
 
     

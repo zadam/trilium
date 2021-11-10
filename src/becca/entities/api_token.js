@@ -14,8 +14,11 @@ class ApiToken extends AbstractEntity {
     constructor(row) {
         super();
 
+        /** @type {string} */
         this.apiTokenId = row.apiTokenId;
+        /** @type {string} */
         this.token = row.token;
+        /** @type {string} */
         this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
     }
 
