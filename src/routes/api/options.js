@@ -55,8 +55,8 @@ const ALLOWED_OPTIONS = new Set([
     'weeklyBackupEnabled',
     'monthlyBackupEnabled',
     'maxContentWidth',
-    'showNewVersionAvailable',
-    'showNewMinorVersionAvailable',
+    'newVersionAvailable',
+    'newMinorVersionAvailable',
 ]);
 
 function getOptions() {

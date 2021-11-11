@@ -281,7 +281,7 @@ export default class ApperanceOptions {
         })
 
         this.$newVersionAvailable = $("#new-version-available");
-        const onNewVersionAvailableChange = async () => {
+        this.onNewVersionAvailableChange = async () => {
             const isChecked = this.$newVersionAvailable.prop("checked");
 
             // Enable / Disable new-minor-version-available input
@@ -289,18 +289,16 @@ export default class ApperanceOptions {
 
             $newMinorVersionAvailableWrapper.prop('disabled', !isChecked);
 
-            await server.put('options/showNewVersionAvailable/' + isChecked);
+            await server.put('options/newVersionAvailable/' + isChecked);
         }
 
-        this.$newVersionAvailable.on('change', onNewVersionAvailableChange);
-        // Initial call to disable other input if checkbox is disabled
-        onNewVersionAvailableChange();
+        this.$newVersionAvailable.on('change', this.onNewVersionAvailableChange);
 
         this.$newMinorVersionAvailable = $("#new-minor-version-available");
         this.$newMinorVersionAvailable.on('change', async () => {
             const isChecked = this.$newMinorVersionAvailable.prop("checked");
 
-            await server.put('options/showNewMinorVersionAvailable/' + isChecked);
+            await server.put('options/newMinorVersionAvailable/' + isChecked);
         });
     }
 
@@ -358,6 +356,13 @@ export default class ApperanceOptions {
         this.fillFontFamilyOptions(this.$monospaceFontFamily, options.monospaceFontFamily);
 
         this.$maxContentWidth.val(options.maxContentWidth);
+
+        this.$newVersionAvailable.prop("checked", options.newVersionAvailable);
+
+        this.$newMinorVersionAvailable.prop("checked", options.newMinorVersionAvailable);
+
+        // Initial call to disable other input if checkbox is disabled
+        onNewVersionAvailableChange();
     }
 
     fillFontFamilyOptions($select, currentValue) {

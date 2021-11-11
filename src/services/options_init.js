@@ -91,6 +91,8 @@ const defaultOptions = [
     { name: 'weeklyBackupEnabled', value: 'true', isSynced: false },
     { name: 'monthlyBackupEnabled', value: 'true', isSynced: false },
     { name: 'maxContentWidth', value: '1200', isSynced: false },
+    { name: 'newVersionAvailable', value: 'true', isSynced: false },
+    { name: 'newMinorVersionAvailable', value: 'true', isSynced: false },
 ];
 
 function initStartupOptions() {
