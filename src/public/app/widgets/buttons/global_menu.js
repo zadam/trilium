@@ -1,6 +1,7 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
+const axios = require("axios");
 
 const TPL = `
 <div class="dropdown global-menu dropright">
@@ -104,6 +105,11 @@ const TPL = `
             About Trilium Notes
         </a>
 
+        <a class="dropdown-item show-about-dialog-button">
+            <span class="bx bx-sync"></span>
+            Update to newest version
+        </a>
+
         <a class="dropdown-item logout-button" data-trigger-command="logout">
             <span class="bx bx-log-out"></span>
             Logout
@@ -111,12 +117,11 @@ const TPL = `
     </div>
 </div>
 `;
+const RELEASES_API_URL = "https://api.github.com/repos/zadam/trilium/releases/latest";
 
 export default class GlobalMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-
-        const $dropdownMenu = this.$widget.find(".dropdown-menu");
 
         const $button = this.$widget.find(".global-menu-button");
         $button.tooltip({ trigger: "hover" });
@@ -131,9 +136,24 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
         this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
 
-        this.$widget.find(".global-menu-button-update-available").append(new UpdateAvailableWidget().render())
 
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
+
+        this.fetchNewVersion().then(newVersion => {
+            if (newVersion) {
+                this.$widget.find(".global-menu-button-update-available").append(
+                    new UpdateAvailableWidget()
+                        .version(newVersion)
+                        .render()
+                )
+            }
+        })
+    }
+
+    async fetchNewVersion() {
+        const {data} = await axios.get(RELEASES_API_URL);
+
+        return data.tag_name.substring(1);
     }
 }
