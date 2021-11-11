@@ -22,18 +22,10 @@ const TPL = `
         height: 100%;
         
         position: relative;
-        left: 0;
-        top: 0;
     }
     
     .global-menu-button:hover {
         background-image: url("images/icon-color.png");
-    }
-    
-    .global-menu-button-wrapper {
-        position: relative;
-        width: 100%;
-        height: 100%;
     }
     
     .global-menu-button-update-available {
@@ -47,13 +39,11 @@ const TPL = `
     }
     </style>
 
-    <div class="global-menu-button-wrapper">
-        <button type="button" data-toggle="dropdown" data-placement="right"
-                aria-haspopup="true" aria-expanded="false" 
-                class="icon-action global-menu-button" title="Menu"></button>
+    <button type="button" data-toggle="dropdown" data-placement="right"
+            aria-haspopup="true" aria-expanded="false" 
+            class="icon-action global-menu-button" title="Menu">
         <div class="global-menu-button-update-available"></div>
-</div>
-    </div>
+    </button>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a class="dropdown-item options-button" data-trigger-command="showOptions">
@@ -125,6 +115,8 @@ const TPL = `
 export default class GlobalMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+
+        const $dropdownMenu = this.$widget.find(".dropdown-menu");
 
         const $button = this.$widget.find(".global-menu-button");
         $button.tooltip({ trigger: "hover" });
