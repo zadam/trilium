@@ -37,46 +37,25 @@ const VERSION_CHANGE_BACKGROUND_COLOR_MAP = Object.fromEntries(
         ]
     )
 )
-const CURRENT_VERSION = process.env.npm_package_version;
 
 export default class UpdateAvailableWidget extends BasicWidget {
-    newVersion = undefined
-
-    static getVersionChange(oldVersion, newVersion) {
-        const [oldMajor, oldSemiMajor, oldMinor] = oldVersion.split(".").map(Number);
-        const [newMajor, newSemiMajor, newMinor] = newVersion.split(".").map(Number);
-
-        if (newMajor !== oldMajor) {
-            return "major";
-        } else if (newSemiMajor !== oldSemiMajor) {
-            return "semi-major";
-        } else if (newMinor !== oldMinor) {
-            return "minor";
-        }
-    }
-
-    checkVersion() {
-        console.log(`New version available: ${CURRENT_VERSION} -> ${this.newVersion}`)
-        const versionChange = UpdateAvailableWidget.getVersionChange(CURRENT_VERSION, this.newVersion);
-
-        this.setButton(versionChange);
-    }
+    versionChange = undefined
 
     doRender() {
         this.$widget = $(TPL);
 
-        this.checkVersion();
+        this.setButton();
     }
 
-    setButton(versionChange) {
-        switch (versionChange) {
+    setButton() {
+        switch (this.versionChange) {
             case "major":
             case "semi-major":
             case "minor":
                 this.$widget.show();
                 this.$widget.css({
-                    color: VERSION_CHANGE_COLOR_MAP[versionChange],
-                    backgroundColor: VERSION_CHANGE_BACKGROUND_COLOR_MAP[versionChange]
+                    color: VERSION_CHANGE_COLOR_MAP[this.versionChange],
+                    backgroundColor: VERSION_CHANGE_BACKGROUND_COLOR_MAP[this.versionChange]
                 });
                 break;
             default:
@@ -84,8 +63,8 @@ export default class UpdateAvailableWidget extends BasicWidget {
         }
     }
 
-    version(newVersion) {
-        this.newVersion = newVersion;
+    withVersionChange(versionChange) {
+        this.versionChange = versionChange;
 
         return this;
     }

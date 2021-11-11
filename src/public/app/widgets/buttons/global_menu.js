@@ -1,6 +1,9 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
+import server from "../../services/server.js";
+import convertUtils from "../../services/convert_utils.js";
+import {show} from "../../dialogs/protected_session.js";
 const axios = require("axios");
 
 const TPL = `
@@ -118,8 +121,22 @@ const TPL = `
 </div>
 `;
 const RELEASES_API_URL = "https://api.github.com/repos/zadam/trilium/releases/latest";
+const CURRENT_VERSION = process.env.npm_package_version;
 
 export default class GlobalMenuWidget extends BasicWidget {
+    static getVersionChange(oldVersion, newVersion) {
+        const [oldMajor, oldSemiMajor, oldMinor] = oldVersion.split(".").map(Number);
+        const [newMajor, newSemiMajor, newMinor] = newVersion.split(".").map(Number);
+
+        if (newMajor !== oldMajor) {
+            return "major";
+        } else if (newSemiMajor !== oldSemiMajor) {
+            return "semi-major";
+        } else if (newMinor !== oldMinor) {
+            return "minor";
+        }
+    }
+
     doRender() {
         this.$widget = $(TPL);
 
@@ -140,15 +157,43 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
 
-        this.fetchNewVersion().then(newVersion => {
-            if (newVersion) {
-                this.$widget.find(".global-menu-button-update-available").append(
-                    new UpdateAvailableWidget()
-                        .version(newVersion)
-                        .render()
-                )
-            }
-        })
+        this.loadUpdateAvailable();
+    }
+
+    async loadUpdateAvailable() {
+        const newVersion = await this.fetchNewVersion();
+
+        if (!newVersion) {
+            return;
+        }
+
+        const versionChange = GlobalMenuWidget.getVersionChange(CURRENT_VERSION, newVersion);
+        const showNewVersion = await this.checkIfShowNewVersionAvailable(versionChange);
+
+        if (!showNewVersion) {
+            return;
+        }
+
+        this.$widget.find(".global-menu-button-update-available").append(
+            new UpdateAvailableWidget()
+                .withVersionChange(versionChange)
+                .render()
+        )
+    }
+
+    async checkIfShowNewVersionAvailable(versionChange) {
+        const data = await server.get("options");
+        const showNewVersionAvailable = convertUtils.parseBoolean(data.newVersionAvailable);
+        const showNewMinorVersionAvailable = convertUtils.parseBoolean(data.newMinorVersionAvailable);
+
+        return (
+            showNewVersionAvailable &&
+            (
+                versionChange === "major" ||
+                versionChange === "semi-major" ||
+                (versionChange === "minor" && showNewMinorVersionAvailable)
+            )
+        )
     }
 
     async fetchNewVersion() {
