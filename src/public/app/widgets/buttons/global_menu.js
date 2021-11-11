@@ -38,17 +38,12 @@ const TPL = `
     
     .global-menu-button-update-available {
         position: absolute;
-        right: -16px;
-        bottom: -16px;
+        right: -30px;
+        bottom: -30px;
         width: 100%;
         height: 100%;
-    }
-    
-    .global-menu-button-update-available-button {
-        width: 28px !important;
-        height: 28px !important;
-        padding: 0 !important;
-        transform: scale(0.7);
+            
+        pointer-events: none;
     }
     </style>
 
@@ -144,7 +139,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
         this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
 
-        this.$widget.find(".global-menu-button-update-available").child(new UpdateAvailableWidget())
+        this.$widget.find(".global-menu-button-update-available").append(new UpdateAvailableWidget().render())
 
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
