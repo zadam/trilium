@@ -1,5 +1,6 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
+import UpdateAvailableWidget from "./update_available.js";
 
 const TPL = `
 <div class="dropdown global-menu dropright">
@@ -19,16 +20,45 @@ const TPL = `
         background-position: 50% 45%;
         width: 100%;
         height: 100%;
+        
+        position: relative;
+        left: 0;
+        top: 0;
     }
     
     .global-menu-button:hover {
         background-image: url("images/icon-color.png");
     }
+    
+    .global-menu-button-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .global-menu-button-update-available {
+        position: absolute;
+        right: -16px;
+        bottom: -16px;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .global-menu-button-update-available-button {
+        width: 28px !important;
+        height: 28px !important;
+        padding: 0 !important;
+        transform: scale(0.7);
+    }
     </style>
 
-    <button type="button" data-toggle="dropdown" data-placement="right"
-            aria-haspopup="true" aria-expanded="false" 
-            class="icon-action global-menu-button" title="Menu"></button>
+    <div class="global-menu-button-wrapper">
+        <button type="button" data-toggle="dropdown" data-placement="right"
+                aria-haspopup="true" aria-expanded="false" 
+                class="icon-action global-menu-button" title="Menu"></button>
+        <div class="global-menu-button-update-available"></div>
+</div>
+    </div>
 
     <div class="dropdown-menu dropdown-menu-right">
         <a class="dropdown-item options-button" data-trigger-command="showOptions">
@@ -113,6 +143,8 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".logout-button").toggle(!isElectron);
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
         this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
+
+        this.$widget.find(".global-menu-button-update-available").child(new UpdateAvailableWidget())
 
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
