@@ -1,6 +1,7 @@
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import appContext from "../../services/app_context.js";
+import convertUtils from "../../services/convert_utils.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },
@@ -28,6 +29,12 @@ const FONT_FAMILIES = [
 ];
 
 const TPL = `
+<style>
+    .disabled-form-label {
+        opacity: 0.5;
+    }
+</style>
+
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
 
 <form>
@@ -285,9 +292,16 @@ export default class ApperanceOptions {
             const isChecked = this.$newVersionAvailable.prop("checked");
 
             // Enable / Disable new-minor-version-available input
-            const $newMinorVersionAvailableWrapper = $("#new-minor-version-available");
+            const $wrapper = $("#new-minor-version-available");
+            const $label = $(".new-minor-version-available > label");
 
-            $newMinorVersionAvailableWrapper.prop('disabled', !isChecked);
+            $wrapper.prop('disabled', !isChecked);
+
+            if (isChecked) {
+                $label.removeClass("disabled-form-label");
+            } else {
+                $label.addClass("disabled-form-label");
+            }
 
             await server.put('options/newVersionAvailable/' + isChecked);
         }
@@ -357,12 +371,12 @@ export default class ApperanceOptions {
 
         this.$maxContentWidth.val(options.maxContentWidth);
 
-        this.$newVersionAvailable.prop("checked", options.newVersionAvailable);
+        this.$newVersionAvailable.prop("checked", convertUtils.parseBoolean(options.newVersionAvailable));
 
-        this.$newMinorVersionAvailable.prop("checked", options.newMinorVersionAvailable);
+        this.$newMinorVersionAvailable.prop("checked", convertUtils.parseBoolean(options.newMinorVersionAvailable));
 
         // Initial call to disable other input if checkbox is disabled
-        onNewVersionAvailableChange();
+        this.onNewVersionAvailableChange();
     }
 
     fillFontFamilyOptions($select, currentValue) {
