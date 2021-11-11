@@ -181,6 +181,23 @@ const TPL = `
         To content width changes, click on 
         <button class="btn btn-micro reload-frontend-button">reload frontend</button>
     </p>
+    
+    <section>
+        <h4>Version notification</h4>
+        <p>Show a hint in the global menu button when there's a new version available.></p>
+        <div class="form-group row">
+            <div class="col-4">
+                <div>
+                    <input type="checkbox" name="new-version-available" id="new-version-available">
+                    <label for="new-version-available">Inform about new versions</label>
+                </div>
+                <div class="new-minor-version-available">
+                    <input type="checkbox" name="new-minor-version-available" id="new-minor-version-available">
+                    <label for="new-minor-version-available">Also inform about minor versions</label>
+                </div>
+            </div>
+        </div>
+    </section>
 </form>`;
 
 export default class ApperanceOptions {
@@ -262,6 +279,29 @@ export default class ApperanceOptions {
 
             await server.put('options/maxContentWidth/' + maxContentWidth);
         })
+
+        this.$newVersionAvailable = $("#new-version-available");
+        const onNewVersionAvailableChange = async () => {
+            const isChecked = this.$newVersionAvailable.prop("checked");
+
+            // Enable / Disable new-minor-version-available input
+            const $newMinorVersionAvailableWrapper = $("#new-minor-version-available");
+
+            $newMinorVersionAvailableWrapper.prop('disabled', !isChecked);
+
+            await server.put('options/showNewVersionAvailable/' + isChecked);
+        }
+
+        this.$newVersionAvailable.on('change', onNewVersionAvailableChange);
+        // Initial call to disable other input if checkbox is disabled
+        onNewVersionAvailableChange();
+
+        this.$newMinorVersionAvailable = $("#new-minor-version-available");
+        this.$newMinorVersionAvailable.on('change', async () => {
+            const isChecked = this.$newMinorVersionAvailable.prop("checked");
+
+            await server.put('options/showNewMinorVersionAvailable/' + isChecked);
+        });
     }
 
     toggleBodyClass(prefix, value) {
