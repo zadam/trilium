@@ -184,7 +184,7 @@ const TPL = `
     
     <section>
         <h4>Version notification</h4>
-        <p>Show a hint in the global menu button when there's a new version available.></p>
+        <p>Show a hint in the global menu button when there's a new version available.</p>
         <div class="form-group row">
             <div class="col-4">
                 <div>
