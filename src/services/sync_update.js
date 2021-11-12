@@ -9,7 +9,7 @@ function updateEntity(entityChange, entityRow) {
     if (!entityRow) {
         if (entityChange.isSynced) {
             if (entityChange.isErased) {
-                entityChangesService.addEntityChange(entityChange, true);
+                eraseEntity(entityChange);
             }
             else {
                 log.info(`Encountered synced non-erased entity change without entity: ${JSON.stringify(entityChange)}`);
@@ -103,6 +103,23 @@ function handleContent(content) {
     }
 
     return content;
+}
+
+function eraseEntity(entityChange) {
+    const {entityName, entityId} = entityChange;
+
+    if (!["notes", "note_contents", "branches", "attributes", "note_revisions", "note_revision_contents"].includes(entityName)) {
+        log.error(`Cannot erase entity ${entityName}, id ${entityId}`);
+        return;
+    }
+
+    const keyName = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
+
+    sql.execute(`DELETE FROM ${entityName} WHERE ${keyName} = ?`, [entityId]);
+
+    eventService.emit(eventService.ENTITY_DELETE_SYNCED, { entityName, entityId });
+
+    entityChangesService.addEntityChange(entityChange, true);
 }
 
 module.exports = {

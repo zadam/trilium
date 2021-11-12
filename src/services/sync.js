@@ -395,8 +395,8 @@ function getOutstandingPullCount() {
 require("../becca/becca_loader").beccaLoaded.then(() => {
     setInterval(cls.wrap(sync), 60000);
 
-    // kickoff initial sync immediately
-    setTimeout(cls.wrap(sync), 2000);
+    // kickoff initial sync immediately, but should happen after initial consistency checks
+    setTimeout(cls.wrap(sync), 5000);
 
     // called just so ws.setLastSyncedPush() is called
     getLastSyncedPush();

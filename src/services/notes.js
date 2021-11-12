@@ -679,10 +679,10 @@ function eraseNotes(noteIdsToErase) {
     }
 
     sql.executeMany(`DELETE FROM notes WHERE noteId IN (???)`, noteIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'notes' AND entityId IN (???)`, noteIdsToErase);
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'notes' AND entityId IN (???)`, noteIdsToErase));
 
     sql.executeMany(`DELETE FROM note_contents WHERE noteId IN (???)`, noteIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_contents' AND entityId IN (???)`, noteIdsToErase);
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'note_contents' AND entityId IN (???)`, noteIdsToErase));
 
     // we also need to erase all "dependent" entities of the erased notes
     const branchIdsToErase = sql.getManyRows(`SELECT branchId FROM branches WHERE noteId IN (???)`, noteIdsToErase)
@@ -703,6 +703,14 @@ function eraseNotes(noteIdsToErase) {
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
+function setEntityChangesAsErased(entityChanges) {
+    for (const ec of entityChanges) {
+        ec.isErased = true;
+
+        entityChangesService.addEntityChange(ec);
+    }
+}
+
 function eraseBranches(branchIdsToErase) {
     if (branchIdsToErase.length === 0) {
         return;
@@ -710,7 +718,7 @@ function eraseBranches(branchIdsToErase) {
 
     sql.executeMany(`DELETE FROM branches WHERE branchId IN (???)`, branchIdsToErase);
 
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'branches' AND entityId IN (???)`, branchIdsToErase);
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'branches' AND entityId IN (???)`, branchIdsToErase));
 }
 
 function eraseAttributes(attributeIdsToErase) {
@@ -720,7 +728,7 @@ function eraseAttributes(attributeIdsToErase) {
 
     sql.executeMany(`DELETE FROM attributes WHERE attributeId IN (???)`, attributeIdsToErase);
 
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase);
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase));
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {

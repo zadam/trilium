@@ -160,6 +160,11 @@ if (utils.isElectron()) {
                 arg.body = JSON.parse(arg.body);
             }
 
+            if (!(arg.requestId in reqResolves)) {
+                // this can happen when reload happens between firing up the request and receiving the response
+                throw new Error(`Unknown requestId="${arg.requestId}"`);
+            }
+
             reqResolves[arg.requestId]({
                 body: arg.body,
                 headers: arg.headers
