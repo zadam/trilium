@@ -25,8 +25,8 @@ const TPL = `
     </style>
 `
 const VERSION_CHANGE_COLOR_MAP = {
-    minor: "#666666",
-    "semi-major": "#5bc625",
+    patch: "#666666",
+    minor: "#5bc625",
     major: "#ec2f2f"
 }
 const VERSION_CHANGE_BACKGROUND_COLOR_MAP = Object.fromEntries(
@@ -50,8 +50,8 @@ export default class UpdateAvailableWidget extends BasicWidget {
     setButton() {
         switch (this.versionChange) {
             case "major":
-            case "semi-major":
             case "minor":
+            case "patch":
                 this.$widget.show();
                 this.$widget.css({
                     color: VERSION_CHANGE_COLOR_MAP[this.versionChange],

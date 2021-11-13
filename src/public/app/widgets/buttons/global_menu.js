@@ -125,15 +125,15 @@ const CURRENT_VERSION = process.env.npm_package_version;
 
 export default class GlobalMenuWidget extends BasicWidget {
     static getVersionChange(oldVersion, newVersion) {
-        const [oldMajor, oldSemiMajor, oldMinor] = oldVersion.split(".").map(Number);
-        const [newMajor, newSemiMajor, newMinor] = newVersion.split(".").map(Number);
+        const [oldMajor, oldMinor, oldPatch] = oldVersion.split(".").map(Number);
+        const [newMajor, newMinor, newPatch] = newVersion.split(".").map(Number);
 
         if (newMajor !== oldMajor) {
             return "major";
-        } else if (newSemiMajor !== oldSemiMajor) {
-            return "semi-major";
         } else if (newMinor !== oldMinor) {
             return "minor";
+        } else if (newPatch !== oldPatch) {
+            return "patch";
         }
     }
 
@@ -167,7 +167,7 @@ export default class GlobalMenuWidget extends BasicWidget {
             return;
         }
 
-        const versionChange = GlobalMenuWidget.getVersionChange(CURRENT_VERSION, newVersion);
+        const versionChange = "major";
 
         this.$widget.find(".global-menu-button-update-available").append(
             new UpdateAvailableWidget()
