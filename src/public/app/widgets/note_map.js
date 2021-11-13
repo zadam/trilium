@@ -335,21 +335,31 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 const subGraphNoteIds = this.getSubGraphConnectedToCurrentNote(data);
 
                 this.graph.zoomToFit(400, 50, node => subGraphNoteIds.has(node.id));
+
+                if (subGraphNoteIds.size < 30) {
+                    this.graph.d3VelocityDecay(0.4);
+                }
             }, 1000);
         }
         else if (this.widgetMode === 'type') {
             if (data.nodes.length > 1) {
-                setTimeout(() => this.graph.zoomToFit(400, 10), 1000);
+                setTimeout(() => {
+                    this.graph.zoomToFit(400, 10);
+
+                    if (data.nodes.length < 30) {
+                        this.graph.d3VelocityDecay(0.4);
+                    }
+                }, 1000);
             }
         }
     }
 
     getSubGraphConnectedToCurrentNote(data) {
-        function getGroupedLinksBySource(links) {
+        function getGroupedLinks(links, type) {
             const map = {};
 
             for (const link of links) {
-                const key = link.source.id;
+                const key = link[type].id;
                 map[key] = map[key] || [];
                 map[key].push(link);
             }
@@ -357,7 +367,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             return map;
         }
 
-        const linksBySource = getGroupedLinksBySource(data.links);
+        const linksBySource = getGroupedLinks(data.links, "source");
+        const linksByTarget = getGroupedLinks(data.links, "target");
 
         const subGraphNoteIds = new Set();
 
@@ -370,6 +381,10 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
             for (const link of linksBySource[noteId] || []) {
                 traverseGraph(link.target.id);
+            }
+
+            for (const link of linksByTarget[noteId] || []) {
+                traverseGraph(link.source.id);
             }
         }
 
