@@ -1,4 +1,3 @@
-const axios = require("axios");
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `

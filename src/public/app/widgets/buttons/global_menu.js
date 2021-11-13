@@ -1,9 +1,6 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
-import server from "../../services/server.js";
-import convertUtils from "../../services/convert_utils.js";
-import {show} from "../../dialogs/protected_session.js";
 const axios = require("axios");
 
 const TPL = `
