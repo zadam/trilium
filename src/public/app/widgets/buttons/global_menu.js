@@ -168,31 +168,11 @@ export default class GlobalMenuWidget extends BasicWidget {
         }
 
         const versionChange = GlobalMenuWidget.getVersionChange(CURRENT_VERSION, newVersion);
-        const showNewVersion = await this.checkIfShowNewVersionAvailable(versionChange);
-
-        if (!showNewVersion) {
-            return;
-        }
 
         this.$widget.find(".global-menu-button-update-available").append(
             new UpdateAvailableWidget()
                 .withVersionChange(versionChange)
                 .render()
-        )
-    }
-
-    async checkIfShowNewVersionAvailable(versionChange) {
-        const data = await server.get("options");
-        const showNewVersionAvailable = convertUtils.parseBoolean(data.newVersionAvailable);
-        const showNewMinorVersionAvailable = convertUtils.parseBoolean(data.newMinorVersionAvailable);
-
-        return (
-            showNewVersionAvailable &&
-            (
-                versionChange === "major" ||
-                versionChange === "semi-major" ||
-                (versionChange === "minor" && showNewMinorVersionAvailable)
-            )
         )
     }
 

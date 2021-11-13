@@ -188,23 +188,6 @@ const TPL = `
         To content width changes, click on 
         <button class="btn btn-micro reload-frontend-button">reload frontend</button>
     </p>
-    
-    <section>
-        <h4>Version notification</h4>
-        <p>Show a hint in the global menu button when there's a new version available.</p>
-        <div class="form-group row">
-            <div class="col-4">
-                <div>
-                    <input type="checkbox" name="new-version-available" id="new-version-available">
-                    <label for="new-version-available">Inform about new versions</label>
-                </div>
-                <div class="new-minor-version-available">
-                    <input type="checkbox" name="new-minor-version-available" id="new-minor-version-available">
-                    <label for="new-minor-version-available">Also inform about minor versions</label>
-                </div>
-            </div>
-        </div>
-    </section>
 </form>`;
 
 export default class ApperanceOptions {
@@ -286,34 +269,6 @@ export default class ApperanceOptions {
 
             await server.put('options/maxContentWidth/' + maxContentWidth);
         })
-
-        this.$newVersionAvailable = $("#new-version-available");
-        this.onNewVersionAvailableChange = async () => {
-            const isChecked = this.$newVersionAvailable.prop("checked");
-
-            // Enable / Disable new-minor-version-available input
-            const $wrapper = $("#new-minor-version-available");
-            const $label = $(".new-minor-version-available > label");
-
-            $wrapper.prop('disabled', !isChecked);
-
-            if (isChecked) {
-                $label.removeClass("disabled-form-label");
-            } else {
-                $label.addClass("disabled-form-label");
-            }
-
-            await server.put('options/newVersionAvailable/' + isChecked);
-        }
-
-        this.$newVersionAvailable.on('change', this.onNewVersionAvailableChange);
-
-        this.$newMinorVersionAvailable = $("#new-minor-version-available");
-        this.$newMinorVersionAvailable.on('change', async () => {
-            const isChecked = this.$newMinorVersionAvailable.prop("checked");
-
-            await server.put('options/newMinorVersionAvailable/' + isChecked);
-        });
     }
 
     toggleBodyClass(prefix, value) {
@@ -370,13 +325,6 @@ export default class ApperanceOptions {
         this.fillFontFamilyOptions(this.$monospaceFontFamily, options.monospaceFontFamily);
 
         this.$maxContentWidth.val(options.maxContentWidth);
-
-        this.$newVersionAvailable.prop("checked", convertUtils.parseBoolean(options.newVersionAvailable));
-
-        this.$newMinorVersionAvailable.prop("checked", convertUtils.parseBoolean(options.newMinorVersionAvailable));
-
-        // Initial call to disable other input if checkbox is disabled
-        this.onNewVersionAvailableChange();
     }
 
     fillFontFamilyOptions($select, currentValue) {
