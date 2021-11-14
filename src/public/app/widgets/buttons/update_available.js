@@ -1,7 +1,7 @@
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `
-    <span class="bx bx-sync global-menu-button-update-available-button" title="Update available"></span>
+<div style="display: none;">
     <style>
         .global-menu-button-update-available-button {
             width: 21px !important;
@@ -22,49 +22,17 @@ const TPL = `
             opacity: 1;
         }
     </style>
-`
-const VERSION_CHANGE_COLOR_MAP = {
-    patch: "#666666",
-    minor: "#5bc625",
-    major: "#ec2f2f"
-}
-const VERSION_CHANGE_BACKGROUND_COLOR_MAP = Object.fromEntries(
-    Object.entries(
-        VERSION_CHANGE_COLOR_MAP).map(([key, value]) => [
-            key,
-            `${value}40`
-        ]
-    )
-)
+    
+    <span class="bx bx-sync global-menu-button-update-available-button" title="Update available"></span>
+</div>
+`;
 
 export default class UpdateAvailableWidget extends BasicWidget {
-    versionChange = undefined
-
     doRender() {
         this.$widget = $(TPL);
-
-        this.setButton();
     }
 
-    setButton() {
-        switch (this.versionChange) {
-            case "major":
-            case "minor":
-            case "patch":
-                this.$widget.show();
-                this.$widget.css({
-                    color: VERSION_CHANGE_COLOR_MAP[this.versionChange],
-                    backgroundColor: VERSION_CHANGE_BACKGROUND_COLOR_MAP[this.versionChange]
-                });
-                break;
-            default:
-                this.$widget.hide();
-        }
-    }
-
-    withVersionChange(versionChange) {
-        this.versionChange = versionChange;
-
-        return this;
+    updateVersionStatus(latestVersion) {
+        this.$widget.toggle(latestVersion > glob.triliumVersion);
     }
 }

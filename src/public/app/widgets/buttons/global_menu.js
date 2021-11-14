@@ -1,7 +1,6 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
-const axios = require("axios");
 
 const TPL = `
 <div class="dropdown global-menu dropright">
@@ -12,7 +11,7 @@ const TPL = `
     }
     
     .global-menu .dropdown-menu {
-        width: 20em;
+        min-width: 20em;
     }
     
     .global-menu-button {
@@ -105,9 +104,10 @@ const TPL = `
             About Trilium Notes
         </a>
 
-        <a class="dropdown-item show-about-dialog-button">
+        <a class="dropdown-item update-to-latest-version-button" data-trigger-command="downloadLatestVersion">
             <span class="bx bx-sync"></span>
-            Update to newest version
+
+            <span class="version-text"></span>
         </a>
 
         <a class="dropdown-item logout-button" data-trigger-command="logout">
@@ -117,21 +117,12 @@ const TPL = `
     </div>
 </div>
 `;
-const RELEASES_API_URL = "https://api.github.com/repos/zadam/trilium/releases/latest";
-const CURRENT_VERSION = process.env.npm_package_version;
 
 export default class GlobalMenuWidget extends BasicWidget {
-    static getVersionChange(oldVersion, newVersion) {
-        const [oldMajor, oldMinor, oldPatch] = oldVersion.split(".").map(Number);
-        const [newMajor, newMinor, newPatch] = newVersion.split(".").map(Number);
+    constructor() {
+        super();
 
-        if (newMajor !== oldMajor) {
-            return "major";
-        } else if (newMinor !== oldMinor) {
-            return "minor";
-        } else if (newPatch !== oldPatch) {
-            return "patch";
-        }
+        this.updateAvailableWidget = new UpdateAvailableWidget();
     }
 
     doRender() {
@@ -154,28 +145,36 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.on('click', '.dropdown-item',
             () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
 
-        this.loadUpdateAvailable();
-    }
-
-    async loadUpdateAvailable() {
-        const newVersion = await this.fetchNewVersion();
-
-        if (!newVersion) {
-            return;
-        }
-
-        const versionChange = "major";
-
         this.$widget.find(".global-menu-button-update-available").append(
-            new UpdateAvailableWidget()
-                .withVersionChange(versionChange)
-                .render()
-        )
+            this.updateAvailableWidget.render()
+        );
+
+        this.$updateToLatestVersionButton = this.$widget.find(".update-to-latest-version-button");
+
+        this.updateVersionStatus();
+
+        setInterval(() => this.updateVersionStatus(), 8 * 60 * 60 * 1000);
     }
 
-    async fetchNewVersion() {
-        const {data} = await axios.get(RELEASES_API_URL);
+    async updateVersionStatus() {
+        const latestVersion = await this.fetchLatestVersion();
+
+        this.updateAvailableWidget.updateVersionStatus(latestVersion);
+
+        this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
+        this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
+    }
+
+    async fetchLatestVersion() {
+        const RELEASES_API_URL = "https://api.github.com/repos/zadam/trilium/releases/latest";
+
+        const resp = await fetch(RELEASES_API_URL);
+        const data = await resp.json();
 
         return data.tag_name.substring(1);
+    }
+
+    downloadLatestVersionCommand() {
+        window.open("https://github.com/zadam/trilium/releases/latest");
     }
 }

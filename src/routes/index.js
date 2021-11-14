@@ -36,7 +36,8 @@ function index(req, res) {
         isMainWindow: !req.query.extra,
         extraHoistedNoteId: req.query.extraHoistedNoteId,
         isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
-        maxContentWidth: parseInt(options.maxContentWidth)
+        maxContentWidth: parseInt(options.maxContentWidth),
+        triliumVersion: process.env.npm_package_version
     });
 }
 
