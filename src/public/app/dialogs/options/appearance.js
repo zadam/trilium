@@ -1,7 +1,6 @@
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import appContext from "../../services/app_context.js";
-import convertUtils from "../../services/convert_utils.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },
@@ -29,12 +28,6 @@ const FONT_FAMILIES = [
 ];
 
 const TPL = `
-<style>
-    .disabled-form-label {
-        opacity: 0.5;
-    }
-</style>
-
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
 
 <form>

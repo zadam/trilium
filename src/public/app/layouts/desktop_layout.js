@@ -45,7 +45,6 @@ import EditedNotesWidget from "../widgets/ribbon_widgets/edited_notes.js";
 import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js";
 import MermaidWidget from "../widgets/mermaid.js";
 import BookmarkButtons from "../widgets/bookmark_buttons.js";
-import UpdateAvailableWidget from "../widgets/buttons/update_available.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
