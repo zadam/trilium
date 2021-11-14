@@ -3,6 +3,9 @@
 const sql = require("../services/sql.js");
 const NoteSet = require("../services/search/note_set");
 
+/**
+ * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
+ */
 class Becca {
     constructor() {
         this.reset();

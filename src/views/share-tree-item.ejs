@@ -1,0 +1,17 @@
+<p>
+    <% if (activeNote.noteId === note.noteId) { %>
+    <strong><%= note.title %></strong>
+    <% } else { %>
+    <a href="./<%= note.noteId %>"><%= note.title %></a>
+    <% } %>
+</p>
+
+<% if (note.hasChildren()) { %>
+<ul>
+    <% note.getChildNotes().forEach(function (childNote) { %>
+        <li>
+            <%- include('share-tree-item', {note: childNote}) %>
+        </li>
+    <% }) %>
+</ul>
+<% } %>
