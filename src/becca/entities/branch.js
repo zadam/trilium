@@ -58,6 +58,9 @@ class Branch extends AbstractEntity {
     }
 
     init() {
+        this.becca.branches[this.branchId] = this;
+        this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
+
         if (this.branchId === 'root') {
             return;
         }
@@ -76,9 +79,6 @@ class Branch extends AbstractEntity {
         if (!parentNote.children.includes(childNote)) {
             parentNote.children.push(childNote);
         }
-
-        this.becca.branches[this.branchId] = this;
-        this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @returns {Note} */
