@@ -181,9 +181,9 @@ async function consumeFrontendUpdateData() {
 
         for (const entityChange of nonProcessedEntityChanges) {
             processedEntityChangeIds.add(entityChange.id);
-        }
 
-        lastProcessedEntityChangeId = Math.max(lastProcessedEntityChangeId, allEntityChanges[allEntityChanges.length - 1].id);
+            lastProcessedEntityChangeId = Math.max(lastProcessedEntityChangeId, entityChange.id);
+        }
     }
 
     checkEntityChangeIdListeners();
