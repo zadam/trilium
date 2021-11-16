@@ -138,7 +138,7 @@ ws.subscribeToMessages(message => {
        appContext.tabManager.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
-           const currentWindow = utils.dynamicRequire("electron").remote.getCurrentWindow();
+           const currentWindow = utils.dynamicRequire('@electron/remote').getCurrentWindow();
 
            currentWindow.show();
        }

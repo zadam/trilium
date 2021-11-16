@@ -35,7 +35,7 @@ export default class Entrypoints extends Component {
 
     openDevToolsCommand() {
         if (utils.isElectron()) {
-            utils.dynamicRequire('electron').remote.getCurrentWindow().toggleDevTools();
+            utils.dynamicRequire('@electron/remote').getCurrentWindow().toggleDevTools();
         }
     }
 
@@ -44,7 +44,7 @@ export default class Entrypoints extends Component {
             return;
         }
 
-        const {remote} = utils.dynamicRequire('electron');
+        const remote = utils.dynamicRequire('@electron/remote');
         const {FindInPage} = utils.dynamicRequire('electron-find');
         const findInPage = new FindInPage(remote.getCurrentWebContents(), {
             offsetTop: 10,
@@ -116,7 +116,7 @@ export default class Entrypoints extends Component {
 
     toggleFullscreenCommand() {
         if (utils.isElectron()) {
-            const win = utils.dynamicRequire('electron').remote.getCurrentWindow();
+            const win = utils.dynamicRequire('@electron/remote').getCurrentWindow();
 
             if (win.isFullScreenable()) {
                 win.setFullScreen(!win.isFullScreen());
@@ -143,7 +143,7 @@ export default class Entrypoints extends Component {
     backInNoteHistoryCommand() {
         if (utils.isElectron()) {
             // standard JS version does not work completely correctly in electron
-            const webContents = utils.dynamicRequire('electron').remote.getCurrentWebContents();
+            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 
             webContents.goToIndex(activeIndex - 1);
@@ -156,7 +156,7 @@ export default class Entrypoints extends Component {
     forwardInNoteHistoryCommand() {
         if (utils.isElectron()) {
             // standard JS version does not work completely correctly in electron
-            const webContents = utils.dynamicRequire('electron').remote.getCurrentWebContents();
+            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 
             webContents.goToIndex(activeIndex + 1);

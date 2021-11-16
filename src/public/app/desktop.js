@@ -34,7 +34,9 @@ noteAutocompleteService.init();
 
 if (utils.isElectron()) {
     const electron = utils.dynamicRequire('electron');
-    const {webContents} = electron.remote.getCurrentWindow();
+
+    const remote = utils.dynamicRequire('@electron/remote');
+    const {webContents} = remote.getCurrentWindow();
 
     webContents.on('context-menu', (event, params) => {
         const {editFlags} = params;

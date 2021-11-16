@@ -122,7 +122,7 @@ export default class ProtectedSessionOptions {
         this.$availableLanguageCodes = $("#available-language-codes");
 
         if (utils.isElectron()) {
-            const {webContents} = utils.dynamicRequire('electron').remote.getCurrentWindow();
+            const {webContents} = utils.dynamicRequire('@electron/remote').getCurrentWindow();
 
             this.$availableLanguageCodes.text(webContents.session.availableSpellCheckerLanguages.join(', '));
         }

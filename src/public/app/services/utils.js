@@ -279,7 +279,7 @@ function isHtmlEmpty(html) {
 
 async function clearBrowserCache() {
     if (isElectron()) {
-        const win = dynamicRequire('electron').remote.getCurrentWindow();
+        const win = utils.dynamicRequire('@electron/remote').getCurrentWindow();
         await win.webContents.session.clearCache();
     }
 }

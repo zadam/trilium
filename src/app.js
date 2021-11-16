@@ -101,6 +101,8 @@ require('./services/consistency_checks');
 
 require('./services/scheduler');
 
+require('@electron/remote/main').initialize();
+
 module.exports = {
     app,
     sessionParser

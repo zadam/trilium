@@ -42,8 +42,7 @@ export default class HistoryNavigationWidget extends BasicWidget {
         this.$forwardInHistory = this.$widget.find("[data-trigger-command='forwardInNoteHistory']");
         this.$forwardInHistory.on('contextmenu', contextMenuHandler);
 
-        const electron = utils.dynamicRequire('electron');
-        this.webContents = electron.remote.getCurrentWindow().webContents;
+        this.webContents = utils.dynamicRequire('@electron/remote').webContents;
 
         // without this the history is preserved across frontend reloads
         this.webContents.clearHistory();

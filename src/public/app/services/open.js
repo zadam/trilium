@@ -7,7 +7,7 @@ function getFileUrl(noteId) {
 
 function download(url) {
     if (utils.isElectron()) {
-        const remote = utils.dynamicRequire('electron').remote;
+        const remote = utils.dynamicRequire('@electron/remote');
 
         remote.getCurrentWebContents().downloadURL(url);
     } else {

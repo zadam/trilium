@@ -122,7 +122,7 @@ async function checkOutstandingSyncs() {
 
     if (initialized) {
         if (utils.isElectron()) {
-            const remote = utils.dynamicRequire('electron').remote;
+            const remote = utils.dynamicRequire('@electron/remote');
             remote.app.relaunch();
             remote.app.exit(0);
         }
