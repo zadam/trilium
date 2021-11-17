@@ -54,7 +54,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
 
             sql.execute(`DELETE FROM ${remoteEntityChange.entityName} WHERE ${primaryKey} = ?`, remoteEntityChange.entityId);
 
-            entityChangesService.addEntityChange(remoteEntityChange, true);
+            entityChangesService.addEntityChange(remoteEntityChange);
         });
 
         return true;
@@ -71,7 +71,7 @@ function updateNormalEntity(remoteEntityChange, entity) {
         sql.transactional(() => {
             sql.replace(remoteEntityChange.entityName, entity);
 
-            entityChangesService.addEntityChange(remoteEntityChange, true);
+            entityChangesService.addEntityChange(remoteEntityChange);
         });
 
         return true;
@@ -86,7 +86,7 @@ function updateNoteReordering(entityChange, entity) {
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
         }
 
-        entityChangesService.addEntityChange(entityChange, true);
+        entityChangesService.addEntityChange(entityChange);
     });
 
     return true;

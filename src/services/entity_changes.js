@@ -7,12 +7,10 @@ const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function addEntityChange(origEntityChange, keepOriginalId = false) {
+function addEntityChange(origEntityChange) {
     const ec = {...origEntityChange};
 
-    if (!keepOriginalId) {
-        delete ec.id;
-    }
+    delete ec.id;
 
     ec.sourceId = ec.sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId();
     ec.isSynced = ec.isSynced ? 1 : 0;
