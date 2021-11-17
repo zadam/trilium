@@ -204,6 +204,11 @@ function queueSector(req) {
     entityChangesService.addEntityChangesForSector(entityName, sector);
 }
 
+function checkEntityChanges() {
+    const consistencyChecks = require("../../services/consistency_checks");
+    consistencyChecks.runEntityChangesChecks();
+}
+
 module.exports = {
     testSync,
     checkSync,
@@ -215,5 +220,6 @@ module.exports = {
     update,
     getStats,
     syncFinished,
-    queueSector
+    queueSector,
+    checkEntityChanges
 };
