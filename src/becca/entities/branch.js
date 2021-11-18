@@ -136,9 +136,7 @@ class Branch extends AbstractEntity {
             notePosition: this.notePosition,
             isExpanded: this.isExpanded,
             isDeleted: false,
-            utcDateModified: this.utcDateModified,
-            // not used for anything, will be later dropped
-            utcDateCreated: dateUtils.utcNowDateTime()
+            utcDateModified: this.utcDateModified
         };
     }
 

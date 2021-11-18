@@ -37,9 +37,7 @@ class Option extends AbstractEntity {
             name: this.name,
             value: this.value,
             isSynced: this.isSynced,
-            utcDateModified: this.utcDateModified,
-            // utcDateCreated is scheduled for removal so the value does not matter
-            utcDateCreated: dateUtils.utcNowDateTime()
+            utcDateModified: this.utcDateModified
         }
     }
 }
