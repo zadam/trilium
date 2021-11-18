@@ -23,8 +23,7 @@ CREATE TABLE IF NOT EXISTS "branches" (
                                           `isExpanded`	INTEGER NOT NULL DEFAULT 0,
                                           `isDeleted`	INTEGER NOT NULL DEFAULT 0,
                                           `deleteId`    TEXT DEFAULT NULL,
-                                          `utcDateModified`	TEXT NOT NULL,
-                                          utcDateCreated TEXT NOT NULL,
+                                          `utcDateModified`	TEXT NOT NULL
                                           PRIMARY KEY(`branchId`));
 CREATE TABLE IF NOT EXISTS "notes" (
                                        `noteId`	TEXT NOT NULL,
@@ -65,7 +64,6 @@ CREATE TABLE IF NOT EXISTS "options"
     name TEXT not null PRIMARY KEY,
     value TEXT,
     isSynced INTEGER default 0 not null,
-    utcDateCreated TEXT not null,
     utcDateModified TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS "attributes"

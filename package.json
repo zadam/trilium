@@ -81,7 +81,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "16.0.0",
+    "electron": "16.0.1",
     "@electron/remote": "2.0.1",
     "electron-builder": "22.13.1",
     "electron-packager": "15.4.0",
