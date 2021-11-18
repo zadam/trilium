@@ -701,6 +701,11 @@ function runOnDemandChecks(autoFix) {
     consistencyChecks.runChecks();
 }
 
+function runEntityChangesChecks() {
+    const consistencyChecks = new ConsistencyChecks(true);
+    consistencyChecks.findEntityChangeIssues();
+}
+
 sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runPeriodicChecks), 60 * 60 * 1000);
 
@@ -709,5 +714,6 @@ sqlInit.dbReady.then(() => {
 });
 
 module.exports = {
-    runOnDemandChecks
+    runOnDemandChecks,
+    runEntityChangesChecks
 };

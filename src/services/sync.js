@@ -149,7 +149,10 @@ async function pullChanges(syncContext) {
 
         sql.transactional(() => {
             for (const {entityChange, entity} of entityChanges) {
-                if (!sourceIdService.isLocalSourceId(entityChange.sourceId)) {
+                // FIXME: temporary fix
+                const existsAlready = !!sql.getValue("SELECT id FROM entity_changes WHERE entityName = ? AND entityId = ? AND utcDateChanged = ? AND hash = ?", [entityChange.entityName, entityChange.entityId, entityChange.utcDateChanged, entityChange.hash]);
+
+                if (!existsAlready && !sourceIdService.isLocalSourceId(entityChange.sourceId)) {
                     if (!atLeastOnePullApplied) { // send only for first
                         ws.syncPullInProgress();
 
@@ -248,6 +251,14 @@ async function checkContentHash(syncContext) {
     }
 
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
+
+    if (failedChecks.length > 0) {
+        // before requeuing sectors make sure the entity changes are correct
+        const consistencyChecks = require("./consistency_checks");
+        consistencyChecks.runEntityChangesChecks();
+
+        await syncRequest(syncContext, 'POST', `/api/sync/check-entity-changes`);
+    }
 
     for (const {entityName, sector} of failedChecks) {
         entityChangesService.addEntityChangesForSector(entityName, sector);
