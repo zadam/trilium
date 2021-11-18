@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS "entity_changes" (
                                                 `entityId`	TEXT NOT NULL,
                                                 `hash`	TEXT NOT NULL,
                                                 `isErased` INT NOT NULL,
+                                                `changeId` TEXT NOT NULL,
                                                 `sourceId` TEXT NOT NULL,
                                                 `isSynced` INTEGER NOT NULL,
                                                 `utcDateChanged` TEXT NOT NULL

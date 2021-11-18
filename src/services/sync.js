@@ -149,10 +149,10 @@ async function pullChanges(syncContext) {
 
         sql.transactional(() => {
             for (const {entityChange, entity} of entityChanges) {
-                // FIXME: temporary fix
-                const existsAlready = !!sql.getValue("SELECT id FROM entity_changes WHERE entityName = ? AND entityId = ? AND utcDateChanged = ? AND hash = ?", [entityChange.entityName, entityChange.entityId, entityChange.utcDateChanged, entityChange.hash]);
+                const changeAppliedAlready = !entityChange.changeId
+                    || !!sql.getValue("SELECT id FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
 
-                if (!existsAlready && !sourceIdService.isLocalSourceId(entityChange.sourceId)) {
+                if (!changeAppliedAlready && !sourceIdService.isLocalSourceId(entityChange.sourceId)) {
                     if (!atLeastOnePullApplied) { // send only for first
                         ws.syncPullInProgress();
 

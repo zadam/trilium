@@ -44,14 +44,10 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function clearEntityChangeIds() {
-    namespace.set('entityChangeIds', []);
-}
-
 function getAndClearEntityChangeIds() {
     const entityChangeIds = namespace.get('entityChangeIds') || [];
 
-    clearEntityChangeIds();
+    namespace.set('entityChangeIds', []);
 
     return entityChangeIds;
 }
@@ -89,7 +85,6 @@ module.exports = {
     disableEntityEvents,
     isEntityEventsDisabled,
     reset,
-    clearEntityChangeIds,
     getAndClearEntityChangeIds,
     addEntityChange,
     ignoreEntityChangeIds
