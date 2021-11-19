@@ -129,12 +129,12 @@ export default class TabManager extends Component {
             window.history.pushState(null, "", url);
         }
 
-        document.title = "Trilium Notes";
-
-        if (activeNoteContext.note) {
+        const titleFragments = [
             // it helps navigating in history if note title is included in the title
-            document.title += " - " + activeNoteContext.note.title;
-        }
+            activeNoteContext.note?.title,
+            "Trilium Notes"
+        ].filter(Boolean);
+        document.title = titleFragments.join(" - ");
 
         this.triggerEvent('activeNoteChanged'); // trigger this even in on popstate event
     }
