@@ -52,6 +52,20 @@ export default class QuickSearchWidget extends BasicWidget {
 
         this.$widget.find('.input-group-prepend').on('shown.bs.dropdown', () => this.search());
 
+        if(utils.isMobile()) {
+            this.$searchString.keydown(e =>{
+                if(e.which==13) {
+                    if (this.$dropdownMenu.is(":visible")) {
+                        this.search(); // just update already visible dropdown
+                    } else {
+                        this.$dropdownToggle.dropdown('show');
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            })
+        }
+
         utils.bindElShortcut(this.$searchString, 'return', () => {
             if (this.$dropdownMenu.is(":visible")) {
                 this.search(); // just update already visible dropdown
