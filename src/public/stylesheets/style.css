@@ -58,7 +58,7 @@ table td, table th {
 }
 
 code, kbd, pre, samp {
-    font-family: var(--monospace-font-family);
+    font-family: var(--monospace-font-family) !important;
 }
 
 .input-group-text {
