@@ -1,5 +1,6 @@
 "use strict";
 
+const normalizeString = require("normalize-strings");
 const lex = require('./lex');
 const handleParens = require('./handle_parens');
 const parse = require('./parse');
@@ -9,6 +10,7 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
+const {wrapText} = require("../../utils.js");
 
 function loadNeededInfoFromDatabase() {
     const sql = require('../../sql');
@@ -83,12 +85,8 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
-            if (notePathArray.includes("hidden")) {
-                return null;
-            }
-
             return new SearchResult(notePathArray);
-        }).filter(Boolean);
+        });
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);
@@ -226,7 +224,11 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of searchResults) {
-            result.highlightedNotePathTitle = result.highlightedNotePathTitle.replace(tokenRegex, "{$1}");
+            const match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle));
+
+            if (match) {
+                result.highlightedNotePathTitle = wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
+            }
         }
     }
 
