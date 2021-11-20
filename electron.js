@@ -31,12 +31,12 @@ app.on('ready', async () => {
         await sqlInit.dbReady;
 
         await windowService.createMainWindow();
+
+        tray.createTray();
     }
     else {
         await windowService.createSetupWindow();
     }
-
-    tray.createTray()
 
     await windowService.registerGlobalShortcuts();
 });
