@@ -220,14 +220,18 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 
     for (const token of highlightedTokens) {
-        // this approach won't work for strings with diacritics
-        const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
-
         for (const result of searchResults) {
-            const match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle));
+            // Reset token
+            const tokenRegex = new RegExp(utils.escapeRegExp(token), "gi");
+            let match;
 
-            if (match) {
+            // Find all matches
+            while ((match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle))) !== null) {
+                console.log(match)
                 result.highlightedNotePathTitle = wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
+
+                // 2 characters are added, so we need to adjust the index
+                tokenRegex.lastIndex += 2;
             }
         }
     }
