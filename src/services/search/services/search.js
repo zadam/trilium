@@ -83,8 +83,12 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
+            if (notePathArray.includes("hidden")) {
+                return null;
+            }
+
             return new SearchResult(notePathArray);
-        });
+        }).filter(Boolean);
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);
