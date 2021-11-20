@@ -10,7 +10,6 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
-const {wrapText} = require("../../utils.js");
 
 function loadNeededInfoFromDatabase() {
     const sql = require('../../sql');
@@ -228,7 +227,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
             // Find all matches
             while ((match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle))) !== null) {
                 console.log(match)
-                result.highlightedNotePathTitle = wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
+                result.highlightedNotePathTitle = utils.wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
 
                 // 2 characters are added, so we need to adjust the index
                 tokenRegex.lastIndex += 2;
