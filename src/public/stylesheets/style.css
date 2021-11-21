@@ -18,9 +18,11 @@ body {
        on the last line of the editor. */
     position: fixed;
     width: 100%;
+    height: 100%;
     background-color: var(--main-background-color);
     color: var(--main-text-color);
     font-family: var(--main-font-family);
+    font-size: var(--main-font-size);
 }
 
 a, a:visited, a:hover {
@@ -712,10 +714,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     color: var(--main-text-color) !important;
     background-color: transparent !important;
     border-color: var(--main-border-color) !important;
-}
-
-body {
-    font-size: var(--main-font-size);
 }
 
 .gutter {
