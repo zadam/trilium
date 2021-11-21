@@ -54,7 +54,8 @@ const ALLOWED_OPTIONS = new Set([
     'dailyBackupEnabled',
     'weeklyBackupEnabled',
     'monthlyBackupEnabled',
-    'maxContentWidth'
+    'maxContentWidth',
+    'compressImages'
 ]);
 
 function getOptions() {

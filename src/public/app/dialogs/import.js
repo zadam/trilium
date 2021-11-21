@@ -1,6 +1,7 @@
 import utils from '../services/utils.js';
 import treeService from "../services/tree.js";
 import importService from "../services/import.js";
+import options from "../services/options.js";
 
 const $dialog = $("#import-dialog");
 const $form = $("#import-form");
@@ -8,6 +9,7 @@ const $noteTitle = $dialog.find(".import-note-title");
 const $fileUploadInput = $("#import-file-upload-input");
 const $importButton = $("#import-button");
 const $safeImportCheckbox = $("#safe-import-checkbox");
+const $shrinkImagesWrapper = $("shrink-images-wrapper");
 const $shrinkImagesCheckbox = $("#shrink-images-checkbox");
 const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
 const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
@@ -21,7 +23,7 @@ export async function showDialog(noteId) {
     $fileUploadInput.val('').trigger('change'); // to trigger Import button disabling listener below
 
     $safeImportCheckbox.prop("checked", true);
-    $shrinkImagesCheckbox.prop("checked", true);
+    $shrinkImagesCheckbox.prop("checked", options.is('compressImages'));
     $textImportedAsTextCheckbox.prop("checked", true);
     $codeImportedAsCodeCheckbox.prop("checked", true);
     $explodeArchivesCheckbox.prop("checked", true);
