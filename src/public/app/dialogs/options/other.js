@@ -3,6 +3,13 @@ import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 
 const TPL = `
+<style>
+.disabled-field {
+    opacity: 0.5;
+    pointer-events: none;
+}
+</style>
+
 <div>
     <h4>Spell check</h4>
 
@@ -27,15 +34,22 @@ const TPL = `
 
 <div>
     <h4>Image compression</h4>
-
+    
     <div class="form-group">
-        <label for="image-max-width-height">Max width / height of an image in pixels (image will be resized if it exceeds this setting).</label>
-        <input class="form-control" id="image-max-width-height" type="number">
+        <input id="image-compresion-enabled" type="checkbox" name="image-compression-enabled">
+        <label for="image-compresion-enabled">Enable image compression</label>
     </div>
 
-    <div class="form-group">
-        <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
-        <input class="form-control" id="image-jpeg-quality" min="0" max="100" type="number">
+    <div id="image-compression-enabled-wraper">
+        <div class="form-group">
+            <label for="image-max-width-height">Max width / height of an image in pixels (image will be resized if it exceeds this setting).</label>
+            <input class="form-control" id="image-max-width-height" type="number">
+        </div>
+    
+        <div class="form-group">
+            <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
+            <input class="form-control" id="image-jpeg-quality" min="0" max="100" type="number">
+        </div>
     </div>
 </div>
 
@@ -201,6 +215,26 @@ export default class ProtectedSessionOptions {
 
             return false;
         });
+
+        this.$enableImageCompression = $("#image-compresion-enabled");
+        this.$imageCompressionWrapper = $("#image-compression-enabled-wraper");
+
+        this.setImageCompression = (isChecked) => {
+            if (isChecked) {
+                this.$imageCompressionWrapper.removeClass("disabled-field");
+            } else {
+                this.$imageCompressionWrapper.addClass("disabled-field");
+            }
+        }
+
+        this.$enableImageCompression.on("change", () => {
+            const isChecked = this.$enableImageCompression.prop("checked");
+            const opts = { 'compressImages': isChecked ? 'true' : 'false' };
+
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+
+            this.setImageCompression(isChecked);
+        })
     }
 
     optionsLoaded(options) {
@@ -216,5 +250,9 @@ export default class ProtectedSessionOptions {
 
         this.$autoReadonlySizeText.val(options['autoReadonlySizeText']);
         this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
+
+        const compressImages = options['compressImages'] === 'true';
+        this.$enableImageCompression.prop('checked', compressImages);
+        this.setImageCompression(compressImages);
     }
 }
