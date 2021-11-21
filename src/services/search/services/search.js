@@ -218,6 +218,10 @@ function highlightSearchResults(searchResults, highlightedTokens) {
         }
     }
 
+    function wrapText(text, start, length, prefix, suffix) {
+        return text.substring(0, start) + prefix + text.substr(start, length) + suffix + text.substring(start + length);
+    }
+
     for (const token of highlightedTokens) {
         for (const result of searchResults) {
             // Reset token
@@ -226,8 +230,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
             // Find all matches
             while ((match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle))) !== null) {
-                console.log(match)
-                result.highlightedNotePathTitle = utils.wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
+                result.highlightedNotePathTitle = wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
 
                 // 2 characters are added, so we need to adjust the index
                 tokenRegex.lastIndex += 2;
