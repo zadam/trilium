@@ -9,6 +9,7 @@ const log = require('../services/log');
 const env = require('../services/env');
 const utils = require('../services/utils');
 const protectedSessionService = require("../services/protected_session");
+const packageJson = require('../../package.json');
 
 function index(req, res) {
     const options = optionService.getOptionsMap();
@@ -37,7 +38,7 @@ function index(req, res) {
         extraHoistedNoteId: req.query.extraHoistedNoteId,
         isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
         maxContentWidth: parseInt(options.maxContentWidth),
-        triliumVersion: process.env.npm_package_version
+        triliumVersion: packageJson.version
     });
 }
 
