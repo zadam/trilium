@@ -60,6 +60,7 @@
     "mime-types": "2.1.34",
     "multer": "1.4.3",
     "node-abi": "3.5.0",
+    "normalize-strings": "^1.1.1",
     "open": "8.4.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",

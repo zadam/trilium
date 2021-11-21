@@ -1,5 +1,6 @@
 "use strict";
 
+const normalizeString = require("normalize-strings");
 const lex = require('./lex');
 const handleParens = require('./handle_parens');
 const parse = require('./parse');
@@ -83,12 +84,8 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
-            if (notePathArray.includes("hidden")) {
-                return null;
-            }
-
             return new SearchResult(notePathArray);
-        }).filter(Boolean);
+        });
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);
@@ -222,11 +219,19 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 
     for (const token of highlightedTokens) {
-        // this approach won't work for strings with diacritics
-        const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
-
         for (const result of searchResults) {
-            result.highlightedNotePathTitle = result.highlightedNotePathTitle.replace(tokenRegex, "{$1}");
+            // Reset token
+            const tokenRegex = new RegExp(utils.escapeRegExp(token), "gi");
+            let match;
+
+            // Find all matches
+            while ((match = tokenRegex.exec(normalizeString(result.highlightedNotePathTitle))) !== null) {
+                console.log(match)
+                result.highlightedNotePathTitle = utils.wrapText(result.highlightedNotePathTitle, match.index, token.length, "{", "}");
+
+                // 2 characters are added, so we need to adjust the index
+                tokenRegex.lastIndex += 2;
+            }
         }
     }
 
