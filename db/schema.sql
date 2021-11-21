@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "branches" (
                                           `isExpanded`	INTEGER NOT NULL DEFAULT 0,
                                           `isDeleted`	INTEGER NOT NULL DEFAULT 0,
                                           `deleteId`    TEXT DEFAULT NULL,
-                                          `utcDateModified`	TEXT NOT NULL
+                                          `utcDateModified`	TEXT NOT NULL,
                                           PRIMARY KEY(`branchId`));
 CREATE TABLE IF NOT EXISTS "notes" (
                                        `noteId`	TEXT NOT NULL,
