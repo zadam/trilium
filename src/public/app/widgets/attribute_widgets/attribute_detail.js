@@ -189,6 +189,7 @@ const ATTR_HELP = {
         "runAtHour": "On which hour should this run. Should be used together with <code>#run=hourly</code>. Can be defined multiple times for more runs during the day.",
         "disableInclusion": "scripts with this label won't be included into parent script execution.",
         "sorted": "keeps child notes sorted by title alphabetically",
+        "top": "keep given note on top in its parent (applies only on sorted parents)",
         "hidePromotedAttributes": "Hide promoted attributes on this note",
         "readOnly": "editor is in read only mode. Works only for text and code notes.",
         "autoReadOnlyDisabled": "text/code notes can be set automatically into read mode when they are too large. You can disable this behavior on per-note basis by adding this label to the note",
@@ -208,6 +209,8 @@ const ATTR_HELP = {
         "inbox": "default inbox location for new notes",
         "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
         "sqlConsoleHome": "default location of SQL console notes",
+        "bookmarked": "note with this label will appear in bookmarks",
+        "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)"
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",
