@@ -150,6 +150,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$tree = this.$widget.find('.tree');
+        this.$treeActions = this.$widget.find(".tree-actions");
 
         this.$tree.on("mousedown", ".unhoist-button", () => hoistedNoteService.unhoist());
         this.$tree.on("mousedown", ".refresh-search-button", e => this.refreshSearch(e));
@@ -200,20 +201,16 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             this.$hideIncludedImages.prop("checked", this.hideIncludedImages);
             this.$autoCollapseNoteTree.prop("checked", this.autoCollapseNoteTree);
 
-            let top = this.$treeSettingsButton[0].offsetTop;
-            let left = this.$treeSettingsButton[0].offsetLeft;
-            top -= this.$treeSettingsPopup.outerHeight() + 10;
-            left += this.$treeSettingsButton.outerWidth() - this.$treeSettingsPopup.outerWidth();
-
-            if (left < 0) {
-                left = 0;
-            }
+            const top = this.$treeActions[0].offsetTop - (this.$treeSettingsPopup.outerHeight());
+            const left = Math.max(
+                0,
+                this.$treeActions[0].offsetLeft - this.$treeSettingsPopup.outerWidth() + this.$treeActions.outerWidth()
+            );
 
             this.$treeSettingsPopup.css({
-                display: "block",
-                top: top,
-                left: left
-            }).addClass("show");
+                top,
+                left
+            }).show();
 
             return false;
         });
