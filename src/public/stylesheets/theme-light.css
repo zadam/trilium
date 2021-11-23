@@ -68,4 +68,7 @@ html {
     --link-color: blue;
 
     --mermaid-theme: default;
+
+    --banner-background-color: #DA321B;
+    --banner-color: var(--main-text-color);
 }

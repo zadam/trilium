@@ -64,6 +64,9 @@
     --link-color: lightskyblue;
 
     --mermaid-theme: dark;
+
+    --banner-background-color: #DA321B;
+    --banner-color: var(--main-text-color);
 }
 
 body .global-menu-button {
