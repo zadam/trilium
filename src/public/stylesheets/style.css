@@ -954,3 +954,7 @@ input {
     margin-left: auto;
     margin-right: auto;
 }
+
+.note-split.full-content-width {
+    max-width: 999999px;
+}

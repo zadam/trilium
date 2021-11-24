@@ -51,6 +51,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'bookmarkFolder' },
     { type: 'label', name: 'sorted' },
     { type: 'label', name: 'top' },
+    { type: 'label', name: 'fullContentWidth' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
