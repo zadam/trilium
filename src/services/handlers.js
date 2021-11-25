@@ -39,6 +39,10 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, note => {
 eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED ], ({ entityName, entity }) => {
     if (entityName === 'attributes') {
         runAttachedRelations(entity.getNote(), 'runOnAttributeChange', entity);
+
+        if (entity.type === 'label' && entity.name === 'sorted') {
+            handleSortedAttribute(entity);
+        }
     }
     else if (entityName === 'notes') {
         runAttachedRelations(entity, 'runOnNoteChange', entity);
@@ -83,17 +87,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
             }
         }
         else if (entity.type === 'label' && entity.name === 'sorted') {
-            treeService.sortNotesIfNeeded(entity.noteId);
-
-            if (entity.isInheritable) {
-                const note = becca.notes[entity.noteId];
-
-                if (note) {
-                    for (const noteId of note.getSubtreeNoteIds()) {
-                        treeService.sortNotesIfNeeded(noteId);
-                    }
-                }
-            }
+            handleSortedAttribute(entity);
         }
     }
     else if (entityName === 'notes') {
@@ -117,6 +111,20 @@ function processInverseRelations(entityName, entity, handler) {
                 const targetNote = entity.getTargetNote();
 
                 handler(definition, note, targetNote);
+            }
+        }
+    }
+}
+
+function handleSortedAttribute(entity) {
+    treeService.sortNotesIfNeeded(entity.noteId);
+
+    if (entity.isInheritable) {
+        const note = becca.notes[entity.noteId];
+
+        if (note) {
+            for (const noteId of note.getSubtreeNoteIds()) {
+                treeService.sortNotesIfNeeded(noteId);
             }
         }
     }

@@ -108,9 +108,9 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst = false) {
-    if (!sortBy) {
-        sortBy = 'title';
+function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false) {
+    if (!customSortBy) {
+        customSortBy = 'title';
     }
 
     sql.transactional(() => {
@@ -129,10 +129,41 @@ function sortNotes(parentNoteId, sortBy = 'title', reverse = false, foldersFirst
                 }
             }
 
-            let aEl = normalize(a[sortBy]);
-            let bEl = normalize(b[sortBy]);
+            function fetchValue(note, key) {
+                const rawValue = ['title', 'dateCreated', 'dateModified'].includes(key)
+                    ? note[key]
+                    : note.getLabelValue(key);
 
-            return aEl < bEl ? -1 : 1;
+                return normalize(rawValue);
+            }
+
+            function compare(a, b) {
+                return b === null || b === undefined || a < b ? -1 : 1;
+            }
+
+            const topAEl = fetchValue(a, 'top');
+            const topBEl = fetchValue(b, 'top');
+
+            console.log(a.title, topAEl);
+            console.log(b.title, topBEl);
+            console.log("comp", compare(topAEl, topBEl) && !reverse);
+
+            if (topAEl !== topBEl) {
+                // since "top" should not be reversible, we'll reverse it once more to nullify this effect
+                return compare(topAEl, topBEl) * (reverse ? -1 : 1);
+            }
+
+            const customAEl = fetchValue(a, customSortBy);
+            const customBEl = fetchValue(b, customSortBy);
+
+            if (customAEl !== customBEl) {
+                return compare(customAEl, customBEl);
+            }
+
+            const titleAEl = fetchValue(a, 'title');
+            const titleBEl = fetchValue(b, 'title');
+
+            return compare(titleAEl, titleBEl);
         });
 
         if (reverse) {

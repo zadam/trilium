@@ -19,8 +19,6 @@ export default class SplitNoteContainer extends FlexContainer {
         const $renderedWidget = widget.render();
 
         $renderedWidget.attr("data-ntx-id", noteContext.ntxId);
-        $renderedWidget.addClass("note-split");
-
         $renderedWidget.on('click', () => appContext.tabManager.activateNoteContext(noteContext.ntxId));
 
         this.$widget.append($renderedWidget);
