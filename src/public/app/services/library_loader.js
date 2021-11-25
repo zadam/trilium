@@ -56,6 +56,15 @@ const MERMAID = {
     js: [ "libraries/mermaid.min.js" ]
 }
 
+const CANVAS_NOTE = {
+    js: [
+        "libraries/canvas-note/fabric.4.0.0-beta.12.min.js",
+    ],
+    // css: [
+    //     "stylesheets/somestyle.css"
+    // ]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -106,5 +115,6 @@ export default {
     KATEX,
     WHEEL_ZOOM,
     FORCE_GRAPH,
-    MERMAID
+    MERMAID,
+    CANVAS_NOTE
 }
