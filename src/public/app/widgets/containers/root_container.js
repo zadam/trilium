@@ -4,7 +4,7 @@ import appContext from "../../services/app_context.js";
 
 export default class RootContainer extends FlexContainer {
     constructor() {
-        super('row');
+        super('column');
 
         this.id('root-widget');
         this.css('height', '100%');

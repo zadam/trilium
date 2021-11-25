@@ -10,4 +10,10 @@ export default class FlexContainer extends Container {
 
         this.attrs.style = `display: flex; flex-direction: ${direction};`;
     }
+
+    withFullSize() {
+        this.attrs.style += `width: 100%; height: 100%;`;
+
+        return this;
+    }
 }

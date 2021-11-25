@@ -55,10 +55,6 @@ table td, table th {
     background-color: var(--modal-backdrop-color) !important;
 }
 
-.component {
-    contain: size;
-}
-
 code, kbd, pre, samp {
     font-family: var(--monospace-font-family) !important;
 }

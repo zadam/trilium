@@ -7,15 +7,20 @@ import BasicWidget from "./basic_widget.js";
 const TLP = `
     <style>
         #banner-message {
+            text-align: center;
+            font-weight: 900;
+            font-size: .85rem;
             width: 100%;
             background-color: var(--banner-background-color);
             color: var(--banner-color);
-            padding: 5px 20px;
+            padding: 8px 20px;
+        }
+        
+        #banner-message:empty {
+            padding: 0;
         }
     </style>
-    <div id="banner-message">
-    
-    </div>
+    <div id="banner-message"></div>
 `
 
 export default class BannerMessageWidget extends BasicWidget {
