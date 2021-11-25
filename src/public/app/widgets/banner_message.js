@@ -5,23 +5,52 @@ import BookmarkFolderWidget from "./buttons/bookmark_folder.js";
 import BasicWidget from "./basic_widget.js";
 
 const TLP = `
-    <style>
-        #banner-message {
-            text-align: center;
-            font-weight: 900;
-            font-size: .85rem;
-            width: 100%;
-            background-color: var(--banner-background-color);
-            color: var(--banner-color);
-            padding: 8px 20px;
-        }
-        
-        #banner-message:empty {
-            padding: 0;
-        }
-    </style>
-    <div id="banner-message"></div>
-`
+    <div id="banner-message" class="empty">
+        <style>        
+            #banner-message {
+                text-align: center;
+                font-weight: 900;
+                font-size: 1rem;
+                width: 100%;
+                color: var(--banner-color);
+            }
+            
+            #banner-message.error {
+                background-color: var(--banner-background-color-error);
+            }
+            
+            #banner-message.info {
+                background-color: var(--banner-background-color-info);
+            }
+            
+            #banner-message.warning {
+                background-color: var(--banner-background-color-warning);
+            }
+            
+            #banner-message.success {
+                background-color: var(--banner-background-color-success);
+            }
+            
+            #banner-message.plain {
+                background-color: var(--banner-background-color-plain);
+            }
+            
+            #banner-message > p {
+                margin: 0;
+                padding: 5px 20px;
+            }
+            
+            #banner-message.empty > p {
+                padding: 0;
+            }
+        </style>
+        <p></p>
+    </div>
+`;
+
+const AVAILABLE_TYPES = new Set([
+    "error", "info", "warning", "success", "plain"
+]);
 
 export default class BannerMessageWidget extends BasicWidget {
     constructor() {
@@ -30,5 +59,33 @@ export default class BannerMessageWidget extends BasicWidget {
 
     doRender() {
         this.$widget = $(TLP);
+        this.$banner = this.$widget;
+        this.$bannerParagraph = this.$banner.find("p");
+    }
+
+    hideBanner() {
+        this.$bannerParagraph.text("");
+        this.$banner.removeClass();
+        this.$banner.addClass("empty");
+    }
+
+    setBannerEvent({
+        text,
+        type = "alert"
+    }) {
+        if (!text) {
+            this.hideBanner();
+            return;
+        }
+
+        const className = AVAILABLE_TYPES.has(type) ? type : "plain";
+
+        this.$bannerParagraph.text(text);
+        this.$banner.removeClass();
+        this.$banner.addClass(className);
+    }
+
+    hideBannerEvent() {
+        this.hideBanner();
     }
 }

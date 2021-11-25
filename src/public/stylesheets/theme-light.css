@@ -69,6 +69,10 @@ html {
 
     --mermaid-theme: default;
 
-    --banner-background-color: #DA321B;
+    --banner-background-color-error: #DA321B;
+    --banner-background-color-info: #1bb7da;
+    --banner-background-color-warning: #daad1b;
+    --banner-background-color-success: #67da1b;
+    --banner-background-color-plain: var(--more-accented-background-color);
     --banner-color: var(--main-text-color);
 }
