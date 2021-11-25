@@ -57,9 +57,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const imageHash = utils.randomString(10);
-
-        this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}?${imageHash}`);
+        this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}`);
     }
 
     copyImageToClipboardEvent({ntxId}) {
