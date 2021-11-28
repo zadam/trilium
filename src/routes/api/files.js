@@ -60,6 +60,7 @@ function downloadNoteFile(noteId, res, contentDisposition = true) {
         res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     }
 
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader('Content-Type', note.mime);
 
     res.send(note.getContent());

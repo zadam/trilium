@@ -20,6 +20,7 @@ function returnImage(req, res) {
     }
 
     res.set('Content-Type', image.mime);
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
 
     res.send(image.getContent());
 }
