@@ -28,28 +28,9 @@ const TLP = `
                 font-size: 1rem;
                 width: 100%;
                 color: var(--banner-color);
+                background: var(--banner-background-color);
                 
                 position: relative;
-            }
-            
-            #banner-message.error {
-                background-color: var(--banner-background-color-error);
-            }
-            
-            #banner-message.info {
-                background-color: var(--banner-background-color-info);
-            }
-            
-            #banner-message.warning {
-                background-color: var(--banner-background-color-warning);
-            }
-            
-            #banner-message.success {
-                background-color: var(--banner-background-color-success);
-            }
-            
-            #banner-message.plain {
-                background-color: var(--banner-background-color-plain);
             }
             
             #banner-message > p {
