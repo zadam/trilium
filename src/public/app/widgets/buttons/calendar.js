@@ -30,6 +30,13 @@ const DROPDOWN_TPL = `
 export default class CalendarWidget extends RightDropdownButtonWidget {
     constructor() {
         super("bx-calendar", "Calendar", DROPDOWN_TPL);
+
+        setTimeout(() => {
+            this.triggerEvent("setBanner", {
+                text: "Internet lost.",
+                type: "error"
+            })
+        }, 200);
     }
 
     doRender() {
