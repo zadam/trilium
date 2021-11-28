@@ -30,7 +30,9 @@ const TLP = `
                 color: var(--banner-color);
                 background: var(--banner-background-color);
                 
-                position: relative;
+                position: absolute;
+                top: 0;
+                left: 0;
             }
             
             #banner-message > p {
