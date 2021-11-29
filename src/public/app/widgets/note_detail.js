@@ -196,6 +196,28 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         }
     }
 
+    async noteLoadingEvent() {
+        console.log("blaa");
+        const widget = new EmptyTypeWidget();
+        widget.spacedUpdate = this.spacedUpdate;
+        widget.setParent(this);
+
+        const $renderedWidget = widget.render();
+        keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
+
+        this.$widget.append($renderedWidget);
+
+        await widget.handleEvent('setNoteContext', {noteContext: this.noteContext});
+
+        // this is happening in update() so note has been already set and we need to reflect this
+        await widget.handleEvent('noteSwitched', {
+            noteContext: this.noteContext,
+            notePath: this.noteContext.notePath
+        });
+
+        this.child(widget);
+    }
+
     async beforeTabRemoveEvent({ntxIds}) {
         if (this.isNoteContext(ntxIds)) {
             await this.spacedUpdate.updateNowIfNecessary();
