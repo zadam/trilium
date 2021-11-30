@@ -25,15 +25,6 @@ function createNote(parentNote, noteTitle) {
     }).note;
 }
 
-function getNoteStartingWith(parentNoteId, startsWith) {
-    const noteId = sql.getValue(`SELECT notes.noteId FROM notes JOIN branches USING(noteId) 
-                                    WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
-                                    AND notes.isDeleted = 0 AND isProtected = 0 
-                                    AND branches.isDeleted = 0`, [parentNoteId]);
-
-    return becca.getNote(noteId);
-}
-
 /** @returns {Note} */
 function getRootCalendarNote() {
     let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
@@ -163,12 +154,6 @@ function getDateNote(dateStr) {
     const rootNote = getRootCalendarNote();
     const monthNote = getMonthNote(dateStr, rootNote);
     const dayNumber = dateStr.substr(8, 2);
-
-    dateNote = getNoteStartingWith(monthNote.noteId, dayNumber);
-
-    if (dateNote) {
-        return dateNote;
-    }
 
     const dateObj = dateUtils.parseLocalDate(dateStr);
 
