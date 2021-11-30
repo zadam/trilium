@@ -65,6 +65,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'renderNote', isDangerous: true }
 ];
 
+/** @returns {Note[]} */
 function getNotesWithLabel(name, value) {
     const query = formatAttrForSearch({type: 'label', name, value}, true);
     return searchService.searchNotes(query, {
@@ -74,6 +75,7 @@ function getNotesWithLabel(name, value) {
 }
 
 // TODO: should be in search service
+/** @returns {Note|null} */
 function getNoteWithLabel(name, value) {
     // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
     const attrs = becca.findAttributes('label', name);
