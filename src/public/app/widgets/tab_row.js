@@ -184,7 +184,6 @@ const TAB_ROW_TPL = `
         font-size: 24px;
         position: relative;
         top: -6px;
-        cursor: pointer;
     }
     
     .tab-row-widget .note-tab:hover .note-tab-wrapper {
