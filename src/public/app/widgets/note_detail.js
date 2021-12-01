@@ -21,6 +21,7 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import attributeService from "../services/attributes.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
+import LoadingTypeWidget from "./type_widgets/loading.js";
 
 const TPL = `
 <div class="note-detail">
@@ -47,7 +48,8 @@ const typeWidgetClasses = {
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget
+    'note-map': NoteMapTypeWidget,
+    'loading': LoadingTypeWidget,
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -197,23 +199,16 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     async noteLoadingEvent() {
-        console.log("blaa");
-        const widget = new EmptyTypeWidget();
+        const widget = new LoadingTypeWidget();
         widget.spacedUpdate = this.spacedUpdate;
         widget.setParent(this);
 
         const $renderedWidget = widget.render();
-        keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
-
+        this.$widget.empty();
         this.$widget.append($renderedWidget);
 
-        await widget.handleEvent('setNoteContext', {noteContext: this.noteContext});
-
-        // this is happening in update() so note has been already set and we need to reflect this
-        await widget.handleEvent('noteSwitched', {
-            noteContext: this.noteContext,
-            notePath: this.noteContext.notePath
-        });
+        console.log(this, this.$widget);
+        this.$widget.append($renderedWidget);
 
         this.child(widget);
     }

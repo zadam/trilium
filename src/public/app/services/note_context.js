@@ -33,7 +33,6 @@ class NoteContext extends Component {
     }
 
     setLoading() {
-        console.log("setLoading")
         this.notePath = null;
         this.noteId = null;
         this.parentNoteId = null;
