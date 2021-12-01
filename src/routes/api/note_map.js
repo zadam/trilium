@@ -1,6 +1,7 @@
 "use strict";
 
 const becca = require("../../becca/becca");
+const { JSDOM } = require("jsdom");
 
 function buildDescendantCountMap() {
     const noteIdToCountMap = {};
@@ -174,7 +175,131 @@ function getTreeMap(req) {
     };
 }
 
+function removeImages(document) {
+    const images = document.getElementsByTagName('img');
+    while (images.length > 0) {
+        images[0].parentNode.removeChild(images[0]);
+    }
+}
+
+function getBacklinks(req) {
+    const {noteId} = req.params;
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} was not found`];
+    }
+
+    let backlinks = note.getTargetRelations();
+
+    if (backlinks.length > 50) {
+        backlinks = backlinks.slice(0, 50);
+    }
+
+    return backlinks.map(backlink => {
+        const sourceNote = backlink.note;
+
+        const html = sourceNote.getContent();
+        const dom = new JSDOM(html);
+
+        const excerpts = [];
+
+        const document = dom.window.document;
+
+        removeImages(document);
+
+        for (const linkEl of document.querySelectorAll("a")) {
+            const href = linkEl.getAttribute("href");
+
+            if (!href || !href.includes(noteId)) {
+                continue;
+            }
+
+            linkEl.style.fontWeight = "bold";
+            linkEl.style.backgroundColor = "yellow";
+
+            const LIMIT = 200;
+            let centerEl = linkEl;
+
+            while (centerEl.tagName !== 'BODY' && centerEl.parentElement.textContent.length < LIMIT) {
+                centerEl = centerEl.parentElement;
+            }
+
+            const sub = [centerEl];
+            let counter = centerEl.textContent.length;
+            let left = centerEl;
+            let right = centerEl;
+
+            while (true) {
+                let added = false;
+
+                const prev = left.previousElementSibling;
+
+                if (prev) {
+                    const prevText = prev.textContent;
+
+                    if (prevText.length + counter > LIMIT) {
+                        const prefix = prevText.substr(prevText.length - (LIMIT - counter));
+
+                        const textNode = document.createTextNode("…" + prefix);
+                        sub.unshift(textNode);
+
+                        break;
+                    }
+
+                    left = prev;
+                    sub.unshift(left);
+                    counter += prevText.length;
+                    added = true;
+                }
+
+                const next = right.nextElementSibling;
+
+                if (next) {
+                    const nextText = next.textContent;
+
+                    if (nextText.length + counter > LIMIT) {
+                        const suffix = nextText.substr(nextText.length - (LIMIT - counter));
+
+                        const textNode = document.createTextNode(suffix + "…");
+                        sub.push(textNode);
+
+                        break;
+                    }
+
+                    right = next;
+                    sub.push(right);
+                    counter += nextText.length;
+                    added = true;
+                }
+
+                if (!added) {
+                    break;
+                }
+            }
+
+            const div = document.createElement('div');
+            div.classList.add("ck-content");
+            div.classList.add("backlink-excerpt");
+
+            for (const childEl of sub) {
+                div.appendChild(childEl);
+            }
+
+            const subHtml = div.outerHTML;
+
+            excerpts.push(subHtml);
+        }
+
+        return {
+            noteId: sourceNote.noteId,
+            excerpts
+        };
+    });
+}
+
 module.exports = {
     getLinkMap,
-    getTreeMap
+    getTreeMap,
+    getBacklinks
 };

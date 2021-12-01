@@ -260,6 +260,7 @@ function register(app) {
 
     apiRoute(POST, '/api/note-map/:noteId/tree', noteMapRoute.getTreeMap);
     apiRoute(POST, '/api/note-map/:noteId/link', noteMapRoute.getLinkMap);
+    apiRoute(GET, '/api/note-map/:noteId/backlinks', noteMapRoute.getBacklinks);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
     apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
