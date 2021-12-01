@@ -46,6 +46,7 @@ import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js"
 import MermaidWidget from "../widgets/mermaid.js";
 import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
+import BannerMessageWidget from "../widgets/banner_message.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -57,6 +58,7 @@ export default class DesktopLayout {
 
         return new RootContainer()
             .setParent(appContext)
+            .child(new BannerMessageWidget())
             .child(new FlexContainer("column")
                 .id("launcher-pane")
                 .css("width", "53px")
