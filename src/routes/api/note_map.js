@@ -182,6 +182,97 @@ function removeImages(document) {
     }
 }
 
+const EXCERPT_CHAR_LIMIT = 200;
+
+function findExcerpts(sourceNote, referencedNoteId) {
+    const html = sourceNote.getContent();
+    const document = new JSDOM(html).window.document;
+
+    const excerpts = [];
+
+    removeImages(document);
+
+    for (const linkEl of document.querySelectorAll("a")) {
+        const href = linkEl.getAttribute("href");
+
+        if (!href || !href.endsWith(referencedNoteId)) {
+            continue;
+        }
+
+        linkEl.classList.add("backlink-link");
+
+        let centerEl = linkEl;
+
+        while (centerEl.tagName !== 'BODY' && centerEl.parentElement.textContent.length <= EXCERPT_CHAR_LIMIT) {
+            centerEl = centerEl.parentElement;
+        }
+
+        const excerptEls = [centerEl];
+        let excerptLength = centerEl.textContent.length;
+        let left = centerEl;
+        let right = centerEl;
+
+        while (excerptLength < EXCERPT_CHAR_LIMIT) {
+            let added = false;
+
+            const prev = left.previousElementSibling;
+
+            if (prev) {
+                const prevText = prev.textContent;
+
+                if (prevText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
+                    const prefix = prevText.substr(prevText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
+
+                    const textNode = document.createTextNode("…" + prefix);
+                    excerptEls.unshift(textNode);
+
+                    break;
+                }
+
+                left = prev;
+                excerptEls.unshift(left);
+                excerptLength += prevText.length;
+                added = true;
+            }
+
+            const next = right.nextElementSibling;
+
+            if (next) {
+                const nextText = next.textContent;
+
+                if (nextText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
+                    const suffix = nextText.substr(nextText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
+
+                    const textNode = document.createTextNode(suffix + "…");
+                    excerptEls.push(textNode);
+
+                    break;
+                }
+
+                right = next;
+                excerptEls.push(right);
+                excerptLength += nextText.length;
+                added = true;
+            }
+
+            if (!added) {
+                break;
+            }
+        }
+
+        const excerptWrapper = document.createElement('div');
+        excerptWrapper.classList.add("ck-content");
+        excerptWrapper.classList.add("backlink-excerpt");
+
+        for (const childEl of excerptEls) {
+            excerptWrapper.appendChild(childEl);
+        }
+
+        excerpts.push(excerptWrapper.outerHTML);
+    }
+    return excerpts;
+}
+
 function getBacklinks(req) {
     const {noteId} = req.params;
     const note = becca.getNote(noteId);
@@ -192,104 +283,21 @@ function getBacklinks(req) {
 
     let backlinks = note.getTargetRelations();
 
-    if (backlinks.length > 50) {
-        backlinks = backlinks.slice(0, 50);
-    }
+    let backlinksWithExcerptCount = 0;
 
     return backlinks.map(backlink => {
         const sourceNote = backlink.note;
 
-        const html = sourceNote.getContent();
-        const dom = new JSDOM(html);
-
-        const excerpts = [];
-
-        const document = dom.window.document;
-
-        removeImages(document);
-
-        for (const linkEl of document.querySelectorAll("a")) {
-            const href = linkEl.getAttribute("href");
-
-            if (!href || !href.includes(noteId)) {
-                continue;
-            }
-
-            linkEl.style.fontWeight = "bold";
-            linkEl.style.backgroundColor = "yellow";
-
-            const LIMIT = 200;
-            let centerEl = linkEl;
-
-            while (centerEl.tagName !== 'BODY' && centerEl.parentElement.textContent.length < LIMIT) {
-                centerEl = centerEl.parentElement;
-            }
-
-            const sub = [centerEl];
-            let counter = centerEl.textContent.length;
-            let left = centerEl;
-            let right = centerEl;
-
-            while (true) {
-                let added = false;
-
-                const prev = left.previousElementSibling;
-
-                if (prev) {
-                    const prevText = prev.textContent;
-
-                    if (prevText.length + counter > LIMIT) {
-                        const prefix = prevText.substr(prevText.length - (LIMIT - counter));
-
-                        const textNode = document.createTextNode("…" + prefix);
-                        sub.unshift(textNode);
-
-                        break;
-                    }
-
-                    left = prev;
-                    sub.unshift(left);
-                    counter += prevText.length;
-                    added = true;
-                }
-
-                const next = right.nextElementSibling;
-
-                if (next) {
-                    const nextText = next.textContent;
-
-                    if (nextText.length + counter > LIMIT) {
-                        const suffix = nextText.substr(nextText.length - (LIMIT - counter));
-
-                        const textNode = document.createTextNode(suffix + "…");
-                        sub.push(textNode);
-
-                        break;
-                    }
-
-                    right = next;
-                    sub.push(right);
-                    counter += nextText.length;
-                    added = true;
-                }
-
-                if (!added) {
-                    break;
-                }
-            }
-
-            const div = document.createElement('div');
-            div.classList.add("ck-content");
-            div.classList.add("backlink-excerpt");
-
-            for (const childEl of sub) {
-                div.appendChild(childEl);
-            }
-
-            const subHtml = div.outerHTML;
-
-            excerpts.push(subHtml);
+        if (sourceNote.type !== 'text' || backlinksWithExcerptCount > 50) {
+            return {
+                noteId: sourceNote.noteId,
+                relationName: backlink.name
+            };
         }
+
+        backlinksWithExcerptCount++;
+
+        const excerpts = findExcerpts(sourceNote, noteId);
 
         return {
             noteId: sourceNote.noteId,

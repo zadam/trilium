@@ -23,6 +23,7 @@ const TPL = `
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
         }
         
         .backlinks-count {
@@ -56,6 +57,15 @@ const TPL = `
             opacity: 80%;
             font-size: 90%;
         }
+        
+        .backlink-excerpt .backlink-link { /* the actual backlink */
+            font-weight: bold;
+            background-color: yellow;
+        }
+        
+        /* relation map has already buttons in that position */
+        .type-relation-map .backlinks-ticker { top: 50px; }
+        .type-relation-map .backlinks-items { top: 100px; }
     </style>
     
     <div class="backlinks-ticker">
@@ -136,8 +146,12 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
                 showTooltip: false
             }));
 
-            this.$items.append("<br/>");
-            this.$items.append(...backlink.excerpts);
+            if (backlink.relationName) {
+                this.$items.append($("<p>").text("relation: " + backlink.relationName));
+            }
+            else {
+                this.$items.append(...backlink.excerpts);
+            }
         }
     }
 }
