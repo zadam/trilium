@@ -21,6 +21,7 @@ async function createNoteLink(notePath, options = {}) {
     const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
     const showNoteIcon = options.showNoteIcon === undefined ? false : options.showNoteIcon;
+    const referenceLink = options.referenceLink === undefined ? false : options.referenceLink;
 
     const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
@@ -46,6 +47,10 @@ async function createNoteLink(notePath, options = {}) {
 
     if (!showTooltip) {
         $noteLink.addClass("no-tooltip-preview");
+    }
+
+    if (referenceLink) {
+        $noteLink.addClass("reference-link");
     }
 
     $container.append($noteLink);

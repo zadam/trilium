@@ -66,11 +66,12 @@ async function copy(branchIds) {
     clipboardMode = 'copy';
 
     if (utils.isElectron()) {
+        // https://github.com/zadam/trilium/issues/2401
         const {clipboard} = require('electron');
         const links = [];
 
         for (const branch of froca.getBranches(clipboardBranchIds)) {
-            const $link = await linkService.createNoteLink(branch.parentNoteId + '/' + branch.noteId);
+            const $link = await linkService.createNoteLink(branch.parentNoteId + '/' + branch.noteId, { referenceLink: true });
             links.push($link[0].outerHTML);
         }
 
