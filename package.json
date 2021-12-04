@@ -82,7 +82,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "16.0.1",
+    "electron": "16.0.4",
     "@electron/remote": "2.0.1",
     "electron-builder": "22.14.5",
     "electron-packager": "15.4.0",
@@ -92,7 +92,7 @@
     "jsdoc": "3.6.7",
     "lorem-ipsum": "2.0.4",
     "rcedit": "3.0.1",
-    "webpack": "5.64.3",
+    "webpack": "5.64.4",
     "webpack-cli": "4.9.1"
   },
   "optionalDependencies": {

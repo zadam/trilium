@@ -261,6 +261,7 @@ class Froca {
         return (await this.getNotes([noteId], silentNotFoundError))[0];
     }
 
+    /** @returns {Note|null} */
     getNoteFromCache(noteId) {
         if (!noteId) {
             throw new Error("Empty noteId");
@@ -269,6 +270,7 @@ class Froca {
         return this.notes[noteId];
     }
 
+    /** @returns {Branch[]} */
     getBranches(branchIds, silentNotFoundError = false) {
         return branchIds
             .map(branchId => this.getBranch(branchId, silentNotFoundError))

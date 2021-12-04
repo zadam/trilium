@@ -44,6 +44,7 @@ function getHiddenRoot() {
         // isInheritable: false means that this notePath is automatically not preffered but at the same time
         // the flag is not inherited to the children
         hidden.addLabel('archived', "", false);
+        hidden.addLabel('excludeFromNoteMap', "", true);
     }
 
     return hidden;
@@ -206,6 +207,12 @@ function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSinglesNoteRoot();
     getGlobalNoteMap();
+
+    const hidden = getHiddenRoot();
+
+    if (!hidden.hasOwnedLabel('excludeFromNoteMap')) {
+        hidden.addLabel('excludeFromNoteMap', "", true);
+    }
 }
 
 module.exports = {

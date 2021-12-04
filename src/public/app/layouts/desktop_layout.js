@@ -46,6 +46,7 @@ import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js"
 import MermaidWidget from "../widgets/mermaid.js";
 import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
+import BacklinksWidget from "../widgets/backlinks.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -147,6 +148,7 @@ export default class DesktopLayout {
                                         .button(new NoteActionsWidget())
                                 )
                                 .child(new NoteUpdateStatusWidget())
+                                .child(new BacklinksWidget())
                                 .child(new MermaidWidget())
                                 .child(
                                     new ScrollingContainer()

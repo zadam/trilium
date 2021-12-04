@@ -1,7 +1,8 @@
 import branchService from "./branches.js";
 import toastService from "./toast.js";
-import hoistedNoteService from "./hoisted_note.js";
 import froca from "./froca.js";
+import linkService from "./link.js";
+import utils from "./utils.js";
 
 let clipboardBranchIds = [];
 let clipboardMode = null;
@@ -60,9 +61,22 @@ async function pasteInto(parentBranchId) {
     }
 }
 
-function copy(branchIds) {
+async function copy(branchIds) {
     clipboardBranchIds = branchIds;
     clipboardMode = 'copy';
+
+    if (utils.isElectron()) {
+        // https://github.com/zadam/trilium/issues/2401
+        const {clipboard} = require('electron');
+        const links = [];
+
+        for (const branch of froca.getBranches(clipboardBranchIds)) {
+            const $link = await linkService.createNoteLink(branch.parentNoteId + '/' + branch.noteId, { referenceLink: true });
+            links.push($link[0].outerHTML);
+        }
+
+        clipboard.writeHTML(links.join(', '));
+    }
 
     toastService.showMessage("Note(s) have been copied into clipboard.");
 }

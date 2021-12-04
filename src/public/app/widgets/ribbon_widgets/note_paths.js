@@ -69,7 +69,10 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         this.$notePathList.empty();
 
         if (this.noteId === 'root') {
-            await this.getRenderedPath('root');
+            this.$notePathList.empty().append(
+                await this.getRenderedPath('root')
+            );
+
             return;
         }
 
@@ -94,7 +97,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         this.$notePathList.empty().append(...renderedPaths);
     }
 
-    async getRenderedPath(notePath, notePathRecord) {
+    async getRenderedPath(notePath, notePathRecord = null) {
         const title = await treeService.getNotePathTitle(notePath);
 
         const $noteLink = await linkService.createNoteLink(notePath, {title});
@@ -109,20 +112,20 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             $noteLink.addClass("path-current");
         }
 
-        if (notePathRecord.isInHoistedSubTree) {
+        if (!notePathRecord || notePathRecord.isInHoistedSubTree) {
             $noteLink.addClass("path-in-hoisted-subtree");
         }
         else {
             icons.push(`<span class="bx bx-trending-up" title="This path is outside of hoisted note and you would have to unhoist."></span>`);
         }
 
-        if (notePathRecord.isArchived) {
+        if (notePathRecord?.isArchived) {
             $noteLink.addClass("path-archived");
 
             icons.push(`<span class="bx bx-archive" title="Archived"></span>`);
         }
 
-        if (notePathRecord.isSearch) {
+        if (notePathRecord?.isSearch) {
             $noteLink.addClass("path-search");
 
             icons.push(`<span class="bx bx-search" title="Search"></span>`);
