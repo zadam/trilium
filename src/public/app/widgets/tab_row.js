@@ -188,11 +188,11 @@ const TAB_ROW_TPL = `
     }
     
     .tab-row-widget .note-tab:hover .note-tab-wrapper {
-        background-color: var(--accented-background-color);
+        background-color: var(--inactive-tab-hover-background-color);
     }
     
     .tab-row-widget .note-tab[active]:hover .note-tab-wrapper {
-        background-color: var(--more-accented-background-color);
+        background-color: var(--active-tab-hover-background-color);
     }
     
     .tab-row-widget .note-tab .note-tab-close:hover {

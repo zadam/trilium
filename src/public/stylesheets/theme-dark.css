@@ -54,9 +54,11 @@
     --launcher-pane-text-color: #AAAAAA;
 
     --active-tab-background-color: #666;
+    --active-tab-hover-background-color: #737373;
     --active-tab-text-color: #ccc;
 
     --inactive-tab-background-color: #444;
+    --inactive-tab-hover-background-color: #525252;
     --inactive-tab-text-color: #bbb;
 
     --scrollbar-border-color: #888;
