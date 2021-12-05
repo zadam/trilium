@@ -46,11 +46,11 @@ span.fancytree-node.fancytree-hide {
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
     font-family: 'boxicons' !important;
+    content: "\ea50"; /* lookup code for "chevron-right" in boxicons.css */
     speak: none;
     font-size: x-large;
     text-transform: none;
     line-height: 1;
-    content: "\e9b2";
     position: relative;
     top: 2px;
     margin-right: 5px;
@@ -102,7 +102,7 @@ ul.fancytree-container li {
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
     font-family: 'boxicons' !important;
-    content: "\e9ac";
+    content: "\ea4a"; /* lookup code for "chevron-down" in boxicons.css */
 }
 
 /** some common text styling for cssClass label */
