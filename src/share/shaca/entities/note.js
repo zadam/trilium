@@ -8,7 +8,7 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 class Note extends AbstractEntity {
-    constructor([noteId, title, type, mime]) {
+    constructor([noteId, title, type, mime, utcDateModified]) {
         super();
 
         /** @param {string} */
@@ -19,6 +19,8 @@ class Note extends AbstractEntity {
         this.type = type;
         /** @param {string} */
         this.mime = mime;
+        /** @param {string} */
+        this.utcDateModified = utcDateModified; // used for caching of images
 
         /** @param {Branch[]} */
         this.parentBranches = [];
@@ -436,16 +438,6 @@ class Note extends AbstractEntity {
 
     hasInheritableOwnedArchivedLabel() {
         return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
-    }
-
-    // will sort the parents so that non-search & non-archived are first and archived at the end
-    // this is done so that non-search & non-archived paths are always explored as first when looking for note path
-    resortParents() {
-        this.parentBranches.sort((a, b) =>
-            a.branchId.startsWith('virt-')
-            || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
-
-        this.parents = this.parentBranches.map(branch => branch.parentNote);
     }
 
     isTemplate() {

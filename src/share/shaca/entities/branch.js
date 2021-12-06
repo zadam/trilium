@@ -4,7 +4,7 @@ const AbstractEntity = require('./abstract_entity');
 const shareRoot = require("../../share_root");
 
 class Branch extends AbstractEntity {
-    constructor([branchId, noteId, parentNoteId, prefix, notePosition, isExpanded]) {
+    constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {
         super();
 
         /** @param {string} */
@@ -15,8 +15,6 @@ class Branch extends AbstractEntity {
         this.parentNoteId = parentNoteId;
         /** @param {string} */
         this.prefix = prefix;
-        /** @param {int} */
-        this.notePosition = notePosition;
         /** @param {boolean} */
         this.isExpanded = !!isExpanded;
 
@@ -33,10 +31,6 @@ class Branch extends AbstractEntity {
 
         if (!childNote.parentBranches.includes(this)) {
             childNote.parentBranches.push(this);
-        }
-
-        if (!parentNote) {
-            console.log(this);
         }
 
         if (!parentNote.children.includes(childNote)) {

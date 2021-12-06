@@ -33,11 +33,11 @@ function load() {
 
     const noteIdStr = noteIds.map(noteId => `'${noteId}'`).join(",");
 
-    for (const row of sql.getRawRows(`SELECT noteId, title, type, mime FROM notes WHERE isDeleted = 0 AND noteId IN (${noteIdStr})`)) {
+    for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, utcDateModified FROM notes WHERE isDeleted = 0 AND noteId IN (${noteIdStr})`)) {
         new Note(row);
     }
 
-    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0 AND noteId IN (${noteIdStr})`)) {
+    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0 AND noteId IN (${noteIdStr}) ORDER BY notePosition`)) {
         new Branch(row);
     }
 

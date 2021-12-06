@@ -1,7 +1,6 @@
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
-const utils = require("../services/utils");
 const {JSDOM} = require("jsdom");
 
 function getSubRoot(note) {
@@ -47,15 +46,26 @@ function getContent(note) {
     let content = note.getContent();
 
     if (note.type === 'text') {
-        const isEmpty = !content?.trim() || (function() {
-            const document = new JSDOM(content).window.document;
+        const document = new JSDOM(content || "").window.document;
 
-            return document.body.textContent.trim().length === 0
+        const isEmpty = document.body.textContent.trim().length === 0
                 && document.querySelectorAll("img").length === 0;
-        })();
 
         if (isEmpty) {
             content = NO_CONTENT + getChildrenList(note);
+        }
+        else {
+            for (const linkEl of document.querySelectorAll("a")) {
+                const href = linkEl.getAttribute("href");
+
+                if (href?.startsWith("#")) {
+                    const notePathSegments = href.split("/");
+
+                    linkEl.setAttribute("href", notePathSegments[notePathSegments.length - 1]);
+                }
+            }
+
+            content = document.body.innerHTML;
         }
     }
     else if (note.type === 'code') {
@@ -66,10 +76,16 @@ function getContent(note) {
             const document = new JSDOM().window.document;
 
             const preEl = document.createElement('pre');
-            preEl.innerText = content;
+            preEl.appendChild(document.createTextNode(content));
 
             content = preEl.outerHTML;
         }
+    }
+    else if (note.type === 'image') {
+        content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
+    }
+    else if (note.type === 'file') {
+        content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
     }
     else if (note.type === 'book') {
         content = getChildrenList(note);
@@ -78,7 +94,7 @@ function getContent(note) {
         content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
     }
 
-    return content;
+    return `<div class="type-${note.type}">${content}</content>`;
 }
 
 function register(router) {
@@ -118,6 +134,26 @@ function register(router) {
         res.set('Content-Type', image.mime);
 
         res.send(image.getContent());
+    });
+
+    router.get('/share/api/notes/:noteId/:download', (req, res, next) => {
+        const {noteId} = req.params;
+        const note = shaca.getNote(noteId);
+
+        if (!note) {
+            return res.status(404).send(`Note ${noteId} doesn't exist.`);
+        }
+
+        const utils = require("../services/utils");
+
+        const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
+
+        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
+
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader('Content-Type', note.mime);
+
+        res.send(note.getContent());
     });
 }
 
