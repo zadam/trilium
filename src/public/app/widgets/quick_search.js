@@ -134,6 +134,8 @@ export default class QuickSearchWidget extends BasicWidget {
     }
 
     async showInFullSearch() {
+        this.$dropdownToggle.dropdown("hide");
+
         const searchNote = await dateNotesService.createSearchNote({searchString: this.$searchString.val()});
 
         await froca.loadSearchNote(searchNote.noteId);
