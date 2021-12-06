@@ -8,6 +8,7 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require("../../utils");
 
+// FIXME: create common subclass with NoteContentUnprotectedFulltextExp to avoid duplication
 class NoteContentProtectedFulltextExp extends Expression {
     constructor(operator, tokens, raw) {
         super();
@@ -46,15 +47,7 @@ class NoteContentProtectedFulltextExp extends Expression {
                 continue;
             }
 
-            content = utils.normalize(content);
-
-            if (type === 'text' && mime === 'text/html') {
-                if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
-                    content = striptags(content);
-                }
-
-                content = content.replace(/&nbsp;/g, ' ');
-            }
+            content = this.preprocessContent(content, type, mime);
 
             if (!this.tokens.find(token => !content.includes(token))) {
                 resultNoteSet.add(becca.notes[noteId]);
@@ -62,6 +55,23 @@ class NoteContentProtectedFulltextExp extends Expression {
         }
 
         return resultNoteSet;
+    }
+
+    preprocessContent(content, type, mime) {
+        content = utils.normalize(content.toString());
+
+        if (type === 'text' && mime === 'text/html') {
+            if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
+                // allow link to preserve URLs: https://github.com/zadam/trilium/issues/2412
+                content = striptags(content, ['a']);
+
+                // at least the closing tag can be easily stripped
+                content = content.replace(/<\/a>/ig, "");
+            }
+
+            content = content.replace(/&nbsp;/g, ' ');
+        }
+        return content;
     }
 }
 
