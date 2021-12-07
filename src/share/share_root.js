@@ -1,3 +1,3 @@
 module.exports = {
-    SHARE_ROOT_NOTE_ID: 'root'
+    SHARE_ROOT_NOTE_ID: 'share'
 }

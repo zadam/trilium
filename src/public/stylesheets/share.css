@@ -9,12 +9,16 @@
     padding: 20px;
     flex-basis: 0;
     flex-grow: 1;
-    background-color: #ccc;
     overflow: auto;
 }
 
 #menu p {
     margin: 0;
+}
+
+#menu > p {
+    font-weight: bold;
+    font-size: 110%;
 }
 
 #menu ul {
@@ -24,12 +28,11 @@
 #main {
     flex-basis: 0;
     flex-grow: 3;
-    background-color:#eee;
 }
 
 #title {
     margin: 0;
-    padding: 20px 20px 0 20px;
+    padding: 10px 20px 0 20px;
 }
 
 #content {

@@ -201,12 +201,29 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
+function getShareRoot() {
+    let shareRoot = becca.getNote('share');
+
+    if (!shareRoot) {
+        shareRoot = noteService.createNewNote({
+            noteId: 'share',
+            title: 'share',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return shareRoot;
+}
+
 function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSqlConsoleRoot();
     getSinglesNoteRoot();
     getSinglesNoteRoot();
     getGlobalNoteMap();
+    getShareRoot();
 
     const hidden = getHiddenRoot();
 

@@ -7,6 +7,7 @@ const Note = require('./entities/note');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 const shareRoot = require('../share_root');
+const eventService = require("../../services/events");
 
 function load() {
     const start = Date.now();
@@ -41,8 +42,17 @@ function load() {
         new Branch(row);
     }
 
-    // TODO: add filter for allowed attributes
-    for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0 AND noteId IN (${noteIdStr})`, [])) {
+    const attributes = sql.getRawRows(`
+        SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified 
+        FROM attributes 
+        WHERE isDeleted = 0 
+          AND noteId IN (${noteIdStr})
+          AND (
+              (type = 'label' AND name IN ('archived')) 
+              OR (type = 'relation' AND name IN ('imageLink', 'template'))
+          )`, []);
+
+    for (const row of attributes) {
         new Attribute(row);
     }
 
@@ -57,6 +67,9 @@ function ensureLoad() {
     }
 }
 
+eventService.subscribe([ eventService.ENTITY_CREATED, eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_CHANGE_SYNCED, eventService.ENTITY_DELETE_SYNCED ], ({ entityName, entity }) => {
+    shaca.reset();
+});
 
 module.exports = {
     load,
