@@ -30,7 +30,7 @@ const TPL = `
 
     <div class="form-group">
         <label for="image-max-width-height">Max width / height of an image in pixels (image will be resized if it exceeds this setting).</label>
-        <input class="form-control" id="image-max-width-height" type="number">
+        <input class="form-control" id="image-max-width-height" type="number" min="1">
     </div>
 
     <div class="form-group">
@@ -67,7 +67,7 @@ const TPL = `
 
     <div class="form-group">
         <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
-        <input class="form-control" id="protected-session-timeout-in-seconds" type="number">
+        <input class="form-control" id="protected-session-timeout-in-seconds" type="number" min="60">
     </div>
 </div>
 
@@ -78,7 +78,7 @@ const TPL = `
 
     <div class="form-group">
         <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
-        <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
+        <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number" min="10">
     </div>
 </div>
 
@@ -89,12 +89,12 @@ const TPL = `
 
     <div class="form-group">
         <label for="auto-readonly-size-text">Automatic readonly size (text notes)</label>
-        <input class="form-control" id="auto-readonly-size-text" type="number">
+        <input class="form-control" id="auto-readonly-size-text" type="number" min="0">
     </div>
 
     <div class="form-group">
         <label for="auto-readonly-size-code">Automatic readonly size (code notes)</label>
-        <input class="form-control" id="auto-readonly-size-code" type="number">
+        <input class="form-control" id="auto-readonly-size-code" type="number" min="0">
     </div>
 </div>`;
 
