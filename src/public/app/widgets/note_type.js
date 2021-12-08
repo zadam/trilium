@@ -133,9 +133,7 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        await server.put('notes/' + this.noteId
-            + '/type/' + encodeURIComponent(type)
-            + '/mime/' + encodeURIComponent(mime));
+        await server.put('notes/' + this.noteId + '/type', { type, mime });
     }
 
     async confirmChangeIfContent() {
