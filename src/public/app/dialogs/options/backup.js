@@ -50,21 +50,21 @@ export default class BackupOptions {
 
         this.$dailyBackupEnabled.on('change', () => {
             const opts = { 'dailyBackupEnabled': this.$dailyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
 
         this.$weeklyBackupEnabled.on('change', () => {
             const opts = { 'weeklyBackupEnabled': this.$weeklyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
 
         this.$monthlyBackupEnabled.on('change', () => {
             const opts = { 'monthlyBackupEnabled': this.$monthlyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
