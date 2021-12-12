@@ -74,7 +74,7 @@ export default class SyncOptions {
             'syncProxy': this.$syncProxy.val()
         };
 
-        server.put('options', opts).then(()  => toastService.showMessage("Options change have been saved."));
+        server.put('options', opts).then(()  => toastService.showMessage("Options changed have been saved."));
 
         return false;
     }
