@@ -121,14 +121,14 @@ export default class ProtectedSessionOptions {
 
         this.$spellCheckEnabled.on('change', () => {
             const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
 
         this.$spellCheckLanguageCode.on('change', () => {
             const opts = { 'spellCheckLanguageCode': this.$spellCheckLanguageCode.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
@@ -147,7 +147,7 @@ export default class ProtectedSessionOptions {
             const eraseEntitiesAfterTimeInSeconds = this.$eraseEntitiesAfterTimeInSeconds.val();
 
             server.put('options', { 'eraseEntitiesAfterTimeInSeconds': eraseEntitiesAfterTimeInSeconds }).then(() => {
-                toastService.showMessage("Options change have been saved.");
+                toastService.showMessage("Options changed have been saved.");
             });
 
             return false;
@@ -166,7 +166,7 @@ export default class ProtectedSessionOptions {
             const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
             server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-                toastService.showMessage("Options change have been saved.");
+                toastService.showMessage("Options changed have been saved.");
             });
 
             return false;
@@ -176,7 +176,7 @@ export default class ProtectedSessionOptions {
 
         this.$noteRevisionsTimeInterval.on('change', () => {
             const opts = { 'noteRevisionSnapshotTimeInterval': this.$noteRevisionsTimeInterval.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
@@ -186,14 +186,14 @@ export default class ProtectedSessionOptions {
 
         this.$imageMaxWidthHeight.on('change', () => {
             const opts = { 'imageMaxWidthHeight': this.$imageMaxWidthHeight.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
 
         this.$imageJpegQuality.on('change', () => {
             const opts = { 'imageJpegQuality': this.$imageJpegQuality.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
@@ -202,7 +202,7 @@ export default class ProtectedSessionOptions {
 
         this.$autoReadonlySizeText.on('change', () => {
             const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
@@ -211,7 +211,7 @@ export default class ProtectedSessionOptions {
 
         this.$autoReadonlySizeCode.on('change', () => {
             const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeText.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             return false;
         });
@@ -231,7 +231,7 @@ export default class ProtectedSessionOptions {
             const isChecked = this.$enableImageCompression.prop("checked");
             const opts = { 'compressImages': isChecked ? 'true' : 'false' };
 
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             this.setImageCompression(isChecked);
         })
