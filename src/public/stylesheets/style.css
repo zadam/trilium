@@ -358,9 +358,12 @@ pre:not(.CodeMirror-line) {
     color: var(--button-disabled-background-color) !important;
 }
 
-.note-autocomplete-input {
-    /* this is for seamless integration of "input clearer" button */
-    border-right: 0;
+.note-autocomplete-container {
+    display: flex;
+}
+
+.note-autocomplete-container .note-autocomplete-input {
+    flex-grow: 1;
 }
 
 table.promoted-attributes-in-tooltip {
@@ -430,43 +433,6 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .tooltip.show {
     opacity: 1;
-}
-
-.algolia-autocomplete {
-    width: calc(100% - 30px);
-    z-index: 2000 !important;
-}
-
-.algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
-    width: 100%;
-}
-
-.algolia-autocomplete .aa-dropdown-menu {
-    width: 100%;
-    background-color: var(--main-background-color);
-    border: 1px solid var(--main-border-color);
-    border-top: none;
-    z-index: 2000 !important;
-    max-height: 500px;
-    overflow: auto;
-    padding: 0;
-    margin: 0;
-}
-
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion {
-    cursor: pointer;
-    padding: 5px;
-    margin: 0;
-}
-
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion p {
-    padding: 0;
-    margin: 0;
-}
-
-.algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
-    color: var(--hover-item-text-color);
-    background-color: var(--hover-item-background-color);
 }
 
 .help-button {
@@ -957,4 +923,8 @@ input {
 
 .note-split.full-content-width {
     max-width: 999999px;
+}
+
+.aa-Panel {
+    z-index: 10000;
 }

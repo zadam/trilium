@@ -41,7 +41,7 @@ export async function showDialog(widget, text = '') {
         $linkTitle.val(noteTitle);
     }
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete, {
+    const ac = noteAutocompleteService.initNoteAutocomplete($autoComplete, {
         allowExternalLinks: true,
         allowCreatingNotes: true
     });
@@ -84,7 +84,7 @@ export async function showDialog(widget, text = '') {
     });
 
     if (text && text.trim()) {
-        noteAutocompleteService.setText($autoComplete, text);
+        noteAutocompleteService.setText(ac, text);
     }
     else {
         noteAutocompleteService.showRecentNotes($autoComplete);

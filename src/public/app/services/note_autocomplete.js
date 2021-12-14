@@ -8,7 +8,75 @@ import froca from "./froca.js";
 // this key needs to have this value so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
-const SELECTED_EXTERNAL_LINK_KEY = "data-external-link";
+const acMixin = {
+    selectedNotePath: "",
+    selectedExternalLink: "",
+    $el: "",
+
+    focus() {
+        this.$el.find('.aa-Input').focus();
+    },
+
+    select() {
+        this.$el.find('.aa-Input').select();
+    },
+
+    getQuery() {
+        return this?.lastState.query;
+    },
+
+    getSelectedNotePath() {
+        if (!this.getQuery()) {
+            return "";
+        } else {
+            return this.selectedNotePath;
+        }
+    },
+
+    getSelectedNoteId() {
+        const notePath = this.getSelectedNotePath();
+        const chunks = notePath.split('/');
+
+        return chunks.length >= 1 ? chunks[chunks.length - 1] : null;
+    },
+
+    setSelectedNotePath(notePath) {
+        notePath = notePath || "";
+
+        this.selectedNotePath = notePath;
+
+        $(this)
+            .closest(".input-group")
+            .find(".go-to-selected-note-button")
+            .toggleClass("disabled", !notePath.trim())
+            .attr(SELECTED_NOTE_PATH_KEY, notePath); // we also set attr here so tooltip can be displayed
+    },
+
+    getSelectedExternalLink() {
+        if (!$(this).val().trim()) {
+            return "";
+        } else {
+            return this.selectedExternalLink;
+        }
+    },
+
+    setSelectedExternalLink(externalLink) {
+        this.selectedExternalLink = externalLink;
+
+        $(this)
+            .closest(".input-group")
+            .find(".go-to-selected-note-button")
+            .toggleClass("disabled", true);
+    },
+
+    async setNote(noteId) {
+        const note = noteId ? await froca.getNote(noteId, true) : null;
+
+        $(this)
+            .val(note ? note.title : "")
+            .setSelectedNotePath(noteId);
+    }
+}
 
 async function autocompleteSourceForCKEditor(queryText) {
     return await new Promise((res, rej) => {
@@ -30,7 +98,7 @@ async function autocompleteSourceForCKEditor(queryText) {
     });
 }
 
-async function autocompleteSource(term, cb, options = {}) {
+async function autocompleteSource(term, options = {}) {
     const activeNoteId = appContext.tabManager.getActiveContextNoteId();
 
     let results = await server.get('autocomplete'
@@ -58,206 +126,176 @@ async function autocompleteSource(term, cb, options = {}) {
         ].concat(results);
     }
 
-    cb(results);
+    return results;
 }
 
-function clearText($el) {
+function clearText(acObj) {
     if (utils.isMobile()) {
         return;
     }
 
-    $el.setSelectedNotePath("");
-    $el.autocomplete("val", "").trigger('change');
+    acObj.ext.setSelectedNotePath("");
+    acObj.setQuery("");
 }
 
-function setText($el, text) {
+function setText(ac, text) {
     if (utils.isMobile()) {
         return;
     }
 
-    $el.setSelectedNotePath("");
-    $el
-        .autocomplete("val", text.trim())
-        .autocomplete("open");
+    ac.ext.setSelectedNotePath("");
+    ac.setQuery(text.trim());
+    ac.setIsOpen(true);
 }
 
-function showRecentNotes($el) {
+function showRecentNotes(ac) {
     if (utils.isMobile()) {
         return;
     }
 
-    $el.setSelectedNotePath("");
-    $el.autocomplete("val", "");
-    $el.trigger('focus');
+    ac.ext.$el.find(".aa-Input").val("").change();
+
+    ac.setQuery("");
+    ac.setIsOpen(true);
+    ac.update();
+    ac.ext.setSelectedNotePath("");
+    ac.ext.focus();
+
+
+    console.log("BBB");
 }
 
-function initNoteAutocomplete($el, options) {
-    if ($el.hasClass("note-autocomplete-input") || utils.isMobile()) {
+function initNoteAutocomplete($container, options) {
+    if ($container.hasClass("note-autocomplete-container") || utils.isMobile()) {
         // clear any event listener added in previous invocation of this function
-        $el.off('autocomplete:noteselected');
+        $container.off('autocomplete:noteselected');
 
-        return $el;
+        return $container.prop("acObj");
     }
 
     options = options || {};
 
-    $el.addClass("note-autocomplete-input");
+    const $el = $('<div class="note-autocomplete-input">');
+    const $sideButtons = $('<div>');
 
-    const $clearTextButton = $("<a>")
-            .addClass("input-group-text input-clearer-button bx bx-x")
-            .prop("title", "Clear text field");
+    $container.addClass("note-autocomplete-container")
+        .append($el)
+        .append($sideButtons);
 
     const $showRecentNotesButton = $("<a>")
-            .addClass("input-group-text show-recent-notes-button bx bx-time")
+            .addClass("show-recent-notes-button bx bx-time")
             .prop("title", "Show recent notes");
 
     const $goToSelectedNoteButton = $("<a>")
-        .addClass("input-group-text go-to-selected-note-button bx bx-arrow-to-right")
+        .addClass("go-to-selected-note-button bx bx-arrow-to-right")
         .attr("data-action", "note");
 
-    const $sideButtons = $("<div>")
-        .addClass("input-group-append")
-        .append($clearTextButton)
-        .append($showRecentNotesButton);
+    $sideButtons.append($showRecentNotesButton);
 
     if (!options.hideGoToSelectedNoteButton) {
         $sideButtons.append($goToSelectedNoteButton);
     }
 
-    $el.after($sideButtons);
-
-    $clearTextButton.on('click', () => clearText($el));
-
     $showRecentNotesButton.on('click', e => {
-        showRecentNotes($el);
+        showRecentNotes(acObj);
 
         // this will cause the click not give focus to the "show recent notes" button
         // this is important because otherwise input will lose focus immediatelly and not show the results
         return false;
     });
 
-    $el.autocomplete({
-        appendTo: document.querySelector('body'),
-        hint: false,
-        autoselect: true,
+    const { autocomplete } = window['@algolia/autocomplete-js'];
+
+    let acObj = autocomplete({
+        container: $el[0],
+        defaultActiveItemId: 0,
         openOnFocus: true,
-        minLength: 0,
-        tabAutocomplete: false
-    }, [
-        {
-            source: (term, cb) => autocompleteSource(term, cb, options),
-            displayKey: 'notePathTitle',
-            templates: {
-                suggestion: suggestion => suggestion.highlightedNotePathTitle
-            },
-            // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
-            cache: false
+        tabAutocomplete: false,
+        placeholder: options.placeholder,
+        onStateChange({ state }) {
+            acObj.lastState = state;
+        },
+        async getSources({ query }) {
+            const items = await autocompleteSource(query, options);
+
+            return [
+                {
+                    getItems() {
+                        return items;
+                    },
+                    onSelect({item}) {
+                        acObj.ext.$el.trigger("autocomplete:selected", [item]);
+                    },
+                    displayKey: 'notePathTitle',
+                    templates: {
+                        item({ item, createElement }) {
+                            return createElement('div', {
+                                dangerouslySetInnerHTML: {
+                                    __html: item.highlightedNotePathTitle,
+                                },
+                            });
+                        }
+                    },
+                    // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
+                    cache: false
+                }
+            ]
         }
-    ]);
+    });
 
-    $el.on('autocomplete:selected', async (event, suggestion) => {
-        if (suggestion.action === 'external-link') {
-            $el.setSelectedNotePath(null);
-            $el.setSelectedExternalLink(suggestion.externalLink);
+    acObj.ext = {...acMixin, $el, $container };
 
-            $el.autocomplete("val", suggestion.externalLink);
+    $container.prop("acObj", acObj);
 
-            $el.autocomplete("close");
+    $container.on('autocomplete:selected', async (event, item) => {
+        if (item.action === 'external-link') {
+            acObj.ext.setSelectedNotePath(null);
+            acObj.ext.setSelectedExternalLink(item.externalLink);
 
-            $el.trigger('autocomplete:externallinkselected', [suggestion]);
+            acObj.setQuery(item.externalLink);
+
+            $container.autocomplete("close");
+
+            $container.trigger('autocomplete:externallinkselected', [item]);
 
             return;
         }
 
-        if (suggestion.action === 'create-note') {
-            const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
-                title: suggestion.noteTitle,
+        if (item.action === 'create-note') {
+            const {note} = await noteCreateService.createNote(item.parentNoteId, {
+                title: item.noteTitle,
                 activate: false
             });
 
-            suggestion.notePath = treeService.getSomeNotePath(note);
+            item.notePath = treeService.getSomeNotePath(note);
         }
 
-        $el.setSelectedNotePath(suggestion.notePath);
-        $el.setSelectedExternalLink(null);
+        acObj.ext.setSelectedNotePath(item.notePath);
+        acObj.ext.setSelectedExternalLink(null);
 
-        $el.autocomplete("val", suggestion.noteTitle);
+        acObj.setQuery(item.noteTitle);
 
-        $el.autocomplete("close");
+        acObj.setIsOpen(false);
 
-        $el.trigger('autocomplete:noteselected', [suggestion]);
+        $container.trigger('autocomplete:noteselected', [item]);
     });
 
-    $el.on('autocomplete:closed', () => {
-        if (!$el.val().trim()) {
-            clearText($el);
+    $container.on('autocomplete:closed', () => {
+        if (!$container.val().trim()) {
+            clearText($container);
         }
     });
 
-    $el.on('autocomplete:opened', () => {
-        if ($el.attr("readonly")) {
-            $el.autocomplete('close');
+    $container.on('autocomplete:opened', () => {
+        if ($container.attr("readonly")) {
+            $container.autocomplete('close');
         }
     });
 
     // clear any event listener added in previous invocation of this function
-    $el.off('autocomplete:noteselected');
+    $container.off('autocomplete:noteselected');
 
-    return $el;
-}
-
-function init() {
-    $.fn.getSelectedNotePath = function () {
-        if (!$(this).val().trim()) {
-            return "";
-        } else {
-            return $(this).attr(SELECTED_NOTE_PATH_KEY);
-        }
-    };
-
-    $.fn.getSelectedNoteId = function () {
-        const notePath = $(this).getSelectedNotePath();
-        const chunks = notePath.split('/');
-
-        return chunks.length >= 1 ? chunks[chunks.length - 1] : null;
-    }
-
-    $.fn.setSelectedNotePath = function (notePath) {
-        notePath = notePath || "";
-
-        $(this).attr(SELECTED_NOTE_PATH_KEY, notePath);
-
-        $(this)
-            .closest(".input-group")
-            .find(".go-to-selected-note-button")
-            .toggleClass("disabled", !notePath.trim())
-            .attr(SELECTED_NOTE_PATH_KEY, notePath); // we also set attr here so tooltip can be displayed
-    };
-
-    $.fn.getSelectedExternalLink = function () {
-        if (!$(this).val().trim()) {
-            return "";
-        } else {
-            return $(this).attr(SELECTED_EXTERNAL_LINK_KEY);
-        }
-    };
-
-    $.fn.setSelectedExternalLink = function (externalLink) {
-        $(this).attr(SELECTED_EXTERNAL_LINK_KEY, externalLink);
-
-        $(this)
-            .closest(".input-group")
-            .find(".go-to-selected-note-button")
-            .toggleClass("disabled", true);
-    }
-
-    $.fn.setNote = async function (noteId) {
-        const note = noteId ? await froca.getNote(noteId, true) : null;
-
-        $(this)
-            .val(note ? note.title : "")
-            .setSelectedNotePath(noteId);
-    }
+    return acObj;
 }
 
 export default {
@@ -265,6 +303,5 @@ export default {
     autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,
-    setText,
-    init
+    setText
 }

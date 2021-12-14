@@ -292,7 +292,9 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
         this.$inputTargetNote = this.$widget.find('.attr-input-target-note');
 
-        noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote, {allowCreatingNotes: true})
+        noteAutocompleteService.initNoteAutocomplete(this.$inputTargetNote, {allowCreatingNotes: true});
+
+        this.$inputTargetNote
             .on('autocomplete:noteselected', (event, suggestion, dataset) => {
                 if (!suggestion.notePath) {
                     return false;

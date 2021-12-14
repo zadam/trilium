@@ -59,10 +59,10 @@ class NoteContext extends Component {
             });
         }
 
-        if (utils.isDesktop()) {
-            // close dangling autocompletes after closing the tab
-            $(".aa-input").autocomplete("close");
-        }
+        // if (utils.isDesktop()) {
+        //     // close dangling autocompletes after closing the tab
+        //     $(".aa-input").autocomplete("close");
+        // }
     }
 
     getSubContexts() {

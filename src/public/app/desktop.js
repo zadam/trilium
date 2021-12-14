@@ -30,8 +30,6 @@ bundleService.getWidgetBundlesByParent().then(widgetBundles => {
 
 noteTooltipService.setupGlobalTooltip();
 
-noteAutocompleteService.init();
-
 if (utils.isElectron()) {
     const electron = utils.dynamicRequire('electron');
 

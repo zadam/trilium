@@ -12,7 +12,12 @@ const KEEP_LAST_SEARCH_FOR_X_SECONDS = 120;
 export async function showDialog() {
     utils.openDialog($dialog);
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
+    const ac = noteAutocompleteService.initNoteAutocomplete($autoComplete, {
+        hideGoToSelectedNoteButton: true,
+        placeholder: "search for note by its name"
+    });
+
+    $autoComplete
         // clear any event listener added in previous invocation of this function
         .off('autocomplete:noteselected')
         .on('autocomplete:noteselected', function(event, suggestion, dataset) {
@@ -28,15 +33,12 @@ export async function showDialog() {
     // so we'll keep the content.
     // if it's outside of this time limit then we assume it's a completely new search and show recent notes instead.
     if (Date.now() - lastOpenedTs > KEEP_LAST_SEARCH_FOR_X_SECONDS * 1000) {
-        noteAutocompleteService.showRecentNotes($autoComplete);
+        noteAutocompleteService.showRecentNotes(ac, $autoComplete);
     }
     else {
-        $autoComplete
-            // hack, the actual search value is stored in <pre> element next to the search input
-            // this is important because the search input value is replaced with the suggestion note's title
-            .autocomplete("val", $autoComplete.next().text())
-            .trigger('focus')
-            .trigger('select');
+        ac.setIsOpen(true);
+        ac.ext.focus();
+        ac.ext.select();
     }
 
     lastOpenedTs = Date.now();
