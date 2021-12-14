@@ -56,8 +56,7 @@ function getYearNote(dateStr, rootNote) {
 
     const yearStr = dateStr.substr(0, 4);
 
-    let yearNote = attributeService.getNoteWithLabel(YEAR_LABEL, yearStr)
-        || getNoteStartingWith(rootNote.noteId, yearStr);
+    let yearNote = attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
     if (yearNote) {
         return yearNote;
@@ -103,17 +102,11 @@ function getMonthNote(dateStr, rootNote) {
         return monthNote;
     }
 
-    const yearNote = getYearNote(dateStr, rootNote);
-
-    monthNote = getNoteStartingWith(yearNote.noteId, monthNumber);
-
-    if (monthNote) {
-        return monthNote;
-    }
-
     const dateObj = dateUtils.parseLocalDate(dateStr);
 
     const noteTitle = getMonthNoteTitle(rootNote, monthNumber, dateObj);
+
+    const yearNote = getYearNote(dateStr, rootNote);
 
     sql.transactional(() => {
         monthNote = createNote(yearNote, noteTitle);

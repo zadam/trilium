@@ -918,5 +918,6 @@ module.exports = {
     getUndeletedParentBranchIds,
     triggerNoteTitleChanged,
     eraseDeletedNotesNow,
-    eraseNotesWithDeleteId
+    eraseNotesWithDeleteId,
+    saveNoteRevision
 };
