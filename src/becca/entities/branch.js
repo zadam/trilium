@@ -84,7 +84,7 @@ class Branch extends AbstractEntity {
     /** @returns {Note} */
     get childNote() {
         if (!(this.noteId in this.becca.notes)) {
-            // entities can come out of order in sync, create skeleton which will be filled later
+            // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
         }
 
@@ -98,7 +98,7 @@ class Branch extends AbstractEntity {
     /** @returns {Note} */
     get parentNote() {
         if (!(this.parentNoteId in this.becca.notes)) {
-            // entities can come out of order in sync, create skeleton which will be filled later
+            // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
         }
 
