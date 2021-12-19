@@ -1,19 +1,22 @@
 "use strict";
 
 const keyboardActions = require('../../services/keyboard_actions');
-const sql = require('../../services/sql');
+const becca = require('../../becca/becca');
 
 function getKeyboardActions() {
     return keyboardActions.getKeyboardActions();
 }
 
 function getShortcutsForNotes() {
-    return sql.getMap(`
-        SELECT value, noteId
-        FROM attributes
-        WHERE isDeleted = 0
-          AND type = 'label'
-          AND name = 'keyboardShortcut'`);
+    const attrs = becca.findAttributes('label', 'keyboardShortcut');
+
+    const map = {};
+
+    for (const attr of attrs) {
+        map[attr.value] = attr.noteId;
+    }
+
+    return map;
 }
 
 module.exports = {
