@@ -95,6 +95,24 @@ function getNoteWithLabel(name, value) {
     return null;
 }
 
+/**
+ * Does not take into account templates and inheritance
+ */
+function getNotesWithLabelFast(name, value) {
+    // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
+    const attrs = becca.findAttributes('label', name);
+
+    if (value === undefined) {
+        return attrs.map(attr => attr.getNote());
+    }
+
+    value = value?.toLowerCase();
+
+    return attrs
+        .filter(attr => attr.value.toLowerCase() === value)
+        .map(attr => attr.getNote());
+}
+
 function createLabel(noteId, name, value = "") {
     return createAttribute({
         noteId: noteId,
@@ -186,6 +204,7 @@ function sanitizeAttributeName(origName) {
 
 module.exports = {
     getNotesWithLabel,
+    getNotesWithLabelFast,
     getNoteWithLabel,
     createLabel,
     createRelation,
