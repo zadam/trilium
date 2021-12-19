@@ -44,7 +44,10 @@ export default class ButtonWidget extends NoteContextAwareWidget {
         this.$widget.tooltip({
             html: true,
             title: () => {
-                const title = this.settings.title;
+                const title = typeof this.settings.title === "function"
+                    ? this.settings.title()
+                    : this.settings.title;
+
                 const action = actions.find(act => act.actionName === this.settings.command);
 
                 if (action && action.effectiveShortcuts.length > 0) {
