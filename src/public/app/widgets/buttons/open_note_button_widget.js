@@ -18,7 +18,12 @@ export default class OpenNoteButtonWidget extends ButtonWidget {
             }
 
             this.icon(note.getIcon());
-            this.title(note.title);
+            this.title(() => {
+                const n = froca.getNoteFromCache(noteId);
+
+                // always fresh, always decoded (when protected session is available)
+                return n.title;
+            });
 
             this.refreshIcon();
         });

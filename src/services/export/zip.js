@@ -50,7 +50,13 @@ function exportToZip(taskContext, branch, format, res) {
     }
 
     function getDataFileName(note, baseFileName, existingFileNames) {
-        const existingExtension = path.extname(baseFileName).toLowerCase();
+        let fileName = baseFileName;
+
+        if (fileName.length > 30) {
+            fileName = fileName.substr(0, 30);
+        }
+
+        let existingExtension = path.extname(fileName).toLowerCase();
         let newExtension;
 
         // following two are handled specifically since we always want to have these extensions no matter the automatic detection
@@ -68,13 +74,12 @@ function exportToZip(taskContext, branch, format, res) {
             newExtension = null;
         }
         else {
-            newExtension = mimeTypes.extension(note.mime) || "dat";
-        }
-
-        let fileName = baseFileName;
-
-        if (fileName.length > 30) {
-            fileName = fileName.substr(0, 30);
+            if (note.mime?.toLowerCase()?.trim() === "image/jpg") {
+                newExtension = 'jpg';
+            }
+            else {
+                newExtension = mimeTypes.extension(note.mime) || "dat";
+            }
         }
 
         // if the note is already named with extension (e.g. "jquery"), then it's silly to append exact same extension again

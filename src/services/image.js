@@ -123,7 +123,11 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
 }
 
 async function shrinkImage(buffer, originalName) {
-    const jpegQuality = optionService.getOptionInt('imageJpegQuality');
+    let jpegQuality = optionService.getOptionInt('imageJpegQuality');
+
+    if (jpegQuality < 10 || jpegQuality > 100) {
+        jpegQuality = 75;
+    }
 
     let finalImageBuffer;
     try {

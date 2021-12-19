@@ -47,8 +47,8 @@ const TPL = `
         </div>
     
         <div class="form-group">
-            <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
-            <input class="form-control" id="image-jpeg-quality" min="0" max="100" type="number">
+            <label for="image-jpeg-quality">JPEG quality (10 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
+            <input class="form-control" id="image-jpeg-quality" min="10" max="100" type="number">
         </div>
     </div>
 </div>
