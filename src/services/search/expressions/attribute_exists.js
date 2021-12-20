@@ -23,20 +23,18 @@ class AttributeExistsExp extends Expression {
         for (const attr of attrs) {
             const note = attr.note;
 
-            if (inputNoteSet.hasNoteId(note.noteId)) {
-                if (attr.isInheritable) {
-                    resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
-                }
-                else if (note.isTemplate()) {
-                    resultNoteSet.addAll(note.getTemplatedNotes());
-                }
-                else {
-                    resultNoteSet.add(note);
-                }
+            if (attr.isInheritable) {
+                resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
+            }
+            else if (note.isTemplate()) {
+                resultNoteSet.addAll(note.getTemplatedNotes());
+            }
+            else {
+                resultNoteSet.add(note);
             }
         }
 
-        return resultNoteSet;
+        return resultNoteSet.intersection(inputNoteSet);
     }
 }
 

@@ -157,6 +157,21 @@ describe("Search", () => {
         expect(findNoteByTitle(searchResults, "Czech Republic")).toBeTruthy();
     });
 
+    it("inherited label comparison", () => {
+        rootNote
+            .child(note("Europe")
+                .label('country', '', true)
+                .child(note("Austria"))
+                .child(note("Czech Republic"))
+            );
+
+        const searchContext = new SearchContext();
+
+        const searchResults = searchService.findResultsWithQuery('austria #country', searchContext);
+        expect(searchResults.length).toEqual(1);
+        expect(findNoteByTitle(searchResults, "Austria")).toBeTruthy();
+    });
+
     it("numeric label comparison fallback to string comparison", () => {
         // dates should not be coerced into numbers which would then give wrong numbers
 
