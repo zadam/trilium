@@ -118,6 +118,7 @@ function createNewNote(params) {
         note.setContent(params.content);
 
         const branch = new Branch({
+            branchId: params.branchId,
             noteId: note.noteId,
             parentNoteId: params.parentNoteId,
             notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
@@ -540,7 +541,7 @@ function deleteBranch(branch, deleteId, taskContext) {
     branch.markAsDeleted(deleteId);
 
     const note = branch.getNote();
-    const notDeletedBranches = note.getBranches();
+    const notDeletedBranches = note.getParentBranches();
 
     if (notDeletedBranches.length === 0) {
         for (const childBranch of note.getChildBranches()) {
@@ -785,7 +786,7 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
 
     const origNote = becca.notes[origNoteId];
     // might be null if orig note is not in the target newParentNoteId
-    const origBranch = origNote.getBranches().find(branch => branch.parentNoteId === newParentNoteId);
+    const origBranch = origNote.getParentBranches().find(branch => branch.parentNoteId === newParentNoteId);
 
     const noteIdMapping = getNoteIdMapping(origNote);
 

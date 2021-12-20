@@ -206,11 +206,12 @@ function getShareRoot() {
 
     if (!shareRoot) {
         shareRoot = noteService.createNewNote({
+            branchId: 'share',
             noteId: 'share',
-            title: 'share',
+            title: 'Shared notes',
             type: 'text',
             content: '',
-            parentNoteId: getHiddenRoot().noteId
+            parentNoteId: 'root'
         }).note;
     }
 
@@ -223,7 +224,7 @@ function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSinglesNoteRoot();
     getGlobalNoteMap();
-    getShareRoot();
+    // share root is not automatically created since it's visible in the tree and many won't need it/use it
 
     const hidden = getHiddenRoot();
 
@@ -238,5 +239,6 @@ module.exports = {
     saveSqlConsole,
     createSearchNote,
     saveSearchNote,
-    createMissingSpecialNotes
+    createMissingSpecialNotes,
+    getShareRoot
 };

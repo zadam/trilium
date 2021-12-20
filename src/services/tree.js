@@ -173,7 +173,7 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
         let position = 10;
 
         for (const note of notes) {
-            const branch = note.getBranches().find(b => b.parentNoteId === parentNoteId);
+            const branch = note.getParentBranches().find(b => b.parentNoteId === parentNoteId);
 
             sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, branch.branchId]);

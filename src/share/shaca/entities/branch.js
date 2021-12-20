@@ -1,7 +1,6 @@
 "use strict";
 
 const AbstractEntity = require('./abstract_entity');
-const shareRoot = require("../../share_root");
 
 class Branch extends AbstractEntity {
     constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {
@@ -17,10 +16,6 @@ class Branch extends AbstractEntity {
         this.prefix = prefix;
         /** @param {boolean} */
         this.isExpanded = !!isExpanded;
-
-        if (this.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
-            return;
-        }
 
         const childNote = this.childNote;
         const parentNote = this.parentNote;

@@ -130,16 +130,36 @@ class NoteShort {
         }
     }
 
-    /** @returns {string[]} */
-    getBranchIds() {
+    /**
+     * @returns {string[]}
+     */
+    getParentBranchIds() {
         return Object.values(this.parentToBranch);
     }
 
-    /** @returns {Branch[]} */
-    getBranches() {
+    /**
+     * @returns {string[]}
+     * @deprecated use getParentBranchIds() instead
+     */
+    getBranchIds() {
+        return this.getParentBranchIds();
+    }
+
+    /**
+     * @returns {Branch[]}
+     */
+    getParentBranches() {
         const branchIds = Object.values(this.parentToBranch);
 
         return this.froca.getBranches(branchIds);
+    }
+
+    /**
+     * @returns {Branch[]}
+     * @deprecated use getParentBranches() instead
+     */
+    getBranches() {
+        return this.getParentBranches();
     }
 
     /** @returns {boolean} */
@@ -620,8 +640,8 @@ class NoteShort {
             });
     }
 
-    hasAncestor(ancestorNote, visitedNoteIds = null) {
-        if (this.noteId === ancestorNote.noteId) {
+    hasAncestor(ancestorNoteId, visitedNoteIds = null) {
+        if (this.noteId === ancestorNoteId) {
             return true;
         }
 
@@ -635,13 +655,13 @@ class NoteShort {
         visitedNoteIds.add(this.noteId);
 
         for (const templateNote of this.getTemplateNotes()) {
-            if (templateNote.hasAncestor(ancestorNote, visitedNoteIds)) {
+            if (templateNote.hasAncestor(ancestorNoteId, visitedNoteIds)) {
                 return true;
             }
         }
 
         for (const parentNote of this.getParentNotes()) {
-            if (parentNote.hasAncestor(ancestorNote, visitedNoteIds)) {
+            if (parentNote.hasAncestor(ancestorNoteId, visitedNoteIds)) {
                 return true;
             }
         }

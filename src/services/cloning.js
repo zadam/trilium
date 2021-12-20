@@ -11,6 +11,12 @@ const becca = require("../becca/becca");
 const beccaService = require("../becca/becca_service");
 
 function cloneNoteToParent(noteId, parentBranchId, prefix) {
+    if (parentBranchId === 'share') {
+        const specialNotesService = require('./special_notes');
+        // share root note is created lazily
+        specialNotesService.getShareRoot();
+    }
+
     const parentBranch = becca.getBranch(parentBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(parentBranch.noteId)) {

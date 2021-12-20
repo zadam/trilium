@@ -38,7 +38,7 @@ function load() {
         new Note(row);
     }
 
-    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0 AND noteId IN (${noteIdStr}) ORDER BY notePosition`)) {
+    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0 AND parentNoteId IN (${noteIdStr}) ORDER BY notePosition`)) {
         new Branch(row);
     }
 

@@ -73,7 +73,7 @@ function deleteNote(req) {
 
     const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
-    for (const branch of note.getBranches()) {
+    for (const branch of note.getParentBranches()) {
         noteService.deleteBranch(branch, deleteId, taskContext);
     }
 
@@ -239,7 +239,7 @@ function getDeleteNotesPreview(req) {
 
         const note = branch.getNote();
 
-        if (deleteAllClones || note.getBranches().length <= branchCountToDelete[branch.branchId]) {
+        if (deleteAllClones || note.getParentBranches().length <= branchCountToDelete[branch.branchId]) {
             noteIdsToBeDeleted.add(note.noteId);
 
             for (const childBranch of note.getChildBranches()) {

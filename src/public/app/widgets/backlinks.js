@@ -33,11 +33,7 @@ const TPL = `
         .backlinks-close-ticker {
             cursor: pointer;
         }
-        
-        .backlinks-ticker:hover {
-            opacity: 100%;
-        }
-        
+                
         .backlinks-items {
             z-index: 10;
             position: absolute;

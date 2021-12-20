@@ -188,7 +188,7 @@ class Froca {
             froca.notes[note.noteId].childToBranch = {};
         }
 
-        const branches = [...note.getBranches(), ...note.getChildBranches()];
+        const branches = [...note.getParentBranches(), ...note.getChildBranches()];
 
         searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
             // branchId should be repeatable since sometimes we reload some notes without rerendering the tree

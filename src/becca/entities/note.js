@@ -136,7 +136,10 @@ class Note extends AbstractEntity {
         return this.parentBranches;
     }
 
-    /** @returns {Branch[]} */
+    /**
+     * @returns {Branch[]}
+     * @deprecated use getParentBranches() instead
+     */
     getBranches() {
         return this.parentBranches;
     }
