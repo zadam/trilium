@@ -84,5 +84,11 @@ export default class EmptyTypeWidget extends TypeWidget {
                     .on('click', () => this.triggerCommand('hoistNote', {noteId: workspaceNote.noteId}))
             );
         }
+
+        if (workspaceNotes.length === 0) {
+            this.$autoComplete
+                .trigger('focus')
+                .trigger('select');
+        }
     }
 }

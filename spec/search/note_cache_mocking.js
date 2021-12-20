@@ -42,7 +42,7 @@ class NoteBuilder {
     }
 
     child(childNoteBuilder, prefix = "") {
-        new Branch(becca, {
+        new Branch({
             branchId: id(),
             noteId: childNoteBuilder.note.noteId,
             parentNoteId: this.note.noteId,
