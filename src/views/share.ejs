@@ -12,21 +12,21 @@
 </head>
 <body>
     <div id="layout">
-        <% if (subRoot.hasChildren()) { %>
-        <button id="menuButton"></button>
-
-        <div id="menu">
-            <%- include('share-tree-item', {note: subRoot, activeNote: note}) %>
-        </div>
-        <% } %>
-
         <div id="main">
             <h1 id="title"><%= note.title %></h1>
 
-            <div id="content">
-                <div class="ck-content"><%- content %></div>
+            <div id="content" class="note-<%= note.type %> <% if (note.type === 'text') { %>ck-content<% } %>">
+                <%- content %>
             </div>
         </div>
+
+        <% if (subRoot.hasChildren()) { %>
+            <button id="menuButton"></button>
+
+            <div id="menu">
+                <%- include('share-tree-item', {note: subRoot, activeNote: note}) %>
+            </div>
+        <% } %>
     </div>
 
     <script>

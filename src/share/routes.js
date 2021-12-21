@@ -94,7 +94,7 @@ function getContent(note) {
         content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
     }
 
-    return `<div class="type-${note.type}">${content}</content>`;
+    return content;
 }
 
 function register(router) {
