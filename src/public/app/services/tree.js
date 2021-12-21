@@ -83,6 +83,10 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                 if (someNotePath) { // in case it's root the path may be empty
                     const pathToRoot = someNotePath.split("/").reverse().slice(1);
 
+                    if (!pathToRoot.includes("root")) {
+                        pathToRoot.push('root');
+                    }
+
                     for (const noteId of pathToRoot) {
                         effectivePathSegments.push(noteId);
                     }

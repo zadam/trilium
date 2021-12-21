@@ -213,9 +213,13 @@ export default class Entrypoints extends Component {
         } else if (note.mime.endsWith("env=backend")) {
             await server.post('script/run/' + note.noteId);
         } else if (note.mime === 'text/x-sqlite;schema=trilium') {
-            const {results} = await server.post("sql/execute/" + note.noteId);
+            const resp = await server.post("sql/execute/" + note.noteId);
 
-            await appContext.triggerEvent('sqlQueryResults', {ntxId: ntxId, results: results});
+            if (!resp.success) {
+                alert("Error occurred while executing SQL query: " + resp.message);
+            }
+
+            await appContext.triggerEvent('sqlQueryResults', {ntxId: ntxId, results: resp.results});
         }
 
         toastService.showMessage("Note executed");

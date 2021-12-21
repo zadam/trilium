@@ -258,7 +258,8 @@ class ConsistencyChecks {
                              FROM branches
                              WHERE noteId = ?
                                and parentNoteId = ?
-                               and isDeleted = 0`, [noteId, parentNoteId]);
+                               and isDeleted = 0
+                             ORDER BY utcDateCreated`, [noteId, parentNoteId]);
 
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
