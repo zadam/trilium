@@ -1,5 +1,4 @@
 import SwitchWidget from "./switch.js";
-import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
@@ -39,7 +38,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
             }
         }
 
-        await server.remove(`branches/${shareBranch.branchId}`);
+        await server.remove(`branches/${shareBranch.branchId}?taskId=no-progress-reporting`);
     }
 
     async refreshWithNote(note) {

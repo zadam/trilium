@@ -1,3 +1,7 @@
+body {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+}
+
 #layout {
     max-width: 1200px;
     margin: 0 auto;
@@ -32,7 +36,7 @@
 
 #title {
     margin: 0;
-    padding: 10px 20px 0 20px;
+    padding: 20px 20px 0 20px;
 }
 
 #content {
@@ -48,24 +52,34 @@ pre {
     word-wrap: anywhere;
 }
 
-#menuLink {
+#menuButton {
+    display: none;
     position: fixed;
-    display: block;
-    top: 0;
-    left: 0;
+    top: 8px;
+    left: 5px;
     width: 1.4em;
-    background: #000;
-    background: rgba(0,0,0,0.7);
+    border-radius: 5px;
+    border: 1px solid #aaa;
     font-size: 2rem;
     z-index: 10;
     height: auto;
-    color: white;
-    border: none;
+    color: black;
     cursor: pointer;
+}
+
+#menuButton::after {
+    position: relative;
+    top: -2px;
+    left: 1px;
 }
 
 @media (max-width: 48em) {
     #layout.active #menu {
+        display: block;
+        margin-top: 40px;
+    }
+
+    #menuButton {
         display: block;
     }
 
@@ -73,15 +87,19 @@ pre {
         display: none;
     }
 
-    #layout.active #menuLink::after {
+    #title {
+        padding-left: 60px;
+    }
+
+    #layout.active #menuButton::after {
         content: "«";
+    }
+
+    #menuButton::after {
+        content: "»";
     }
 
     #menu {
         display: none;
-    }
-
-    #menuLink::after {
-        content: "»";
     }
 }

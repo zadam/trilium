@@ -94,7 +94,7 @@ async function createInitialDatabase(username, password, theme) {
 
     log.info("Importing demo content ...");
 
-    const dummyTaskContext = new TaskContext("initial-demo-import", 'import', false);
+    const dummyTaskContext = new TaskContext("no-progress-reporting", 'import', false);
 
     const zipImportService = require("./import/zip");
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
