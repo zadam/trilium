@@ -538,6 +538,27 @@ class ConsistencyChecks {
                         logError(`Unrecognized entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
                     }
                 });
+
+        this.findAndFixIssues(`
+            SELECT 
+              id, entityId
+            FROM 
+              entity_changes 
+              JOIN ${entityName} ON entityId = ${key} 
+            WHERE
+              entity_changes.isErased = 1
+              AND entity_changes.entityName = '${entityName}'`,
+            ({id, entityId}) => {
+                if (this.autoFix) {
+                    sql.execute(`DELETE FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+
+                    this.reloadNeeded = true;
+
+                    logFix(`Erasing entityName=${entityName}, entityId=${entityId} since entity change id=${id} has it as erased.`);
+                } else {
+                    logError(`Entity change id=${id} has entityName=${entityName}, entityId=${entityId} as erased, but it's not.`);
+                }
+            });
     }
 
     findEntityChangeIssues() {
@@ -604,13 +625,13 @@ class ConsistencyChecks {
         this.fixedIssues = false;
         this.reloadNeeded = false;
 
+        this.findEntityChangeIssues();
+
         this.findBrokenReferenceIssues();
 
         this.findExistencyIssues();
 
         this.findLogicIssues();
-
-        this.findEntityChangeIssues();
 
         this.findWronglyNamedAttributes();
 
