@@ -34,6 +34,7 @@ function getHiddenRoot() {
 
     if (!hidden) {
         hidden = noteService.createNewNote({
+            branchId: 'hidden',
             noteId: 'hidden',
             title: 'hidden',
             type: 'text',
