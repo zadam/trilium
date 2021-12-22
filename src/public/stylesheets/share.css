@@ -74,7 +74,7 @@ pre {
 }
 
 @media (max-width: 48em) {
-    #layout.active #menu {
+    #layout.navMenu #menu {
         display: block;
         margin-top: 40px;
     }
@@ -83,7 +83,7 @@ pre {
         display: block;
     }
 
-    #layout.active #main {
+    #layout.navMenu #main {
         display: none;
     }
 
@@ -91,7 +91,7 @@ pre {
         padding-left: 60px;
     }
 
-    #layout.active #menuButton::after {
+    #layout.navMenu #menuButton::after {
         content: "«";
     }
 

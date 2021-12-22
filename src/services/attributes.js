@@ -54,6 +54,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'fullContentWidth' },
     { type: 'label', name: 'shareHiddenFromTree' },
     { type: 'label', name: 'shareAlias' },
+    { type: 'label', name: 'shareOmitDefaultCss' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },

@@ -3,8 +3,10 @@
 <head>
     <meta charset="utf-8">
     <link rel="shortcut icon" href="../favicon.ico">
+    <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
     <link href="../libraries/normalize.min.css" rel="stylesheet">
     <link href="../stylesheets/share.css" rel="stylesheet">
+    <% } %>
     <% if (note.type === 'text' || note.type === 'book') { %>
     <link href="../libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
     <% } %>
@@ -24,69 +26,21 @@
         </div>
 
         <% if (subRoot.hasChildren()) { %>
-            <button id="menuButton"></button>
+        <button id="menuButton"></button>
 
-            <div id="menu">
-                <%- include('tree_item', {note: subRoot, activeNote: note}) %>
-            </div>
+        <nav id="menu">
+            <%- include('tree_item', {note: subRoot, activeNote: note}) %>
+        </nav>
         <% } %>
     </div>
 
     <script>
-        (function (window, document) {
+        (function () {
+            const menuButton = document.getElementById('menuButton');
+            const layout = document.getElementById('layout');
 
-            // we fetch the elements each time because docusaurus removes the previous
-            // element references on page navigation
-            function getElements() {
-                return {
-                    layout: document.getElementById('layout'),
-                    menu: document.getElementById('menu'),
-                    menuButton: document.getElementById('menuButton')
-                };
-            }
-
-            function toggleClass(element, className) {
-                var classes = element.className.split(/\s+/);
-                var length = classes.length;
-                var i = 0;
-
-                for (; i < length; i++) {
-                    if (classes[i] === className) {
-                        classes.splice(i, 1);
-                        break;
-                    }
-                }
-                // The className is not found
-                if (length === classes.length) {
-                    classes.push(className);
-                }
-
-                element.className = classes.join(' ');
-            }
-
-            function toggleAll() {
-                var active = 'active';
-                var elements = getElements();
-
-                toggleClass(elements.layout, active);
-                toggleClass(elements.menu, active);
-                toggleClass(elements.menuButton, active);
-            }
-
-            function handleEvent(e) {
-                var elements = getElements();
-
-                if (e.target.id === elements.menuButton.id) {
-                    toggleAll();
-                    e.preventDefault();
-                } else if (elements.menu.className.indexOf('active') !== -1) {
-                    toggleAll();
-                }
-            }
-
-            document.addEventListener('click', handleEvent);
-
-        }(this, this.document));
+            menuButton.addEventListener('click', () => layout.classList.toggle('navMenu'));
+        }());
     </script>
 </body>
 </html>

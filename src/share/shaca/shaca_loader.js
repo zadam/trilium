@@ -48,7 +48,7 @@ function load() {
         WHERE isDeleted = 0 
           AND noteId IN (${noteIdStr})
           AND (
-              (type = 'label' AND name IN ('archived', 'shareHiddenFromTree', 'shareAlias')) 
+              (type = 'label' AND name IN ('archived', 'shareHiddenFromTree', 'shareAlias', 'shareOmitDefaultCss')) 
               OR (type = 'relation' AND name IN ('imageLink', 'template', 'shareCss'))
           )`, []);
 
