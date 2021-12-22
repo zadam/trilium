@@ -1,5 +1,6 @@
 const {JSDOM} = require("jsdom");
 const NO_CONTENT = '<p>This note has no content.</p>';
+const shaca = require("./shaca/shaca");
 
 function getChildrenList(note) {
     if (note.hasChildren()) {
@@ -43,7 +44,15 @@ function getContent(note) {
                 if (href?.startsWith("#")) {
                     const notePathSegments = href.split("/");
 
-                    linkEl.setAttribute("href", notePathSegments[notePathSegments.length - 1]);
+                    const noteId = notePathSegments[notePathSegments.length - 1];
+                    const linkedNote = shaca.getNote(noteId);
+
+                    if (linkedNote) {
+                        linkEl.setAttribute("href", linkedNote.shareId);
+                    }
+                    else {
+                        linkEl.removeAttribute("href");
+                    }
                 }
             }
 

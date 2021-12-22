@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import options from "../services/options.js";
+import attributeService from "../services/attributes.js";
 
 const TPL = `
 <div class="shared-info-widget alert alert-warning">
@@ -31,15 +32,23 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         const syncServerHost = options.get("syncServerHost");
         let link;
 
+        const shareId = note.getOwnedLabelValue('shareAlias') || note.noteId;
+
         if (syncServerHost) {
-            link = syncServerHost + "/share/" + note.noteId;
+            link = syncServerHost + "/share/" + shareId;
             this.$shareText.text("This note is shared publicly on");
         }
         else {
-            link = location.protocol + '//' + location.host + location.pathname + "share/" + note.noteId;
+            link = location.protocol + '//' + location.host + location.pathname + "share/" + shareId;
             this.$shareText.text("This note is shared locally on");
         }
 
         this.$shareLink.attr("href", link).text(link);
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.name.startsWith("share") && attributeService.isAffecting(attr, this.note))) {
+            this.refresh();
+        }
     }
 }

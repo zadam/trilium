@@ -549,6 +549,12 @@ class Note extends AbstractEntity {
 
         return notePaths.some(path => path.includes(ancestorNoteId));
     }
+
+    get shareId() {
+        const sharedAlias = this.getOwnedLabelValue("shareAlias");
+
+        return sharedAlias || this.noteId;
+    }
 }
 
 module.exports = Note;

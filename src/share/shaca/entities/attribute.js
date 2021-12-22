@@ -39,6 +39,10 @@ class Attribute extends AbstractEntity {
                 linkedChildNote.parents = linkedChildNote.parents.filter(parentNote => parentNote.noteId !== this.noteId);
             }
         }
+
+        if (this.type === 'label' && this.name === 'shareAlias' && this.value.trim()) {
+            this.shaca.aliasToNote[this.value.trim()] = this.note;
+        }
     }
 
     get isAffectingSubtree() {

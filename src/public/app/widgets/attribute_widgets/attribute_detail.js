@@ -210,7 +210,9 @@ const ATTR_HELP = {
         "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
         "sqlConsoleHome": "default location of SQL console notes",
         "bookmarked": "note with this label will appear in bookmarks",
-        "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)"
+        "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)",
+        "shareHiddenFromTree": "this note is hidden from left navigation tree, but still accessible with its URL",
+        "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",
@@ -221,7 +223,8 @@ const ATTR_HELP = {
         "runOnAttributeChange": "executes when attribute is changed under this note",
         "template": "attached note's attributes will be inherited even without parent-child relationship. See template for details.",
         "renderNote": 'notes of type "render HTML note" will be rendered using a code note (HTML or script) and it is necessary to point using this relation to which note should be rendered',
-        "widget": "target of this relation will be executed and rendered as a widget in the sidebar"
+        "widget": "target of this relation will be executed and rendered as a widget in the sidebar",
+        "shareCss": "CSS note which will be injected into the share page. CSS note must be in the shared sub-tree as well. Consider using 'shareHiddenFromTree' label to hide it.",
     }
 };
 

@@ -14,12 +14,18 @@ class Shaca {
         this.childParentToBranch = {};
         /** @type {Object.<String, Attribute>} */
         this.attributes = {};
+        /** @type {Object.<String, String>} */
+        this.aliasToNote = {};
 
         this.loaded = false;
     }
 
     getNote(noteId) {
         return this.notes[noteId];
+    }
+
+    hasNote(noteId) {
+        return noteId in this.notes;
     }
 
     getNotes(noteIds, ignoreMissing = false) {

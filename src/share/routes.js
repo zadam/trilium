@@ -18,14 +18,14 @@ function getSubRoot(note) {
 }
 
 function register(router) {
-    router.get('/share/:noteId', (req, res, next) => {
-        const {noteId} = req.params;
+    router.get('/share/:shareId', (req, res, next) => {
+        const {shareId} = req.params;
 
         shacaLoader.ensureLoad();
 
-        if (noteId in shaca.notes) {
-            const note = shaca.notes[noteId];
+        const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
+        if (note) {
             const content = contentRenderer.getContent(note);
 
             const subRoot = getSubRoot(note);
