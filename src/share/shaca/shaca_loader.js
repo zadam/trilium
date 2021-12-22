@@ -48,8 +48,8 @@ function load() {
         WHERE isDeleted = 0 
           AND noteId IN (${noteIdStr})
           AND (
-              (type = 'label' AND name IN ('archived')) 
-              OR (type = 'relation' AND name IN ('imageLink', 'template'))
+              (type = 'label' AND name IN ('archived', 'shareHiddenFromTree')) 
+              OR (type = 'relation' AND name IN ('imageLink', 'template', 'shareCss'))
           )`, []);
 
     for (const row of attributes) {

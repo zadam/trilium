@@ -10,7 +10,7 @@
 <ul>
     <% note.getChildNotes().forEach(function (childNote) { %>
         <li>
-            <%- include('share-tree-item', {note: childNote}) %>
+            <%- include('tree_item', {note: childNote}) %>
         </li>
     <% }) %>
 </ul>
