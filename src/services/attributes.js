@@ -52,6 +52,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'sorted' },
     { type: 'label', name: 'top' },
     { type: 'label', name: 'fullContentWidth' },
+    { type: 'label', name: 'shareHiddenFromTree' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
@@ -62,7 +63,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'runOnAttributeChange', isDangerous: true },
     { type: 'relation', name: 'template' },
     { type: 'relation', name: 'widget', isDangerous: true },
-    { type: 'relation', name: 'renderNote', isDangerous: true }
+    { type: 'relation', name: 'renderNote', isDangerous: true },
+    { type: 'relation', name: 'shareCss', isDangerous: false },
 ];
 
 /** @returns {Note[]} */

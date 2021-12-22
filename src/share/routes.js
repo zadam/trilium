@@ -45,10 +45,10 @@ function register(router) {
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
-            return res.sendStatus(404);
+            return res.status(404).send("Not found");
         }
         else if (image.type !== 'image') {
-            return res.sendStatus(400);
+            return res.status(400).send("Requested note is not an image");
         }
 
         res.set('Content-Type', image.mime);
@@ -56,12 +56,12 @@ function register(router) {
         res.send(image.getContent());
     });
 
-    router.get('/share/api/notes/:noteId/:download', (req, res, next) => {
+    router.get('/share/api/notes/:noteId/download', (req, res, next) => {
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} doesn't exist.`);
+            return res.status(404).send(`Not found`);
         }
 
         const utils = require("../services/utils");
