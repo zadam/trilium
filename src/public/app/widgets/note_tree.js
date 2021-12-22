@@ -1017,8 +1017,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
 
         for (const ecBranch of loadResults.getBranches()) {
-            // adding noteId itself to update all potential clones
-            noteIdsToUpdate.add(ecBranch.noteId);
+            if (ecBranch.parentNoteId === 'share') {
+                // all shared notes have a sign in the tree, even the descendants of shared notes
+                noteIdsToReload.add(ecBranch.noteId);
+            }
+            else {
+                // adding noteId itself to update all potential clones
+                noteIdsToUpdate.add(ecBranch.noteId);
+            }
 
             for (const node of this.getNodesByBranch(ecBranch)) {
                 if (ecBranch.isDeleted) {

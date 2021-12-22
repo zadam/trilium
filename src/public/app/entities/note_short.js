@@ -398,6 +398,9 @@ class NoteShort {
         else if (this.noteId === 'root') {
             return "bx bx-chevrons-right";
         }
+        if (this.noteId === 'share') {
+            return "bx bx-share-alt";
+        }
         else if (this.type === 'text') {
             if (this.isFolder()) {
                 return "bx bx-folder";
