@@ -50,5 +50,8 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         if (loadResults.getAttributes().find(attr => attr.name.startsWith("share") && attributeService.isAffecting(attr, this.note))) {
             this.refresh();
         }
+        else if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)) {
+            this.refresh();
+        }
     }
 }

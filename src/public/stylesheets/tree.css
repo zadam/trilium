@@ -135,7 +135,11 @@ span.fancytree-node.protected > span.fancytree-custom-icon {
 }
 
 span.fancytree-node.multiple-parents .fancytree-title::after {
-    content: " *"
+    content: " *";
+}
+
+span.fancytree-node.shared .fancytree-title::after {
+    content: " \2197";
 }
 
 span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {

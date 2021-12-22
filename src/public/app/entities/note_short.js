@@ -778,6 +778,26 @@ class NoteShort {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
         }
     }
+
+    isShared() {
+        for (const parentNoteId of this.parents) {
+            if (parentNoteId === 'root' || parentNoteId === 'none') {
+                continue;
+            }
+
+            const parentNote = froca.notes[parentNoteId];
+
+            if (!parentNote) {
+                continue;
+            }
+
+            if (parentNote.noteId === 'share' || parentNote.isShared()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 export default NoteShort;

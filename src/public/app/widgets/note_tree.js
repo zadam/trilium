@@ -661,7 +661,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             extraClasses.push("protected");
         }
 
-        if (note.getParentNoteIds().length > 1) {
+        if (note.isShared()) {
+            extraClasses.push("shared");
+        }
+        else if (note.getParentNoteIds().length > 1) {
             const notSearchParents = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
