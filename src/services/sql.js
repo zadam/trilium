@@ -2,6 +2,8 @@
 
 /**
  * @module sql
+ *
+ * TODO: some methods (like getValue()) could use raw rows
  */
 
 const log = require('./log');
@@ -89,13 +91,7 @@ function getRowOrNull(query, params = []) {
 }
 
 function getValue(query, params = []) {
-    const row = getRowOrNull(query, params);
-
-    if (!row) {
-        return null;
-    }
-
-    return row[Object.keys(row)[0]];
+    return wrap(query, s => s.pluck().get(params));
 }
 
 // smaller values can result in better performance due to better usage of statement cache
@@ -144,32 +140,17 @@ function iterateRows(query, params = []) {
 
 function getMap(query, params = []) {
     const map = {};
-    const results = getRows(query, params);
+    const results = getRawRows(query, params);
 
     for (const row of results) {
-        const keys = Object.keys(row);
-
-        map[row[keys[0]]] = row[keys[1]];
+        map[row[0]] = row[1];
     }
 
     return map;
 }
 
 function getColumn(query, params = []) {
-    const list = [];
-    const result = getRows(query, params);
-
-    if (result.length === 0) {
-        return list;
-    }
-
-    const key = Object.keys(result[0])[0];
-
-    for (const row of result) {
-        list.push(row[key]);
-    }
-
-    return list;
+    return wrap(query, s => s.pluck().all(params));
 }
 
 function execute(query, params = []) {
