@@ -59,7 +59,7 @@ function getContent(note) {
             content = document.body.innerHTML;
         }
     }
-    else if (note.type === 'code') {
+    else if (note.type === 'code' || note.type === 'mermaid') {
         if (!content?.trim()) {
             content = NO_CONTENT + getChildrenList(note);
         }

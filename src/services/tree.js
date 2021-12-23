@@ -41,10 +41,15 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 
     const existing = getExistingBranch(parentNoteId, childNoteId);
 
+    console.log("BBBB", existing);
+
     if (existing && (branchId === null || existing.branchId !== branchId)) {
+        const parentNote = becca.getNote(parentNoteId);
+        const childNote = becca.getNote(childNoteId);
+
         return {
             success: false,
-            message: 'This note already exists in the target.'
+            message: `Note "${childNote.title}" note already exists in the "${parentNote.title}".`
         };
     }
 
@@ -59,7 +64,12 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 }
 
 function getExistingBranch(parentNoteId, childNoteId) {
-    const branchId = sql.getValue('SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+    const branchId = sql.getValue(`
+        SELECT branchId 
+        FROM branches 
+        WHERE noteId = ? 
+          AND parentNoteId = ? 
+          AND isDeleted = 0`, [childNoteId, parentNoteId]);
 
     return becca.getBranch(branchId);
 }

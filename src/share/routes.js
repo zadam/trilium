@@ -3,18 +3,21 @@ const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer.js");
 
-function getSubRoot(note) {
+function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
+        // share root itself is not shared
         return null;
     }
 
+    // every path leads to share root, but which one to choose?
+    // for sake of simplicity URLs are not note paths
     const parentNote = note.getParentNotes()[0];
 
     if (parentNote.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
         return note;
     }
 
-    return getSubRoot(parentNote);
+    return getSharedSubTreeRoot(parentNote);
 }
 
 function register(router) {
@@ -28,7 +31,7 @@ function register(router) {
         if (note) {
             const content = contentRenderer.getContent(note);
 
-            const subRoot = getSubRoot(note);
+            const subRoot = getSharedSubTreeRoot(note);
 
             res.render("share/page", {
                 note,
