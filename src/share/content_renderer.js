@@ -89,8 +89,7 @@ function getContent(note) {
     else {
         content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
     }
-    // console.log(note);
-
+    
     return content;
 }
 

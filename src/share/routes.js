@@ -78,6 +78,7 @@ function register(router) {
 
         res.send(note.getContent());
     });
+    
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
