@@ -18,7 +18,7 @@ const TPL = `
 
 export default class SharedInfoWidget extends NoteContextAwareWidget {
     isEnabled() {
-        return super.isEnabled() && this.note.hasAncestor('share');
+        return super.isEnabled() && this.noteId !== 'share' && this.note.hasAncestor('share');
     }
 
     doRender() {
