@@ -4,6 +4,10 @@ import server from "../services/server.js";
 import utils from "../services/utils.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
+    isEnabled() {
+        return super.isEnabled() && this.noteId !== 'root' && this.noteId !== 'share';
+    }
+
     doRender() {
         super.doRender();
 
