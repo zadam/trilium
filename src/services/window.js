@@ -59,6 +59,7 @@ async function createMainWindow() {
         height: mainWindowState.height,
         title: 'Trilium Notes',
         webPreferences: {
+            enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
             spellcheck: spellcheckEnabled

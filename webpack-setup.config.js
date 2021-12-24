@@ -11,5 +11,5 @@ module.exports = {
         filename: 'setup.js'
     },
     devtool: 'source-map',
-    target: 'electron-main'
+    target: 'electron-renderer'
 };

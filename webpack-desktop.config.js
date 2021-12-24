@@ -11,5 +11,5 @@ module.exports = {
         filename: 'desktop.js'
     },
     devtool: 'source-map',
-    target: 'electron-main'
+    target: 'electron-renderer'
 };
