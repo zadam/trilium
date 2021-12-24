@@ -77,7 +77,7 @@ function getContent(note) {
     }
     else if (note.type === 'file') {
         if (note.mime === 'application/pdf') {
-            content = `<iframe height="800" width="800" src="api/notes/${note.noteId}/view"></iframe>`
+            content = `<iframe class="pdf-view" src="api/notes/${note.noteId}/view"></iframe>`
         }
         else {
             content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
@@ -89,7 +89,7 @@ function getContent(note) {
     else {
         content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
     }
-    
+
     return content;
 }
 

@@ -52,6 +52,11 @@ pre {
     word-wrap: anywhere;
 }
 
+iframe.pdf-view {
+    width: 100%;
+    height: 800px;
+}
+
 #menuButton {
     display: none;
     position: fixed;
