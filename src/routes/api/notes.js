@@ -302,6 +302,21 @@ function uploadModifiedFile(req) {
     note.setContent(fileContent);
 }
 
+function getBacklinkCount(req) {
+    const {noteId} = req.params;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, "Not found"];
+    }
+    else {
+        return {
+            count: note.getTargetRelations().length
+        };
+    }
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -316,5 +331,6 @@ module.exports = {
     duplicateSubtree,
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
-    uploadModifiedFile
+    uploadModifiedFile,
+    getBacklinkCount
 };

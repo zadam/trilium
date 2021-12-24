@@ -220,6 +220,7 @@ function register(app) {
     apiRoute(DELETE, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.eraseNoteRevision);
     route(GET, '/api/notes/:noteId/revisions/:noteRevisionId/download', [auth.checkApiAuthOrElectron], noteRevisionsApiRoute.downloadNoteRevision);
     apiRoute(PUT, '/api/notes/:noteId/restore-revision/:noteRevisionId', noteRevisionsApiRoute.restoreNoteRevision);
+    apiRoute(GET, '/api/notes/:noteId/backlink-count', notesApiRoute.getBacklinkCount);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(POST, '/api/notes/erase-deleted-notes-now', notesApiRoute.eraseDeletedNotesNow);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);

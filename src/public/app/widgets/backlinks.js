@@ -103,17 +103,19 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.clearItems();
 
-        const targetRelationCount = note.getTargetRelations().length;
-        if (targetRelationCount === 0) {
+        // can't use froca since that would count only relations from loaded notes
+        const resp = await server.get(`notes/${this.noteId}/backlink-count`);
+
+        if (!resp || !resp.count) {
             this.$ticker.hide();
+            return;
         }
-        else {
-            this.$ticker.show();
-            this.$count.text(
-                `${targetRelationCount} backlink`
-                + (targetRelationCount === 1 ? '' : 's')
-            );
-        }
+
+        this.$ticker.show();
+        this.$count.text(
+            `${resp.count} backlink`
+            + (resp.count === 1 ? '' : 's')
+        );
     }
 
     clearItems() {
@@ -136,18 +138,22 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
         await froca.getNotes(backlinks.map(bl => bl.noteId)); // prefetch all
 
         for (const backlink of backlinks) {
-            this.$items.append(await linkService.createNoteLink(backlink.noteId, {
+            const $item = $("<div>");
+
+            $item.append(await linkService.createNoteLink(backlink.noteId, {
                 showNoteIcon: true,
                 showNotePath: true,
                 showTooltip: false
             }));
 
             if (backlink.relationName) {
-                this.$items.append($("<p>").text("relation: " + backlink.relationName));
+                $item.append($("<p>").text("relation: " + backlink.relationName));
             }
             else {
-                this.$items.append(...backlink.excerpts);
+                $item.append(...backlink.excerpts);
             }
+
+            this.$items.append($item);
         }
     }
 }
