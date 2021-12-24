@@ -76,7 +76,12 @@ function getContent(note) {
         content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
     }
     else if (note.type === 'file') {
-        content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
+        if (note.mime === 'application/pdf') {
+            content = `<iframe height="800" width="800" src="api/notes/${note.noteId}/view"></iframe>`
+        }
+        else {
+            content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
+        }
     }
     else if (note.type === 'book') {
         content = getChildrenList(note);
@@ -84,6 +89,7 @@ function getContent(note) {
     else {
         content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
     }
+    // console.log(note);
 
     return content;
 }

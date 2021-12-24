@@ -78,6 +78,25 @@ function register(router) {
 
         res.send(note.getContent());
     });
+    router.get('/share/api/notes/:noteId/view', (req, res, next) => {
+        const {noteId} = req.params;
+        const note = shaca.getNote(noteId);
+
+        if (!note) {
+            return res.status(404).send(`Not found`);
+        }
+
+        const utils = require("../services/utils");
+
+        const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
+
+        // res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
+
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader('Content-Type', note.mime);
+
+        res.send(note.getContent());
+    });
 }
 
 module.exports = {
