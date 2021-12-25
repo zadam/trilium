@@ -57,6 +57,13 @@ function getContent(note) {
             }
 
             content = document.body.innerHTML;
+ 
+            if (content.includes("<span class=\"math-tex\">")) {
+                content += "<script src=\"/libraries/katex/katex.min.js\"></script>"
+                content += "<link rel=\"stylesheet\" href=\"/libraries/katex/katex.min.css\">";
+                content += "<script src=\"/libraries/katex/auto-render.min.js\" onload=\"renderMathInElement(document.getElementById('content'));\"></script>"
+                content += "<script src=\"/libraries/katex/mhchem.min.js\"></script>"
+            }
         }
     }
     else if (note.type === 'code') {
