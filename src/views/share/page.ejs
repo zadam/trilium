@@ -18,6 +18,8 @@
 <body>
     <div id="layout">
         <div id="main">
+            <br>
+            <a href="<%= note.parents[0].noteId %>">&lt; Parent note (<%= note.parents[0].title %>)</a>
             <h1 id="title"><%= note.title %></h1>
 
             <div id="content" class="note-<%= note.type %> <% if (note.type === 'text') { %>ck-content<% } %>">
