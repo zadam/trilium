@@ -35,7 +35,7 @@ function getContent(note) {
             && document.querySelectorAll("img").length === 0;
 
         if (isEmpty) {
-            content = NO_CONTENT + getChildrenList(note);
+            content = NO_CONTENT;
         }
         else {
             for (const linkEl of document.querySelectorAll("a")) {
@@ -68,7 +68,7 @@ function getContent(note) {
     }
     else if (note.type === 'code') {
         if (!content?.trim()) {
-            content = NO_CONTENT + getChildrenList(note);
+            content = NO_CONTENT;
         }
         else {
             const document = new JSDOM().window.document;
@@ -80,8 +80,8 @@ function getContent(note) {
         }
     }
     else if (note.type === 'mermaid') {
-        content = `<div class=\"mermaid\">${content}</div><script src=\"/libraries/mermaid.min.js\"></script>`
-    }
+        content = `<div class=\"mermaid\">${content}</div><script src=\"/libraries/mermaid.min.js\"></script><hr><details><summary>Chart source</summary><pre>${content}</pre></details>`
+        }
     else if (note.type === 'image') {
         content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
     }
@@ -93,12 +93,11 @@ function getContent(note) {
             content = `<button type="button" onclick="location.href='api/notes/${note.noteId}/download'">Download file</button>`;
         }
     }
-    else if (note.type === 'book') {
-        content = getChildrenList(note);
-    }
     else {
-        content = '<p>This note type cannot be displayed.</p>' + getChildrenList(note);
+        content = '<p>This note type cannot be displayed.</p>';
     }
+    var child = getChildrenList(note);
+    content += child === '' ? '' : `<hr>${child}`;
 
     return content;
 }
@@ -106,3 +105,5 @@ function getContent(note) {
 module.exports = {
     getContent
 };
+
+
