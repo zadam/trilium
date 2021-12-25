@@ -59,7 +59,7 @@ function getContent(note) {
             content = document.body.innerHTML;
         }
     }
-    else if (note.type === 'code' || note.type === 'mermaid') {
+    else if (note.type === 'code') {
         if (!content?.trim()) {
             content = NO_CONTENT + getChildrenList(note);
         }
@@ -71,6 +71,9 @@ function getContent(note) {
 
             content = preEl.outerHTML;
         }
+    }
+    else if (note.type === 'mermaid') {
+        content = `<div class=\"mermaid\">${content}</div><script src=\"/libraries/mermaid.min.js\"></script>`
     }
     else if (note.type === 'image') {
         content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
