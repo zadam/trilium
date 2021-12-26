@@ -58,11 +58,11 @@ function getContent(note) {
 
             content = document.body.innerHTML;
  
-            if (content.includes("<span class=\"math-tex\">")) {
-                content += "<script src=\"../../libraries/katex/katex.min.js\"></script>"
-                content += "<link rel=\"stylesheet\" href=\"../../libraries/katex/katex.min.css\">";
-                content += "<script src=\"../../libraries/katex/auto-render.min.js\" onload=\"renderMathInElement(document.getElementById('content'));\"></script>"
-                content += "<script src=\"../../libraries/katex/mhchem.min.js\"></script>"
+            if (content.includes(`<span class="math-tex">`)) {
+                content += `<script src="../../libraries/katex/katex.min.js"></script>`;
+                content += `<link rel="stylesheet" href="../../libraries/katex/katex.min.css">`;
+                content += `<script src="../../libraries/katex/auto-render.min.js" onload="renderMathInElement(document.getElementById('content'));"></script>`;
+                content += `<script src="../../libraries/katex/mhchem.min.js"></script>`;
             }
         }
     }
@@ -71,12 +71,9 @@ function getContent(note) {
             content = NO_CONTENT;
         }
         else {
-            const document = new JSDOM().window.document;
-
-            const preEl = document.createElement('pre');
-            preEl.appendChild(document.createTextNode(content));
-
-            content = preEl.outerHTML;
+            content = `<textarea style="width:100px;" id="code">${content}</textarea>`
+            content += `<link rel="stylesheet" href="../../libraries/codemirror/codemirror.css">`
+            content += `<script src="../../libraries/codemirror/codemirror.js" onload="var editor = CodeMirror.fromTextArea(document.getElementById('code'), {lineNumbers: true, lineWrapping: true});"></script>`
         }
     }
     else if (note.type === 'mermaid') {

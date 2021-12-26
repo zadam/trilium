@@ -26,7 +26,7 @@
             <% } %>
             <h1 id="title"><%= note.title %></h1>
 
-            <div id="content" class="note-<%= note.type %> <% if (note.type === 'text') { %>ck-content<% } %>">
+            <div id="content" class="note-<%= note.type %><% if (note.type === 'text') { %>ck-content<% } %>">
                 <%- content %>
             </div>
         </div>
