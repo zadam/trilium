@@ -6,6 +6,7 @@ import ws from "../../services/ws.js";
 import appContext from "../../services/app_context.js";
 import toastService from "../../services/toast.js";
 import treeService from "../../services/tree.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
@@ -97,6 +98,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             viewportMargin: Infinity,
             indentUnit: 4,
             matchBrackets: true,
+            keyMap: options.is('vimKeymapEnabled') ? "vim": "default",
             matchTags: {bothTags: true},
             highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
             lint: true,
