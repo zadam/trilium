@@ -11,7 +11,7 @@ function getChildrenList(note) {
         for (const childNote of note.getChildNotes()) {
             const li = document.createElement("li");
             const link = document.createElement("a");
-            link.appendChild(document.createTextNode(childNote.title));
+            link.appendChild(document.createTextNode(childNote.title + ` (${childNote.type})`));
             link.setAttribute("href", childNote.noteId);
 
             li.appendChild(link);
