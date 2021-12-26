@@ -11,7 +11,7 @@ function getChildrenList(note) {
         for (const childNote of note.getChildNotes()) {
             const li = document.createElement("li");
             const link = document.createElement("a");
-            link.appendChild(document.createTextNode(childNote.title + ` (${childNote.type})`));
+            link.appendChild(document.createTextNode(childNote.title));
             link.setAttribute("href", childNote.noteId);
 
             li.appendChild(link);
@@ -59,10 +59,10 @@ function getContent(note) {
             content = document.body.innerHTML;
  
             if (content.includes("<span class=\"math-tex\">")) {
-                content += "<script src=\"/libraries/katex/katex.min.js\"></script>"
-                content += "<link rel=\"stylesheet\" href=\"/libraries/katex/katex.min.css\">";
-                content += "<script src=\"/libraries/katex/auto-render.min.js\" onload=\"renderMathInElement(document.getElementById('content'));\"></script>"
-                content += "<script src=\"/libraries/katex/mhchem.min.js\"></script>"
+                content += "<script src=\"../../libraries/katex/katex.min.js\"></script>"
+                content += "<link rel=\"stylesheet\" href=\"../../libraries/katex/katex.min.css\">";
+                content += "<script src=\"../../libraries/katex/auto-render.min.js\" onload=\"renderMathInElement(document.getElementById('content'));\"></script>"
+                content += "<script src=\"../../libraries/katex/mhchem.min.js\"></script>"
             }
         }
     }
@@ -80,7 +80,7 @@ function getContent(note) {
         }
     }
     else if (note.type === 'mermaid') {
-        content = `<div class=\"mermaid\">${content}</div><script src=\"/libraries/mermaid.min.js\"></script><hr><details><summary>Chart source</summary><pre>${content}</pre></details>`
+        content = `<div class=\"mermaid\">${content}</div><script src=\"../../libraries/mermaid.min.js\"></script><hr><details><summary>Chart source</summary><pre>${content}</pre></details>`
         }
     else if (note.type === 'image') {
         content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
