@@ -72,6 +72,47 @@ iframe.pdf-view {
     cursor: pointer;
 }
 
+#child-links.grid ul {
+    list-style-type: none;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+#child-links.grid ul li {
+    width: 180px;
+    height: 140px;
+    padding: 10px;
+}
+
+#child-links.grid ul li a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    font-size: large;
+}
+
+#child-links.grid ul li a:hover {
+    background: #eee;
+}
+
+#child-links.list ul {
+    list-style-type: none;
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+#child-links.list ul li {
+    margin-right: 20px;
+}
+
 #menuButton::after {
     position: relative;
     top: -2px;

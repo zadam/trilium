@@ -54,7 +54,7 @@ function getYearNote(dateStr, rootNote) {
         rootNote = getRootCalendarNote();
     }
 
-    const yearStr = dateStr.substr(0, 4);
+    const yearStr = dateStr.trim().substr(0, 4);
 
     let yearNote = attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
@@ -138,6 +138,8 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
 
 /** @returns {Note} */
 function getDateNote(dateStr) {
+    dateStr = dateStr.trim().substr(0, 10);
+
     let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
     if (dateNote) {

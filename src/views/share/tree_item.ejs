@@ -2,7 +2,7 @@
     <% if (activeNote.noteId === note.noteId) { %>
     <strong><%= note.title %></strong>
     <% } else { %>
-    <a href="./<%= note.shareId %>"><%= note.title %></a>
+    <a class="type-<%= note.type %>" href="./<%= note.shareId %>"><%= note.title %></a>
     <% } %>
 </p>
 

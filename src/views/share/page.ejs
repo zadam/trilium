@@ -4,49 +4,73 @@
     <meta charset="utf-8">
     <link rel="shortcut icon" href="../favicon.ico">
     <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
-    <link href="../libraries/normalize.min.css" rel="stylesheet">
-    <link href="../stylesheets/share.css" rel="stylesheet">
+        <link href="../libraries/normalize.min.css" rel="stylesheet">
+        <link href="../stylesheets/share.css" rel="stylesheet">
     <% } %>
     <% if (note.type === 'text' || note.type === 'book') { %>
-    <link href="../libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
+        <link href="../libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
     <% } %>
     <% for (const cssRelation of note.getRelations("shareCss")) { %>
-    <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">
+        <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">
     <% } %>
+    <%- header %>
     <title><%= note.title %></title>
 </head>
 <body>
-    <div id="layout">
-        <div id="main">
-            <br>
-            <% if (note.parents[0].noteId !== 'share' && note.parents.length != 0) { %>
-            <nav class="parent-link">
-                <a href="<%= note.parents[0].noteId %>">&lt; Parent note (<%= note.parents[0].title %>)</a>
+<div id="layout">
+    <div id="main">
+        <br>
+        <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
+            <nav id="parent-link">
+                Parent note: <a href="<%= note.parents[0].noteId %>" class="type-<% note.type %>"><%= note.parents[0].title %></a>
             </nav>
-            <% } %>
-            <h1 id="title"><%= note.title %></h1>
+        <% } %>
+        <h1 id="title"><%= note.title %></h1>
 
-            <div id="content" class="note-<%= note.type %><% if (note.type === 'text') { %>ck-content<% } %>">
+        <% if (note.type === 'book') { %>
+        <% } else if (isEmpty) { %>
+            <p>This note has no content.</p>
+        <% } else { %>
+            <div id="content" class="type-<%= note.type %><% if (note.type === 'text') { %>ck-content<% } %>">
                 <%- content %>
             </div>
-        </div>
+        <% } %>
 
-        <% if (subRoot.hasChildren()) { %>
+        <% if (note.hasChildren()) { %>
+            <nav id="child-links" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
+                <% if (!isEmpty) { %>
+                    <hr>
+                    <span>Child notes: </span>
+                <% } %>
+
+                <ul>
+                    <% for (const childNote of note.getChildNotes()) { %>
+                        <li>
+                            <a href="<%= childNote.shareId %>"
+                               class="type-<% childNote.type %>"><%= childNote.title %></a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        <% } %>
+    </div>
+
+    <% if (subRoot.hasChildren()) { %>
         <button id="menuButton"></button>
 
         <nav id="menu">
             <%- include('tree_item', {note: subRoot, activeNote: note}) %>
         </nav>
-        <% } %>
-    </div>
+    <% } %>
+</div>
 
-    <script>
-        (function () {
-            const menuButton = document.getElementById('menuButton');
-            const layout = document.getElementById('layout');
+<script>
+    (function () {
+        const menuButton = document.getElementById('menuButton');
+        const layout = document.getElementById('layout');
 
-            menuButton.addEventListener('click', () => layout.classList.toggle('navMenu'));
-        }());
-    </script>
+        menuButton.addEventListener('click', () => layout.classList.toggle('navMenu'));
+    }());
+</script>
 </body>
 </html>

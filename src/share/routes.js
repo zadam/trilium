@@ -29,13 +29,15 @@ function register(router) {
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
         if (note) {
-            const content = contentRenderer.getContent(note);
+            const {header, content, isEmpty} = contentRenderer.getContent(note);
 
             const subRoot = getSharedSubTreeRoot(note);
 
             res.render("share/page", {
                 note,
+                header,
                 content,
+                isEmpty,
                 subRoot
             });
         }
@@ -78,7 +80,7 @@ function register(router) {
 
         res.send(note.getContent());
     });
-    
+
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
