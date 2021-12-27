@@ -61,7 +61,7 @@ async function start() {
             const parentNoteId = getRandomNoteId();
             const prefix = Math.random() > 0.8 ? "prefix" : null;
 
-            const result = await cloningService.cloneNoteToParent(noteIdToClone, parentNoteId, prefix);
+            const result = await cloningService.cloneNoteToBranch(noteIdToClone, parentNoteId, prefix);
 
             console.log(`Cloning ${i}:`, result.success ? "succeeded" : "FAILED");
         }

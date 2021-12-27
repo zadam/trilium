@@ -51,7 +51,7 @@ async function pasteInto(parentBranchId) {
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
 
-            await branchService.cloneNoteTo(clipboardNote.noteId, parentBranchId);
+            await branchService.cloneNoteToBranch(clipboardNote.noteId, parentBranchId);
         }
 
         // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places

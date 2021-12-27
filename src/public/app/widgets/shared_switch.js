@@ -22,7 +22,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
     }
 
     switchOn() {
-        branchService.cloneNoteTo(this.noteId, 'share');
+        branchService.cloneNoteToNote(this.noteId, 'share');
     }
 
     async switchOff() {

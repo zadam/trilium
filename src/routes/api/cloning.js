@@ -2,11 +2,18 @@
 
 const cloningService = require('../../services/cloning');
 
-function cloneNoteToParent(req) {
+function cloneNoteToBranch(req) {
     const {noteId, parentBranchId} = req.params;
     const {prefix} = req.body;
 
-    return cloningService.cloneNoteToParent(noteId, parentBranchId, prefix);
+    return cloningService.cloneNoteToBranch(noteId, parentBranchId, prefix);
+}
+
+function cloneNoteToNote(req) {
+    const {noteId, parentNoteId} = req.params;
+    const {prefix} = req.body;
+
+    return cloningService.cloneNoteToNote(noteId, parentNoteId, prefix);
 }
 
 function cloneNoteAfter(req) {
@@ -16,6 +23,7 @@ function cloneNoteAfter(req) {
 }
 
 module.exports = {
-    cloneNoteToParent,
+    cloneNoteToBranch,
+    cloneNoteToNote,
     cloneNoteAfter
 };

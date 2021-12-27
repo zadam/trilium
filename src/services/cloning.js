@@ -10,20 +10,18 @@ const utils = require('./utils');
 const becca = require("../becca/becca");
 const beccaService = require("../becca/becca_service");
 
-function cloneNoteToParent(noteId, parentBranchId, prefix) {
-    if (parentBranchId === 'share') {
+function cloneNoteToNote(noteId, parentNoteId, prefix) {
+    if (parentNoteId === 'share') {
         const specialNotesService = require('./special_notes');
         // share root note is created lazily
         specialNotesService.getShareRoot();
     }
 
-    const parentBranch = becca.getBranch(parentBranchId);
-
-    if (isNoteDeleted(noteId) || isNoteDeleted(parentBranch.noteId)) {
+    if (isNoteDeleted(noteId) || isNoteDeleted(parentNoteId)) {
         return { success: false, message: 'Note is deleted.' };
     }
 
-    const validationResult = treeService.validateParentChild(parentBranch.noteId, noteId);
+    const validationResult = treeService.validateParentChild(parentNoteId, noteId);
 
     if (!validationResult.success) {
         return validationResult;
@@ -31,19 +29,31 @@ function cloneNoteToParent(noteId, parentBranchId, prefix) {
 
     const branch = new Branch({
         noteId: noteId,
-        parentNoteId: parentBranch.noteId,
+        parentNoteId: parentNoteId,
         prefix: prefix,
         isExpanded: 0
     }).save();
 
-    parentBranch.isExpanded = true; // the new target should be expanded so it immediately shows up to the user
-    parentBranch.save();
-
     return {
         success: true,
         branchId: branch.branchId,
-        notePath: beccaService.getNotePath(parentBranch.noteId).path + "/" + noteId
+        notePath: beccaService.getNotePath(parentNoteId).path + "/" + noteId
     };
+}
+
+function cloneNoteToBranch(noteId, parentBranchId, prefix) {
+    const parentBranch = becca.getBranch(parentBranchId);
+
+    if (!parentBranch) {
+        return { success: false, message: `Parent branch ${parentBranchId} does not exist.` };
+    }
+
+    const ret = cloneNoteToNote(noteId, parentBranch.noteId, prefix);
+
+    parentBranch.isExpanded = true; // the new target should be expanded so it immediately shows up to the user
+    parentBranch.save();
+
+    return ret;
 }
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
@@ -121,7 +131,8 @@ function isNoteDeleted(noteId) {
 }
 
 module.exports = {
-    cloneNoteToParent,
+    cloneNoteToBranch,
+    cloneNoteToNote,
     ensureNoteIsPresentInParent,
     ensureNoteIsAbsentFromParent,
     toggleNoteInParent,
