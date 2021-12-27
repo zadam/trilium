@@ -240,13 +240,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
 
         if (noteMeta && noteMeta.isClone) {
-            new Branch({
-                noteId,
-                parentNoteId,
-                isExpanded: noteMeta.isExpanded,
-                prefix: noteMeta.prefix,
-                notePosition: noteMeta.notePosition
-            }).save();
+            if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
+                new Branch({
+                    noteId,
+                    parentNoteId,
+                    isExpanded: noteMeta.isExpanded,
+                    prefix: noteMeta.prefix,
+                    notePosition: noteMeta.notePosition
+                }).save();
+            }
 
             return;
         }
@@ -366,13 +368,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             note.setContent(content);
 
-            new Branch({
-                noteId,
-                parentNoteId,
-                isExpanded: noteMeta.isExpanded,
-                prefix: noteMeta.prefix,
-                notePosition: noteMeta.notePosition
-            }).save();
+            if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
+                new Branch({
+                    noteId,
+                    parentNoteId,
+                    isExpanded: noteMeta.isExpanded,
+                    prefix: noteMeta.prefix,
+                    notePosition: noteMeta.notePosition
+                }).save();
+            }
         }
         else {
             ({note} = noteService.createNewNote({
