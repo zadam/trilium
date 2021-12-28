@@ -38,8 +38,13 @@ function getContent(note) {
                 header += `
 <script src="../../libraries/katex/katex.min.js"></script>
 <link rel="stylesheet" href="../../libraries/katex/katex.min.css">
-<script src="../../libraries/katex/auto-render.min.js" onload="renderMathInElement(document.getElementById('content'));"></script>
-<script src="../../libraries/katex/mhchem.min.js"></script>`;
+<script src="../../libraries/katex/auto-render.min.js"></script>
+<script src="../../libraries/katex/mhchem.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.getElementById('content'));
+});
+</script>`;
             }
         }
     }
@@ -94,5 +99,7 @@ function getContent(note) {
 module.exports = {
     getContent
 };
+
+
 
 
