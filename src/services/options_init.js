@@ -12,9 +12,7 @@ function initDocumentOptions() {
     optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
 }
 
-function initSyncedOptions(username, password) {
-    optionService.createOption('username', username, true);
-
+function initPassword(username, password) {
     optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
     optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
 
@@ -129,7 +127,7 @@ function getKeyboardDefaultOptions() {
 
 module.exports = {
     initDocumentOptions,
-    initSyncedOptions,
+    initPassword,
     initNotSyncedOptions,
     initStartupOptions
 };

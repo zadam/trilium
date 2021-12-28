@@ -13,10 +13,8 @@ function getStatus() {
     };
 }
 
-async function setupNewDocument(req) {
-    const { username, password, theme } = req.body;
-
-    await sqlInit.createInitialDatabase(username, password, theme);
+async function setupNewDocument() {
+    await sqlInit.createInitialDatabase();
 }
 
 function setupSyncFromServer(req) {
