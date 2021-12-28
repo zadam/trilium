@@ -20,8 +20,8 @@
 <div id="layout">
     <div id="main">
         <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
-            <nav id="parent-link">
-                parent: <a href="<%= note.parents[0].noteId %>" class="type-<% note.type %>"><%= note.parents[0].title %></a>
+            <nav id="parentLink">
+                parent: <a href="<%= note.parents[0].noteId %>" class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>
             </nav>
         <% } %>
 
@@ -37,7 +37,7 @@
         <% } %>
 
         <% if (note.hasChildren()) { %>
-            <nav id="child-links" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
+            <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
                 <% if (!isEmpty) { %>
                     <hr>
                     <span>Child notes: </span>
@@ -47,7 +47,7 @@
                     <% for (const childNote of note.getChildNotes()) { %>
                         <li>
                             <a href="<%= childNote.shareId %>"
-                               class="type-<% childNote.type %>"><%= childNote.title %></a>
+                               class="type-<%= childNote.type %>"><%= childNote.title %></a>
                         </li>
                     <% } %>
                 </ul>
@@ -56,7 +56,7 @@
     </div>
 
     <% if (subRoot.hasChildren()) { %>
-        <button id="menuButton"></button>
+        <button id="toggleMenuButton"></button>
 
         <nav id="menu">
             <%- include('tree_item', {note: subRoot, activeNote: note}) %>
@@ -66,10 +66,10 @@
 
 <script>
     (function () {
-        const menuButton = document.getElementById('menuButton');
+        const toggleMenuButton = document.getElementById('toggleMenuButton');
         const layout = document.getElementById('layout');
 
-        menuButton.addEventListener('click', () => layout.classList.toggle('navMenu'));
+        toggleMenuButton.addEventListener('click', () => layout.classList.toggle('showMenu'));
     }());
 </script>
 </body>

@@ -36,7 +36,7 @@ body {
     padding: 10px 20px 20px 20px;
 }
 
-#parent-link {
+#parentLink {
     float: right;
     margin-top: 20px;
 }
@@ -60,7 +60,7 @@ iframe.pdf-view {
     height: 800px;
 }
 
-#menuButton {
+#toggleMenuButton {
     display: none;
     position: fixed;
     top: 8px;
@@ -75,20 +75,20 @@ iframe.pdf-view {
     cursor: pointer;
 }
 
-#child-links.grid ul {
+#childLinks.grid ul {
     list-style-type: none;
     display: flex;
     flex-wrap: wrap;
     padding: 0;
 }
 
-#child-links.grid ul li {
+#childLinks.grid ul li {
     width: 180px;
     height: 140px;
     padding: 10px;
 }
 
-#child-links.grid ul li a {
+#childLinks.grid ul li a {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -101,11 +101,11 @@ iframe.pdf-view {
     font-size: large;
 }
 
-#child-links.grid ul li a:hover {
+#childLinks.grid ul li a:hover {
     background: #eee;
 }
 
-#child-links.list ul {
+#childLinks.list ul {
     list-style-type: none;
     display: inline-flex;
     flex-wrap: wrap;
@@ -113,27 +113,27 @@ iframe.pdf-view {
     margin-top: 5px;
 }
 
-#child-links.list ul li {
+#childLinks.list ul li {
     margin-right: 20px;
 }
 
-#menuButton::after {
+#toggleMenuButton::after {
     position: relative;
     top: -2px;
     left: 1px;
 }
 
 @media (max-width: 48em) {
-    #layout.navMenu #menu {
+    #layout.showMenu #menu {
         display: block;
         margin-top: 40px;
     }
 
-    #menuButton {
+    #toggleMenuButton {
         display: block;
     }
 
-    #layout.navMenu #main {
+    #layout.showMenu #main {
         display: none;
     }
 
@@ -141,11 +141,11 @@ iframe.pdf-view {
         padding-left: 60px;
     }
 
-    #layout.navMenu #menuButton::after {
+    #layout.showMenu #toggleMenuButton::after {
         content: "«";
     }
 
-    #menuButton::after {
+    #toggleMenuButton::after {
         content: "»";
     }
 
