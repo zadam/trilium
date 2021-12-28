@@ -32,15 +32,18 @@ body {
 #main {
     flex-basis: 0;
     flex-grow: 3;
+    overflow: auto;
+    padding: 10px 20px 20px 20px;
+}
+
+#parent-link {
+    float: right;
+    margin-top: 20px;
 }
 
 #title {
     margin: 0;
-    padding: 20px 20px 0 20px;
-}
-
-#content {
-    padding: 20px;
+    padding-top: 10px;
 }
 
 img {
@@ -107,6 +110,7 @@ iframe.pdf-view {
     display: inline-flex;
     flex-wrap: wrap;
     padding: 0;
+    margin-top: 5px;
 }
 
 #child-links.list ul li {
