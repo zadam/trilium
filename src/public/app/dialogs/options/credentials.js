@@ -3,10 +3,6 @@ import protectedSessionHolder from "../../services/protected_session_holder.js";
 import toastService from "../../services/toast.js";
 
 const TPL = `
-<h3>Username</h3>
-
-<p>Your username is <strong id="credentials-username"></strong>.</p>
-
 <h3>Change password</h3>
 
 <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
@@ -36,7 +32,6 @@ export default class ChangePasswordOptions {
     constructor() {
         $("#options-credentials").html(TPL);
 
-        this.$username = $("#credentials-username");
         this.$form = $("#change-password-form");
         this.$oldPassword = $("#old-password");
         this.$newPassword1 = $("#new-password1");
@@ -46,7 +41,6 @@ export default class ChangePasswordOptions {
     }
 
     optionsLoaded(options) {
-        this.$username.text(options.username);
     }
 
     save() {

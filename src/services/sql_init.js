@@ -30,6 +30,14 @@ function isDbInitialized() {
     return initialized === 'true';
 }
 
+function isPasswordSet() {
+    const value = sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");
+
+    console.log("AAAAAAAAAAAAEEEEEEEEE", value);
+
+    return !!value;
+}
+
 async function initDbConnection() {
     if (!isDbInitialized()) {
         log.info(`DB not initialized, please visit setup page` +
@@ -169,8 +177,8 @@ module.exports = {
     dbReady,
     schemaExists,
     isDbInitialized,
-    initDbConnection,
     createInitialDatabase,
     createDatabaseForSync,
-    setDbAsInitialized
+    setDbAsInitialized,
+    isPasswordSet
 };

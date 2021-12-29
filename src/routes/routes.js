@@ -182,7 +182,8 @@ const uploadMiddleware = multer.single('upload');
 
 function register(app) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
-    route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
+    route(GET, '/login', [auth.checkAppInitialized, auth.checkPasswordSet], loginRoute.loginPage);
+    route(GET, '/set_password', [auth.checkAppInitialized], loginRoute.setPasswordPage);
 
     const loginRateLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes

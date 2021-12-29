@@ -15,7 +15,11 @@ function checkAuth(req, res, next) {
         res.redirect("setup");
     }
     else if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
-        res.redirect("login");
+        if (sqlInit.isPasswordSet()) {
+            res.redirect("login");
+        } else {
+            res.redirect("set_password");
+        }
     }
     else {
         next();
@@ -47,6 +51,14 @@ function checkAppInitialized(req, res, next) {
         res.redirect("setup");
     }
     else {
+        next();
+    }
+}
+
+function checkPasswordSet(req, res, next) {
+    if (!utils.isElectron() && !sqlInit.isPasswordSet()) {
+        res.redirect("set_password");
+    } else {
         next();
     }
 }
@@ -101,6 +113,7 @@ module.exports = {
     checkAuth,
     checkApiAuth,
     checkAppInitialized,
+    checkPasswordSet,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
     checkToken,

@@ -9,6 +9,10 @@ function loginPage(req, res) {
     res.render('login', { failedAuth: false });
 }
 
+function setPasswordPage(req, res) {
+    res.render('set_password', { failed: false });
+}
+
 function login(req, res) {
     const userName = optionService.getOption('username');
 
@@ -55,6 +59,7 @@ function logout(req, res) {
 
 module.exports = {
     loginPage,
+    setPasswordPage,
     login,
     logout
 };
