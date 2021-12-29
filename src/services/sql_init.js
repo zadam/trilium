@@ -31,11 +31,7 @@ function isDbInitialized() {
 }
 
 function isPasswordSet() {
-    const value = sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");
-
-    console.log("AAAAAAAAAAAAEEEEEEEEE", value);
-
-    return !!value;
+    return !!sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");
 }
 
 async function initDbConnection() {

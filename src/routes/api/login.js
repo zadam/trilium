@@ -85,14 +85,10 @@ function logoutFromProtectedSession() {
 }
 
 function token(req) {
-    const username = req.body.username;
     const password = req.body.password;
 
-    const isUsernameValid = username === optionService.getOption('username');
-    const isPasswordValid = passwordEncryptionService.verifyPassword(password);
-
-    if (!isUsernameValid || !isPasswordValid) {
-        return [401, "Incorrect username/password"];
+    if (!passwordEncryptionService.verifyPassword(password)) {
+        return [401, "Incorrect password"];
     }
 
     const apiToken = new ApiToken({

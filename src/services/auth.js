@@ -18,7 +18,7 @@ function checkAuth(req, res, next) {
         if (sqlInit.isPasswordSet()) {
             res.redirect("login");
         } else {
-            res.redirect("set_password");
+            res.redirect("set-password");
         }
     }
     else {
@@ -57,7 +57,7 @@ function checkAppInitialized(req, res, next) {
 
 function checkPasswordSet(req, res, next) {
     if (!utils.isElectron() && !sqlInit.isPasswordSet()) {
-        res.redirect("set_password");
+        res.redirect("set-password");
     } else {
         next();
     }
@@ -99,10 +99,10 @@ function checkCredentials(req, res, next) {
     const auth = new Buffer.from(header, 'base64').toString();
     const [username, password] = auth.split(/:/);
 
-    const dbUsername = optionService.getOption('username');
+    // username is ignored
 
-    if (dbUsername !== username || !passwordEncryptionService.verifyPassword(password)) {
-        res.status(401).send('Incorrect username and/or password');
+    if (!passwordEncryptionService.verifyPassword(password)) {
+        res.status(401).send('Incorrect password');
     }
     else {
         next();

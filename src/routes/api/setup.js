@@ -18,9 +18,9 @@ async function setupNewDocument() {
 }
 
 function setupSyncFromServer(req) {
-    const { syncServerHost, syncProxy, username, password } = req.body;
+    const { syncServerHost, syncProxy, password } = req.body;
 
-    return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, username, password);
+    return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password);
 }
 
 function saveSyncSeed(req) {
