@@ -5,7 +5,7 @@ import utils from "../services/utils.js";
 
 const $dialog = $("#options-dialog");
 
-export async function showDialog() {
+export async function showDialog(openTab) {
     const options = await server.get('options');
 
     utils.openDialog($dialog);
@@ -14,7 +14,7 @@ export async function showDialog() {
         import('./options/appearance.js'),
         import('./options/shortcuts.js'),
         import('./options/code_notes.js'),
-        import('./options/credentials.js'),
+        import('./options/password.js'),
         import('./options/backup.js'),
         import('./options/sync.js'),
         import('./options/other.js'),
@@ -26,4 +26,8 @@ export async function showDialog() {
                 tab.optionsLoaded(options)
             }
         });
+
+    if (openTab) {
+        $(`.nav-link[href='#options-${openTab}']`).trigger("click");
+    }
 }

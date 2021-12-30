@@ -32,7 +32,7 @@ const TPL = `
 
 export default class ChangePasswordOptions {
     constructor() {
-        $("#options-credentials").html(TPL);
+        $("#options-password").html(TPL);
 
         this.$passwordHeading = $("#password-heading");
         this.$form = $("#change-password-form");
