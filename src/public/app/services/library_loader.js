@@ -10,6 +10,7 @@ const CODE_MIRROR = {
         "libraries/codemirror/addon/edit/matchtags.js",
         "libraries/codemirror/addon/search/match-highlighter.js",
         "libraries/codemirror/mode/meta.js",
+        "libraries/codemirror/keymap/vim.js",
         "libraries/codemirror/addon/lint/lint.js",
         "libraries/codemirror/addon/lint/eslint.js"
     ],
