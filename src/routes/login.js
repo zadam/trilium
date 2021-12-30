@@ -4,8 +4,7 @@ const utils = require('../services/utils');
 const optionService = require('../services/options');
 const myScryptService = require('../services/my_scrypt');
 const log = require('../services/log');
-const sqlInit = require("../services/sql_init.js");
-const optionsInitService = require("../services/options_init.js");
+const passwordService = require("../services/password.js");
 
 function loginPage(req, res) {
     res.render('login', { failedAuth: false });
@@ -16,7 +15,7 @@ function setPasswordPage(req, res) {
 }
 
 function setPassword(req, res) {
-    if (sqlInit.isPasswordSet()) {
+    if (passwordService.isPasswordSet()) {
         return [400, "Password has been already set"];
     }
 
@@ -37,7 +36,7 @@ function setPassword(req, res) {
         return;
     }
 
-    optionsInitService.initPassword(password1);
+    passwordService.setPassword(password1);
 
     res.redirect('login');
 }

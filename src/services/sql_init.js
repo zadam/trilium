@@ -30,10 +30,6 @@ function isDbInitialized() {
     return initialized === 'true';
 }
 
-function isPasswordSet() {
-    return !!sql.getValue("SELECT value FROM options WHERE name = 'passwordVerificationHash'");
-}
-
 async function initDbConnection() {
     if (!isDbInitialized()) {
         log.info(`DB not initialized, please visit setup page` +
@@ -93,6 +89,7 @@ async function createInitialDatabase() {
         optionsInitService.initDocumentOptions();
         optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
+        require("./password").resetPassword();
     });
 
     log.info("Importing demo content ...");
@@ -175,6 +172,5 @@ module.exports = {
     isDbInitialized,
     createInitialDatabase,
     createDatabaseForSync,
-    setDbAsInitialized,
-    isPasswordSet
+    setDbAsInitialized
 };

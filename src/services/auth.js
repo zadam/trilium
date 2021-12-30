@@ -5,8 +5,8 @@ const log = require('./log');
 const sqlInit = require('./sql_init');
 const utils = require('./utils');
 const passwordEncryptionService = require('./password_encryption');
-const optionService = require('./options');
 const config = require('./config');
+const passwordService = require("./password.js");
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
@@ -15,7 +15,7 @@ function checkAuth(req, res, next) {
         res.redirect("setup");
     }
     else if (!req.session.loggedIn && !utils.isElectron() && !noAuthentication) {
-        if (sqlInit.isPasswordSet()) {
+        if (passwordService.isPasswordSet()) {
             res.redirect("login");
         } else {
             res.redirect("set-password");
@@ -56,7 +56,7 @@ function checkAppInitialized(req, res, next) {
 }
 
 function checkPasswordSet(req, res, next) {
-    if (!utils.isElectron() && !sqlInit.isPasswordSet()) {
+    if (!utils.isElectron() && !passwordService.isPasswordSet()) {
         res.redirect("set-password");
     } else {
         next();

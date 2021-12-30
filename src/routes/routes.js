@@ -290,6 +290,7 @@ function register(app) {
     apiRoute(GET, '/api/options/user-themes', optionsApiRoute.getUserThemes);
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
+    apiRoute(POST, '/api/password/reset', passwordApiRoute.resetPassword);
 
     apiRoute(POST, '/api/sync/test', syncApiRoute.testSync);
     apiRoute(POST, '/api/sync/now', syncApiRoute.syncNow);
