@@ -51,7 +51,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
 
-        content = htmlSanitizer.sanitize(content);
+        content = htmlSanitizer.sanitize(content || "");
 
         const {note} = noteService.createNewNote({
             parentNoteId,

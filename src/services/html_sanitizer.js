@@ -3,6 +3,10 @@ const sanitizeHtml = require('sanitize-html');
 // intended mainly as protection against XSS via import
 // secondarily it (partly) protects against "CSS takeover"
 function sanitize(dirtyHtml) {
+    if (!dirtyHtml) {
+        return dirtyHtml;
+    }
+
     // avoid H1 per https://github.com/zadam/trilium/issues/1552
     // demote H1, and if that conflicts with existing H2, demote that, etc
     const transformTags = {};
