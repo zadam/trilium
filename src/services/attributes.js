@@ -67,6 +67,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'widget', isDangerous: true },
     { type: 'relation', name: 'renderNote', isDangerous: true },
     { type: 'relation', name: 'shareCss', isDangerous: false },
+    { type: 'relation', name: 'shareJs', isDangerous: false },
+    { type: 'relation', name: 'shareFavicon', isDangerous: false },
 ];
 
 /** @returns {Note[]} */
