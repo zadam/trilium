@@ -7,7 +7,7 @@
     <% } else { %>
     <link rel="shortcut icon" href="../favicon.ico">
     <% } %>
-    <script src="app/share.js"></script>
+    <script src="../app/share.js"></script>
     <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
         <link href="../libraries/normalize.min.css" rel="stylesheet">
         <link href="../stylesheets/share.css" rel="stylesheet">
@@ -19,7 +19,7 @@
         <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">
     <% } %>
     <% for (const jsRelation of note.getRelations("shareJs")) { %>
-        <script src="api/notes/<%= jsRelation.value %>/download"></script>
+        <script type="module" src="api/notes/<%= jsRelation.value %>/download"></script>
     <% } %>
     <%- header %>
     <title><%= note.title %></title>

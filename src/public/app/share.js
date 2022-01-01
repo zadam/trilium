@@ -5,10 +5,10 @@
  */
 async function fetchNote(noteId = null) {
     if (!noteId) {
-        noteId = document.getElementsByName("body")[0].getAttribute("data-note-id");
+        noteId = document.body.getAttribute("data-note-id");
     }
 
-    const resp = await fetch(`share/api/notes/${noteId}`);
+    const resp = await fetch(`api/notes/${noteId}`);
 
     return await resp.json();
 }
