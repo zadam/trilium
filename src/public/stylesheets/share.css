@@ -117,6 +117,15 @@ iframe.pdf-view {
     margin-right: 20px;
 }
 
+#noteClippedFrom {
+    padding: 10px 0 10px 0;
+    margin: 20px 0 20px 0;
+    color: #666;
+    border: 1px solid #ddd;
+    border-left: 0;
+    border-right: 0;
+}
+
 #toggleMenuButton::after {
     position: relative;
     top: -2px;

@@ -36,6 +36,10 @@
 
         <h1 id="title"><%= note.title %></h1>
 
+        <% if (note.hasLabel("pageUrl")) { %>
+            <div id="noteClippedFrom">This note was originally clipped from <a href="<%= note.getLabelValue("pageUrl") %>"><%= note.getLabelValue("pageUrl") %></a></div>
+        <% } %>
+
         <% if (note.type === 'book') { %>
         <% } else if (isEmpty) { %>
             <p>This note has no content.</p>
