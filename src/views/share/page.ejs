@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <% if (note.hasRelation("shareFavicon")) { %>
+    <link rel="shortcut icon" href="api/notes/<%= note.getRelation("shareFavicon").value %>/download">
+    <% } else { %>
     <link rel="shortcut icon" href="../favicon.ico">
+    <% } %>
+    <script src="../app/share.js"></script>
     <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
         <link href="../libraries/normalize.min.css" rel="stylesheet">
         <link href="../stylesheets/share.css" rel="stylesheet">
@@ -13,19 +18,27 @@
     <% for (const cssRelation of note.getRelations("shareCss")) { %>
         <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">
     <% } %>
+    <% for (const jsRelation of note.getRelations("shareJs")) { %>
+        <script type="module" src="api/notes/<%= jsRelation.value %>/download"></script>
+    <% } %>
     <%- header %>
     <title><%= note.title %></title>
 </head>
-<body>
+<body data-note-id="<%= note.noteId %>">
 <div id="layout">
     <div id="main">
         <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
             <nav id="parentLink">
-                parent: <a href="<%= note.parents[0].noteId %>" class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>
+                parent: <a href="<%= note.parents[0].noteId %>"
+                           class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>
             </nav>
         <% } %>
 
         <h1 id="title"><%= note.title %></h1>
+
+        <% if (note.hasLabel("pageUrl")) { %>
+            <div id="noteClippedFrom">This note was originally clipped from <a href="<%= note.getLabelValue("pageUrl") %>"><%= note.getLabelValue("pageUrl") %></a></div>
+        <% } %>
 
         <% if (note.type === 'book') { %>
         <% } else if (isEmpty) { %>
@@ -39,18 +52,19 @@
         <% if (note.hasChildren()) { %>
             <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
                 <% if (!isEmpty) { %>
-                    <hr>
+                    <div id="noteClippedFrom">
                     <span>Child notes: </span>
+                    <ul>
+                        <% for (const childNote of note.getChildNotes()) { %>
+                            <li>
+                                <a href="<%= childNote.shareId %>"
+                                   class="type-<%= childNote.type %>"><%= childNote.title %></a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
                 <% } %>
 
-                <ul>
-                    <% for (const childNote of note.getChildNotes()) { %>
-                        <li>
-                            <a href="<%= childNote.shareId %>"
-                               class="type-<%= childNote.type %>"><%= childNote.title %></a>
-                        </li>
-                    <% } %>
-                </ul>
             </nav>
         <% } %>
     </div>
@@ -63,14 +77,5 @@
         </nav>
     <% } %>
 </div>
-
-<script>
-    (function () {
-        const toggleMenuButton = document.getElementById('toggleMenuButton');
-        const layout = document.getElementById('layout');
-
-        toggleMenuButton.addEventListener('click', () => layout.classList.toggle('showMenu'));
-    }());
-</script>
 </body>
 </html>

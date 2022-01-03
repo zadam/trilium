@@ -1,7 +1,16 @@
 const becca = require('../becca/becca');
+const sql = require("./sql.js");
 
 function getOption(name) {
-    const option = require('../becca/becca').getOption(name);
+    let option;
+
+    if (becca.loaded) {
+        option = becca.getOption(name);
+    }
+    else {
+        // e.g. in initial sync becca is not loaded because DB is not initialized
+        option = sql.getRow("SELECT * FROM options WHERE name = ?", name);
+    }
 
     if (!option) {
         throw new Error(`Option "${name}" doesn't exist`);
@@ -39,11 +48,11 @@ function getOptionBool(name) {
 }
 
 function setOption(name, value) {
-    const option = becca.getOption(name);
-
     if (value === true || value === false) {
         value = value.toString();
     }
+
+    const option = becca.getOption(name);
 
     if (option) {
         option.value = value;
