@@ -1,5 +1,10 @@
 const becca = require("../../becca/becca");
 const utils = require("../../services/utils");
+const noteService = require("../../services/notes");
+const attributeService = require("../../services/attributes");
+const Branch = require("../../becca/entities/branch");
+
+const GENERIC_CODE = "GENERIC";
 
 function sendError(res, statusCode, code, message) {
     return res
@@ -33,22 +38,7 @@ function register(router) {
             return sendNoteNotFoundError(res, noteId);
         }
 
-        res.json({
-            noteId: note.noteId,
-            isProtected: note.isProtected,
-            title: note.title,
-            type: note.type,
-            mime: note.mime,
-            dateCreated: note.dateCreated,
-            dateModified: note.dateModified,
-            utcDateCreated: note.utcDateCreated,
-            utcDateModified: note.utcDateModified,
-            parentNoteIds: note.getParentNotes().map(p => p.noteId),
-            childNoteIds: note.getChildNotes().map(ch => ch.noteId),
-            parentBranchIds: note.getParentBranches().map(p => p.branchId),
-            childBranchIds: note.getChildBranches().map(ch => ch.branchId),
-            attributes: note.getAttributes().map(attr => mapAttributeToPojo(attr))
-        });
+        res.json(mapNoteToPojo(note));
     });
 
     router.get('/etapi/notes/:noteId/content', (req, res, next) => {
@@ -77,15 +67,7 @@ function register(router) {
             return sendBranchNotFoundError(res, branchId);
         }
 
-        res.json({
-            branchId: branch.branchId,
-            noteId: branch.noteId,
-            parentNoteId: branch.parentNoteId,
-            prefix: branch.prefix,
-            notePosition: branch.notePosition,
-            isExpanded: branch.isExpanded,
-            utcDateModified: branch.utcDateModified
-        });
+        res.json(mapBranchToPojo(branch));
     });
 
     router.get('/etapi/attributes/:attributeId', (req, res, next) => {
@@ -98,6 +80,113 @@ function register(router) {
 
         res.json(mapAttributeToPojo(attribute));
     });
+
+    router.post('/etapi/notes', (req, res, next) => {
+        const params = req.body;
+
+        if (!becca.getNote(params.parentNoteId)) {
+            return sendNoteNotFoundError(res, params.parentNoteId);
+        }
+
+        try {
+            const resp = noteService.createNewNote(params);
+
+            res.json({
+                note: mapNoteToPojo(resp.note),
+                branch: mapBranchToPojo(resp.branch)
+            });
+        }
+        catch (e) {
+            return sendError(res, 400, GENERIC_CODE, e.message);
+        }
+    });
+
+    router.post('/etapi/branches', (req, res, next) => {
+        const params = req.body;
+
+        if (!becca.getNote(params.noteId)) {
+            return sendNoteNotFoundError(res, params.noteId);
+        }
+
+        if (!becca.getNote(params.parentNoteId)) {
+            return sendNoteNotFoundError(res, params.parentNoteId);
+        }
+
+        const existing = becca.getBranchFromChildAndParent(params.noteId, params.parentNoteId);
+
+        if (existing) {
+            existing.notePosition = params.notePosition;
+            existing.prefix = params.prefix;
+            existing.save();
+
+            return res.json(mapBranchToPojo(existing));
+        }
+
+        try {
+            const branch = new Branch(params).save();
+
+            res.json(mapBranchToPojo(branch));
+        }
+        catch (e) {
+            return sendError(res, 400, GENERIC_CODE, e.message);
+        }
+    });
+
+    router.post('/etapi/attributes', (req, res, next) => {
+        const params = req.body;
+
+        if (!becca.getNote(params.noteId)) {
+            return sendNoteNotFoundError(res, params.noteId);
+        }
+
+        if (params.type === 'relation' && !becca.getNote(params.value)) {
+            return sendNoteNotFoundError(res, params.value);
+        }
+
+        if (params.type !== 'relation' && params.type !== 'label') {
+            return sendError(res, 400, GENERIC_CODE, `Only "relation" and "label" are supported attribute types, "${params.type}" given.`);
+        }
+
+        try {
+            const attr = attributeService.createAttribute(params);
+
+            res.json(mapAttributeToPojo(attr));
+        }
+        catch (e) {
+            return sendError(res, 400, GENERIC_CODE, e.message);
+        }
+    });
+}
+
+function mapNoteToPojo(note) {
+    return {
+        noteId: note.noteId,
+        isProtected: note.isProtected,
+        title: note.title,
+        type: note.type,
+        mime: note.mime,
+        dateCreated: note.dateCreated,
+        dateModified: note.dateModified,
+        utcDateCreated: note.utcDateCreated,
+        utcDateModified: note.utcDateModified,
+        parentNoteIds: note.getParentNotes().map(p => p.noteId),
+        childNoteIds: note.getChildNotes().map(ch => ch.noteId),
+        parentBranchIds: note.getParentBranches().map(p => p.branchId),
+        childBranchIds: note.getChildBranches().map(ch => ch.branchId),
+        attributes: note.getAttributes().map(attr => mapAttributeToPojo(attr))
+    };
+}
+
+function mapBranchToPojo(branch) {
+    return {
+        branchId: branch.branchId,
+        noteId: branch.noteId,
+        parentNoteId: branch.parentNoteId,
+        prefix: branch.prefix,
+        notePosition: branch.notePosition,
+        isExpanded: branch.isExpanded,
+        utcDateModified: branch.utcDateModified
+    };
 }
 
 function mapAttributeToPojo(attr) {
