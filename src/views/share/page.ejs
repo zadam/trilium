@@ -52,18 +52,19 @@
         <% if (note.hasChildren()) { %>
             <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
                 <% if (!isEmpty) { %>
-                    <hr>
+                    <div id="noteClippedFrom">
                     <span>Child notes: </span>
+                    <ul>
+                        <% for (const childNote of note.getChildNotes()) { %>
+                            <li>
+                                <a href="<%= childNote.shareId %>"
+                                   class="type-<%= childNote.type %>"><%= childNote.title %></a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
                 <% } %>
 
-                <ul>
-                    <% for (const childNote of note.getChildNotes()) { %>
-                        <li>
-                            <a href="<%= childNote.shareId %>"
-                               class="type-<%= childNote.type %>"><%= childNote.title %></a>
-                        </li>
-                    <% } %>
-                </ul>
             </nav>
         <% } %>
     </div>
