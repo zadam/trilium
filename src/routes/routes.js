@@ -40,6 +40,7 @@ const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
 const fontsRoute = require('./api/fonts');
 const shareRoutes = require('../share/routes');
+const etapiRoutes = require('./api/etapi');
 
 const log = require('../services/log');
 const express = require('express');
@@ -375,6 +376,7 @@ function register(app) {
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
 
     shareRoutes.register(router);
+    etapiRoutes.register(router);
 
     app.use('', router);
 }
