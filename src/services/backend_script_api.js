@@ -134,18 +134,18 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getNoteWithLabel = attributeService.getNoteWithLabel;
 
     /**
-     * If there's no branch between note and parent note, create one. Otherwise do nothing.
+     * If there's no branch between note and parent note, create one. Otherwise, do nothing.
      *
      * @method
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be create between note and parent note, set this prefix
+     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
      * @returns {void}
      */
     this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
 
     /**
-     * If there's a branch between note and parent note, remove it. Otherwise do nothing.
+     * If there's a branch between note and parent note, remove it. Otherwise, do nothing.
      *
      * @method
      * @param {string} noteId

@@ -3,6 +3,12 @@ const utils = require("../../services/utils");
 const noteService = require("../../services/notes");
 const attributeService = require("../../services/attributes");
 const Branch = require("../../becca/entities/branch");
+const cls = require("../../services/cls.js");
+const sql = require("../../services/sql.js");
+const log = require("../../services/log.js");
+const entityChangesService = require("../../services/entity_changes.js");
+const sqlInit = require("../../services/sql_init.js");
+const passwordService = require("../../services/password.js");
 
 const GENERIC_CODE = "GENERIC";
 
@@ -29,8 +35,43 @@ function sendAttributeNotFoundError(res, attributeId) {
     return sendError(res, 404, "ATTRIBUTE_NOT_FOUND",`Attribute ${attributeId} not found`);
 }
 
+// TODO:
+// * add date/month/year functions
+
+function checkEtapiAuth(req, res, next) {
+    if (false) {
+        sendError(res, 401, "NOT_AUTHENTICATED", "Not authenticated");
+    }
+    else {
+        next();
+    }
+}
+
 function register(router) {
-    router.get('/etapi/notes/:noteId', (req, res, next) => {
+    function route(method, path, routeHandler) {
+        router[method](path, checkEtapiAuth, (req, res, next) => {
+            try {
+                cls.namespace.bindEmitter(req);
+                cls.namespace.bindEmitter(res);
+
+                cls.init(() => {
+                    cls.set('sourceId', "etapi");
+                    cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
+
+                    const cb = () => routeHandler(req, res, next);
+
+                    return sql.transactional(cb);
+                });
+            }
+            catch (e) {
+                log.error(`${method} ${path} threw exception: ` + e.stack);
+
+                res.status(500).send(e.message);
+            }
+        });
+    }
+
+    route('get', '/etapi/notes/:noteId', (req, res, next) => {
         const {noteId} = req.params;
         const note = becca.getNote(noteId);
 
@@ -41,7 +82,7 @@ function register(router) {
         res.json(mapNoteToPojo(note));
     });
 
-    router.get('/etapi/notes/:noteId/content', (req, res, next) => {
+    route('get', '/etapi/notes/:noteId/content', (req, res, next) => {
         const {noteId} = req.params;
         const note = becca.getNote(noteId);
 
@@ -59,7 +100,7 @@ function register(router) {
         res.send(note.getContent());
     });
 
-    router.get('/etapi/branches/:branchId', (req, res, next) => {
+    route('get', '/etapi/branches/:branchId', (req, res, next) => {
         const {branchId} = req.params;
         const branch = becca.getBranch(branchId);
 
@@ -70,7 +111,7 @@ function register(router) {
         res.json(mapBranchToPojo(branch));
     });
 
-    router.get('/etapi/attributes/:attributeId', (req, res, next) => {
+    route('get', '/etapi/attributes/:attributeId', (req, res, next) => {
         const {attributeId} = req.params;
         const attribute = becca.getAttribute(attributeId);
 
@@ -81,7 +122,7 @@ function register(router) {
         res.json(mapAttributeToPojo(attribute));
     });
 
-    router.post('/etapi/notes', (req, res, next) => {
+    route('post' ,'/etapi/notes', (req, res, next) => {
         const params = req.body;
 
         if (!becca.getNote(params.parentNoteId)) {
@@ -101,7 +142,7 @@ function register(router) {
         }
     });
 
-    router.post('/etapi/branches', (req, res, next) => {
+    route('post' ,'/etapi/branches', (req, res, next) => {
         const params = req.body;
 
         if (!becca.getNote(params.noteId)) {
@@ -132,7 +173,7 @@ function register(router) {
         }
     });
 
-    router.post('/etapi/attributes', (req, res, next) => {
+    route('post' ,'/etapi/attributes', (req, res, next) => {
         const params = req.body;
 
         if (!becca.getNote(params.noteId)) {
