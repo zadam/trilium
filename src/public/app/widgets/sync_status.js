@@ -1,5 +1,4 @@
 import BasicWidget from "./basic_widget.js";
-import toastService from "../services/toast.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import syncService from "../services/sync.js";

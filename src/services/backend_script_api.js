@@ -161,7 +161,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {boolean} present - true if we want the branch to exist, false if we want it gone
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be create between note and parent note, set this prefix
+     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
      * @returns {void}
      */
     this.toggleNoteInParent = cloningService.toggleNoteInParent;
