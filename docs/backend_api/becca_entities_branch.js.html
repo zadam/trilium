@@ -86,6 +86,12 @@ class Branch extends AbstractEntity {
     }
 
     init() {
+        if (this.branchId) {
+            this.becca.branches[this.branchId] = this;
+        }
+
+        this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
+
         if (this.branchId === 'root') {
             return;
         }
@@ -104,15 +110,12 @@ class Branch extends AbstractEntity {
         if (!parentNote.children.includes(childNote)) {
             parentNote.children.push(childNote);
         }
-
-        this.becca.branches[this.branchId] = this;
-        this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
     /** @returns {Note} */
     get childNote() {
         if (!(this.noteId in this.becca.notes)) {
-            // entities can come out of order in sync, create skeleton which will be filled later
+            // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
         }
 
@@ -126,7 +129,7 @@ class Branch extends AbstractEntity {
     /** @returns {Note} */
     get parentNote() {
         if (!(this.parentNoteId in this.becca.notes)) {
-            // entities can come out of order in sync, create skeleton which will be filled later
+            // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
         }
 
@@ -164,9 +167,7 @@ class Branch extends AbstractEntity {
             notePosition: this.notePosition,
             isExpanded: this.isExpanded,
             isDeleted: false,
-            utcDateModified: this.utcDateModified,
-            // not used for anything, will be later dropped
-            utcDateCreated: dateUtils.utcNowDateTime()
+            utcDateModified: this.utcDateModified
         };
     }
 
@@ -192,7 +193,9 @@ module.exports = Branch;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="sql%250A%250ATODO_%2520some%2520methods%2520(like%2520getValue())%2520could%2520use%2520raw%2520rowsmodule_.html">sql
+
+TODO: some methods (like getValue()) could use raw rows</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

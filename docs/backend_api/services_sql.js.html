@@ -30,6 +30,8 @@
 
 /**
  * @module sql
+ *
+ * TODO: some methods (like getValue()) could use raw rows
  */
 
 const log = require('./log');
@@ -117,13 +119,7 @@ function getRowOrNull(query, params = []) {
 }
 
 function getValue(query, params = []) {
-    const row = getRowOrNull(query, params);
-
-    if (!row) {
-        return null;
-    }
-
-    return row[Object.keys(row)[0]];
+    return wrap(query, s => s.pluck().get(params));
 }
 
 // smaller values can result in better performance due to better usage of statement cache
@@ -172,32 +168,17 @@ function iterateRows(query, params = []) {
 
 function getMap(query, params = []) {
     const map = {};
-    const results = getRows(query, params);
+    const results = getRawRows(query, params);
 
     for (const row of results) {
-        const keys = Object.keys(row);
-
-        map[row[keys[0]]] = row[keys[1]];
+        map[row[0]] = row[1];
     }
 
     return map;
 }
 
 function getColumn(query, params = []) {
-    const list = [];
-    const result = getRows(query, params);
-
-    if (result.length === 0) {
-        return list;
-    }
-
-    const key = Object.keys(result[0])[0];
-
-    for (const row of result) {
-        list.push(row[key]);
-    }
-
-    return list;
+    return wrap(query, s => s.pluck().all(params));
 }
 
 function execute(query, params = []) {
@@ -395,7 +376,9 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="sql%250A%250ATODO_%2520some%2520methods%2520(like%2520getValue())%2520could%2520use%2520raw%2520rowsmodule_.html">sql
+
+TODO: some methods (like getValue()) could use raw rows</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
