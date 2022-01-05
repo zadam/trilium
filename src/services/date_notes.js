@@ -49,7 +49,7 @@ function getRootCalendarNote() {
 }
 
 /** @returns {Note} */
-function getYearNote(dateStr, rootNote) {
+function getYearNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
     }

@@ -1,0 +1,94 @@
+GET {{triliumHost}}/etapi/inbox/2022-01-01
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/date/2022-01-01
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/date/2022-1
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code == "DATE_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/week/2022-01-01
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/week/2022-1
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code == "DATE_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/month/2022-01
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/month/2022-1
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code == "MONTH_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/year/2022
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/year/202
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code == "YEAR_INVALID");
+    });
+%}
+
+###
+

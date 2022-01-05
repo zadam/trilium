@@ -1,0 +1,91 @@
+POST {{triliumHost}}/etapi/notes
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.note.title == "Hello");
+        client.assert(response.body.branch.parentNoteId == "root");
+    });
+
+    client.log(`Created note "${createdNoteId}" and branch ${createdBranchId}`);
+    
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.noteId == client.global.get("createdNoteId"));
+        client.assert(response.body.title == "Hello");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body == "Hi there!");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.branchId == client.global.get("createdBranchId"));
+        client.assert(response.body.parentNoteId == "root");
+    });
+%}
+
+###
+
+POST {{triliumHost}}/etapi/attributes
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": "true"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.log(`Created attribute ${response.body.attributeId}`);
+    
+    client.global.set("createdAttributeId", response.body.attributeId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.attributeId == client.global.get("createdAttributeId"));
+    });
+%}
