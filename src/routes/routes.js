@@ -44,6 +44,7 @@ const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches');
 const etapiNoteRoutes = require('../etapi/notes');
 const etapiSpecialNoteRoutes = require('../etapi/special_notes');
+const etapiSpecRoute = require('../etapi/spec');
 
 const log = require('../services/log');
 const express = require('express');
@@ -383,6 +384,7 @@ function register(app) {
     etapiBranchRoutes.register(router);
     etapiNoteRoutes.register(router);
     etapiSpecialNoteRoutes.register(router);
+    etapiSpecRoute.register(router);
 
     app.use('', router);
 }

@@ -1,4 +1,4 @@
-openapi: "3.1.0"
+openapi: "3.0.3"
 info:
   version: 1.0.0
   title: ETAPI
@@ -14,25 +14,80 @@ servers:
   - url: http://localhost:37740/etapi
   - url: http://localhost:8080/etapi
 paths:
-  /pets/{id}:
-    get:
-      description: Returns a user based on a single ID, if the user does not have access to the pet
-      operationId: find pet by id
-      parameters:
-        - name: id
-          in: path
-          description: ID of pet to fetch
-          required: true
-          schema:
-            type: integer
-            format: int64
+  /create-note:
+    post:
+      description: Create a note and place it into the note tree
+      operationId: createNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoteDef'
       responses:
         '200':
-          description: pet response
+          description: note created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
+                properties:
+                  note:
+                    $ref: '#/components/schemas/Note'
+                    description: Created note
+                  branch:
+                    $ref: '#/components/schemas/Branch'
+                    description: Created branch
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /notes/{noteId}:
+    get:
+      description: Returns a note identified by its ID
+      operationId: getNoteById
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      responses:
+        '200':
+          description: note response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: patch a note identified by the noteId with changes in the body
+      operationId: patchNoteById
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+      responses:
+        '200':
+          description: update note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
@@ -40,56 +95,384 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
-      description: deletes a single pet based on the ID supplied
-      operationId: deletePet
+      description: deletes a single note based on the noteId supplied
+      operationId: deleteNoteById
       parameters:
-        - name: id
+        - name: noteId
           in: path
-          description: ID of pet to delete
+          description: noteId of note to delete
           required: true
           schema:
-            type: integer
-            format: int64
+            $ref: '#/components/schemas/EntityId'
       responses:
         '204':
-          description: pet deleted
+          description: note deleted
         default:
           description: unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /branches/{branchId}:
+    get:
+      description: Returns a branch identified by its ID
+      operationId: getBranchById
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      responses:
+        '200':
+          description: branch response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: create a branch (clone a note to a different location in the tree)
+      operationId: postBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+      responses:
+        '200':
+          description: update branch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: patch a branch identified by the branchId with changes in the body
+      operationId: patchBranchById
+      parameters:
+        - name: branchId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+      responses:
+        '200':
+          description: update branch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      description: deletes a branch based on the branchId supplied. If this is the last branch of the (child) note, then the note is deleted as well.
+      operationId: deleteBranchById
+      parameters:
+        - name: branchId
+          in: path
+          description: branchId of note to delete
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      responses:
+        '204':
+          description: branch deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /attributes/{attributeId}:
+    get:
+      description: Returns an attribute identified by its ID
+      operationId: getAttributeById
+      parameters:
+        - name: attributeId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      responses:
+        '200':
+          description: attribute response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: create an attribute for a given note
+      operationId: postAttribute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attribute'
+      responses:
+        '200':
+          description: update attribute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: patch a attribute identified by the attributeId with changes in the body
+      operationId: patchAttributeById
+      parameters:
+        - name: attributeId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attribute'
+      responses:
+        '200':
+          description: update attribute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      description: deletes a attribute based on the attributeId supplied.
+      operationId: deleteAttributeById
+      parameters:
+        - name: attributeId
+          in: path
+          description: attributeId of attribute to delete
+          required: true
+          schema:
+            $ref: '#/components/schemas/EntityId'
+      responses:
+        '204':
+          description: attribute deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /refresh-note-ordering/{parentNoteId}:
+    post:
+      description: notePositions in branches are not automatically pushed to connected clients and need a specific instruction. If you want your changes to be in effect immediately, call this service after setting branches' notePosition. Note that you need to supply "parentNoteId" of branch(es) with changed positions.
+      operationId: postRefreshNoteOrdering
+      responses:
+        '204':
+          description: note ordering will be asynchronously updated in all connected clients
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
-    Pet:
-      allOf:
-        - $ref: '#/components/schemas/NewPet'
-        - type: object
-          required:
-            - id
-          properties:
-            id:
-              type: integer
-              format: int64
-
-    NewPet:
+    CreateNoteDef:
       type: object
       required:
-        - name
+        - parentNoteId
+        - title
+        - content
       properties:
+        noteId:
+          $ref: '#/components/schemas/EntityId'
+          description: Leave this out unless you want to force a specific noteId
+        branchId:
+          $ref: '#/components/schemas/EntityId'
+          description: Leave this out unless you want to force a specific branchId
+        parentNoteId:
+          $ref: '#/components/schemas/EntityId'
+          description: Note ID of the parent note in the tree
+        title:
+          type: string
+        content:
+          type: string
+
+
+    Note:
+      type: object
+      properties:
+        noteId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+        title:
+          type: string
+        type:
+          type: string
+          enum: [text, code, book, image, file, mermaid, relation-map, render, search, note-map]
+        mime:
+          type: string
+        isProtected:
+          type: boolean
+          readOnly: true
+        attributes:
+          $ref: '#/components/schemas/AttributeList'
+          readOnly: true
+        parentNoteIds:
+          $ref: '#/components/schemas/EntityIdList'
+          readOnly: true
+        childNoteIds:
+          $ref: '#/components/schemas/EntityIdList'
+          readOnly: true
+        parentBranchIds:
+          $ref: '#/components/schemas/EntityIdList'
+          readOnly: true
+        childBranchIds:
+          $ref: '#/components/schemas/EntityIdList'
+          readOnly: true
+        dateCreated:
+          $ref: '#/components/schemas/LocalDateTime'
+          readOnly: true
+        dateModified:
+          $ref: '#/components/schemas/LocalDateTime'
+          readOnly: true
+        utcDateCreated:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+        utcDateModified:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+    Branch:
+      type: object
+      description: Branch places the note into the tree, it represents the relationship between a parent note and child note
+      required:
+        - noteId
+        - parentNoteId
+      properties:
+        branchId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+        noteId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+          description: identifies the child note
+        parentNoteId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+          description: identifies the parent note
+        prefix:
+          type: string
+        notePosition:
+          type: integer
+          format: int32
+        isExanded:
+          type: boolean
+        utcDateModified:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+    Attribute:
+      type: object
+      description: Attribute (Label, Relation) is a key-value record attached to a note.
+      required:
+        - noteId
+      properties:
+        attributeId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+        noteId:
+          $ref: '#/components/schemas/EntityId'
+          readOnly: true
+          description: identifies the child note
+        type:
+          type: string
+          enum: [label, relation]
         name:
           type: string
-        tag:
+          pattern: '^[\p{L}\p{N}_:]+'
+          example: shareCss
+        value:
           type: string
-    
+        position:
+          type: integer
+          format: int32
+        isInheritable:
+          type: boolean
+        utcDateModified:
+          $ref: '#/components/schemas/UtcDateTime'
+          readOnly: true
+    AttributeList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Attribute'
+    EntityId:
+      type: string
+      pattern: '[a-zA-Z0-9]{4,12}'
+      example: evnnmvHTCgIn
+    EntityIdList:
+      type: array
+      items:
+        $ref: '#/components/schemas/EntityId'
+    LocalDateTime:
+      type: string
+      pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{4}'
+      example: 2021-12-31 20:18:11.939+0100
+    UtcDateTime:
+      type: string
+      pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z'
+      example: 2021-12-31 19:18:11.939Z
     Error:
       type: object
       required:
+        - status
         - code
         - message
       properties:
-        code:
+        status:
           type: integer
           format: int32
+          description: HTTP status, identical to the one given in HTTP response
+          example: 400
+        code:
+          type: string
+          description: stable string constant
+          example: NOTE_IS_PROTECTED
         message:
           type: string
+          description: Human readable error, potentially with more details,
+          example: Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI

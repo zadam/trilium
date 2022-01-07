@@ -18,6 +18,8 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 
+// TODO: patch/put note content
+
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
 
@@ -105,7 +107,7 @@ function createNewNote(params) {
     if (!params.title || params.title.trim().length === 0) {
         throw new Error(`Note title must not be empty`);
     }
-    
+
     if (params.content === null || params.content === undefined) {
         throw new Error(`Note content must be set`);
     }

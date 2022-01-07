@@ -41,8 +41,8 @@ function register(router) {
     });
 
     const ALLOWED_PROPERTIES_FOR_PATCH = {
-        'notePosition': validators.isInteger, 
-        'prefix': validators.isStringOrNull, 
+        'notePosition': validators.isInteger,
+        'prefix': validators.isStringOrNull,
         'isExpanded': validators.isBoolean
     };
 
@@ -70,6 +70,8 @@ function register(router) {
         ru.getAndCheckNote(req.params.parentNoteId);
 
         entityChangesService.addNoteReorderingEntityChange(req.params.parentNoteId, "etapi");
+
+        res.sendStatus(204);
     });
 }
 

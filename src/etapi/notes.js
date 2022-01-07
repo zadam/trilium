@@ -15,7 +15,7 @@ function register(router) {
 
     ru.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
         const note = ru.getAndCheckNote(req.params.noteId);
-        
+
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
         res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
@@ -52,13 +52,13 @@ function register(router) {
 
     ru.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
         const note = ru.getAndCheckNote(req.params.noteId)
-        
+
         if (note.isProtected) {
-            throw new ru.EtapiError(404, "NOTE_IS_PROTECTED", `Note ${req.params.noteId} is protected and cannot be modified through ETAPI`);
+            throw new ru.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI`);
         }
-        
+
         ru.validateAndPatch(note, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
-        
+
         res.json(mappers.mapNoteToPojo(note));
     });
 
