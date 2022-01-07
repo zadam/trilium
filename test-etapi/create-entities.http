@@ -1,4 +1,4 @@
-POST {{triliumHost}}/etapi/notes
+POST {{triliumHost}}/etapi/create-note
 Content-Type: application/json
 
 {
@@ -15,10 +15,31 @@ Content-Type: application/json
         client.assert(response.body.branch.parentNoteId == "root");
     });
 
-    client.log(`Created note "${createdNoteId}" and branch ${createdBranchId}`);
+    client.log(`Created note ` + response.body.note.noteId + ` and branch ` + response.body.branch.branchId);
     
     client.global.set("createdNoteId", response.body.note.noteId);
     client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+### Clone to another location
+
+POST {{triliumHost}}/etapi/branches
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "parentNoteId": "hidden"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.parentNoteId == "hidden");
+    });
+
+    client.global.set("clonedBranchId", response.body.branchId);
+    
+    client.log(`Created cloned branch ` + response.body.branchId);
 %}
 
 ###
@@ -30,6 +51,9 @@ GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
         client.assert(response.status === 200, "Response status is not 200");
         client.assert(response.body.noteId == client.global.get("createdNoteId"));
         client.assert(response.body.title == "Hello");
+        // order is not defined and may fail in the future
+        client.assert(response.body.parentBranchIds[0] == client.global.get("clonedBranchId"))
+        client.assert(response.body.parentBranchIds[1] == client.global.get("createdBranchId"));
     });
 %}
 
@@ -58,6 +82,18 @@ GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 
 ###
 
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.branchId == client.global.get("clonedBranchId"));
+        client.assert(response.body.parentNoteId == "hidden");
+    });
+%}
+
+###
+
 POST {{triliumHost}}/etapi/attributes
 Content-Type: application/json
 
@@ -74,7 +110,7 @@ Content-Type: application/json
         client.assert(response.status === 200, "Response status is not 200");
     });
 
-    client.log(`Created attribute ${response.body.attributeId}`);
+    client.log(`Created attribute ` + response.body.attributeId);
     
     client.global.set("createdAttributeId", response.body.attributeId);
 %}

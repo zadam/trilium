@@ -5,8 +5,6 @@ const TPL = `
 <div class="note-list-widget">
     <style>
     .note-list-widget {
-        flex-grow: 100000;
-        flex-shrink: 100000;
         min-height: 0;
         overflow: auto;
     }
@@ -22,11 +20,7 @@ const TPL = `
 
 export default class NoteListWidget extends NoteContextAwareWidget {
     isEnabled() {
-        return super.isEnabled()
-            && ['book', 'text', 'code'].includes(this.note.type)
-            && this.note.mime !== 'text/x-sqlite;schema=trilium'
-            && this.note.hasChildren()
-            && !this.note.hasLabel('hideChildrenOverview');
+        return super.isEnabled() && this.noteContext.hasNoteList();
     }
 
     doRender() {

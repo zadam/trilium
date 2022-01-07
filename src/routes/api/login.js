@@ -10,7 +10,6 @@ const appInfo = require('../../services/app_info');
 const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
-const optionService = require('../../services/options');
 const ApiToken = require('../../becca/entities/api_token');
 const ws = require("../../services/ws");
 
@@ -92,6 +91,8 @@ function token(req) {
     }
 
     const apiToken = new ApiToken({
+        // for backwards compatibility with Sender which does not send the name
+        name: req.body.tokenName || "Trilium Sender",
         token: utils.randomSecureToken()
     }).save();
 

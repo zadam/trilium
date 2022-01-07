@@ -40,7 +40,10 @@ const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
 const fontsRoute = require('./api/fonts');
 const shareRoutes = require('../share/routes');
-const etapiRoutes = require('./api/etapi');
+const etapiAttributeRoutes = require('../etapi/attributes');
+const etapiBranchRoutes = require('../etapi/branches');
+const etapiNoteRoutes = require('../etapi/notes');
+const etapiSpecialNoteRoutes = require('../etapi/special_notes');
 
 const log = require('../services/log');
 const express = require('express');
@@ -376,7 +379,10 @@ function register(app) {
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
 
     shareRoutes.register(router);
-    etapiRoutes.register(router);
+    etapiAttributeRoutes.register(router);
+    etapiBranchRoutes.register(router);
+    etapiNoteRoutes.register(router);
+    etapiSpecialNoteRoutes.register(router);
 
     app.use('', router);
 }

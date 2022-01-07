@@ -81,6 +81,7 @@ async function renderAttributes(attributes, renderIsInheritable) {
 
 const HIDDEN_ATTRIBUTES = [
     'originalFileName',
+    'fileSize',
     'template',
     'cssClass',
     'iconClass',

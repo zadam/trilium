@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS "entity_changes" (
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
     apiTokenId TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
     token TEXT NOT NULL,
     utcDateCreated TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);

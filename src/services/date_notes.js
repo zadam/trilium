@@ -88,7 +88,7 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
 }
 
 /** @returns {Note} */
-function getMonthNote(dateStr, rootNote) {
+function getMonthNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
     }

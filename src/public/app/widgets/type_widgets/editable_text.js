@@ -36,6 +36,7 @@ const TPL = `
         font-family: var(--detail-font-family);
         padding-left: 14px;
         padding-top: 10px;
+        height: 100%;
     }
     
     .note-detail-editable-text a:hover {
@@ -73,6 +74,7 @@ const TPL = `
         border: 0 !important;
         box-shadow: none !important;
         min-height: 50px;
+        height: 100%;
     }
     </style>
 

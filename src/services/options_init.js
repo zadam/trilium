@@ -28,7 +28,15 @@ function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('lastSyncedPull', '0', false);
     optionService.createOption('lastSyncedPush', '0', false);
 
-    optionService.createOption('theme', opts.theme || 'white', false);
+    let theme = 'dark'; // default based on the poll in https://github.com/zadam/trilium/issues/2516
+    
+    if (utils.isElectron()) {
+        const {nativeTheme} = require('electron');
+        
+        theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    }
+    
+    optionService.createOption('theme', theme, false);
 
     optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
     optionService.createOption('syncServerTimeout', '120000', false);
