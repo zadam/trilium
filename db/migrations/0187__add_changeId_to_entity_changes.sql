@@ -1,3 +1,13 @@
+-- delete duplicates https://github.com/zadam/trilium/issues/2534
+DELETE FROM entity_changes WHERE id IN (
+    SELECT id FROM entity_changes ec
+    WHERE (
+              SELECT COUNT(*) FROM entity_changes
+              WHERE ec.entityName = entity_changes.entityName
+                AND ec.entityId = entity_changes.entityId
+          ) > 1
+);
+
 CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                 `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                 `entityName`	TEXT NOT NULL,
