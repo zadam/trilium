@@ -13,19 +13,6 @@ function register(router) {
         res.json(mappers.mapNoteToPojo(note));
     });
 
-    ru.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
-        const note = ru.getAndCheckNote(req.params.noteId);
-
-        const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
-
-        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
-
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader('Content-Type', note.mime);
-
-        res.send(note.getContent());
-    });
-
     ru.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
         const params = req.body;
 
@@ -67,13 +54,34 @@ function register(router) {
 
         const note = becca.getNote(noteId);
 
-        if (!note) {
+        if (!note || note.isDeleted) {
             return res.sendStatus(204);
         }
 
         noteService.deleteNote(note, null, new TaskContext('no-progress-reporting'));
 
         res.sendStatus(204);
+    });
+
+    ru.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
+        const note = ru.getAndCheckNote(req.params.noteId);
+
+        const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
+
+        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
+
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader('Content-Type', note.mime);
+
+        res.send(note.getContent());
+    });
+
+    ru.route(router, 'put', '/etapi/notes/:noteId/content', (req, res, next) => {
+        const note = ru.getAndCheckNote(req.params.noteId);
+
+        note.setContent(req.body);
+
+        return res.sendStatus(204);
     });
 }
 

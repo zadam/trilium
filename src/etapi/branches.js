@@ -57,7 +57,7 @@ function register(router) {
     ru.route(router, 'delete' ,'/etapi/branches/:branchId', (req, res, next) => {
         const branch = becca.getBranch(req.params.branchId);
 
-        if (!branch) {
+        if (!branch || branch.isDeleted) {
             return res.sendStatus(204);
         }
 

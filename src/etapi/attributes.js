@@ -49,7 +49,7 @@ function register(router) {
     ru.route(router, 'delete' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = becca.getAttribute(req.params.attributeId);
 
-        if (!attribute) {
+        if (!attribute || attribute.isDeleted) {
             return res.sendStatus(204);
         }
 

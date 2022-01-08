@@ -70,21 +70,27 @@ DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
 
 > {% client.assert(response.status === 204, "Response status is not 204"); %}
 
+### repeat the DELETE request to test the idempotency
+
+DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
+
+> {% client.assert(response.status === 204, "Response status is not 204"); %}
+
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 
-> {% 
-    client.assert(response.status === 404, "Response status is not 404"); 
-    client.assert(response.body.code == "BRANCH_NOT_FOUND");
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "BRANCH_NOT_FOUND");
 %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 
-> {% 
-    client.assert(response.status === 404, "Response status is not 404"); 
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
     client.assert(response.body.code == "BRANCH_NOT_FOUND");
 %}
 
@@ -92,16 +98,16 @@ GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 
-> {% 
-    client.assert(response.status === 404, "Response status is not 404"); 
-    client.assert(response.body.code == "NOTE_NOT_FOUND");
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "NOTE_NOT_FOUND");
 %}
 
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
 
-> {% 
-    client.assert(response.status === 404, "Response status is not 404"); 
-    client.assert(response.body.code == "ATTRIBUTE_NOT_FOUND");
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "ATTRIBUTE_NOT_FOUND");
 %}
