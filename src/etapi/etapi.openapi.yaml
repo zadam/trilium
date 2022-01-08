@@ -333,8 +333,6 @@ components:
           type: string
         content:
           type: string
-
-
     Note:
       type: object
       properties:

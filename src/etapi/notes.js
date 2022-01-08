@@ -18,8 +18,6 @@ function register(router) {
 
         const foundNotes = searchService.searchNotes(search, searchParams);
 
-        console.log(foundNotes.map(note => mappers.mapNoteToPojo(note)));
-
         res.json(foundNotes.map(note => mappers.mapNoteToPojo(note)));
     });
 
