@@ -1,5 +1,5 @@
 -- delete duplicates https://github.com/zadam/trilium/issues/2534
-DELETE FROM entity_changes WHERE id IN (
+DELETE FROM entity_changes WHERE isErased = 0 AND id IN (
     SELECT id FROM entity_changes ec
     WHERE (
               SELECT COUNT(*) FROM entity_changes
