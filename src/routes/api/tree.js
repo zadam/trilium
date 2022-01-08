@@ -54,7 +54,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
         notes.push({
             noteId: note.noteId,
-            title: note.isDecrypted ? note.title : '[protected]',
+            title: note.getTitleOrProtected(),
             isProtected: note.isProtected,
             type: note.type,
             mime: note.mime

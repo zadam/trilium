@@ -97,7 +97,8 @@ function exportToZip(taskContext, branch, format, res) {
             return;
         }
 
-        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
+        const title = note.getTitleOrProtected();
+        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + title) : title;
         let baseFileName = sanitize(completeTitle);
 
         if (baseFileName.length > 200) { // actual limit is 256 bytes(!) but let's be conservative
@@ -113,7 +114,7 @@ function exportToZip(taskContext, branch, format, res) {
                 isClone: true,
                 noteId: note.noteId,
                 notePath: notePath,
-                title: note.title,
+                title: note.getTitleOrProtected(),
                 prefix: branch.prefix,
                 dataFileName: fileName,
                 type: 'text', // export will have text description,
@@ -125,7 +126,7 @@ function exportToZip(taskContext, branch, format, res) {
             isClone: false,
             noteId: note.noteId,
             notePath: notePath,
-            title: note.title,
+            title: note.getTitleOrProtected(),
             notePosition: branch.notePosition,
             prefix: branch.prefix,
             isExpanded: branch.isExpanded,
@@ -445,7 +446,7 @@ ${content}
     }
 
     const note = branch.getNote();
-    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.title + ".zip";
+    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.getTitleOrProtected() + ".zip";
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');

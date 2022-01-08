@@ -98,7 +98,7 @@ function getLinkMap(req) {
 
         return [
             note.noteId,
-            note.isContentAvailable() ? note.title : '[protected]',
+            note.getTitleOrProtected(),
             note.type
         ];
     });
@@ -158,7 +158,7 @@ function getTreeMap(req) {
         .concat(...mapRootNote.getParentNotes())
         .map(note => [
             note.noteId,
-            note.isContentAvailable() ? note.title : '[protected]',
+            note.getTitleOrProtected(),
             note.type
         ]);
 

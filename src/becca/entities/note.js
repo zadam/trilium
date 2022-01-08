@@ -131,6 +131,10 @@ class Note extends AbstractEntity {
             || protectedSessionService.isProtectedSessionAvailable()
     }
 
+    getTitleOrProtected() {
+        return this.isContentAvailable() ? this.title : '[protected]';
+    }
+
     /** @returns {Branch[]} */
     getParentBranches() {
         return this.parentBranches;
