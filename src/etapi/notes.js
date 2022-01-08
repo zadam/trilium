@@ -5,8 +5,24 @@ const mappers = require("./mappers");
 const noteService = require("../services/notes");
 const TaskContext = require("../services/task_context");
 const validators = require("./validators");
+const searchService = require("../services/search/services/search");
 
 function register(router) {
+    ru.route(router, 'get', '/etapi/notes', (req, res, next) => {
+        const {search} = req.query;
+
+        if (!search?.trim()) {
+            throw new ru.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory");
+        }
+        const searchParams = parseSearchParams(req);
+
+        const foundNotes = searchService.searchNotes(search, searchParams);
+
+        console.log(foundNotes.map(note => mappers.mapNoteToPojo(note)));
+
+        res.json(foundNotes.map(note => mappers.mapNoteToPojo(note)));
+    });
+
     ru.route(router, 'get', '/etapi/notes/:noteId', (req, res, next) => {
         const note = ru.getAndCheckNote(req.params.noteId);
 
@@ -83,6 +99,71 @@ function register(router) {
 
         return res.sendStatus(204);
     });
+}
+
+function parseSearchParams(req) {
+    const rawSearchParams = {
+        'fastSearch': parseBoolean(req.query, 'fastSearch'),
+        'includeArchivedNotes': parseBoolean(req.query, 'includeArchivedNotes'),
+        'ancestorNoteId': req.query['ancestorNoteId'],
+        'ancestorDepth': parseInteger(req.query, 'ancestorDepth'),
+        'orderBy': req.query['orderBy'],
+        'orderDirection': parseOrderDirection(req.query, 'orderDirection'),
+        'limit': parseInteger(req.query, 'limit'),
+        'debug': parseBoolean(req.query, 'debug')
+    };
+
+    const searchParams = {};
+
+    for (const paramName of Object.keys(rawSearchParams)) {
+        if (rawSearchParams[paramName] !== undefined) {
+            searchParams[paramName] = rawSearchParams[paramName];
+        }
+    }
+
+    return searchParams;
+}
+
+const SEARCH_PARAM_ERROR = "SEARCH_PARAM_VALIDATION_ERROR";
+
+function parseBoolean(obj, name) {
+    if (!(name in obj)) {
+        return undefined;
+    }
+
+    if (!['true', 'false'].includes(obj[name])) {
+        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse boolean '${name}' value '${obj[name]}, allowed values are 'true' and 'false'`);
+    }
+
+    return obj[name] === 'true';
+}
+
+function parseInteger(obj, name) {
+    if (!(name in obj)) {
+        return undefined;
+    }
+
+    const integer = parseInt(obj[name]);
+
+    if (!['asc', 'desc'].includes(obj[name])) {
+        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse order direction value '${obj[name]}, allowed values are 'asc' and 'desc'`);
+    }
+
+    return integer;
+}
+
+function parseOrderDirection(obj, name) {
+    if (!(name in obj)) {
+        return undefined;
+    }
+
+    const integer = parseInt(obj[name]);
+
+    if (Number.isNaN(integer)) {
+        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse integer '${name}' value '${obj[name]}`);
+    }
+
+    return integer;
 }
 
 module.exports = {
