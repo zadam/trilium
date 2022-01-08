@@ -102,8 +102,9 @@ function createNewNote(params) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (!params.title || params.title.trim().length === 0) {
-        throw new Error(`Note title must not be empty`);
+    if (params.title === null || params.title === undefined) {
+        // empty title is allowed since it's possible to create such in the UI
+        throw new Error(`Note title must be set`);
     }
 
     return sql.transactional(() => {
