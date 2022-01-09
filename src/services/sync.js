@@ -149,8 +149,8 @@ async function pullChanges(syncContext) {
 
         sql.transactional(() => {
             for (const {entityChange, entity} of entityChanges) {
-                const changeAppliedAlready = !entityChange.changeId
-                    || !!sql.getValue("SELECT id FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
+                const changeAppliedAlready = entityChange.changeId
+                    && !!sql.getValue("SELECT id FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
 
                 if (!changeAppliedAlready && !sourceIdService.isLocalSourceId(entityChange.sourceId)) {
                     if (!atLeastOnePullApplied) { // send only for first
