@@ -8,9 +8,9 @@ function getEntityHashes() {
     const startTime = new Date();
 
     const hashRows = sql.getRawRows(`
-        SELECT entityName, 
-               entityId, 
-               hash 
+        SELECT entityName,
+               entityId,
+               hash
         FROM entity_changes 
         WHERE isSynced = 1
           AND entityName != 'note_reordering'`);

@@ -144,7 +144,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             cls.namespace.bindEmitter(res);
 
             const result = cls.init(() => {
-                cls.set('sourceId', req.headers['trilium-source-id']);
+                cls.set('componentId', req.headers['trilium-component-id']);
                 cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
                 cls.set('hoistedNoteId', req.headers['trilium-hoisted-note-id'] || 'root');
 

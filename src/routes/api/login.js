@@ -3,7 +3,7 @@
 const options = require('../../services/options');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
-const sourceIdService = require('../../services/source_id');
+const memberId = require('../../services/member_id');
 const passwordEncryptionService = require('../../services/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info');
@@ -47,7 +47,7 @@ function loginSync(req) {
     req.session.loggedIn = true;
 
     return {
-        sourceId: sourceIdService.getCurrentSourceId(),
+        memberId: memberId,
         maxEntityChangeId: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1")
     };
 }

@@ -30,9 +30,9 @@ function executeBundle(bundle, apiParams = {}) {
         apiParams.startNote = bundle.note;
     }
 
-    const originalSourceId = cls.get('sourceId');
+    const originalComponentId = cls.get('componentId');
 
-    cls.set('sourceId', 'script');
+    cls.set('componentId', 'script');
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "function() {\r\n" + bundle.script + "\r\n}";
@@ -47,7 +47,7 @@ function executeBundle(bundle, apiParams = {}) {
         throw e;
     }
     finally {
-        cls.set('sourceId', originalSourceId);
+        cls.set('componentId', originalComponentId);
     }
 }
 

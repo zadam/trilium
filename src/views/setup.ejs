@@ -119,8 +119,8 @@
                 <p><strong>Note:</strong> If you leave proxy setting blank, system proxy will be used (applies to desktop/electron build only)</p>
             </div>
             <div class="form-group">
-                <label for="password1">Password</label>
-                <input type="password" id="password1" class="form-control" data-bind="value: password1" placeholder="Password">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" data-bind="value: password" placeholder="Password">
             </div>
 
             <button type="button" data-bind="click: back" class="btn btn-secondary">Back</button>
@@ -146,7 +146,7 @@
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */
 
     window.glob = {
-        sourceId: ''
+        componentId: ''
     };
 
     window.syncInProgress = <%= syncInProgress ? 'true' : 'false' %>;

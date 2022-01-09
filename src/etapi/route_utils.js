@@ -41,7 +41,7 @@ function route(router, method, path, routeHandler) {
             cls.namespace.bindEmitter(res);
 
             cls.init(() => {
-                cls.set('sourceId', "etapi");
+                cls.set('componentId', "etapi");
                 cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
 
                 const cb = () => routeHandler(req, res, next);
