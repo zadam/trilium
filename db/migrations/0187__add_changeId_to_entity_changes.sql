@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                 `utcDateChanged` TEXT NOT NULL
 );
 
-INSERT INTO mig_entity_changes (entityName, entityId, hash, isErased, changeId, sourceId, isSynced, utcDateChanged)
-    SELECT entityName, entityId, hash, isErased, '', sourceId, isSynced, utcDateChanged FROM entity_changes;
+INSERT INTO mig_entity_changes (id, entityName, entityId, hash, isErased, changeId, sourceId, isSynced, utcDateChanged)
+    SELECT id, entityName, entityId, hash, isErased, '', sourceId, isSynced, utcDateChanged FROM entity_changes;
 
 DROP TABLE  entity_changes;
 
