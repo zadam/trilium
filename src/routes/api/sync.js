@@ -124,7 +124,7 @@ function getChanged(req) {
     const startTime = Date.now();
 
     let lastEntityChangeId = parseInt(req.query.lastEntityChangeId);
-    const clientMemberId = req.query.memberId;
+    const clientinstanceId = req.query.instanceId;
     let filteredEntityChanges = [];
 
     while (filteredEntityChanges.length === 0) {
@@ -140,19 +140,28 @@ function getChanged(req) {
             break;
         }
 
-        filteredEntityChanges = entityChanges.filter(ec => ec.memberId !== clientMemberId);
+        filteredEntityChanges = entityChanges.filter(ec => ec.instanceId !== clientinstanceId);
+
+        if (filteredEntityChanges.length === 0) {
+            lastEntityChangeId = entityChanges[entityChanges.length - 1].id;
+        }
     }
 
-    const entityChangesRecords = syncService.getEntityChangesRecords(filteredEntityChanges);
+    const entityChangeRecords = syncService.getEntityChangeRecords(filteredEntityChanges);
 
-    if (entityChangesRecords.length > 0) {
-        lastEntityChangeId = entityChangesRecords[entityChangesRecords.length - 1].entityChange.id;
+    if (entityChangeRecords.length > 0) {
+        lastEntityChangeId = entityChangeRecords[entityChangeRecords.length - 1].entityChange.id;
     }
 
     const ret = {
-        entityChanges: entityChangesRecords,
-        maxEntityChangeId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1'),
-        lastEntityChangeId
+        entityChanges: entityChangeRecords,
+        lastEntityChangeId,
+        outstandingPullCount: sql.getValue(`
+            SELECT COUNT(id) 
+            FROM entity_changes 
+            WHERE isSynced = 1 
+              AND instanceId != ?
+              AND id > ?`, [clientinstanceId, lastEntityChangeId])
     };
 
     if (ret.entityChanges.length > 0) {
@@ -197,10 +206,10 @@ function update(req) {
         }
     }
 
-    const {entities, memberId} = body;
+    const {entities, instanceId} = body;
 
     for (const {entityChange, entity} of entities) {
-        syncUpdateService.updateEntity(entityChange, entity, memberId);
+        syncUpdateService.updateEntity(entityChange, entity, instanceId);
     }
 }
 

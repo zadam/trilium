@@ -3,13 +3,13 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 const utils = require('./utils');
-const memberId = require('./member_id');
+const instanceId = require('./member_id');
 const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function addEntityChangeWithMemberId(origEntityChange, memberId) {
-    const ec = {...origEntityChange, memberId};
+function addEntityChangeWithinstanceId(origEntityChange, instanceId) {
+    const ec = {...origEntityChange, instanceId};
 
     return addEntityChange(ec);
 }
@@ -24,7 +24,7 @@ function addEntityChange(origEntityChange) {
     }
 
     ec.componentId = ec.componentId || cls.getComponentId() || "";
-    ec.memberId = ec.memberId || memberId;
+    ec.instanceId = ec.instanceId || instanceId;
     ec.isSynced = ec.isSynced ? 1 : 0;
     ec.isErased = ec.isErased ? 1 : 0;
     ec.id = sql.replace("entity_changes", ec);
@@ -43,7 +43,7 @@ function addNoteReorderingEntityChange(parentNoteId, componentId) {
         utcDateChanged: dateUtils.utcNowDateTime(),
         isSynced: true,
         componentId,
-        memberId: memberId
+        instanceId: instanceId
     });
 
     const eventService = require('./events');
@@ -146,7 +146,7 @@ module.exports = {
     addNoteReorderingEntityChange,
     moveEntityChangeToTop,
     addEntityChange,
-    addEntityChangeWithMemberId,
+    addEntityChangeWithinstanceId,
     fillAllEntityChanges,
     addEntityChangesForSector,
     getMaxEntityChangeId: () => maxEntityChangeId

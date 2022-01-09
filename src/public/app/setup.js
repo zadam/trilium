@@ -23,8 +23,6 @@ function SetupModel() {
     this.syncProxy = ko.observable();
     this.password = ko.observable();
 
-    this.instanceType = utils.isElectron() ? "desktop" : "server";
-
     this.setupTypeSelected = () => !!this.setupType();
 
     this.selectSetupType = () => {

@@ -4,7 +4,7 @@ const log = require('./log');
 const sql = require('./sql');
 const optionService = require('./options');
 const utils = require('./utils');
-const memberId = require('./member_id');
+const instanceId = require('./member_id');
 const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
@@ -107,11 +107,11 @@ async function doLogin() {
         hash: hash
     });
 
-    if (resp.memberId === memberId) {
-        throw new Error(`Sync server has member ID ${resp.memberId} which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
+    if (resp.instanceId === instanceId) {
+        throw new Error(`Sync server has member ID ${resp.instanceId} which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
     }
 
-    syncContext.memberId = resp.memberId;
+    syncContext.instanceId = resp.instanceId;
 
     const lastSyncedPull = getLastSyncedPull();
 
@@ -131,22 +131,21 @@ async function pullChanges(syncContext) {
 
     while (true) {
         const lastSyncedPull = getLastSyncedPull();
-        const changesUri = `/api/sync/changed?memberId=${memberId}&lastEntityChangeId=${lastSyncedPull}`;
+        const changesUri = `/api/sync/changed?instanceId=${instanceId}&lastEntityChangeId=${lastSyncedPull}`;
 
         const startDate = Date.now();
 
         const resp = await syncRequest(syncContext, 'GET', changesUri);
+        const {entityChanges, lastEntityChangeId} = resp;
+
+        outstandingPullCount = resp.outstandingPullCount;
 
         const pulledDate = Date.now();
 
-        outstandingPullCount = Math.max(0, resp.maxEntityChangeId - lastSyncedPull);
-
-        const {entityChanges, lastEntityChangeId} = resp;
-
         sql.transactional(() => {
             for (const {entityChange, entity} of entityChanges) {
-                const changeAppliedAlready = !entityChange.changeId
-                    || !!sql.getValue("SELECT id FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
+                const changeAppliedAlready = entityChange.changeId
+                    && !!sql.getValue("SELECT id FROM entity_changes WHERE changeId = ?", [entityChange.changeId]);
 
                 if (!changeAppliedAlready) {
                     if (!atLeastOnePullApplied) { // send only for first
@@ -155,10 +154,8 @@ async function pullChanges(syncContext) {
                         atLeastOnePullApplied = true;
                     }
 
-                    syncUpdateService.updateEntity(entityChange, entity, syncContext.memberId);
+                    syncUpdateService.updateEntity(entityChange, entity, syncContext.instanceId);
                 }
-
-                outstandingPullCount = Math.max(0, resp.maxEntityChangeId - entityChange.id);
             }
 
             if (lastSyncedPull !== lastEntityChangeId) {
@@ -191,7 +188,7 @@ async function pushChanges(syncContext) {
         }
 
         const filteredEntityChanges = entityChanges.filter(entityChange => {
-            if (entityChange.memberId === syncContext.memberId) {
+            if (entityChange.instanceId === syncContext.instanceId) {
                 // this may set lastSyncedPush beyond what's actually sent (because of size limit)
                 // so this is applied to the database only if there's no actual update
                 lastSyncedPush = entityChange.id;
@@ -211,12 +208,12 @@ async function pushChanges(syncContext) {
             continue;
         }
 
-        const entityChangesRecords = getEntityChangesRecords(filteredEntityChanges);
+        const entityChangesRecords = getEntityChangeRecords(filteredEntityChanges);
         const startDate = new Date();
 
         await syncRequest(syncContext, 'PUT', '/api/sync/update', {
             entities: entityChangesRecords,
-            memberId
+            instanceId
         });
 
         ws.syncPushInProgress();
@@ -252,6 +249,11 @@ async function checkContentHash(syncContext) {
     }
 
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
+
+    process.exit(0);
+    throw new Error("AAAA");
+
+    return;
 
     if (failedChecks.length > 0) {
         // before requeuing sectors make sure the entity changes are correct
@@ -332,7 +334,7 @@ function getEntityChangeRow(entityName, entityId) {
     }
 }
 
-function getEntityChangesRecords(entityChanges) {
+function getEntityChangeRecords(entityChanges) {
     const records = [];
     let length = 0;
 
@@ -344,13 +346,6 @@ function getEntityChangesRecords(entityChanges) {
         }
 
         const entity = getEntityChangeRow(entityChange.entityName, entityChange.entityId);
-
-        if (entityChange.entityName === 'options' && !entity.isSynced) {
-            // if non-synced entities should count towards "lastSyncedPush"
-            records.push({entityChange});
-
-            continue;
-        }
 
         const record = { entityChange, entity };
 
@@ -423,7 +418,7 @@ require("../becca/becca_loader").beccaLoaded.then(() => {
 module.exports = {
     sync,
     login,
-    getEntityChangesRecords,
+    getEntityChangeRecords,
     getOutstandingPullCount,
     getMaxEntityChangeId
 };

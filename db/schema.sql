@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "entity_changes" (
                                                 `isErased` INT NOT NULL,
                                                 `changeId` TEXT NOT NULL,
                                                 `componentId` TEXT NOT NULL,
-                                                `memberId` TEXT NOT NULL,
+                                                `instanceId` TEXT NOT NULL,
                                                 `isSynced` INTEGER NOT NULL,
                                                 `utcDateChanged` TEXT NOT NULL
                                                 );
@@ -98,6 +98,7 @@ CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCr
 CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
 CREATE INDEX `IDX_note_revisions_dateCreated` ON `note_revisions` (`dateCreated`);
 CREATE INDEX `IDX_note_revisions_dateLastEdited` ON `note_revisions` (`dateLastEdited`);
+CREATE INDEX `IDX_entity_changes_changeId` ON `entity_changes` (`changeId`);
 CREATE INDEX IDX_attributes_name_value
     on attributes (name, value);
 CREATE INDEX IDX_attributes_noteId_index
