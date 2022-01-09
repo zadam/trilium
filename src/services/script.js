@@ -5,7 +5,7 @@ const becca = require("../becca/becca");
 
 function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
-        log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS frontend"`);
+        log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS backend"`);
 
         return;
     }

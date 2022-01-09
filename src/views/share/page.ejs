@@ -29,7 +29,7 @@
     <div id="main">
         <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
             <nav id="parentLink">
-                parent: <a href="<%= note.parents[0].noteId %>"
+                parent: <a href="<%= note.parents[0].shareId %>"
                            class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>
             </nav>
         <% } %>
@@ -40,10 +40,7 @@
             <div id="noteClippedFrom">This note was originally clipped from <a href="<%= note.getLabelValue("pageUrl") %>"><%= note.getLabelValue("pageUrl") %></a></div>
         <% } %>
 
-        <% if (note.type === 'book') { %>
-        <% } else if (isEmpty) { %>
-            <p>This note has no content.</p>
-        <% } else { %>
+        <% if (!isEmpty) { %>
             <div id="content" class="type-<%= note.type %><% if (note.type === 'text') { %> ck-content<% } %>">
                 <%- content %>
             </div>
@@ -52,20 +49,21 @@
         <% if (note.hasChildren()) { %>
             <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
                 <% if (!isEmpty) { %>
-                    <div id="noteClippedFrom">
+                    <hr>
                     <span>Child notes: </span>
-                    <ul>
-                        <% for (const childNote of note.getChildNotes()) { %>
-                            <li>
-                                <a href="<%= childNote.shareId %>"
-                                   class="type-<%= childNote.type %>"><%= childNote.title %></a>
-                            </li>
-                        <% } %>
-                    </ul>
-                </div>
                 <% } %>
 
+                <ul>
+                    <% for (const childNote of note.getChildNotes()) { %>
+                        <li>
+                            <a href="<%= childNote.shareId %>"
+                               class="type-<%= childNote.type %>"><%= childNote.title %></a>
+                        </li>
+                    <% } %>
+                </ul>
             </nav>
+        <% } else if (isEmpty) { %>
+            <p>This note has no content.</p>
         <% } %>
     </div>
 
