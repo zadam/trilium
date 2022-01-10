@@ -47,8 +47,8 @@ function checkContentHashes(otherHashes) {
     const failedChecks = [];
 
     for (const entityName in entityHashes) {
-        const thisSectorHashes = entityHashes[entityName];
-        const otherSectorHashes = otherHashes[entityName];
+        const thisSectorHashes = entityHashes[entityName] || {};
+        const otherSectorHashes = otherHashes[entityName] || {};
 
         const sectors = new Set(Object.keys(thisSectorHashes).concat(Object.keys(otherSectorHashes)));
 

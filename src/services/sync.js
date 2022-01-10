@@ -250,11 +250,6 @@ async function checkContentHash(syncContext) {
 
     const failedChecks = contentHashService.checkContentHashes(resp.entityHashes);
 
-    process.exit(0);
-    throw new Error("AAAA");
-
-    return;
-
     if (failedChecks.length > 0) {
         // before requeuing sectors make sure the entity changes are correct
         const consistencyChecks = require("./consistency_checks");

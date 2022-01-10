@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS "etapi_tokens"
     name TEXT NOT NULL,
     tokenHash TEXT NOT NULL,
     utcDateCreated TEXT NOT NULL,
+    utcDateModified TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "branches" (
                                           `branchId`	TEXT NOT NULL,
