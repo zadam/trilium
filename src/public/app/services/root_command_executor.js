@@ -76,7 +76,10 @@ export default class RootCommandExecutor extends Component {
         // force immediate search
         await froca.loadSearchNote(searchNote.noteId);
 
-        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true);
+        const activeNoteContext = appContext.tabManager.getActiveContext();
+        const hoistedNoteId = activeNoteContext?.hoistedNoteId || 'root';
+
+        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true, null, hoistedNoteId);
 
         appContext.triggerCommand('focusOnSearchDefinition', {ntxId: noteContext.ntxId});
     }

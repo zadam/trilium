@@ -206,7 +206,7 @@ export default class TabManager extends Component {
         await noteContext.setEmpty();
     }
 
-    async openEmptyTab(ntxId, hoistedNoteId = 'root', mainNtxId = null) {
+    async openEmptyTab(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = new NoteContext(ntxId, hoistedNoteId, mainNtxId);
 
         const existingNoteContext = this.children.find(nc => nc.ntxId === noteContext.ntxId);
@@ -240,7 +240,7 @@ export default class TabManager extends Component {
         return this.openContextWithNote(notePath, activate, null, hoistedNoteId);
     }
 
-    async openContextWithNote(notePath, activate, ntxId, hoistedNoteId = 'root', mainNtxId = null) {
+    async openContextWithNote(notePath, activate, ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
         if (notePath) {
