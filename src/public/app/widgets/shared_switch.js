@@ -2,6 +2,7 @@ import SwitchWidget from "./switch.js";
 import branchService from "../services/branches.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
+import syncService from "../services/sync.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
     isEnabled() {
@@ -21,8 +22,10 @@ export default class SharedSwitchWidget extends SwitchWidget {
         this.$helpButton.on('click', e => utils.openHelp(e));
     }
 
-    switchOn() {
-        branchService.cloneNoteToNote(this.noteId, 'share');
+    async switchOn() {
+        await branchService.cloneNoteToNote(this.noteId, 'share');
+
+        syncService.syncNow();
     }
 
     async switchOff() {
@@ -43,6 +46,8 @@ export default class SharedSwitchWidget extends SwitchWidget {
         }
 
         await server.remove(`branches/${shareBranch.branchId}?taskId=no-progress-reporting`);
+
+        syncService.syncNow();
     }
 
     async refreshWithNote(note) {
