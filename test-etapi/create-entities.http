@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -24,6 +25,7 @@ Content-Type: application/json
 ### Clone to another location
 
 POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -45,6 +47,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {
@@ -60,6 +63,7 @@ GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {
@@ -71,6 +75,7 @@ GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {
@@ -83,6 +88,7 @@ GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {
@@ -96,6 +102,7 @@ GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 
 POST {{triliumHost}}/etapi/attributes
 Content-Type: application/json
+Authorization: {{authToken}}
 
 {
   "noteId": "{{createdNoteId}}",
@@ -118,6 +125,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {

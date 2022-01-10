@@ -36,7 +36,7 @@ function getClipperInboxNote() {
     let clipperInbox = attributeService.getNoteWithLabel('clipperInbox');
 
     if (!clipperInbox) {
-        clipperInbox = dateNoteService.getDateNote(dateUtils.localNowDate());
+        clipperInbox = dateNoteService.getDayNote(dateUtils.localNowDate());
     }
 
     return clipperInbox;

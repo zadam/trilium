@@ -41,6 +41,10 @@ async function put(url, data, componentId) {
     return await call('PUT', url, data, {'trilium-component-id': componentId});
 }
 
+async function patch(url, data, componentId) {
+    return await call('PATCH', url, data, {'trilium-component-id': componentId});
+}
+
 async function remove(url, componentId) {
     return await call('DELETE', url, null, {'trilium-component-id': componentId});
 }
@@ -185,6 +189,7 @@ export default {
     get,
     post,
     put,
+    patch,
     remove,
     ajax,
     // don't remove, used from CKEditor image upload!

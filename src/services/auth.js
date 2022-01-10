@@ -1,12 +1,12 @@
 "use strict";
 
-const sql = require('./sql');
+const etapiTokenService = require("./etapi_tokens");
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const utils = require('./utils');
 const passwordEncryptionService = require('./password_encryption');
 const config = require('./config');
-const passwordService = require("./password.js");
+const passwordService = require("./password");
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
 
@@ -72,15 +72,12 @@ function checkAppNotInitialized(req, res, next) {
     }
 }
 
-function checkToken(req, res, next) {
-    const token = req.headers.authorization;
-
-    // TODO: put all tokens into becca memory to avoid these requests
-    if (sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
-        reject(req, res, "Token not found");
+function checkEtapiToken(req, res, next) {
+    if (etapiTokenService.isValidAuthHeader(req.headers.authorization)) {
+        next();
     }
     else {
-        next();
+        reject(req, res, "Token not found");
     }
 }
 
@@ -116,6 +113,6 @@ module.exports = {
     checkPasswordSet,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
-    checkToken,
+    checkEtapiToken,
     checkCredentials
 };

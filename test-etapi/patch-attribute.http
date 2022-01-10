@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -16,6 +17,7 @@ Content-Type: application/json
 ###
 
 POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -31,6 +33,7 @@ Content-Type: application/json
 ###
 
 PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -40,6 +43,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 
 > {%        
 client.assert(response.body.value === "CHANGED");
@@ -48,6 +52,7 @@ client.assert(response.body.value === "CHANGED");
 ###
 
 PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -62,6 +67,7 @@ Content-Type: application/json
 ###
 
 PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {

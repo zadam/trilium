@@ -18,6 +18,7 @@ class SearchContext {
         this.orderDirection = params.orderDirection;
         this.limit = params.limit;
         this.debug = params.debug;
+        this.debugInfo = null;
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
         this.originalQuery = "";

@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS "entity_changes" (
                                                 `isSynced` INTEGER NOT NULL,
                                                 `utcDateChanged` TEXT NOT NULL
                                                 );
-CREATE TABLE IF NOT EXISTS "api_tokens"
+CREATE TABLE IF NOT EXISTS "etapi_tokens"
 (
-    apiTokenId TEXT PRIMARY KEY NOT NULL,
+    etapiTokenId TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
-    token TEXT NOT NULL,
+    tokenHash TEXT NOT NULL,
     utcDateCreated TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "branches" (

@@ -15,6 +15,7 @@ export async function showDialog(openTab) {
         import('./options/shortcuts.js'),
         import('./options/code_notes.js'),
         import('./options/password.js'),
+        import('./options/etapi.js'),
         import('./options/backup.js'),
         import('./options/sync.js'),
         import('./options/other.js'),

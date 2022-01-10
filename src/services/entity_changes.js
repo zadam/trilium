@@ -137,7 +137,7 @@ function fillAllEntityChanges() {
         fillEntityChanges("note_revision_contents", "noteRevisionId");
         fillEntityChanges("recent_notes", "noteId");
         fillEntityChanges("attributes", "attributeId");
-        fillEntityChanges("api_tokens", "apiTokenId");
+        fillEntityChanges("etapi_tokens", "etapiTokenId");
         fillEntityChanges("options", "name", 'isSynced = 1');
     });
 }

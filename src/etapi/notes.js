@@ -1,36 +1,48 @@
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
-const ru = require("./route_utils");
+const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const noteService = require("../services/notes");
 const TaskContext = require("../services/task_context");
 const validators = require("./validators");
 const searchService = require("../services/search/services/search");
+const SearchContext = require("../services/search/search_context");
 
 function register(router) {
-    ru.route(router, 'get', '/etapi/notes', (req, res, next) => {
+    eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
         const {search} = req.query;
 
         if (!search?.trim()) {
-            throw new ru.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory");
+            throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory");
         }
+        
         const searchParams = parseSearchParams(req);
-
-        const foundNotes = searchService.searchNotes(search, searchParams);
-
-        res.json(foundNotes.map(note => mappers.mapNoteToPojo(note)));
+        const searchContext = new SearchContext(searchParams);
+        
+        const searchResults = searchService.findResultsWithQuery(search, searchContext);
+        const foundNotes = searchResults.map(sr => becca.notes[sr.noteId]);
+        
+        const resp = {
+            results: foundNotes.map(note => mappers.mapNoteToPojo(note))
+        };
+        
+        if (searchContext.debugInfo) {
+            resp.debugInfo = searchContext.debugInfo;
+        }
+        
+        res.json(resp);
     });
 
-    ru.route(router, 'get', '/etapi/notes/:noteId', (req, res, next) => {
-        const note = ru.getAndCheckNote(req.params.noteId);
+    eu.route(router, 'get', '/etapi/notes/:noteId', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
 
         res.json(mappers.mapNoteToPojo(note));
     });
 
-    ru.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
         const params = req.body;
 
-        ru.getAndCheckNote(params.parentNoteId);
+        eu.getAndCheckNote(params.parentNoteId);
 
         try {
             const resp = noteService.createNewNote(params);
@@ -41,7 +53,7 @@ function register(router) {
             });
         }
         catch (e) {
-            return ru.sendError(res, 400, ru.GENERIC_CODE, e.message);
+            return eu.sendError(res, 400, eu.GENERIC_CODE, e.message);
         }
     });
 
@@ -51,19 +63,19 @@ function register(router) {
         'mime': validators.isString
     };
 
-    ru.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
-        const note = ru.getAndCheckNote(req.params.noteId)
+    eu.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId)
 
         if (note.isProtected) {
-            throw new ru.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI`);
+            throw new eu.EtapiError(400, "NOTE_IS_PROTECTED", `Note '${req.params.noteId}' is protected and cannot be modified through ETAPI`);
         }
 
-        ru.validateAndPatch(note, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+        eu.validateAndPatch(note, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
 
         res.json(mappers.mapNoteToPojo(note));
     });
 
-    ru.route(router, 'delete' ,'/etapi/notes/:noteId', (req, res, next) => {
+    eu.route(router, 'delete' ,'/etapi/notes/:noteId', (req, res, next) => {
         const {noteId} = req.params;
 
         const note = becca.getNote(noteId);
@@ -77,8 +89,8 @@ function register(router) {
         res.sendStatus(204);
     });
 
-    ru.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
-        const note = ru.getAndCheckNote(req.params.noteId);
+    eu.route(router, 'get', '/etapi/notes/:noteId/content', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
 
         const filename = utils.formatDownloadTitle(note.title, note.type, note.mime);
 
@@ -90,8 +102,8 @@ function register(router) {
         res.send(note.getContent());
     });
 
-    ru.route(router, 'put', '/etapi/notes/:noteId/content', (req, res, next) => {
-        const note = ru.getAndCheckNote(req.params.noteId);
+    eu.route(router, 'put', '/etapi/notes/:noteId/content', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
 
         note.setContent(req.body);
 
@@ -130,7 +142,7 @@ function parseBoolean(obj, name) {
     }
 
     if (!['true', 'false'].includes(obj[name])) {
-        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse boolean '${name}' value '${obj[name]}, allowed values are 'true' and 'false'`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse boolean '${name}' value '${obj[name]}, allowed values are 'true' and 'false'`);
     }
 
     return obj[name] === 'true';
@@ -144,7 +156,7 @@ function parseInteger(obj, name) {
     const integer = parseInt(obj[name]);
 
     if (!['asc', 'desc'].includes(obj[name])) {
-        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse order direction value '${obj[name]}, allowed values are 'asc' and 'desc'`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse order direction value '${obj[name]}, allowed values are 'asc' and 'desc'`);
     }
 
     return integer;
@@ -158,7 +170,7 @@ function parseOrderDirection(obj, name) {
     const integer = parseInt(obj[name]);
 
     if (Number.isNaN(integer)) {
-        throw new ru.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse integer '${name}' value '${obj[name]}`);
+        throw new eu.EtapiError(400, SEARCH_PARAM_ERROR, `Cannot parse integer '${name}' value '${obj[name]}`);
     }
 
     return integer;

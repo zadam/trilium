@@ -309,8 +309,18 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} date in YYYY-MM-DD format
      * @returns {Note|null}
+     * @deprecated use getDayNote instead
      */
-    this.getDateNote = dateNoteService.getDateNote;
+    this.getDateNote = dateNoteService.getDayNote;
+
+    /**
+     * Returns day note for given date. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} date in YYYY-MM-DD format
+     * @returns {Note|null}
+     */
+    this.getDayNote = dateNoteService.getDayNote;
 
     /**
      * Returns today's day note. If such note doesn't exist, it is created.

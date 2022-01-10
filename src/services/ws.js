@@ -7,7 +7,7 @@ const config = require('./config');
 const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
 const becca = require("../becca/becca");
-const AbstractEntity = require("../becca/entities/abstract_entity.js");
+const AbstractEntity = require("../becca/entities/abstract_entity");
 
 let webSocketServer;
 let lastSyncedPush = null;
@@ -139,7 +139,7 @@ function fillInAdditionalProperties(entityChange) {
 
 // entities with higher number can reference the entities with lower number
 const ORDERING = {
-    "api_tokens": 0,
+    "etapi_tokens": 0,
     "attributes": 1,
     "branches": 1,
     "note_contents": 1,

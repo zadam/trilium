@@ -1,8 +1,12 @@
-const cls = require("../services/cls.js");
-const sql = require("../services/sql.js");
-const log = require("../services/log.js");
-const becca = require("../becca/becca.js");
+const cls = require("../services/cls");
+const sql = require("../services/sql");
+const log = require("../services/log");
+const becca = require("../becca/becca");
+const etapiTokenService = require("../services/etapi_tokens.js");
+const config = require("../services/config.js");
 const GENERIC_CODE = "GENERIC";
+
+const noAuthentication = config.General && config.General.noAuthentication === true;
 
 class EtapiError extends Error {
     constructor(statusCode, code, message) {
@@ -26,40 +30,44 @@ function sendError(res, statusCode, code, message) {
 }
 
 function checkEtapiAuth(req, res, next) {
-    if (false) {
-        sendError(res, 401, "NOT_AUTHENTICATED", "Not authenticated");
+    if (noAuthentication || etapiTokenService.isValidAuthHeader(req.headers.authorization)) {
+        next();
     }
     else {
-        next();
+        sendError(res, 401, "NOT_AUTHENTICATED", "Not authenticated");
+    }
+}
+
+function processRequest(req, res, routeHandler, next, method, path) {
+    try {
+        cls.namespace.bindEmitter(req);
+        cls.namespace.bindEmitter(res);
+
+        cls.init(() => {
+            cls.set('componentId', "etapi");
+            cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
+
+            const cb = () => routeHandler(req, res, next);
+
+            return sql.transactional(cb);
+        });
+    } catch (e) {
+        log.error(`${method} ${path} threw exception ${e.message} with stacktrace: ${e.stack}`);
+
+        if (e instanceof EtapiError) {
+            sendError(res, e.statusCode, e.code, e.message);
+        } else {
+            sendError(res, 500, GENERIC_CODE, e.message);
+        }
     }
 }
 
 function route(router, method, path, routeHandler) {
-    router[method](path, checkEtapiAuth, (req, res, next) => {
-        try {
-            cls.namespace.bindEmitter(req);
-            cls.namespace.bindEmitter(res);
+    router[method](path, checkEtapiAuth, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
+}
 
-            cls.init(() => {
-                cls.set('componentId', "etapi");
-                cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
-
-                const cb = () => routeHandler(req, res, next);
-
-                return sql.transactional(cb);
-            });
-        }
-        catch (e) {
-            log.error(`${method} ${path} threw exception ${e.message} with stacktrace: ${e.stack}`);
-            
-            if (e instanceof EtapiError) {
-                sendError(res, e.statusCode, e.code, e.message);
-            }
-            else {
-                sendError(res, 500, GENERIC_CODE, e.message);
-            }
-        }
-    });
+function NOT_AUTHENTICATED_ROUTE(router, method, path, routeHandler) {
+    router[method](path, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
 }
 
 function getAndCheckNote(noteId) {
@@ -121,12 +129,11 @@ function validateAndPatch(entity, props, allowedProperties) {
 module.exports = {
     EtapiError,
     sendError,
-    checkEtapiAuth,
     route,
+    NOT_AUTHENTICATED_ROUTE,
     GENERIC_CODE,
     validateAndPatch,
     getAndCheckNote,
     getAndCheckBranch,
-    getAndCheckAttribute,
-    getNotAllowedPatchPropertyError: (propertyName, allowedProperties) => new EtapiError(400, "PROPERTY_NOT_ALLOWED_FOR_PATCH", `Property '${propertyName}' is not allowed to be patched, allowed properties are ${allowedProperties}.`),
+    getAndCheckAttribute
 }

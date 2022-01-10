@@ -1,6 +1,6 @@
 "use strict";
 
-const passwordService = require('../../services/password.js');
+const passwordService = require('../../services/password');
 
 function changePassword(req) {
     if (passwordService.isPasswordSet()) {

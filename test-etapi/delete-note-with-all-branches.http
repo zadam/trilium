@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -16,6 +17,7 @@ Content-Type: application/json
 ###
 
 POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -31,6 +33,7 @@ Content-Type: application/json
 ### Clone to another location
 
 POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -43,42 +46,49 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 200, "Response status is not 200"); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 200, "Response status is not 200"); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 200, "Response status is not 200"); %}
 
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 200, "Response status is not 200"); %}
 
 ###
 
 DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 204, "Response status is not 204"); %}
 
 ### repeat the DELETE request to test the idempotency
 
 DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {% client.assert(response.status === 204, "Response status is not 204"); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 404, "Response status is not 404");
@@ -88,6 +98,7 @@ GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 404, "Response status is not 404");
@@ -97,6 +108,7 @@ GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 404, "Response status is not 404");
@@ -106,6 +118,7 @@ GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 404, "Response status is not 404");

@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -13,6 +14,7 @@ Content-Type: application/json
 ###
 
 PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -24,6 +26,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 
 > {% 
 client.assert(response.status === 200);
@@ -35,6 +38,7 @@ client.assert(response.body.isExpanded === true);
 ###
 
 PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -49,6 +53,7 @@ Content-Type: application/json
 ###
 
 PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {

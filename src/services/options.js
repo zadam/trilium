@@ -1,5 +1,5 @@
 const becca = require('../becca/becca');
-const sql = require("./sql.js");
+const sql = require("./sql");
 
 function getOption(name) {
     let option;

@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -14,6 +15,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {% 
 client.assert(response.status === 200);
@@ -25,6 +27,7 @@ client.assert(response.body.mime === 'application/json');
 ###
 
 PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -36,6 +39,7 @@ Content-Type: application/json
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 
 > {% 
 client.assert(response.status === 200);
@@ -47,6 +51,7 @@ client.assert(response.body.mime === 'text/html');
 ###
 
 PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {
@@ -61,6 +66,7 @@ Content-Type: application/json
 ###
 
 PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
 Content-Type: application/json
 
 {

@@ -11,9 +11,11 @@ const $form = $("#prompt-dialog-form");
 let resolve;
 let shownCb;
 
-export function ask({ message, defaultValue, shown }) {
+export function ask({ title, message, defaultValue, shown }) {
     shownCb = shown;
-
+    
+    $("#prompt-title").text(title || "Prompt");
+    
     $question = $("<label>")
         .prop("for", "prompt-dialog-answer")
         .text(message);
@@ -30,7 +32,7 @@ export function ask({ message, defaultValue, shown }) {
             .append($question)
             .append($answer));
 
-    utils.openDialog($dialog);
+    utils.openDialog($dialog, false);
 
     return new Promise((res, rej) => { resolve = res; });
 }

@@ -11,12 +11,12 @@ async function getInboxNote() {
 
 /** @returns {NoteShort} */
 async function getTodayNote() {
-    return await getDateNote(dayjs().format("YYYY-MM-DD"));
+    return await getDayNote(dayjs().format("YYYY-MM-DD"));
 }
 
 /** @returns {NoteShort} */
-async function getDateNote(date) {
-    const note = await server.get('special-notes/date/' + date, "date-note");
+async function getDayNote(date) {
+    const note = await server.get('special-notes/days/' + date, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -25,7 +25,7 @@ async function getDateNote(date) {
 
 /** @returns {NoteShort} */
 async function getWeekNote(date) {
-    const note = await server.get('special-notes/week/' + date, "date-note");
+    const note = await server.get('special-notes/weeks/' + date, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -34,7 +34,7 @@ async function getWeekNote(date) {
 
 /** @returns {NoteShort} */
 async function getMonthNote(month) {
-    const note = await server.get('special-notes/month/' + month, "date-note");
+    const note = await server.get('special-notes/months/' + month, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -43,7 +43,7 @@ async function getMonthNote(month) {
 
 /** @returns {NoteShort} */
 async function getYearNote(year) {
-    const note = await server.get('special-notes/year/' + year, "date-note");
+    const note = await server.get('special-notes/years/' + year, "date-note");
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -71,7 +71,7 @@ async function createSearchNote(opts = {}) {
 export default {
     getInboxNote,
     getTodayNote,
-    getDateNote,
+    getDayNote,
     getWeekNote,
     getMonthNote,
     getYearNote,

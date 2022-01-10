@@ -1,27 +1,27 @@
 const becca = require("../becca/becca");
-const ru = require("./route_utils");
+const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const attributeService = require("../services/attributes");
-const validators = require("./validators.js");
+const validators = require("./validators");
 
 function register(router) {
-    ru.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {
-        const attribute = ru.getAndCheckAttribute(req.params.attributeId);
+    eu.route(router, 'get', '/etapi/attributes/:attributeId', (req, res, next) => {
+        const attribute = eu.getAndCheckAttribute(req.params.attributeId);
 
         res.json(mappers.mapAttributeToPojo(attribute));
     });
 
-    ru.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
         const params = req.body;
 
-        ru.getAndCheckNote(params.noteId);
+        eu.getAndCheckNote(params.noteId);
 
         if (params.type === 'relation') {
-            ru.getAndCheckNote(params.value);
+            eu.getAndCheckNote(params.value);
         }
 
         if (params.type !== 'relation' && params.type !== 'label') {
-            throw new ru.EtapiError(400, ru.GENERIC_CODE, `Only "relation" and "label" are supported attribute types, "${params.type}" given.`);
+            throw new eu.EtapiError(400, eu.GENERIC_CODE, `Only "relation" and "label" are supported attribute types, "${params.type}" given.`);
         }
 
         try {
@@ -30,7 +30,7 @@ function register(router) {
             res.json(mappers.mapAttributeToPojo(attr));
         }
         catch (e) {
-            throw new ru.EtapiError(400, ru.GENERIC_CODE, e.message);
+            throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
         }
     });
 
@@ -38,15 +38,15 @@ function register(router) {
         'value': validators.isString
     };
 
-    ru.route(router, 'patch' ,'/etapi/attributes/:attributeId', (req, res, next) => {
-        const attribute = ru.getAndCheckAttribute(req.params.attributeId);
+    eu.route(router, 'patch' ,'/etapi/attributes/:attributeId', (req, res, next) => {
+        const attribute = eu.getAndCheckAttribute(req.params.attributeId);
 
-        ru.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+        eu.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
 
         res.json(mappers.mapAttributeToPojo(attribute));
     });
 
-    ru.route(router, 'delete' ,'/etapi/attributes/:attributeId', (req, res, next) => {
+    eu.route(router, 'delete' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         const attribute = becca.getAttribute(req.params.attributeId);
 
         if (!attribute || attribute.isDeleted) {

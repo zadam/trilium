@@ -1,4 +1,5 @@
 POST {{triliumHost}}/etapi/refresh-note-ordering/root
+Authorization: {{authToken}}
 
 > {%
     client.test("Request executed successfully", function() {

@@ -31,15 +31,17 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
-const specialNotesRoute = require('./api/special_notes.js');
-const noteMapRoute = require('./api/note_map.js');
+const specialNotesRoute = require('./api/special_notes');
+const noteMapRoute = require('./api/note_map');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
 const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
 const fontsRoute = require('./api/fonts');
+const etapiTokensApiRoutes = require('./api/etapi_tokens');
 const shareRoutes = require('../share/routes');
+const etapiAuthRoutes = require('../etapi/auth');
 const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches');
 const etapiNoteRoutes = require('../etapi/notes');
@@ -56,7 +58,7 @@ const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
-const AbstractEntity = require("../becca/entities/abstract_entity.js");
+const AbstractEntity = require("../becca/entities/abstract_entity");
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -182,7 +184,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
     });
 }
 
-const GET = 'get', POST = 'post', PUT = 'put', DELETE = 'delete';
+const GET = 'get', POST = 'post', PUT = 'put', PATCH = 'patch', DELETE = 'delete';
 const uploadMiddleware = multer.single('upload');
 
 function register(app) {
@@ -272,11 +274,11 @@ function register(app) {
     apiRoute(GET, '/api/note-map/:noteId/backlinks', noteMapRoute.getBacklinks);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);
-    apiRoute(GET, '/api/special-notes/date/:date', specialNotesRoute.getDateNote);
-    apiRoute(GET, '/api/special-notes/week/:date', specialNotesRoute.getWeekNote);
-    apiRoute(GET, '/api/special-notes/month/:month', specialNotesRoute.getMonthNote);
-    apiRoute(GET, '/api/special-notes/year/:year', specialNotesRoute.getYearNote);
-    apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDateNotesForMonth);
+    apiRoute(GET, '/api/special-notes/days/:date', specialNotesRoute.getDayNote);
+    apiRoute(GET, '/api/special-notes/weeks/:date', specialNotesRoute.getWeekNote);
+    apiRoute(GET, '/api/special-notes/months/:month', specialNotesRoute.getMonthNote);
+    apiRoute(GET, '/api/special-notes/years/:year', specialNotesRoute.getYearNote);
+    apiRoute(GET, '/api/special-notes/notes-for-month/:month', specialNotesRoute.getDayNotesForMonth);
     apiRoute(POST, '/api/special-notes/sql-console', specialNotesRoute.createSqlConsole);
     apiRoute(POST, '/api/special-notes/save-sql-console', specialNotesRoute.saveSqlConsole);
     apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
@@ -341,8 +343,8 @@ function register(app) {
 
     // no CSRF since this is called from android app
     route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
-    route(POST, '/api/sender/image', [auth.checkToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
-    route(POST, '/api/sender/note', [auth.checkToken], senderRoute.saveNote, apiResultHandler);
+    route(POST, '/api/sender/image', [auth.checkEtapiToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/sender/note', [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
     apiRoute(GET, '/api/quick-search/:searchString', searchRoute.quickSearch);
     apiRoute(GET, '/api/search-note/:noteId', searchRoute.searchFromNote);
@@ -358,7 +360,7 @@ function register(app) {
     route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
 
     // in case of local electron, local calls are allowed unauthenticated, for server they need auth
-    const clipperMiddleware = utils.isElectron() ? [] : [auth.checkToken];
+    const clipperMiddleware = utils.isElectron() ? [] : [auth.checkEtapiToken];
 
     route(GET, '/api/clipper/handshake', clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
@@ -379,7 +381,14 @@ function register(app) {
 
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
 
+    apiRoute(GET, '/api/etapi-tokens', etapiTokensApiRoutes.getTokens);
+    apiRoute(POST, '/api/etapi-tokens', etapiTokensApiRoutes.createToken);
+    apiRoute(PATCH, '/api/etapi-tokens/:etapiTokenId', etapiTokensApiRoutes.patchToken);
+    apiRoute(DELETE, '/api/etapi-tokens/:etapiTokenId', etapiTokensApiRoutes.deleteToken);
+
     shareRoutes.register(router);
+    
+    etapiAuthRoutes.register(router);
     etapiAttributeRoutes.register(router);
     etapiBranchRoutes.register(router);
     etapiNoteRoutes.register(router);

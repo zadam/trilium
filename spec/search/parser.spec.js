@@ -1,5 +1,5 @@
-const SearchContext = require("../../src/services/search/search_context.js");
-const parse = require('../../src/services/search/services/parse.js');
+const SearchContext = require("../../src/services/search/search_context");
+const parse = require('../../src/services/search/services/parse');
 
 function tokens(toks, cur = 0) {
     return toks.map(arg => {

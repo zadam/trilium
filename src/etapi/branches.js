@@ -1,24 +1,24 @@
-const becca = require("../becca/becca.js");
-const ru = require("./route_utils");
+const becca = require("../becca/becca");
+const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const Branch = require("../becca/entities/branch");
 const noteService = require("../services/notes");
 const TaskContext = require("../services/task_context");
 const entityChangesService = require("../services/entity_changes");
-const validators = require("./validators.js");
+const validators = require("./validators");
 
 function register(router) {
-    ru.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
-        const branch = ru.getAndCheckBranch(req.params.branchId);
+    eu.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
+        const branch = eu.getAndCheckBranch(req.params.branchId);
 
         res.json(mappers.mapBranchToPojo(branch));
     });
 
-    ru.route(router, 'post' ,'/etapi/branches', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/branches', (req, res, next) => {
         const params = req.body;
 
-        ru.getAndCheckNote(params.noteId);
-        ru.getAndCheckNote(params.parentNoteId);
+        eu.getAndCheckNote(params.noteId);
+        eu.getAndCheckNote(params.parentNoteId);
 
         const existing = becca.getBranchFromChildAndParent(params.noteId, params.parentNoteId);
 
@@ -36,7 +36,7 @@ function register(router) {
             res.json(mappers.mapBranchToPojo(branch));
         }
         catch (e) {
-            throw new ru.EtapiError(400, ru.GENERIC_CODE, e.message);
+            throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
         }
     });
 
@@ -46,15 +46,15 @@ function register(router) {
         'isExpanded': validators.isBoolean
     };
 
-    ru.route(router, 'patch' ,'/etapi/branches/:branchId', (req, res, next) => {
-        const branch = ru.getAndCheckBranch(req.params.branchId);
+    eu.route(router, 'patch' ,'/etapi/branches/:branchId', (req, res, next) => {
+        const branch = eu.getAndCheckBranch(req.params.branchId);
 
-        ru.validateAndPatch(branch, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+        eu.validateAndPatch(branch, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
 
         res.json(mappers.mapBranchToPojo(branch));
     });
 
-    ru.route(router, 'delete' ,'/etapi/branches/:branchId', (req, res, next) => {
+    eu.route(router, 'delete' ,'/etapi/branches/:branchId', (req, res, next) => {
         const branch = becca.getBranch(req.params.branchId);
 
         if (!branch || branch.isDeleted) {
@@ -66,8 +66,8 @@ function register(router) {
         res.sendStatus(204);
     });
 
-    ru.route(router, 'post' ,'/etapi/refresh-note-ordering/:parentNoteId', (req, res, next) => {
-        ru.getAndCheckNote(req.params.parentNoteId);
+    eu.route(router, 'post' ,'/etapi/refresh-note-ordering/:parentNoteId', (req, res, next) => {
+        eu.getAndCheckNote(req.params.parentNoteId);
 
         entityChangesService.addNoteReorderingEntityChange(req.params.parentNoteId, "etapi");
 

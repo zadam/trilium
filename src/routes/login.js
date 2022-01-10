@@ -4,7 +4,7 @@ const utils = require('../services/utils');
 const optionService = require('../services/options');
 const myScryptService = require('../services/my_scrypt');
 const log = require('../services/log');
-const passwordService = require("../services/password.js");
+const passwordService = require("../services/password");
 
 function loginPage(req, res) {
     res.render('login', { failedAuth: false });

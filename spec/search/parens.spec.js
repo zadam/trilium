@@ -1,4 +1,4 @@
-const handleParens = require('../../src/services/search/services/handle_parens.js');
+const handleParens = require('../../src/services/search/services/handle_parens');
 
 describe("Parens handler", () => {
     it("handles parens", () => {

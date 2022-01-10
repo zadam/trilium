@@ -36,6 +36,9 @@ async function processEntityChanges(entityChanges) {
 
                 loadResults.addOption(ec.entity.name);
             }
+            else if (ec.entityName === 'etapi_tokens') {
+                // NOOP
+            }
             else {
                 throw new Error(`Unknown entityName ${ec.entityName}`);
             }

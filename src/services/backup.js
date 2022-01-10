@@ -76,7 +76,7 @@ async function anonymize() {
 
     const db = new Database(anonymizedFile);
 
-    db.prepare("UPDATE api_tokens SET token = 'API token value'").run();
+    db.prepare("UPDATE etapi_tokens SET tokenHash = 'API token hash value'").run();
     db.prepare("UPDATE notes SET title = 'title'").run();
     db.prepare("UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL").run();
     db.prepare("UPDATE note_revisions SET title = 'title'").run();
