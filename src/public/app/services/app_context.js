@@ -118,7 +118,7 @@ class AppContext extends Component {
 const appContext = new AppContext(window.glob.isMainWindow);
 
 // we should save all outstanding changes before the page/app is closed
-$(window).on('beforeunload', () => {
+$(window).on('beforeunload', () => {return "SSS";
     let allSaved = true;
 
     appContext.beforeUnloadListeners = appContext.beforeUnloadListeners.filter(wr => !!wr.deref());

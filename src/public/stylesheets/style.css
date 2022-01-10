@@ -241,6 +241,10 @@ body .CodeMirror {
     background-color: #eeeeee
 }
 
+.CodeMirror pre.CodeMirror-placeholder { 
+    color: #999 !important; 
+}
+
 #sql-console-query {
     height: 150px;
     width: 100%;

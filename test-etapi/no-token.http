@@ -1,0 +1,103 @@
+GET {{triliumHost}}/etapi/notes?search=aaa
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/notes/root
+Authorization: fakeauth
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+DELETE {{triliumHost}}/etapi/notes/root
+Authorization: fakeauth
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/root
+Authorization: fakeauth
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/branches/root
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+DELETE {{triliumHost}}/etapi/branches/root
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/000
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/attributes/000
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+DELETE {{triliumHost}}/etapi/attributes/000
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/inbox/2022-02-22
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/days/2022-02-22
+Authorization: fakeauth
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/weeks/2022-02-22
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/months/2022-02
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/years/2022
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+POST {{triliumHost}}/etapi/create-note
+
+> {% client.assert(response.status === 401); %}
+
+### Fake URL will get a 404 even without token
+
+GET {{triliumHost}}/etapi/zzzzzz
+
+> {% client.assert(response.status === 404); %}

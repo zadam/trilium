@@ -9,6 +9,7 @@ const Note = require('./entities/note');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 const Option = require('./entities/option');
+const EtapiToken = require("./entities/etapi_token");
 const cls = require("../services/cls");
 const entityConstructor = require("../becca/entity_constructor");
 
@@ -45,6 +46,10 @@ function load() {
         new Option(row);
     }
 
+    for (const row of sql.getRows(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
+        new EtapiToken(row);
+    }
+
     for (const noteId in becca.notes) {
         becca.notes[noteId].sortParents();
     }
@@ -75,7 +80,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entity
         return;
     }
 
-    if (["notes", "branches", "attributes"].includes(entityName)) {
+    if (["notes", "branches", "attributes", "etapi_tokens"].includes(entityName)) {
         const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
         const primaryKeyName = EntityClass.primaryKeyName;
 
@@ -112,6 +117,8 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENT
         branchDeleted(entityId);
     } else if (entityName === 'attributes') {
         attributeDeleted(entityId);
+    } else if (entityName === 'etapi_tokens') {
+        etapiTokenDeleted(entityId);
     }
 });
 
@@ -218,6 +225,10 @@ function noteReorderingUpdated(branchIdList) {
             parentNoteIds.add(branch.parentNoteId);
         }
     }
+}
+
+function etapiTokenDeleted(etapiTokenId) {
+    delete becca.etapiTokens[etapiTokenId];
 }
 
 eventService.subscribeBeccaLoader(eventService.ENTER_PROTECTED_SESSION, () => {

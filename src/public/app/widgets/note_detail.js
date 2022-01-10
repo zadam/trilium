@@ -29,6 +29,10 @@ const TPL = `
         font-family: var(--detail-font-family);
         font-size: var(--detail-font-size);
     }
+    
+    .note-detail.full-height {
+        height: 100%;
+    }
     </style>
 </div>
 `;
@@ -128,7 +132,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             await typeWidget.handleEvent('setNoteContext', {noteContext: this.noteContext});
 
-            // this is happening in update() so note has been already set and we need to reflect this
+            // this is happening in update() so note has been already set, and we need to reflect this
             await typeWidget.handleEvent('noteSwitched', {
                 noteContext: this.noteContext,
                 notePath: this.noteContext.notePath
@@ -136,6 +140,15 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             this.child(typeWidget);
         }
+        
+        this.checkFullHeight();
+    }
+
+    checkFullHeight() {
+        // https://github.com/zadam/trilium/issues/2522
+        this.$widget.toggleClass("full-height", 
+            !this.noteContext.hasNoteList()
+            && ['editable-text', 'editable-code'].includes(this.type));
     }
 
     getTypeWidget() {

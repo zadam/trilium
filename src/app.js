@@ -11,7 +11,7 @@ const sessionSecret = require('./services/session_secret');
 const dataDir = require('./services/data_dir');
 const utils = require('./services/utils');
 require('./services/handlers');
-require('./becca/becca_loader.js');
+require('./becca/becca_loader');
 
 const app = express();
 

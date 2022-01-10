@@ -15,7 +15,7 @@ function uploadImage(req) {
 
     const originalName = "Sender image." + imageType(file.buffer).ext;
 
-    const parentNote = dateNoteService.getDateNote(req.headers['x-local-date']);
+    const parentNote = dateNoteService.getDayNote(req.headers['x-local-date']);
 
     const {note, noteId} = imageService.saveImage(parentNote.noteId, file.buffer, originalName, true);
 
@@ -35,7 +35,7 @@ function uploadImage(req) {
 }
 
 function saveNote(req) {
-    const parentNote = dateNoteService.getDateNote(req.headers['x-local-date']);
+    const parentNote = dateNoteService.getDayNote(req.headers['x-local-date']);
 
     const {note, branch} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,

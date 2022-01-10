@@ -38,7 +38,7 @@ export default class RootContainer extends FlexContainer {
 
     entitiesReloadedEvent({loadResults}) {
         const note = appContext.tabManager.getActiveContextNote();
-
+        
         if (note && loadResults.isNoteReloaded(note.noteId)) {
             this.refresh();
         }

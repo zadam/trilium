@@ -45,9 +45,7 @@ async function initDbConnection() {
     dbReady.resolve();
 }
 
-async function createInitialDatabase(username, password, theme) {
-    log.info("Creating database schema ...");
-
+async function createInitialDatabase() {
     if (isDbInitialized()) {
         throw new Error("DB is already initialized");
     }
@@ -57,15 +55,17 @@ async function createInitialDatabase(username, password, theme) {
 
     let rootNote;
 
-    log.info("Creating root note ...");
-
     sql.transactional(() => {
+        log.info("Creating database schema ...");
+
         sql.executeScript(schema);
 
         require("../becca/becca_loader").load();
 
         const Note = require("../becca/entities/note");
         const Branch = require("../becca/entities/branch");
+
+        log.info("Creating root note ...");
 
         rootNote = new Note({
             noteId: 'root',
@@ -87,9 +87,9 @@ async function createInitialDatabase(username, password, theme) {
         const optionsInitService = require('./options_init');
 
         optionsInitService.initDocumentOptions();
-        optionsInitService.initSyncedOptions(username, password);
-        optionsInitService.initNotSyncedOptions(true, { theme });
+        optionsInitService.initNotSyncedOptions(true, {});
         optionsInitService.initStartupOptions();
+        require("./password").resetPassword();
     });
 
     log.info("Importing demo content ...");
@@ -170,7 +170,6 @@ module.exports = {
     dbReady,
     schemaExists,
     isDbInitialized,
-    initDbConnection,
     createInitialDatabase,
     createDatabaseForSync,
     setDbAsInitialized

@@ -219,6 +219,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         else if (command === "editTitle") {
             const promptDialog = await import("../../dialogs/prompt.js");
             const title = await promptDialog.ask({
+                title: "Rename note",
                 message: "Enter new note title:",
                 defaultValue: $title.text()
             });

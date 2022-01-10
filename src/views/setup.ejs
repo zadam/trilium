@@ -55,60 +55,18 @@
         <div id="setup-type" data-bind="visible: step() == 'setup-type'" style="margin-top: 20px;">
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupType">
-                    I'm a new user and I want to create new Trilium document for my notes</label>
+                    I'm a new user, and I want to create new Trilium document for my notes</label>
             </div>
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupType">
-                    I have desktop instance already and I want to setup sync with it</label>
+                    I have desktop instance already, and I want to set up sync with it</label>
             </div>
             <div class="radio" style="margin-bottom: 15px;">
                 <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupType">
-                    I have server instance already and I want to setup sync with it</label>
+                    I have server instance already, and I want to set up sync with it</label>
             </div>
 
             <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>
-        </div>
-
-        <div data-bind="visible: step() == 'new-document'">
-            <h2>New document</h2>
-
-            <p>You're almost done with the setup. The last thing is to choose username and password using which you'll login to the application.
-                This password is also used for generating encryption key which encrypts protected notes.</p>
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" data-bind="value: username" placeholder="Choose alphanumeric username">
-            </div>
-            <div class="form-group">
-                <label for="password1">Password</label>
-                <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
-            </div>
-            <div class="form-group">
-                <label for="password2">Repeat password</label>
-                <input type="password" class="form-control" data-bind="value: password2" placeholder="Password">
-            </div>
-            <div class="form-group">
-                <label for="password2">Theme</label>
-
-                <div style="display: flex; justify-content: space-around;">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="theme" id="theme-light" value="light" data-bind="checked: theme" checked>
-                        <label class="form-check-label" for="theme-light">light</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="theme" id="theme-dark" value="dark" data-bind="checked: theme">
-                        <label class="form-check-label" for="theme-dark">dark</label>
-                    </div>
-                </div>
-
-                <p style="font-size: smaller;margin-top: 10px;"><em>Theme can be later changed in Options -> Appearance.</em></p>
-            </div>
-
-            <button type="button" data-bind="click: back" class="btn btn-secondary">Back</button>
-
-            &nbsp;
-
-            <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
         </div>
 
         <div data-bind="visible: step() == 'new-document-in-progress'">
@@ -161,12 +119,8 @@
                 <p><strong>Note:</strong> If you leave proxy setting blank, system proxy will be used (applies to desktop/electron build only)</p>
             </div>
             <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" class="form-control" data-bind="value: username" placeholder="Username">
-            </div>
-            <div class="form-group">
-                <label for="password1">Password</label>
-                <input type="password" id="password1" class="form-control" data-bind="value: password1" placeholder="Password">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" data-bind="value: password" placeholder="Password">
             </div>
 
             <button type="button" data-bind="click: back" class="btn btn-secondary">Back</button>
@@ -181,9 +135,7 @@
 
             <div class="alert alert-success">Sync has been correctly set up. It will take some time for the initial sync to finish. Once it's done, you'll be redirected to the login page.</div>
 
-            <div data-bind="if: instanceType == 'desktop'">
-                Outstanding sync items: <strong id="outstanding-syncs">N/A</strong>
-            </div>
+            <div>Outstanding sync items: <strong id="outstanding-syncs">N/A</strong></div>
         </div>
     </div>
 </div>
@@ -192,7 +144,7 @@
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */
 
     window.glob = {
-        sourceId: ''
+        componentId: ''
     };
 
     window.syncInProgress = <%= syncInProgress ? 'true' : 'false' %>;

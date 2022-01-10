@@ -3,16 +3,15 @@
 const options = require('../../services/options');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
-const sourceIdService = require('../../services/source_id');
+const instanceId = require('../../services/member_id');
 const passwordEncryptionService = require('../../services/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info');
 const eventService = require('../../services/events');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
-const optionService = require('../../services/options');
-const ApiToken = require('../../becca/entities/api_token');
 const ws = require("../../services/ws");
+const etapiTokenService = require("../../services/etapi_tokens");
 
 function loginSync(req) {
     if (!sqlInit.schemaExists()) {
@@ -48,7 +47,7 @@ function loginSync(req) {
     req.session.loggedIn = true;
 
     return {
-        sourceId: sourceIdService.getCurrentSourceId(),
+        instanceId: instanceId,
         maxEntityChangeId: sql.getValue("SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1")
     };
 }
@@ -85,23 +84,18 @@ function logoutFromProtectedSession() {
 }
 
 function token(req) {
-    const username = req.body.username;
     const password = req.body.password;
 
-    const isUsernameValid = username === optionService.getOption('username');
-    const isPasswordValid = passwordEncryptionService.verifyPassword(password);
-
-    if (!isUsernameValid || !isPasswordValid) {
-        return [401, "Incorrect username/password"];
+    if (!passwordEncryptionService.verifyPassword(password)) {
+        return [401, "Incorrect password"];
     }
 
-    const apiToken = new ApiToken({
-        token: utils.randomSecureToken()
-    }).save();
+    // for backwards compatibility with Sender which does not send the name
+    const tokenName = req.body.tokenName || "Trilium Sender / Web Clipper";
+    
+    const {authToken} = etapiTokenService.createToken(tokenName);
 
-    return {
-        token: apiToken.token
-    };
+    return { token: authToken };
 }
 
 module.exports = {

@@ -1,0 +1,103 @@
+GET {{triliumHost}}/etapi/inbox/2022-01-01
+Authorization: {{authToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/days/2022-01-01
+Authorization: {{authToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/days/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code === "DATE_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/weeks/2022-01-01
+Authorization: {{authToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/weeks/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code === "DATE_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/months/2022-01
+Authorization: {{authToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/months/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code === "MONTH_INVALID");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/years/2022
+Authorization: {{authToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/years/202
+Authorization: {{authToken}}
+
+> {%
+    client.test("Correct error handling", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.code === "YEAR_INVALID");
+    });
+%}
+
+###
+

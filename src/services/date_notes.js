@@ -3,7 +3,6 @@
 const noteService = require('./notes');
 const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
-const becca = require('../becca/becca');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
 
@@ -49,7 +48,7 @@ function getRootCalendarNote() {
 }
 
 /** @returns {Note} */
-function getYearNote(dateStr, rootNote) {
+function getYearNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
     }
@@ -88,7 +87,7 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
 }
 
 /** @returns {Note} */
-function getMonthNote(dateStr, rootNote) {
+function getMonthNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
     }
@@ -124,7 +123,7 @@ function getMonthNote(dateStr, rootNote) {
     return monthNote;
 }
 
-function getDateNoteTitle(rootNote, dayNumber, dateObj) {
+function getDayNoteTitle(rootNote, dayNumber, dateObj) {
     const pattern = rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
     const weekDay = DAYS[dateObj.getDay()];
 
@@ -137,7 +136,7 @@ function getDateNoteTitle(rootNote, dayNumber, dateObj) {
 }
 
 /** @returns {Note} */
-function getDateNote(dateStr) {
+function getDayNote(dateStr) {
     dateStr = dateStr.trim().substr(0, 10);
 
     let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
@@ -152,7 +151,7 @@ function getDateNote(dateStr) {
 
     const dateObj = dateUtils.parseLocalDate(dateStr);
 
-    const noteTitle = getDateNoteTitle(rootNote, dayNumber, dateObj);
+    const noteTitle = getDayNoteTitle(rootNote, dayNumber, dateObj);
 
     sql.transactional(() => {
         dateNote = createNote(monthNote, noteTitle);
@@ -170,7 +169,7 @@ function getDateNote(dateStr) {
 }
 
 function getTodayNote() {
-    return getDateNote(dateUtils.localNowDate());
+    return getDayNote(dateUtils.localNowDate());
 }
 
 function getStartOfTheWeek(date, startOfTheWeek) {
@@ -197,7 +196,7 @@ function getWeekNote(dateStr, options = {}) {
 
     dateStr = dateUtils.utcDateTimeStr(dateObj);
 
-    return getDateNote(dateStr);
+    return getDayNote(dateStr);
 }
 
 module.exports = {
@@ -205,6 +204,6 @@ module.exports = {
     getYearNote,
     getMonthNote,
     getWeekNote,
-    getDateNote,
+    getDayNote,
     getTodayNote
 };

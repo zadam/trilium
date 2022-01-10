@@ -12,7 +12,7 @@ export function show() {
 }
 
 export function close() {
-    // this may fal if the dialog has not been previously opened (not sure if still true with Bootstrap modal)
+    // this may fail if the dialog has not been previously opened (not sure if still true with Bootstrap modal)
     try {
         $dialog.modal('hide');
     }

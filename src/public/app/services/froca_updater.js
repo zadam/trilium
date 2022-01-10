@@ -22,9 +22,9 @@ async function processEntityChanges(entityChanges) {
             } else if (ec.entityName === 'note_contents') {
                 delete froca.noteComplementPromises[ec.entityId];
 
-                loadResults.addNoteContent(ec.entityId, ec.sourceId);
+                loadResults.addNoteContent(ec.entityId, ec.componentId);
             } else if (ec.entityName === 'note_revisions') {
-                loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.sourceId);
+                loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'note_revision_contents') {
                 // this should change only when toggling isProtected, ignore
             } else if (ec.entityName === 'options') {
@@ -35,6 +35,9 @@ async function processEntityChanges(entityChanges) {
                 options.set(ec.entity.name, ec.entity.value);
 
                 loadResults.addOption(ec.entity.name);
+            }
+            else if (ec.entityName === 'etapi_tokens') {
+                // NOOP
             }
             else {
                 throw new Error(`Unknown entityName ${ec.entityName}`);
@@ -87,7 +90,7 @@ function processNoteChange(loadResults, ec) {
         return;
     }
 
-    loadResults.addNote(ec.entityId, ec.sourceId);
+    loadResults.addNote(ec.entityId, ec.componentId);
 
     if (ec.isErased && ec.entityId in froca.notes) {
         utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
@@ -125,7 +128,7 @@ function processBranchChange(loadResults, ec) {
                 delete parentNote.childToBranch[branch.noteId];
             }
 
-            loadResults.addBranch(ec.entityId, ec.sourceId);
+            loadResults.addBranch(ec.entityId, ec.componentId);
 
             delete froca.branches[ec.entityId];
         }
@@ -133,7 +136,7 @@ function processBranchChange(loadResults, ec) {
         return;
     }
 
-    loadResults.addBranch(ec.entityId, ec.sourceId);
+    loadResults.addBranch(ec.entityId, ec.componentId);
 
     const childNote = froca.notes[ec.entity.noteId];
     const parentNote = froca.notes[ec.entity.parentNoteId];
@@ -175,7 +178,7 @@ function processNoteReordering(loadResults, ec) {
         }
     }
 
-    loadResults.addNoteReordering(ec.entityId, ec.sourceId);
+    loadResults.addNoteReordering(ec.entityId, ec.componentId);
 }
 
 function processAttributeChange(loadResults, ec) {
@@ -199,7 +202,7 @@ function processAttributeChange(loadResults, ec) {
                 targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
             }
 
-            loadResults.addAttribute(ec.entityId, ec.sourceId);
+            loadResults.addAttribute(ec.entityId, ec.componentId);
 
             delete froca.attributes[ec.entityId];
         }
@@ -207,7 +210,7 @@ function processAttributeChange(loadResults, ec) {
         return;
     }
 
-    loadResults.addAttribute(ec.entityId, ec.sourceId);
+    loadResults.addAttribute(ec.entityId, ec.componentId);
 
     const sourceNote = froca.notes[ec.entity.noteId];
     const targetNote = ec.entity.type === 'relation' && froca.notes[ec.entity.value];

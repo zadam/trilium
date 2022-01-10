@@ -3,18 +3,16 @@ import protectedSessionHolder from "../../services/protected_session_holder.js";
 import toastService from "../../services/toast.js";
 
 const TPL = `
-<h3>Username</h3>
-
-<p>Your username is <strong id="credentials-username"></strong>.</p>
-
-<h3>Change password</h3>
+<h3 id="password-heading"></h3>
 
 <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
-  Please take care to remember your new password. Password is used to encrypt protected notes. If you forget your password, then all your protected notes are forever lost with no recovery options.
+  Please take care to remember your new password. Password is used to encrypt protected notes. 
+  If you forget your password, then all your protected notes are forever lost. 
+  In case you did forget your password, <a id="reset-password-button" href="javascript:">click here to reset it</a>.
 </div>
 
 <form id="change-password-form">
-    <div class="form-group">
+    <div class="form-group" id="old-password-form-group">
         <label for="old-password">Old password</label>
         <input class="form-control" id="old-password" type="password">
     </div>
@@ -29,24 +27,41 @@ const TPL = `
         <input class="form-control" id="new-password2" type="password">
     </div>
 
-    <button class="btn btn-primary">Change password</button>
+    <button class="btn btn-primary" id="save-password-button">Change password</button>
 </form>`;
 
 export default class ChangePasswordOptions {
     constructor() {
-        $("#options-credentials").html(TPL);
+        $("#options-password").html(TPL);
 
-        this.$username = $("#credentials-username");
+        this.$passwordHeading = $("#password-heading");
         this.$form = $("#change-password-form");
         this.$oldPassword = $("#old-password");
         this.$newPassword1 = $("#new-password1");
         this.$newPassword2 = $("#new-password2");
+        this.$savePasswordButton = $("#save-password-button");
+        this.$resetPasswordButton = $("#reset-password-button");
+
+        this.$resetPasswordButton.on("click", async () => {
+            if (confirm("By resetting the password you will forever lose access to all your existing protected notes. Do you really want to reset the password?")) {
+                await server.post("password/reset?really=yesIReallyWantToResetPasswordAndLoseAccessToMyProtectedNotes");
+
+                const options = await server.get('options');
+                this.optionsLoaded(options);
+
+                alert("Password has been reset. Please set new password");
+            }
+        });
 
         this.$form.on('submit', () => this.save());
     }
 
     optionsLoaded(options) {
-        this.$username.text(options.username);
+        const isPasswordSet = options.isPasswordSet === 'true';
+
+        $("#old-password-form-group").toggle(isPasswordSet);
+        this.$passwordHeading.text(isPasswordSet ? 'Change password' : 'Set password');
+        this.$savePasswordButton.text(isPasswordSet ? 'Change password' : 'Set password');
     }
 
     save() {

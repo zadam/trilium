@@ -39,6 +39,7 @@
 <%- include('dialogs/include_note.ejs') %>
 <%- include('dialogs/sort_child_notes.ejs') %>
 <%- include('dialogs/delete_notes.ejs') %>
+<%- include('dialogs/password_not_set.ejs') %>
 
 <script type="text/javascript">
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */
@@ -47,7 +48,6 @@
     window.device = "desktop";
     window.glob = {
         activeDialog: null,
-        sourceId: '<%= sourceId %>',
         maxEntityChangeIdAtLoad: <%= maxEntityChangeIdAtLoad %>,
         maxEntityChangeSyncIdAtLoad: <%= maxEntityChangeSyncIdAtLoad %>,
         instanceName: '<%= instanceName %>',

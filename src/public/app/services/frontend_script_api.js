@@ -389,16 +389,26 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getTodayNote = dateNotesService.getTodayNote;
 
     /**
-     * Returns date-note. If it doesn't exist, it is automatically created.
+     * Returns day note for a given date. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} date - e.g. "2019-04-29"
+     * @return {Promise<NoteShort>}
+     * @deprecated use getDayNote instead
+     */
+    this.getDateNote = dateNotesService.getDayNote;
+
+    /**
+     * Returns day note for a given date. If it doesn't exist, it is automatically created.
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
      * @return {Promise<NoteShort>}
      */
-    this.getDateNote = dateNotesService.getDateNote;
+    this.getDayNote = dateNotesService.getDayNote;
 
     /**
-     * Returns date-note for the first date of the week of the given date. If it doesn't exist, it is automatically created.
+     * Returns day note for the first date of the week of the given date. If it doesn't exist, it is automatically created.
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"

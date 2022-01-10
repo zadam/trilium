@@ -4,9 +4,9 @@ const protectedSessionService = require('../../services/protected_session');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
-const becca = require('../becca.js');
+const becca = require('../becca');
 const entityChangesService = require('../../services/entity_changes');
-const AbstractEntity = require("./abstract_entity.js");
+const AbstractEntity = require("./abstract_entity");
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past.

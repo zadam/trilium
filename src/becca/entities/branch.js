@@ -1,9 +1,9 @@
 "use strict";
 
-const Note = require('./note.js');
-const AbstractEntity = require("./abstract_entity.js");
-const sql = require("../../services/sql.js");
-const dateUtils = require("../../services/date_utils.js");
+const Note = require('./note');
+const AbstractEntity = require("./abstract_entity");
+const sql = require("../../services/sql");
+const dateUtils = require("../../services/date_utils");
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple

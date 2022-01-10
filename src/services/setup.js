@@ -55,7 +55,7 @@ async function requestToSyncServer(method, path, body = null) {
     }), timeout);
 }
 
-async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {
+async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
     if (sqlInit.isDbInitialized()) {
         return {
             result: 'failure',
@@ -70,10 +70,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
         const resp = await request.exec({
             method: 'get',
             url: syncServerHost + '/api/setup/sync-seed',
-            auth: {
-                username,
-                password
-            },
+            auth: { password },
             proxy: syncProxy,
             timeout: 30000 // seed request should not take long
         });

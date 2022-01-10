@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../sql');
-const shaca = require('./shaca.js');
+const shaca = require('./shaca');
 const log = require('../../services/log');
 const Note = require('./entities/note');
 const Branch = require('./entities/branch');

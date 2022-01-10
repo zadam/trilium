@@ -73,9 +73,7 @@ function deleteNote(req) {
 
     const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
-    for (const branch of note.getParentBranches()) {
-        noteService.deleteBranch(branch, deleteId, taskContext);
-    }
+    noteService.deleteNote(note, deleteId, taskContext);
 
     if (eraseNotes) {
         noteService.eraseNotesWithDeleteId(deleteId);

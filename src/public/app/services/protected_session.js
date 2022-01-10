@@ -5,6 +5,7 @@ import ws from "./ws.js";
 import appContext from "./app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
+import options from "./options.js";
 
 let protectedSessionDeferred = null;
 
@@ -17,6 +18,11 @@ async function leaveProtectedSession() {
 /** returned promise resolves with true if new protected session was established, false if no action was necessary */
 function enterProtectedSession() {
     const dfd = $.Deferred();
+
+    if (!options.is("isPasswordSet")) {
+        import("../dialogs/password_not_set.js").then(dialog => dialog.show());
+        return dfd;
+    }
 
     if (protectedSessionHolder.isProtectedSessionAvailable()) {
         dfd.resolve(false);

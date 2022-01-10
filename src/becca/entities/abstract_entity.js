@@ -40,7 +40,7 @@ class AbstractEntity {
 
     get becca() {
         if (!becca) {
-            becca = require('../becca.js');
+            becca = require('../becca');
         }
 
         return becca;
@@ -111,6 +111,19 @@ class AbstractEntity {
             sql.execute(`UPDATE ${entityName} SET dateModified = ? WHERE ${this.constructor.primaryKeyName} = ?`,
                 [dateUtils.localNowDateTime(), entityId]);
         }
+
+        this.addEntityChange(true);
+
+        eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
+    }
+
+    markAsDeletedSimple() {
+        const entityId = this[this.constructor.primaryKeyName];
+        const entityName = this.constructor.entityName;
+
+        sql.execute(`UPDATE ${entityName} SET isDeleted = 1, utcDateModified = ?
+                           WHERE ${this.constructor.primaryKeyName} = ?`,
+            [dateUtils.utcNowDateTime(), entityId]);
 
         this.addEntityChange(true);
 

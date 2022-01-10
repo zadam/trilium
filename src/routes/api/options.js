@@ -6,7 +6,6 @@ const searchService = require('../../services/search/services/search');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = new Set([
-    'username', // not exposed for update (not harmful anyway), needed for reading
     'eraseEntitiesAfterTimeInSeconds',
     'protectedSessionTimeout',
     'noteRevisionSnapshotTimeInterval',
@@ -68,6 +67,8 @@ function getOptions() {
             resultMap[optionName] = optionMap[optionName];
         }
     }
+
+    resultMap['isPasswordSet'] = !!optionMap['passwordVerificationHash'] ? 'true' : 'false';
 
     return resultMap;
 }

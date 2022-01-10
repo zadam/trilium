@@ -13,16 +13,14 @@ function getStatus() {
     };
 }
 
-async function setupNewDocument(req) {
-    const { username, password, theme } = req.body;
-
-    await sqlInit.createInitialDatabase(username, password, theme);
+async function setupNewDocument() {
+    await sqlInit.createInitialDatabase();
 }
 
 function setupSyncFromServer(req) {
-    const { syncServerHost, syncProxy, username, password } = req.body;
+    const { syncServerHost, syncProxy, password } = req.body;
 
-    return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, username, password);
+    return setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password);
 }
 
 function saveSyncSeed(req) {

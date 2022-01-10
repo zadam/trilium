@@ -1,6 +1,4 @@
 const optionService = require('./options');
-const passwordEncryptionService = require('./password_encryption');
-const myScryptService = require('./my_scrypt');
 const appInfo = require('./app_info');
 const utils = require('./utils');
 const log = require('./log');
@@ -10,21 +8,6 @@ const keyboardActions = require('./keyboard_actions');
 function initDocumentOptions() {
     optionService.createOption('documentId', utils.randomSecureToken(16), false);
     optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
-}
-
-function initSyncedOptions(username, password) {
-    optionService.createOption('username', username, true);
-
-    optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
-    optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
-
-    const passwordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(password), true);
-    optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
-
-    // passwordEncryptionService expects these options to already exist
-    optionService.createOption('encryptedDataKey', '', true);
-
-    passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
 function initNotSyncedOptions(initialized, opts = {}) {
@@ -45,7 +28,15 @@ function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('lastSyncedPull', '0', false);
     optionService.createOption('lastSyncedPush', '0', false);
 
-    optionService.createOption('theme', opts.theme || 'white', false);
+    let theme = 'dark'; // default based on the poll in https://github.com/zadam/trilium/issues/2516
+    
+    if (utils.isElectron()) {
+        const {nativeTheme} = require('electron');
+        
+        theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    }
+    
+    optionService.createOption('theme', theme, false);
 
     optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
     optionService.createOption('syncServerTimeout', '120000', false);
@@ -130,7 +121,6 @@ function getKeyboardDefaultOptions() {
 
 module.exports = {
     initDocumentOptions,
-    initSyncedOptions,
     initNotSyncedOptions,
     initStartupOptions
 };

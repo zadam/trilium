@@ -18,6 +18,8 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 
+// TODO: patch/put note content
+
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
 
@@ -105,6 +107,10 @@ function createNewNote(params) {
     if (params.title === null || params.title === undefined) {
         // empty title is allowed since it's possible to create such in the UI
         throw new Error(`Note title must be set`);
+    }
+
+    if (params.content === null || params.content === undefined) {
+        throw new Error(`Note content must be set`);
     }
 
     return sql.transactional(() => {
@@ -520,7 +526,7 @@ function updateNote(noteId, noteUpdates) {
 
 /**
  * @param {Branch} branch
- * @param {string} deleteId
+ * @param {string|null} deleteId
  * @param {TaskContext} taskContext
  *
  * @return {boolean} - true if note has been deleted, false otherwise
@@ -567,6 +573,17 @@ function deleteBranch(branch, deleteId, taskContext) {
     }
     else {
         return false;
+    }
+}
+
+/**
+ * @param {Note} note
+ * @param {string|null} deleteId
+ * @param {TaskContext} taskContext
+ */
+function deleteNote(note, deleteId, taskContext) {
+    for (const branch of note.getParentBranches()) {
+        deleteBranch(branch, deleteId, taskContext);
     }
 }
 
@@ -915,6 +932,7 @@ module.exports = {
     createNewNoteWithTarget,
     updateNote,
     deleteBranch,
+    deleteNote,
     undeleteNote,
     protectNoteRecursively,
     scanForLinks,

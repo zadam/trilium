@@ -53,8 +53,8 @@ export default class RootCommandExecutor extends Component {
         d.showDialog(branchIds);
     }
 
-    showOptionsCommand() {
-        import("../dialogs/options.js").then(d => d.showDialog());
+    showOptionsCommand({openTab}) {
+        import("../dialogs/options.js").then(d => d.showDialog(openTab));
     }
 
     showHelpCommand() {
