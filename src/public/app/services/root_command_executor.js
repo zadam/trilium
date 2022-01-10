@@ -5,6 +5,7 @@ import treeService from "../services/tree.js";
 import openService from "./open.js";
 import protectedSessionService from "./protected_session.js";
 import options from "./options.js";
+import froca from "./froca.js";
 
 export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -71,6 +72,9 @@ export default class RootCommandExecutor extends Component {
 
     async searchNotesCommand({searchString, ancestorNoteId}) {
         const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
+
+        // force immediate search
+        await froca.loadSearchNote(searchNote.noteId);
 
         const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true);
 
