@@ -790,7 +790,7 @@ class NoteShort {
 
             const parentNote = froca.notes[parentNoteId];
 
-            if (!parentNote) {
+            if (!parentNote || parentNote.type === 'search') {
                 continue;
             }
 
