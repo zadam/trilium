@@ -6,7 +6,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.assert(response.status === 200);
-    
+    client.assert(response.status === 201);
+
     client.global.set("authToken", response.body.authToken);
 %}

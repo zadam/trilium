@@ -27,7 +27,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateNoteDef'
       responses:
-        '200':
+        '201':
           description: note created
           content:
             application/json:
@@ -56,7 +56,7 @@ paths:
           description: search query string as described in https://github.com/zadam/trilium/wiki/Search
           schema:
             type: string
-          examples: 
+          examples:
             fulltext:
               summary: Fulltext search for keywords (not exact match)
               value: 'towers tolkien'
@@ -205,7 +205,7 @@ paths:
               $ref: '#/components/schemas/Note'
       responses:
         '200':
-          description: update note
+          description: note updated
           content:
             application/json:
               schema:
@@ -252,7 +252,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
-      description: create a branch (clone a note to a different location in the tree)
+      description: >
+        Create a branch (clone a note to a different location in the tree).
+        In case there is a branch between parent note and child note already, 
+        then this will update the existing branch with prefix, notePosition and isExpanded.
       operationId: postBranch
       requestBody:
         required: true
@@ -262,11 +265,17 @@ paths:
               $ref: '#/components/schemas/Branch'
       responses:
         '200':
-          description: update branch
+          description: branch updated (branch between parent note and child note already existed)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Note'
+                $ref: '#/components/schemas/Branch'
+        '201':
+          description: branch created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
         default:
           description: unexpected error
           content:
@@ -284,11 +293,11 @@ paths:
               $ref: '#/components/schemas/Branch'
       responses:
         '200':
-          description: update branch
+          description: branch updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Note'
+                $ref: '#/components/schemas/Branch'
         default:
           description: unexpected error
           content:
@@ -342,8 +351,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Attribute'
       responses:
-        '200':
-          description: update attribute
+        '201':
+          description: attribute created
           content:
             application/json:
               schema:
@@ -365,7 +374,7 @@ paths:
               $ref: '#/components/schemas/Attribute'
       responses:
         '200':
-          description: update attribute
+          description: attribute updated
           content:
             application/json:
               schema:
@@ -421,7 +430,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string 
+            type: string
             format: date
           example: 2022-02-22
       responses:
@@ -547,17 +556,17 @@ paths:
         content:
           application/json:
             schema:
-              properties: 
+              properties:
                 password:
                   type: string
                   description: user's password used to e.g. login to Trilium server and/or protect notes
       responses:
-        '200':
+        '201':
           description: auth token
           content:
             application/json:
               schema:
-                properties: 
+                properties:
                   authToken:
                     type: string
                     example: Bc4bFn0Ffiok_4NpbVCDnFz7B2WU+pdhW8B5Ne3DiR5wXrEyqdjgRIsk=
@@ -602,7 +611,7 @@ components:
           type: string
         type:
           type: string
-          enum: 
+          enum:
             - text
             - code
             - file

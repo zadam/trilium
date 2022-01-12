@@ -12,8 +12,8 @@ function register(router) {
         }
 
         const {authToken} = etapiTokenService.createToken(tokenName || "ETAPI login");
-        
-        res.json({
+
+        res.status(201).json({
             authToken
         });
     });
@@ -26,14 +26,14 @@ function register(router) {
         }
 
         const etapiToken = becca.getEtapiToken(parsed.etapiTokenId);
-        
+
         if (!etapiToken) {
             // shouldn't happen since this already passed auth validation
             throw new Error(`Cannot find the token ${parsed.etapiTokenId}.`);
         }
-        
+
         etapiToken.markAsDeletedSimple();
-        
+
         res.sendStatus(204);
     });
 }

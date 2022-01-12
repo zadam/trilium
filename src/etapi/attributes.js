@@ -19,20 +19,20 @@ function register(router) {
         'value': [v.notNull, v.isString],
         'isInheritable': [v.notNull, v.isBoolean]
     };
-    
+
     eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
         if (req.body.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
-        
+
         const params = {};
-        
+
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_ATTRIBUTE);
 
         try {
             const attr = attributeService.createAttribute(params);
 
-            res.json(mappers.mapAttributeToPojo(attr));
+            res.status(201).json(mappers.mapAttributeToPojo(attr));
         }
         catch (e) {
             throw new eu.EtapiError(500, eu.GENERIC_CODE, e.message);
@@ -49,9 +49,9 @@ function register(router) {
         if (attribute.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
-        
+
         eu.validateAndPatch(attribute, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
-        
+
         attribute.save();
 
         res.json(mappers.mapAttributeToPojo(attribute));

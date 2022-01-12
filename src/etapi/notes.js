@@ -15,21 +15,21 @@ function register(router) {
         if (!search?.trim()) {
             throw new eu.EtapiError(400, 'SEARCH_QUERY_PARAM_MANDATORY', "'search' query parameter is mandatory");
         }
-        
+
         const searchParams = parseSearchParams(req);
         const searchContext = new SearchContext(searchParams);
-        
+
         const searchResults = searchService.findResultsWithQuery(search, searchContext);
         const foundNotes = searchResults.map(sr => becca.notes[sr.noteId]);
-        
+
         const resp = {
             results: foundNotes.map(note => mappers.mapNoteToPojo(note))
         };
-        
+
         if (searchContext.debugInfo) {
             resp.debugInfo = searchContext.debugInfo;
         }
-        
+
         res.json(resp);
     });
 
@@ -51,16 +51,16 @@ function register(router) {
         'noteId': [v.notNull, v.isValidEntityId],
         'branchId': [v.notNull, v.isValidEntityId],
     };
-    
+
     eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
         const params = {};
-        
+
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
 
         try {
             const resp = noteService.createNewNote(params);
 
-            res.json({
+            res.status(201).json({
                 note: mappers.mapNoteToPojo(resp.note),
                 branch: mappers.mapBranchToPojo(resp.branch)
             });

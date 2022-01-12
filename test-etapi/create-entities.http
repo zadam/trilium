@@ -11,15 +11,15 @@ Content-Type: application/json
   "content": "Hi there!"
 }
 
-> {%    
-    client.assert(response.status === 200);
+> {%
+    client.assert(response.status === 201);
     client.assert(response.body.note.noteId.startsWith("forcedId"));
     client.assert(response.body.note.title == "Hello");
     client.assert(response.body.branch.branchId.startsWith("forcedId"));
     client.assert(response.body.branch.parentNoteId == "root");
 
     client.log(`Created note ` + response.body.note.noteId + ` and branch ` + response.body.branch.branchId);
-    
+
     client.global.set("createdNoteId", response.body.note.noteId);
     client.global.set("createdBranchId", response.body.branch.branchId);
 %}
@@ -37,11 +37,11 @@ Content-Type: application/json
 }
 
 > {%
-    client.assert(response.status === 200);
+    client.assert(response.status === 201);
     client.assert(response.body.parentNoteId == "hidden");
 
     client.global.set("clonedBranchId", response.body.branchId);
-    
+
     client.log(`Created cloned branch ` + response.body.branchId);
 %}
 
@@ -107,9 +107,9 @@ Authorization: {{authToken}}
 }
 
 > {%
-    client.assert(response.status === 200);
+    client.assert(response.status === 201);
     client.assert(response.body.attributeId.startsWith("forcedAttributeId"));
-    
+
     client.global.set("createdAttributeId", response.body.attributeId);
 %}
 

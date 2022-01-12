@@ -22,10 +22,10 @@ function register(router) {
         'prefix': [v.isString],
         'isExpanded': [v.notNull, v.isBoolean]
     };
-    
+
     eu.route(router, 'post' ,'/etapi/branches', (req, res, next) => {
         const params = {};
-        
+
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_BRANCH);
 
         const existing = becca.getBranchFromChildAndParent(params.noteId, params.parentNoteId);
@@ -33,15 +33,16 @@ function register(router) {
         if (existing) {
             existing.notePosition = params.notePosition;
             existing.prefix = params.prefix;
+            existing.isExpanded = params.isExpanded;
             existing.save();
 
-            return res.json(mappers.mapBranchToPojo(existing));
+            return res.status(200).json(mappers.mapBranchToPojo(existing));
         }
 
         try {
             const branch = new Branch(params).save();
 
-            res.json(mappers.mapBranchToPojo(branch));
+            res.status(201).json(mappers.mapBranchToPojo(branch));
         }
         catch (e) {
             throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
