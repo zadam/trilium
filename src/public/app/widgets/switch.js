@@ -65,6 +65,7 @@ const TPL = `
         border: 0;
         background: none;
         cursor: pointer;
+        color: var(--main-text-color);
     }
     </style>
 

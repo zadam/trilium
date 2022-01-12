@@ -19,7 +19,7 @@ const TPL = `
             border-color: var(--main-border-color);
             background-color: var(--more-accented-background-color);
             padding: 4px 10px 4px 10px;
-            opacity: 70%;
+            opacity: 90%;
             display: flex;
             justify-content: space-between;
             align-items: center;
