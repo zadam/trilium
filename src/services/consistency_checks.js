@@ -13,6 +13,7 @@ const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
+const noteTypes = require("../services/note_types");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -281,11 +282,13 @@ class ConsistencyChecks {
     }
 
     findLogicIssues() {
+        const noteTypesStr = noteTypes.map(nt => `'${nt}'`).join(", ");
+        
         this.findAndFixIssues(`
                     SELECT noteId, type
                     FROM notes
                     WHERE isDeleted = 0
-                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book', 'note-map', 'mermaid')`,
+                      AND type NOT IN (${noteTypesStr})`,
             ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);

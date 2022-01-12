@@ -12,7 +12,7 @@ function getTokenHash(token) {
 }
 
 function createToken(tokenName) {
-    const token = utils.randomSecureToken();
+    const token = utils.randomSecureToken(32);
     const tokenHash = getTokenHash(token);
 
     const etapiToken = new EtapiToken({

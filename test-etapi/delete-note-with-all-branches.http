@@ -25,7 +25,7 @@ Content-Type: application/json
   "type": "label",
   "name": "mylabel",
   "value": "val",
-  "isInheritable": "true"
+  "isInheritable": true
 }
 
 > {% client.global.set("createdAttributeId", response.body.attributeId); %}
@@ -48,28 +48,28 @@ Content-Type: application/json
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 

@@ -154,10 +154,6 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
             const topAEl = fetchValue(a, 'top');
             const topBEl = fetchValue(b, 'top');
 
-            console.log(a.title, topAEl);
-            console.log(b.title, topBEl);
-            console.log("comp", compare(topAEl, topBEl) && !reverse);
-
             if (topAEl !== topBEl) {
                 // since "top" should not be reversible, we'll reverse it once more to nullify this effect
                 return compare(topAEl, topBEl) * (reverse ? -1 : 1);

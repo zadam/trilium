@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIM
                                              `noteId`	TEXT NOT NULL,
                                              type TEXT DEFAULT '' NOT NULL,
                                              mime TEXT DEFAULT '' NOT NULL,
-                                             `title`	TEXT,
+                                             `title`	TEXT NOT NULL,
                                              `isProtected`	INT NOT NULL DEFAULT 0,
                                              `utcDateLastEdited` TEXT NOT NULL,
                                              `utcDateCreated` TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT N
 CREATE TABLE IF NOT EXISTS "options"
 (
     name TEXT not null PRIMARY KEY,
-    value TEXT,
+    value TEXT not null,
     isSynced INTEGER default 0 not null,
     utcDateModified TEXT NOT NULL
 );

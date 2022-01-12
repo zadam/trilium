@@ -9,6 +9,9 @@ const sql = require("../../services/sql.js");
  * Used by:
  * - Trilium Sender
  * - ETAPI clients
+ * 
+ * The format user is presented with is "<etapiTokenId>_<tokenHash>". This is also called "authToken" to distinguish it
+ * from tokenHash and token.
  */
 class EtapiToken extends AbstractEntity {
     static get entityName() { return "etapi_tokens"; }

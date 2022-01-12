@@ -5,7 +5,7 @@ const Branch = require("../becca/entities/branch");
 const noteService = require("../services/notes");
 const TaskContext = require("../services/task_context");
 const entityChangesService = require("../services/entity_changes");
-const validators = require("./validators");
+const v = require("./validators");
 
 function register(router) {
     eu.route(router, 'get', '/etapi/branches/:branchId', (req, res, next) => {
@@ -14,11 +14,19 @@ function register(router) {
         res.json(mappers.mapBranchToPojo(branch));
     });
 
+    const ALLOWED_PROPERTIES_FOR_CREATE_BRANCH = {
+        'branchId': [v.mandatory, v.notNull, v.isValidEntityId],
+        'noteId': [v.mandatory, v.notNull, v.isNoteId],
+        'parentNoteId': [v.mandatory, v.notNull, v.isNoteId],
+        'notePosition': [v.notNull, v.isInteger],
+        'prefix': [v.isString],
+        'isExpanded': [v.notNull, v.isBoolean]
+    };
+    
     eu.route(router, 'post' ,'/etapi/branches', (req, res, next) => {
-        const params = req.body;
-
-        eu.getAndCheckNote(params.noteId);
-        eu.getAndCheckNote(params.parentNoteId);
+        const params = {};
+        
+        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_BRANCH);
 
         const existing = becca.getBranchFromChildAndParent(params.noteId, params.parentNoteId);
 
@@ -41,15 +49,16 @@ function register(router) {
     });
 
     const ALLOWED_PROPERTIES_FOR_PATCH = {
-        'notePosition': validators.isInteger,
-        'prefix': validators.isStringOrNull,
-        'isExpanded': validators.isBoolean
+        'notePosition': [v.notNull, v.isInteger],
+        'prefix': [v.isString],
+        'isExpanded': [v.notNull, v.isBoolean]
     };
 
     eu.route(router, 'patch' ,'/etapi/branches/:branchId', (req, res, next) => {
         const branch = eu.getAndCheckBranch(req.params.branchId);
 
         eu.validateAndPatch(branch, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+        branch.save();
 
         res.json(mappers.mapBranchToPojo(branch));
     });

@@ -51,7 +51,7 @@ class Attribute extends AbstractEntity {
         /** @type {int} */
         this.position = position;
         /** @type {string} */
-        this.value = value;
+        this.value = value || "";
         /** @type {boolean} */
         this.isInheritable = !!isInheritable;
         /** @type {string} */

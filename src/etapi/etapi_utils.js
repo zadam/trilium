@@ -103,27 +103,26 @@ function getAndCheckAttribute(attributeId) {
     }
 }
 
-function validateAndPatch(entity, props, allowedProperties) {
-    for (const key of Object.keys(props)) {
+function validateAndPatch(target, source, allowedProperties) {
+    for (const key of Object.keys(source)) {
         if (!(key in allowedProperties)) {
-            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED_FOR_PATCH", `Property '${key}' is not allowed for PATCH.`);
+            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for PATCH.`);
         }
         else {
-            const validator = allowedProperties[key];
-            const validationResult = validator(props[key]);
-            
-            if (validationResult) {
-                throw new EtapiError(400, "PROPERTY_VALIDATION_ERROR", `Validation failed on property '${key}': ${validationResult}`);
+            for (const validator of allowedProperties[key]) {
+                const validationResult = validator(source[key]);
+
+                if (validationResult) {
+                    throw new EtapiError(400, "PROPERTY_VALIDATION_ERROR", `Validation failed on property '${key}': ${validationResult}`);
+                }
             }
         }
     }
     
     // validation passed, let's patch
-    for (const propName of Object.keys(props)) {
-        entity[propName] = props[propName];
+    for (const propName of Object.keys(source)) {
+        target[propName] = source[propName];
     }
-    
-    entity.save();
 }
 
 module.exports = {

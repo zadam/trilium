@@ -23,7 +23,7 @@ function addEntityChange(origEntityChange) {
         ec.changeId = utils.randomString(12);
     }
 
-    ec.componentId = ec.componentId || cls.getComponentId() || "";
+    ec.componentId = ec.componentId || cls.getComponentId() || "NA"; // NA = not available
     ec.instanceId = ec.instanceId || instanceId;
     ec.isSynced = ec.isSynced ? 1 : 0;
     ec.isErased = ec.isErased ? 1 : 0;
@@ -43,7 +43,7 @@ function addNoteReorderingEntityChange(parentNoteId, componentId) {
         utcDateChanged: dateUtils.utcNowDateTime(),
         isSynced: true,
         componentId,
-        instanceId: instanceId
+        instanceId
     });
 
     const eventService = require('./events');

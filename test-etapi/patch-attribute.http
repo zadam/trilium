@@ -25,7 +25,7 @@ Content-Type: application/json
   "type": "label",
   "name": "mylabel",
   "value": "val",
-  "isInheritable": "true"
+  "isInheritable": true
 }
 
 > {% client.global.set("createdAttributeId", response.body.attributeId); %}
@@ -61,7 +61,7 @@ Content-Type: application/json
 
 > {% 
     client.assert(response.status === 400); 
-    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED_FOR_PATCH");
+    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED");
 %}
 
 ###

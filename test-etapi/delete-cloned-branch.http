@@ -32,21 +32,21 @@ Content-Type: application/json
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
@@ -77,11 +77,11 @@ Authorization: {{authToken}}
 GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}
 
 ###
 
 GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
 Authorization: {{authToken}}
 
-> {% client.assert(response.status === 200, "Response status is not 200"); %}
+> {% client.assert(response.status === 200); %}

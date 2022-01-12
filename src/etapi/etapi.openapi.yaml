@@ -591,13 +591,15 @@ components:
       type: object
       required:
         - parentNoteId
-        - type
         - title
+        - type
         - content
       properties:
         parentNoteId:
           $ref: '#/components/schemas/EntityId'
           description: Note ID of the parent note in the tree
+        title:
+          type: string
         type:
           type: string
           enum: 
@@ -613,8 +615,6 @@ components:
           type: string
           description: this needs to be specified only for note types 'code', 'file', 'image'.
           example: application/json
-        title:
-          type: string
         content:
           type: string
         notePosition:
@@ -628,6 +628,9 @@ components:
             Prefix is branch (placement) specific title prefix for the note. 
             Let's say you have your note placed into two different places in the tree, 
             but you want to change the title a bit in one of the placements. For this you can use prefix.
+        isExpanded:
+          type: boolean
+          description: true if this note (as a folder) should appear expanded
         noteId:
           $ref: '#/components/schemas/EntityId'
           description: DON'T specify unless you want to force a specific noteId
@@ -644,7 +647,7 @@ components:
           type: string
         type:
           type: string
-          enum: [text, code, book, image, file, mermaid, relation-map, render, search, note-map]
+          enum: [text, code, render, file, image, search, relation-map, book, note-map, mermaid]
         mime:
           type: string
         isProtected:
@@ -686,7 +689,6 @@ components:
       properties:
         branchId:
           $ref: '#/components/schemas/EntityId'
-          readOnly: true
         noteId:
           $ref: '#/components/schemas/EntityId'
           readOnly: true
@@ -700,7 +702,7 @@ components:
         notePosition:
           type: integer
           format: int32
-        isExanded:
+        isExpanded:
           type: boolean
         utcDateModified:
           $ref: '#/components/schemas/UtcDateTime'
@@ -713,7 +715,6 @@ components:
       properties:
         attributeId:
           $ref: '#/components/schemas/EntityId'
-          readOnly: true
         noteId:
           $ref: '#/components/schemas/EntityId'
           readOnly: true
@@ -753,7 +754,7 @@ components:
           description: debugging info on parsing the search query enabled with &debug=true parameter
     EntityId:
       type: string
-      pattern: '[a-zA-Z0-9]{4,12}'
+      pattern: '[a-zA-Z0-9]{4,32}'
       example: evnnmvHTCgIn
     EntityIdList:
       type: array

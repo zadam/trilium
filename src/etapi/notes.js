@@ -4,7 +4,7 @@ const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const noteService = require("../services/notes");
 const TaskContext = require("../services/task_context");
-const validators = require("./validators");
+const v = require("./validators");
 const searchService = require("../services/search/services/search");
 const SearchContext = require("../services/search/search_context");
 
@@ -39,10 +39,23 @@ function register(router) {
         res.json(mappers.mapNoteToPojo(note));
     });
 
+    const ALLOWED_PROPERTIES_FOR_CREATE_NOTE = {
+        'parentNoteId': [v.mandatory, v.notNull, v.isNoteId],
+        'title': [v.mandatory, v.notNull, v.isString],
+        'type': [v.mandatory, v.notNull, v.isNoteType],
+        'mime': [v.notNull, v.isString],
+        'content': [v.notNull, v.isString],
+        'notePosition': [v.notNull, v.isInteger],
+        'prefix': [v.notNull, v.isInteger],
+        'isExpanded': [v.notNull, v.isBoolean],
+        'noteId': [v.notNull, v.isValidEntityId],
+        'branchId': [v.notNull, v.isValidEntityId],
+    };
+    
     eu.route(router, 'post' ,'/etapi/create-note', (req, res, next) => {
-        const params = req.body;
-
-        eu.getAndCheckNote(params.parentNoteId);
+        const params = {};
+        
+        eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_NOTE);
 
         try {
             const resp = noteService.createNewNote(params);
@@ -53,14 +66,14 @@ function register(router) {
             });
         }
         catch (e) {
-            return eu.sendError(res, 400, eu.GENERIC_CODE, e.message);
+            return eu.sendError(res, 500, eu.GENERIC_CODE, e.message);
         }
     });
 
     const ALLOWED_PROPERTIES_FOR_PATCH = {
-        'title': validators.isString,
-        'type': validators.isString,
-        'mime': validators.isString
+        'title': [v.notNull, v.isString],
+        'type': [v.notNull, v.isString],
+        'mime': [v.notNull, v.isString]
     };
 
     eu.route(router, 'patch' ,'/etapi/notes/:noteId', (req, res, next) => {
@@ -71,6 +84,7 @@ function register(router) {
         }
 
         eu.validateAndPatch(note, req.body, ALLOWED_PROPERTIES_FOR_PATCH);
+        note.save();
 
         res.json(mappers.mapNoteToPojo(note));
     });

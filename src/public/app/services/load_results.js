@@ -91,7 +91,7 @@ export default class LoadResults {
         }
 
         const componentIds = this.noteIdToComponentId[noteId];
-        return componentIds && !!componentIds.find(sId => sId !== componentId);
+        return componentIds && componentIds.find(sId => sId !== componentId) !== undefined;
     }
 
     addNoteContent(noteId, componentId) {

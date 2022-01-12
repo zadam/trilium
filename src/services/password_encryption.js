@@ -6,8 +6,12 @@ const dataEncryptionService = require('./data_encryption');
 function verifyPassword(password) {
     const givenPasswordHash = utils.toBase64(myScryptService.getVerificationHash(password));
 
-    const dbPasswordHash = optionService.getOption('passwordVerificationHash');
+    const dbPasswordHash = optionService.getOptionOrNull('passwordVerificationHash');
 
+    if (!dbPasswordHash) {
+        return false;
+    }
+    
     return givenPasswordHash === dbPasswordHash;
 }
 

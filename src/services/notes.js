@@ -18,8 +18,6 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 
-// TODO: patch/put note content
-
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
 
