@@ -865,10 +865,12 @@ class Note extends AbstractEntity {
             this.ancestorCache = [];
 
             for (const parent of this.parents) {
-                if (!noteIds.has(parent.noteId)) {
-                    this.ancestorCache.push(parent);
-                    noteIds.add(parent.noteId);
+                if (noteIds.has(parent.noteId)) {
+                    continue;
                 }
+
+                this.ancestorCache.push(parent);
+                noteIds.add(parent.noteId);
 
                 for (const ancestorNote of parent.getAncestors()) {
                     if (!noteIds.has(ancestorNote.noteId)) {
