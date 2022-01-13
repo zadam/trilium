@@ -41,8 +41,6 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 
     const existing = getExistingBranch(parentNoteId, childNoteId);
 
-    console.log("BBBB", existing);
-
     if (existing && (branchId === null || existing.branchId !== branchId)) {
         const parentNote = becca.getNote(parentNoteId);
         const childNote = becca.getNote(childNoteId);

@@ -25,7 +25,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
     async switchOn() {
         await branchService.cloneNoteToNote(this.noteId, 'share');
 
-        syncService.syncNow();
+        syncService.syncNow(true);
     }
 
     async switchOff() {
@@ -47,7 +47,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
 
         await server.remove(`branches/${shareBranch.branchId}?taskId=no-progress-reporting`);
 
-        syncService.syncNow();
+        syncService.syncNow(true);
     }
 
     async refreshWithNote(note) {
