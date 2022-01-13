@@ -26,7 +26,7 @@ async function sync() {
     try {
         return await syncMutexService.doExclusively(async () => {
             if (!syncOptions.isSyncSetup()) {
-                return { success: false, message: 'Sync not configured' };
+                return { success: false, errorCode: 'NOT_CONFIGURED', message: 'Sync not configured' };
             }
 
             let continueSync = false;
