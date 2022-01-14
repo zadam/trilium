@@ -21,6 +21,7 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import attributeService from "../services/attributes.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
+import attributeRenderer from "../services/attribute_renderer.js";
 
 const TPL = `
 <div class="note-detail">
@@ -140,13 +141,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             this.child(typeWidget);
         }
-        
+
         this.checkFullHeight();
     }
 
     checkFullHeight() {
         // https://github.com/zadam/trilium/issues/2522
-        this.$widget.toggleClass("full-height", 
+        this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
             && ['editable-text', 'editable-code'].includes(this.type));
     }
@@ -222,8 +223,17 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
 
+        let $promotedAttributes = $("");
+
+        if (this.note.getPromotedDefinitionAttributes().length > 0) {
+            $promotedAttributes = (await attributeRenderer.renderNormalAttributes(this.note)).$renderedAttributes;
+        }
+
         this.$widget.find('.note-detail-printable:visible').printThis({
-            header: $("<h2>").text(this.note && this.note.title).prop('outerHTML'),
+            header: $("<div>")
+                        .append($("<h2>").text(this.note.title))
+                        .append($promotedAttributes)
+                        .prop('outerHTML'),
             footer: `
 <script src="libraries/katex/katex.min.js"></script>
 <script src="libraries/katex/mhchem.min.js"></script>
