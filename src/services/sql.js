@@ -2,8 +2,6 @@
 
 /**
  * @module sql
- *
- * TODO: some methods (like getValue()) could use raw rows
  */
 
 const log = require('./log');
