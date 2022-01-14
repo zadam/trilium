@@ -328,19 +328,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 }
             },
             activate: async (event, data) => {
-                // click event won't propagate so let's close context menu manually
-                contextMenu.hide();
-
-                this.clearSelectedNodes();
-
                 const notePath = treeService.getNotePath(data.node);
 
                 const activeNoteContext = appContext.tabManager.getActiveContext();
+                activeNoteContext.setLoading();
                 await activeNoteContext.setNote(notePath);
-
-                if (utils.isMobile()) {
-                    this.triggerCommand('setActiveScreen', {screen: 'detail'});
-                }
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),

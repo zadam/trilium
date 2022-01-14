@@ -32,6 +32,14 @@ class NoteContext extends Component {
         });
     }
 
+    setLoading() {
+        this.notePath = null;
+        this.noteId = null;
+        this.parentNoteId = null;
+
+        this.triggerEvent('noteLoading');
+    }
+
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 

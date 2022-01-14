@@ -21,6 +21,7 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import attributeService from "../services/attributes.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
+import LoadingTypeWidget from "./type_widgets/loading.js";
 
 const TPL = `
 <div class="note-detail">
@@ -51,7 +52,8 @@ const typeWidgetClasses = {
     'relation-map': RelationMapTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget
+    'note-map': NoteMapTypeWidget,
+    'loading': LoadingTypeWidget,
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -207,6 +209,21 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         if (this.isNoteContext(noteContext.ntxId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
+    }
+
+    async noteLoadingEvent() {
+        const widget = new LoadingTypeWidget();
+        widget.spacedUpdate = this.spacedUpdate;
+        widget.setParent(this);
+
+        const $renderedWidget = widget.render();
+        this.$widget.empty();
+        this.$widget.append($renderedWidget);
+
+        console.log(this, this.$widget);
+        this.$widget.append($renderedWidget);
+
+        this.child(widget);
     }
 
     async beforeTabRemoveEvent({ntxIds}) {
