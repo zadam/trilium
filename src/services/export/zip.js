@@ -150,7 +150,8 @@ function exportToZip(taskContext, branch, format, res) {
 
         noteIdToMeta[note.noteId] = meta;
 
-        const childBranches = note.getChildBranches();
+        const childBranches = note.getChildBranches()
+            .filter(branch => branch.noteId !== 'hidden');
 
         const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
 
