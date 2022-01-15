@@ -5,71 +5,9 @@ const sql = require('./sql');
 const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
 const {formatAttrForSearch} = require("./attribute_formatter");
+const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
-
-const BUILTIN_ATTRIBUTES = [
-    // label names
-    { type: 'label', name: 'inbox' },
-    { type: 'label', name: 'disableVersioning' },
-    { type: 'label', name: 'calendarRoot' },
-    { type: 'label', name: 'archived' },
-    { type: 'label', name: 'excludeFromExport' },
-    { type: 'label', name: 'disableInclusion' },
-    { type: 'label', name: 'appCss' },
-    { type: 'label', name: 'appTheme' },
-    { type: 'label', name: 'hidePromotedAttributes' },
-    { type: 'label', name: 'readOnly' },
-    { type: 'label', name: 'autoReadOnlyDisabled' },
-    { type: 'label', name: 'hoistedCssClass' },
-    { type: 'label', name: 'cssClass' },
-    { type: 'label', name: 'iconClass' },
-    { type: 'label', name: 'keyboardShortcut' },
-    { type: 'label', name: 'run', isDangerous: true },
-    { type: 'label', name: 'runOnInstance', isDangerous: false },
-    { type: 'label', name: 'runAtHour', isDangerous: false },
-    { type: 'label', name: 'customRequestHandler', isDangerous: true },
-    { type: 'label', name: 'customResourceProvider', isDangerous: true },
-    { type: 'label', name: 'widget', isDangerous: true },
-    { type: 'label', name: 'noteInfoWidgetDisabled' },
-    { type: 'label', name: 'linkMapWidgetDisabled' },
-    { type: 'label', name: 'noteRevisionsWidgetDisabled' },
-    { type: 'label', name: 'whatLinksHereWidgetDisabled' },
-    { type: 'label', name: 'similarNotesWidgetDisabled' },
-    { type: 'label', name: 'workspace' },
-    { type: 'label', name: 'workspaceIconClass' },
-    { type: 'label', name: 'workspaceTabBackgroundColor' },
-    { type: 'label', name: 'searchHome' },
-    { type: 'label', name: 'hoistedInbox' },
-    { type: 'label', name: 'hoistedSearchHome' },
-    { type: 'label', name: 'sqlConsoleHome' },
-    { type: 'label', name: 'datePattern' },
-    { type: 'label', name: 'pageSize' },
-    { type: 'label', name: 'viewType' },
-    { type: 'label', name: 'mapRootNoteId' },
-    { type: 'label', name: 'bookmarked' },
-    { type: 'label', name: 'bookmarkFolder' },
-    { type: 'label', name: 'sorted' },
-    { type: 'label', name: 'top' },
-    { type: 'label', name: 'fullContentWidth' },
-    { type: 'label', name: 'shareHiddenFromTree' },
-    { type: 'label', name: 'shareAlias' },
-    { type: 'label', name: 'shareOmitDefaultCss' },
-
-    // relation names
-    { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
-    { type: 'relation', name: 'runOnNoteTitleChange', isDangerous: true },
-    { type: 'relation', name: 'runOnNoteChange', isDangerous: true },
-    { type: 'relation', name: 'runOnChildNoteCreation', isDangerous: true },
-    { type: 'relation', name: 'runOnAttributeCreation', isDangerous: true },
-    { type: 'relation', name: 'runOnAttributeChange', isDangerous: true },
-    { type: 'relation', name: 'template' },
-    { type: 'relation', name: 'widget', isDangerous: true },
-    { type: 'relation', name: 'renderNote', isDangerous: true },
-    { type: 'relation', name: 'shareCss', isDangerous: false },
-    { type: 'relation', name: 'shareJs', isDangerous: false },
-    { type: 'relation', name: 'shareFavicon', isDangerous: false },
-];
 
 /** @returns {Note[]} */
 function getNotesWithLabel(name, value) {
@@ -144,7 +82,7 @@ function createAttribute(attribute) {
 function getAttributeNames(type, nameLike) {
     nameLike = nameLike.toLowerCase();
 
-    const names = sql.getColumn(
+    let names = sql.getColumn(
         `SELECT DISTINCT name 
              FROM attributes 
              WHERE isDeleted = 0
@@ -156,6 +94,13 @@ function getAttributeNames(type, nameLike) {
             names.push(attr.name);
         }
     }
+
+    names = names.filter(name => ![
+        'internalLink',
+        'imageLink',
+        'includeNoteLink',
+        'relationMapLink'
+    ].includes(name));
 
     names.sort((a, b) => {
         const aPrefix = a.toLowerCase().startsWith(nameLike);
@@ -184,14 +129,7 @@ function isAttributeDangerous(type, name) {
 }
 
 function getBuiltinAttributeNames() {
-    return BUILTIN_ATTRIBUTES
-        .map(attr => attr.name)
-        .concat([
-            'internalLink',
-            'imageLink',
-            'includeNoteLink',
-            'relationMapLink'
-        ]);
+    return BUILTIN_ATTRIBUTES;
 }
 
 function sanitizeAttributeName(origName) {
