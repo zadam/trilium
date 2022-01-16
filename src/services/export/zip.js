@@ -52,12 +52,12 @@ function exportToZip(taskContext, branch, format, res) {
     function getDataFileName(note, baseFileName, existingFileNames) {
         let fileName = baseFileName;
 
+        let existingExtension = path.extname(fileName).toLowerCase();
+        let newExtension;
+        
         if (fileName.length > 30) {
             fileName = fileName.substr(0, 30);
         }
-
-        let existingExtension = path.extname(fileName).toLowerCase();
-        let newExtension;
 
         // following two are handled specifically since we always want to have these extensions no matter the automatic detection
         // and/or existing detected extensions in the note name
