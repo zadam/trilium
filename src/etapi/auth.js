@@ -1,7 +1,7 @@
 const becca = require("../becca/becca");
 const eu = require("./etapi_utils");
-const passwordEncryptionService = require("../services/password_encryption.js");
-const etapiTokenService = require("../services/etapi_tokens.js");
+const passwordEncryptionService = require("../services/password_encryption");
+const etapiTokenService = require("../services/etapi_tokens");
 
 function register(router) {
     eu.NOT_AUTHENTICATED_ROUTE(router, 'post', '/etapi/auth/login', (req, res, next) => {
