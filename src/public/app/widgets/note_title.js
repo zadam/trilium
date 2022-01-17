@@ -52,7 +52,11 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
 
         this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
 
-        this.$noteTitle.on('blur', () => { this.deleteNoteOnEscape = false });
+        this.$noteTitle.on('blur', () => {
+            this.spacedUpdate.updateNowIfNecessary();
+
+            this.deleteNoteOnEscape = false;
+        });
 
         utils.bindElShortcut(this.$noteTitle, 'esc', () => {
             if (this.deleteNoteOnEscape && this.noteContext.isActive()) {
