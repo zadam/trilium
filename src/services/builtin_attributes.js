@@ -48,6 +48,10 @@ module.exports = [
     { type: 'label', name: 'shareRoot' },
 
     // relation names
+    { type: 'relation', name: 'internalLink' },
+    { type: 'relation', name: 'imageLink' },
+    { type: 'relation', name: 'relationMapLink' },
+    { type: 'relation', name: 'includeMapLink' },
     { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
     { type: 'relation', name: 'runOnNoteTitleChange', isDangerous: true },
     { type: 'relation', name: 'runOnNoteChange', isDangerous: true },
@@ -57,7 +61,7 @@ module.exports = [
     { type: 'relation', name: 'template' },
     { type: 'relation', name: 'widget', isDangerous: true },
     { type: 'relation', name: 'renderNote', isDangerous: true },
-    { type: 'relation', name: 'shareCss', isDangerous: false },
-    { type: 'relation', name: 'shareJs', isDangerous: false },
-    { type: 'relation', name: 'shareFavicon', isDangerous: false },
+    { type: 'relation', name: 'shareCss' },
+    { type: 'relation', name: 'shareJs' },
+    { type: 'relation', name: 'shareFavicon' },
 ];

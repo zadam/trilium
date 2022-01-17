@@ -2,14 +2,13 @@
 
 const dateUtils = require('../../services/date_utils');
 const AbstractEntity = require("./abstract_entity");
-const sql = require("../../services/sql.js");
 
 /**
  * EtapiToken is an entity representing token used to authenticate against Trilium REST API from client applications.
  * Used by:
  * - Trilium Sender
  * - ETAPI clients
- * 
+ *
  * The format user is presented with is "<etapiTokenId>_<tokenHash>". This is also called "authToken" to distinguish it
  * from tokenHash and token.
  */
@@ -42,10 +41,10 @@ class EtapiToken extends AbstractEntity {
         this.utcDateModified = row.utcDateModified || this.utcDateCreated;
         /** @type {boolean} */
         this.isDeleted = !!row.isDeleted;
-        
+
         this.becca.etapiTokens[this.etapiTokenId] = this;
     }
-    
+
     init() {
         if (this.etapiTokenId) {
             this.becca.etapiTokens[this.etapiTokenId] = this;

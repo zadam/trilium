@@ -8,6 +8,7 @@ const log = require('./log');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir');
 const cls = require('./cls');
+const fs = require("fs-extra");
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
@@ -276,6 +277,15 @@ function fillParamList(paramIds, truncate = true) {
     s.run(paramIds);
 }
 
+async function copyDatabase(targetFilePath) {
+    try {
+        fs.unlinkSync(targetFilePath);
+    } catch (e) {
+    } // unlink throws exception if the file did not exist
+
+    await dbConnection.backup(targetFilePath);
+}
+
 module.exports = {
     dbConnection,
     insert,
@@ -347,5 +357,6 @@ module.exports = {
     executeScript,
     transactional,
     upsert,
-    fillParamList
+    fillParamList,
+    copyDatabase
 };

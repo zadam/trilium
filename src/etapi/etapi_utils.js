@@ -2,8 +2,8 @@ const cls = require("../services/cls");
 const sql = require("../services/sql");
 const log = require("../services/log");
 const becca = require("../becca/becca");
-const etapiTokenService = require("../services/etapi_tokens.js");
-const config = require("../services/config.js");
+const etapiTokenService = require("../services/etapi_tokens");
+const config = require("../services/config");
 const GENERIC_CODE = "GENERIC";
 
 const noAuthentication = config.General && config.General.noAuthentication === true;
@@ -11,7 +11,7 @@ const noAuthentication = config.General && config.General.noAuthentication === t
 class EtapiError extends Error {
     constructor(statusCode, code, message) {
         super();
-        
+
         this.statusCode = statusCode;
         this.code = code;
         this.message = message;
@@ -72,7 +72,7 @@ function NOT_AUTHENTICATED_ROUTE(router, method, path, routeHandler) {
 
 function getAndCheckNote(noteId) {
     const note = becca.getNote(noteId);
-    
+
     if (note) {
         return note;
     }
@@ -118,7 +118,7 @@ function validateAndPatch(target, source, allowedProperties) {
             }
         }
     }
-    
+
     // validation passed, let's patch
     for (const propName of Object.keys(source)) {
         target[propName] = source[propName];

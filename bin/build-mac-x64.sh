@@ -23,6 +23,8 @@ rm -rf $BUILD_DIR
 # Mac build has by default useless directory level
 mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR
 
+cp bin/tpl/anonymize-database.sql $BUILD_DIR/
+
 echo "Zipping mac x64 electron distribution..."
 
 VERSION=`jq -r ".version" package.json`

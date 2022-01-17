@@ -82,7 +82,7 @@ function createAttribute(attribute) {
 function getAttributeNames(type, nameLike) {
     nameLike = nameLike.toLowerCase();
 
-    const names = sql.getColumn(
+    let names = sql.getColumn(
         `SELECT DISTINCT name 
              FROM attributes 
              WHERE isDeleted = 0
@@ -94,6 +94,13 @@ function getAttributeNames(type, nameLike) {
             names.push(attr.name);
         }
     }
+
+    names = names.filter(name => ![
+        'internalLink',
+        'imageLink',
+        'includeNoteLink',
+        'relationMapLink'
+    ].includes(name));
 
     names.sort((a, b) => {
         const aPrefix = a.toLowerCase().startsWith(nameLike);
@@ -122,14 +129,7 @@ function isAttributeDangerous(type, name) {
 }
 
 function getBuiltinAttributeNames() {
-    return BUILTIN_ATTRIBUTES
-        .map(attr => attr.name)
-        .concat([
-            'internalLink',
-            'imageLink',
-            'includeNoteLink',
-            'relationMapLink'
-        ]);
+    return BUILTIN_ATTRIBUTES;
 }
 
 function sanitizeAttributeName(origName) {
