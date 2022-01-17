@@ -406,6 +406,10 @@ class Note extends AbstractEntity {
     }
 
     get shareId() {
+        if (this.hasOwnedLabel('shareRoot')) {
+            return "";
+        }
+
         const sharedAlias = this.getOwnedLabelValue("shareAlias");
 
         return sharedAlias || this.noteId;

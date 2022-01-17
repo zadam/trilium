@@ -32,7 +32,7 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         const syncServerHost = options.get("syncServerHost");
         let link;
 
-        const shareId = note.getOwnedLabelValue('shareAlias') || note.noteId;
+        const shareId = this.getShareId(note);
 
         if (syncServerHost) {
             link = syncServerHost + "/share/" + shareId;
@@ -44,6 +44,14 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         }
 
         this.$sharedLink.attr("href", link).text(link);
+    }
+
+    getShareId(note) {
+        if (note.hasOwnedLabel('shareRoot')) {
+            return '';
+        }
+
+        return note.getOwnedLabelValue('shareAlias') || note.noteId;
     }
 
     entitiesReloadedEvent({loadResults}) {

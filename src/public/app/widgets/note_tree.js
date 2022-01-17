@@ -617,6 +617,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     /**
      * @param {Branch} branch
+     * @param {boolean} forceLazy
      */
     prepareNode(branch, forceLazy = false) {
         const note = branch.getNoteFromCache();

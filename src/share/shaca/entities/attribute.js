@@ -43,6 +43,10 @@ class Attribute extends AbstractEntity {
         if (this.type === 'label' && this.name === 'shareAlias' && this.value.trim()) {
             this.shaca.aliasToNote[this.value.trim()] = this.note;
         }
+
+        if (this.type === 'label' && this.name === 'shareRoot') {
+            this.shaca.shareRootNote = this.note;
+        }
     }
 
     get isAffectingSubtree() {

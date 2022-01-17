@@ -214,6 +214,7 @@ const ATTR_HELP = {
         "shareHiddenFromTree": "this note is hidden from left navigation tree, but still accessible with its URL",
         "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
         "shareOmitDefaultCss": "default share page CSS will be omitted. Use when you make extensive styling changes.",
+        "shareRoot": "marks note which is served on /share root.",
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",

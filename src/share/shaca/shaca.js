@@ -17,6 +17,9 @@ class Shaca {
         /** @type {Object.<String, String>} */
         this.aliasToNote = {};
 
+        /** @type {Note|null} */
+        this.shareRootNote = null;
+
         this.loaded = false;
     }
 

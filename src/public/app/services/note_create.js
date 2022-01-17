@@ -40,7 +40,7 @@ async function createNote(parentNotePath, options = {}) {
     C-->D;`
     }
 
-    const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${options.target}&targetBranchId=${options.targetBranchId}`, {
+    const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${options.target}&targetBranchId=${options.targetBranchId || ""}`, {
         title: newNoteName,
         content: options.content || "",
         isProtected: options.isProtected,
