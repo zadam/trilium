@@ -129,12 +129,7 @@ export default class TabManager extends Component {
             window.history.pushState(null, "", url);
         }
 
-        const titleFragments = [
-            // it helps navigating in history if note title is included in the title
-            activeNoteContext.note?.title,
-            "Trilium Notes"
-        ].filter(Boolean);
-        document.title = titleFragments.join(" - ");
+        this.updateDocumentTitle(activeNoteContext);
 
         this.triggerEvent('activeNoteChanged'); // trigger this even in on popstate event
     }
@@ -211,7 +206,7 @@ export default class TabManager extends Component {
         await noteContext.setEmpty();
     }
 
-    async openEmptyTab(ntxId, hoistedNoteId = 'root', mainNtxId = null) {
+    async openEmptyTab(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = new NoteContext(ntxId, hoistedNoteId, mainNtxId);
 
         const existingNoteContext = this.children.find(nc => nc.ntxId === noteContext.ntxId);
@@ -245,7 +240,7 @@ export default class TabManager extends Component {
         return this.openContextWithNote(notePath, activate, null, hoistedNoteId);
     }
 
-    async openContextWithNote(notePath, activate, ntxId, hoistedNoteId = 'root', mainNtxId = null) {
+    async openContextWithNote(notePath, activate, ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
         if (notePath) {
@@ -452,5 +447,23 @@ export default class TabManager extends Component {
 
     hoistedNoteChangedEvent() {
         this.tabsUpdate.scheduleUpdate();
+    }
+
+    updateDocumentTitle(activeNoteContext) {
+        const titleFragments = [
+            // it helps navigating in history if note title is included in the title
+            activeNoteContext.note?.title,
+            "Trilium Notes"
+        ].filter(Boolean);
+
+        document.title = titleFragments.join(" - ");
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        const activeContext = this.getActiveContext();
+
+        if (activeContext && loadResults.isNoteReloaded(activeContext.noteId)) {
+            this.updateDocumentTitle(activeContext);
+        }
     }
 }

@@ -102,8 +102,13 @@ function createNewNote(params) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (!params.title || params.title.trim().length === 0) {
-        throw new Error(`Note title must not be empty`);
+    if (params.title === null || params.title === undefined) {
+        // empty title is allowed since it's possible to create such in the UI
+        throw new Error(`Note title must be set`);
+    }
+
+    if (params.content === null || params.content === undefined) {
+        throw new Error(`Note content must be set`);
     }
 
     return sql.transactional(() => {
@@ -360,7 +365,7 @@ function downloadImages(noteId, content) {
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
-                const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping));
+                const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping), true);
 
                 const origNote = becca.getNote(noteId);
 
@@ -519,7 +524,7 @@ function updateNote(noteId, noteUpdates) {
 
 /**
  * @param {Branch} branch
- * @param {string} deleteId
+ * @param {string|null} deleteId
  * @param {TaskContext} taskContext
  *
  * @return {boolean} - true if note has been deleted, false otherwise
@@ -566,6 +571,17 @@ function deleteBranch(branch, deleteId, taskContext) {
     }
     else {
         return false;
+    }
+}
+
+/**
+ * @param {Note} note
+ * @param {string|null} deleteId
+ * @param {TaskContext} taskContext
+ */
+function deleteNote(note, deleteId, taskContext) {
+    for (const branch of note.getParentBranches()) {
+        deleteBranch(branch, deleteId, taskContext);
     }
 }
 
@@ -733,23 +749,26 @@ function eraseAttributes(attributeIdsToErase) {
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
-    if (eraseEntitiesAfterTimeInSeconds === null) {
-        eraseEntitiesAfterTimeInSeconds = optionService.getOptionInt('eraseEntitiesAfterTimeInSeconds');
-    }
+    // this is important also so that the erased entity changes are sent to the connected clients
+    sql.transactional(() => {
+        if (eraseEntitiesAfterTimeInSeconds === null) {
+            eraseEntitiesAfterTimeInSeconds = optionService.getOptionInt('eraseEntitiesAfterTimeInSeconds');
+        }
 
-    const cutoffDate = new Date(Date.now() - eraseEntitiesAfterTimeInSeconds * 1000);
+        const cutoffDate = new Date(Date.now() - eraseEntitiesAfterTimeInSeconds * 1000);
 
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
+        const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
-    eraseNotes(noteIdsToErase);
+        eraseNotes(noteIdsToErase);
 
-    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
+        const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
-    eraseBranches(branchIdsToErase);
+        eraseBranches(branchIdsToErase);
 
-    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
+        const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
-    eraseAttributes(attributeIdsToErase);
+        eraseAttributes(attributeIdsToErase);
+    });
 }
 
 function eraseNotesWithDeleteId(deleteId) {
@@ -911,6 +930,7 @@ module.exports = {
     createNewNoteWithTarget,
     updateNote,
     deleteBranch,
+    deleteNote,
     undeleteNote,
     protectNoteRecursively,
     scanForLinks,

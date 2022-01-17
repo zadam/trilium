@@ -71,14 +71,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
         return "[error fetching title]";
     }
 
-    let title;
-
-    if (childNote.isProtected) {
-        title = protectedSessionService.isProtectedSessionAvailable() ? childNote.title : '[protected]';
-    }
-    else {
-        title = childNote.title;
-    }
+    const title = childNote.getTitleOrProtected();
 
     const branch = parentNote ? becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId) : null;
 

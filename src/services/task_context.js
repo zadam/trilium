@@ -34,7 +34,7 @@ class TaskContext {
     increaseProgressCount() {
         this.progressCount++;
 
-        if (Date.now() - this.lastSentCountTs >= 300 && this.taskId !== 'initial-demo-import') {
+        if (Date.now() - this.lastSentCountTs >= 300 && this.taskId !== 'no-progress-reporting') {
             this.lastSentCountTs = Date.now();
 
             ws.sendMessageToAllClients({

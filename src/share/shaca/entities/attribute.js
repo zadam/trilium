@@ -39,6 +39,14 @@ class Attribute extends AbstractEntity {
                 linkedChildNote.parents = linkedChildNote.parents.filter(parentNote => parentNote.noteId !== this.noteId);
             }
         }
+
+        if (this.type === 'label' && this.name === 'shareAlias' && this.value.trim()) {
+            this.shaca.aliasToNote[this.value.trim()] = this.note;
+        }
+
+        if (this.type === 'label' && this.name === 'shareRoot') {
+            this.shaca.shareRootNote = this.note;
+        }
     }
 
     get isAffectingSubtree() {
@@ -84,6 +92,18 @@ class Attribute extends AbstractEntity {
         }
 
         return this.shaca.getNote(this.value);
+    }
+
+    getPojo() {
+        return {
+            attributeId: this.attributeId,
+            noteId: this.noteId,
+            type: this.type,
+            name: this.name,
+            position: this.position,
+            value: this.value,
+            isInheritable: this.isInheritable
+        };
     }
 }
 

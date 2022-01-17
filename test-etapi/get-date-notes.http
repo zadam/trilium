@@ -1,0 +1,72 @@
+GET {{triliumHost}}/etapi/inbox/2022-01-01
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/days/2022-01-01
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/days/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code === "DATE_INVALID");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/weeks/2022-01-01
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/weeks/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code === "DATE_INVALID");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/months/2022-01
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/months/2022-1
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code === "MONTH_INVALID");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/years/2022
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/calendar/years/202
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code === "YEAR_INVALID");
+%}

@@ -123,13 +123,45 @@ function forceNoteSync(req) {
 function getChanged(req) {
     const startTime = Date.now();
 
-    const lastEntityChangeId = parseInt(req.query.lastEntityChangeId);
+    let lastEntityChangeId = parseInt(req.query.lastEntityChangeId);
+    const clientinstanceId = req.query.instanceId;
+    let filteredEntityChanges = [];
 
-    const entityChanges = sql.getRows("SELECT * FROM entity_changes WHERE isSynced = 1 AND id > ? LIMIT 1000", [lastEntityChangeId]);
+    while (filteredEntityChanges.length === 0) {
+        const entityChanges = sql.getRows(`
+            SELECT *
+            FROM entity_changes
+            WHERE isSynced = 1
+              AND id > ?
+            ORDER BY id
+            LIMIT 1000`, [lastEntityChangeId]);
+
+        if (entityChanges.length === 0) {
+            break;
+        }
+
+        filteredEntityChanges = entityChanges.filter(ec => ec.instanceId !== clientinstanceId);
+
+        if (filteredEntityChanges.length === 0) {
+            lastEntityChangeId = entityChanges[entityChanges.length - 1].id;
+        }
+    }
+
+    const entityChangeRecords = syncService.getEntityChangeRecords(filteredEntityChanges);
+
+    if (entityChangeRecords.length > 0) {
+        lastEntityChangeId = entityChangeRecords[entityChangeRecords.length - 1].entityChange.id;
+    }
 
     const ret = {
-        entityChanges: syncService.getEntityChangesRecords(entityChanges),
-        maxEntityChangeId: sql.getValue('SELECT COALESCE(MAX(id), 0) FROM entity_changes WHERE isSynced = 1')
+        entityChanges: entityChangeRecords,
+        lastEntityChangeId,
+        outstandingPullCount: sql.getValue(`
+            SELECT COUNT(id) 
+            FROM entity_changes 
+            WHERE isSynced = 1 
+              AND instanceId != ?
+              AND id > ?`, [clientinstanceId, lastEntityChangeId])
     };
 
     if (ret.entityChanges.length > 0) {
@@ -174,10 +206,10 @@ function update(req) {
         }
     }
 
-    const {entities} = body;
+    const {entities, instanceId} = body;
 
     for (const {entityChange, entity} of entities) {
-        syncUpdateService.updateEntity(entityChange, entity);
+        syncUpdateService.updateEntity(entityChange, entity, instanceId);
     }
 }
 

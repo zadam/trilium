@@ -134,18 +134,18 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getNoteWithLabel = attributeService.getNoteWithLabel;
 
     /**
-     * If there's no branch between note and parent note, create one. Otherwise do nothing.
+     * If there's no branch between note and parent note, create one. Otherwise, do nothing.
      *
      * @method
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be create between note and parent note, set this prefix
+     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
      * @returns {void}
      */
     this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
 
     /**
-     * If there's a branch between note and parent note, remove it. Otherwise do nothing.
+     * If there's a branch between note and parent note, remove it. Otherwise, do nothing.
      *
      * @method
      * @param {string} noteId
@@ -161,7 +161,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {boolean} present - true if we want the branch to exist, false if we want it gone
      * @param {string} noteId
      * @param {string} parentNoteId
-     * @param {string} prefix - if branch will be create between note and parent note, set this prefix
+     * @param {string} prefix - if branch will be created between note and parent note, set this prefix
      * @returns {void}
      */
     this.toggleNoteInParent = cloningService.toggleNoteInParent;
@@ -309,8 +309,18 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} date in YYYY-MM-DD format
      * @returns {Note|null}
+     * @deprecated use getDayNote instead
      */
-    this.getDateNote = dateNoteService.getDateNote;
+    this.getDateNote = dateNoteService.getDayNote;
+
+    /**
+     * Returns day note for given date. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} date in YYYY-MM-DD format
+     * @returns {Note|null}
+     */
+    this.getDayNote = dateNoteService.getDayNote;
 
     /**
      * Returns today's day note. If such note doesn't exist, it is created.

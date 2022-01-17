@@ -1,0 +1,39 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "title",
+  "type": "text",
+  "content": "{{$uuid}}"
+}
+
+> {% client.global.set("createdNoteId", response.body.note.noteId); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+Authorization: {{authToken}}
+
+> {% client.global.set("content", response.body); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes?search={{content}}&debug=true
+Authorization: {{authToken}}
+
+> {%
+client.assert(response.status === 200);
+client.assert(response.body.results.length === 1);
+%}
+
+### Same but with fast search which doesn't look in the content so 0 notes should be found
+
+GET {{triliumHost}}/etapi/notes?search={{content}}&fastSearch=true
+Authorization: {{authToken}}
+
+> {%
+client.assert(response.status === 200);
+client.assert(response.body.results.length === 0);
+%}

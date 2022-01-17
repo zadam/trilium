@@ -1,0 +1,34 @@
+POST {{triliumHost}}/etapi/auth/login
+Content-Type: application/json
+
+{
+  "password": "1234"
+}
+
+> {%
+    client.assert(response.status === 201);
+
+    client.global.set("testAuthToken", response.body.authToken);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root
+Authorization: {{testAuthToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+POST {{triliumHost}}/etapi/auth/logout
+Authorization: {{testAuthToken}}
+Content-Type: application/json
+
+> {% client.assert(response.status === 204); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root
+Authorization: {{testAuthToken}}
+
+> {% client.assert(response.status === 401); %}

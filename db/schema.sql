@@ -5,15 +5,18 @@ CREATE TABLE IF NOT EXISTS "entity_changes" (
                                                 `hash`	TEXT NOT NULL,
                                                 `isErased` INT NOT NULL,
                                                 `changeId` TEXT NOT NULL,
-                                                `sourceId` TEXT NOT NULL,
+                                                `componentId` TEXT NOT NULL,
+                                                `instanceId` TEXT NOT NULL,
                                                 `isSynced` INTEGER NOT NULL,
                                                 `utcDateChanged` TEXT NOT NULL
                                                 );
-CREATE TABLE IF NOT EXISTS "api_tokens"
+CREATE TABLE IF NOT EXISTS "etapi_tokens"
 (
-    apiTokenId TEXT PRIMARY KEY NOT NULL,
-    token TEXT NOT NULL,
+    etapiTokenId TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    tokenHash TEXT NOT NULL,
     utcDateCreated TEXT NOT NULL,
+    utcDateModified TEXT NOT NULL,
     isDeleted INT NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "branches" (
                                           `branchId`	TEXT NOT NULL,
@@ -50,7 +53,7 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIM
                                              `noteId`	TEXT NOT NULL,
                                              type TEXT DEFAULT '' NOT NULL,
                                              mime TEXT DEFAULT '' NOT NULL,
-                                             `title`	TEXT,
+                                             `title`	TEXT NOT NULL,
                                              `isProtected`	INT NOT NULL DEFAULT 0,
                                              `utcDateLastEdited` TEXT NOT NULL,
                                              `utcDateCreated` TEXT NOT NULL,
@@ -63,7 +66,7 @@ CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT N
 CREATE TABLE IF NOT EXISTS "options"
 (
     name TEXT not null PRIMARY KEY,
-    value TEXT,
+    value TEXT not null,
     isSynced INTEGER default 0 not null,
     utcDateModified TEXT NOT NULL
 );
@@ -96,6 +99,7 @@ CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCr
 CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
 CREATE INDEX `IDX_note_revisions_dateCreated` ON `note_revisions` (`dateCreated`);
 CREATE INDEX `IDX_note_revisions_dateLastEdited` ON `note_revisions` (`dateLastEdited`);
+CREATE INDEX `IDX_entity_changes_changeId` ON `entity_changes` (`changeId`);
 CREATE INDEX IDX_attributes_name_value
     on attributes (name, value);
 CREATE INDEX IDX_attributes_noteId_index

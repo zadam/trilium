@@ -10,8 +10,8 @@ function getInboxNote(req) {
     return specialNotesService.getInboxNote(req.params.date);
 }
 
-function getDateNote(req) {
-    return dateNoteService.getDateNote(req.params.date);
+function getDayNote(req) {
+    return dateNoteService.getDayNote(req.params.date);
 }
 
 function getWeekNote(req) {
@@ -26,7 +26,7 @@ function getYearNote(req) {
     return dateNoteService.getYearNote(req.params.year);
 }
 
-function getDateNotesForMonth(req) {
+function getDayNotesForMonth(req) {
     const month = req.params.month;
 
     return sql.getMap(`
@@ -68,11 +68,11 @@ function getHoistedNote() {
 
 module.exports = {
     getInboxNote,
-    getDateNote,
+    getDayNote,
     getWeekNote,
     getMonthNote,
     getYearNote,
-    getDateNotesForMonth,
+    getDayNotesForMonth,
     createSqlConsole,
     saveSqlConsole,
     createSearchNote,

@@ -1,0 +1,87 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+### Clone to another location
+
+POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "parentNoteId": "hidden"
+}
+
+> {% client.global.set("clonedBranchId", response.body.branchId); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+DELETE {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 204, "Response status is not 204"); %}
+
+### repeat the DELETE request to test the idempotency
+
+DELETE {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 204, "Response status is not 204"); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "BRANCH_NOT_FOUND");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}

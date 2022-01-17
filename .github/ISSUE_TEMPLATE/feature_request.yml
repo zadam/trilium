@@ -1,15 +1,8 @@
 name: Feature Request
-description: Report a bug
+description: Ask for a new feature to be added
 title: "(Feature request) "
 labels: "Type: Enhancement"
 body:
-- type: checkboxes
-  attributes:
-    label: Preflight Checklist
-    description: Please ensure you've completed all of the following.
-    options:
-      - label: I have searched the [issue tracker](https://www.github.com/zadam/trilium/issues) for a feature request that matches the one I want to file, without success.
-        required: true
 - type: textarea
   attributes:
     label: Describe feature

@@ -1,10 +1,14 @@
 import SwitchWidget from "./switch.js";
-import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
+import syncService from "../services/sync.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
+    isEnabled() {
+        return super.isEnabled() && this.noteId !== 'root' && this.noteId !== 'share';
+    }
+
     doRender() {
         super.doRender();
 
@@ -18,8 +22,10 @@ export default class SharedSwitchWidget extends SwitchWidget {
         this.$helpButton.on('click', e => utils.openHelp(e));
     }
 
-    switchOn() {
-        branchService.cloneNoteTo(this.noteId, 'share');
+    async switchOn() {
+        await branchService.cloneNoteToNote(this.noteId, 'share');
+
+        syncService.syncNow(true);
     }
 
     async switchOff() {
@@ -39,7 +45,9 @@ export default class SharedSwitchWidget extends SwitchWidget {
             }
         }
 
-        await server.remove(`branches/${shareBranch.branchId}`);
+        await server.remove(`branches/${shareBranch.branchId}?taskId=no-progress-reporting`);
+
+        syncService.syncNow(true);
     }
 
     async refreshWithNote(note) {

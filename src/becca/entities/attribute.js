@@ -1,9 +1,9 @@
 "use strict";
 
-const Note = require('./note.js');
-const AbstractEntity = require("./abstract_entity.js");
-const sql = require("../../services/sql.js");
-const dateUtils = require("../../services/date_utils.js");
+const Note = require('./note');
+const AbstractEntity = require("./abstract_entity");
+const sql = require("../../services/sql");
+const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 
 /**
@@ -51,7 +51,7 @@ class Attribute extends AbstractEntity {
         /** @type {int} */
         this.position = position;
         /** @type {string} */
-        this.value = value;
+        this.value = value || "";
         /** @type {boolean} */
         this.isInheritable = !!isInheritable;
         /** @type {string} */

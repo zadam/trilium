@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require("../services/sql.js");
+const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
 
 /**
@@ -24,6 +24,8 @@ class Becca {
         this.attributeIndex = {};
         /** @type {Object.<String, Option>} */
         this.options = {};
+        /** @type {Object.<String, EtapiToken>} */
+        this.etapiTokens = {};
 
         this.loaded = false;
     }
@@ -64,10 +66,12 @@ class Becca {
         this.dirtyNoteSetCache();
     }
 
+    /** @returns {Note|null} */
     getNote(noteId) {
         return this.notes[noteId];
     }
 
+    /** @returns {Note[]} */
     getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
 
@@ -88,27 +92,42 @@ class Becca {
         return filteredNotes;
     }
 
+    /** @returns {Branch|null} */
     getBranch(branchId) {
         return this.branches[branchId];
     }
 
+    /** @returns {Attribute|null} */
     getAttribute(attributeId) {
         return this.attributes[attributeId];
     }
 
+    /** @returns {Branch|null} */
     getBranchFromChildAndParent(childNoteId, parentNoteId) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 
+    /** @returns {NoteRevision|null} */
     getNoteRevision(noteRevisionId) {
         const row = sql.getRow("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
 
-        const NoteRevision = require("./entities/note_revision.js"); // avoiding circular dependency problems
+        const NoteRevision = require("./entities/note_revision"); // avoiding circular dependency problems
         return row ? new NoteRevision(row) : null;
     }
 
+    /** @returns {Option|null} */
     getOption(name) {
         return this.options[name];
+    }
+
+    /** @returns {EtapiToken[]} */
+    getEtapiTokens() {
+        return Object.values(this.etapiTokens);
+    }
+
+    /** @returns {EtapiToken|null} */
+    getEtapiToken(etapiTokenId) {
+        return this.etapiTokens[etapiTokenId];
     }
 
     getEntity(entityName, entityId) {
@@ -130,17 +149,19 @@ class Becca {
         return this[camelCaseEntityName][entityId];
     }
 
+    /** @returns {RecentNote[]} */
     getRecentNotesFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const RecentNote = require("./entities/recent_note.js"); // avoiding circular dependency problems
+        const RecentNote = require("./entities/recent_note"); // avoiding circular dependency problems
         return rows.map(row => new RecentNote(row));
     }
 
+    /** @returns {NoteRevision[]} */
     getNoteRevisionsFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const NoteRevision = require("./entities/note_revision.js"); // avoiding circular dependency problems
+        const NoteRevision = require("./entities/note_revision"); // avoiding circular dependency problems
         return rows.map(row => new NoteRevision(row));
     }
 

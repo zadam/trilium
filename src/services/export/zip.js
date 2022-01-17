@@ -52,12 +52,12 @@ function exportToZip(taskContext, branch, format, res) {
     function getDataFileName(note, baseFileName, existingFileNames) {
         let fileName = baseFileName;
 
+        let existingExtension = path.extname(fileName).toLowerCase();
+        let newExtension;
+        
         if (fileName.length > 30) {
             fileName = fileName.substr(0, 30);
         }
-
-        let existingExtension = path.extname(fileName).toLowerCase();
-        let newExtension;
 
         // following two are handled specifically since we always want to have these extensions no matter the automatic detection
         // and/or existing detected extensions in the note name
@@ -97,7 +97,8 @@ function exportToZip(taskContext, branch, format, res) {
             return;
         }
 
-        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
+        const title = note.getTitleOrProtected();
+        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + title) : title;
         let baseFileName = sanitize(completeTitle);
 
         if (baseFileName.length > 200) { // actual limit is 256 bytes(!) but let's be conservative
@@ -113,7 +114,7 @@ function exportToZip(taskContext, branch, format, res) {
                 isClone: true,
                 noteId: note.noteId,
                 notePath: notePath,
-                title: note.title,
+                title: note.getTitleOrProtected(),
                 prefix: branch.prefix,
                 dataFileName: fileName,
                 type: 'text', // export will have text description,
@@ -125,7 +126,7 @@ function exportToZip(taskContext, branch, format, res) {
             isClone: false,
             noteId: note.noteId,
             notePath: notePath,
-            title: note.title,
+            title: note.getTitleOrProtected(),
             notePosition: branch.notePosition,
             prefix: branch.prefix,
             isExpanded: branch.isExpanded,
@@ -149,7 +150,8 @@ function exportToZip(taskContext, branch, format, res) {
 
         noteIdToMeta[note.noteId] = meta;
 
-        const childBranches = note.getChildBranches();
+        const childBranches = note.getChildBranches()
+            .filter(branch => branch.noteId !== 'hidden');
 
         const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
 
@@ -445,7 +447,7 @@ ${content}
     }
 
     const note = branch.getNote();
-    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.title + ".zip";
+    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.getTitleOrProtected() + ".zip";
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');

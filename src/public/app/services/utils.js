@@ -245,10 +245,11 @@ function focusSavedElement() {
     $lastFocusedElement = null;
 }
 
-async function openDialog($dialog) {
-    closeActiveDialog();
-
-    glob.activeDialog = $dialog;
+async function openDialog($dialog, closeActDialog = true) {
+    if (closeActDialog) {
+        closeActiveDialog();
+        glob.activeDialog = $dialog;
+    }
 
     saveFocusedElement();
 

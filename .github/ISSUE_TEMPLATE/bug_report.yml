@@ -3,13 +3,6 @@ description: Report a bug
 title: "(Bug report) "
 labels: "Type: Bug"
 body:
-- type: checkboxes
-  attributes:
-    label: Preflight Checklist
-    description: Please ensure you've completed all of the following.
-    options:
-      - label: I have searched the [issue tracker](https://www.github.com/zadam/trilium/issues) for a bug report that matches the one I want to file, without success.
-        required: true
 - type: input
   attributes:
     label: Trilium Version
@@ -30,7 +23,7 @@ body:
     required: true
 - type: dropdown
   attributes:
-    label: What is your setup? 
+    label: What is your setup?
     description: https://github.com/zadam/trilium/wiki#choose-the-setup
     options:
       - Local (no sync)
@@ -47,17 +40,7 @@ body:
     required: true
 - type: textarea
   attributes:
-    label: Expected Behavior
-    description: A clear and concise description of what you expected to happen.
+    label: Description
+    description: A clear and concise description of the bug and any additional information.
   validations:
     required: true
-- type: textarea
-  attributes:
-    label: Actual Behavior
-    description: A clear description of what actually happens.
-  validations:
-    required: true
-- type: textarea
-  attributes:
-    label: Additional Information
-    description: If your problem needs further explanation, or if the issue you're seeing cannot be reproduced in a gist, please add more information here.

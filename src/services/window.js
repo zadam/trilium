@@ -16,7 +16,10 @@ let mainWindow;
 let setupWindow;
 
 async function createExtraWindow(notePath, hoistedNoteId = 'root') {
+    const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
+
     const {BrowserWindow} = require('electron');
+
     const win = new BrowserWindow({
         width: 1000,
         height: 800,
@@ -25,7 +28,7 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
             enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
-            spellcheck: optionService.getOptionBool('spellCheckEnabled')
+            spellcheck: spellcheckEnabled
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
         icon: getIcon()
@@ -33,6 +36,8 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
 
     win.setMenuBarVisibility(false);
     win.loadURL('http://127.0.0.1:' + await port + '/?extra=1&extraHoistedNoteId=' + hoistedNoteId + '#' + notePath);
+
+    configureWebContents(win.webContents, spellcheckEnabled);
 }
 
 ipcMain.on('create-extra-window', (event, arg) => {
@@ -59,6 +64,7 @@ async function createMainWindow() {
         height: mainWindowState.height,
         title: 'Trilium Notes',
         webPreferences: {
+            enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
             spellcheck: spellcheckEnabled
@@ -73,8 +79,10 @@ async function createMainWindow() {
     mainWindow.loadURL('http://127.0.0.1:' + await port);
     mainWindow.on('closed', () => mainWindow = null);
 
-    const {webContents} = mainWindow;
+    configureWebContents(mainWindow.webContents, spellcheckEnabled);
+}
 
+function configureWebContents(webContents, spellcheckEnabled) {
     require("@electron/remote/main").enable(webContents);
 
     webContents.on('new-window', (e, url) => {

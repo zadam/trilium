@@ -19,20 +19,23 @@ function SetupModel() {
     this.setupSyncFromDesktop = ko.observable(false);
     this.setupSyncFromServer = ko.observable(false);
 
-    this.username = ko.observable();
-    this.password1 = ko.observable();
-    this.password2 = ko.observable();
-
-    this.theme = ko.observable("light");
     this.syncServerHost = ko.observable();
     this.syncProxy = ko.observable();
-
-    this.instanceType = utils.isElectron() ? "desktop" : "server";
+    this.password = ko.observable();
 
     this.setupTypeSelected = () => !!this.setupType();
 
     this.selectSetupType = () => {
-        this.step(this.setupType());
+        if (this.setupType() === 'new-document') {
+            this.step('new-document-in-progress');
+
+            $.post('api/setup/new-document').then(() => {
+                window.location.replace("./setup");
+            });
+        }
+        else {
+            this.step(this.setupType());
+        }
     };
 
     this.back = () => {
@@ -42,77 +45,36 @@ function SetupModel() {
     };
 
     this.finish = async () => {
-        if (this.setupType() === 'new-document') {
-            const username = this.username();
-            const password1 = this.password1();
-            const password2 = this.password2();
-            const theme = this.theme();
+        const syncServerHost = this.syncServerHost();
+        const syncProxy = this.syncProxy();
+        const password = this.password();
 
-            if (!username) {
-                showAlert("Username can't be empty");
-                return;
-            }
-
-            if (!password1) {
-                showAlert("Password can't be empty");
-                return;
-            }
-
-            if (password1 !== password2) {
-                showAlert("Both password fields need be identical.");
-                return;
-            }
-
-            this.step('new-document-in-progress');
-
-            // not using server.js because it loads too many dependencies
-            $.post('api/setup/new-document', {
-                username: username,
-                password: password1,
-                theme: theme
-            }).then(() => {
-                window.location.replace("./setup");
-            });
+        if (!syncServerHost) {
+            showAlert("Trilium server address can't be empty");
+            return;
         }
-        else if (this.setupType() === 'sync-from-server') {
-            const syncServerHost = this.syncServerHost();
-            const syncProxy = this.syncProxy();
-            const username = this.username();
-            const password = this.password1();
 
-            if (!syncServerHost) {
-                showAlert("Trilium server address can't be empty");
-                return;
-            }
+        if (!password) {
+            showAlert("Password can't be empty");
+            return;
+        }
 
-            if (!username) {
-                showAlert("Username can't be empty");
-                return;
-            }
+        // not using server.js because it loads too many dependencies
+        const resp = await $.post('api/setup/sync-from-server', {
+            syncServerHost: syncServerHost,
+            syncProxy: syncProxy,
+            password: password
+        });
 
-            if (!password) {
-                showAlert("Password can't be empty");
-                return;
-            }
+        if (resp.result === 'success') {
+            this.step('sync-in-progress');
 
-            // not using server.js because it loads too many dependencies
-            const resp = await $.post('api/setup/sync-from-server', {
-                syncServerHost: syncServerHost,
-                syncProxy: syncProxy,
-                username: username,
-                password: password
-            });
+            setInterval(checkOutstandingSyncs, 1000);
 
-            if (resp.result === 'success') {
-                this.step('sync-in-progress');
-
-                setInterval(checkOutstandingSyncs, 1000);
-
-                hideAlert();
-            }
-            else {
-                showAlert('Sync setup failed: ' + resp.error);
-            }
+            hideAlert();
+        }
+        else {
+            showAlert('Sync setup failed: ' + resp.error);
         }
     };
 }

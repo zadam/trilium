@@ -42,9 +42,12 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     const existing = getExistingBranch(parentNoteId, childNoteId);
 
     if (existing && (branchId === null || existing.branchId !== branchId)) {
+        const parentNote = becca.getNote(parentNoteId);
+        const childNote = becca.getNote(childNoteId);
+
         return {
             success: false,
-            message: 'This note already exists in the target.'
+            message: `Note "${childNote.title}" note already exists in the "${parentNote.title}".`
         };
     }
 
@@ -59,7 +62,12 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 }
 
 function getExistingBranch(parentNoteId, childNoteId) {
-    const branchId = sql.getValue('SELECT branchId FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+    const branchId = sql.getValue(`
+        SELECT branchId 
+        FROM branches 
+        WHERE noteId = ? 
+          AND parentNoteId = ? 
+          AND isDeleted = 0`, [childNoteId, parentNoteId]);
 
     return becca.getBranch(branchId);
 }
@@ -143,10 +151,6 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
 
             const topAEl = fetchValue(a, 'top');
             const topBEl = fetchValue(b, 'top');
-
-            console.log(a.title, topAEl);
-            console.log(b.title, topBEl);
-            console.log("comp", compare(topAEl, topBEl) && !reverse);
 
             if (topAEl !== topBEl) {
                 // since "top" should not be reversible, we'll reverse it once more to nullify this effect

@@ -135,7 +135,13 @@ span.fancytree-node.protected > span.fancytree-custom-icon {
 }
 
 span.fancytree-node.multiple-parents .fancytree-title::after {
-    content: " *"
+    content: " *";
+}
+
+span.fancytree-node.shared .fancytree-title::after {
+    font-family: 'boxicons' !important;
+    font-size: smaller;
+    content: " \ec03"; /* lookup code for "share-alt" in boxicons.css */
 }
 
 span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {

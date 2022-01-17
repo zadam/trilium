@@ -1,0 +1,66 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "type": "text",
+  "title": "Hello",
+  "content": ""
+}
+
+> {% client.global.set("createdBranchId", response.body.branch.branchId); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "prefix": "pref",
+  "notePosition": 666,
+  "isExpanded": true
+}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {% 
+client.assert(response.status === 200);
+client.assert(response.body.prefix === 'pref');
+client.assert(response.body.notePosition === 666);
+client.assert(response.body.isExpanded === true);
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root"
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED");
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "prefix": 123
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_VALIDATION_ERROR");
+%}

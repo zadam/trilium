@@ -3,7 +3,7 @@ const NoteRevision = require('./entities/note_revision');
 const Branch = require('./entities/branch');
 const Attribute = require('./entities/attribute');
 const RecentNote = require('./entities/recent_note');
-const ApiToken = require('./entities/api_token');
+const EtapiToken = require('./entities/etapi_token');
 const Option = require('./entities/option');
 
 const ENTITY_NAME_TO_ENTITY = {
@@ -14,7 +14,7 @@ const ENTITY_NAME_TO_ENTITY = {
     "note_revisions": NoteRevision,
     "note_revision_contents": NoteRevision,
     "recent_notes": RecentNote,
-    "api_tokens": ApiToken,
+    "etapi_tokens": EtapiToken,
     "options": Option
 };
 

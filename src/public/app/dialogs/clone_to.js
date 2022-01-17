@@ -48,7 +48,7 @@ async function cloneNotesTo(notePath) {
     const targetBranchId = await froca.getBranchId(parentNoteId, noteId);
 
     for (const cloneNoteId of clonedNoteIds) {
-        await branchService.cloneNoteTo(cloneNoteId, targetBranchId, $clonePrefix.val());
+        await branchService.cloneNoteToBranch(cloneNoteId, targetBranchId, $clonePrefix.val());
 
         const clonedNote = await froca.getNote(cloneNoteId);
         const targetNote = await froca.getBranch(targetBranchId).getNote();

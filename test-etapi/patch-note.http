@@ -1,0 +1,79 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "code",
+  "mime": "application/json",
+  "content": "{}"
+}
+
+> {% client.global.set("createdNoteId", response.body.note.noteId); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% 
+client.assert(response.status === 200);
+client.assert(response.body.title === 'Hello'); 
+client.assert(response.body.type === 'code'); 
+client.assert(response.body.mime === 'application/json'); 
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Wassup",
+  "type": "html",
+  "mime": "text/html"
+}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% 
+client.assert(response.status === 200);
+client.assert(response.body.title === 'Wassup'); 
+client.assert(response.body.type === 'html'); 
+client.assert(response.body.mime === 'text/html'); 
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "isProtected": true
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED");
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": true
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_VALIDATION_ERROR");
+%}

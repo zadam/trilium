@@ -10,10 +10,20 @@ CREATE TABLE IF NOT EXISTS "mig_entity_changes" (
                                                 `utcDateChanged` TEXT NOT NULL
 );
 
-INSERT INTO mig_entity_changes (entityName, entityId, hash, isErased, changeId, sourceId, isSynced, utcDateChanged)
-    SELECT entityName, entityId, hash, isErased, '', sourceId, isSynced, utcDateChanged FROM entity_changes;
+INSERT INTO mig_entity_changes (id, entityName, entityId, hash, isErased, changeId, sourceId, isSynced, utcDateChanged)
+    SELECT id, entityName, entityId, hash, isErased, '', sourceId, isSynced, utcDateChanged FROM entity_changes;
 
-DROP TABLE  entity_changes;
+-- delete duplicates https://github.com/zadam/trilium/issues/2534
+DELETE FROM mig_entity_changes WHERE isErased = 0 AND id IN (
+    SELECT id FROM mig_entity_changes ec
+    WHERE (
+              SELECT COUNT(*) FROM mig_entity_changes
+              WHERE ec.entityName = mig_entity_changes.entityName
+                AND ec.entityId = mig_entity_changes.entityId
+          ) > 1
+);
+
+DROP TABLE entity_changes;
 
 ALTER TABLE mig_entity_changes RENAME TO entity_changes;
 

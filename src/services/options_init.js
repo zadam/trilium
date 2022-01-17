@@ -1,6 +1,4 @@
 const optionService = require('./options');
-const passwordEncryptionService = require('./password_encryption');
-const myScryptService = require('./my_scrypt');
 const appInfo = require('./app_info');
 const utils = require('./utils');
 const log = require('./log');
@@ -10,21 +8,6 @@ const keyboardActions = require('./keyboard_actions');
 function initDocumentOptions() {
     optionService.createOption('documentId', utils.randomSecureToken(16), false);
     optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
-}
-
-function initSyncedOptions(username, password) {
-    optionService.createOption('username', username, true);
-
-    optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
-    optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
-
-    const passwordVerificationKey = utils.toBase64(myScryptService.getVerificationHash(password), true);
-    optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
-
-    // passwordEncryptionService expects these options to already exist
-    optionService.createOption('encryptedDataKey', '', true);
-
-    passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
 function initNotSyncedOptions(initialized, opts = {}) {
@@ -45,7 +28,15 @@ function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('lastSyncedPull', '0', false);
     optionService.createOption('lastSyncedPush', '0', false);
 
-    optionService.createOption('theme', opts.theme || 'white', false);
+    let theme = 'dark'; // default based on the poll in https://github.com/zadam/trilium/issues/2516
+    
+    if (utils.isElectron()) {
+        const {nativeTheme} = require('electron');
+        
+        theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    }
+    
+    optionService.createOption('theme', theme, false);
 
     optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
     optionService.createOption('syncServerTimeout', '120000', false);
@@ -55,7 +46,7 @@ function initNotSyncedOptions(initialized, opts = {}) {
 const defaultOptions = [
     { name: 'noteRevisionSnapshotTimeInterval', value: '600', isSynced: true },
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
-    { name: 'zoomFactor', value: '1.0', isSynced: false },
+    { name: 'zoomFactor', value: process.platform === "win32" ? '0.9' : '1.0', isSynced: false },
     { name: 'overrideThemeFonts', value: 'false', isSynced: false },
     { name: 'mainFontFamily', value: 'theme', isSynced: false },
     { name: 'mainFontSize', value: '100', isSynced: false },
@@ -70,6 +61,7 @@ const defaultOptions = [
     { name: 'imageMaxWidthHeight', value: '2000', isSynced: true },
     { name: 'imageJpegQuality', value: '75', isSynced: true },
     { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
+    { name: 'vimKeymapEnabled', value: 'false', isSynced: false },
     { name: 'codeNotesMimeTypes', value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml"]', isSynced: true },
     { name: 'leftPaneWidth', value: '25', isSynced: false },
     { name: 'leftPaneVisible', value: 'true', isSynced: false },
@@ -129,7 +121,6 @@ function getKeyboardDefaultOptions() {
 
 module.exports = {
     initDocumentOptions,
-    initSyncedOptions,
     initNotSyncedOptions,
     initStartupOptions
 };

@@ -14,6 +14,8 @@ function setupPage(req, res) {
         else {
             res.redirect('/');
         }
+
+        return;
     }
 
     // we got here because DB is not completely initialized so if schema exists

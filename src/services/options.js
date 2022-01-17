@@ -1,13 +1,27 @@
 const becca = require('../becca/becca');
+const sql = require("./sql");
+
+function getOptionOrNull(name) {
+    let option;
+
+    if (becca.loaded) {
+        option = becca.getOption(name);
+    } else {
+        // e.g. in initial sync becca is not loaded because DB is not initialized
+        option = sql.getRow("SELECT * FROM options WHERE name = ?", name);
+    }
+    
+    return option ? option.value : null;
+}
 
 function getOption(name) {
-    const option = require('../becca/becca').getOption(name);
+    const val = getOptionOrNull(name);
 
-    if (!option) {
+    if (val === null) {
         throw new Error(`Option "${name}" doesn't exist`);
     }
 
-    return option.value;
+    return val;
 }
 
 /**
@@ -39,11 +53,11 @@ function getOptionBool(name) {
 }
 
 function setOption(name, value) {
-    const option = becca.getOption(name);
-
     if (value === true || value === false) {
         value = value.toString();
     }
+
+    const option = becca.getOption(name);
 
     if (option) {
         option.value = value;
@@ -87,5 +101,6 @@ module.exports = {
     setOption,
     createOption,
     getOptions,
-    getOptionsMap
+    getOptionsMap,
+    getOptionOrNull
 };

@@ -218,6 +218,14 @@ class NoteContext extends Component {
             }
         }
     }
+
+    hasNoteList() {
+        return this.note
+            && this.note.hasChildren()
+            && ['book', 'text', 'code'].includes(this.note.type)
+            && this.note.mime !== 'text/x-sqlite;schema=trilium'
+            && !this.note.hasLabel('hideChildrenOverview');
+    }
 }
 
 export default NoteContext;

@@ -10,5 +10,6 @@ module.exports = {
         path: path.resolve(__dirname, 'src/public/app-dist'),
         filename: 'desktop.js'
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
+    target: 'electron-renderer'
 };

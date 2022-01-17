@@ -9,7 +9,7 @@ async function getHeaders(headers) {
     // headers need to be lowercase because node.js automatically converts them to lower case
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     const allHeaders = {
-        'trilium-source-id': glob.sourceId,
+        'trilium-component-id': glob.componentId,
         'trilium-local-now-datetime': utils.localNowDateTime(),
         'trilium-hoisted-note-id': activeNoteContext ? activeNoteContext.hoistedNoteId : null,
         'x-csrf-token': glob.csrfToken
@@ -29,20 +29,24 @@ async function getHeaders(headers) {
     return allHeaders;
 }
 
-async function get(url, sourceId) {
-    return await call('GET', url, null, {'trilium-source-id': sourceId});
+async function get(url, componentId) {
+    return await call('GET', url, null, {'trilium-component-id': componentId});
 }
 
-async function post(url, data, sourceId) {
-    return await call('POST', url, data, {'trilium-source-id': sourceId});
+async function post(url, data, componentId) {
+    return await call('POST', url, data, {'trilium-component-id': componentId});
 }
 
-async function put(url, data, sourceId) {
-    return await call('PUT', url, data, {'trilium-source-id': sourceId});
+async function put(url, data, componentId) {
+    return await call('PUT', url, data, {'trilium-component-id': componentId});
 }
 
-async function remove(url, sourceId) {
-    return await call('DELETE', url, null, {'trilium-source-id': sourceId});
+async function patch(url, data, componentId) {
+    return await call('PATCH', url, data, {'trilium-component-id': componentId});
+}
+
+async function remove(url, componentId) {
+    return await call('DELETE', url, null, {'trilium-component-id': componentId});
 }
 
 let i = 1;
@@ -185,6 +189,7 @@ export default {
     get,
     post,
     put,
+    patch,
     remove,
     ajax,
     // don't remove, used from CKEditor image upload!

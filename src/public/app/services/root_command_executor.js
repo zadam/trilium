@@ -5,6 +5,7 @@ import treeService from "../services/tree.js";
 import openService from "./open.js";
 import protectedSessionService from "./protected_session.js";
 import options from "./options.js";
+import froca from "./froca.js";
 
 export default class RootCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -53,8 +54,8 @@ export default class RootCommandExecutor extends Component {
         d.showDialog(branchIds);
     }
 
-    showOptionsCommand() {
-        import("../dialogs/options.js").then(d => d.showDialog());
+    showOptionsCommand({openTab}) {
+        import("../dialogs/options.js").then(d => d.showDialog(openTab));
     }
 
     showHelpCommand() {
@@ -72,7 +73,13 @@ export default class RootCommandExecutor extends Component {
     async searchNotesCommand({searchString, ancestorNoteId}) {
         const searchNote = await dateNoteService.createSearchNote({searchString, ancestorNoteId});
 
-        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true);
+        // force immediate search
+        await froca.loadSearchNote(searchNote.noteId);
+
+        const activeNoteContext = appContext.tabManager.getActiveContext();
+        const hoistedNoteId = activeNoteContext?.hoistedNoteId || 'root';
+
+        const noteContext = await appContext.tabManager.openContextWithNote(searchNote.noteId, true, null, hoistedNoteId);
 
         appContext.triggerCommand('focusOnSearchDefinition', {ntxId: noteContext.ntxId});
     }

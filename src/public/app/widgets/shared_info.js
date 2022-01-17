@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import options from "../services/options.js";
+import attributeService from "../services/attributes.js";
 
 const TPL = `
 <div class="shared-info-widget alert alert-warning">
@@ -12,18 +13,18 @@ const TPL = `
         }
     </style>
     
-    <span class="share-text"></span> <a class="share-link external"></a>. For help visit <a href="https://github.com/zadam/trilium/wiki/Sharing">wiki</a>.
+    <span class="shared-text"></span> <a class="shared-link external"></a>. For help visit <a href="https://github.com/zadam/trilium/wiki/Sharing">wiki</a>.
 </div>`;
 
 export default class SharedInfoWidget extends NoteContextAwareWidget {
     isEnabled() {
-        return super.isEnabled() && this.note.hasAncestor('share');
+        return super.isEnabled() && this.noteId !== 'share' && this.note.hasAncestor('share');
     }
 
     doRender() {
         this.$widget = $(TPL);
-        this.$shareLink = this.$widget.find(".share-link");
-        this.$shareText = this.$widget.find(".share-text");
+        this.$sharedLink = this.$widget.find(".shared-link");
+        this.$sharedText = this.$widget.find(".shared-text");
         this.contentSized();
     }
 
@@ -31,15 +32,34 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         const syncServerHost = options.get("syncServerHost");
         let link;
 
+        const shareId = this.getShareId(note);
+
         if (syncServerHost) {
-            link = syncServerHost + "/share/" + note.noteId;
-            this.$shareText.text("This note is shared publicly on");
+            link = syncServerHost + "/share/" + shareId;
+            this.$sharedText.text("This note is shared publicly on");
         }
         else {
-            link = location.protocol + '//' + location.host + location.pathname + "share/" + note.noteId;
-            this.$shareText.text("This note is shared locally on");
+            link = location.protocol + '//' + location.host + location.pathname + "share/" + shareId;
+            this.$sharedText.text("This note is shared locally on");
         }
 
-        this.$shareLink.attr("href", link).text(link);
+        this.$sharedLink.attr("href", link).text(link);
+    }
+
+    getShareId(note) {
+        if (note.hasOwnedLabel('shareRoot')) {
+            return '';
+        }
+
+        return note.getOwnedLabelValue('shareAlias') || note.noteId;
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.name.startsWith("share") && attributeService.isAffecting(attr, this.note))) {
+            this.refresh();
+        }
+        else if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)) {
+            this.refresh();
+        }
     }
 }

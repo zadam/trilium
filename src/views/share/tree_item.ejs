@@ -2,16 +2,18 @@
     <% if (activeNote.noteId === note.noteId) { %>
     <strong><%= note.title %></strong>
     <% } else { %>
-    <a href="./<%= note.noteId %>"><%= note.title %></a>
+    <a class="type-<%= note.type %>" href="./<%= note.shareId %>"><%= note.title %></a>
     <% } %>
 </p>
 
 <% if (note.hasChildren()) { %>
 <ul>
     <% note.getChildNotes().forEach(function (childNote) { %>
+        <% if (!childNote.hasLabel("shareHiddenFromTree")) { %>
         <li>
-            <%- include('share-tree-item', {note: childNote}) %>
+            <%- include('tree_item', {note: childNote}) %>
         </li>
+        <% } %>
     <% }) %>
 </ul>
 <% } %>

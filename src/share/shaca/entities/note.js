@@ -40,9 +40,6 @@ class Note extends AbstractEntity {
         this.targetRelations = [];
 
         this.shaca.notes[this.noteId] = this;
-
-        /** @param {Note[]|null} */
-        this.ancestorCache = null;
     }
 
     getParentBranches() {
@@ -91,36 +88,6 @@ class Note extends AbstractEntity {
         else {
             return content;
         }
-    }
-
-    /** @returns {*} */
-    getJsonContent() {
-        const content = this.getContent();
-
-        if (!content || !content.trim()) {
-            return null;
-        }
-
-        return JSON.parse(content);
-    }
-
-    /** @returns {boolean} true if this note is of application/json content type */
-    isJson() {
-        return this.mime === "application/json";
-    }
-
-    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
-    isJavaScript() {
-        return (this.type === "code" || this.type === "file")
-            && (this.mime.startsWith("application/javascript")
-                || this.mime === "application/x-javascript"
-                || this.mime === "text/javascript");
-    }
-
-    /** @returns {boolean} true if this note is HTML */
-    isHtml() {
-        return ["code", "file", "render"].includes(this.type)
-            && this.mime === "text/html";
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
@@ -216,16 +183,6 @@ class Note extends AbstractEntity {
 
     hasAttribute(type, name) {
         return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
-    }
-
-    getAttributeCaseInsensitive(type, name, value) {
-        name = name.toLowerCase();
-        value = value ? value.toLowerCase() : null;
-
-        return this.getAttributes().find(
-            attr => attr.type === type
-            && attr.name.toLowerCase() === name
-            && (!value || attr.value.toLowerCase() === value));
     }
 
     getRelationTarget(name) {
@@ -444,110 +401,31 @@ class Note extends AbstractEntity {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
-    /** @return {Note[]} */
-    getSubtreeNotesIncludingTemplated() {
-        const arr = [[this]];
-
-        for (const childNote of this.children) {
-            arr.push(childNote.getSubtreeNotesIncludingTemplated());
-        }
-
-        for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
-                const note = targetRelation.note;
-
-                if (note) {
-                    arr.push(note.getSubtreeNotesIncludingTemplated());
-                }
-            }
-        }
-
-        return arr.flat();
-    }
-
-    /** @return {Note[]} */
-    getSubtreeNotes(includeArchived = true) {
-        const noteSet = new Set();
-
-        function addSubtreeNotesInner(note) {
-            if (!includeArchived && note.isArchived) {
-                return;
-            }
-
-            noteSet.add(note);
-
-            for (const childNote of note.children) {
-                addSubtreeNotesInner(childNote);
-            }
-        }
-
-        addSubtreeNotesInner(this);
-
-        return Array.from(noteSet);
-    }
-
-    /** @return {String[]} */
-    getSubtreeNoteIds() {
-        return this.getSubtreeNotes().map(note => note.noteId);
-    }
-
-    getDescendantNoteIds() {
-        return this.getSubtreeNoteIds();
-    }
-
-    getAncestors() {
-        if (!this.ancestorCache) {
-            const noteIds = new Set();
-            this.ancestorCache = [];
-
-            for (const parent of this.parents) {
-                if (!noteIds.has(parent.noteId)) {
-                    this.ancestorCache.push(parent);
-                    noteIds.add(parent.noteId);
-                }
-
-                for (const ancestorNote of parent.getAncestors()) {
-                    if (!noteIds.has(ancestorNote.noteId)) {
-                        this.ancestorCache.push(ancestorNote);
-                        noteIds.add(ancestorNote.noteId);
-                    }
-                }
-            }
-        }
-
-        return this.ancestorCache;
-    }
-
     getTargetRelations() {
         return this.targetRelations;
     }
 
-    /** @return {Note[]} - returns only notes which are templated, does not include their subtrees
-     *                     in effect returns notes which are influenced by note's non-inheritable attributes */
-    getTemplatedNotes() {
-        const arr = [this];
-
-        for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
-                const note = targetRelation.note;
-
-                if (note) {
-                    arr.push(note);
-                }
-            }
+    get shareId() {
+        if (this.hasOwnedLabel('shareRoot')) {
+            return "";
         }
 
-        return arr;
+        const sharedAlias = this.getOwnedLabelValue("shareAlias");
+
+        return sharedAlias || this.noteId;
     }
 
-    /**
-     * @param ancestorNoteId
-     * @return {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
-     */
-    isDescendantOfNote(ancestorNoteId) {
-        const notePaths = this.getAllNotePaths();
-
-        return notePaths.some(path => path.includes(ancestorNoteId));
+    getPojoWithAttributes() {
+        return {
+            noteId: this.noteId,
+            title: this.title,
+            type: this.type,
+            mime: this.mime,
+            utcDateModified: this.utcDateModified,
+            attributes: this.getAttributes().map(attr => attr.getPojo()),
+            parentNoteIds: this.parents.map(parentNote => parentNote.noteId),
+            childNoteIds: this.children.map(child => child.noteId)
+        };
     }
 }
 

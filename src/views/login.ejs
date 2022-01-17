@@ -14,17 +14,11 @@
 
         <% if (failedAuth) { %>
             <div class="alert alert-warning">
-                Username and / or password are incorrect. Please try again.
+                Password is incorrect. Please try again.
             </div>
         <% } %>
 
         <form action="login" method="POST">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <div class="controls">
-                    <input id="username" name="username" placeholder="" class="form-control" type="text">
-                </div>
-            </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="controls">

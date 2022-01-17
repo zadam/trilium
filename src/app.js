@@ -3,7 +3,6 @@ const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
@@ -11,7 +10,7 @@ const sessionSecret = require('./services/session_secret');
 const dataDir = require('./services/data_dir');
 const utils = require('./services/utils');
 require('./services/handlers');
-require('./becca/becca_loader.js');
+require('./becca/becca_loader');
 
 const app = express();
 
@@ -20,13 +19,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(helmet({
-    hidePoweredBy: false, // deactivated because electron 4.0 crashes on this right after startup
+    hidePoweredBy: false, // errors out in electron
     contentSecurityPolicy: false
 }));
 
-app.use(bodyParser.text({limit: '500mb'}));
-app.use(bodyParser.json({limit: '500mb'}));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(express.text({limit: '500mb'}));
+app.use(express.json({limit: '500mb'}));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/libraries', express.static(path.join(__dirname, '..', 'libraries')));

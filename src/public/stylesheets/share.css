@@ -1,12 +1,16 @@
+body {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+}
+
 #layout {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
 }
 
 #menu {
-    padding: 20px;
+    padding: 25px;
     flex-basis: 0;
     flex-grow: 1;
     overflow: auto;
@@ -28,18 +32,21 @@
 #main {
     flex-basis: 0;
     flex-grow: 3;
+    overflow: auto;
+    padding: 10px 20px 20px 20px;
+}
+
+#parentLink {
+    float: right;
+    margin-top: 20px;
 }
 
 #title {
     margin: 0;
-    padding: 10px 20px 0 20px;
+    padding-top: 10px;
 }
 
-#content {
-    padding: 20px;
-}
-
-.type-image img {
+img {
     max-width: 100%;
 }
 
@@ -48,40 +55,110 @@ pre {
     word-wrap: anywhere;
 }
 
-#menuLink {
+iframe.pdf-view {
+    width: 100%;
+    height: 800px;
+}
+
+#toggleMenuButton {
+    display: none;
     position: fixed;
-    display: block;
-    top: 0;
-    left: 0;
+    top: 8px;
+    left: 5px;
     width: 1.4em;
-    background: #000;
-    background: rgba(0,0,0,0.7);
+    border-radius: 5px;
+    border: 1px solid #aaa;
     font-size: 2rem;
     z-index: 10;
     height: auto;
-    color: white;
-    border: none;
+    color: black;
     cursor: pointer;
 }
 
+#childLinks.grid ul {
+    list-style-type: none;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+#childLinks.grid ul li {
+    width: 180px;
+    height: 140px;
+    padding: 10px;
+}
+
+#childLinks.grid ul li a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    font-size: large;
+}
+
+#childLinks.grid ul li a:hover {
+    background: #eee;
+}
+
+#childLinks.list ul {
+    list-style-type: none;
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin-top: 5px;
+}
+
+#childLinks.list ul li {
+    margin-right: 20px;
+}
+
+#noteClippedFrom {
+    padding: 10px 0 10px 0;
+    margin: 20px 0 20px 0;
+    color: #666;
+    border: 1px solid #ddd;
+    border-left: 0;
+    border-right: 0;
+}
+
+#toggleMenuButton::after {
+    position: relative;
+    top: -2px;
+    left: 1px;
+}
+
 @media (max-width: 48em) {
-    #layout.active #menu {
+    #layout.showMenu #menu {
+        display: block;
+        margin-top: 40px;
+    }
+
+    #toggleMenuButton {
         display: block;
     }
 
-    #layout.active #main {
+    #layout.showMenu #main {
         display: none;
     }
 
-    #layout.active #menuLink::after {
+    #title {
+        padding-left: 60px;
+    }
+
+    #layout.showMenu #toggleMenuButton::after {
         content: "«";
+    }
+
+    #toggleMenuButton::after {
+        content: "»";
     }
 
     #menu {
         display: none;
-    }
-
-    #menuLink::after {
-        content: "»";
     }
 }

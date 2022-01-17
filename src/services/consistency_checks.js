@@ -13,6 +13,7 @@ const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
+const noteTypes = require("../services/note_types");
 
 class ConsistencyChecks {
     constructor(autoFix) {
@@ -258,7 +259,8 @@ class ConsistencyChecks {
                              FROM branches
                              WHERE noteId = ?
                                and parentNoteId = ?
-                               and isDeleted = 0`, [noteId, parentNoteId]);
+                               and isDeleted = 0
+                             ORDER BY utcDateModified`, [noteId, parentNoteId]);
 
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
@@ -280,11 +282,13 @@ class ConsistencyChecks {
     }
 
     findLogicIssues() {
+        const noteTypesStr = noteTypes.map(nt => `'${nt}'`).join(", ");
+        
         this.findAndFixIssues(`
                     SELECT noteId, type
                     FROM notes
                     WHERE isDeleted = 0
-                      AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book', 'note-map', 'mermaid')`,
+                      AND type NOT IN (${noteTypesStr})`,
             ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
@@ -537,6 +541,27 @@ class ConsistencyChecks {
                         logError(`Unrecognized entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
                     }
                 });
+
+        this.findAndFixIssues(`
+            SELECT 
+              id, entityId
+            FROM 
+              entity_changes 
+              JOIN ${entityName} ON entityId = ${key} 
+            WHERE
+              entity_changes.isErased = 1
+              AND entity_changes.entityName = '${entityName}'`,
+            ({id, entityId}) => {
+                if (this.autoFix) {
+                    sql.execute(`DELETE FROM ${entityName} WHERE ${key} = ?`, [entityId]);
+
+                    this.reloadNeeded = true;
+
+                    logFix(`Erasing entityName=${entityName}, entityId=${entityId} since entity change id=${id} has it as erased.`);
+                } else {
+                    logError(`Entity change id=${id} has entityName=${entityName}, entityId=${entityId} as erased, but it's not.`);
+                }
+            });
     }
 
     findEntityChangeIssues() {
@@ -545,7 +570,7 @@ class ConsistencyChecks {
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
-        this.runEntityChangeChecks("api_tokens", "apiTokenId");
+        this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");
         this.runEntityChangeChecks("options", "name");
     }
 
@@ -603,13 +628,13 @@ class ConsistencyChecks {
         this.fixedIssues = false;
         this.reloadNeeded = false;
 
+        this.findEntityChangeIssues();
+
         this.findBrokenReferenceIssues();
 
         this.findExistencyIssues();
 
         this.findLogicIssues();
-
-        this.findEntityChangeIssues();
 
         this.findWronglyNamedAttributes();
 
@@ -638,7 +663,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "note_revisions", "branches", "attributes", "api_tokens" ];
+        const tables = [ "notes", "note_revisions", "branches", "attributes", "etapi_tokens" ];
 
         log.info("Table counts: " + tables.map(tableName => getTableRowCount(tableName)).join(", "));
     }

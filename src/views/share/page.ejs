@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <% if (note.hasRelation("shareFavicon")) { %>
+    <link rel="shortcut icon" href="api/notes/<%= note.getRelation("shareFavicon").value %>/download">
+    <% } else { %>
+    <link rel="shortcut icon" href="../favicon.ico">
+    <% } %>
+    <script src="../app/share.js"></script>
+    <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
+        <link href="../libraries/normalize.min.css" rel="stylesheet">
+        <link href="../stylesheets/share.css" rel="stylesheet">
+    <% } %>
+    <% if (note.type === 'text' || note.type === 'book') { %>
+        <link href="../libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
+    <% } %>
+    <% for (const cssRelation of note.getRelations("shareCss")) { %>
+        <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">
+    <% } %>
+    <% for (const jsRelation of note.getRelations("shareJs")) { %>
+        <script type="module" src="api/notes/<%= jsRelation.value %>/download"></script>
+    <% } %>
+    <%- header %>
+    <title><%= note.title %></title>
+</head>
+<body data-note-id="<%= note.noteId %>">
+<div id="layout">
+    <div id="main">
+        <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
+            <nav id="parentLink">
+                parent: <a href="<%= note.parents[0].shareId %>"
+                           class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>
+            </nav>
+        <% } %>
+
+        <h1 id="title"><%= note.title %></h1>
+
+        <% if (note.hasLabel("pageUrl")) { %>
+            <div id="noteClippedFrom">This note was originally clipped from <a href="<%= note.getLabelValue("pageUrl") %>"><%= note.getLabelValue("pageUrl") %></a></div>
+        <% } %>
+
+        <% if (!isEmpty) { %>
+            <div id="content" class="type-<%= note.type %><% if (note.type === 'text') { %> ck-content<% } %>">
+                <%- content %>
+            </div>
+        <% } %>
+
+        <% if (note.hasChildren()) { %>
+            <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
+                <% if (!isEmpty) { %>
+                    <hr>
+                    <span>Child notes: </span>
+                <% } %>
+
+                <ul>
+                    <% for (const childNote of note.getChildNotes()) { %>
+                        <li>
+                            <a href="<%= childNote.shareId %>"
+                               class="type-<%= childNote.type %>"><%= childNote.title %></a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        <% } else if (isEmpty) { %>
+            <p>This note has no content.</p>
+        <% } %>
+    </div>
+
+    <% if (subRoot.hasChildren()) { %>
+        <button id="toggleMenuButton"></button>
+
+        <nav id="menu">
+            <%- include('tree_item', {note: subRoot, activeNote: note}) %>
+        </nav>
+    <% } %>
+</div>
+</body>
+</html>

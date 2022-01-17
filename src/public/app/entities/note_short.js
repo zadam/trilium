@@ -398,6 +398,9 @@ class NoteShort {
         else if (this.noteId === 'root') {
             return "bx bx-chevrons-right";
         }
+        if (this.noteId === 'share') {
+            return "bx bx-share-alt";
+        }
         else if (this.type === 'text') {
             if (this.isFolder()) {
                 return "bx bx-folder";
@@ -777,6 +780,26 @@ class NoteShort {
         else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
         }
+    }
+
+    isShared() {
+        for (const parentNoteId of this.parents) {
+            if (parentNoteId === 'root' || parentNoteId === 'none') {
+                continue;
+            }
+
+            const parentNote = froca.notes[parentNoteId];
+
+            if (!parentNote || parentNote.type === 'search') {
+                continue;
+            }
+
+            if (parentNote.noteId === 'share' || parentNote.isShared()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

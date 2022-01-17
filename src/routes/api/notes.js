@@ -73,9 +73,7 @@ function deleteNote(req) {
 
     const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
-    for (const branch of note.getParentBranches()) {
-        noteService.deleteBranch(branch, deleteId, taskContext);
-    }
+    noteService.deleteNote(note, deleteId, taskContext);
 
     if (eraseNotes) {
         noteService.eraseNotesWithDeleteId(deleteId);
@@ -302,6 +300,21 @@ function uploadModifiedFile(req) {
     note.setContent(fileContent);
 }
 
+function getBacklinkCount(req) {
+    const {noteId} = req.params;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, "Not found"];
+    }
+    else {
+        return {
+            count: note.getTargetRelations().length
+        };
+    }
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -316,5 +329,6 @@ module.exports = {
     duplicateSubtree,
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
-    uploadModifiedFile
+    uploadModifiedFile,
+    getBacklinkCount
 };

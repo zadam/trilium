@@ -1,7 +1,7 @@
 import server from './server.js';
 import toastService from "./toast.js";
 
-async function syncNow() {
+async function syncNow(ignoreNotConfigured = false) {
     const result = await server.post('sync/now');
 
     if (result.success) {
@@ -12,7 +12,9 @@ async function syncNow() {
             result.message = result.message.substr(0, 200) + "...";
         }
 
-        toastService.showError("Sync failed: " + result.message);
+        if (!ignoreNotConfigured || result.errorCode !== 'NOT_CONFIGURED') {
+            toastService.showError("Sync failed: " + result.message);
+        }
     }
 }
 

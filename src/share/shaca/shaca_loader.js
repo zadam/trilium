@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../sql');
-const shaca = require('./shaca.js');
+const shaca = require('./shaca');
 const log = require('../../services/log');
 const Note = require('./entities/note');
 const Branch = require('./entities/branch');
@@ -34,31 +34,40 @@ function load() {
 
     const noteIdStr = noteIds.map(noteId => `'${noteId}'`).join(",");
 
-    for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, utcDateModified FROM notes WHERE isDeleted = 0 AND noteId IN (${noteIdStr})`)) {
+    const rawNoteRows = sql.getRawRows(`
+        SELECT noteId, title, type, mime, utcDateModified 
+        FROM notes 
+        WHERE isDeleted = 0 
+          AND noteId IN (${noteIdStr})`);
+
+    for (const row of rawNoteRows) {
         new Note(row);
     }
 
-    for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0 AND parentNoteId IN (${noteIdStr}) ORDER BY notePosition`)) {
+    const rawBranchRows = sql.getRawRows(`
+        SELECT branchId, noteId, parentNoteId, prefix, isExpanded, utcDateModified 
+        FROM branches 
+        WHERE isDeleted = 0 
+          AND parentNoteId IN (${noteIdStr}) 
+        ORDER BY notePosition`);
+
+    for (const row of rawBranchRows) {
         new Branch(row);
     }
 
-    const attributes = sql.getRawRows(`
+    const rawAttributeRows = sql.getRawRows(`
         SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified 
         FROM attributes 
         WHERE isDeleted = 0 
-          AND noteId IN (${noteIdStr})
-          AND (
-              (type = 'label' AND name IN ('archived')) 
-              OR (type = 'relation' AND name IN ('imageLink', 'template'))
-          )`, []);
+          AND noteId IN (${noteIdStr})`);
 
-    for (const row of attributes) {
+    for (const row of rawAttributeRows) {
         new Attribute(row);
     }
 
     shaca.loaded = true;
 
-    log.info(`Shaca load took ${Date.now() - start}ms`);
+    log.info(`Shaca loaded ${rawNoteRows.length} notes, ${rawBranchRows.length} branches, ${rawAttributeRows.length} attributes took ${Date.now() - start}ms`);
 }
 
 function ensureLoad() {

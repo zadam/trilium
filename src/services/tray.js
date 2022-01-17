@@ -1,7 +1,6 @@
 const { Menu, Tray } = require('electron');
 const path = require('path');
-const windowService = require("./window.js");
-const {getMainWindow} = require("./window.js");
+const windowService = require("./window");
 
 const UPDATE_TRAY_EVENTS = [
     'minimize', 'maximize', 'show', 'hide'
@@ -81,7 +80,7 @@ const updateTrayMenu = () => {
     tray?.setContextMenu(contextMenu);
 }
 const changeVisibility = () => {
-    const window = getMainWindow();
+    const window = windowService.getMainWindow();
 
     if (isVisible) {
         window.hide();

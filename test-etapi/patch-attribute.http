@@ -1,0 +1,80 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+###
+
+POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": true
+}
+
+> {% client.global.set("createdAttributeId", response.body.attributeId); %}
+
+###
+
+PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "value": "CHANGED"
+}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+
+> {%        
+client.assert(response.body.value === "CHANGED");
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "root"
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_NOT_ALLOWED");
+%}
+
+###
+
+PATCH {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "value": null
+}
+
+> {% 
+    client.assert(response.status === 400); 
+    client.assert(response.body.code == "PROPERTY_VALIDATION_ERROR");
+%}

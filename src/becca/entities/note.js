@@ -6,8 +6,8 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
-const AbstractEntity = require("./abstract_entity.js");
-const NoteRevision = require("./note_revision.js");
+const AbstractEntity = require("./abstract_entity");
+const NoteRevision = require("./note_revision");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -129,6 +129,10 @@ class Note extends AbstractEntity {
         return !this.noteId // new note which was not encrypted yet
             || !this.isProtected
             || protectedSessionService.isProtectedSessionAvailable()
+    }
+
+    getTitleOrProtected() {
+        return this.isContentAvailable() ? this.title : '[protected]';
     }
 
     /** @returns {Branch[]} */
@@ -861,10 +865,12 @@ class Note extends AbstractEntity {
             this.ancestorCache = [];
 
             for (const parent of this.parents) {
-                if (!noteIds.has(parent.noteId)) {
-                    this.ancestorCache.push(parent);
-                    noteIds.add(parent.noteId);
+                if (noteIds.has(parent.noteId)) {
+                    continue;
                 }
+
+                this.ancestorCache.push(parent);
+                noteIds.add(parent.noteId);
 
                 for (const ancestorNote of parent.getAncestors()) {
                     if (!noteIds.has(ancestorNote.noteId)) {
@@ -980,7 +986,7 @@ class Note extends AbstractEntity {
             }
         }
         else {
-            const Attribute = require("./attribute.js");
+            const Attribute = require("./attribute");
 
             new Attribute({
                 noteId: this.noteId,
@@ -1012,7 +1018,7 @@ class Note extends AbstractEntity {
      * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
-        const Attribute = require("./attribute.js");
+        const Attribute = require("./attribute");
 
         return new Attribute({
             noteId: this.noteId,
@@ -1114,7 +1120,7 @@ class Note extends AbstractEntity {
 
         const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
 
-        return cloningService.cloneNoteToParent(this.noteId, branch.branchId);
+        return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
     }
 
     decrypt() {

@@ -10,5 +10,6 @@ module.exports = {
         path: path.resolve(__dirname, 'src/public/app-dist'),
         filename: 'mobile.js'
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
+    target: 'electron-renderer'
 };

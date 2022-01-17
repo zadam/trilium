@@ -617,6 +617,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     /**
      * @param {Branch} branch
+     * @param {boolean} forceLazy
      */
     prepareNode(branch, forceLazy = false) {
         const note = branch.getNoteFromCache();
@@ -661,7 +662,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             extraClasses.push("protected");
         }
 
-        if (note.getParentNoteIds().length > 1) {
+        if (note.isShared()) {
+            extraClasses.push("shared");
+        }
+        else if (note.getParentNoteIds().length > 1) {
             const notSearchParents = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
@@ -1014,8 +1018,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
 
         for (const ecBranch of loadResults.getBranches()) {
-            // adding noteId itself to update all potential clones
-            noteIdsToUpdate.add(ecBranch.noteId);
+            if (ecBranch.parentNoteId === 'share') {
+                // all shared notes have a sign in the tree, even the descendants of shared notes
+                noteIdsToReload.add(ecBranch.noteId);
+            }
+            else {
+                // adding noteId itself to update all potential clones
+                noteIdsToUpdate.add(ecBranch.noteId);
+            }
 
             for (const node of this.getNodesByBranch(ecBranch)) {
                 if (ecBranch.isDeleted) {

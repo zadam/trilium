@@ -1,0 +1,124 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "forcedId{{$randomInt}}",
+  "branchId": "forcedId{{$randomInt}}",
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.assert(response.body.note.noteId.startsWith("forcedId"));
+    client.assert(response.body.note.title == "Hello");
+    client.assert(response.body.branch.branchId.startsWith("forcedId"));
+    client.assert(response.body.branch.parentNoteId == "root");
+
+    client.log(`Created note ` + response.body.note.noteId + ` and branch ` + response.body.branch.branchId);
+
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+### Clone to another location
+
+POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "branchId": "forcedClonedId",
+  "noteId": "{{createdNoteId}}",
+  "parentNoteId": "hidden"
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.assert(response.body.parentNoteId == "hidden");
+
+    client.global.set("clonedBranchId", response.body.branchId);
+
+    client.log(`Created cloned branch ` + response.body.branchId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.noteId == client.global.get("createdNoteId"));
+    client.assert(response.body.title == "Hello");
+    // order is not defined and may fail in the future
+    client.assert(response.body.parentBranchIds[0] == client.global.get("clonedBranchId"))
+    client.assert(response.body.parentBranchIds[1] == client.global.get("createdBranchId"));
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body == "Hi there!");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.branchId == client.global.get("createdBranchId"));
+    client.assert(response.body.parentNoteId == "root");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.branchId == client.global.get("clonedBranchId"));
+    client.assert(response.body.parentNoteId == "hidden");
+%}
+
+###
+
+POST {{triliumHost}}/etapi/attributes
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "attributeId": "forcedAttributeId{{$randomInt}}",
+  "noteId": "{{createdNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": true
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.assert(response.body.attributeId.startsWith("forcedAttributeId"));
+
+    client.global.set("createdAttributeId", response.body.attributeId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.attributeId == client.global.get("createdAttributeId"));
+%}

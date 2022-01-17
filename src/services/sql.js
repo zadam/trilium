@@ -8,9 +8,12 @@ const log = require('./log');
 const Database = require('better-sqlite3');
 const dataDir = require('./data_dir');
 const cls = require('./cls');
+const fs = require("fs-extra");
 
 const dbConnection = new Database(dataDir.DOCUMENT_PATH);
 dbConnection.pragma('journal_mode = WAL');
+
+const LOG_ALL_QUERIES = false;
 
 [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach(eventType => {
     process.on(eventType, () => {
@@ -89,13 +92,7 @@ function getRowOrNull(query, params = []) {
 }
 
 function getValue(query, params = []) {
-    const row = getRowOrNull(query, params);
-
-    if (!row) {
-        return null;
-    }
-
-    return row[Object.keys(row)[0]];
+    return wrap(query, s => s.pluck().get(params));
 }
 
 // smaller values can result in better performance due to better usage of statement cache
@@ -139,48 +136,37 @@ function getRawRows(query, params = []) {
 }
 
 function iterateRows(query, params = []) {
+    if (LOG_ALL_QUERIES) {
+        console.log(query);
+    }
+
     return stmt(query).iterate(params);
 }
 
 function getMap(query, params = []) {
     const map = {};
-    const results = getRows(query, params);
+    const results = getRawRows(query, params);
 
     for (const row of results) {
-        const keys = Object.keys(row);
-
-        map[row[keys[0]]] = row[keys[1]];
+        map[row[0]] = row[1];
     }
 
     return map;
 }
 
 function getColumn(query, params = []) {
-    const list = [];
-    const result = getRows(query, params);
-
-    if (result.length === 0) {
-        return list;
-    }
-
-    const key = Object.keys(result[0])[0];
-
-    for (const row of result) {
-        list.push(row[key]);
-    }
-
-    return list;
+    return wrap(query, s => s.pluck().all(params));
 }
 
 function execute(query, params = []) {
     return wrap(query, s => s.run(params));
 }
 
-function executeWithoutTransaction(query, params = []) {
-    dbConnection.run(query, params);
-}
-
 function executeMany(query, params) {
+    if (LOG_ALL_QUERIES) {
+        console.log(query);
+    }
+
     while (params.length > 0) {
         const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
@@ -201,12 +187,20 @@ function executeMany(query, params) {
 }
 
 function executeScript(query) {
+    if (LOG_ALL_QUERIES) {
+        console.log(query);
+    }
+
     return dbConnection.exec(query);
 }
 
 function wrap(query, func) {
     const startTimestamp = Date.now();
     let result;
+
+    if (LOG_ALL_QUERIES) {
+        console.log(query);
+    }
 
     try {
         result = func(stmt(query));
@@ -283,6 +277,15 @@ function fillParamList(paramIds, truncate = true) {
     s.run(paramIds);
 }
 
+async function copyDatabase(targetFilePath) {
+    try {
+        fs.unlinkSync(targetFilePath);
+    } catch (e) {
+    } // unlink throws exception if the file did not exist
+
+    await dbConnection.backup(targetFilePath);
+}
+
 module.exports = {
     dbConnection,
     insert,
@@ -350,10 +353,10 @@ module.exports = {
      * @param {object[]} [params] - array of params if needed
      */
     execute,
-    executeWithoutTransaction,
     executeMany,
     executeScript,
     transactional,
     upsert,
-    fillParamList
+    fillParamList,
+    copyDatabase
 };

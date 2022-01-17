@@ -1,0 +1,126 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+###
+
+POST {{triliumHost}}/etapi/attributes
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "type": "label",
+  "name": "mylabel",
+  "value": "val",
+  "isInheritable": true
+}
+
+> {% client.global.set("createdAttributeId", response.body.attributeId); %}
+
+### Clone to another location
+
+POST {{triliumHost}}/etapi/branches
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{createdNoteId}}",
+  "parentNoteId": "hidden"
+}
+
+> {% client.global.set("clonedBranchId", response.body.branchId); %}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}
+
+###
+
+DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 204, "Response status is not 204"); %}
+
+### repeat the DELETE request to test the idempotency
+
+DELETE {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 204, "Response status is not 204"); %}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{createdBranchId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "BRANCH_NOT_FOUND");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/branches/{{clonedBranchId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code == "BRANCH_NOT_FOUND");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "NOTE_NOT_FOUND");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/attributes/{{createdAttributeId}}
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 404, "Response status is not 404");
+    client.assert(response.body.code === "ATTRIBUTE_NOT_FOUND");
+%}

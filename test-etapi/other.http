@@ -1,0 +1,4 @@
+POST {{triliumHost}}/etapi/refresh-note-ordering/root
+Authorization: {{authToken}}
+
+> {% client.assert(response.status === 200); %}

@@ -28,8 +28,8 @@ function getHoistedNoteId() {
     return namespace.get('hoistedNoteId') || 'root';
 }
 
-function getSourceId() {
-    return namespace.get('sourceId');
+function getComponentId() {
+    return namespace.get('componentId');
 }
 
 function getLocalNowDateTime() {
@@ -80,7 +80,7 @@ module.exports = {
     set,
     namespace,
     getHoistedNoteId,
-    getSourceId,
+    getComponentId,
     getLocalNowDateTime,
     disableEntityEvents,
     isEntityEventsDisabled,

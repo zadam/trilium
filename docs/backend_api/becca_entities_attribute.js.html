@@ -28,10 +28,10 @@
         <article>
             <pre class="prettyprint source linenums"><code>"use strict";
 
-const Note = require('./note.js');
-const AbstractEntity = require("./abstract_entity.js");
-const sql = require("../../services/sql.js");
-const dateUtils = require("../../services/date_utils.js");
+const Note = require('./note');
+const AbstractEntity = require("./abstract_entity");
+const sql = require("../../services/sql");
+const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
 
 /**
@@ -79,7 +79,7 @@ class Attribute extends AbstractEntity {
         /** @type {int} */
         this.position = position;
         /** @type {string} */
-        this.value = value;
+        this.value = value || "";
         /** @type {boolean} */
         this.isInheritable = !!isInheritable;
         /** @type {string} */
@@ -245,7 +245,7 @@ module.exports = Attribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

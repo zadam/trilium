@@ -1,0 +1,12 @@
+POST {{triliumHost}}/etapi/auth/login
+Content-Type: application/json
+
+{
+  "password": "1234"
+}
+
+> {%
+    client.assert(response.status === 201);
+
+    client.global.set("authToken", response.body.authToken);
+%}
