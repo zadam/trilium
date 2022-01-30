@@ -110,8 +110,10 @@ class AbstractEntity {
             [deleteId, this.utcDateModified, entityId]);
 
         if (this.dateModified) {
+            this.dateModified = dateUtils.localNowDateTime();
+
             sql.execute(`UPDATE ${entityName} SET dateModified = ? WHERE ${this.constructor.primaryKeyName} = ?`,
-                [dateUtils.localNowDateTime(), entityId]);
+                [this.dateModified, entityId]);
         }
 
         this.addEntityChange(true);
