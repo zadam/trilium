@@ -104,13 +104,17 @@ class AbstractEntity {
         const entityId = this[this.constructor.primaryKeyName];
         const entityName = this.constructor.entityName;
 
+        this.utcDateModified = dateUtils.utcNowDateTime();
+
         sql.execute(`UPDATE ${entityName} SET isDeleted = 1, deleteId = ?, utcDateModified = ?
                            WHERE ${this.constructor.primaryKeyName} = ?`,
-            [deleteId, dateUtils.utcNowDateTime(), entityId]);
+            [deleteId, this.utcDateModified, entityId]);
 
         if (this.dateModified) {
+            this.dateModified = dateUtils.localNowDateTime();
+
             sql.execute(`UPDATE ${entityName} SET dateModified = ? WHERE ${this.constructor.primaryKeyName} = ?`,
-                [dateUtils.localNowDateTime(), entityId]);
+                [this.dateModified, entityId]);
         }
 
         log.info(`Marking ${entityName} ${entityId} as deleted`);
