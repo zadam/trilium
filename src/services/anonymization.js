@@ -13,7 +13,7 @@ function getAnonymizationScript() {
 
     const anonymizeScript = `
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
-UPDATE notes SET title = 'title';
+UPDATE notes SET title = 'title' WHERE title NOT IN ('root', 'hidden', 'share');
 UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL;
 UPDATE note_revisions SET title = 'title';
 UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL;

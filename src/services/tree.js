@@ -223,12 +223,15 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 
     if (branch) {
         if (!parentNoteId) {
+            log.info(`Removing note ${noteId} from parent ${parentNoteId}`);
+
             branch.markAsDeleted();
         }
         else {
-            branch.parentNoteId = parentNoteId;
-            branch.prefix = prefix;
-            branch.save();
+            const newBranch = branch.createClone(parentNoteId);
+            newBranch.save();
+
+            branch.markAsDeleted();
         }
     }
     else if (parentNoteId) {

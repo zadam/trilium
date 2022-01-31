@@ -80,6 +80,10 @@ function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     const branch = becca.getBranch(branchId);
 
     if (branch) {
+        if (branch.getNote().getParentBranches().length <= 1) {
+            throw new Error(`Cannot remove branch ${branch.branchId} between child ${noteId} and parent ${parentNoteId} because this would delete the note as well.`);
+        }
+
         const deleteId = utils.randomString(10);
         noteService.deleteBranch(branch, deleteId, new TaskContext());
     }

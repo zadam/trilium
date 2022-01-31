@@ -222,8 +222,6 @@ function getShareRoot() {
 function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSqlConsoleRoot();
-    getSinglesNoteRoot();
-    getSinglesNoteRoot();
     getGlobalNoteMap();
     // share root is not automatically created since it's visible in the tree and many won't need it/use it
 
