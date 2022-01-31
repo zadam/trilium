@@ -1,6 +1,7 @@
 "use strict";
 
 const build = require('./build');
+const dateUtils = require('./date_utils');
 const packageJson = require('../../package');
 const {TRILIUM_DATA_DIR} = require('./data_dir');
 
@@ -15,5 +16,6 @@ module.exports = {
     buildDate: build.buildDate,
     buildRevision: build.buildRevision,
     dataDirectory: TRILIUM_DATA_DIR,
-    clipperProtocolVersion: CLIPPER_PROTOCOL_VERSION
+    clipperProtocolVersion: CLIPPER_PROTOCOL_VERSION,
+    utcDateTime: dateUtils.utcNowDateTime() // for timezone inference
 };

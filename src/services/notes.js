@@ -138,6 +138,8 @@ function createNewNote(params) {
         triggerNoteTitleChanged(note);
         triggerChildNoteCreated(note, parentNote);
 
+        log.info(`Created new note ${note.noteId}, branch ${branch.branchId} of type ${note.type}, mime ${note.mime}`);
+
         return {
             note,
             branch

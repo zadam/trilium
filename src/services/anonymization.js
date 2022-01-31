@@ -20,7 +20,7 @@ UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL;
 
 UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label' AND name NOT IN(${builtinAttrNames});
 UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrNames});
-UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL;
+UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL AND prefix != 'recovered';
 UPDATE options SET value = 'anonymized' WHERE name IN
                     ('documentId', 'documentSecret', 'encryptedDataKey', 
                      'passwordVerificationHash', 'passwordVerificationSalt', 

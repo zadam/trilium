@@ -283,7 +283,7 @@ class ConsistencyChecks {
 
     findLogicIssues() {
         const noteTypesStr = noteTypes.map(nt => `'${nt}'`).join(", ");
-        
+
         this.findAndFixIssues(`
                     SELECT noteId, type
                     FROM notes
@@ -696,14 +696,14 @@ class ConsistencyChecks {
 
 function getBlankContent(isProtected, type, mime) {
     if (isProtected) {
-        return null; // this is wrong for protected non-erased notes but we cannot create a valid value without password
+        return null; // this is wrong for protected non-erased notes, but we cannot create a valid value without password
     }
 
     if (mime === 'application/json') {
         return '{}';
     }
 
-    return ''; // empty string might be wrong choice for some note types but it's a best guess
+    return ''; // empty string might be wrong choice for some note types, but it's the best guess
 }
 
 function logFix(message) {

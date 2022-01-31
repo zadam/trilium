@@ -6,6 +6,7 @@ const entityChangesService = require('../../services/entity_changes');
 const eventService = require("../../services/events");
 const dateUtils = require("../../services/date_utils");
 const cls = require("../../services/cls");
+const log = require("../../services/log");
 
 let becca = null;
 
@@ -112,6 +113,8 @@ class AbstractEntity {
                 [dateUtils.localNowDateTime(), entityId]);
         }
 
+        log.info(`Marking ${entityName} ${entityId} as deleted`);
+
         this.addEntityChange(true);
 
         eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
@@ -121,9 +124,13 @@ class AbstractEntity {
         const entityId = this[this.constructor.primaryKeyName];
         const entityName = this.constructor.entityName;
 
+        this.utcDateModified = dateUtils.utcNowDateTime();
+
         sql.execute(`UPDATE ${entityName} SET isDeleted = 1, utcDateModified = ?
                            WHERE ${this.constructor.primaryKeyName} = ?`,
-            [dateUtils.utcNowDateTime(), entityId]);
+            [this.utcDateModified, entityId]);
+
+        log.info(`Marking ${entityName} ${entityId} as deleted`);
 
         this.addEntityChange(true);
 
