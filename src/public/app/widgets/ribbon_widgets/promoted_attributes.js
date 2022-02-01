@@ -310,6 +310,10 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
         $attr.attr("data-attribute-id", result.attributeId);
     }
 
+    focus() {
+        this.$widget.find(".promoted-attribute-input:first").focus();
+    }
+
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refresh();
