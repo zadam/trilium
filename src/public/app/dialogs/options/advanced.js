@@ -13,6 +13,12 @@ const TPL = `
 <br/>
 <br/>
 
+<h4>Database integrity check</h4>
+
+<p>This will check that the database is not corrupted on the SQLite level. It might take some time, depending on the DB size.</p>
+
+<button id="check-integrity-button" class="btn">Check database integrity</button><br/><br/>
+
 <h4>Consistency checks</h4>
 
 <button id="find-and-fix-consistency-issues-button" class="btn">Find and fix consistency issues</button><br/><br/>
@@ -37,9 +43,9 @@ export default class AdvancedOptions {
         this.$forceFullSyncButton = $("#force-full-sync-button");
         this.$fillEntityChangesButton = $("#fill-entity-changes-button");
         this.$anonymizeButton = $("#anonymize-button");
-        this.$backupDatabaseButton = $("#backup-database-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
         this.$findAndFixConsistencyIssuesButton = $("#find-and-fix-consistency-issues-button");
+        this.$checkIntegrityButton = $("#check-integrity-button");
 
         this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');
@@ -74,6 +80,17 @@ export default class AdvancedOptions {
             await server.post('database/find-and-fix-consistency-issues');
 
             toastService.showMessage("Consistency issues should be fixed.");
+        });
+
+        this.$checkIntegrityButton.on('click', async () => {
+            const {results} = await server.get('database/check-integrity');
+
+            if (results.length === 1 && results[0].integrity_check === "ok") {
+                toastService.showMessage("Integrity check succeeded - no problems found.");
+            }
+            else {
+                toastService.showMessage("Integrity check failed: " + JSON.stringify(results, null, 2), 15000);
+            }
         });
     }
 }
