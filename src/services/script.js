@@ -33,6 +33,7 @@ function executeBundle(bundle, apiParams = {}) {
     const originalComponentId = cls.get('componentId');
 
     cls.set('componentId', 'script');
+    cls.set('bundleNoteId', bundle.note.noteId);
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "function() {\r\n" + bundle.script + "\r\n}";

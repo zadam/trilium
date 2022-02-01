@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const dataDir = require('./data_dir');
+const cls = require('./cls');
 
 if (!fs.existsSync(dataDir.LOG_DIR)) {
     fs.mkdirSync(dataDir.LOG_DIR, 0o700);
@@ -49,6 +50,12 @@ function checkDate(millisSinceMidnight) {
 }
 
 function log(str) {
+    const bundleNoteId = cls.get("bundleNoteId");
+
+    if (bundleNoteId) {
+        str = `[Script ${bundleNoteId}] ${str}`;
+    }
+
     let millisSinceMidnight = Date.now() - todaysMidnight.getTime();
 
     millisSinceMidnight = checkDate(millisSinceMidnight);

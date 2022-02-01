@@ -293,7 +293,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @param message
      */
-    this.log = message => log.info(`Script "${currentNote.title}" (${currentNote.noteId}): ${message}`);
+    this.log = message => log.info(message);
 
     /**
      * Returns root note of the calendar.

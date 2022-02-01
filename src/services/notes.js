@@ -738,6 +738,8 @@ function eraseBranches(branchIdsToErase) {
     sql.executeMany(`DELETE FROM branches WHERE branchId IN (???)`, branchIdsToErase);
 
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'branches' AND entityId IN (???)`, branchIdsToErase));
+
+    log.info(`Erased branches: ${JSON.stringify(branchIdsToErase)}`);
 }
 
 function eraseAttributes(attributeIdsToErase) {
@@ -748,6 +750,8 @@ function eraseAttributes(attributeIdsToErase) {
     sql.executeMany(`DELETE FROM attributes WHERE attributeId IN (???)`, attributeIdsToErase);
 
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase));
+
+    log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
