@@ -151,6 +151,14 @@ function setDbAsInitialized() {
     }
 }
 
+function optimize() {
+    log.info("Optimizing database");
+
+    sql.execute("PRAGMA optimize");
+
+    log.info("Optimization finished.");
+}
+
 dbReady.then(() => {
     if (config.General && config.General.noBackup === true) {
         log.info("Disabling scheduled backups.");
@@ -162,6 +170,11 @@ dbReady.then(() => {
 
     // kickoff first backup soon after start up
     setTimeout(() => require('./backup').regularBackup(), 5 * 60 * 1000);
+
+    // optimize is usually inexpensive no-op so running it semi-frequently is not a big deal
+    setTimeout(() => optimize(), 60 * 60 * 1000);
+
+    setInterval(() => optimize(), 10 * 60 * 60 * 1000);
 });
 
 log.info("DB size: " + sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
