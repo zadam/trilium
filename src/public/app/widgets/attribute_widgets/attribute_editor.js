@@ -497,6 +497,16 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         await this.renderOwnedAttributes(attributes, false);
     }
 
+    focus() {
+        this.$editor.trigger('focus');
+
+        this.textEditor.model.change( writer => {
+            const positionAt = writer.createPositionAt(this.textEditor.model.document.getRoot(), 'end');
+
+            writer.setSelection(positionAt);
+        } );
+    }
+
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
             this.refresh();

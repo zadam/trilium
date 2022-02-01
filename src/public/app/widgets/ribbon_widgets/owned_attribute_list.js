@@ -82,4 +82,8 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
             this.getTitle(this.note);
         }
     }
+
+    focus() {
+        this.attributeEditorWidget.focus();
+    }
 }
