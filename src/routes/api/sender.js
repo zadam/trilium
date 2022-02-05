@@ -29,6 +29,8 @@ function uploadImage(req) {
         }
     }
 
+    note.setLabel("sentFromSender");
+
     return {
         noteId: noteId
     };
