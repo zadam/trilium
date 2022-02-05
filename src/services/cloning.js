@@ -9,6 +9,7 @@ const TaskContext = require("./task_context");
 const utils = require('./utils');
 const becca = require("../becca/becca");
 const beccaService = require("../becca/becca_service");
+const log = require("./log");
 
 function cloneNoteToNote(noteId, parentNoteId, prefix) {
     if (parentNoteId === 'share') {
@@ -33,6 +34,8 @@ function cloneNoteToNote(noteId, parentNoteId, prefix) {
         prefix: prefix,
         isExpanded: 0
     }).save();
+
+    log.info(`Cloned note ${noteId} to new parent note ${parentNoteId} with prefix ${prefix}`);
 
     return {
         success: true,
@@ -73,6 +76,8 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
         prefix: prefix,
         isExpanded: 0
     }).save();
+
+    log.info(`Ensured note ${noteId} is in parent note ${parentNoteId} with prefix ${prefix}`);
 }
 
 function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
@@ -86,6 +91,8 @@ function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
 
         const deleteId = utils.randomString(10);
         noteService.deleteBranch(branch, deleteId, new TaskContext());
+
+        log.info(`Ensured note ${noteId} is NOT in parent note ${parentNoteId}`);
     }
 }
 
@@ -124,6 +131,8 @@ function cloneNoteAfter(noteId, afterBranchId) {
         notePosition: afterNote.notePosition + 10,
         isExpanded: 0
     }).save();
+
+    log.info(`Cloned note ${noteId} into parent note ${afterNote.parentNoteId} after note ${afterNote.noteId}, branch ${afterBranchId}`);
 
     return { success: true, branchId: branch.branchId };
 }

@@ -6,6 +6,8 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const noteRevisionService = require("../../services/note_revisions");
+const branchService = require("../../services/branches");
+const cloningService = require("../../services/cloning");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 async function searchFromNoteInt(note) {
@@ -91,6 +93,26 @@ const ACTION_HANDLERS = {
     },
     setRelationTarget: (action, note) => {
         note.setRelation(action.relationName, action.targetNoteId);
+    },
+    moveNote: (action, note) => {
+        const targetParentNote = becca.getNote(action.targetParentNoteId);
+
+        if (!targetParentNote) {
+            return;
+        }
+
+        let res;
+
+        if (note.getParentBranches().length > 1) {
+            res = cloningService.cloneNoteToNote(note.noteId, action.targetParentNoteId);
+        }
+        else {
+            res = branchService.moveBranchToNote(note.getParentBranches()[0], action.targetParentNoteId);
+        }
+
+        if (!res.success) {
+            log.info(`Moving/cloning note ${note.noteId} to ${action.targetParentNoteId} failed with error ${JSON.stringify(res)}`);
+        }
     },
     executeScript: (action, note) => {
         if (!action.script || !action.script.trim()) {

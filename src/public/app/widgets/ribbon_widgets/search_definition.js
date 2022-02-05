@@ -23,6 +23,7 @@ import Limit from "../search_options/limit.js";
 import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
 import Debug from "../search_options/debug.js";
 import appContext from "../../services/app_context.js";
+import MoveNoteSearchAction from "../search_actions/move_note.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -127,9 +128,13 @@ const TPL = `
                         action
                       </button>
                       <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#" data-action-add="moveNote">
+                            Move note</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteNote">
                             Delete note</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteNoteRevisions">
+                            Delete note revisions</a>
+                        <a class="dropdown-item" href="#" data-action-add="moveNote">
                             Delete note revisions</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteLabel">
                             Delete label</a>
@@ -193,6 +198,7 @@ const OPTION_CLASSES = [
 const ACTION_CLASSES = {};
 
 for (const clazz of [
+    MoveNoteSearchAction,
     DeleteNoteSearchAction,
     DeleteNoteRevisionsSearchAction,
     DeleteLabelSearchAction,

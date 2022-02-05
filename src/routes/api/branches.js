@@ -7,6 +7,8 @@ const treeService = require('../../services/tree');
 const noteService = require('../../services/notes');
 const becca = require('../../becca/becca');
 const TaskContext = require('../../services/task_context');
+const branchService = require("../../services/branches");
+const log = require("../../services/log.js");
 
 /**
  * Code in this file deals with moving and cloning branches. Relationship between note and parent note is unique
@@ -23,29 +25,7 @@ function moveBranchToParent(req) {
         return [400, `One or both branches ${branchId}, ${parentBranchId} have not been found`];
     }
 
-    if (branchToMove.parentNoteId === parentBranch.noteId) {
-        return { success: true }; // no-op
-    }
-
-    const validationResult = treeService.validateParentChild(parentBranch.noteId, branchToMove.noteId, branchId);
-
-    if (!validationResult.success) {
-        return [200, validationResult];
-    }
-
-    const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentBranch.noteId]);
-    const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
-
-    // expanding so that the new placement of the branch is immediately visible
-    parentBranch.isExpanded = true;
-    parentBranch.save();
-
-    const newBranch = branchToMove.createClone(parentBranch.noteId, newNotePos);
-    newBranch.save();
-
-    branchToMove.markAsDeleted();
-
-    return { success: true };
+    return branchService.moveBranchToBranch(branchToMove, parentBranch, branchId);
 }
 
 function moveBranchBeforeNote(req) {
@@ -101,6 +81,8 @@ function moveBranchBeforeNote(req) {
     // if sorting is not needed then still the ordering might have changed above manually
     entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
 
+    log.info(`Moved note ${branchToMove.noteId}, branch ${branchId} before note ${beforeBranch.noteId}, branch ${beforeBranchId}`);
+
     return { success: true };
 }
 
@@ -149,6 +131,8 @@ function moveBranchAfterNote(req) {
 
     // if sorting is not needed then still the ordering might have changed above manually
     entityChangesService.addNoteReorderingEntityChange(parentNote.noteId);
+
+    log.info(`Moved note ${branchToMove.noteId}, branch ${branchId} after note ${afterNote.noteId}, branch ${afterBranchId}`);
 
     return { success: true };
 }
