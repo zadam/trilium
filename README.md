@@ -60,6 +60,10 @@ npm run start-server
 * [CodeMirror](https://github.com/codemirror/CodeMirror) - code editor with support for huge amount of languages
 * [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library without competition. Used in [relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map)
 
+## Donating
+
+You can donate using GitHub Sponsors, [PayPal](https://paypal.me/za4am) or [Bitcoin](bitcoin:bc1qv3svjn40v89mnkre5vyvs2xw6y8phaltl385d2).
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
