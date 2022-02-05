@@ -153,7 +153,10 @@ function getRelationMap(req) {
         .split(",")
         .map(token => token.trim());
 
-    console.log("displayRelations", displayRelations);
+    const hideRelationsVal = relationMapNote.getLabelValue('hideRelations');
+    const hideRelations = !hideRelationsVal ? [] : hideRelationsVal
+        .split(",")
+        .map(token => token.trim());
 
     const foundNoteIds = sql.getColumn(`SELECT noteId FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
     const notes = becca.getNotes(foundNoteIds);
@@ -163,7 +166,9 @@ function getRelationMap(req) {
 
         resp.relations = resp.relations.concat(note.getRelations()
             .filter(relation => !relation.isAutoLink() || displayRelations.includes(relation.name))
-            .filter(relation => displayRelations.length === 0 || displayRelations.includes(relation.name))
+            .filter(relation => displayRelations.length > 0
+                ? displayRelations.includes(relation.name)
+                : !hideRelations.includes(relation.name))
             .filter(relation => noteIds.includes(relation.value))
             .map(relation => ({
                 attributeId: relation.attributeId,

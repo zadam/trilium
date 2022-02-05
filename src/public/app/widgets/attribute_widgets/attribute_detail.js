@@ -215,6 +215,8 @@ const ATTR_HELP = {
         "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
         "shareOmitDefaultCss": "default share page CSS will be omitted. Use when you make extensive styling changes.",
         "shareRoot": "marks note which is served on /share root.",
+        "displayRelations": "comma delimited names of relations which should be displayed. All other ones will be hidden.",
+        "hideRelations": "comma delimited names of relations which should be hidden. All other ones will be displayed.",
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",

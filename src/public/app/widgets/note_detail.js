@@ -275,7 +275,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             const label = attrs.find(attr =>
                 attr.type === 'label'
-                && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'displayRelations'].includes(attr.name)
+                && ['readOnly', 'autoReadOnlyDisabled', 'cssClass', 'displayRelations', 'hideRelations'].includes(attr.name)
                 && attributeService.isAffecting(attr, this.note));
 
             const relation = attrs.find(attr =>

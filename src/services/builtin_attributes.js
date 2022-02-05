@@ -46,6 +46,8 @@ module.exports = [
     { type: 'label', name: 'shareAlias' },
     { type: 'label', name: 'shareOmitDefaultCss' },
     { type: 'label', name: 'shareRoot' },
+    { type: 'label', name: 'displayRelations' },
+    { type: 'label', name: 'hideRelations' },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
