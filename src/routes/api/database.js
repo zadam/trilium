@@ -6,8 +6,8 @@ const backupService = require('../../services/backup');
 const anonymizationService = require('../../services/anonymization');
 const consistencyChecksService = require('../../services/consistency_checks');
 
-async function anonymize() {
-    return await anonymizationService.createAnonymizedCopy();
+async function anonymize(req) {
+    return await anonymizationService.createAnonymizedCopy(req.params.type);
 }
 
 async function backupDatabase() {

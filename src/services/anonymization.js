@@ -5,7 +5,7 @@ const dateUtils = require("./date_utils");
 const Database = require("better-sqlite3");
 const sql = require("./sql");
 
-function getAnonymizationScript() {
+function getFullAnonymizationScript() {
     // we want to delete all non-builtin attributes because they can contain sensitive names and values
 // on the other hand builtin/system attrs should not contain any sensitive info
     const builtinAttrNames = BUILTIN_ATTRIBUTES
@@ -33,18 +33,37 @@ VACUUM;
     return anonymizeScript;
 }
 
-async function createAnonymizedCopy() {
+function getLightAnonymizationScript() {
+    return `
+         UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL AND noteId NOT IN (
+                SELECT noteId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+         );
+         UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL AND noteRevisionId NOT IN (
+                SELECT noteRevisionId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+         );
+     `;
+}
+
+async function createAnonymizedCopy(type) {
+    if (!['full', 'light'].includes(type)) {
+        throw new Error(`Unrecognized anonymization type '${type}'`);
+    }
+
     if (!fs.existsSync(dataDir.ANONYMIZED_DB_DIR)) {
         fs.mkdirSync(dataDir.ANONYMIZED_DB_DIR, 0o700);
     }
 
-    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "anonymized-" + dateUtils.getDateTimeForFile() + ".db";
+    const anonymizedFile = `${dataDir.ANONYMIZED_DB_DIR}/anonymized-${type}-${dateUtils.getDateTimeForFile()}.db`;
 
     await sql.copyDatabase(anonymizedFile);
 
     const db = new Database(anonymizedFile);
 
-    db.exec(getAnonymizationScript());
+    const anonymizationScript = type === 'light'
+        ? getLightAnonymizationScript()
+        : getFullAnonymizationScript();
+
+    db.exec(anonymizationScript);
 
     db.close();
 
@@ -55,6 +74,6 @@ async function createAnonymizedCopy() {
 }
 
 module.exports = {
-    getAnonymizationScript,
+    getFullAnonymizationScript,
     createAnonymizedCopy
 }

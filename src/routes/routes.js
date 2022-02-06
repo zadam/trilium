@@ -324,7 +324,7 @@ function register(app) {
 
     apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(POST, '/api/sql/execute/:noteId', sqlRoute.execute);
-    route(POST, '/api/database/anonymize', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
+    route(POST, '/api/database/anonymize/:type', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler, false);
 
     // backup requires execution outside of transaction
     route(POST, '/api/database/backup-database', [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.backupDatabase, apiResultHandler, false);
