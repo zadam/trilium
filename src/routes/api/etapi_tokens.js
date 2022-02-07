@@ -2,16 +2,14 @@ const etapiTokenService = require("../../services/etapi_tokens");
 
 function getTokens() {
     const tokens = etapiTokenService.getTokens();
-    
+
     tokens.sort((a, b) => a.utcDateCreated < b.utcDateCreated ? -1 : 1);
-    
+
     return tokens;
 }
 
 function createToken(req) {
-    return {
-        authToken: etapiTokenService.createToken(req.body.tokenName)
-    };
+    return etapiTokenService.createToken(req.body.tokenName);
 }
 
 function patchToken(req) {
