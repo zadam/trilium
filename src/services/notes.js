@@ -634,7 +634,10 @@ function undeleteBranch(branchId, deleteId, taskContext) {
     taskContext.increaseProgressCount();
 
     if (note.isDeleted && note.deleteId === deleteId) {
-        new Note(note).save();
+        // becca entity was already created as skeleton in "new Branch()" above
+        const noteEntity = becca.getNote(note.noteId);
+        noteEntity.updateFromRow(note);
+        noteEntity.save();
 
         const attributes = sql.getRows(`
                 SELECT * FROM attributes 
