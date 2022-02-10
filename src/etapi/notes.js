@@ -162,7 +162,7 @@ function parseBoolean(obj, name) {
     return obj[name] === 'true';
 }
 
-function parseInteger(obj, name) {
+function parseOrderDirection(obj, name) {
     if (!(name in obj)) {
         return undefined;
     }
@@ -176,7 +176,7 @@ function parseInteger(obj, name) {
     return integer;
 }
 
-function parseOrderDirection(obj, name) {
+function parseInteger(obj, name) {
     if (!(name in obj)) {
         return undefined;
     }
