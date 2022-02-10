@@ -48,46 +48,46 @@ const TPL = `
 export default class EtapiOptions {
     constructor() {
         $("#options-etapi").html(TPL);
-        
+
         $("#create-etapi-token").on("click", async () => {
             const promptDialog = await import('../../dialogs/prompt.js');
             const tokenName = await promptDialog.ask({
                 title: "New ETAPI token",
-                message: "Please enter new token's name", 
-                defaultValue: "new token" 
+                message: "Please enter new token's name",
+                defaultValue: "new token"
             });
-            
+
             if (!tokenName.trim()) {
                 alert("Token name can't be empty");
                 return;
             }
-            
-            const {token} = await server.post('etapi-tokens', {tokenName});
 
-            await promptDialog.ask({ 
+            const {authToken} = await server.post('etapi-tokens', {tokenName});
+
+            await promptDialog.ask({
                 title: "ETAPI token created",
-                message: 'Copy the created token into clipboard. Trilium stores the token hashed and this is the last time you see it.', 
-                defaultValue: token 
+                message: 'Copy the created token into clipboard. Trilium stores the token hashed and this is the last time you see it.',
+                defaultValue: authToken
             });
-            
+
             this.refreshTokens();
         });
 
         this.refreshTokens();
     }
-    
+
     async refreshTokens() {
         const $noTokensYet = $("#no-tokens-yet");
         const $tokensTable = $("#tokens-table");
-        
+
         const tokens = await server.get('etapi-tokens');
-        
+
         $noTokensYet.toggle(tokens.length === 0);
         $tokensTable.toggle(tokens.length > 0);
 
         const $tokensTableBody = $tokensTable.find("tbody");
         $tokensTableBody.empty();
-        
+
         for (const token of tokens) {
             $tokensTableBody.append(
                 $("<tr>")
@@ -112,7 +112,7 @@ export default class EtapiOptions {
         });
 
         await server.patch(`etapi-tokens/${etapiTokenId}`, {name: tokenName});
-        
+
         this.refreshTokens();
     }
 

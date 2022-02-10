@@ -42,7 +42,9 @@ class EtapiToken extends AbstractEntity {
         /** @type {boolean} */
         this.isDeleted = !!row.isDeleted;
 
-        this.becca.etapiTokens[this.etapiTokenId] = this;
+        if (this.etapiTokenId) {
+            this.becca.etapiTokens[this.etapiTokenId] = this;
+        }
     }
 
     init() {

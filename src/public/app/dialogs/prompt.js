@@ -13,9 +13,9 @@ let shownCb;
 
 export function ask({ title, message, defaultValue, shown }) {
     shownCb = shown;
-    
+
     $("#prompt-title").text(title || "Prompt");
-    
+
     $question = $("<label>")
         .prop("for", "prompt-dialog-answer")
         .text(message);
@@ -51,7 +51,8 @@ $dialog.on("hidden.bs.modal", () => {
     }
 });
 
-$form.on('submit', () => {
+$form.on('submit', e => {
+    e.preventDefault();
     resolve($answer.val());
 
     $dialog.modal('hide');
