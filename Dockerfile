@@ -1,3 +1,5 @@
+# !!! Don't try to build this Dockerfile directly, run it through bin/build-docker.sh script !!!
+
 FROM node:16.13.2-alpine
 
 # Create app directory
