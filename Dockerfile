@@ -23,6 +23,10 @@ RUN set -x \
 # Bundle app source
 COPY . .
 
+# For mounting a persistent volume with docker compose
+ENV TRILIUM_DATA_DIR /home/node/trilium-data
+RUN mkdir -p "$TRILIUM_DATA_DIR" && chown -R node:node "$TRILIUM_DATA_DIR" && chmod 750 "$TRILIUM_DATA_DIR"
+
 USER node
 
 EXPOSE 8080
