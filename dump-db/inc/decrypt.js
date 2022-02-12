@@ -1,4 +1,4 @@
-import crypto from "crypto";
+const crypto = require("crypto");
 
 function decryptString(dataKey, cipherText) {
     const buffer = decrypt(dataKey, cipherText);
@@ -57,6 +57,19 @@ function decrypt(key, cipherText, ivLength = 13) {
             throw e;
         }
     }
+}
+
+function pad(data) {
+    if (data.length > 16) {
+        data = data.slice(0, 16);
+    }
+    else if (data.length < 16) {
+        const zeros = Array(16 - data.length).fill(0);
+
+        data = Buffer.concat([data, Buffer.from(zeros)]);
+    }
+
+    return Buffer.from(data);
 }
 
 function arraysIdentical(a, b) {

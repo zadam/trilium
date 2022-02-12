@@ -17,6 +17,18 @@ npm install
 See output of `node dump-db.js --help`:
 
 ```
-Trilium Notes DB dump tool. Usage:
-node dump-db.js PATH_TO_DOCUMENT_DB TARGET_PATH
+dump-db.js <path_to_document> <target_directory>
+
+dump the contents of document.db into the target directory
+
+Positionals:
+path_to_document  path to the document.db
+target_directory  path of the directory into which the notes should be dumped
+
+Options:
+--help             Show help                                         [boolean]
+--version          Show version number                               [boolean]
+--password         Set password to be able to decrypt protected notes.[string]
+--include-deleted  If set to true, dump also deleted notes.
+[boolean] [default: false]
 ```

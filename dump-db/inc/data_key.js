@@ -1,14 +1,24 @@
-import crypto from "crypto";
-import sql from "./sql.js";
+const crypto = require("crypto");
+const sql = require("./sql.js");
+const decryptService = require("./decrypt.js");
 
 function getDataKey(password) {
-    const passwordDerivedKey = getPasswordDerivedKey(password);
+    if (!password) {
+        return null;
+    }
 
-    const encryptedDataKey = getOption('encryptedDataKey');
+    try {
+        const passwordDerivedKey = getPasswordDerivedKey(password);
 
-    const decryptedDataKey = decrypt(passwordDerivedKey, encryptedDataKey, 16);
+        const encryptedDataKey = getOption('encryptedDataKey');
 
-    return decryptedDataKey;
+        const decryptedDataKey = decryptService.decrypt(passwordDerivedKey, encryptedDataKey, 16);
+
+        return decryptedDataKey;
+    }
+    catch (e) {
+        throw new Error(`Cannot read data key, the entered password might be wrong. The underlying error: '${e.message}', stack:\n${e.stack}`);
+    }
 }
 
 function getPasswordDerivedKey(password) {
@@ -25,7 +35,7 @@ function getScryptHash(password, salt) {
 }
 
 function getOption(name) {
-    return sql.getValue("SELECT value FROM options WHERE name = ?", name);
+    return sql.getValue("SELECT value FROM options WHERE name = ?", [name]);
 }
 
 module.exports = {

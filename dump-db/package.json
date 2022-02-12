@@ -19,6 +19,7 @@
   "dependencies": {
     "better-sqlite3": "7.5.0",
     "mime-types": "2.1.34",
-    "sanitize-filename": "1.6.3"
+    "sanitize-filename": "1.6.3",
+    "yargs": "17.3.1"
   }
 }
