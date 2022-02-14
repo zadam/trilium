@@ -949,5 +949,6 @@ module.exports = {
     triggerNoteTitleChanged,
     eraseDeletedNotesNow,
     eraseNotesWithDeleteId,
-    saveNoteRevision
+    saveNoteRevision,
+    downloadImages
 };
