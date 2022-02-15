@@ -46,7 +46,7 @@ function register(router) {
         'mime': [v.notNull, v.isString],
         'content': [v.notNull, v.isString],
         'notePosition': [v.notNull, v.isInteger],
-        'prefix': [v.notNull, v.isInteger],
+        'prefix': [v.notNull, v.isString],
         'isExpanded': [v.notNull, v.isBoolean],
         'noteId': [v.notNull, v.isValidEntityId],
         'branchId': [v.notNull, v.isValidEntityId],
