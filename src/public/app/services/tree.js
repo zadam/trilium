@@ -65,7 +65,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
 
             if (!parents.length) {
                 if (logErrors) {
-                    ws.logError(`No parents found for ${childNoteId} (${child.title}) for path ${notePath}`);
+                    ws.logError(`No parents found for note ${childNoteId} (${child.title}) for path ${notePath}`);
                 }
 
                 return;

@@ -1,0 +1,25 @@
+{
+  "name": "dump-db",
+  "version": "1.0.0",
+  "description": "Standalone tool to dump contents of Trilium document.db file into a directory tree of notes",
+  "main": "dump-db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zadam/trilium.git"
+  },
+  "author": "zadam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zadam/trilium/issues"
+  },
+  "homepage": "https://github.com/zadam/trilium/dump-db#readme",
+  "dependencies": {
+    "better-sqlite3": "7.5.0",
+    "mime-types": "2.1.34",
+    "sanitize-filename": "1.6.3",
+    "yargs": "17.3.1"
+  }
+}

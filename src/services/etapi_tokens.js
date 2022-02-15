@@ -19,7 +19,7 @@ function createToken(tokenName) {
         name: tokenName,
         tokenHash
     }).save();
-    
+
     return {
         authToken: `${etapiToken.etapiTokenId}_${token}`
     };
@@ -29,14 +29,14 @@ function parseAuthToken(auth) {
     if (!auth) {
         return null;
     }
-    
+
     const chunks = auth.split("_");
-    
+
     if (chunks.length === 1) {
         return { token: auth }; // legacy format without etapiTokenId
     }
     else if (chunks.length === 2) {
-        return { 
+        return {
             etapiTokenId: chunks[0],
             token: chunks[1]
         }
@@ -48,20 +48,20 @@ function parseAuthToken(auth) {
 
 function isValidAuthHeader(auth) {
     const parsed = parseAuthToken(auth);
-    
+
     if (!parsed) {
         return false;
     }
-    
-    const authTokenHash = getTokenHash(parsed.token); 
-    
+
+    const authTokenHash = getTokenHash(parsed.token);
+
     if (parsed.etapiTokenId) {
         const etapiToken = becca.getEtapiToken(parsed.etapiTokenId);
-        
+
         if (!etapiToken) {
             return false;
         }
-        
+
         return etapiToken.tokenHash === authTokenHash;
     }
     else {
@@ -70,31 +70,30 @@ function isValidAuthHeader(auth) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }
 
 function renameToken(etapiTokenId, newName) {
     const etapiToken = becca.getEtapiToken(etapiTokenId);
-    
+
     if (!etapiToken) {
         throw new Error(`Token ${etapiTokenId} does not exist`);
     }
-    
+
     etapiToken.name = newName;
     etapiToken.save();
 }
 
 function deleteToken(etapiTokenId) {
     const etapiToken = becca.getEtapiToken(etapiTokenId);
-    
+
     if (!etapiToken) {
         return; // ok, already deleted
     }
-    
-    etapiToken.isDeleted = true;
-    etapiToken.save();
+
+    etapiToken.markAsDeletedSimple();
 }
 
 module.exports = {

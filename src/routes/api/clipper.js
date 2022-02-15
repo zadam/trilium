@@ -144,6 +144,9 @@ function processContent(images, note, content) {
         }
     }
 
+    // fallback if parsing/downloading images fails for some reason on the extension side (
+    rewrittenContent = noteService.downloadImages(note.noteId, rewrittenContent);
+
     return rewrittenContent;
 }
 

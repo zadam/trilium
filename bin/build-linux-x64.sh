@@ -29,6 +29,8 @@ rm -r $BUILD_DIR/swiftshader
 
 cp bin/tpl/anonymize-database.sql $BUILD_DIR/
 
+cp -r dump-db $BUILD_DIR/
+
 cp bin/tpl/trilium-portable.sh $BUILD_DIR/
 chmod 755 $BUILD_DIR/trilium-portable.sh
 

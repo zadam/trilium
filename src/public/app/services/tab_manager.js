@@ -7,10 +7,13 @@ import treeService from "./tree.js";
 import utils from "./utils.js";
 import NoteContext from "./note_context.js";
 import appContext from "./app_context.js";
+import Mutex from "../utils/mutex.js";
 
 export default class TabManager extends Component {
     constructor() {
         super();
+
+        this.mutex = new Mutex();
 
         this.activeNtxId = null;
 
@@ -292,51 +295,55 @@ export default class TabManager extends Component {
     }
 
     async removeNoteContext(ntxId) {
-        const noteContextToRemove = this.getNoteContextById(ntxId);
+        // removing note context is async process which can take some time, if users presses CTRL-W quickly, two
+        // close events could interleave which would then lead to attempting to activate already removed context.
+        await this.mutex.runExclusively(async () => {
+            const noteContextToRemove = this.getNoteContextById(ntxId);
 
-        if (noteContextToRemove.isMainContext()) {
-            // forbid removing last main note context
-            // this was previously allowed (was replaced with empty tab) but this proved to be prone to race conditions
-            const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
+            if (noteContextToRemove.isMainContext()) {
+                // forbid removing last main note context
+                // this was previously allowed (was replaced with empty tab) but this proved to be prone to race conditions
+                const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
 
-            if (mainNoteContexts.length === 1) {
-                mainNoteContexts[0].setEmpty();
-                return;
+                if (mainNoteContexts.length === 1) {
+                    mainNoteContexts[0].setEmpty();
+                    return;
+                }
             }
-        }
 
-        // close dangling autocompletes after closing the tab
-        $(".aa-input").autocomplete("close");
+            // close dangling autocompletes after closing the tab
+            $(".aa-input").autocomplete("close");
 
-        const noteContextsToRemove = noteContextToRemove.getSubContexts();
-        const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
+            const noteContextsToRemove = noteContextToRemove.getSubContexts();
+            const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
-        await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
+            await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
 
-        if (!noteContextToRemove.isMainContext()) {
-            await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
-        }
-        else if (this.mainNoteContexts.length <= 1) {
-            await this.openAndActivateEmptyTab();
-        }
-        else if (ntxIdsToRemove.includes(this.activeNtxId)) {
-            const idx = this.mainNoteContexts.findIndex(nc => nc.ntxId === noteContextToRemove.ntxId);
-
-            if (idx === this.mainNoteContexts.length - 1) {
-                await this.activatePreviousTabCommand();
+            if (!noteContextToRemove.isMainContext()) {
+                await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
             }
-            else {
-                await this.activateNextTabCommand();
+            else if (this.mainNoteContexts.length <= 1) {
+                await this.openAndActivateEmptyTab();
             }
-        }
+            else if (ntxIdsToRemove.includes(this.activeNtxId)) {
+                const idx = this.mainNoteContexts.findIndex(nc => nc.ntxId === noteContextToRemove.ntxId);
 
-        this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
+                if (idx === this.mainNoteContexts.length - 1) {
+                    await this.activatePreviousTabCommand();
+                }
+                else {
+                    await this.activateNextTabCommand();
+                }
+            }
 
-        this.recentlyClosedTabs.push(noteContextsToRemove);
+            this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
 
-        this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
+            this.recentlyClosedTabs.push(noteContextsToRemove);
 
-        this.tabsUpdate.scheduleUpdate();
+            this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
+
+            this.tabsUpdate.scheduleUpdate();
+        });
     }
 
     tabReorderEvent({ntxIdsInOrder}) {

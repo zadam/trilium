@@ -27,6 +27,8 @@ rm -r $BUILD_DIR/swiftshader
 
 cp bin/tpl/anonymize-database.sql $BUILD_DIR/
 
+cp -r dump-db $BUILD_DIR/
+
 cp bin/tpl/trilium-{portable,no-cert-check,safe-mode}.{bat,ps1} $BUILD_DIR/
 
 echo "Zipping windows x64 electron distribution..."
