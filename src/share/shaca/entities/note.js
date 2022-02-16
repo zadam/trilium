@@ -58,8 +58,18 @@ class Note extends AbstractEntity {
         return this.children;
     }
 
+    getVisibleChildNotes() {
+        console.log(this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree')));
+
+        return this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
+    }
+
     hasChildren() {
         return this.children && this.children.length > 0;
+    }
+
+    hasVisibleChildren() {
+        return this.children && !!this.children.find(childNote => !childNote.hasLabel('shareHiddenFromTree'));
     }
 
     getChildBranches() {

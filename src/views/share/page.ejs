@@ -46,7 +46,7 @@
             </div>
         <% } %>
 
-        <% if (note.hasChildren()) { %>
+        <% if (note.hasVisibleChildren()) { %>
             <nav id="childLinks" class="<% if (isEmpty) { %>grid<% } else { %>list<% } %>">
                 <% if (!isEmpty) { %>
                     <hr>
@@ -54,7 +54,7 @@
                 <% } %>
 
                 <ul>
-                    <% for (const childNote of note.getChildNotes()) { %>
+                    <% for (const childNote of note.getVisibleChildNotes()) { %>
                         <li>
                             <a href="<%= childNote.shareId %>"
                                class="type-<%= childNote.type %>"><%= childNote.title %></a>
@@ -67,7 +67,7 @@
         <% } %>
     </div>
 
-    <% if (subRoot.hasChildren()) { %>
+    <% if (subRoot.hasVisibleChildren()) { %>
         <button id="toggleMenuButton"></button>
 
         <nav id="menu">
