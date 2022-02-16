@@ -59,8 +59,6 @@ class Note extends AbstractEntity {
     }
 
     getVisibleChildNotes() {
-        console.log(this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree')));
-
         return this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
     }
 
