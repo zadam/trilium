@@ -85,7 +85,7 @@ function updateImage(noteId, uploadBuffer, originalName) {
 }
 
 function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
-    log.info(`Saving image ${originalName}`);
+    log.info(`Saving image ${originalName} into parent ${parentNoteId}`);
 
     if (trimFilename && originalName.length > 40) {
         // https://github.com/zadam/trilium/issues/2307

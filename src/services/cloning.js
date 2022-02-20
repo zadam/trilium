@@ -9,6 +9,7 @@ const TaskContext = require("./task_context");
 const utils = require('./utils');
 const becca = require("../becca/becca");
 const beccaService = require("../becca/becca_service");
+const log = require("./log");
 
 function cloneNoteToNote(noteId, parentNoteId, prefix) {
     if (parentNoteId === 'share') {
@@ -73,6 +74,8 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
         prefix: prefix,
         isExpanded: 0
     }).save();
+
+    log.info(`Creating new branch between child '${noteId}' and parent '${parentNoteId}'`);
 }
 
 function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
