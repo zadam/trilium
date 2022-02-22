@@ -16,6 +16,7 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 * Seamless [note versioning](https://github.com/zadam/trilium/wiki/Note-revisions)
 * Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [scripting](https://github.com/zadam/trilium/wiki/Scripts)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
+  * there's a [3rd party service for hosting synchronisation server](https://trilium.cc/paid-hosting)
 * [Sharing](https://github.com/zadam/trilium/wiki/Sharing) (publishing) notes to public internet
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes) with per-note granularity
 * [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map) for visualizing notes and their relations
