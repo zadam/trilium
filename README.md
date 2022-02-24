@@ -7,6 +7,10 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
 
+Ukraine is currently suffering from Russian aggression, please consider donating to [one of these charities](https://old.reddit.com/r/ukraine/comments/s6g5un/want_to_support_ukraine_heres_a_list_of_charities/).
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" alt="drawing" width="600"/>
+
 ## Features
 
 * Notes can be arranged into arbitrarily deep tree. Single note can be placed into multiple places in the tree (see [cloning](https://github.com/zadam/trilium/wiki/Cloning-notes))
@@ -16,6 +20,7 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 * Seamless [note versioning](https://github.com/zadam/trilium/wiki/Note-revisions)
 * Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [scripting](https://github.com/zadam/trilium/wiki/Scripts)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
+  * there's a [3rd party service for hosting synchronisation server](https://trilium.cc/paid-hosting)
 * [Sharing](https://github.com/zadam/trilium/wiki/Sharing) (publishing) notes to public internet
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes) with per-note granularity
 * [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map) for visualizing notes and their relations
