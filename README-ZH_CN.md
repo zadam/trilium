@@ -7,6 +7,10 @@ Trilium Notes是一个分层的笔记应用程序，专注于建立大型个人�
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
 
+Ukraine is currently suffering from Russian aggression, please consider donating to [one of these charities](https://old.reddit.com/r/ukraine/comments/s6g5un/want_to_support_ukraine_heres_a_list_of_charities/).
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" alt="drawing" width="600"/>
+
 ## 特性
 
 * 笔记可以排列成任意深的树。单个笔记可以放在树中的多个位置（请参阅[克隆](https://github.com/zadam/trilium/wiki/Cloning-notes)）
