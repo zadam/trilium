@@ -94,6 +94,12 @@ function reject(req, res, message) {
 function checkCredentials(req, res, next) {
     if (!sqlInit.isDbInitialized()) {
         res.status(400).send('Database is not initialized yet.');
+        return;
+    }
+
+    if (!passwordService.isPasswordSet()) {
+        res.status(400).send('Password has not been set yet. Please set a password and repeat the action');
+        return;
     }
 
     const header = req.headers['trilium-cred'] || '';
