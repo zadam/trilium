@@ -9,6 +9,7 @@ const FileStore = require('session-file-store')(session);
 const sessionSecret = require('./services/session_secret');
 const dataDir = require('./services/data_dir');
 const utils = require('./services/utils');
+const { version } = require('../package.json');
 require('./services/handlers');
 require('./becca/becca_loader');
 
@@ -22,6 +23,11 @@ app.use(helmet({
     hidePoweredBy: false, // errors out in electron
     contentSecurityPolicy: false
 }));
+
+app.use((req, res, next) => {
+    res.setHeader('x-trilium-version', version);
+    next();
+});
 
 app.use(express.text({limit: '500mb'}));
 app.use(express.json({limit: '500mb'}));
