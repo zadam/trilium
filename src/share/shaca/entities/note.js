@@ -59,7 +59,7 @@ class Note extends AbstractEntity {
     }
 
     getVisibleChildNotes() {
-        return this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
+        return this.children.filter(childNote => !childNote.hasLabel('shareHiddenFromTree') && !childNote.isProtected);
     }
 
     hasChildren() {
@@ -67,7 +67,7 @@ class Note extends AbstractEntity {
     }
 
     hasVisibleChildren() {
-        return this.children && !!this.children.find(childNote => !childNote.hasLabel('shareHiddenFromTree'));
+        return this.children && !!this.children.find(childNote => !childNote.hasLabel('shareHiddenFromTree') && !childNote.isProtected);
     }
 
     getChildBranches() {
