@@ -42,6 +42,7 @@ const fontsRoute = require('./api/fonts');
 const etapiTokensApiRoutes = require('./api/etapi_tokens');
 const shareRoutes = require('../share/routes');
 const etapiAuthRoutes = require('../etapi/auth');
+const etapiAppInfoRoutes = require('../etapi/app_info');
 const etapiAttributeRoutes = require('../etapi/attributes');
 const etapiBranchRoutes = require('../etapi/branches');
 const etapiNoteRoutes = require('../etapi/notes');
@@ -391,6 +392,7 @@ function register(app) {
     shareRoutes.register(router);
 
     etapiAuthRoutes.register(router);
+    etapiAppInfoRoutes.register(router);
     etapiAttributeRoutes.register(router);
     etapiBranchRoutes.register(router);
     etapiNoteRoutes.register(router);

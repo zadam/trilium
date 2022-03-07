@@ -1,0 +1,7 @@
+GET {{triliumHost}}/etapi/app-info
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body == "Hi there!");
+%}

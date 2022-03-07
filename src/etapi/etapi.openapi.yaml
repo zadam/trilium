@@ -589,6 +589,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /app-info:
+    get:
+      description: returns information about the running Trilium instance
+      operationId: getAppInfo
+      responses:
+        '200':
+          description: app info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppInfo'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     EtapiTokenAuth:
@@ -777,6 +795,48 @@ components:
       type: string
       pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z'
       example: 2021-12-31 19:18:11.939Z
+    AppInfo:
+      type: object
+      required:
+        - statu
+        - code
+        - message
+      properties:
+        appVersion:
+          type: string
+          description: Trilium version
+          example: 0.50.2
+        dbVersion:
+          type: integer
+          format: int32
+          description: DB version
+          example: 194
+        syncVersion:
+          type: integer
+          format: int32
+          description: Sync protocol version
+          example: 25
+        buildDate:
+          type: string
+          format: date-time
+          description: build date
+          example: 2022-02-09T22:52:36+01:00
+        buildRevision:
+          type: string
+          description: git build revision
+          example: 23daaa2387a0655685377f0a541d154aeec2aae8
+        dataDirectory:
+          type: string
+          description: data directory where Trilium stores files
+          example: /home/user/data
+        clipperProtocolVersion:
+          type: string
+          description: version of the supported Trilium Web Clipper protocol
+          example: 1.0
+        utcDateTime:
+          type: string
+          description: current UTC date time
+          example: 2022-03-07T21:54:25.277Z
     Error:
       type: object
       required:

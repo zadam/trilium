@@ -96,6 +96,12 @@ POST {{triliumHost}}/etapi/create-note
 
 > {% client.assert(response.status === 401); %}
 
+###
+
+GET {{triliumHost}}/etapi/app-info
+
+> {% client.assert(response.status === 401); %}
+
 ### Fake URL will get a 404 even without token
 
 GET {{triliumHost}}/etapi/zzzzzz
