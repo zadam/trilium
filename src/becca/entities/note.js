@@ -1127,6 +1127,7 @@ class Note extends AbstractEntity {
         if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
             try {
                 this.title = protectedSessionService.decryptString(this.title);
+                this.flatTextCache = null;
 
                 this.isDecrypted = true;
             }

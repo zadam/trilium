@@ -138,7 +138,7 @@ function processContent(images, note, content) {
                 value: imageNote.noteId
             }).save();
 
-            console.log(`Replacing ${imageId} with ${url}`);
+            log.info(`Replacing ${imageId} with ${url} in note ${note.noteId}`);
 
             rewrittenContent = utils.replaceAll(rewrittenContent, imageId, url);
         }

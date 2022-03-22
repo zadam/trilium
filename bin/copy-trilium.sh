@@ -47,8 +47,11 @@ find $DIR/node_modules -name demo -exec rm -rf {} \;
 
 find $DIR/libraries -name "*.map" -type f -delete
 
+cp $DIR/src/public/app/share.js $DIR/src/public/app-dist/
+
 rm -rf $DIR/src/public/app
 
 sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' $DIR/src/views/desktop.ejs
 sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' $DIR/src/views/mobile.ejs
 sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' $DIR/src/views/setup.ejs
+sed -i -e 's/app\/share.js/app-dist\/share.js/g' $DIR/src/views/share/*.ejs
