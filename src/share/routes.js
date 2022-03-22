@@ -23,6 +23,13 @@ function getSharedSubTreeRoot(note) {
 function register(router) {
     function renderNote(note, res) {
         if (note) {
+            if (note.hasLabel('shareRaw')) {
+                res.setHeader('Content-Type', note.mime);
+
+                res.send(note.getContent());
+                return;
+            }
+
             const {header, content, isEmpty} = contentRenderer.getContent(note);
 
             const subRoot = getSharedSubTreeRoot(note);
