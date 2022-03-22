@@ -20,30 +20,39 @@ function getSharedSubTreeRoot(note) {
     return getSharedSubTreeRoot(parentNote);
 }
 
+function addNoIndexHeader(note, res) {
+    if (note.hasLabel('shareDisallowRobotIndexing')) {
+        res.setHeader('X-Robots-Tag', 'noindex');
+    }
+}
+
 function register(router) {
     function renderNote(note, res) {
-        if (note) {
-            if (note.hasLabel('shareRaw')) {
-                res.setHeader('Content-Type', note.mime);
-
-                res.send(note.getContent());
-                return;
-            }
-
-            const {header, content, isEmpty} = contentRenderer.getContent(note);
-
-            const subRoot = getSharedSubTreeRoot(note);
-
-            res.render("share/page", {
-                note,
-                header,
-                content,
-                isEmpty,
-                subRoot
-            });
-        } else {
+        if (!note) {
             res.status(404).render("share/404");
+            return;
         }
+
+        addNoIndexHeader(note, res);
+
+        if (note.hasLabel('shareRaw') || ['image', 'file'].includes(note.type)) {
+            res.setHeader('Content-Type', note.mime);
+
+            res.send(note.getContent());
+            return;
+        }
+
+        const {header, content, isEmpty} = contentRenderer.getContent(note);
+
+        const subRoot = getSharedSubTreeRoot(note);
+
+        res.render("share/page", {
+            note,
+            header,
+            content,
+            isEmpty,
+            subRoot
+        });
     }
 
     router.get(['/share', '/share/'], (req, res, next) => {
@@ -70,6 +79,8 @@ function register(router) {
             return res.status(404).send(`Note ${noteId} not found`);
         }
 
+        addNoIndexHeader(note, res);
+
         res.json(note.getPojoWithAttributes());
     });
 
@@ -80,6 +91,8 @@ function register(router) {
         if (!note) {
             return res.status(404).send(`Note ${noteId} not found`);
         }
+
+        addNoIndexHeader(note, res);
 
         const utils = require("../services/utils");
 
@@ -103,6 +116,8 @@ function register(router) {
             return res.status(400).send("Requested note is not an image");
         }
 
+        addNoIndexHeader(image, res);
+
         res.set('Content-Type', image.mime);
 
         res.send(image.getContent());
@@ -116,6 +131,8 @@ function register(router) {
         if (!note) {
             return res.status(404).send(`Note ${noteId} not found`);
         }
+
+        addNoIndexHeader(note, res);
 
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader('Content-Type', note.mime);

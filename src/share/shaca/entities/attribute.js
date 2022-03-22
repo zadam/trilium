@@ -34,9 +34,9 @@ class Attribute extends AbstractEntity {
             const linkedChildNote = this.note.getChildNotes().find(childNote => childNote.noteId === this.value);
 
             if (linkedChildNote) {
-                this.note.children = this.note.children.filter(childNote => childNote.noteId !== this.value);
+                const branch = this.shaca.getBranchFromChildAndParent(this.noteId, linkedChildNote.noteId);
 
-                linkedChildNote.parents = linkedChildNote.parents.filter(parentNote => parentNote.noteId !== this.noteId);
+                branch.isHidden = true;
             }
         }
 

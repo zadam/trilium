@@ -8,12 +8,10 @@
 
 <% if (note.hasChildren()) { %>
 <ul>
-    <% note.getChildNotes().forEach(function (childNote) { %>
-        <% if (!childNote.hasLabel("shareHiddenFromTree")) { %>
+    <% note.getVisibleChildNotes().forEach(function (childNote) { %>
         <li>
             <%- include('tree_item', {note: childNote}) %>
         </li>
-        <% } %>
     <% }) %>
 </ul>
 <% } %>

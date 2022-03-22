@@ -21,6 +21,9 @@
     <% for (const jsRelation of note.getRelations("shareJs")) { %>
         <script type="module" src="api/notes/<%= jsRelation.value %>/download"></script>
     <% } %>
+    <% if (note.hasLabel('shareDisallowRobotIndexing')) { %>
+        <meta name="robots" content="noindex,follow" />
+    <% } %>
     <%- header %>
     <title><%= note.title %></title>
 </head>

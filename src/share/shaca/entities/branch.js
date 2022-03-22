@@ -16,6 +16,8 @@ class Branch extends AbstractEntity {
         this.prefix = prefix;
         /** @param {boolean} */
         this.isExpanded = !!isExpanded;
+        /** @param {boolean} */
+        this.isHidden = false;
 
         const childNote = this.childNote;
         const parentNote = this.parentNote;
