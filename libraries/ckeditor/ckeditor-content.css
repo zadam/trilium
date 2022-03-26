@@ -4,6 +4,12 @@
     display: none;
 }
 
+/*
+ * CKEditor 5 (v33.0.0) content styles.
+ * Generated on Fri, 11 Mar 2022 14:34:26 GMT.
+ * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/content-styles.html
+ */
+
 :root {
     --ck-color-image-caption-background: hsl(0, 0%, 97%);
     --ck-color-image-caption-text: hsl(0, 0%, 20%);
@@ -22,6 +28,28 @@
     --ck-todo-list-checkmark-size: 16px;
 }
 
+/* ckeditor5-basic-styles/theme/code.css */
+.ck-content code {
+    background-color: hsla(0, 0%, 78%, 0.3);
+    padding: .15em;
+    border-radius: 2px;
+}
+/* ckeditor5-font/theme/fontsize.css */
+.ck-content .text-tiny {
+    font-size: .7em;
+}
+/* ckeditor5-font/theme/fontsize.css */
+.ck-content .text-small {
+    font-size: .85em;
+}
+/* ckeditor5-font/theme/fontsize.css */
+.ck-content .text-big {
+    font-size: 1.4em;
+}
+/* ckeditor5-font/theme/fontsize.css */
+.ck-content .text-huge {
+    font-size: 1.8em;
+}
 /* ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
     overflow: hidden;
@@ -63,27 +91,42 @@
     color: var(--ck-highlight-pen-green);
     background-color: transparent;
 }
-/* ckeditor5-font/theme/fontsize.css */
-.ck-content .text-tiny {
-    font-size: .7em;
+/* ckeditor5-image/theme/image.css */
+.ck-content .image {
+    display: table;
+    clear: both;
+    text-align: center;
+    margin: 0.9em auto;
+    min-width: 50px;
 }
-/* ckeditor5-font/theme/fontsize.css */
-.ck-content .text-small {
-    font-size: .85em;
+/* ckeditor5-image/theme/image.css */
+.ck-content .image img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    min-width: 100%;
 }
-/* ckeditor5-font/theme/fontsize.css */
-.ck-content .text-big {
-    font-size: 1.4em;
+/* ckeditor5-image/theme/image.css */
+.ck-content .image-inline {
+    /*
+     * Normally, the .image-inline would have "display: inline-block" and "img { width: 100% }" (to follow the wrapper while resizing).;
+     * Unfortunately, together with "srcset", it gets automatically stretched up to the width of the editing root.
+     * This strange behavior does not happen with inline-flex.
+     */
+    display: inline-flex;
+    max-width: 100%;
+    align-items: flex-start;
 }
-/* ckeditor5-font/theme/fontsize.css */
-.ck-content .text-huge {
-    font-size: 1.8em;
+/* ckeditor5-image/theme/image.css */
+.ck-content .image-inline picture {
+    display: flex;
 }
-/* ckeditor5-basic-styles/theme/code.css */
-.ck-content code {
-    background-color: hsla(0, 0%, 78%, 0.3);
-    padding: .15em;
-    border-radius: 2px;
+/* ckeditor5-image/theme/image.css */
+.ck-content .image-inline picture,
+.ck-content .image-inline img {
+    flex-grow: 1;
+    flex-shrink: 1;
+    max-width: 100%;
 }
 /* ckeditor5-image/theme/imagecaption.css */
 .ck-content .image > figcaption {
@@ -171,42 +214,9 @@
 .ck-content .image.image_resized > figcaption {
     display: block;
 }
-/* ckeditor5-image/theme/image.css */
-.ck-content .image {
-    display: table;
-    clear: both;
-    text-align: center;
-    margin: 0.9em auto;
-    min-width: 50px;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image img {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    min-width: 100%;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image-inline {
-    /*
-     * Normally, the .image-inline would have "display: inline-block" and "img { width: 100% }" (to follow the wrapper while resizing).;
-     * Unfortunately, together with "srcset", it gets automatically stretched up to the width of the editing root.
-     * This strange behavior does not happen with inline-flex.
-     */
-    display: inline-flex;
-    max-width: 100%;
-    align-items: flex-start;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image-inline picture {
-    display: flex;
-}
-/* ckeditor5-image/theme/image.css */
-.ck-content .image-inline picture,
-.ck-content .image-inline img {
-    flex-grow: 1;
-    flex-shrink: 1;
-    max-width: 100%;
+/* ckeditor5-language/theme/language.css */
+.ck-content span[lang] {
+    font-style: italic;
 }
 /* ckeditor5-list/theme/todolist.css */
 .ck-content .todo-list {
@@ -281,10 +291,6 @@
     margin: 0.9em 0;
     display: block;
     min-width: 15em;
-}
-/* ckeditor5-language/theme/language.css */
-.ck-content span[lang] {
-    font-style: italic;
 }
 /* ckeditor5-page-break/theme/pagebreak.css */
 .ck-content .page-break {
