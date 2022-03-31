@@ -24,7 +24,7 @@ const TPL = `
 
     <div class="note-detail-code-editor"></div>
 
-    <div style="display: flex; justify-content: space-evenly;">
+    <div style="display: flex; justify-content: space-evenly; position: sticky; bottom: 0px; padding-top: 5px">
         <button data-trigger-command="runActiveNote"
                 class="no-print execute-button btn btn-sm">
             Execute <kbd data-command="runActiveNote"></kbd>
