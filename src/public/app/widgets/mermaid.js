@@ -17,11 +17,12 @@ const TPL = `<div class="mermaid-widget">
         .mermaid-render {
             overflow: auto;
             height: 100%;
+            text-align: center;
         }
     </style>
 
     <div class="mermaid-error alert alert-warning">
-        <p><strong>The diagram could not displayed. See <a href="https://mermaid-js.github.io/mermaid/#/flowchart?id=graph">help and examples</a>.</strong></p>
+        <p><strong>The diagram could not be displayed. See <a href="https://mermaid-js.github.io/mermaid/#/flowchart?id=graph">help and examples</a>.</strong></p>
         <p class="error-content"></p>
     </div>
 
@@ -70,8 +71,25 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
         this.$display.empty();
 
+        const libLoaded = libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM);
+
         try {
-            mermaid.mermaidAPI.render('mermaid-graph-' + idCounter++, content, content => this.$display.html(content));
+            const idNumber = idCounter++;
+
+            mermaid.mermaidAPI.render('mermaid-graph-' + idNumber, content, async content => {
+                this.$display.html(content);
+
+                await libLoaded;
+
+                this.$display.attr("id", 'mermaid-render-' + idNumber);
+
+                WZoom.create('#mermaid-render-' + idNumber, {
+                    type: 'html',
+                    maxScale: 10,
+                    speed: 20,
+                    zoomOnClick: false
+                });
+            });
 
             this.$errorContainer.hide();
         } catch (e) {
