@@ -56,11 +56,11 @@ const MERMAID = {
     js: [ "libraries/mermaid.min.js" ]
 }
 
-const CANVAS_NOTE = {
+const EXCALIDRAW = {
     js: [
-        "libraries/canvas-note/fabric.4.1.0.custom.js",
-        "libraries/canvas-note/hammer.2.0.8.min.js",
-        "libraries/canvas-note/jquery.hammer.js",
+        "libraries/excalidraw/umd/react.development.js",
+        "libraries/excalidraw/umd/react-dom.development.js",
+        "libraries/excalidraw/excalidraw.production.min.js",
     ],
     // css: [
     //     "stylesheets/somestyle.css"
@@ -118,5 +118,5 @@ export default {
     WHEEL_ZOOM,
     FORCE_GRAPH,
     MERMAID,
-    CANVAS_NOTE
+    EXCALIDRAW
 }

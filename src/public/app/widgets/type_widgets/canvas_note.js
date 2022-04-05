@@ -1,76 +1,52 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
-import { InfiniteCanvas } from './canvas-note-utils/infinite-drawing-canvas.js';
-
-import { initButtons, initPens } from './canvas-note-utils/gui.js';
-import _debounce from './canvas-note-utils/lib/lodash.debounce.js';
 
 const TPL = `
     <div 
         id="parentContainer" 
         class="note-detail-canvas-note note-detail-printable"
-        style="overflow:auto; width: 100%; height: 70%; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
+        style="overflow:auto; width: 100%; height: 400px; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
     >
-    <div id="canvasContainer" style="width: 1500px; height: 1500px;">
-        <canvas id="c" class="canvasElement" style="border:1px solid #aaa; width: 1500px; height: 1500px"></canvas>
+            <h1>Excalidraw Embed Example asdf</h1>
+            <div id="app" style="width:100%; height: 100%"></div>
     </div>
-    <br />
-    </div>
-  
-    <div id="pens-and-markers">
-    <!--    Drawing:-->
-    <!--    <button id="undo" disabled><i class='bx bx-undo'></i></button>-->
-    <!--    <button id="redo" disabled><i class='bx bx-redo'></i></button>-->
-    Pens:
-    <button id="pen-1" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid black"></i></button>
-    <button id="pen-2" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid red"></i></button>
-    <button id="pen-3" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid green"></i></button>
-    <button id="pen-4" class="btn btn-info"><i class='bx bx-pencil' style="border-left: 3px solid blue"></i></button>
-    <button id="marker-1" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid yellow"></i></button>
-    <button id="marker-2" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid wheat"></i></button>
-    <button id="marker-3" class="btn btn-info"><i class='bx bx-pen'
-        style="border-left: 7px solid rgba(51,204,0, 0.5)"></i></button>
-    <button id="marker-4" class="btn btn-info"><i class='bx bx-pen' style="border-left: 7px solid skyblue"></i></button>
-    <button id="eraser" class="btn btn-info"><i class='bx bx-eraser' style="border-left: 7px solid black"></i></button>
-    <button id="eraser-path" class="btn btn-info"><i class='bx bx-eraser' style="border-left: 7px dashed rgba(236,195,220, 20)"><i class='bx bx-shape-polygon' ></i></i></button>
-    Shapes:
-    <button id="text-1" class="btn btn-info"><i class='bx bx-text' style="border-left: 3px solid black"></i></button>
-    <br />
-    Mode:
-    <button id="mode-select" class="btn btn-info"><i class='bx bx-pointer'></i></button>
-    <!-- <button id="mode-1" class="btn btn-info"><i class='bx bx-mouse'></i></button> -->
-    <button id="mode-drawWithTouch" class="btn btn-info"><i class='bx bxs-hand-up'></i> Draw with Touch</button>
-    <!-- <button id="mode-3" class="btn btn-info"><i class='bx bx-stats'></i>Pen-Touch-Mouse</button> -->
-    <br />
-    Canvas:
-    Enlarge <input type="number" value=100 id="enlargeValue" style="width: 60px" />px
-    <button id="enlarge-left" class="btn btn-info"><i class='bx bxs-dock-left'></i></button>
-    <button id="enlarge-top" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-90' ></i></button>
-    <button id="enlarge-bottom" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-270' ></i></button>
-    <button id="enlarge-right" class="btn btn-info"><i class='bx bxs-dock-left bx-rotate-180' ></i></button>
-    Crop: 
-    <button id="crop-canvas" class="btn btn-info"><i class='bx bx-crop'></i></button>
-    <br />
-    <button id="zoom-100" class="btn btn-info">Zoom 100%</button>
-    <button id="clear-canvas" class="btn btn-info">Clear</button>
-  </div>
-  
-    <style>
-        .note-detail {
-            height: 100%;
+    <style type="text/css">
+
+        .button-wrapper button {
+            z-index: 1;
+            height: 40px;
+            width: 100px;
+            margin: 10px;
+            padding: 5px;
         }
+
+        .excalidraw .App-menu_top .buttonList {
+            display: flex;
+        }
+
+        .excalidraw-wrapper {
+            height: 800px;
+            margin: 50px;
+            position: relative;
+        }
+
+        :root[dir="ltr"]
+        .excalidraw
+        .layer-ui__wrapper
+        .zen-mode-transition.App-menu_bottom--transition-left {
+            transform: none;
+        }
+
     </style>
 `;
 
-export default class CanvasNoteTypeWidget extends TypeWidget {
+
+export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
         super();
 
-        this.initCanvas = this.initCanvas.bind(this);
-        this.saveData = this.saveData.bind(this);
-        this.getContent = this.getContent.bind(this);
-        this.doRefresh = this.doRefresh.bind(this);
+        this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
     }
     static getType() {
         return "canvas-note";
@@ -80,63 +56,136 @@ export default class CanvasNoteTypeWidget extends TypeWidget {
         this.$widget = $(TPL);
 
         libraryLoader
-            .requireLibrary(libraryLoader.CANVAS_NOTE)
+            .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
-                console.log("fabric.js-loaded")
-                this.initCanvas();
+                console.log("react, react-dom, excalidraw loaded");
+
+                const excalidrawWrapper = document.getElementById("app");
+
+                const React = window.React;
+                const ReactDOM = window.ReactDOM;
+
+                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), excalidrawWrapper);
             })
-            .then(async () => {
-                const noteComplement = await this.tabContext.getNoteComplement();
-                if (this.infiniteCanvas && noteComplement.content) {
-                    const content = JSON.parse(noteComplement.content || "");
-                    await this.infiniteCanvas.setInfiniteCanvas(content);
-                }
-                this.canvas.on('after:render', _debounce(this.saveData, 1000));
-            });
 
         return this.$widget;
     }
 
-    async doRefresh(note) {
-        // get note from backend and put into canvas
-        const noteComplement = await this.tabContext.getNoteComplement();
-        if (this.infiniteCanvas && noteComplement.content) {
-            const content = JSON.parse(noteComplement.content || "");
-            await this.infiniteCanvas.setInfiniteCanvas(content);
-        }
-        console.log('doRefresh', note, noteComplement);
-    }
+    // async doRefresh(note) {
+    //     // get note from backend and put into canvas
+    //     const noteComplement = await this.tabContext.getNoteComplement();
+    //     if (this.infiniteCanvas && noteComplement.content) {
+    //         const content = JSON.parse(noteComplement.content || "");
+    //         await this.infiniteCanvas.setInfiniteCanvas(content);
+    //     }
+    //     console.log('doRefresh', note, noteComplement);
+    // }
 
     /**
      * Function gets data that will be sent via spacedUpdate.scheduleUpdate();
      */
-    getContent() {
-        const content = this.infiniteCanvas.getInfiniteCanvas();
-        console.log('gC', content);
-        return JSON.stringify(content);
-    }
+    // getContent() {
+    //     const content = this.infiniteCanvas.getInfiniteCanvas();
+    //     console.log('gC', content);
+    //     return JSON.stringify(content);
+    // }
 
-    saveData() {
-        this.spacedUpdate.scheduleUpdate();
-    }
+    // saveData() {
+    //     this.spacedUpdate.scheduleUpdate();
+    // }
 
-    initCanvas() {
-        const myCanvas = new InfiniteCanvas(
-            $('.canvasElement'),
-            $('#parentContainer'),
-            $('#canvasContainer'),
+    ExcalidrawReactApp() {
+        const React = window.React;
+        const Excalidraw = window.Excalidraw;
+
+        const excalidrawRef = React.useRef(null);
+        const excalidrawWrapperRef = React.useRef(null);
+        const [dimensions, setDimensions] = React.useState({
+            width: undefined,
+            height: undefined
+        });
+
+        const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
+        const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
+        const [gridModeEnabled, setGridModeEnabled] = React.useState(false);
+        //
+        // React.useEffect(() => {
+        //   setDimensions({
+        //     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+        //     height: excalidrawWrapperRef.current.getBoundingClientRect().height
+        //   });
+        //   const onResize = () => {
+        //     setDimensions({
+        //       width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+        //       height: excalidrawWrapperRef.current.getBoundingClientRect().height
+        //     });
+        //   };
+        //
+        //   window.addEventListener("resize", onResize);
+        //
+        //   return () => window.removeEventListener("resize", onResize);
+        // }, [excalidrawWrapperRef]);
+
+        const updateScene = () => {
+            const sceneData = {
+                elements: [
+                    {
+                        type: "rectangle",
+                        version: 141,
+                        versionNonce: 361174001,
+                        isDeleted: false,
+                        id: "oDVXy8D6rom3H1-LLH2-f",
+                        fillStyle: "hachure",
+                        strokeWidth: 1,
+                        strokeStyle: "solid",
+                        roughness: 1,
+                        opacity: 100,
+                        angle: 0,
+                        x: 100.50390625,
+                        y: 93.67578125,
+                        strokeColor: "#c92a2a",
+                        backgroundColor: "transparent",
+                        width: 186.47265625,
+                        height: 141.9765625,
+                        seed: 1968410350,
+                        groupIds: []
+                    }
+                ],
+                appState: {
+                    viewBackgroundColor: "#edf2ff"
+                }
+            };
+            excalidrawRef.current.updateScene(sceneData);
+        };
+
+        return React.createElement(
+            React.Fragment,
+            null,
+            React.createElement(
+                "div",
+                {
+                    className: "excalidraw-wrapper",
+                    ref: excalidrawWrapperRef
+                },
+                React.createElement(Excalidraw.default, {
+                    ref: excalidrawRef,
+                    width: dimensions.width,
+                    height: dimensions.height,
+                    // initialData: InitialData,
+                    onPaste: (data, event) => {
+                        console.log("tom", data, event);
+                    },
+                    onChange: (elements, state) =>
+                        console.log("onChange Elements :", elements, "State : ", state),
+                    // onPointerUpdate: (payload) => console.log(payload),
+                    onCollabButtonClick: () => window.alert("You clicked on collab button"),
+                    viewModeEnabled: viewModeEnabled,
+                    zenModeEnabled: zenModeEnabled,
+                    gridModeEnabled: gridModeEnabled,
+                    isCollaborating: false,
+                })
+            )
         );
-
-        this.infiniteCanvas = myCanvas.initFabric();
-        this.canvas = this.infiniteCanvas.$canvas;
-        // this.canvas.clear();
-
-        this.canvas.setWidth(myCanvas.width);
-        this.canvas.setHeight(myCanvas.height);
-
-        // Buttons
-        initButtons(this.infiniteCanvas);
-        initPens(this.infiniteCanvas);
-    }
+    };
 }
 
