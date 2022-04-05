@@ -6,9 +6,8 @@ const TPL = `
     <div 
         id="parentContainer" 
         class="note-detail-canvas-note note-detail-printable"
-        style="overflow:auto; width: 100%; height: 400px; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
+        style="overflow:auto; width: 100%; height: 500px; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
     >
-            <h1>Excalidraw Embed Example asdf</h1>
             <div id="app" style="width:100%; height: 100%"></div>
     </div>
     <style type="text/css">
@@ -26,8 +25,7 @@ const TPL = `
         }
 
         .excalidraw-wrapper {
-            height: 800px;
-            margin: 50px;
+            height: 100%;
             position: relative;
         }
 
