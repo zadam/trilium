@@ -1,6 +1,12 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
+import _debounce from './canvas-note-utils/lodash.debounce.js';
+import _throttle from './canvas-note-utils/lodash.throttle.js';
+import sleep from './canvas-note-utils/sleep.js';
+import froca from "../../services/froca.js";
+import throttle from "./canvas-note-utils/lodash.throttle.js";
+import debounce from "./canvas-note-utils/lodash.debounce.js";
 
 const TPL = `
     <div 
@@ -8,18 +14,9 @@ const TPL = `
         class="note-detail-canvas-note note-detail-printable"
         style="overflow:auto; width: 100%; height: 500px; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
     >
-            <div id="app" style="width:100%; height: 100%"></div>
+        <div id="app" style="width:100%; height: 100%"></div>
     </div>
     <style type="text/css">
-
-        .button-wrapper button {
-            z-index: 1;
-            height: 40px;
-            width: 100px;
-            margin: 10px;
-            padding: 5px;
-        }
-
         .excalidraw .App-menu_top .buttonList {
             display: flex;
         }
@@ -45,6 +42,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         super();
 
         this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
+        this.doRefresh = this.doRefresh.bind(this);
+        this.getContent = this.getContent.bind(this);
+        this.saveData = this.saveData.bind(this);
+        this.refreshWithNote = this.refreshWithNote.bind(this);
+        this.onChangeHandler = this.onChangeHandler.bind(this);
+        window.triliumexcalidraw = this;
     }
     static getType() {
         return "canvas-note";
@@ -68,35 +71,84 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         return this.$widget;
     }
-
-    // async doRefresh(note) {
-    //     // get note from backend and put into canvas
-    //     const noteComplement = await this.tabContext.getNoteComplement();
-    //     if (this.infiniteCanvas && noteComplement.content) {
-    //         const content = JSON.parse(noteComplement.content || "");
-    //         await this.infiniteCanvas.setInfiniteCanvas(content);
-    //     }
-    //     console.log('doRefresh', note, noteComplement);
-    // }
+    
+    async refreshWithNote(note) {
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const content = noteComplement.content || "";
+        console.log('refreshWithNote(note) called', content);
+    }
 
     /**
-     * Function gets data that will be sent via spacedUpdate.scheduleUpdate();
+     * called to populate the widget container with the note content
+     * 
+     * @param {note} note 
      */
-    // getContent() {
-    //     const content = this.infiniteCanvas.getInfiniteCanvas();
-    //     console.log('gC', content);
-    //     return JSON.stringify(content);
-    // }
+    async doRefresh(note) {
+        console.log('doRefresh()', note);
+        // get note from backend and put into canvas
+        
+        console.log('sleep 1s...');
+        await sleep(1000);
 
-    // saveData() {
-    //     this.spacedUpdate.scheduleUpdate();
-    // }
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        console.log('doRefresh', note, noteComplement, noteComplement.content);
+
+        if (this.excalidrawRef.current && noteComplement.content) {
+            const content = JSON.parse(noteComplement.content || "");
+            const {elements, appState} = content;
+
+            console.log('doRefresh with this:', elements, appState);
+
+            const sceneData = {
+                elements, 
+                appState, 
+                collaborators: []
+            };
+
+            console.log("doRefresh(note) sceneData", sceneData);
+            this.excalidrawRef.current.updateScene(sceneData);
+        }
+    }
+
+    /**
+     * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
+     */
+    getContent() {
+        console.log('getContent()');
+        const time = new Date();
+        // const content = "hallöchen"+time.toUTCString();
+
+        const elements = this.excalidrawRef.current.getSceneElements();
+        const appState = this.excalidrawRef.current.getAppState();
+
+        const content = {
+            elements,
+            appState,
+            time
+        };
+
+        console.log('gC', content);
+
+        return JSON.stringify(content);
+    }
+
+    saveData() {
+        console.log("saveData()");
+        this.spacedUpdate.scheduleUpdate();
+    }
+
+    onChangeHandler() {
+        this.saveData();
+    }
 
     ExcalidrawReactApp() {
+        var self = this;
+
         const React = window.React;
         const Excalidraw = window.Excalidraw;
 
         const excalidrawRef = React.useRef(null);
+        self.excalidrawRef = excalidrawRef;
         const excalidrawWrapperRef = React.useRef(null);
         const [dimensions, setDimensions] = React.useState({
             width: undefined,
@@ -106,55 +158,23 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
         const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
         const [gridModeEnabled, setGridModeEnabled] = React.useState(false);
-        //
-        // React.useEffect(() => {
-        //   setDimensions({
-        //     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
-        //     height: excalidrawWrapperRef.current.getBoundingClientRect().height
-        //   });
-        //   const onResize = () => {
-        //     setDimensions({
-        //       width: excalidrawWrapperRef.current.getBoundingClientRect().width,
-        //       height: excalidrawWrapperRef.current.getBoundingClientRect().height
-        //     });
-        //   };
-        //
-        //   window.addEventListener("resize", onResize);
-        //
-        //   return () => window.removeEventListener("resize", onResize);
-        // }, [excalidrawWrapperRef]);
-
-        const updateScene = () => {
-            const sceneData = {
-                elements: [
-                    {
-                        type: "rectangle",
-                        version: 141,
-                        versionNonce: 361174001,
-                        isDeleted: false,
-                        id: "oDVXy8D6rom3H1-LLH2-f",
-                        fillStyle: "hachure",
-                        strokeWidth: 1,
-                        strokeStyle: "solid",
-                        roughness: 1,
-                        opacity: 100,
-                        angle: 0,
-                        x: 100.50390625,
-                        y: 93.67578125,
-                        strokeColor: "#c92a2a",
-                        backgroundColor: "transparent",
-                        width: 186.47265625,
-                        height: 141.9765625,
-                        seed: 1968410350,
-                        groupIds: []
-                    }
-                ],
-                appState: {
-                    viewBackgroundColor: "#edf2ff"
-                }
-            };
-            excalidrawRef.current.updateScene(sceneData);
-        };
+        
+        React.useEffect(() => {
+          setDimensions({
+            width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+            height: excalidrawWrapperRef.current.getBoundingClientRect().height
+          });
+          const onResize = () => {
+            setDimensions({
+              width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+              height: excalidrawWrapperRef.current.getBoundingClientRect().height
+            });
+          };
+        
+          window.addEventListener("resize", onResize);
+        
+          return () => window.removeEventListener("resize", onResize);
+        }, [excalidrawWrapperRef]);
 
         return React.createElement(
             React.Fragment,
@@ -173,10 +193,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     onPaste: (data, event) => {
                         console.log("tom", data, event);
                     },
-                    onChange: (elements, state) =>
-                        console.log("onChange Elements :", elements, "State : ", state),
+                    // onChange: (elements, state) => {
+                    //     console.log("onChange Elements :", elements, "State : ", state)
+                    //     debounce(() => {
+                    //         console.log('called onChange via throttle');
+                    //         self.saveData();
+                    //     }, 400);
+                    // },
+                    onChange: debounce(self.onChangeHandler, 500),
                     // onPointerUpdate: (payload) => console.log(payload),
-                    onCollabButtonClick: () => window.alert("You clicked on collab button"),
+                    onCollabButtonClick: () => {
+                        window.alert("You clicked on collab button")
+                    },
                     viewModeEnabled: viewModeEnabled,
                     zenModeEnabled: zenModeEnabled,
                     gridModeEnabled: gridModeEnabled,
