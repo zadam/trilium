@@ -65,17 +65,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
-
+                
+                ReactDOM.unmountComponentAtNode(excalidrawWrapper);
                 ReactDOM.render(React.createElement(this.ExcalidrawReactApp), excalidrawWrapper);
             })
 
         return this.$widget;
-    }
-    
-    async refreshWithNote(note) {
-        const noteComplement = await froca.getNoteComplement(note.noteId);
-        const content = noteComplement.content || "";
-        console.log('refreshWithNote(note) called', content);
     }
 
     /**
@@ -87,6 +82,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         console.log('doRefresh()', note);
         // get note from backend and put into canvas
         
+        // wait for react to have rendered!
         console.log('sleep 1s...');
         await sleep(1000);
 
@@ -138,6 +134,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     onChangeHandler() {
+        console.log("onChangeHandler() =================", new Date());
         this.saveData();
     }
 
@@ -200,7 +197,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     //         self.saveData();
                     //     }, 400);
                     // },
-                    onChange: debounce(self.onChangeHandler, 500),
+                    onChange: debounce(self.onChangeHandler, 750),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
                         window.alert("You clicked on collab button")
