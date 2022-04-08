@@ -49,6 +49,7 @@ class ImageTypeWidget extends TypeWidget {
         libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM).then(() => {
             WZoom.create('#' + this.$imageView.attr("id"), {
                 maxScale: 10,
+                speed: 20,
                 zoomOnClick: false
             });
         });
