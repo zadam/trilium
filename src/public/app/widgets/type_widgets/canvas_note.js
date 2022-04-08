@@ -1,24 +1,21 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
-import _debounce from './canvas-note-utils/lodash.debounce.js';
-import _throttle from './canvas-note-utils/lodash.throttle.js';
 import sleep from './canvas-note-utils/sleep.js';
 import froca from "../../services/froca.js";
-import throttle from "./canvas-note-utils/lodash.throttle.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
+ // NoteContextAwareWidget does not handle loading/refreshing of note context
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
-    <div 
-        id="parentContainer" 
-        class="note-detail-canvas-note note-detail-printable"
-        style="overflow:auto; width: 100%; height: 500px; background-color: rgba(255,248,230,0.58); border: 1px double #efefef;"
-    >
-        <div id="app" style="width:100%; height: 100%"></div>
-    </div>
-    <style type="text/css">
+    <div class="canvas-note-widget note-detail-canvas-note note-detail-printable">
+        <style type="text/css">
+        .note-detail-canvas-note {
+            height: 100%;
+        }
+
         .excalidraw .App-menu_top .buttonList {
-            display: flex;
+            /*display: flex;*/
         }
 
         .excalidraw-wrapper {
@@ -33,7 +30,10 @@ const TPL = `
             transform: none;
         }
 
-    </style>
+        </style>
+        <!-- height here necessary .otherwise excalidraw not shown. also, one window resize necessary! -->
+        <div class="canvas-note-render" style="height: 500px"></div>
+    </div>
 `;
 
 
@@ -54,20 +54,23 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     doRender() {
+        const self = this;
         this.$widget = $(TPL);
+
+        this.contentSized();
+        this.$render = this.$widget.find('.canvas-note-render');
+        this.$renderElement = this.$render.get(0);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
                 console.log("react, react-dom, excalidraw loaded");
 
-                const excalidrawWrapper = document.getElementById("app");
-
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
                 
-                ReactDOM.unmountComponentAtNode(excalidrawWrapper);
-                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), excalidrawWrapper);
+                ReactDOM.unmountComponentAtNode(this.$renderElement);
+                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), self.$renderElement);
             })
 
         return this.$widget;
@@ -157,20 +160,25 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const [gridModeEnabled, setGridModeEnabled] = React.useState(false);
         
         React.useEffect(() => {
-          setDimensions({
-            width: excalidrawWrapperRef.current.getBoundingClientRect().width,
-            height: excalidrawWrapperRef.current.getBoundingClientRect().height
-          });
-          const onResize = () => {
-            setDimensions({
-              width: excalidrawWrapperRef.current.getBoundingClientRect().width,
-              height: excalidrawWrapperRef.current.getBoundingClientRect().height
-            });
-          };
-        
-          window.addEventListener("resize", onResize);
-        
-          return () => window.removeEventListener("resize", onResize);
+            const dimensions = {
+                width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+                height: excalidrawWrapperRef.current.getBoundingClientRect().height
+            };
+            console.log('effect, setdimensions', dimensions);
+            setDimensions(dimensions);
+
+            const onResize = () => {
+                const dimensions = {
+                    width: excalidrawWrapperRef.current.getBoundingClientRect().width,
+                    height: excalidrawWrapperRef.current.getBoundingClientRect().height
+                };
+                console.log('onResize, setdimensions', dimensions);
+                setDimensions(dimensions);
+            };
+            
+            window.addEventListener("resize", onResize);
+            
+            return () => window.removeEventListener("resize", onResize);
         }, [excalidrawWrapperRef]);
 
         return React.createElement(
