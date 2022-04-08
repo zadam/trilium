@@ -67,6 +67,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.refreshWithNote = this.refreshWithNote.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
+        this.updateSceneVersion = this.updateSceneVersion.bind(this);
         this.getSceneVersion = this.getSceneVersion.bind(this);
 
         // debugging helper
@@ -199,8 +200,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      *        Bug in excalidraw?! yes => see isNewSceneVersion()
      */
     onChangeHandler() {
-        this.log("onChangeHandler() =================", new Date());
+        this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());
         if (this.isNewSceneVersion()) {
+            this.updateSceneVersion();
             this.saveData();
         }
     }
@@ -289,8 +291,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * we compare the scene version as suggested in:
      * https://github.com/excalidraw/excalidraw/issues/3014#issuecomment-778115329
      * 
-     * FIXME: calling it, increments scene version. calling it in a log and then for "real"
-     *        will give wrong result
+     * info: sceneVersions are not incrementing. it seems to be a pseudo-random number
      */
      isNewSceneVersion() {
         const sceneVersion = this.getSceneVersion();
@@ -299,8 +300,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             this.currentSceneVersion === -1     // initial scene version update
             || this.currentSceneVersion !== sceneVersion
             ) {
-            this.log("isNewSceneVersion() YES - update!");
-            this.currentSceneVersion = sceneVersion;
             return true;
         } else {
             return false;
@@ -311,6 +310,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const elements = this.excalidrawRef.current.getSceneElements();
         const sceneVersion = window.Excalidraw.getSceneVersion(elements);
         return sceneVersion;
+    }
+
+    updateSceneVersion() {
+        this.currentSceneVersion = this.getSceneVersion();
     }
 }
 
