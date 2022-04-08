@@ -82,7 +82,29 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
     
     test() {
-        this.log("test", str);
+        /**
+         * exportToSvg({
+            elements: ExcalidrawElement[],
+            appState: AppState,
+            exportPadding?: number, = 10 defualt
+            metadata?: string, // no function!?
+            files?: BinaryFiles
+            })
+         */
+        const elements = this.excalidrawRef.current.getSceneElements();
+        const appState = this.excalidrawRef.current.getAppState();
+        const files = this.excalidrawRef.current.getFiles();
+        const data = {
+            elements, 
+            appState, 
+            files, 
+            exportPadding: 5, // padding [px] of svg "image"
+        }
+        const svg = window.Excalidraw.exportToSvg(data);
+
+        console.log("test", data, svg);
+
+        return svg;
     }
 
     static getType() {
@@ -161,7 +183,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
             const fileArray = [];
             for (const fileId in files) {
-                fileArray.push(files[fileId]);
+                const file = files[fileId];
+                // TODO: dataURL is replaceable with a trilium image url
+                //       maybe we can save normal images (pasted) with base64 data url, and trilium images
+                //       with their respective url! nice
+                // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
+                fileArray.push(file);
             }
 
             this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
@@ -188,6 +215,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
+        /**
+         * FIXME: a file is not deleted, even though removed from canvas
+         *        maybe cross-reference elements and files before saving?!
+         */
         const files = this.excalidrawRef.current.getFiles();
 
         const content = {
