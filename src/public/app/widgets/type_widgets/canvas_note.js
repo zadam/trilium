@@ -4,6 +4,9 @@ import appContext from "../../services/app_context.js";
 import sleep from './canvas-note-utils/sleep.js';
 import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
+import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
+
+
  // NoteContextAwareWidget does not handle loading/refreshing of note context
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
@@ -36,21 +39,59 @@ const TPL = `
     </div>
 `;
 
-
+/**
+ * FIXME: Buttons from one excalidraw get activated. Problems with instance?!
+ * 
+ * FIXME: when adding / removing splits, resize are not correctly called!!!
+ */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
         super();
 
+        // config
+        this.debounceTimeOnchangeHandler = 750; // ms
+
+        // temporary vars
+        this.currentSceneVersion = -1;
+
+        // will be overwritten
+        this.excalidrawRef;
+        this.$render;
+        this.$renderElement;
+        this.$widget;
+        
         this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
         this.doRefresh = this.doRefresh.bind(this);
         this.getContent = this.getContent.bind(this);
         this.saveData = this.saveData.bind(this);
         this.refreshWithNote = this.refreshWithNote.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
-        window.triliumexcalidraw = this;
+        this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
+        this.getSceneVersion = this.getSceneVersion.bind(this);
+
+        // debugging helper
+        this.uniqueId = uniqueId();
+        console.log("uniqueId", this.uniqueId);
+        if (!window.triliumexcalidraw) {
+            window.triliumexcalidraw = [];
+        }
+        window.triliumexcalidraw[this.uniqueId] = this;
+        // end debug 
     }
+
     static getType() {
         return "canvas-note";
+    }
+
+    log(...args) {
+        let title = '';
+        if (this.note) {
+            title = this.note.title;
+        } else {
+            title = this.noteId + "nt/na";
+        }
+
+        console.log(title, "=", this.noteId, "==",  ...args);
     }
 
     doRender() {
@@ -60,18 +101,20 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.contentSized();
         this.$render = this.$widget.find('.canvas-note-render');
         this.$renderElement = this.$render.get(0);
-        console.log(this.noteId, "doRender", this.$widget);
+        this.log("doRender", this.$widget);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
-                console.log(this.noteId, "react, react-dom, excalidraw loaded");
+                self.log("react, react-dom, excalidraw loaded");
 
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
                 
                 ReactDOM.unmountComponentAtNode(this.$renderElement);
                 ReactDOM.render(React.createElement(this.ExcalidrawReactApp), self.$renderElement);
+
+                // FIXME: probably, now, i should manually trigger a refresh?!
             })
 
         return this.$widget;
@@ -83,18 +126,17 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * @param {note} note 
      */
     async doRefresh(note) {
-        console.log(this.noteId, 'doRefresh()', note);
         // get note from backend and put into canvas
-        
-        // wait for react to have rendered!
-        // console.log(this.noteId, 'sleep 1s...');
-        // await sleep(1000);
-
         const noteComplement = await froca.getNoteComplement(note.noteId);
-        console.log(this.noteId, 'doRefresh', note, noteComplement, noteComplement.content);
+        this.log('doRefresh', note, noteComplement);
 
+        /**
+         * before we load content into excalidraw, make sure excalidraw has loaded
+         * 
+         * FIXME: better a loop?
+         */
         if (!this.excalidrawRef) {
-            console.log(this.noteId, "doRefresh !!!!!!!!!!! excalidrawref not yet loeaded, sleep 1s...");
+            this.log("doRefresh !!!!!!!!!!! excalidrawref not yet loeaded, sleep 1s...");
             await sleep(1000);
         }
 
@@ -102,26 +144,32 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const content = JSON.parse(noteComplement.content || "");
             const {elements, appState} = content;
 
-            console.log(this.noteId, 'doRefresh with this:', elements, appState);
-
             const sceneData = {
                 elements, 
                 appState, 
                 collaborators: []
             };
 
-            console.log(this.noteId, "doRefresh(note) sceneData", sceneData);
+            this.log("doRefresh(note) sceneData", sceneData);
+
+            this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
+            this.log("doRefresh sceneVersion", window.Excalidraw.getSceneVersion(elements));
+
             this.excalidrawRef.current.updateScene(sceneData);
+
+            // set initial version
+            if (this.currentSceneVersion === -1) {
+                this.currentSceneVersion = this.getSceneVersion();
+            }
         }
     }
 
     /**
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
+     * this is automatically called after this.saveData();
      */
     getContent() {
-        console.log(this.noteId, 'getContent()');
         const time = new Date();
-        // const content = "hallöchen"+time.toUTCString();
 
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
@@ -132,19 +180,29 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             time
         };
 
-        console.log(this.noteId, 'gC', content);
+        this.log('getContent()', content);
 
         return JSON.stringify(content);
     }
 
+    /**
+     * save content to backend
+     * spacedUpdate is kind of a debouncer.
+     */
     saveData() {
-        console.log(this.noteId, "saveData()");
+        this.log("saveData()");
         this.spacedUpdate.scheduleUpdate();
     }
 
+    /**
+     * FIXME: 2-canvas-split: onChangehandler is fired for both, even though only one instance changed.
+     *        Bug in excalidraw?! yes => see isNewSceneVersion()
+     */
     onChangeHandler() {
-        console.log(this.noteId, "onChangeHandler() =================", new Date());
-        this.saveData();
+        this.log("onChangeHandler() =================", new Date());
+        if (this.isNewSceneVersion()) {
+            this.saveData();
+        }
     }
 
     ExcalidrawReactApp() {
@@ -154,12 +212,13 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const Excalidraw = window.Excalidraw;
 
         const excalidrawRef = React.useRef(null);
-        self.excalidrawRef = excalidrawRef;
+        this.excalidrawRef = excalidrawRef;
         const excalidrawWrapperRef = React.useRef(null);
         const [dimensions, setDimensions] = React.useState({
             width: undefined,
             height: undefined
         });
+        self.setDimensions = setDimensions;
 
         const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
         const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
@@ -170,7 +229,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                 height: excalidrawWrapperRef.current.getBoundingClientRect().height
             };
-            console.log(this.noteId, 'effect, setdimensions', dimensions);
+            this.log('effect, setdimensions', dimensions);
             setDimensions(dimensions);
 
             const onResize = () => {
@@ -178,7 +237,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                     height: excalidrawWrapperRef.current.getBoundingClientRect().height
                 };
-                console.log(this.noteId, 'onResize, setdimensions', dimensions);
+                this.log('onResize, setdimensions', dimensions);
                 setDimensions(dimensions);
             };
             
@@ -202,16 +261,16 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     height: dimensions.height,
                     // initialData: InitialData,
                     onPaste: (data, event) => {
-                        console.log(this.noteId, "tom", data, event);
+                        this.log("tom", data, event);
                     },
                     // onChange: (elements, state) => {
-                    //     console.log(this.noteId, "onChange Elements :", elements, "State : ", state)
+                    //     this.log("onChange Elements :", elements, "State : ", state)
                     //     debounce(() => {
-                    //         console.log(this.noteId, 'called onChange via throttle');
+                    //         this.log('called onChange via throttle');
                     //         self.saveData();
                     //     }, 400);
                     // },
-                    onChange: debounce(self.onChangeHandler, 750),
+                    onChange: debounce(self.onChangeHandler, self.debounceTimeOnchangeHandler),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
                         window.alert("You clicked on collab button")
@@ -223,6 +282,35 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 })
             )
         );
-    };
+    }    
+
+    /**
+     * needed to ensure, that multipleOnChangeHandler calls do not trigger a safe.
+     * we compare the scene version as suggested in:
+     * https://github.com/excalidraw/excalidraw/issues/3014#issuecomment-778115329
+     * 
+     * FIXME: calling it, increments scene version. calling it in a log and then for "real"
+     *        will give wrong result
+     */
+     isNewSceneVersion() {
+        const sceneVersion = this.getSceneVersion();
+        this.log("isNewSceneVersion()", this.currentSceneVersion, sceneVersion);
+        if (
+            this.currentSceneVersion === -1     // initial scene version update
+            || this.currentSceneVersion !== sceneVersion
+            ) {
+            this.log("isNewSceneVersion() YES - update!");
+            this.currentSceneVersion = sceneVersion;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    getSceneVersion() {
+        const elements = this.excalidrawRef.current.getSceneElements();
+        const sceneVersion = window.Excalidraw.getSceneVersion(elements);
+        return sceneVersion;
+    }
 }
 
