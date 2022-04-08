@@ -60,11 +60,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.contentSized();
         this.$render = this.$widget.find('.canvas-note-render');
         this.$renderElement = this.$render.get(0);
+        console.log(this.noteId, "doRender", this.$widget);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
-                console.log("react, react-dom, excalidraw loaded");
+                console.log(this.noteId, "react, react-dom, excalidraw loaded");
 
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
@@ -82,21 +83,26 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * @param {note} note 
      */
     async doRefresh(note) {
-        console.log('doRefresh()', note);
+        console.log(this.noteId, 'doRefresh()', note);
         // get note from backend and put into canvas
         
         // wait for react to have rendered!
-        console.log('sleep 1s...');
-        await sleep(1000);
+        // console.log(this.noteId, 'sleep 1s...');
+        // await sleep(1000);
 
         const noteComplement = await froca.getNoteComplement(note.noteId);
-        console.log('doRefresh', note, noteComplement, noteComplement.content);
+        console.log(this.noteId, 'doRefresh', note, noteComplement, noteComplement.content);
+
+        if (!this.excalidrawRef) {
+            console.log(this.noteId, "doRefresh !!!!!!!!!!! excalidrawref not yet loeaded, sleep 1s...");
+            await sleep(1000);
+        }
 
         if (this.excalidrawRef.current && noteComplement.content) {
             const content = JSON.parse(noteComplement.content || "");
             const {elements, appState} = content;
 
-            console.log('doRefresh with this:', elements, appState);
+            console.log(this.noteId, 'doRefresh with this:', elements, appState);
 
             const sceneData = {
                 elements, 
@@ -104,7 +110,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 collaborators: []
             };
 
-            console.log("doRefresh(note) sceneData", sceneData);
+            console.log(this.noteId, "doRefresh(note) sceneData", sceneData);
             this.excalidrawRef.current.updateScene(sceneData);
         }
     }
@@ -113,7 +119,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
      */
     getContent() {
-        console.log('getContent()');
+        console.log(this.noteId, 'getContent()');
         const time = new Date();
         // const content = "hallöchen"+time.toUTCString();
 
@@ -126,18 +132,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             time
         };
 
-        console.log('gC', content);
+        console.log(this.noteId, 'gC', content);
 
         return JSON.stringify(content);
     }
 
     saveData() {
-        console.log("saveData()");
+        console.log(this.noteId, "saveData()");
         this.spacedUpdate.scheduleUpdate();
     }
 
     onChangeHandler() {
-        console.log("onChangeHandler() =================", new Date());
+        console.log(this.noteId, "onChangeHandler() =================", new Date());
         this.saveData();
     }
 
@@ -164,7 +170,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                 height: excalidrawWrapperRef.current.getBoundingClientRect().height
             };
-            console.log('effect, setdimensions', dimensions);
+            console.log(this.noteId, 'effect, setdimensions', dimensions);
             setDimensions(dimensions);
 
             const onResize = () => {
@@ -172,7 +178,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                     height: excalidrawWrapperRef.current.getBoundingClientRect().height
                 };
-                console.log('onResize, setdimensions', dimensions);
+                console.log(this.noteId, 'onResize, setdimensions', dimensions);
                 setDimensions(dimensions);
             };
             
@@ -196,12 +202,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     height: dimensions.height,
                     // initialData: InitialData,
                     onPaste: (data, event) => {
-                        console.log("tom", data, event);
+                        console.log(this.noteId, "tom", data, event);
                     },
                     // onChange: (elements, state) => {
-                    //     console.log("onChange Elements :", elements, "State : ", state)
+                    //     console.log(this.noteId, "onChange Elements :", elements, "State : ", state)
                     //     debounce(() => {
-                    //         console.log('called onChange via throttle');
+                    //         console.log(this.noteId, 'called onChange via throttle');
                     //         self.saveData();
                     //     }, 400);
                     // },
