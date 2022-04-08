@@ -126,6 +126,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const self = this;
         this.$widget = $(TPL);
 
+        // leads to contain: none
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/contain
         this.contentSized();
         this.$render = this.$widget.find('.canvas-note-render');
         this.$renderElement = this.$render.get(0);
@@ -171,6 +173,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         if (this.excalidrawRef.current && noteComplement.content) {
             const content = JSON.parse(noteComplement.content || "");
             const {elements, appState, files} = content;
+
+            /**
+             * FIXME: appState will overwrite the width and height of container and lead to bugs!
+             *        maybe get width/height here anew?
+             */
 
             const sceneData = {
                 elements, 
@@ -242,7 +249,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.spacedUpdate.scheduleUpdate();
     }
 
-
     /**
      * 
         // FIXME: also, after we save, a refresh is triggered. if we switch too fast, we might get the saved
@@ -308,6 +314,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             };
             
             window.addEventListener("resize", onResize);
+            // ensure that resize is also called for split creation and deletion
+            // not really the problem. problem is saved appState!
+            // self.$renderElement.addEventListener("resize", onResize);
             
             return () => window.removeEventListener("resize", onResize);
         }, [excalidrawWrapperRef]);
@@ -383,4 +392,3 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.currentSceneVersion = this.getSceneVersion();
     }
 }
-
