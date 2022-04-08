@@ -69,6 +69,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
         this.updateSceneVersion = this.updateSceneVersion.bind(this);
         this.getSceneVersion = this.getSceneVersion.bind(this);
+        this.test = this.test.bind(this);
 
         // debugging helper
         this.uniqueId = uniqueId();
@@ -78,6 +79,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
         window.triliumexcalidraw[this.uniqueId] = this;
         // end debug 
+    }
+    
+    test() {
+        this.log("test", str);
     }
 
     static getType() {
@@ -143,20 +148,29 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         if (this.excalidrawRef.current && noteComplement.content) {
             const content = JSON.parse(noteComplement.content || "");
-            const {elements, appState} = content;
+            const {elements, appState, files} = content;
 
             const sceneData = {
                 elements, 
-                appState, 
+                appState,
                 collaborators: []
             };
 
-            this.log("doRefresh(note) sceneData", sceneData);
+            // files are expected in an array when loading. they are stored as an key-index object
+            // see example for loading here:
+            // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
+            const fileArray = [];
+            for (const fileId in files) {
+                fileArray.push(files[fileId]);
+            }
+
+            this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
 
             this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
             this.log("doRefresh sceneVersion", window.Excalidraw.getSceneVersion(elements));
 
             this.excalidrawRef.current.updateScene(sceneData);
+            this.excalidrawRef.current.addFiles(fileArray);
 
             // set initial version
             if (this.currentSceneVersion === -1) {
@@ -174,10 +188,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
+        const files = this.excalidrawRef.current.getFiles();
 
         const content = {
             elements,
             appState,
+            files,
             time
         };
 
@@ -195,15 +211,32 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.spacedUpdate.scheduleUpdate();
     }
 
+
     /**
-     * FIXME: 2-canvas-split: onChangehandler is fired for both, even though only one instance changed.
-     *        Bug in excalidraw?! yes => see isNewSceneVersion()
+     * 
+        // FIXME: also, after we save, a refresh is triggered. if we switch too fast, we might get the saved
+        //        version instead of our (draw something, activate circle, then refresh happens, circle activation
+        //        is revoked)         
      */
     onChangeHandler() {
-        this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());
-        if (this.isNewSceneVersion()) {
+        this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());        
+        const appState = this.excalidrawRef.current.getAppState() || {};
+
+        // if cursor is down, rectangle is not yet part of elements. updating and refreshing breaks stuff
+        const isCursorUp = appState.cursorButton === "up";
+        // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
+        // make sure only when a new element is added, we actually save something.
+        const isNewSceneVersion = this.isNewSceneVersion();
+        // FIXME: however, we might want to make an exception, if viewport changed, since viewport
+        //        is desired to save? (add)
+
+        const shouldSave = isCursorUp && isNewSceneVersion;
+
+        if (shouldSave) {
             this.updateSceneVersion();
             this.saveData();
+        } else {
+            // do nothing
         }
     }
 
@@ -281,6 +314,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     zenModeEnabled: zenModeEnabled,
                     gridModeEnabled: gridModeEnabled,
                     isCollaborating: false,
+                    detectScroll: false,
+                    handleKeyboardGlobally: false,
+                    autoFocus: true,
                 })
             )
         );
