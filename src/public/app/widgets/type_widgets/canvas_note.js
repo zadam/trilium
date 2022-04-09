@@ -40,9 +40,8 @@ const TPL = `
 `;
 
 /**
- * FIXME: Buttons from one excalidraw get activated. Problems with instance?!
- * 
- * FIXME: when adding / removing splits, resize are not correctly called!!!
+ * FIXME: Buttons from one excalidraw get activated. Problems with instance?! (maybe it is only visually, once
+ *        mouse is over one instance they change?)
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
@@ -123,7 +122,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     doRender() {
-        const self = this;
         this.$widget = $(TPL);
 
         // leads to contain: none
@@ -136,13 +134,13 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
-                self.log("react, react-dom, excalidraw loaded");
+                this.log("react, react-dom, excalidraw loaded");
 
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
                 
                 ReactDOM.unmountComponentAtNode(this.$renderElement);
-                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), self.$renderElement);
+                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), this.$renderElement);
 
                 // FIXME: probably, now, i should manually trigger a refresh?!
             })
@@ -165,9 +163,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * 
          * FIXME: better a loop?
          */
-        if (!this.excalidrawRef) {
+        while (!this.excalidrawRef) {
             this.log("doRefresh !!!!!!!!!!! excalidrawref not yet loeaded, sleep 1s...");
-            await sleep(1000);
+            await sleep(100);
         }
 
         if (this.excalidrawRef.current && noteComplement.content) {
@@ -175,13 +173,19 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const {elements, appState, files} = content;
 
             /**
-             * FIXME: appState will overwrite the width and height of container and lead to bugs!
-             *        maybe get width/height here anew?
+             * use widths and offsets of current view, since stored appState has the state from
+             * previous edit. using the stored state would lead to pointer mismatch.
              */
+            const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
+            appState.width = boundingClientRect.width;
+            appState.height = boundingClientRect.height;
+            appState.offsetLeft = boundingClientRect.left;
+            appState.offsetTop = boundingClientRect.top;
 
             const sceneData = {
                 elements, 
                 appState,
+                // appState: {},
                 collaborators: []
             };
 
@@ -214,6 +218,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     /**
+     * (trilium)
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
      * this is automatically called after this.saveData();
      */
@@ -241,6 +246,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     /**
+     * (trilium)
      * save content to backend
      * spacedUpdate is kind of a debouncer.
      */
@@ -277,8 +283,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
     }
 
-    ExcalidrawReactApp() {
-        var self = this;
+    ExcalidrawReactApp(handlers) {
 
         const React = window.React;
         const Excalidraw = window.Excalidraw;
@@ -286,11 +291,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const excalidrawRef = React.useRef(null);
         this.excalidrawRef = excalidrawRef;
         const excalidrawWrapperRef = React.useRef(null);
+        this.excalidrawWrapperRef = excalidrawWrapperRef;
         const [dimensions, setDimensions] = React.useState({
             width: undefined,
             height: undefined
         });
-        self.setDimensions = setDimensions;
 
         const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
         const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
@@ -345,7 +350,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     //         self.saveData();
                     //     }, 400);
                     // },
-                    onChange: debounce(self.onChangeHandler, self.debounceTimeOnchangeHandler),
+                    onChange: debounce(this.onChangeHandler, this.debounceTimeOnchangeHandler),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
                         window.alert("You clicked on collab button")
@@ -371,7 +376,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      */
      isNewSceneVersion() {
         const sceneVersion = this.getSceneVersion();
-        this.log("isNewSceneVersion()", this.currentSceneVersion, sceneVersion);
+        // this.log("isNewSceneVersion()", this.currentSceneVersion, sceneVersion);
         if (
             this.currentSceneVersion === -1     // initial scene version update
             || this.currentSceneVersion !== sceneVersion
