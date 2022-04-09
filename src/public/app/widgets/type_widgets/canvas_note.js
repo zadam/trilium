@@ -6,7 +6,6 @@ import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
 import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 
-
  // NoteContextAwareWidget does not handle loading/refreshing of note context
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
@@ -68,9 +67,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
         this.updateSceneVersion = this.updateSceneVersion.bind(this);
         this.getSceneVersion = this.getSceneVersion.bind(this);
-        this.test = this.test.bind(this);
 
-        // debugging helper
+        // debugging helper - delete this block or comment
         this.uniqueId = uniqueId();
         console.log("uniqueId", this.uniqueId);
         if (!window.triliumexcalidraw) {
@@ -79,48 +77,20 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         window.triliumexcalidraw[this.uniqueId] = this;
         // end debug 
     }
-    
-    test() {
-        /**
-         * exportToSvg({
-            elements: ExcalidrawElement[],
-            appState: AppState,
-            exportPadding?: number, = 10 defualt
-            metadata?: string, // no function!?
-            files?: BinaryFiles
-            })
-         */
-        const elements = this.excalidrawRef.current.getSceneElements();
-        const appState = this.excalidrawRef.current.getAppState();
-        const files = this.excalidrawRef.current.getFiles();
-        const data = {
-            elements, 
-            appState, 
-            files, 
-            exportPadding: 5, // padding [px] of svg "image"
-        }
-        const svg = window.Excalidraw.exportToSvg(data);
 
-        console.log("test", data, svg);
-
-        return svg;
-    }
-
+    /**
+     * (trilium)
+     * 
+     * @returns {string} "canvas-note"
+     */
     static getType() {
         return "canvas-note";
     }
 
-    log(...args) {
-        let title = '';
-        if (this.note) {
-            title = this.note.title;
-        } else {
-            title = this.noteId + "nt/na";
-        }
-
-        console.log(title, "=", this.noteId, "==",  ...args);
-    }
-
+    /**
+     * (trilium)
+     * renders note
+     */
     doRender() {
         this.$widget = $(TPL);
 
@@ -149,6 +119,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     /**
+     * (trilium)
      * called to populate the widget container with the note content
      * 
      * @param {note} note 
@@ -160,12 +131,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         /**
          * before we load content into excalidraw, make sure excalidraw has loaded
-         * 
-         * FIXME: better a loop?
          */
         while (!this.excalidrawRef) {
-            this.log("doRefresh !!!!!!!!!!! excalidrawref not yet loeaded, sleep 1s...");
-            await sleep(100);
+            this.log("doRefresh! excalidrawref not yet loeaded, sleep 200ms...");
+            await sleep(200);
         }
 
         if (this.excalidrawRef.current && noteComplement.content) {
@@ -395,5 +364,21 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     updateSceneVersion() {
         this.currentSceneVersion = this.getSceneVersion();
+    }
+    
+    /**
+     * logs to console.log with some predefined title
+     * 
+     * @param  {...any} args 
+     */
+    log(...args) {
+        let title = '';
+        if (this.note) {
+            title = this.note.title;
+        } else {
+            title = this.noteId + "nt/na";
+        }
+
+        console.log(title, "=", this.noteId, "==",  ...args);
     }
 }
