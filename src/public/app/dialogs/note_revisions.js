@@ -171,6 +171,35 @@ async function setContentPane() {
 
         $content.html($table);
     }
+    else if (revisionItem.type === 'canvas-note') {
+        /**
+         * can the revisions called without being on the note type before?
+         * if so: load excalidraw
+         */
+        await libraryLoader.requireLibrary(libraryLoader.EXCALIDRAW_UTILS);
+        const {exportToSvg} = window.ExcalidrawUtils
+
+        const content = fullNoteRevision.content;
+
+        try {
+            const data = JSON.parse(content)
+            const excData = {
+                type: "excalidraw",
+                version: 2,
+                source: "trilium",
+                elements: data.elements,
+                appState: data.appState,
+                files: data.files,
+            }
+            const svg = await exportToSvg(excData);
+            console.log("canvas-note", data, svg);
+            $content.html($("<div>").html(svg));
+        } catch(err) {
+            console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
+            $content.html($("<div>").text("error parsing content"));
+        }        
+
+    }
     else {
         $content.text("Preview isn't available for this note type.");
     }

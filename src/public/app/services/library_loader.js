@@ -67,6 +67,12 @@ const EXCALIDRAW = {
     // ]
 };
 
+const EXCALIDRAW_UTILS = {
+    js: [
+        "libraries/excalidraw/utils/excalidraw-utils.min.js", //v0.1.2
+    ]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -118,5 +124,6 @@ export default {
     WHEEL_ZOOM,
     FORCE_GRAPH,
     MERMAID,
-    EXCALIDRAW
+    EXCALIDRAW,
+    EXCALIDRAW_UTILS
 }
