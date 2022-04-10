@@ -42,6 +42,9 @@ const TPL = `
  *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
  */
 /**
+ * FIXME: somehow the files array keeps increasing. Somehow the files from one note are transferred to another?
+ */
+/**
  * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
@@ -130,9 +133,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         // see if note changed, since we do not get a new class for a new note
         this.log("doRefresh note KKKK", this.currentNoteId, note.noteId);
         const noteChanged = this.currentNoteId !== note.noteId;
-        // reset scene to omit unnecessary onchange handler
         if (noteChanged) {
             this.log("doRefresh resetCurrentSceneVersion = -1");
+            // reset scene to omit unnecessary onchange handler
             this.currentSceneVersion = -1;
         }
         this.currentNoteId = note.noteId;
@@ -149,52 +152,65 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             await sleep(200);
         }
 
-        if (this.excalidrawRef.current && noteComplement.content) {
-            const content = JSON.parse(noteComplement.content || "");
-            const {elements, appState, files} = content;
+        /**
+         * new and empty note
+         */
+        if (this.excalidrawRef.current && noteComplement.content === "") {
+        }
+        /**
+         * load saved content into excalidraw canvas
+         */
+        else if (this.excalidrawRef.current && noteComplement.content) {
+            try {
+                const content = JSON.parse(noteComplement.content || "");
+                
+                const {elements, appState, files} = content;
 
-            /**
-             * use widths and offsets of current view, since stored appState has the state from
-             * previous edit. using the stored state would lead to pointer mismatch.
-             */
-            const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
-            appState.width = boundingClientRect.width;
-            appState.height = boundingClientRect.height;
-            appState.offsetLeft = boundingClientRect.left;
-            appState.offsetTop = boundingClientRect.top;
+                /**
+                 * use widths and offsets of current view, since stored appState has the state from
+                 * previous edit. using the stored state would lead to pointer mismatch.
+                 */
+                const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
+                appState.width = boundingClientRect.width;
+                appState.height = boundingClientRect.height;
+                appState.offsetLeft = boundingClientRect.left;
+                appState.offsetTop = boundingClientRect.top;
 
-            const sceneData = {
-                elements, 
-                appState,
-                // appState: {},
-                collaborators: []
-            };
+                const sceneData = {
+                    elements, 
+                    appState,
+                    // appState: {},
+                    collaborators: []
+                };
 
-            // files are expected in an array when loading. they are stored as an key-index object
-            // see example for loading here:
-            // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
-            const fileArray = [];
-            for (const fileId in files) {
-                const file = files[fileId];
-                // TODO: dataURL is replaceable with a trilium image url
-                //       maybe we can save normal images (pasted) with base64 data url, and trilium images
-                //       with their respective url! nice
-                // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
-                fileArray.push(file);
+                // files are expected in an array when loading. they are stored as an key-index object
+                // see example for loading here:
+                // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
+                const fileArray = [];
+                for (const fileId in files) {
+                    const file = files[fileId];
+                    // TODO: dataURL is replaceable with a trilium image url
+                    //       maybe we can save normal images (pasted) with base64 data url, and trilium images
+                    //       with their respective url! nice
+                    // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
+                    fileArray.push(file);
+                }
+
+                this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
+
+                this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
+                this.log("doRefresh sceneVersion", window.Excalidraw.getSceneVersion(elements));
+
+                this.excalidrawRef.current.updateScene(sceneData);
+                this.excalidrawRef.current.addFiles(fileArray);
+            } catch(err) {
+                console.error("Error (note, noteComplement, err)", note, noteComplement, err);
             }
-
-            this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
-
-            this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
-            this.log("doRefresh sceneVersion", window.Excalidraw.getSceneVersion(elements));
-
-            this.excalidrawRef.current.updateScene(sceneData);
-            this.excalidrawRef.current.addFiles(fileArray);
-
-            // set initial version
-            if (this.currentSceneVersion === -1) {
-                this.currentSceneVersion = this.getSceneVersion();
-            }
+        }
+        
+        // set initial scene version
+        if (this.currentSceneVersion === -1) {
+            this.currentSceneVersion = this.getSceneVersion();
         }
     }
 
@@ -218,7 +234,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             elements,
             appState,
             files,
-            time
+            time,
         };
 
         this.log('getContent()', content);
@@ -247,15 +263,16 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         //        is desired to save? (add)
 
         // upon updateScene, onchange is called, even though "nothing really changed" that is worth saving
-        const isInitialScene = this.currentSceneVersion === -1;
+        const isNotInitialScene = this.currentSceneVersion !== -1;
 
-        const shouldSave = isNewSceneVersion && !isInitialScene;
+        const shouldSave = isNewSceneVersion && isNotInitialScene;
 
         if (shouldSave) {
             this.updateSceneVersion();
             this.saveData();
         } else {
             // do nothing
+            this.log("onChangeHandler() no update", isNewSceneVersion, isNotInitialScene);
         }
     }
 
