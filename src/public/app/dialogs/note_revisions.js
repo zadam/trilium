@@ -207,8 +207,7 @@ async function setContentPane() {
         } catch(err) {
             console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
             $content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
-        }        
-
+        }
     }
     else {
         $content.text("Preview isn't available for this note type.");
