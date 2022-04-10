@@ -131,7 +131,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      */
     async doRefresh(note) {
         // see if note changed, since we do not get a new class for a new note
-        this.log("doRefresh note KKKK", this.currentNoteId, note.noteId);
+        this.log("doRefresh note", this.currentNoteId, note.noteId);
         const noteChanged = this.currentNoteId !== note.noteId;
         if (noteChanged) {
             this.log("doRefresh resetCurrentSceneVersion = -1");
@@ -142,7 +142,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         
         // get note from backend and put into canvas
         const noteComplement = await froca.getNoteComplement(note.noteId);
-        this.log('doRefresh', note, noteComplement);
+        // this.log('doRefresh', note, noteComplement);
 
         /**
          * before we load content into excalidraw, make sure excalidraw has loaded
@@ -153,14 +153,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
 
         /**
-         * new and empty note
-         */
-        if (this.excalidrawRef.current && noteComplement.content === "") {
-        }
-        /**
          * load saved content into excalidraw canvas
          */
-        else if (this.excalidrawRef.current && noteComplement.content) {
+        if (this.excalidrawRef.current && noteComplement.content) {
             try {
                 const content = JSON.parse(noteComplement.content || "");
                 
@@ -245,7 +240,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             time,
         };
         
-        this.log('getContent()', content, activeFiles);
+        // this.log('getContent()', content, activeFiles);
 
         return JSON.stringify(content);
     }

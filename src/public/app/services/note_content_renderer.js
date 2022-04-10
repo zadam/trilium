@@ -148,8 +148,6 @@ async function getRenderedContent(note, options = {}) {
         const noteComplement = await froca.getNoteComplement(note.noteId);
         const content = noteComplement.content || "";
 
-        console.log("canvas-note book", note, noteComplement, content);
-
         try {
             const data = JSON.parse(content)
             const excData = {
@@ -161,10 +159,9 @@ async function getRenderedContent(note, options = {}) {
                 files: data.files,
             }
             const svg = await exportToSvg(excData);
-            console.log("canvas-note content book", data, svg);
             $renderedContent.append($('<div>').html(svg));
         } catch(err) {
-            console.error("error parsing fullNoteRevision.content as JSON", content, err);
+            console.error("error parsing content as JSON", content, err);
             $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
         }
     }

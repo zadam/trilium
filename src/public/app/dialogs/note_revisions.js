@@ -198,7 +198,6 @@ async function setContentPane() {
                 files: data.files,
             }
             const svg = await exportToSvg(excData);
-            console.log("canvas-note revision", data, svg);
             $content
                 .html(
                     $('<div>')
