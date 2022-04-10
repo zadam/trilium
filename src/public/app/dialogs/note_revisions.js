@@ -176,6 +176,12 @@ async function setContentPane() {
          * can the revisions called without being on the note type before?
          * if so: load excalidraw
          */
+        // FIXME: Does it make sense to use EXCALIDRAW_UTILS  that are 1.5 MB
+        //        whereas excalidraw (650kB) +react(12kB)+reactdom(118kB)
+        /**
+         * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
+         *        REMOVE external dependency!!!! This is defined in the svg in defs.style
+         */ 
         await libraryLoader.requireLibrary(libraryLoader.EXCALIDRAW_UTILS);
         const {exportToSvg} = window.ExcalidrawUtils
 
@@ -192,11 +198,15 @@ async function setContentPane() {
                 files: data.files,
             }
             const svg = await exportToSvg(excData);
-            console.log("canvas-note", data, svg);
-            $content.html($("<div>").html(svg));
+            console.log("canvas-note revision", data, svg);
+            $content
+                .html(
+                    $('<div>')
+                    .html(svg)
+                );
         } catch(err) {
             console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
-            $content.html($("<div>").text("error parsing content"));
+            $content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
         }        
 
     }
