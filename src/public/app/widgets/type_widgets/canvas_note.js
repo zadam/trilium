@@ -42,11 +42,6 @@ const TPL = `
  *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
  */
 /**
- * FIXME: when loading a note, onchangehandler gets fired and then note is automatically saved. this leads to
- *        network overhead, and also sometimes to an empty note, if somehow loading failed, then empty content
- *        is saved.
- */
-/**
  * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
@@ -57,6 +52,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.debounceTimeOnchangeHandler = 750; // ms
 
         // temporary vars
+        this.currentNoteId = "";
         this.currentSceneVersion = -1;
 
         // will be overwritten
@@ -119,8 +115,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 
                 ReactDOM.unmountComponentAtNode(this.$renderElement);
                 ReactDOM.render(React.createElement(this.ExcalidrawReactApp), this.$renderElement);
-
-                // FIXME: probably, now, i should manually trigger a refresh?!
             })
 
         return this.$widget;
@@ -133,6 +127,16 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * @param {note} note 
      */
     async doRefresh(note) {
+        // see if note changed, since we do not get a new class for a new note
+        this.log("doRefresh note KKKK", this.currentNoteId, note.noteId);
+        const noteChanged = this.currentNoteId !== note.noteId;
+        // reset scene to omit unnecessary onchange handler
+        if (noteChanged) {
+            this.log("doRefresh resetCurrentSceneVersion = -1");
+            this.currentSceneVersion = -1;
+        }
+        this.currentNoteId = note.noteId;
+        
         // get note from backend and put into canvas
         const noteComplement = await froca.getNoteComplement(note.noteId);
         this.log('doRefresh', note, noteComplement);
@@ -232,25 +236,20 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.spacedUpdate.scheduleUpdate();
     }
 
-    /**
-     * 
-        // FIXME: also, after we save, a refresh is triggered. if we switch too fast, we might get the saved
-        //        version instead of our (draw something, activate circle, then refresh happens, circle activation
-        //        is revoked)         
-     */
     onChangeHandler() {
         this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());        
         const appState = this.excalidrawRef.current.getAppState() || {};
 
-        // if cursor is down, rectangle is not yet part of elements. updating and refreshing breaks stuff
-        const isCursorUp = appState.cursorButton === "up";
         // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
         // make sure only when a new element is added, we actually save something.
         const isNewSceneVersion = this.isNewSceneVersion();
         // FIXME: however, we might want to make an exception, if viewport changed, since viewport
         //        is desired to save? (add)
 
-        const shouldSave = isCursorUp && isNewSceneVersion;
+        // upon updateScene, onchange is called, even though "nothing really changed" that is worth saving
+        const isInitialScene = this.currentSceneVersion === -1;
+
+        const shouldSave = isNewSceneVersion && !isInitialScene;
 
         if (shouldSave) {
             this.updateSceneVersion();
