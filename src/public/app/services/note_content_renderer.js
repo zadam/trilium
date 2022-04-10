@@ -141,6 +141,33 @@ async function getRenderedContent(note, options = {}) {
 
         $renderedContent.append($content);
     }
+    else if (type === 'canvas-note') {
+        await libraryLoader.requireLibrary(libraryLoader.EXCALIDRAW_UTILS);
+        const {exportToSvg} = window.ExcalidrawUtils
+
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const content = noteComplement.content || "";
+
+        console.log("canvas-note book", note, noteComplement, content);
+
+        try {
+            const data = JSON.parse(content)
+            const excData = {
+                type: "excalidraw",
+                version: 2,
+                source: "trilium",
+                elements: data.elements,
+                appState: data.appState,
+                files: data.files,
+            }
+            const svg = await exportToSvg(excData);
+            console.log("canvas-note content book", data, svg);
+            $renderedContent.append($('<div>').html(svg));
+        } catch(err) {
+            console.error("error parsing fullNoteRevision.content as JSON", content, err);
+            $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
+        }
+    }
     else if (!options.tooltip && type === 'protected-session') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
