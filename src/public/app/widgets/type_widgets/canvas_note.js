@@ -224,20 +224,28 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
+
         /**
-         * FIXME: a file is not deleted, even though removed from canvas
-         *        maybe cross-reference elements and files before saving?!
+         * A file is not deleted, even though removed from canvas. therefore we only keep
+         * files that are referenced by an element. Maybe this will change with new excalidraw version?
          */
         const files = this.excalidrawRef.current.getFiles();
+
+        const activeFiles = {};
+        elements.forEach((element) => {
+            if (element.fileId) {
+                activeFiles[element.fileId] = files[element.fileId];
+            }
+        })
 
         const content = {
             elements,
             appState,
-            files,
+            files: activeFiles,
             time,
         };
-
-        this.log('getContent()', content);
+        
+        this.log('getContent()', content, activeFiles);
 
         return JSON.stringify(content);
     }
