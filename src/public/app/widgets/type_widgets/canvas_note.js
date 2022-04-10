@@ -153,9 +153,24 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
 
         /**
+         * new and empty note - make sure that canvas is empty.
+         * If we do not set it manually, we occasionally get some "bleeding" from another
+         * note into this fresh note. Probably due to that this note-instance does not get
+         * newly instantiated?
+         */
+        if (this.excalidrawRef.current && noteComplement.content === "") {
+            const sceneData = {
+                elements: [], 
+                appState: {},
+                collaborators: []
+            };
+            
+            this.excalidrawRef.current.updateScene(sceneData);
+        }
+        /**
          * load saved content into excalidraw canvas
          */
-        if (this.excalidrawRef.current && noteComplement.content) {
+        else if (this.excalidrawRef.current && noteComplement.content) {
             try {
                 const content = JSON.parse(noteComplement.content || "");
                 
