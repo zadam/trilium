@@ -249,6 +249,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
+            _meta: "This note has type `canvas-note`. It uses excalidraw to render.",
             elements,
             appState,
             files: activeFiles,
