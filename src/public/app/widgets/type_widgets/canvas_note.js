@@ -10,19 +10,14 @@ import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
-    <div class="canvas-note-widget note-detail-canvas-note note-detail-printable">
+    <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
         <style type="text/css">
-        .note-detail-canvas-note {
-            height: 100%;
-        }
-
         .excalidraw .App-menu_top .buttonList {
             /*display: flex;*/
         }
 
         .excalidraw-wrapper {
             height: 100%;
-            position: relative;
         }
 
         :root[dir="ltr"]
@@ -33,14 +28,26 @@ const TPL = `
         }
 
         </style>
-        <!-- height here necessary .otherwise excalidraw not shown. also, one window resize necessary! -->
-        <div class="canvas-note-render" style="height: 500px"></div>
+        <!-- height here necessary. otherwise excalidraw not shown -->
+        <div class="canvas-note-render" style="height: 100%"></div>
     </div>
 `;
 
 /**
  * FIXME: Buttons from one excalidraw get activated. Problems with instance?! (maybe it is only visually, once
  *        mouse is over one instance they change?)
+ */
+/**
+ * FIXME: FONTS from unpkg.com are loaded. Change font to HELVETICA? 
+ *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
+ */
+/**
+ * FIXME: when loading a note, onchangehandler gets fired and then note is automatically saved. this leads to
+ *        network overhead, and also sometimes to an empty note, if somehow loading failed, then empty content
+ *        is saved.
+ */
+/**
+ * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
@@ -96,7 +103,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         // leads to contain: none
         // https://developer.mozilla.org/en-US/docs/Web/CSS/contain
-        this.contentSized();
+        // this.contentSized();
+        this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-note-render');
         this.$renderElement = this.$render.get(0);
         this.log("doRender", this.$widget);
