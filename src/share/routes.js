@@ -1,3 +1,5 @@
+const excalidrawToSvg = require("excalidraw-to-svg");
+
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
@@ -112,15 +114,41 @@ function register(router) {
         if (!image) {
             return res.status(404).send(`Note ${noteId} not found`);
         }
-        else if (image.type !== 'image') {
-            return res.status(400).send("Requested note is not an image");
+        else if (!["image", "canvas-note"].includes(image.type)) {
+            return res.status(400).send("Requested note is not a shareable image");
+        } else if (image.type === "canvas-note") {
+            /**
+             * FIXME: deduplicate the code from api/image.js
+             */
+            // render the svg in node.js using excalidraw and jsdom
+            const content = image.getContent();
+            try {
+                const data = JSON.parse(content)
+                const excalidrawData = {
+                    type: "excalidraw",
+                    version: 2,
+                    source: "trilium",
+                    elements: data.elements,
+                    appState: data.appState,
+                    files: data.files,
+                }
+                excalidrawToSvg(excalidrawData)
+                    .then(svg => {
+                        const svgHtml = svg.outerHTML;
+                        res.set('Content-Type', "image/svg+xml");
+                        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+                        res.send(svgHtml);
+                    });
+            } catch(err) {
+                res.status(500).send("there was an error parsing excalidraw to svg");
+            }
+        } else {
+            // normal image
+            res.set('Content-Type', image.mime);
+
+            res.send(image.getContent());
         }
 
-        addNoIndexHeader(image, res);
-
-        res.set('Content-Type', image.mime);
-
-        res.send(image.getContent());
     });
 
     // used for PDF viewing
