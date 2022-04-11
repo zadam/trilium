@@ -1,5 +1,6 @@
 "use strict";
 
+const excalidrawToSvg = require("excalidraw-to-svg");
 const imageService = require('../../services/image');
 const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
@@ -11,7 +12,7 @@ function returnImage(req, res) {
     if (!image) {
         return res.sendStatus(404);
     }
-    else if (image.type !== 'image') {
+    else if (!["image", "canvas-note"].includes(image.type)){
         return res.sendStatus(400);
     }
     else if (image.isDeleted || image.data === null) {
@@ -19,10 +20,38 @@ function returnImage(req, res) {
         return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
 
-    res.set('Content-Type', image.mime);
-    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-
-    res.send(image.getContent());
+    /**
+     * special "image" type. the canvas-note is actually type application/json but can be
+     * rendered on the fly to svg.
+     */
+    if (image.type === 'canvas-note') {
+        // render the svg in node.js using excalidraw and jsdom
+        const content = image.getContent();
+        try {
+            const data = JSON.parse(content)
+            const excalidrawData = {
+                type: "excalidraw",
+                version: 2,
+                source: "trilium",
+                elements: data.elements,
+                appState: data.appState,
+                files: data.files,
+            }
+            excalidrawToSvg(excalidrawData)
+                .then(svg => {
+                    const svgHtml = svg.outerHTML;
+                    res.set('Content-Type', "image/svg+xml");
+                    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+                    res.send(svgHtml);
+                });
+        } catch(err) {
+            res.sendStatus(500);
+        }
+    } else {
+        res.set('Content-Type', image.mime);
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.send(image.getContent());
+    }
 }
 
 function uploadImage(req) {
