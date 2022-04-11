@@ -108,7 +108,7 @@ function register(router) {
         res.send(note.getContent());
     });
 
-    router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
+    router.get(['/share/api/images/:noteId/:filename', '/share/api/images/:noteId'], (req, res, next) => {
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
