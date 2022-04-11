@@ -42,7 +42,14 @@ const TPL = `
  *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
  */
 /**
- * FIXME: somehow the files array keeps increasing. Somehow the files from one note are transferred to another?
+ * upon insterting a screenshot/image, we get a chunk load error. somehow our excalidraw.js is thinking about a 
+ * chunck, hosted on unpkg.com
+ * 
+ * VM18070:2          GET https://unpkg.com/@excalidraw/excalidraw@0.11.0/dist/excalidraw-assets/vendor-41e5c0be76c29ad2aba4.js net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep 200
+VM18070:2 error trying to resing image file on insertion ChunkLoadError: Loading chunk 736 failed.
+(error: https://unpkg.com/@excalidraw/excalidraw@0.11.0/dist/excalidraw-assets/vendor-41e5c0be76c29ad2aba4.js)
+    at Object.c.f.j (<anonymous>:2:667361)
+    at <anonymous>:2:663588
  */
 /**
  * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
@@ -255,7 +262,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             files: activeFiles,
             time,
         };
-        
         // this.log('getContent()', content, activeFiles);
 
         return JSON.stringify(content);
