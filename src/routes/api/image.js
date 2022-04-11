@@ -45,7 +45,7 @@ function returnImage(req, res) {
                     res.send(svgHtml);
                 });
         } catch(err) {
-            res.sendStatus(500);
+            res.status(500).send("there was an error parsing excalidraw to svg");
         }
     } else {
         res.set('Content-Type', image.mime);
