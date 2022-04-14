@@ -68,6 +68,9 @@ const EXCALIDRAW = {
 };
 
 const EXCALIDRAW_UTILS = {
+    /**
+     * FIXME: excalidraw-utils does not render pen-background. maybe own built required?
+     */
     js: [
         "node_modules/@excalidraw/utils/dist/excalidraw-utils.min.js", //v0.1.2
     ]
