@@ -10,3 +10,4 @@ cert.key
 cert.crt
 server-package.json
 .idea/httpRequests/
+data/
