@@ -10,6 +10,9 @@ const log = require("../../services/log");
 
 let becca = null;
 
+/**
+ * Base class for all backend entities.
+ */
 class AbstractEntity {
     beforeSaving() {
         this.generateIdIfNecessary();
@@ -62,6 +65,11 @@ class AbstractEntity {
         return this.getPojo();
     }
 
+    /**
+     * Saves entity - executes SQL, but doesn't commit the transaction on its own
+     *
+     * @returns {AbstractEntity}
+     */
     save() {
         const entityName = this.constructor.entityName;
         const primaryKeyName = this.constructor.primaryKeyName;
@@ -100,6 +108,11 @@ class AbstractEntity {
         return this;
     }
 
+    /**
+     * Mark the entity as (soft) deleted. It will be completely erased later.
+     *
+     * @param [deleteId=null]
+     */
     markAsDeleted(deleteId = null) {
         const entityId = this[this.constructor.primaryKeyName];
         const entityName = this.constructor.entityName;

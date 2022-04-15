@@ -5,6 +5,8 @@ const AbstractEntity = require("./abstract_entity");
 
 /**
  * Option represents name-value pair, either directly configurable by the user or some system property.
+ *
+ * @extends AbstractEntity
  */
 class Option extends AbstractEntity {
     static get entityName() { return "options"; }

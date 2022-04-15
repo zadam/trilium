@@ -11,6 +11,8 @@ const AbstractEntity = require("./abstract_entity");
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
+ *
+ * @extends AbstractEntity
  */
 class NoteRevision extends AbstractEntity {
     static get entityName() { return "note_revisions"; }
