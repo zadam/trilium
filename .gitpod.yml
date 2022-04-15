@@ -2,7 +2,7 @@ image:
   file: .gitpod.dockerfile
 
 tasks:
-    - before: nvm install 16.14.0 && nvm use 16.14.0
+    - before: nvm install 16.14.2 && nvm use 16.14.2
       init: npm install
       command: npm run start-server
 
