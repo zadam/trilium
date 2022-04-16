@@ -6,6 +6,10 @@ const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
+    if (!note) {
+        return;
+    }
+
     // same script note can get here with multiple ways, but execute only once
     const notesToRun = new Set(
         note.getRelations(relationName)
