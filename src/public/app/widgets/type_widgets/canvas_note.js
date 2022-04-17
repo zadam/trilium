@@ -97,6 +97,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$render;
         this.$renderElement;
         this.$widget;
+        this.reactHandlers; // used to control react state
         
         this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
         this.doRefresh = this.doRefresh.bind(this);
@@ -115,7 +116,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             window.triliumexcalidraw = [];
         }
         window.triliumexcalidraw[this.uniqueId] = this;
-        // end debug 
+        // end debug
     }
 
     /**
@@ -140,7 +141,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-note-render');
         this.$renderElement = this.$render.get(0);
-        this.log("doRender", this.$widget);
+        // this.log("doRender", this.$widget);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
@@ -165,10 +166,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      */
     async doRefresh(note) {
         // see if note changed, since we do not get a new class for a new note
-        this.log("doRefresh note", this.currentNoteId, note.noteId);
+        // this.log("doRefresh note", this.currentNoteId, note.noteId);
         const noteChanged = this.currentNoteId !== note.noteId;
         if (noteChanged) {
-            this.log("doRefresh resetCurrentSceneVersion = -1");
+            // this.log("doRefresh resetCurrentSceneVersion = -1");
             // reset scene to omit unnecessary onchange handler
             this.currentSceneVersion = -1;
         }
@@ -354,8 +355,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
     }
 
-    ExcalidrawReactApp(handlers) {
-
+    ExcalidrawReactApp() {
         const React = window.React;
         const Excalidraw = window.Excalidraw;
 
@@ -371,6 +371,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
         const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
         const [gridModeEnabled, setGridModeEnabled] = React.useState(false);
+        const [synchronized, setSynchronized] = React.useState(true);
         
         React.useEffect(() => {
             const dimensions = {
@@ -397,6 +398,26 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             return () => window.removeEventListener("resize", onResize);
         }, [excalidrawWrapperRef]);
 
+        const onLinkOpen = React.useCallback((element, event) => {
+            const link = element.link;
+            const { nativeEvent } = event.detail;
+            const isNewTab = nativeEvent.ctrlKey || nativeEvent.metaKey;
+            const isNewWindow = nativeEvent.shiftKey;
+            const isInternalLink =
+                link.startsWith("/") || link.includes(window.location.origin);
+                
+            this.log("onLinkOpen", element, event, nativeEvent, "isinternallink", isInternalLink);
+
+            if (isInternalLink && !isNewTab && !isNewWindow) {
+                // signal that we're handling the redirect ourselves
+                event.preventDefault();
+                // do a custom redirect, such as passing to react-router
+                // ...
+            } else {
+                // open in same tab
+            }
+          }, []);
+
         return React.createElement(
             React.Fragment,
             null,
@@ -412,15 +433,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     height: dimensions.height,
                     // initialData: InitialData,
                     onPaste: (data, event) => {
-                        this.log("tom", data, event);
+                        this.log("excalidraw internal paste", data, event);
                     },
-                    // onChange: (elements, state) => {
-                    //     this.log("onChange Elements :", elements, "State : ", state)
-                    //     debounce(() => {
-                    //         this.log('called onChange via throttle');
-                    //         self.saveData();
-                    //     }, 400);
-                    // },
                     onChange: debounce(this.onChangeHandler, this.debounceTimeOnchangeHandler),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
@@ -433,6 +447,20 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     detectScroll: false,
                     handleKeyboardGlobally: false,
                     autoFocus: true,
+                    // renderTopRightUI: () => {
+                    //     return React.createElement(
+                    //         React.Fragment,
+                    //         null,
+                    //         React.createElement(
+                    //             "div",
+                    //             {
+                    //                 className: "excalidraw-top-right-ui",
+                    //             },
+                    //             synchronized?"✔️":"⏳ unsaved changes"
+                    //         ));
+                    // }, 
+                    onLinkOpen,
+                    // libraryReturnUrl: 'http://localhost:8080', // not working
                 })
             )
         );
