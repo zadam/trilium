@@ -147,6 +147,9 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         this.checkFullHeight();
     }
 
+    /**
+     * sets full height of container that contains note content for a subset of note-types
+     */
     checkFullHeight() {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
