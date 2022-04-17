@@ -20,6 +20,7 @@ const TPL = `
         min-height: 50px;
         height: 100%;
     }
+
     </style>
 
     <div class="note-detail-code-editor"></div>
