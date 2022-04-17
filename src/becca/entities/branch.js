@@ -8,6 +8,8 @@ const dateUtils = require("../../services/date_utils");
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
  * parents.
+ *
+ * @extends AbstractEntity
  */
 class Branch extends AbstractEntity {
     static get entityName() { return "branches"; }

@@ -9,6 +9,8 @@ const promotedAttributeDefinitionParser = require("../../services/promoted_attri
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
+ *
+ * @extends AbstractEntity
  */
 class Attribute extends AbstractEntity {
     static get entityName() { return "attributes"; }

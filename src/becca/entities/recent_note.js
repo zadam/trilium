@@ -5,6 +5,8 @@ const AbstractEntity = require("./abstract_entity");
 
 /**
  * RecentNote represents recently visited note.
+ *
+ * @extends AbstractEntity
  */
 class RecentNote extends AbstractEntity {
     static get entityName() { return "recent_notes"; }

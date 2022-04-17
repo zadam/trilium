@@ -14,6 +14,8 @@ const RELATION = 'relation';
 
 /**
  * Trilium's main entity which can represent text note, image, code note, file attachment etc.
+ *
+ * @extends AbstractEntity
  */
 class Note extends AbstractEntity {
     static get entityName() { return "notes"; }
