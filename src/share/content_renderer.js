@@ -85,6 +85,38 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (note.type === 'book') {
         isEmpty = true;
     }
+    else if (note.type === 'canvas-note') {
+        header += `<script src="../../node_modules/react/umd/react.production.min.js"></script>`;
+        header += `<script src="../../node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
+        header += `<script src="../../node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
+        header += `<style type="text/css">
+        .excalidraw .App-menu_top .buttonList {
+            /*display: flex;*/
+        }
+
+        .excalidraw-wrapper {
+            height: 100%;
+        }
+
+        :root[dir="ltr"]
+        .excalidraw
+        .layer-ui__wrapper
+        .zen-mode-transition.App-menu_bottom--transition-left {
+            transform: none;
+        }
+
+        </style>`;
+
+        content = `
+            <script>
+            const {elements, appState, files} = JSON.parse(${JSON.stringify(content)});
+            window.triliumExcalidraw = {elements, appState, files}
+            </script>
+            <div id="excalidraw-app"/>
+            <script src="../../libraries/excalidraw/canvas_note_share.js"></script>
+        `;
+        
+    }
     else {
         content = '<p>This note type cannot be displayed.</p>';
     }
