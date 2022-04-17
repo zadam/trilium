@@ -173,22 +173,22 @@ async function setContentPane() {
     }
     else if (revisionItem.type === 'canvas-note') {
         /**
-         * can the revisions called without being on the note type before?
-         * if so: load excalidraw
-         */
-        /**
          * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
          *        REMOVE external dependency!!!! This is defined in the svg in defs.style
-         */
-        /**
-         * FIXME: If svg is not present, probably use live excalidraw?
          */
         const content = fullNoteRevision.content;
 
         try {
             const data = JSON.parse(content)
             const svg = data.svg || "no svg present."
-            $content.html($('<div>').html(svg));
+
+            /**
+             * Debatable
+             * maxWidth: 100% use full width of container but do not enlarge!
+             * height:auto to ensure that height scales with width
+             */
+            const svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
+            $content.html($('<div>').append(svgHtml));
         } catch(err) {
             console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
             $content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));

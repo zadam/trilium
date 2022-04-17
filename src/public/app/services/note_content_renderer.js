@@ -142,16 +142,18 @@ async function getRenderedContent(note, options = {}) {
         $renderedContent.append($content);
     }
     else if (type === 'canvas-note') {
-        await libraryLoader.requireLibrary(libraryLoader.EXCALIDRAW_UTILS);
-        const {exportToSvg} = window.ExcalidrawUtils
-
         const noteComplement = await froca.getNoteComplement(note.noteId);
         const content = noteComplement.content || "";
 
         try {
+            const errorSvg = `<svg viewBox="0 0 240 80" style="background-color: white" xmlns="http://www.w3.org/2000/svg"><style>.red { font: 12px serif; fill: red; }</style><text x="20" y="35" class="red">Error: note svg is undefined or empty</text></svg>`;
             const data = JSON.parse(content)
-            const svg = data.svg || "no svg present."
-            $renderedContent.append($('<div>').html(svg));
+            const svg = data.svg || errorSvg;
+            /**
+             * maxWidth: size down to 100% (full) width of container but do not enlarge!
+             * height:auto to ensure that height scales with width
+             */
+            $renderedContent.append($(svg).css({maxWidth: "100%", height: "auto"}));
         } catch(err) {
             console.error("error parsing content as JSON", content, err);
             $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
