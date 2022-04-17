@@ -36,7 +36,13 @@ class Attribute extends AbstractEntity {
             if (linkedChildNote) {
                 const branch = this.shaca.getBranchFromChildAndParent(linkedChildNote.noteId, this.noteId);
 
-                branch.isHidden = true;
+                /**
+                 * FIXME: why can we have branch is undefined? issue when
+                 * sharing and not sharing notes? canvas-note specific?
+                 */
+                if(branch) {
+                    branch.isHidden = true;
+                }
             }
         }
 
