@@ -87,6 +87,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         // config
         this.debounceTimeOnchangeHandler = 750; // ms
+        // ensure that assets are loaded from trilium
+        window.EXCALIDRAW_ASSET_PATH = `${window.location.origin}/node_modules/@excalidraw/excalidraw/dist/`;
 
         // temporary vars
         this.currentNoteId = "";
