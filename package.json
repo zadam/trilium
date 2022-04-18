@@ -41,7 +41,7 @@
     "electron-find": "1.0.7",
     "electron-window-state": "5.0.3",
     "@electron/remote": "2.0.8",
-    "express": "4.17.2",
+    "express": "4.17.3",
     "express-partial-content": "1.0.2",
     "express-rate-limit": "6.3.0",
     "express-session": "1.17.2",
