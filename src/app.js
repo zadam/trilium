@@ -30,6 +30,11 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/libraries', express.static(path.join(__dirname, '..', 'libraries')));
+/**
+ * FIXME: is it (~~crazy~~) insecure to expose node_modules globally without auth?
+ *        without out is required for excalidraw-view mode in shared notes
+ */
+app.use('/node_modules', express.static(path.join(__dirname, '..', 'node_modules')));
 app.use('/images', express.static(path.join(__dirname, '..', 'images')));
 const sessionParser = session({
     secret: sessionSecret,

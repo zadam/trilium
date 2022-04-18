@@ -24,6 +24,8 @@
     "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "0.11.0",
+    "@excalidraw/utils": "0.1.2",
     "archiver": "5.3.1",
     "async-mutex": "0.3.2",
     "axios": "0.26.1",
@@ -65,6 +67,8 @@
     "open": "8.4.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "request": "2.88.2",
     "rimraf": "3.0.2",
     "sanitize-filename": "1.6.3",
