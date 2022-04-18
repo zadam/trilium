@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.11.0",
-    "@excalidraw/utils": "0.1.2",
     "archiver": "5.3.1",
     "async-mutex": "0.3.2",
     "axios": "0.26.1",
@@ -42,7 +41,6 @@
     "electron-find": "1.0.7",
     "electron-window-state": "5.0.3",
     "@electron/remote": "2.0.8",
-    "excalidraw-to-svg": "3.0.0",
     "express": "4.17.2",
     "express-partial-content": "1.0.2",
     "express-rate-limit": "6.3.0",

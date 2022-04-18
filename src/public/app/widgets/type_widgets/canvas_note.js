@@ -6,8 +6,8 @@ import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
 import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 
- // NoteContextAwareWidget does not handle loading/refreshing of note context
-import NoteContextAwareWidget from "../note_context_aware_widget.js";
+// NoteContextAwareWidget does not handle loading/refreshing of note context
+// import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
     <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
@@ -53,6 +53,33 @@ VM18070:2 error trying to resing image file on insertion ChunkLoadError: Loading
  */
 /**
  * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
+ * Result: as of know, most dependencies are manually. however no special preference is given.
+ * Result2: since excalidraw to svg rendering in node is not really working, we can easily do a manual dependency
+ *          management of excalidraw and react.
+ */
+/**
+ * ## Excalidraw and SVG
+ * 2022-04-16 - @thfrei
+ * 
+ * Known issues:
+ *  - excalidraw-to-svg (node.js) does not render any hand drawn (freedraw) paths. There is an issue with 
+ *    Path2D object not present in node-canvas library used by jsdom. (See Trilium PR for samples and other issues 
+ *    in respective library. Link will be added later). Related links:
+ *     - https://github.com/Automattic/node-canvas/pull/2013
+ *     - https://github.com/google/canvas-5-polyfill 
+ *     - https://github.com/Automattic/node-canvas/issues/1116 
+ *     - https://www.npmjs.com/package/path2d-polyfill 
+ *  - excalidraw-to-svg (node.js) takes quite some time to load an image (1-2s)
+ *  - excalidraw-utils (browser) does render freedraw, however NOT freedraw with background
+ * 
+ * Due to this issues, we opt to use **only excalidraw in the frontend**. Upon saving, we will also get the SVG
+ * output from the live excalidraw instance. We will save this **SVG side by side the native excalidraw format
+ * in the trilium note**.
+ * 
+ * Pro: we will combat bit-rot. Showing the SVG will be very fast, since it is already rendered.
+ * Con: The note will get bigger (maybe +30%?), we will generate more bandwith. 
+ *      (However, using trilium desktop instance, does not care too much about bandwidth. Size increase is probably
+ *       acceptable, as a trade off.)
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
@@ -236,17 +263,43 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
      * this is automatically called after this.saveData();
      */
-    getContent() {
-        const time = new Date();
-
+    async getContent() {
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
-
+        
         /**
          * A file is not deleted, even though removed from canvas. therefore we only keep
          * files that are referenced by an element. Maybe this will change with new excalidraw version?
          */
         const files = this.excalidrawRef.current.getFiles();
+        
+        /**
+         * parallel svg export to combat bitrot and enable rendering image for note inclusion,
+         * preview and share.
+         */
+        const svg = await window.Excalidraw.exportToSvg({
+            elements,
+            appState,
+            exportPadding: 5, // 5 px padding
+            metadata: 'trilium-export',
+            files
+        });
+
+        /**
+         * Trials for png
+         */
+        // const png = await window.Excalidraw.exportToBlob(await window.Excalidraw.exportToCanvas({
+        //     elements,
+        //     appState,
+        //     files
+        // }))
+        // function blobToBase64(blob) {
+        //     return new Promise((resolve, _) => {
+        //         const reader = new FileReader();
+        //         reader.onloadend = () => resolve(reader.result);
+        //         reader.readAsDataURL(blob);
+        //     });
+        // }
 
         const activeFiles = {};
         elements.forEach((element) => {
@@ -260,9 +313,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             elements,
             appState,
             files: activeFiles,
-            time,
+            svg: svg.outerHTML,
+            // png: await blobToBase64(png),
         };
-        // this.log('getContent()', content, activeFiles);
 
         return JSON.stringify(content);
     }

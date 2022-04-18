@@ -68,7 +68,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             const {noteId} = note;
 
             const dto = note.dto;
-            dto.content = this.getTypeWidget().getContent();
+            dto.content = await this.getTypeWidget().getContent();
 
             // for read only notes
             if (dto.content === undefined) {

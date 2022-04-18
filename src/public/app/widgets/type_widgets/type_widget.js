@@ -37,6 +37,9 @@ export default class TypeWidget extends NoteContextAwareWidget {
         return this.$widget.is(":visible");
     }
 
+    /**
+     * FIXME: add async here to indicate promise?
+     */
     getContent() {}
 
     focus() {}

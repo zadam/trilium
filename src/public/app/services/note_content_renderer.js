@@ -150,15 +150,7 @@ async function getRenderedContent(note, options = {}) {
 
         try {
             const data = JSON.parse(content)
-            const excData = {
-                type: "excalidraw",
-                version: 2,
-                source: "trilium",
-                elements: data.elements,
-                appState: data.appState,
-                files: data.files,
-            }
-            const svg = await exportToSvg(excData);
+            const svg = data.svg || "no svg present."
             $renderedContent.append($('<div>').html(svg));
         } catch(err) {
             console.error("error parsing content as JSON", content, err);

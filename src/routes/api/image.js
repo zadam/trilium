@@ -1,6 +1,5 @@
 "use strict";
 
-const excalidrawToSvg = require("excalidraw-to-svg");
 const imageService = require('../../services/image');
 const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
@@ -28,22 +27,12 @@ function returnImage(req, res) {
         // render the svg in node.js using excalidraw and jsdom
         const content = image.getContent();
         try {
-            const data = JSON.parse(content)
-            const excalidrawData = {
-                type: "excalidraw",
-                version: 2,
-                source: "trilium",
-                elements: data.elements,
-                appState: data.appState,
-                files: data.files,
-            }
-            excalidrawToSvg(excalidrawData)
-                .then(svg => {
-                    const svgHtml = svg.outerHTML;
-                    res.set('Content-Type', "image/svg+xml");
-                    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-                    res.send(svgHtml);
-                });
+            const data = JSON.parse(content);
+
+            const svg = data.svg || '<svg />'
+            res.set('Content-Type', "image/svg+xml");
+            res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.send(svg);
         } catch(err) {
             res.status(500).send("there was an error parsing excalidraw to svg");
         }
