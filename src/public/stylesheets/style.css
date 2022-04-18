@@ -379,6 +379,10 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     font-size: var(--main-font-size) !important;
 }
 
+.tooltip .arrow {
+    display: none;
+}
+
 .tooltip-inner {
     padding: 15px;
     background-color: var(--tooltip-background-color) !important;
