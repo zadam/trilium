@@ -17,6 +17,7 @@ const becca = require('../becca/becca');
 const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
+const TaskContext = require("./task_context.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -525,69 +526,6 @@ function updateNote(noteId, noteUpdates) {
 }
 
 /**
- * @param {Branch} branch
- * @param {string|null} deleteId
- * @param {TaskContext} taskContext
- *
- * @return {boolean} - true if note has been deleted, false otherwise
- */
-function deleteBranch(branch, deleteId, taskContext) {
-    taskContext.increaseProgressCount();
-
-    if (!branch) {
-        return false;
-    }
-
-    if (branch.branchId === 'root'
-        || branch.noteId === 'root'
-        || branch.noteId === cls.getHoistedNoteId()) {
-
-        throw new Error("Can't delete root or hoisted branch/note");
-    }
-
-    branch.markAsDeleted(deleteId);
-
-    const note = branch.getNote();
-    const notDeletedBranches = note.getParentBranches();
-
-    if (notDeletedBranches.length === 0) {
-        for (const childBranch of note.getChildBranches()) {
-            deleteBranch(childBranch, deleteId, taskContext);
-        }
-
-        // first delete children and then parent - this will show up better in recent changes
-
-        log.info("Deleting note " + note.noteId);
-
-        for (const attribute of note.getOwnedAttributes()) {
-            attribute.markAsDeleted(deleteId);
-        }
-
-        for (const relation of note.getTargetRelations()) {
-            relation.markAsDeleted(deleteId);
-        }
-
-        note.markAsDeleted(deleteId);
-
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-/**
- * @param {Note} note
- * @param {string|null} deleteId
- * @param {TaskContext} taskContext
- */
-function deleteNote(note, deleteId, taskContext) {
-    for (const branch of note.getParentBranches()) {
-        deleteBranch(branch, deleteId, taskContext);
-    }
-}
-
-/**
  * @param {string} noteId
  * @param {TaskContext} taskContext
  */
@@ -938,8 +876,6 @@ module.exports = {
     createNewNote,
     createNewNoteWithTarget,
     updateNote,
-    deleteBranch,
-    deleteNote,
     undeleteNote,
     protectNoteRecursively,
     scanForLinks,

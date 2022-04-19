@@ -71,7 +71,7 @@ function register(router) {
             return res.sendStatus(204);
         }
 
-        noteService.deleteBranch(branch, null, new TaskContext('no-progress-reporting'));
+        branch.deleteBranch();
 
         res.sendStatus(204);
     });
