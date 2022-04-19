@@ -10,7 +10,7 @@ const TPL = `
     <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
         <style type="text/css">
         .excalidraw .App-menu_top .buttonList {
-            /*display: flex;*/
+            display: flex;
         }
 
         .excalidraw-wrapper {
