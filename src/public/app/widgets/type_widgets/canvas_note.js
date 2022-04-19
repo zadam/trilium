@@ -6,9 +6,6 @@ import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
 import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 
-// NoteContextAwareWidget does not handle loading/refreshing of note context
-// import NoteContextAwareWidget from "../note_context_aware_widget.js";
-
 const TPL = `
     <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
         <style type="text/css">
@@ -34,30 +31,6 @@ const TPL = `
 `;
 
 /**
- * FIXME: Buttons from one excalidraw get activated. Problems with instance?! (maybe it is only visually, once
- *        mouse is over one instance they change?)
- */
-/**
- * FIXME: FONTS from unpkg.com are loaded. Change font to HELVETICA? 
- *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
- */
-/**
- * upon insterting a screenshot/image, we get a chunk load error. somehow our excalidraw.js is thinking about a 
- * chunck, hosted on unpkg.com
- * 
- * VM18070:2          GET https://unpkg.com/@excalidraw/excalidraw@0.11.0/dist/excalidraw-assets/vendor-41e5c0be76c29ad2aba4.js net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep 200
-VM18070:2 error trying to resing image file on insertion ChunkLoadError: Loading chunk 736 failed.
-(error: https://unpkg.com/@excalidraw/excalidraw@0.11.0/dist/excalidraw-assets/vendor-41e5c0be76c29ad2aba4.js)
-    at Object.c.f.j (<anonymous>:2:667361)
-    at <anonymous>:2:663588
- */
-/**
- * Discussion?: add complete @excalidraw/excalidraw, utils, react, react-dom as library? maybe also node_modules?
- * Result: as of know, most dependencies are manually. however no special preference is given.
- * Result2: since excalidraw to svg rendering in node is not really working, we can easily do a manual dependency
- *          management of excalidraw and react.
- */
-/**
  * ## Excalidraw and SVG
  * 2022-04-16 - @thfrei
  * 
@@ -80,6 +53,15 @@ VM18070:2 error trying to resing image file on insertion ChunkLoadError: Loading
  * Con: The note will get bigger (maybe +30%?), we will generate more bandwith. 
  *      (However, using trilium desktop instance, does not care too much about bandwidth. Size increase is probably
  *       acceptable, as a trade off.)
+ */
+/**
+ * FIXME: Buttons from one excalidraw get activated. Problems with instance?! (maybe it is only visually, once
+ *        mouse is over one instance they change?)
+ */
+/**
+ * FIXME: FONTS from unpkg.com are loaded. Change font to HELVETICA? 
+ *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
+ * => window.EXCALIDRAW_ASSET_PATH is set, however svg still contains wrong link (to excalidraw.com)
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
@@ -123,7 +105,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     /**
      * (trilium)
-     * 
      * @returns {string} "canvas-note"
      */
     static getType() {
@@ -204,6 +185,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             
             this.excalidrawRef.current.updateScene(sceneData);
         }
+
         /**
          * load saved content into excalidraw canvas
          */
@@ -226,7 +208,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 const sceneData = {
                     elements, 
                     appState,
-                    // appState: {},
                     collaborators: []
                 };
 
@@ -246,7 +227,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
 
                 this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
-                this.log("doRefresh sceneVersion", window.Excalidraw.getSceneVersion(elements));
 
                 this.excalidrawRef.current.updateScene(sceneData);
                 this.excalidrawRef.current.addFiles(fileArray);
@@ -287,22 +267,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             metadata: 'trilium-export',
             files
         });
-
+        const svgString = svg.outerHTML;
         /**
-         * Trials for png
+         * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged
          */
-        // const png = await window.Excalidraw.exportToBlob(await window.Excalidraw.exportToCanvas({
-        //     elements,
-        //     appState,
-        //     files
-        // }))
-        // function blobToBase64(blob) {
-        //     return new Promise((resolve, _) => {
-        //         const reader = new FileReader();
-        //         reader.onloadend = () => resolve(reader.result);
-        //         reader.readAsDataURL(blob);
-        //     });
-        // }
+        const svgSafeString =svgString.replaceAll("https://excalidraw.com/", window.EXCALIDRAW_ASSET_PATH+"excalidraw-assets/");
 
         const activeFiles = {};
         elements.forEach((element) => {
@@ -312,15 +281,17 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
-            _meta: "This note has type `canvas-note`. It uses excalidraw to render.",
-            elements,
-            appState,
-            files: activeFiles,
-            svg: svg.outerHTML,
-            // png: await blobToBase64(png),
+            _meta: "This note has type `canvas-note`. It uses excalidraw and stores an exported svg alongside.",
+            elements, // excalidraw
+            appState, // excalidraw
+            files: activeFiles, // excalidraw
+            svg: svgSafeString, // rendered on every save, not needed for excalidraw
         };
 
-        return JSON.stringify(content);
+        const contentString = JSON.stringify(content);
+        this.log("getContent note size content.svg/content", `~${content.svg.length/1024}kB/${contentString.length/1024}kB`, content.svg.length/contentString.length, "% of svg");
+
+        return contentString;
     }
 
     /**
@@ -340,8 +311,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
         // make sure only when a new element is added, we actually save something.
         const isNewSceneVersion = this.isNewSceneVersion();
-        // FIXME: however, we might want to make an exception, if viewport changed, since viewport
-        //        is desired to save? (add)
+        /**
+         * FIXME: however, we might want to make an exception, if viewport changed, since viewport
+         *        is desired to save? (add) and appState background, and some things
+         */
 
         // upon updateScene, onchange is called, even though "nothing really changed" that is worth saving
         const isNotInitialScene = this.currentSceneVersion !== -1;
@@ -353,7 +326,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             this.saveData();
         } else {
             // do nothing
-            this.log("onChangeHandler() no update", isNewSceneVersion, isNotInitialScene);
         }
     }
 
@@ -393,9 +365,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             };
             
             window.addEventListener("resize", onResize);
-            // ensure that resize is also called for split creation and deletion
-            // not really the problem. problem is saved appState!
-            // self.$renderElement.addEventListener("resize", onResize);
             
             return () => window.removeEventListener("resize", onResize);
         }, [excalidrawWrapperRef]);
@@ -462,7 +431,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     //         ));
                     // }, 
                     onLinkOpen,
-                    // libraryReturnUrl: 'http://localhost:8080', // not working
                 })
             )
         );
@@ -489,9 +457,13 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     getSceneVersion() {
-        const elements = this.excalidrawRef.current.getSceneElements();
-        const sceneVersion = window.Excalidraw.getSceneVersion(elements);
-        return sceneVersion;
+        if (this.excalidrawRef) {
+            const elements = this.excalidrawRef.current.getSceneElements();
+            const sceneVersion = window.Excalidraw.getSceneVersion(elements);
+            return sceneVersion;
+        } else {
+            return -2;
+        }
     }
 
     updateSceneVersion() {
