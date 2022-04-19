@@ -238,7 +238,7 @@ class Note extends AbstractEntity {
 
     setContent(content, ignoreMissingProtectedSession = false) {
         if (content === null || content === undefined) {
-            throw new Error(`Cannot set null content to note ${this.noteId}`);
+            throw new Error(`Cannot set null content to note '${this.noteId}'`);
         }
 
         if (this.isStringNote()) {
@@ -260,7 +260,7 @@ class Note extends AbstractEntity {
                 pojo.content = protectedSessionService.encrypt(pojo.content);
             }
             else if (!ignoreMissingProtectedSession) {
-                throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
+                throw new Error(`Cannot update content of noteId '${this.noteId}' since we're out of protected session.`);
             }
         }
 

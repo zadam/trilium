@@ -67,7 +67,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
     const parentNote = becca.notes[parentNoteId];
 
     if (!childNote) {
-        log.info(`Cannot find note in cache for noteId ${childNoteId}`);
+        log.info(`Cannot find note in cache for noteId '${childNoteId}'`);
         return "[error fetching title]";
     }
 
@@ -162,7 +162,7 @@ function getNotePath(noteId) {
     const note = becca.notes[noteId];
 
     if (!note) {
-        console.trace(`Cannot find note ${noteId} in cache.`);
+        console.trace(`Cannot find note '${noteId}' in cache.`);
         return;
     }
 

@@ -76,7 +76,7 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -89,7 +89,7 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -110,7 +110,7 @@ function register(router) {
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${req.params.noteId}' not found`);
         }
         else if (image.type !== 'image') {
             return res.status(400).send("Requested note is not an image");
@@ -129,7 +129,7 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);

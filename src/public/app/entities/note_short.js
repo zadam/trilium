@@ -124,7 +124,7 @@ class NoteShort {
             return JSON.parse(content);
         }
         catch (e) {
-            console.log(`Cannot parse content of note ${this.noteId}: `, e.message);
+            console.log(`Cannot parse content of note '${this.noteId}': `, e.message);
 
             return null;
         }

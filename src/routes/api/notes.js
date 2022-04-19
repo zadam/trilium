@@ -96,7 +96,7 @@ function sortChildNotes(req) {
     const noteId = req.params.noteId;
     const {sortBy, sortDirection} = req.body;
 
-    log.info(`Sorting ${noteId} children with ${sortBy} ${sortDirection}`);
+    log.info(`Sorting '${noteId}' children with ${sortBy} ${sortDirection}`);
 
     const reverse = sortDirection === 'desc';
 
@@ -196,11 +196,11 @@ function changeTitle(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} has not been found`];
+        return [404, `Note '${noteId}' has not been found`];
     }
 
     if (!note.isContentAvailable()) {
-        return [400, `Note ${noteId} is not available for change`];
+        return [400, `Note '${noteId}' is not available for change`];
     }
 
     const noteTitleChanged = note.title !== title;
@@ -289,10 +289,10 @@ function uploadModifiedFile(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} has not been found`];
+        return [404, `Note '${noteId}' has not been found`];
     }
 
-    log.info(`Updating note ${noteId} with content from ${filePath}`);
+    log.info(`Updating note '${noteId}' with content from ${filePath}`);
 
     noteRevisionService.createNoteRevision(note);
 

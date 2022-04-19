@@ -139,7 +139,7 @@ function createNewNote(params) {
         triggerNoteTitleChanged(note);
         triggerChildNoteCreated(note, parentNote);
 
-        log.info(`Created new note ${note.noteId}, branch ${branch.branchId} of type ${note.type}, mime ${note.mime}`);
+        log.info(`Created new note '${note.noteId}', branch '${branch.branchId}' of type '${note.type}', mime '${note.mime}'`);
 
         return {
             note,
@@ -285,10 +285,10 @@ async function downloadImage(noteId, imageUrl) {
 
         imageUrlToNoteIdMapping[imageUrl] = note.noteId;
 
-        log.info(`Download of ${imageUrl} succeeded and was saved as image note ${note.noteId}`);
+        log.info(`Download of '${imageUrl}' succeeded and was saved as image note '${note.noteId}'`);
     }
     catch (e) {
-        log.error(`Download of ${imageUrl} for note ${noteId} failed with error: ${e.message} ${e.stack}`);
+        log.error(`Download of '${imageUrl}' for note '${noteId}' failed with error: ${e.message} ${e.stack}`);
     }
 }
 
@@ -373,7 +373,7 @@ function downloadImages(noteId, content) {
                 const origNote = becca.getNote(noteId);
 
                 if (!origNote) {
-                    log.error(`Cannot find note ${noteId} to replace image link.`);
+                    log.error(`Cannot find note '${noteId}' to replace image link.`);
                     return;
                 }
 
@@ -394,7 +394,7 @@ function downloadImages(noteId, content) {
 
                     scanForLinks(origNote);
 
-                    console.log(`Fixed the image links for note ${noteId} to the offline saved.`);
+                    console.log(`Fixed the image links for note '${noteId}' to the offline saved.`);
                 }
             });
         }, 5000);
@@ -491,7 +491,7 @@ function updateNote(noteId, noteUpdates) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
-        throw new Error(`Note ${noteId} is not available for change!`);
+        throw new Error(`Note '${noteId}' is not available for change!`);
     }
 
     saveNoteRevision(note);
@@ -533,7 +533,7 @@ function undeleteNote(noteId, taskContext) {
     const note = sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!note.isDeleted) {
-        log.error(`Note ${noteId} is not deleted and thus cannot be undeleted.`);
+        log.error(`Note '${noteId}' is not deleted and thus cannot be undeleted.`);
         return;
     }
 
