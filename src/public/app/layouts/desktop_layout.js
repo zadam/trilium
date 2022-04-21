@@ -48,6 +48,7 @@ import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
 import BacklinksWidget from "../widgets/backlinks.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
+import TocWidget from "../widgets/toc.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -168,6 +169,7 @@ export default class DesktopLayout {
                     )
                     .child(new RightPaneContainer()
                         .child(...this.customWidgets.get('right-pane'))
+                        .child(new TocWidget())
                     )
                 )
             );
