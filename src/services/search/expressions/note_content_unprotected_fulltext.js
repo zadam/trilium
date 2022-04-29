@@ -8,7 +8,7 @@ const utils = require("../../utils");
 
 // FIXME: create common subclass with NoteContentProtectedFulltextExp to avoid duplication
 class NoteContentUnprotectedFulltextExp extends Expression {
-    constructor(operator, tokens, raw) {
+    constructor(operator, {tokens, raw, flatText}) {
         super();
 
         if (operator !== '*=*') {
@@ -17,6 +17,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
 
         this.tokens = tokens;
         this.raw = !!raw;
+        this.flatText = !!flatText;
     }
 
     execute(inputNoteSet) {
@@ -35,7 +36,17 @@ class NoteContentUnprotectedFulltextExp extends Expression {
 
             content = this.preprocessContent(content, type, mime);
 
-            if (!this.tokens.find(token => !content.includes(token))) {
+            const nonMatchingToken = this.tokens.find(token =>
+                !content.includes(token) &&
+                (
+                    // in case of default fulltext search we should consider both title, attrs and content
+                    // so e.g. "hello world" should match when "hello" is in title and "world" in content
+                    !this.flatText
+                    || !becca.notes[noteId].getFlatText().includes(token)
+                )
+            );
+
+            if (!nonMatchingToken) {
                 resultNoteSet.add(becca.notes[noteId]);
             }
         }
