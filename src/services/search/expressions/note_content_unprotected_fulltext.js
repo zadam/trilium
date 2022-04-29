@@ -27,7 +27,7 @@ class NoteContentUnprotectedFulltextExp extends Expression {
         for (let {noteId, type, mime, content} of sql.iterateRows(`
                 SELECT noteId, type, mime, content 
                 FROM notes JOIN note_contents USING (noteId) 
-                WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 0`)) {
+                WHERE type IN ('text', 'code', 'mermaid') AND isDeleted = 0 AND isProtected = 0`)) {
 
             if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
