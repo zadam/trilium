@@ -62,9 +62,9 @@ function register(router) {
     });
 
     router.get('/share/:shareId', (req, res, next) => {
-        const {shareId} = req.params;
-
         shacaLoader.ensureLoad();
+
+        const {shareId} = req.params;
 
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
@@ -72,6 +72,8 @@ function register(router) {
     });
 
     router.get('/share/api/notes/:noteId', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
@@ -85,6 +87,8 @@ function register(router) {
     });
 
     router.get('/share/api/notes/:noteId/download', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
@@ -107,6 +111,8 @@ function register(router) {
     });
 
     router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
@@ -118,13 +124,15 @@ function register(router) {
 
         addNoIndexHeader(image, res);
 
-        res.set('Content-Type', image.mime);
+        res.setHeader('Content-Type', image.mime);
 
         res.send(image.getContent());
     });
 
     // used for PDF viewing
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
