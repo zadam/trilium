@@ -336,15 +336,42 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
      * @method
-     * @param callback - method receiving "textEditor" instance
+     * @param [callback] - deprecated (use returned promise): callback receiving "textEditor" instance
+     * @returns {Promise<CKEditor>} instance of CKEditor
      */
-    this.getActiveTabTextEditor = callback => appContext.triggerCommand('executeInActiveEditor', {callback});
+    this.getActiveTabTextEditor = callback => new Promise(resolve => appContext.triggerCommand('executeInActiveTextEditor', {callback, resolve}));
+
+    /**
+     * See https://codemirror.net/doc/manual.html#api
+     *
+     * @method
+     * @returns {Promise<CodeMirror>} instance of CodeMirror
+     */
+    this.getActiveTabCodeEditor = () => new Promise(resolve => appContext.triggerCommand('executeInActiveCodeEditor', {callback: resolve}));
+
+    /**
+     * Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
+     * implementation of actual widget type.
+     *
+     * @method
+     * @returns {Promise<NoteDetailWidget>}
+     */
+    this.getActiveNoteDetailWidget = () => new Promise(resolve => appContext.triggerCommand('executeInActiveNoteDetailWidget', {callback: resolve}));
 
     /**
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
     this.getActiveTabNotePath = () => appContext.tabManager.getActiveContextNotePath();
+
+    /**
+     * Returns component which owns given DOM element (the nearest parent component in DOM tree)
+     *
+     * @method
+     * @param {Element} el - DOM element
+     * @returns {Component}
+     */
+    this.getComponentByEl = el => appContext.getComponentByEl(el);
 
     /**
      * @method

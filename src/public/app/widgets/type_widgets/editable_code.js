@@ -170,4 +170,14 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             });
         }
     }
+
+    async executeInActiveCodeEditorEvent({callback}) {
+        if (!this.isActive()) {
+            return;
+        }
+
+        await this.initialized;
+
+        callback(this.codeEditor);
+    }
 }
