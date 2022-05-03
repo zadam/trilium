@@ -8,6 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity");
 const NoteRevision = require("./note_revision");
+const TaskContext = require("../../services/task_context.js");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -237,7 +238,7 @@ class Note extends AbstractEntity {
 
     setContent(content, ignoreMissingProtectedSession = false) {
         if (content === null || content === undefined) {
-            throw new Error(`Cannot set null content to note ${this.noteId}`);
+            throw new Error(`Cannot set null content to note '${this.noteId}'`);
         }
 
         if (this.isStringNote()) {
@@ -259,7 +260,7 @@ class Note extends AbstractEntity {
                 pojo.content = protectedSessionService.encrypt(pojo.content);
             }
             else if (!ignoreMissingProtectedSession) {
-                throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
+                throw new Error(`Cannot update content of noteId '${this.noteId}' since we're out of protected session.`);
             }
         }
 
@@ -1123,6 +1124,26 @@ class Note extends AbstractEntity {
         const branch = this.becca.getNote(parentNoteId).getParentBranches()[0];
 
         return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
+    }
+
+    /**
+     * (Soft) delete a note and all its descendants.
+     *
+     * @param {string} [deleteId] - optional delete identified
+     * @param {TaskContext} [taskContext]
+     */
+    deleteNote(deleteId, taskContext) {
+        if (!deleteId) {
+            deleteId = utils.randomString(10);
+        }
+
+        if (!taskContext) {
+            taskContext = new TaskContext('no-progress-reporting');
+        }
+
+        for (const branch of this.getParentBranches()) {
+            branch.deleteBranch(deleteId, taskContext);
+        }
     }
 
     decrypt() {

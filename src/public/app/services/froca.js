@@ -179,7 +179,7 @@ class Froca {
         const searchResultNoteIds = await server.get('search-note/' + note.noteId);
 
         if (!Array.isArray(searchResultNoteIds)) {
-            throw new Error(`Search note ${note.noteId} failed: ${searchResultNoteIds}`);
+            throw new Error(`Search note '${note.noteId}' failed: ${searchResultNoteIds}`);
         }
 
         // reset all the virtual branches from old search results
@@ -254,7 +254,7 @@ class Froca {
             return null;
         }
         else if (!noteId) {
-            console.trace(`Falsy noteId ${noteId}, returning null.`);
+            console.trace(`Falsy noteId '${noteId}', returning null.`);
             return null;
         }
 
@@ -312,7 +312,7 @@ class Froca {
         if (!this.noteComplementPromises[noteId]) {
             this.noteComplementPromises[noteId] = server.get('notes/' + noteId)
                 .then(row => new NoteComplement(row))
-                .catch(e => console.error(`Cannot get note complement for note ${noteId}`));
+                .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
 
             // we don't want to keep large payloads forever in memory so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)

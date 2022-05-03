@@ -4,6 +4,10 @@ const Note = require('./note');
 const AbstractEntity = require("./abstract_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
+const utils = require("../../services/utils.js");
+const TaskContext = require("../../services/task_context.js");
+const cls = require("../../services/cls.js");
+const log = require("../../services/log.js");
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
@@ -112,6 +116,63 @@ class Branch extends AbstractEntity {
 
     get isDeleted() {
         return !(this.branchId in this.becca.branches);
+    }
+
+    /**
+     * Delete a branch. If this is a last note's branch, delete the note as well.
+     *
+     * @param {string} [deleteId] - optional delete identified
+     * @param {TaskContext} [taskContext]
+     *
+     * @return {boolean} - true if note has been deleted, false otherwise
+     */
+    deleteBranch(deleteId, taskContext) {
+        if (!deleteId) {
+            deleteId = utils.randomString(10);
+        }
+
+        if (!taskContext) {
+            taskContext = new TaskContext('no-progress-reporting');
+        }
+
+        taskContext.increaseProgressCount();
+
+        if (this.branchId === 'root'
+            || this.noteId === 'root'
+            || this.noteId === cls.getHoistedNoteId()) {
+
+            throw new Error("Can't delete root or hoisted branch/note");
+        }
+
+        this.markAsDeleted(deleteId);
+
+        const note = this.getNote();
+        const notDeletedBranches = note.getParentBranches();
+
+        if (notDeletedBranches.length === 0) {
+            for (const childBranch of note.getChildBranches()) {
+                childBranch.deleteBranch(deleteId, taskContext);
+            }
+
+            // first delete children and then parent - this will show up better in recent changes
+
+            log.info("Deleting note " + note.noteId);
+
+            for (const attribute of note.getOwnedAttributes()) {
+                attribute.markAsDeleted(deleteId);
+            }
+
+            for (const relation of note.getTargetRelations()) {
+                relation.markAsDeleted(deleteId);
+            }
+
+            note.markAsDeleted(deleteId);
+
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     beforeSaving() {

@@ -98,7 +98,7 @@ function register(router) {
             return res.sendStatus(204);
         }
 
-        noteService.deleteNote(note, null, new TaskContext('no-progress-reporting'));
+        note.deleteNote(null, new TaskContext('no-progress-reporting'));
 
         res.sendStatus(204);
     });

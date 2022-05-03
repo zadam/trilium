@@ -62,9 +62,9 @@ function register(router) {
     });
 
     router.get('/share/:shareId', (req, res, next) => {
-        const {shareId} = req.params;
-
         shacaLoader.ensureLoad();
+
+        const {shareId} = req.params;
 
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
@@ -72,11 +72,13 @@ function register(router) {
     });
 
     router.get('/share/api/notes/:noteId', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -85,11 +87,13 @@ function register(router) {
     });
 
     router.get('/share/api/notes/:noteId/download', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -106,11 +110,13 @@ function register(router) {
         res.send(note.getContent());
     });
 
-    router.get(['/share/api/images/:noteId/:filename', '/share/api/images/:noteId'], (req, res, next) => {
+    router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${req.params.noteId}' not found`);
         }
         else if (!["image", "canvas-note"].includes(image.type)) {
             return res.status(400).send("Requested note is not a shareable image");
@@ -123,6 +129,7 @@ function register(router) {
             try {
                 const data = JSON.parse(content)
                 const svg = data.svg || '<svg />'
+                addNoIndexHeader(image, res);
                 res.set('Content-Type', "image/svg+xml");
                 res.set("Cache-Control", "no-cache, no-store, must-revalidate");
                 res.send(svg);
@@ -132,19 +139,20 @@ function register(router) {
         } else {
             // normal image
             res.set('Content-Type', image.mime);
-
+            addNoIndexHeader(image, res);
             res.send(image.getContent());
         }
-
     });
 
     // used for PDF viewing
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
+        shacaLoader.ensureLoad();
+
         const {noteId} = req.params;
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note ${noteId} not found`);
+            return res.status(404).send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);

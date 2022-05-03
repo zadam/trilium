@@ -32,8 +32,8 @@ function getFulltext(tokens, searchContext) {
     if (!searchContext.fastSearch) {
         return new OrExp([
             new NoteFlatTextExp(tokens),
-            new NoteContentProtectedFulltextExp('*=*', tokens),
-            new NoteContentUnprotectedFulltextExp('*=*', tokens)
+            new NoteContentProtectedFulltextExp('*=*', {tokens, flatText: true}),
+            new NoteContentUnprotectedFulltextExp('*=*', {tokens, flatText: true})
         ]);
     }
     else {
@@ -141,8 +141,8 @@ function getExpression(tokens, searchContext, level = 0) {
             i++;
 
             return new OrExp([
-                new NoteContentUnprotectedFulltextExp(operator, [tokens[i].token], raw),
-                new NoteContentProtectedFulltextExp(operator, [tokens[i].token], raw)
+                new NoteContentUnprotectedFulltextExp(operator, {tokens: [tokens[i].token], raw }),
+                new NoteContentProtectedFulltextExp(operator, {tokens: [tokens[i].token], raw })
             ]);
         }
 
@@ -196,8 +196,8 @@ function getExpression(tokens, searchContext, level = 0) {
 
             return new OrExp([
                 new PropertyComparisonExp(searchContext, 'title', '*=*', tokens[i].token),
-                new NoteContentProtectedFulltextExp('*=*', [tokens[i].token]),
-                new NoteContentUnprotectedFulltextExp('*=*', [tokens[i].token])
+                new NoteContentProtectedFulltextExp('*=*', {tokens: [tokens[i].token]}),
+                new NoteContentUnprotectedFulltextExp('*=*', {tokens: [tokens[i].token]})
             ]);
         }
 

@@ -10,7 +10,7 @@ const utils = require("../../utils");
 
 // FIXME: create common subclass with NoteContentUnprotectedFulltextExp to avoid duplication
 class NoteContentProtectedFulltextExp extends Expression {
-    constructor(operator, tokens, raw) {
+    constructor(operator, {tokens, raw, flatText}) {
         super();
 
         if (operator !== '*=*') {
@@ -19,6 +19,7 @@ class NoteContentProtectedFulltextExp extends Expression {
 
         this.tokens = tokens;
         this.raw = !!raw;
+        this.flatText = !!flatText;
     }
 
     execute(inputNoteSet) {
@@ -33,7 +34,7 @@ class NoteContentProtectedFulltextExp extends Expression {
         for (let {noteId, type, mime, content} of sql.iterateRows(`
                 SELECT noteId, type, mime, content 
                 FROM notes JOIN note_contents USING (noteId) 
-                WHERE type IN ('text', 'code') AND isDeleted = 0 AND isProtected = 1`)) {
+                WHERE type IN ('text', 'code', 'mermaid') AND isDeleted = 0 AND isProtected = 1`)) {
 
             if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
@@ -49,7 +50,17 @@ class NoteContentProtectedFulltextExp extends Expression {
 
             content = this.preprocessContent(content, type, mime);
 
-            if (!this.tokens.find(token => !content.includes(token))) {
+            const nonMatchingToken = this.tokens.find(token =>
+                !content.includes(token) &&
+                (
+                    // in case of default fulltext search we should consider both title, attrs and content
+                    // so e.g. "hello world" should match when "hello" is in title and "world" in content
+                    !this.flatText
+                    || !becca.notes[noteId].getFlatText().includes(token)
+                )
+            );
+
+            if (!nonMatchingToken) {
                 resultNoteSet.add(becca.notes[noteId]);
             }
         }

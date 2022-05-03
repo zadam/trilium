@@ -89,8 +89,7 @@ function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
             throw new Error(`Cannot remove branch ${branch.branchId} between child ${noteId} and parent ${parentNoteId} because this would delete the note as well.`);
         }
 
-        const deleteId = utils.randomString(10);
-        noteService.deleteBranch(branch, deleteId, new TaskContext());
+        branch.deleteBranch();
 
         log.info(`Ensured note ${noteId} is NOT in parent note ${parentNoteId}`);
     }

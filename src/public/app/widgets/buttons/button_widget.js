@@ -71,7 +71,6 @@ export default class ButtonWidget extends NoteContextAwareWidget {
         }
 
         this.$widget
-            .attr("title", this.settings.title)
             .addClass(this.settings.icon);
     }
 
