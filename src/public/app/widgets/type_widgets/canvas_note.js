@@ -54,15 +54,6 @@ const TPL = `
  *      (However, using trilium desktop instance, does not care too much about bandwidth. Size increase is probably
  *       acceptable, as a trade off.)
  */
-/**
- * FIXME: Buttons from one excalidraw get activated. Problems with instance?! (maybe it is only visually, once
- *        mouse is over one instance they change?)
- */
-/**
- * FIXME: FONTS from unpkg.com are loaded. Change font to HELVETICA? 
- *        See: https://www.npmjs.com/package/@excalidraw/excalidraw => FONT_FAMILY
- * => window.EXCALIDRAW_ASSET_PATH is set, however svg still contains wrong link (to excalidraw.com)
- */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
         super();
@@ -418,18 +409,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     detectScroll: false,
                     handleKeyboardGlobally: false,
                     autoFocus: true,
-                    // renderTopRightUI: () => {
-                    //     return React.createElement(
-                    //         React.Fragment,
-                    //         null,
-                    //         React.createElement(
-                    //             "div",
-                    //             {
-                    //                 className: "excalidraw-top-right-ui",
-                    //             },
-                    //             synchronized?"✔️":"⏳ unsaved changes"
-                    //         ));
-                    // }, 
                     onLinkOpen,
                 })
             )

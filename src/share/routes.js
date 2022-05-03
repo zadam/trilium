@@ -122,13 +122,14 @@ function register(router) {
             return res.status(400).send("Requested note is not a shareable image");
         } else if (image.type === "canvas-note") {
             /**
-             * FIXME: deduplicate the code from api/image.js
+             * special "image" type. the canvas-note is actually type application/json 
+             * to avoid bitrot and enable usage as referenced image the svg is included.
              */
-            // render the svg in node.js using excalidraw and jsdom
             const content = image.getContent();
             try {
-                const data = JSON.parse(content)
-                const svg = data.svg || '<svg />'
+                const data = JSON.parse(content);
+
+                const svg = data.svg || '<svg />';
                 addNoIndexHeader(image, res);
                 res.set('Content-Type', "image/svg+xml");
                 res.set("Cache-Control", "no-cache, no-store, must-revalidate");

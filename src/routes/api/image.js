@@ -20,15 +20,14 @@ function returnImage(req, res) {
     }
 
     /**
-     * special "image" type. the canvas-note is actually type application/json but can be
-     * rendered on the fly to svg.
+     * special "image" type. the canvas-note is actually type application/json 
+     * to avoid bitrot and enable usage as referenced image the svg is included.
      */
     if (image.type === 'canvas-note') {
-        // render the svg in node.js using excalidraw and jsdom
         const content = image.getContent();
         try {
             const data = JSON.parse(content);
-
+            
             const svg = data.svg || '<svg />'
             res.set('Content-Type', "image/svg+xml");
             res.set("Cache-Control", "no-cache, no-store, must-revalidate");
