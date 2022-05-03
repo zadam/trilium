@@ -45,19 +45,7 @@ const App = () => {
             {
                 className: "excalidraw-wrapper",
                 ref: excalidrawWrapperRef
-            },
-            React.createElement(
-                "label",
-                null,
-                React.createElement("input", {
-                  type: "checkbox",
-                  checked: viewModeEnabled,
-                  onChange: () => setViewModeEnabled(!viewModeEnabled)
-                }),
-                " Edit mode "
-              ),
-              React.createElement("br"),
-        
+            },        
             React.createElement(Excalidraw.default, {
                 ref: excalidrawRef,
                 width: dimensions.width,
@@ -72,16 +60,32 @@ const App = () => {
                 detectScroll: false,
                 handleKeyboardGlobally: false,
                 autoFocus: true,
-                renderTopRightUI: () => {
+                renderFooter: () => {
                     return React.createElement(
                         React.Fragment,
                         null,
                         React.createElement(
                             "div",
                             {
-                                className: "excalidraw-top-right-ui",
+                                className: "excalidraw-top-right-ui excalidraw Island",
                             },
-                            "view mode"
+                            React.createElement(
+                                "label",
+                                {
+                                    style: {
+                                        padding: "5px",
+                                    },
+                                    className: "excalidraw Stack",
+                                },
+                                React.createElement(
+                                    "button", 
+                                    {
+                                        onClick: () => setViewModeEnabled(!viewModeEnabled)
+                                    }, 
+                                    viewModeEnabled ? " Enter simple view mode " : " Enter extended view mode "
+                                ),
+                                ""
+                            ),
                         ));
                 },
             })

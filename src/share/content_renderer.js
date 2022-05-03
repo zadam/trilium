@@ -105,13 +105,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         content = `<div>
             <script>
-            const {elements, appState, files} = JSON.parse(${JSON.stringify(content)});
-            window.triliumExcalidraw = {elements, appState, files}
+                const {elements, appState, files} = JSON.parse(${JSON.stringify(content)});
+                window.triliumExcalidraw = {elements, appState, files}
             </script>
-            <div id="excalidraw-app">
-            </div>
+            <div id="excalidraw-app"></div>
             <hr>
-            <a href="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">Download SVG</a>
+            <a href="api/images/${note.noteId}/${note.title}?utc=${note.utcDateModified}">Get Image Link</a>
             <script src="../../libraries/excalidraw/canvas_note_share.js"></script>
         </div>`;
     }
