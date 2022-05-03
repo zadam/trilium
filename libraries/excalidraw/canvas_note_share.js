@@ -8,6 +8,7 @@ const App = () => {
         width: undefined,
         height: appState.height,
     });
+    const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
     console.log("no render?");
     
     /**
@@ -45,6 +46,18 @@ const App = () => {
                 className: "excalidraw-wrapper",
                 ref: excalidrawWrapperRef
             },
+            React.createElement(
+                "label",
+                null,
+                React.createElement("input", {
+                  type: "checkbox",
+                  checked: viewModeEnabled,
+                  onChange: () => setViewModeEnabled(!viewModeEnabled)
+                }),
+                " Edit mode "
+              ),
+              React.createElement("br"),
+        
             React.createElement(Excalidraw.default, {
                 ref: excalidrawRef,
                 width: dimensions.width,
@@ -52,7 +65,7 @@ const App = () => {
                 initialData: {
                     elements, appState, files
                 },
-                viewModeEnabled: true,
+                viewModeEnabled: !viewModeEnabled,
                 zenModeEnabled: false,
                 gridModeEnabled: false,
                 isCollaborating: false,

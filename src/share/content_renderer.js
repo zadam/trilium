@@ -110,8 +110,10 @@ document.addEventListener("DOMContentLoaded", function() {
             </script>
             <div id="excalidraw-app">
             </div>
+            <hr>
+            <a href="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">Download SVG</a>
             <script src="../../libraries/excalidraw/canvas_note_share.js"></script>
-        </div>`;        
+        </div>`;
     }
     else {
         content = '<p>This note type cannot be displayed.</p>';
@@ -127,7 +129,3 @@ document.addEventListener("DOMContentLoaded", function() {
 module.exports = {
     getContent
 };
-
-
-
-
