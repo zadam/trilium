@@ -1,11 +1,12 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
-import appContext from "../../services/app_context.js";
-import sleep from './canvas-note-utils/sleep.js';
+import utils from '../../services/utils.js';
 import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
 import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 import replaceExternalAssets from "./canvas-note-utils/replaceExternalAssets.js";
+
+const {sleep} = utils;
 
 const TPL = `
     <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
