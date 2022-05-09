@@ -1671,7 +1671,7 @@
     
 
     
-    <h4 class="name" id="addTextToActiveTabEditor"><span class="type-signature"></span>addTextToActiveTabEditor<span class="signature">(text)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addTextToActiveContextEditor"><span class="type-signature"></span>addTextToActiveContextEditor<span class="signature">(text)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1772,7 +1772,146 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line327">line 327</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line340">line 340</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addTextToActiveTabEditor"><span class="type-signature"></span>addTextToActiveTabEditor<span class="signature">(text)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds given text to the editor cursor
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>text</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">this must be clear text, HTML is not supported.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use addTextToActiveContextEditor() instead</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line328">line 328</a>
     </li></ul></dd>
     
 
@@ -1928,7 +2067,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line484">line 484</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line531">line 531</a>
     </li></ul></dd>
     
 
@@ -2479,114 +2618,7 @@
     
 
     
-    <h4 class="name" id="getActiveNoteDetailWidget"><span class="type-signature"></span>getActiveNoteDetailWidget<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;NoteDetailWidget>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
-implementation of actual widget type.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line359">line 359</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;NoteDetailWidget></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getActiveTabCodeEditor"><span class="type-signature"></span>getActiveTabCodeEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;CodeMirror>}</span></h4>
+    <h4 class="name" id="getActiveContextCodeEditor"><span class="type-signature"></span>getActiveContextCodeEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;CodeMirror>}</span></h4>
     
 
     
@@ -2638,7 +2670,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line350">line 350</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line386">line 386</a>
     </li></ul></dd>
     
 
@@ -2696,7 +2728,7 @@ implementation of actual widget type.
     
 
     
-    <h4 class="name" id="getActiveTabNote"><span class="type-signature"></span>getActiveTabNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="NoteShort.html">NoteShort</a>}</span></h4>
+    <h4 class="name" id="getActiveContextNote"><span class="type-signature"></span>getActiveContextNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="NoteShort.html">NoteShort</a>}</span></h4>
     
 
     
@@ -2744,7 +2776,438 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line333">line 333</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line357">line 357</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    active note (loaded into right pane)
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="NoteShort.html">NoteShort</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getActiveContextNotePath"><span class="type-signature"></span>getActiveContextNotePath<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;(string|null)>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line412">line 412</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    returns note path of active note or null if there isn't active note
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(string|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getActiveContextTextEditor"><span class="type-signature"></span>getActiveContextTextEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;CKEditor>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line378">line 378</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    instance of CKEditor
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;CKEditor></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getActiveNoteDetailWidget"><span class="type-signature"></span>getActiveNoteDetailWidget<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;NoteDetailWidget>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
+implementation of actual widget type.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line395">line 395</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;NoteDetailWidget></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getActiveTabNote"><span class="type-signature"></span>getActiveTabNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="NoteShort.html">NoteShort</a>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use getActiveContextNote() instead</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line347">line 347</a>
     </li></ul></dd>
     
 
@@ -2838,6 +3301,8 @@ implementation of actual widget type.
     
 
     
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use getActiveContextNotePath() instead</li></ul></dd>
+    
 
     
 
@@ -2850,7 +3315,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line365">line 365</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line402">line 402</a>
     </li></ul></dd>
     
 
@@ -2908,7 +3373,7 @@ implementation of actual widget type.
     
 
     
-    <h4 class="name" id="getActiveTabTextEditor"><span class="type-signature"></span>getActiveTabTextEditor<span class="signature">(callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;CKEditor>}</span></h4>
+    <h4 class="name" id="getActiveTabTextEditor"><span class="type-signature"></span>getActiveTabTextEditor<span class="signature">(callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -2975,7 +3440,7 @@ implementation of actual widget type.
 
             
 
-            <td class="description last">deprecated (use returned promise): callback receiving "textEditor" instance</td>
+            <td class="description last">callback receiving "textEditor" instance</td>
         </tr>
 
     
@@ -3004,6 +3469,8 @@ implementation of actual widget type.
     
 
     
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use getActiveContextTextEditor()</li></ul></dd>
+    
 
     
 
@@ -3016,7 +3483,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line342">line 342</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line366">line 366</a>
     </li></ul></dd>
     
 
@@ -3041,28 +3508,6 @@ implementation of actual widget type.
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    instance of CKEditor
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;CKEditor></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -3175,7 +3620,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line374">line 374</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line421">line 421</a>
     </li></ul></dd>
     
 
@@ -3332,7 +3777,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line426">line 426</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line473">line 473</a>
     </li></ul></dd>
     
 
@@ -3487,7 +3932,7 @@ implementation of actual widget type.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line435">line 435</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line482">line 482</a>
     </li></ul></dd>
     
 
@@ -3749,7 +4194,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line453">line 453</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line500">line 500</a>
     </li></ul></dd>
     
 
@@ -4212,7 +4657,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line416">line 416</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line463">line 463</a>
     </li></ul></dd>
     
 
@@ -4367,7 +4812,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line444">line 444</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line491">line 491</a>
     </li></ul></dd>
     
 
@@ -4522,7 +4967,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line462">line 462</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line509">line 509</a>
     </li></ul></dd>
     
 
@@ -4959,7 +5404,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line386">line 386</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line433">line 433</a>
     </li></ul></dd>
     
 
@@ -5115,7 +5560,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line397">line 397</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line444">line 444</a>
     </li></ul></dd>
     
 
@@ -5271,7 +5716,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line406">line 406</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line453">line 453</a>
     </li></ul></dd>
     
 
@@ -5408,7 +5853,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line511">line 511</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line558">line 558</a>
     </li></ul></dd>
     
 
@@ -5562,7 +6007,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line502">line 502</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line549">line 549</a>
     </li></ul></dd>
     
 
@@ -6503,7 +6948,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line471">line 471</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line518">line 518</a>
     </li></ul></dd>
     
 
@@ -6654,7 +7099,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line380">line 380</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line427">line 427</a>
     </li></ul></dd>
     
 
@@ -7020,7 +7465,7 @@ Typical use case is when new note has been created, we should wait until it is s
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line495">line 495</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line542">line 542</a>
     </li></ul></dd>
     
 

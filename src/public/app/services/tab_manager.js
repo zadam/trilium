@@ -193,6 +193,14 @@ export default class TabManager extends Component {
         return activeNote ? activeNote.type : null;
     }
 
+    async getActiveContextTextEditor(callback) {
+        return new Promise(resolve => appContext.triggerCommand('executeInActiveTextEditor', {callback, resolve}));
+    }
+
+    async getActiveContextCodeEditor() {
+        return new Promise(resolve => appContext.triggerCommand('executeInActiveCodeEditor', {resolve}));
+    }
+
     async switchToNoteContext(ntxId, notePath) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
             || await this.openEmptyTab();

@@ -48,6 +48,7 @@ import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
 import BacklinksWidget from "../widgets/backlinks.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
+import FindWidget from "../widgets/find.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -164,6 +165,7 @@ export default class DesktopLayout {
                                 .child(...this.customWidgets.get('node-detail-pane'))
                             )
                         )
+                        .child(new FindWidget())
                         .child(...this.customWidgets.get('center-pane'))
                     )
                     .child(new RightPaneContainer()
