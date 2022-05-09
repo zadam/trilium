@@ -110,9 +110,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
 
-        // leads to contain: none
-        // https://developer.mozilla.org/en-US/docs/Web/CSS/contain
-        // this.contentSized();
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-note-render');
         this.renderElement = this.$render.get(0);
