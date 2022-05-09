@@ -7,6 +7,7 @@ import openService from "./open.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import linkService from "./link.js";
+import errorSvg from "../widgets/type_widgets/canvas-note-utils/errorSvg";
 
 let idCounter = 1;
 
@@ -149,9 +150,9 @@ async function getRenderedContent(note, options = {}) {
         const content = noteComplement.content || "";
 
         try {
-            const errorSvg = `<svg viewBox="0 0 240 80" style="background-color: white" xmlns="http://www.w3.org/2000/svg"><style>.red { font: 12px serif; fill: red; }</style><text x="20" y="35" class="red">Error: note svg is undefined or empty</text></svg>`;
+            const placeHolderSVG = errorSvg;
             const data = JSON.parse(content)
-            const svg = data.svg || errorSvg;
+            const svg = data.svg || placeHolderSVG;
             /**
              * maxWidth: size down to 100% (full) width of container but do not enlarge!
              * height:auto to ensure that height scales with width
