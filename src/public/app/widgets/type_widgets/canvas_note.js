@@ -3,7 +3,6 @@ import TypeWidget from "./type_widget.js";
 import utils from '../../services/utils.js';
 import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
-import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
 import replaceExternalAssets from "./canvas-note-utils/replaceExternalAssets.js";
 
 const {sleep} = utils;
@@ -60,18 +59,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
         super();
 
-        // CONSTANTS
+        // constants
         this.SCENE_VERSION_INITIAL = -1;
         this.SCENE_VERSION_ERROR = -2;
 
         // config
-        this.debounceTimeOnchangeHandler = 750; // ms
+        this.DEBOUNCE_TIME_ONCHANGEHANDLER = 750; // ms
         // ensure that assets are loaded from trilium
         window.EXCALIDRAW_ASSET_PATH = `${window.location.origin}/node_modules/@excalidraw/excalidraw/dist/`;
 
         // temporary vars
         this.currentNoteId = "";
-        this.currentSceneVersion = SCENE_VERSION_INITIAL;
+        this.currentSceneVersion = this.SCENE_VERSION_INITIAL;
 
         // will be overwritten
         this.excalidrawRef;
@@ -89,15 +88,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
         this.updateSceneVersion = this.updateSceneVersion.bind(this);
         this.getSceneVersion = this.getSceneVersion.bind(this);
-
-        // debugging helper - delete this block or comment
-        this.uniqueId = uniqueId();
-        console.log("uniqueId", this.uniqueId);
-        if (!window.triliumexcalidraw) {
-            window.triliumexcalidraw = [];
-        }
-        window.triliumexcalidraw[this.uniqueId] = this;
-        // end debug
     }
 
     /**
@@ -401,7 +391,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     onPaste: (data, event) => {
                         this.log("excalidraw internal paste", data, event);
                     },
-                    onChange: debounce(this.onChangeHandler, this.debounceTimeOnchangeHandler),
+                    onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
                         window.alert("You clicked on collab button")
