@@ -183,7 +183,6 @@ async function setContentPane() {
             const svg = data.svg || "no svg present."
 
             /**
-             * Debatable
              * maxWidth: 100% use full width of container but do not enlarge!
              * height:auto to ensure that height scales with width
              */

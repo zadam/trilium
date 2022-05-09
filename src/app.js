@@ -30,8 +30,11 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/libraries', express.static(path.join(__dirname, '..', 'libraries')));
-// node_modules required for excalidraw-view mode in shared notes
-app.use('/node_modules', express.static(path.join(__dirname, '..', 'node_modules')));
+// excalidraw-view mode in shared notes
+app.use('/node_modules/react/umd/react.production.min.js', express.static(path.join(__dirname, '..', 'node_modules/react/umd/react.production.min.js')));
+app.use('/node_modules/react-dom/umd/react-dom.production.min.js', express.static(path.join(__dirname, '..', 'node_modules/react-dom/umd/react-dom.production.min.js')));
+// expose whole dist folder since complete assets are needed in edit and share
+app.use('/node_modules/@excalidraw/excalidraw/dist/', express.static(path.join(__dirname, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
 app.use('/images', express.static(path.join(__dirname, '..', 'images')));
 const sessionParser = session({
     secret: sessionSecret,

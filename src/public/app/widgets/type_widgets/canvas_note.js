@@ -5,6 +5,7 @@ import sleep from './canvas-note-utils/sleep.js';
 import froca from "../../services/froca.js";
 import debounce from "./canvas-note-utils/lodash.debounce.js";
 import uniqueId from "./canvas-note-utils/lodash.uniqueId.js";
+import replaceExternalAssets from "./canvas-note-utils/replaceExternalAssets.js";
 
 const TPL = `
     <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
@@ -156,7 +157,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         /**
          * before we load content into excalidraw, make sure excalidraw has loaded
          */
-        while (!this.excalidrawRef) {
+        while (!this.excalidrawRef || !this.excalidrawRef.current) {
             this.log("doRefresh! excalidrawref not yet loeaded, sleep 200ms...");
             await sleep(200);
         }
@@ -259,10 +260,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             files
         });
         const svgString = svg.outerHTML;
+
         /**
-         * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged
+         * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
          */
-        const svgSafeString =svgString.replaceAll("https://excalidraw.com/", window.EXCALIDRAW_ASSET_PATH+"excalidraw-assets/");
+        const svgSafeString = replaceExternalAssets(svgString);
 
         const activeFiles = {};
         elements.forEach((element) => {
@@ -276,7 +278,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             elements, // excalidraw
             appState, // excalidraw
             files: activeFiles, // excalidraw
-            svg: svgSafeString, // rendered on every save, not needed for excalidraw
+            svg: svgSafeString, // not needed for excalidraw, used for note_short, content, and image api
         };
 
         const contentString = JSON.stringify(content);

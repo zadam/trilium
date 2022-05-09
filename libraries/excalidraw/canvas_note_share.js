@@ -9,7 +9,8 @@ const App = () => {
         height: appState.height,
     });
     const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
-    console.log("no render?");
+    
+    // ensure that assets are loaded from trilium
     
     /**
      * resizing

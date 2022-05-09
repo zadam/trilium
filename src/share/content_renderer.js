@@ -86,6 +86,9 @@ document.addEventListener("DOMContentLoaded", function() {
         isEmpty = true;
     }
     else if (note.type === 'canvas-note') {
+        header += `<script>
+                    window.EXCALIDRAW_ASSET_PATH = window.location.origin + "/node_modules/@excalidraw/excalidraw/dist/";
+                   </script>`;
         header += `<script src="../../node_modules/react/umd/react.production.min.js"></script>`;
         header += `<script src="../../node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
         header += `<script src="../../node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
