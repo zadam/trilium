@@ -108,13 +108,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-note-render');
         this.renderElement = this.$render.get(0);
-        // this.log("doRender", this.$widget);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
-                this.log("react, react-dom, excalidraw loaded");
-
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
                 
@@ -150,7 +147,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * before we load content into excalidraw, make sure excalidraw has loaded
          */
         while (!this.excalidrawRef || !this.excalidrawRef.current) {
-            this.log("doRefresh! excalidrawref not yet loeaded, sleep 200ms...");
+            this.log("excalidrawref not yet loeaded, sleep 200ms...");
             await sleep(200);
         }
 
@@ -208,7 +205,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     fileArray.push(file);
                 }
 
-                this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
+                // this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
 
                 this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
 
@@ -274,7 +271,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         };
 
         const contentString = JSON.stringify(content);
-        this.log("getContent note size content.svg/content", `~${content.svg.length/1024}kB/${contentString.length/1024}kB`, content.svg.length/contentString.length, "% of svg");
+        // this.log("getContent note size content.svg/content", `~${content.svg.length/1024}kB/${contentString.length/1024}kB`, content.svg.length/contentString.length, "% of svg");
 
         return contentString;
     }
@@ -285,12 +282,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * spacedUpdate is kind of a debouncer.
      */
     saveData() {
-        this.log("saveData()");
         this.spacedUpdate.scheduleUpdate();
     }
 
     onChangeHandler() {
-        this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());        
+        // this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());        
         const appState = this.excalidrawRef.current.getAppState() || {};
 
         // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
@@ -337,7 +333,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                 height: excalidrawWrapperRef.current.getBoundingClientRect().height
             };
-            this.log('effect, setdimensions', dimensions);
+            // this.log('effect, setdimensions', dimensions);
             setDimensions(dimensions);
 
             const onResize = () => {
@@ -345,7 +341,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                     height: excalidrawWrapperRef.current.getBoundingClientRect().height
                 };
-                this.log('onResize, setdimensions', dimensions);
+                // this.log('onResize, setdimensions', dimensions);
                 setDimensions(dimensions);
             };
             
@@ -362,7 +358,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const isInternalLink =
                 link.startsWith("/") || link.includes(window.location.origin);
                 
-            this.log("onLinkOpen", element, event, nativeEvent, "isinternallink", isInternalLink);
+            // this.log("onLinkOpen", element, event, nativeEvent, "isinternallink", isInternalLink);
 
             if (isInternalLink && !isNewTab && !isNewWindow) {
                 // signal that we're handling the redirect ourselves
@@ -394,7 +390,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
                     // onPointerUpdate: (payload) => console.log(payload),
                     onCollabButtonClick: () => {
-                        window.alert("You clicked on collab button")
+                        window.alert("You clicked on collab button. No collaboration is implemented.");
                     },
                     viewModeEnabled: viewModeEnabled,
                     zenModeEnabled: zenModeEnabled,
@@ -418,7 +414,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      */
      isNewSceneVersion() {
         const sceneVersion = this.getSceneVersion();
-        // this.log("isNewSceneVersion()", this.currentSceneVersion, sceneVersion);
+        
         if (
             this.currentSceneVersion === this.SCENE_VERSION_INITIAL     // initial scene version update
             || this.currentSceneVersion !== sceneVersion
