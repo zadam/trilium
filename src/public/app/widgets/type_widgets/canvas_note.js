@@ -70,7 +70,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         // will be overwritten
         this.excalidrawRef;
         this.$render;
-        this.$renderElement;
+        this.renderElement;
         this.$widget;
         this.reactHandlers; // used to control react state
         
@@ -114,7 +114,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         // this.contentSized();
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-note-render');
-        this.$renderElement = this.$render.get(0);
+        this.renderElement = this.$render.get(0);
         // this.log("doRender", this.$widget);
 
         libraryLoader
@@ -125,8 +125,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
                 
-                ReactDOM.unmountComponentAtNode(this.$renderElement);
-                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), this.$renderElement);
+                ReactDOM.unmountComponentAtNode(this.renderElement);
+                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), this.renderElement);
             })
 
         return this.$widget;

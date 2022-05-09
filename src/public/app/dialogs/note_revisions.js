@@ -187,8 +187,8 @@ async function setContentPane() {
              * maxWidth: 100% use full width of container but do not enlarge!
              * height:auto to ensure that height scales with width
              */
-            const svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
-            $content.html($('<div>').append(svgHtml));
+            const $svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
+            $content.html($('<div>').append($svgHtml));
         } catch(err) {
             console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
             $content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
