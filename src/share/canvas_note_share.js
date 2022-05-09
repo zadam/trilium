@@ -1,4 +1,10 @@
-// const {elements, appState, files} = window.triliumExcalidraw;
+/**
+ * this is used as a "standalone js" file and required by a shared note directly via script-tags
+ * 
+ * data input comes via window variable as follow
+ * const {elements, appState, files} = window.triliumExcalidraw;
+ */
+
 document.getElementById("excalidraw-app").style.height = appState.height+"px";
 
 const App = () => {

@@ -1,3 +1,6 @@
+const express = require('express');
+const path = require('path');
+
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
@@ -54,6 +57,8 @@ function register(router) {
             subRoot
         });
     }
+
+    router.use('/share/canvas_note_share.js', express.static(path.join(__dirname, 'canvas_note_share.js')));
 
     router.get(['/share', '/share/'], (req, res, next) => {
         shacaLoader.ensureLoad();
