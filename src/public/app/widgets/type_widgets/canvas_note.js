@@ -60,6 +60,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
         super();
 
+        // CONSTANTS
+        this.SCENE_VERSION_INITIAL = -1;
+        this.SCENE_VERSION_ERROR = -2;
+
         // config
         this.debounceTimeOnchangeHandler = 750; // ms
         // ensure that assets are loaded from trilium
@@ -67,7 +71,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         // temporary vars
         this.currentNoteId = "";
-        this.currentSceneVersion = -1;
+        this.currentSceneVersion = SCENE_VERSION_INITIAL;
 
         // will be overwritten
         this.excalidrawRef;
@@ -144,7 +148,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         if (noteChanged) {
             // this.log("doRefresh resetCurrentSceneVersion = -1");
             // reset scene to omit unnecessary onchange handler
-            this.currentSceneVersion = -1;
+            this.currentSceneVersion = this.SCENE_VERSION_INITIAL;
         }
         this.currentNoteId = note.noteId;
         
@@ -226,7 +230,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
         
         // set initial scene version
-        if (this.currentSceneVersion === -1) {
+        if (this.currentSceneVersion === this.SCENE_VERSION_INITIAL) {
             this.currentSceneVersion = this.getSceneVersion();
         }
     }
@@ -308,7 +312,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          */
 
         // upon updateScene, onchange is called, even though "nothing really changed" that is worth saving
-        const isNotInitialScene = this.currentSceneVersion !== -1;
+        const isNotInitialScene = this.currentSceneVersion !== this.SCENE_VERSION_INITIAL;
 
         const shouldSave = isNewSceneVersion && isNotInitialScene;
 
@@ -426,7 +430,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         const sceneVersion = this.getSceneVersion();
         // this.log("isNewSceneVersion()", this.currentSceneVersion, sceneVersion);
         if (
-            this.currentSceneVersion === -1     // initial scene version update
+            this.currentSceneVersion === this.SCENE_VERSION_INITIAL     // initial scene version update
             || this.currentSceneVersion !== sceneVersion
             ) {
             return true;
@@ -441,7 +445,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const sceneVersion = window.Excalidraw.getSceneVersion(elements);
             return sceneVersion;
         } else {
-            return -2;
+            return this.SCENE_VERSION_ERROR;
         }
     }
 
