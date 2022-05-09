@@ -39,8 +39,8 @@ export default class TypeWidget extends NoteContextAwareWidget {
     }
 
     /**
-     * FIXME: add async here to indicate promise?
-     */
+     * @returns {Promise|*} promise resolving content or directly the content
+     */ 
     getContent() {}
 
     focus() {}
