@@ -7,7 +7,7 @@ import openService from "./open.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import linkService from "./link.js";
-import errorSvg from "../widgets/type_widgets/canvas-note-utils/errorSvg";
+import errorSvg from "../widgets/type_widgets/canvas-note-utils/errorSvg.js";
 
 let idCounter = 1;
 
