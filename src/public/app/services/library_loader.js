@@ -58,9 +58,9 @@ const MERMAID = {
 
 const EXCALIDRAW = {
     js: [
-        "node_modules/react/umd/react.production.min.js", //v17.0.2
-        "node_modules/react-dom/umd/react-dom.production.min.js", //v17.0.2
-        "node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js", //v.0.11.0
+        "node_modules/react/umd/react.production.min.js",
+        "node_modules/react-dom/umd/react-dom.production.min.js",
+        "node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js",
     ],
     // css: [
     //     "stylesheets/somestyle.css"
