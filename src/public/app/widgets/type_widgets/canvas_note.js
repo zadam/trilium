@@ -408,14 +408,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      isNewSceneVersion() {
         const sceneVersion = this.getSceneVersion();
         
-        if (
-            this.currentSceneVersion === this.SCENE_VERSION_INITIAL     // initial scene version update
-            || this.currentSceneVersion !== sceneVersion
-            ) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.currentSceneVersion === this.SCENE_VERSION_INITIAL // initial scene version update
+            || this.currentSceneVersion !== sceneVersion // ensure scene changed
+        ;
     }
 
     getSceneVersion() {
