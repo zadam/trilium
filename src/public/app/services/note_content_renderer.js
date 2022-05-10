@@ -7,7 +7,6 @@ import openService from "./open.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import linkService from "./link.js";
-import errorSvg from "../widgets/type_widgets/canvas-utils/errorSvg.js";
 
 let idCounter = 1;
 
@@ -150,7 +149,7 @@ async function getRenderedContent(note, options = {}) {
         const content = noteComplement.content || "";
 
         try {
-            const placeHolderSVG = errorSvg;
+            const placeHolderSVG = "<svg />";
             const data = JSON.parse(content)
             const svg = data.svg || placeHolderSVG;
             /**
