@@ -124,11 +124,11 @@ function register(router) {
         if (!image) {
             return res.status(404).send(`Note '${req.params.noteId}' not found`);
         }
-        else if (!["image", "canvas-note"].includes(image.type)) {
+        else if (!["image", "canvas"].includes(image.type)) {
             return res.status(400).send("Requested note is not a shareable image");
-        } else if (image.type === "canvas-note") {
+        } else if (image.type === "canvas") {
             /**
-             * special "image" type. the canvas-note is actually type application/json 
+             * special "image" type. the canvas is actually type application/json 
              * to avoid bitrot and enable usage as referenced image the svg is included.
              */
             const content = image.getContent();

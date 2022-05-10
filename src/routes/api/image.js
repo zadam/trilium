@@ -11,7 +11,7 @@ function returnImage(req, res) {
     if (!image) {
         return res.sendStatus(404);
     }
-    else if (!["image", "canvas-note"].includes(image.type)){
+    else if (!["image", "canvas"].includes(image.type)){
         return res.sendStatus(400);
     }
     else if (image.isDeleted || image.data === null) {
@@ -20,10 +20,10 @@ function returnImage(req, res) {
     }
 
     /**
-     * special "image" type. the canvas-note is actually type application/json 
+     * special "image" type. the canvas is actually type application/json 
      * to avoid bitrot and enable usage as referenced image the svg is included.
      */
-    if (image.type === 'canvas-note') {
+    if (image.type === 'canvas') {
         const content = image.getContent();
         try {
             const data = JSON.parse(content);

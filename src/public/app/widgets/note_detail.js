@@ -10,7 +10,7 @@ import FileTypeWidget from "./type_widgets/file.js";
 import ImageTypeWidget from "./type_widgets/image.js";
 import RenderTypeWidget from "./type_widgets/render.js";
 import RelationMapTypeWidget from "./type_widgets/relation_map.js";
-import CanvasNoteTypeWidget from "./type_widgets/canvas_note.js";
+import CanvasTypeWidget from "./type_widgets/canvas.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
 import appContext from "../services/app_context.js";
@@ -51,7 +51,7 @@ const typeWidgetClasses = {
     'search': NoneTypeWidget,
     'render': RenderTypeWidget,
     'relation-map': RelationMapTypeWidget,
-    'canvas-note': CanvasNoteTypeWidget,
+    'canvas': CanvasTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
     'note-map': NoteMapTypeWidget
@@ -154,7 +154,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
-            && ['editable-text', 'editable-code', 'canvas-note'].includes(this.type)
+            && ['editable-text', 'editable-code', 'canvas'].includes(this.type)
             && this.mime !== 'text/x-sqlite;schema=trilium');
     }
 

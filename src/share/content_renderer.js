@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (note.type === 'book') {
         isEmpty = true;
     }
-    else if (note.type === 'canvas-note') {
+    else if (note.type === 'canvas') {
         header += `<script>
                     window.EXCALIDRAW_ASSET_PATH = window.location.origin + "/node_modules/@excalidraw/excalidraw/dist/";
                    </script>`;

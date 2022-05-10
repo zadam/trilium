@@ -171,7 +171,7 @@ async function setContentPane() {
 
         $content.html($table);
     }
-    else if (revisionItem.type === 'canvas-note') {
+    else if (revisionItem.type === 'canvas') {
         /**
          * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
          *        REMOVE external dependency!!!! This is defined in the svg in defs.style

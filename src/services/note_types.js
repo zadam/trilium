@@ -9,5 +9,5 @@ module.exports = [
     'book', 
     'note-map',
     'mermaid',
-    'canvas-note'
+    'canvas'
 ];

@@ -7,7 +7,7 @@ import debounce from "../../../../../libraries/lodash.debounce.js";
 const {sleep} = utils;
 
 const TPL = `
-    <div class="canvas-note-widget note-detail-canvas-note note-detail-printable note-detail">
+    <div class="canvas-widget note-detail-canvas note-detail-printable note-detail">
         <style type="text/css">
         .excalidraw .App-menu_top .buttonList {
             display: flex;
@@ -26,7 +26,7 @@ const TPL = `
 
         </style>
         <!-- height here necessary. otherwise excalidraw not shown -->
-        <div class="canvas-note-render" style="height: 100%"></div>
+        <div class="canvas-render" style="height: 100%"></div>
     </div>
 `;
 
@@ -85,10 +85,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     /**
      * (trilium)
-     * @returns {string} "canvas-note"
+     * @returns {string} "canvas"
      */
     static getType() {
-        return "canvas-note";
+        return "canvas";
     }
 
     /**
@@ -99,7 +99,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget = $(TPL);
 
         this.$widget.toggleClass("full-height", true); // only add
-        this.$render = this.$widget.find('.canvas-note-render');
+        this.$render = this.$widget.find('.canvas-render');
         this.renderElement = this.$render.get(0);
 
         libraryLoader
@@ -249,7 +249,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
-            _meta: "This note has type `canvas-note`. It uses excalidraw and stores an exported svg alongside.",
+            _meta: "This note has type `canvas`. It uses excalidraw and stores an exported svg alongside.",
             elements, // excalidraw
             appState, // excalidraw
             files: activeFiles, // excalidraw

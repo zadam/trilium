@@ -7,7 +7,7 @@ import openService from "./open.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import linkService from "./link.js";
-import errorSvg from "../widgets/type_widgets/canvas-note-utils/errorSvg.js";
+import errorSvg from "../widgets/type_widgets/canvas-utils/errorSvg.js";
 
 let idCounter = 1;
 
@@ -142,7 +142,7 @@ async function getRenderedContent(note, options = {}) {
 
         $renderedContent.append($content);
     }
-    else if (type === 'canvas-note') {
+    else if (type === 'canvas') {
         // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
         $renderedContent.css({height: "100%", width:"100%"});
         
