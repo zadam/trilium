@@ -2,8 +2,7 @@ import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import utils from '../../services/utils.js';
 import froca from "../../services/froca.js";
-import debounce from "./canvas-note-utils/lodash.debounce.js";
-import replaceExternalAssets from "./canvas-note-utils/replaceExternalAssets.js";
+import debounce from "../../../../../libraries/lodash.debounce.js";
 
 const {sleep} = utils;
 
@@ -80,14 +79,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.reactHandlers; // used to control react state
         
         this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
-        this.doRefresh = this.doRefresh.bind(this);
-        this.getContent = this.getContent.bind(this);
-        this.saveData = this.saveData.bind(this);
-        this.refreshWithNote = this.refreshWithNote.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
-        this.updateSceneVersion = this.updateSceneVersion.bind(this);
-        this.getSceneVersion = this.getSceneVersion.bind(this);
     }
 
     /**
@@ -253,7 +246,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         /**
          * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
          */
-        const svgSafeString = replaceExternalAssets(svgString);
+        const svgSafeString = this.replaceExternalAssets(svgString);
 
         const activeFiles = {};
         elements.forEach((element) => {
@@ -453,5 +446,21 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
 
         console.log(title, "=", this.noteId, "==",  ...args);
+    }
+
+    /**
+     * replaces exlicraw.com with own assets
+     * 
+     * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
+     * needed for v0.11.0
+     * 
+     * @param {string} string 
+     * @returns 
+     */
+    replaceExternalAssets = (string) => {
+        let result = string;
+        // exlidraw.com asset in react usage
+        result = result.replaceAll("https://excalidraw.com/", window.EXCALIDRAW_ASSET_PATH+"excalidraw-assets/");
+        return result;
     }
 }
