@@ -159,47 +159,55 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * load saved content into excalidraw canvas
          */
         else if (this.excalidrawRef.current && noteComplement.content) {
+            let content ={
+                elements: [],
+                appState: [],
+                files: [],
+            };
+
             try {
-                const content = JSON.parse(noteComplement.content || "");
-                
-                const {elements, appState, files} = content;
-
-                /**
-                 * use widths and offsets of current view, since stored appState has the state from
-                 * previous edit. using the stored state would lead to pointer mismatch.
-                 */
-                const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
-                appState.width = boundingClientRect.width;
-                appState.height = boundingClientRect.height;
-                appState.offsetLeft = boundingClientRect.left;
-                appState.offsetTop = boundingClientRect.top;
-
-                const sceneData = {
-                    elements, 
-                    appState,
-                    collaborators: []
-                };
-
-                // files are expected in an array when loading. they are stored as an key-index object
-                // see example for loading here:
-                // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
-                const fileArray = [];
-                for (const fileId in files) {
-                    const file = files[fileId];
-                    // TODO: dataURL is replaceable with a trilium image url
-                    //       maybe we can save normal images (pasted) with base64 data url, and trilium images
-                    //       with their respective url! nice
-                    // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
-                    fileArray.push(file);
-                }
-
-                this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
-
-                this.excalidrawRef.current.updateScene(sceneData);
-                this.excalidrawRef.current.addFiles(fileArray);
+                content = JSON.parse(noteComplement.content || "");
             } catch(err) {
-                console.error("Error (note, noteComplement, err)", note, noteComplement, err);
+                console.error("Error parsing content. Probably note.type changed",
+                              "Starting with empty canvas"
+                              , note, noteComplement, err);
             }
+
+            const {elements, appState, files} = content;
+
+            /**
+             * use widths and offsets of current view, since stored appState has the state from
+             * previous edit. using the stored state would lead to pointer mismatch.
+             */
+            const boundingClientRect = this.excalidrawWrapperRef.current.getBoundingClientRect();
+            appState.width = boundingClientRect.width;
+            appState.height = boundingClientRect.height;
+            appState.offsetLeft = boundingClientRect.left;
+            appState.offsetTop = boundingClientRect.top;
+
+            const sceneData = {
+                elements, 
+                appState,
+                collaborators: []
+            };
+
+            // files are expected in an array when loading. they are stored as an key-index object
+            // see example for loading here:
+            // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
+            const fileArray = [];
+            for (const fileId in files) {
+                const file = files[fileId];
+                // TODO: dataURL is replaceable with a trilium image url
+                //       maybe we can save normal images (pasted) with base64 data url, and trilium images
+                //       with their respective url! nice
+                // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
+                fileArray.push(file);
+            }
+
+            this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
+
+            this.excalidrawRef.current.updateScene(sceneData);
+            this.excalidrawRef.current.addFiles(fileArray);
         }
         
         // set initial scene version
