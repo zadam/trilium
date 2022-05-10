@@ -78,7 +78,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget;
         this.reactHandlers; // used to control react state
         
-        this.ExcalidrawReactApp = this.ExcalidrawReactApp.bind(this);
+        this.createExcalidrawReactApp = this.createExcalidrawReactApp.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
     }
@@ -109,7 +109,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 const ReactDOM = window.ReactDOM;
                 
                 ReactDOM.unmountComponentAtNode(this.renderElement);
-                ReactDOM.render(React.createElement(this.ExcalidrawReactApp), this.renderElement);
+                ReactDOM.render(React.createElement(this.createExcalidrawReactApp), this.renderElement);
             })
 
         return this.$widget;
@@ -303,7 +303,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         }
     }
 
-    ExcalidrawReactApp() {
+    createExcalidrawReactApp() {
         const React = window.React;
         const Excalidraw = window.Excalidraw;
 
