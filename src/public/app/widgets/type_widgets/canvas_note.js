@@ -123,10 +123,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      */
     async doRefresh(note) {
         // see if note changed, since we do not get a new class for a new note
-        // this.log("doRefresh note", this.currentNoteId, note.noteId);
         const noteChanged = this.currentNoteId !== note.noteId;
         if (noteChanged) {
-            // this.log("doRefresh resetCurrentSceneVersion = -1");
             // reset scene to omit unnecessary onchange handler
             this.currentSceneVersion = this.SCENE_VERSION_INITIAL;
         }
@@ -134,13 +132,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         
         // get note from backend and put into canvas
         const noteComplement = await froca.getNoteComplement(note.noteId);
-        // this.log('doRefresh', note, noteComplement);
 
-        /**
-         * before we load content into excalidraw, make sure excalidraw has loaded
-         */
+        // before we load content into excalidraw, make sure excalidraw has loaded
         while (!this.excalidrawRef || !this.excalidrawRef.current) {
-            this.log("excalidrawref not yet loeaded, sleep 200ms...");
+            this.log("excalidrawRef not yet loeaded, sleep 200ms...");
             await sleep(200);
         }
 
@@ -197,8 +192,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     // file.dataURL = "http://localhost:8080/api/images/ltjOiU8nwoZx/start.png";
                     fileArray.push(file);
                 }
-
-                // this.log("doRefresh(note) sceneData, files", sceneData, files, fileArray);
 
                 this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
 
@@ -264,7 +257,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         };
 
         const contentString = JSON.stringify(content);
-        // this.log("getContent note size content.svg/content", `~${content.svg.length/1024}kB/${contentString.length/1024}kB`, content.svg.length/contentString.length, "% of svg");
 
         return contentString;
     }
@@ -279,7 +271,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     onChangeHandler() {
-        // this.log("onChangeHandler() =================", new Date(), this.isNewSceneVersion());        
         const appState = this.excalidrawRef.current.getAppState() || {};
 
         // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
@@ -326,7 +317,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                 height: excalidrawWrapperRef.current.getBoundingClientRect().height
             };
-            // this.log('effect, setdimensions', dimensions);
             setDimensions(dimensions);
 
             const onResize = () => {
@@ -334,7 +324,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                     height: excalidrawWrapperRef.current.getBoundingClientRect().height
                 };
-                // this.log('onResize, setdimensions', dimensions);
                 setDimensions(dimensions);
             };
             
@@ -348,11 +337,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const { nativeEvent } = event.detail;
             const isNewTab = nativeEvent.ctrlKey || nativeEvent.metaKey;
             const isNewWindow = nativeEvent.shiftKey;
-            const isInternalLink =
-                link.startsWith("/") || link.includes(window.location.origin);
+            const isInternalLink = link.startsWith("/") 
+                || link.includes(window.location.origin);
                 
-            // this.log("onLinkOpen", element, event, nativeEvent, "isinternallink", isInternalLink);
-
             if (isInternalLink && !isNewTab && !isNewWindow) {
                 // signal that we're handling the redirect ourselves
                 event.preventDefault();
@@ -378,7 +365,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     height: dimensions.height,
                     // initialData: InitialData,
                     onPaste: (data, event) => {
-                        this.log("excalidraw internal paste", data, event);
+                        this.log("Verbose: excalidraw internal paste. No trilium action implemented.", data, event);
                     },
                     onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
                     // onPointerUpdate: (payload) => console.log(payload),
