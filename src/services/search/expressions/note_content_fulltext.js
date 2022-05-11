@@ -8,8 +8,7 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require("../../utils");
 
-// FIXME: create common subclass with NoteContentUnprotectedFulltextExp to avoid duplication
-class NoteContentProtectedFulltextExp extends Expression {
+class NoteContentFulltextExp extends Expression {
     constructor(operator, {tokens, raw, flatText}) {
         super();
 
@@ -24,28 +23,28 @@ class NoteContentProtectedFulltextExp extends Expression {
 
     execute(inputNoteSet) {
         const resultNoteSet = new NoteSet();
-
-        if (!protectedSessionService.isProtectedSessionAvailable()) {
-            return resultNoteSet;
-        }
-
         const sql = require('../../sql');
 
-        for (let {noteId, type, mime, content} of sql.iterateRows(`
-                SELECT noteId, type, mime, content 
+        for (let {noteId, type, mime, content, isProtected} of sql.iterateRows(`
+                SELECT noteId, type, mime, content, isProtected
                 FROM notes JOIN note_contents USING (noteId) 
-                WHERE type IN ('text', 'code', 'mermaid') AND isDeleted = 0 AND isProtected = 1`)) {
+                WHERE type IN ('text', 'code', 'mermaid') AND isDeleted = 0`)) {
 
             if (!inputNoteSet.hasNoteId(noteId) || !(noteId in becca.notes)) {
                 continue;
             }
 
-            try {
-                content = protectedSessionService.decryptString(content);
-            }
-            catch (e) {
-                log.info(`Cannot decrypt content of note ${noteId}`);
-                continue;
+            if (isProtected) {
+                if (!protectedSessionService.isProtectedSessionAvailable()) {
+                    continue;
+                }
+
+                try {
+                    content = protectedSessionService.decryptString(content);
+                } catch (e) {
+                    log.info(`Cannot decrypt content of note ${noteId}`);
+                    continue;
+                }
             }
 
             content = this.preprocessContent(content, type, mime);
@@ -82,8 +81,9 @@ class NoteContentProtectedFulltextExp extends Expression {
 
             content = content.replace(/&nbsp;/g, ' ');
         }
-        return content;
+
+        return content.trim();
     }
 }
 
-module.exports = NoteContentProtectedFulltextExp;
+module.exports = NoteContentFulltextExp;
