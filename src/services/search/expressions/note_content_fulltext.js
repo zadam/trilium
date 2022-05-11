@@ -8,7 +8,7 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require("../../utils");
 
-const ALLOWED_OPERATORS = ['*=*', '=', '*=', '=*', '~'];
+const ALLOWED_OPERATORS = ['*=*', '=', '*=', '=*', '%='];
 
 const cachedRegexes = {};
 
@@ -25,7 +25,7 @@ class NoteContentFulltextExp extends Expression {
         super();
 
         if (!ALLOWED_OPERATORS.includes(operator)) {
-            throw new Error(`Note content can be searched only with operators: ` + ALLOWED_OPERATORS.join(", "));
+            throw new Error(`Note content can be searched only with operators: ` + ALLOWED_OPERATORS.join(", ") + `, operator ${operator} given.`);
         }
 
         this.operator = operator;
@@ -62,13 +62,14 @@ class NoteContentFulltextExp extends Expression {
 
             content = this.preprocessContent(content, type, mime);
 
-            if (this.tokens.length === 1 && this.operator !== '*=*') {
+            if (this.tokens.length === 1) {
                 const [token] = this.tokens;
 
                 if ((this.operator === '=' && token === content)
                     || (this.operator === '*=' && content.endsWith(token))
                     || (this.operator === '=*' && content.startsWith(token))
-                    || (this.operator === '~' && getRegex(token).test(content))) {
+                    || (this.operator === '*=*' && content.includes(token))
+                    || (this.operator === '%=' && getRegex(token).test(content))) {
 
                     resultNoteSet.add(becca.notes[noteId]);
                 }

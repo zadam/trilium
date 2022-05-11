@@ -40,7 +40,7 @@ function getFulltext(tokens, searchContext) {
 }
 
 function isOperator(str) {
-    return str.match(/^[!=<>*~]+$/);
+    return str.match(/^[!=<>*%]+$/);
 }
 
 function getExpression(tokens, searchContext, level = 0) {

@@ -18,7 +18,7 @@ const stringComparators = {
     "*=": comparedValue => (val => val && val.endsWith(comparedValue)),
     "=*": comparedValue => (val => val && val.startsWith(comparedValue)),
     "*=*": comparedValue => (val => val && val.includes(comparedValue)),
-    "~": comparedValue => (val => val && !!getRegex(comparedValue).test(val)),
+    "%=": comparedValue => (val => val && !!getRegex(comparedValue).test(val)),
 };
 
 const numericComparators = {
