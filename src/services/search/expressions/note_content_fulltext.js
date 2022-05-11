@@ -8,14 +8,17 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require("../../utils");
 
+const ALLOWED_OPERATORS = ['*=*', '=', '*=', '=*'];
+
 class NoteContentFulltextExp extends Expression {
     constructor(operator, {tokens, raw, flatText}) {
         super();
 
-        if (operator !== '*=*') {
-            throw new Error(`Note content can be searched only with *=* operator`);
+        if (!ALLOWED_OPERATORS.includes(operator)) {
+            throw new Error(`Note content can be searched only with operators: ` + ALLOWED_OPERATORS.join(", "));
         }
 
+        this.operator = operator;
         this.tokens = tokens;
         this.raw = !!raw;
         this.flatText = !!flatText;
@@ -49,18 +52,30 @@ class NoteContentFulltextExp extends Expression {
 
             content = this.preprocessContent(content, type, mime);
 
-            const nonMatchingToken = this.tokens.find(token =>
-                !content.includes(token) &&
-                (
-                    // in case of default fulltext search we should consider both title, attrs and content
-                    // so e.g. "hello world" should match when "hello" is in title and "world" in content
-                    !this.flatText
-                    || !becca.notes[noteId].getFlatText().includes(token)
-                )
-            );
+            if (this.tokens.length === 1 && this.operator !== '*=*') {
+                const [token] = this.tokens;
 
-            if (!nonMatchingToken) {
-                resultNoteSet.add(becca.notes[noteId]);
+                if ((this.operator === '=' && token === content)
+                    || (this.operator === '*=' && content.endsWith(token))
+                    || (this.operator === '=*' && content.startsWith(token))) {
+
+                    resultNoteSet.add(becca.notes[noteId]);
+                }
+            }
+            else {
+                const nonMatchingToken = this.tokens.find(token =>
+                    !content.includes(token) &&
+                    (
+                        // in case of default fulltext search we should consider both title, attrs and content
+                        // so e.g. "hello world" should match when "hello" is in title and "world" in content
+                        !this.flatText
+                        || !becca.notes[noteId].getFlatText().includes(token)
+                    )
+                );
+
+                if (!nonMatchingToken) {
+                    resultNoteSet.add(becca.notes[noteId]);
+                }
             }
         }
 
