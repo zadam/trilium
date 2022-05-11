@@ -58,7 +58,7 @@ function register(router) {
         });
     }
 
-    router.use('/share/canvas_note_share.js', express.static(path.join(__dirname, 'canvas_note_share.js')));
+    router.use('/share/canvas_share.js', express.static(path.join(__dirname, 'canvas_share.js')));
 
     router.get(['/share', '/share/'], (req, res, next) => {
         shacaLoader.ensureLoad();

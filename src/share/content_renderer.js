@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div id="excalidraw-app"></div>
             <hr>
             <a href="api/images/${note.noteId}/${note.title}?utc=${note.utcDateModified}">Get Image Link</a>
-            <script src="./canvas_note_share.js"></script>
+            <script src="./canvas_share.js"></script>
         </div>`;
     }
     else {
