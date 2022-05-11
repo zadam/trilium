@@ -31,28 +31,49 @@ const TPL = `
 `;
 
 /**
- * ## Excalidraw and SVG
- * 2022-04-16 - @thfrei
+ * # Canvas note with excalidraw
+ * @author thfrei 2022-05-11
  * 
- * Known issues:
- *  - excalidraw-to-svg (node.js) does not render any hand drawn (freedraw) paths. There is an issue with 
- *    Path2D object not present in node-canvas library used by jsdom. (See Trilium PR for samples and other issues 
- *    in respective library. Link will be added later). Related links:
+ * Background:
+ * excalidraw gives great support for hand drawn notes. It also allows to include images and support
+ * for sketching. Excalidraw has a vibrant and active community.
+ * 
+ * Functionality:
+ * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we 
+ * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used
+ * for displaying any canvas note inside of a text note as an image.
+ * 
+ * Paths not taken.
+ *  - excalidraw-to-svg (node.js) could be used to avoid storing the svg in the backend.
+ *    We could render the SVG on the fly. However, as of now, it does not render any hand drawn
+ *    (freedraw) paths. There is an issue with Path2D object not present in node-canvas library 
+ *    used by jsdom. (See Trilium PR for samples and other issues in respective library.
+ *    Link will be added later). Related links:
  *     - https://github.com/Automattic/node-canvas/pull/2013
  *     - https://github.com/google/canvas-5-polyfill 
  *     - https://github.com/Automattic/node-canvas/issues/1116 
  *     - https://www.npmjs.com/package/path2d-polyfill 
  *  - excalidraw-to-svg (node.js) takes quite some time to load an image (1-2s)
- *  - excalidraw-utils (browser) does render freedraw, however NOT freedraw with background
+ *  - excalidraw-utils (browser) does render freedraw, however NOT freedraw with background. It is not
+ *    used, since it is a big dependency, and has the same functionality as react + excalidraw.
+ *  - infinite-drawing-canvas with fabric.js. This library lacked a lot of feature, excalidraw already
+ *    has.
  * 
- * Due to this issues, we opt to use **only excalidraw in the frontend**. Upon saving, we will also get the SVG
- * output from the live excalidraw instance. We will save this **SVG side by side the native excalidraw format
- * in the trilium note**.
+ * Known issues:
+ *  - v0.11.0 of excalidraw does not render freedraw backgrounds in the svg
+ *  - the 3 excalidraw fonts should be included in the share and everywhere, so that it is shown
+ *    when requiring svg.
  * 
- * Pro: we will combat bit-rot. Showing the SVG will be very fast, since it is already rendered.
- * Con: The note will get bigger (maybe +30%?), we will generate more bandwith. 
- *      (However, using trilium desktop instance, does not care too much about bandwidth. Size increase is probably
- *       acceptable, as a trade off.)
+ * Discussion of storing svg in the note:
+ *  - Pro: we will combat bit-rot. Showing the SVG will be very fast and easy, since it is already there.
+ *  - Con: The note will get bigger (~40-50%?), we will generate more bandwith. However, using trilium 
+ *         desktop instance mitigates that issue.
+ * 
+ * Roadmap:
+ *  - Support image-notes as reference in excalidraw
+ *  - Support canvas note as reference (svg) in other canvas notes.
+ *  - Make it easy to include a canvas note inside a text note
+ *  - Support for excalidraw libraries. Maybe special code notes with a tag.
  */
 export default class ExcalidrawTypeWidget extends TypeWidget {
     constructor() {
