@@ -8,7 +8,17 @@ const protectedSessionService = require('../../protected_session');
 const striptags = require('striptags');
 const utils = require("../../utils");
 
-const ALLOWED_OPERATORS = ['*=*', '=', '*=', '=*'];
+const ALLOWED_OPERATORS = ['*=*', '=', '*=', '=*', '~'];
+
+const cachedRegexes = {};
+
+function getRegex(str) {
+    if (!(str in cachedRegexes)) {
+        cachedRegexes[str] = new RegExp(str, 'ms'); // multiline, dot-all
+    }
+
+    return cachedRegexes[str];
+}
 
 class NoteContentFulltextExp extends Expression {
     constructor(operator, {tokens, raw, flatText}) {
@@ -57,7 +67,8 @@ class NoteContentFulltextExp extends Expression {
 
                 if ((this.operator === '=' && token === content)
                     || (this.operator === '*=' && content.endsWith(token))
-                    || (this.operator === '=*' && content.startsWith(token))) {
+                    || (this.operator === '=*' && content.startsWith(token))
+                    || (this.operator === '~' && getRegex(token).test(content))) {
 
                     resultNoteSet.add(becca.notes[noteId]);
                 }
