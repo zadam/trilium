@@ -1,3 +1,13 @@
+const cachedRegexes = {};
+
+function getRegex(str) {
+    if (!(str in cachedRegexes)) {
+        cachedRegexes[str] = new RegExp(str);
+    }
+
+    return cachedRegexes[str];
+}
+
 const stringComparators = {
     "=": comparedValue => (val => val === comparedValue),
     "!=": comparedValue => (val => val !== comparedValue),
@@ -8,6 +18,7 @@ const stringComparators = {
     "*=": comparedValue => (val => val && val.endsWith(comparedValue)),
     "=*": comparedValue => (val => val && val.startsWith(comparedValue)),
     "*=*": comparedValue => (val => val && val.includes(comparedValue)),
+    "%=": comparedValue => (val => val && !!getRegex(comparedValue).test(val)),
 };
 
 const numericComparators = {

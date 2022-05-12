@@ -229,14 +229,18 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         return !selection.isCollapsed;
     }
 
-    async executeInActiveEditorEvent({callback}) {
+    async executeInActiveTextEditorEvent({callback, resolve}) {
         if (!this.isActive()) {
             return;
         }
 
         await this.initialized;
 
-        callback(this.textEditor);
+        if (callback) {
+            callback(this.textEditor);
+        }
+
+        resolve(this.textEditor);
     }
 
     addLinkToTextCommand() {

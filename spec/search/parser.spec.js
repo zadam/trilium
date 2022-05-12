@@ -58,11 +58,8 @@ describe("Parser", () => {
         expect(subs[0].constructor.name).toEqual("NoteFlatTextExp");
         expect(subs[0].tokens).toEqual(["hello", "hi"]);
 
-        expect(subs[1].constructor.name).toEqual("NoteContentProtectedFulltextExp");
+        expect(subs[1].constructor.name).toEqual("NoteContentFulltextExp");
         expect(subs[1].tokens).toEqual(["hello", "hi"]);
-
-        expect(subs[2].constructor.name).toEqual("NoteContentUnprotectedFulltextExp");
-        expect(subs[2].tokens).toEqual(["hello", "hi"]);
     });
 
     it("simple label comparison", () => {

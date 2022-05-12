@@ -307,6 +307,16 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         }
     }
 
+    async executeInActiveNoteDetailWidgetEvent({callback}) {
+        if (!this.isActiveNoteContext()) {
+            return;
+        }
+
+        await this.initialized;
+
+        callback(this);
+    }
+
     async cutIntoNoteCommand() {
         const note = appContext.tabManager.getActiveContextNote();
 
