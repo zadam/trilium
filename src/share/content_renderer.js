@@ -85,6 +85,38 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (note.type === 'book') {
         isEmpty = true;
     }
+    else if (note.type === 'canvas') {
+        header += `<script>
+                    window.EXCALIDRAW_ASSET_PATH = window.location.origin + "/node_modules/@excalidraw/excalidraw/dist/";
+                   </script>`;
+        header += `<script src="../../node_modules/react/umd/react.production.min.js"></script>`;
+        header += `<script src="../../node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
+        header += `<script src="../../node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
+        header += `<style type="text/css">
+
+            .excalidraw-wrapper {
+                height: 100%;
+            }
+
+            :root[dir="ltr"]
+            .excalidraw
+            .layer-ui__wrapper
+            .zen-mode-transition.App-menu_bottom--transition-left {
+                transform: none;
+            }
+        </style>`;
+
+        content = `<div>
+            <script>
+                const {elements, appState, files} = JSON.parse(${JSON.stringify(content)});
+                window.triliumExcalidraw = {elements, appState, files}
+            </script>
+            <div id="excalidraw-app"></div>
+            <hr>
+            <a href="api/images/${note.noteId}/${note.title}?utc=${note.utcDateModified}">Get Image Link</a>
+            <script src="./canvas_share.js"></script>
+        </div>`;
+    }
     else {
         content = '<p>This note type cannot be displayed.</p>';
     }
@@ -99,7 +131,3 @@ document.addEventListener("DOMContentLoaded", function() {
 module.exports = {
     getContent
 };
-
-
-
-

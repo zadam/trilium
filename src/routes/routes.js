@@ -285,6 +285,7 @@ function register(app) {
     apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
     apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
 
+    // :filename is not used by trilium, but instead used for "save as" to assign a human readable filename
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
     route(PUT, '/api/images/:noteId', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.updateImage, apiResultHandler);

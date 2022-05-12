@@ -141,6 +141,27 @@ async function getRenderedContent(note, options = {}) {
 
         $renderedContent.append($content);
     }
+    else if (type === 'canvas') {
+        // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
+        $renderedContent.css({height: "100%", width:"100%"});
+        
+        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const content = noteComplement.content || "";
+
+        try {
+            const placeHolderSVG = "<svg />";
+            const data = JSON.parse(content)
+            const svg = data.svg || placeHolderSVG;
+            /**
+             * maxWidth: size down to 100% (full) width of container but do not enlarge!
+             * height:auto to ensure that height scales with width
+             */
+            $renderedContent.append($(svg).css({maxWidth: "100%", maxHeight: "100%", height: "auto", width: "auto"}));
+        } catch(err) {
+            console.error("error parsing content as JSON", content, err);
+            $renderedContent.append($("<div>").text("Error parsing content. Please check console.error() for more details."));
+        }
+    }
     else if (!options.tooltip && type === 'protected-session') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);

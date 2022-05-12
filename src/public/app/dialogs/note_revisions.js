@@ -171,6 +171,28 @@ async function setContentPane() {
 
         $content.html($table);
     }
+    else if (revisionItem.type === 'canvas') {
+        /**
+         * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
+         *        REMOVE external dependency!!!! This is defined in the svg in defs.style
+         */
+        const content = fullNoteRevision.content;
+
+        try {
+            const data = JSON.parse(content)
+            const svg = data.svg || "no svg present."
+
+            /**
+             * maxWidth: 100% use full width of container but do not enlarge!
+             * height:auto to ensure that height scales with width
+             */
+            const $svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
+            $content.html($('<div>').append($svgHtml));
+        } catch(err) {
+            console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
+            $content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
+        }
+    }
     else {
         $content.text("Preview isn't available for this note type.");
     }

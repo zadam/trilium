@@ -32,7 +32,7 @@ export default class NoteWrapperWidget extends FlexContainer {
 
     refresh(noteContext) {
         this.$widget.toggleClass("full-content-width",
-            ['image', 'mermaid', 'book', 'render'].includes(noteContext?.note?.type)
+            ['image', 'mermaid', 'book', 'render', 'canvas'].includes(noteContext?.note?.type)
             || !!noteContext?.note?.hasLabel('fullContentWidth')
         );
     }

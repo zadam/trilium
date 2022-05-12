@@ -99,13 +99,15 @@ const TPL = `
         padding: 10px;
     }
     
-    .note-book-content.type-image img {
+    .note-book-content.type-image img, .note-book-content.type-canvas svg {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
     }
     
-    .note-book-card.type-image .note-book-content img, .note-book-card.type-text .note-book-content img {
+    .note-book-card.type-image .note-book-content img,
+    .note-book-card.type-text .note-book-content img,
+    .note-book-card.type-canvas .note-book-content img {
         max-width: 100%;
         max-height: 100%;
     }
