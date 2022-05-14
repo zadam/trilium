@@ -33,7 +33,8 @@ class TreeContextMenu {
             { title: "Note Map", command: command, type: "note-map", uiIcon: "map-alt" },
             { title: "Render HTML note", command: command, type: "render", uiIcon: "extension" },
             { title: "Book", command: command, type: "book", uiIcon: "book" },
-            { title: "Mermaid diagram", command: command, type: "mermaid", uiIcon: "selection" }
+            { title: "Mermaid diagram", command: command, type: "mermaid", uiIcon: "selection" },
+            { title: "Canvas", command: command, type: "canvas", uiIcon: "pen" },
         ];
     }
 

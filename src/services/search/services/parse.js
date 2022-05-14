@@ -12,8 +12,7 @@ const PropertyComparisonExp = require('../expressions/property_comparison');
 const AttributeExistsExp = require('../expressions/attribute_exists');
 const LabelComparisonExp = require('../expressions/label_comparison');
 const NoteFlatTextExp = require('../expressions/note_flat_text');
-const NoteContentProtectedFulltextExp = require('../expressions/note_content_protected_fulltext');
-const NoteContentUnprotectedFulltextExp = require('../expressions/note_content_unprotected_fulltext');
+const NoteContentFulltextExp = require('../expressions/note_content_fulltext.js');
 const OrderByAndLimitExp = require('../expressions/order_by_and_limit');
 const AncestorExp = require("../expressions/ancestor");
 const buildComparator = require('./build_comparator');
@@ -32,8 +31,7 @@ function getFulltext(tokens, searchContext) {
     if (!searchContext.fastSearch) {
         return new OrExp([
             new NoteFlatTextExp(tokens),
-            new NoteContentProtectedFulltextExp('*=*', {tokens, flatText: true}),
-            new NoteContentUnprotectedFulltextExp('*=*', {tokens, flatText: true})
+            new NoteContentFulltextExp('*=*', {tokens, flatText: true})
         ]);
     }
     else {
@@ -42,7 +40,7 @@ function getFulltext(tokens, searchContext) {
 }
 
 function isOperator(str) {
-    return str.match(/^[!=<>*]+$/);
+    return str.match(/^[!=<>*%]+$/);
 }
 
 function getExpression(tokens, searchContext, level = 0) {
@@ -140,10 +138,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
             i++;
 
-            return new OrExp([
-                new NoteContentUnprotectedFulltextExp(operator, {tokens: [tokens[i].token], raw }),
-                new NoteContentProtectedFulltextExp(operator, {tokens: [tokens[i].token], raw })
-            ]);
+            return new NoteContentFulltextExp(operator, {tokens: [tokens[i].token], raw });
         }
 
         if (tokens[i].token === 'parents') {
@@ -196,8 +191,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
             return new OrExp([
                 new PropertyComparisonExp(searchContext, 'title', '*=*', tokens[i].token),
-                new NoteContentProtectedFulltextExp('*=*', {tokens: [tokens[i].token]}),
-                new NoteContentUnprotectedFulltextExp('*=*', {tokens: [tokens[i].token]})
+                new NoteContentFulltextExp('*=*', {tokens: [tokens[i].token]})
             ]);
         }
 

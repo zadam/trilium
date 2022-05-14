@@ -359,6 +359,12 @@ function isValidAttributeName(name) {
     return ATTR_NAME_MATCHER.test(name);
 }
 
+function sleep(time_ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, time_ms);
+    });
+}
+
 export default {
     reloadFrontendApp,
     parseDate,
@@ -402,5 +408,6 @@ export default {
     initHelpButtons,
     openHelp,
     filterAttributeName,
-    isValidAttributeName
+    isValidAttributeName,
+    sleep,
 };

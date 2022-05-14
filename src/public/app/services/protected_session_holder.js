@@ -1,16 +1,4 @@
-import options from './options.js';
 import server from "./server.js";
-
-let lastProtectedSessionOperationDate = 0;
-
-setInterval(() => {
-    const protectedSessionTimeout = options.getInt('protectedSessionTimeout');
-    if (lastProtectedSessionOperationDate
-        && Date.now() - lastProtectedSessionOperationDate > protectedSessionTimeout * 1000) {
-
-        resetProtectedSession();
-    }
-}, 10000);
 
 function enableProtectedSession() {
     glob.isProtectedSessionAvailable = true;
@@ -26,9 +14,9 @@ function isProtectedSessionAvailable() {
     return glob.isProtectedSessionAvailable;
 }
 
-function touchProtectedSession() {
+async function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {
-        lastProtectedSessionOperationDate = Date.now();
+        await server.post("login/protected/touch");
     }
 }
 

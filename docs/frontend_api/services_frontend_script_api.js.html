@@ -328,6 +328,24 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showError = toastService.showError;
 
     /**
+     * Trigger command.
+     *
+     * @method
+     * @param {string} name
+     * @param {object} data
+     */
+    this.triggerCommand = (name, data) => appContext.triggerCommand(name, data);
+
+    /**
+     * Trigger event.
+     *
+     * @method
+     * @param {string} name
+     * @param {object} data
+     */
+    this.triggerEvent = (name, data) => appContext.triggerEvent(name, data);
+
+    /**
      * @method
      * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
      */

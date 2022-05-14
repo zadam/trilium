@@ -24,6 +24,7 @@
     "test-all": "npm run test && npm run test-es6"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "0.11.0",
     "archiver": "5.3.1",
     "async-mutex": "0.3.2",
     "axios": "0.27.2",
@@ -34,7 +35,7 @@
     "cookie-parser": "1.4.6",
     "csurf": "1.11.0",
     "dayjs": "1.11.2",
-    "ejs": "3.1.7",
+    "ejs": "3.1.8",
     "electron-debug": "3.2.0",
     "electron-dl": "3.3.1",
     "electron-window-state": "5.0.3",
@@ -42,7 +43,7 @@
     "express": "4.18.1",
     "express-partial-content": "1.0.2",
     "express-rate-limit": "6.4.0",
-    "express-session": "1.17.2",
+    "express-session": "1.17.3",
     "fs-extra": "10.1.0",
     "helmet": "5.0.2",
     "html": "1.0.0",
@@ -63,6 +64,8 @@
     "open": "8.4.0",
     "portscanner": "2.2.0",
     "rand-token": "1.0.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "request": "2.88.2",
     "rimraf": "3.0.2",
     "sanitize-filename": "1.6.3",
@@ -81,7 +84,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "16.2.4",
+    "electron": "16.2.6",
     "electron-builder": "23.0.3",
     "electron-packager": "15.5.1",
     "electron-rebuild": "3.2.7",
@@ -90,7 +93,7 @@
     "jsdoc": "3.6.10",
     "lorem-ipsum": "2.0.4",
     "rcedit": "3.0.1",
-    "webpack": "5.72.0",
+    "webpack": "5.72.1",
     "webpack-cli": "4.9.2"
   },
   "optionalDependencies": {

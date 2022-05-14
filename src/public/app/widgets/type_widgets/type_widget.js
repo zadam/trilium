@@ -38,6 +38,9 @@ export default class TypeWidget extends NoteContextAwareWidget {
         return this.$widget.is(":visible") && this.noteContext?.ntxId === appContext.tabManager.activeNtxId;
     }
 
+    /**
+     * @returns {Promise|*} promise resolving content or directly the content
+     */ 
     getContent() {}
 
     focus() {}

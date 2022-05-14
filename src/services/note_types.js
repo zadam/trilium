@@ -7,6 +7,7 @@ module.exports = [
     'search', 
     'relation-map', 
     'book', 
-    'note-map', 
-    'mermaid'
+    'note-map',
+    'mermaid',
+    'canvas'
 ];

@@ -83,6 +83,10 @@ function logoutFromProtectedSession() {
     ws.sendMessageToAllClients({ type: 'protectedSessionLogout' });
 }
 
+function touchProtectedSession() {
+    protectedSessionService.touchProtectedSession();
+}
+
 function token(req) {
     const password = req.body.password;
 
@@ -92,7 +96,7 @@ function token(req) {
 
     // for backwards compatibility with Sender which does not send the name
     const tokenName = req.body.tokenName || "Trilium Sender / Web Clipper";
-    
+
     const {authToken} = etapiTokenService.createToken(tokenName);
 
     return { token: authToken };
@@ -102,5 +106,6 @@ module.exports = {
     loginSync,
     loginToProtectedSession,
     logoutFromProtectedSession,
+    touchProtectedSession,
     token
 };

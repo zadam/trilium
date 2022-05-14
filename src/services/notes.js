@@ -53,7 +53,7 @@ function deriveMime(type, mime) {
         mime = 'text/html';
     } else if (type === 'code' || type === 'mermaid') {
         mime = 'text/plain';
-    } else if (['relation-map', 'search'].includes(type)) {
+    } else if (['relation-map', 'search', 'canvas'].includes(type)) {
         mime = 'application/json';
     } else if (['render', 'book'].includes(type)) {
         mime = '';
@@ -84,7 +84,7 @@ function copyChildAttributes(parentNote, childNote) {
  * - {string} parentNoteId
  * - {string} title
  * - {*} content
- * - {string} type - text, code, file, image, search, book, relation-map, render
+ * - {string} type - text, code, file, image, search, book, relation-map, canvas, render
  *
  * Following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type

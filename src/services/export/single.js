@@ -41,7 +41,7 @@ function exportSingleNote(taskContext, branch, format, res) {
         extension = mimeTypes.extension(note.mime) || 'code';
         mime = note.mime;
     }
-    else if (note.type === 'relation-map' || note.type === 'search') {
+    else if (note.type === 'relation-map' || note.type === 'canvas' || note.type === 'search') {
         payload = content;
         extension = 'json';
         mime = 'application/json';

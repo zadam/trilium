@@ -168,7 +168,7 @@ const STRING_MIME_TYPES = [
 
 function isStringNote(type, mime) {
     // render and book are string note in the sense that they are expected to contain empty string
-    return ["text", "code", "relation-map", "search", "render", "book", "mermaid"].includes(type)
+    return ["text", "code", "relation-map", "search", "render", "book", "mermaid", "canvas"].includes(type)
         || mime.startsWith('text/')
         || STRING_MIME_TYPES.includes(mime);
 }
@@ -192,7 +192,7 @@ function formatDownloadTitle(filename, type, mime) {
 
     if (type === 'text') {
         return filename + '.html';
-    } else if (['relation-map', 'search'].includes(type)) {
+    } else if (['relation-map', 'canvas', 'search'].includes(type)) {
         return filename + '.json';
     } else {
         if (!mime) {

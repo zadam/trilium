@@ -11,7 +11,7 @@ function returnImage(req, res) {
     if (!image) {
         return res.sendStatus(404);
     }
-    else if (image.type !== 'image') {
+    else if (!["image", "canvas"].includes(image.type)){
         return res.sendStatus(400);
     }
     else if (image.isDeleted || image.data === null) {
@@ -19,10 +19,27 @@ function returnImage(req, res) {
         return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
 
-    res.set('Content-Type', image.mime);
-    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
-
-    res.send(image.getContent());
+    /**
+     * special "image" type. the canvas is actually type application/json 
+     * to avoid bitrot and enable usage as referenced image the svg is included.
+     */
+    if (image.type === 'canvas') {
+        const content = image.getContent();
+        try {
+            const data = JSON.parse(content);
+            
+            const svg = data.svg || '<svg />'
+            res.set('Content-Type', "image/svg+xml");
+            res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+            res.send(svg);
+        } catch(err) {
+            res.status(500).send("there was an error parsing excalidraw to svg");
+        }
+    } else {
+        res.set('Content-Type', image.mime);
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.send(image.getContent());
+    }
 }
 
 function uploadImage(req) {

@@ -13,6 +13,7 @@
       <excludeFolder url="file://$MODULE_DIR$/libraries" />
       <excludeFolder url="file://$MODULE_DIR$/docs" />
       <excludeFolder url="file://$MODULE_DIR$/bin/better-sqlite3" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
