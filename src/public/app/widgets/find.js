@@ -1,6 +1,7 @@
 /**
  * Find in note replacement for Trilium ctrl+f search
  * (c) Antonio Tejada 2022
+ * https://github.com/antoniotejada/Trilium-FindWidget
  *
  * Features:
  * - Find in writeable using ctrl+f and F3
@@ -31,74 +32,29 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import appContext from "../services/app_context.js";
 
-function getNoteAttributeValue(note, attributeType, attributeName, defaultValue) {
-    let attribute = note.getAttribute(attributeType, attributeName);
-
-    let attributeValue = (attribute != null) ? attribute.value : defaultValue;
-
-    return attributeValue;
-}
-
 const findWidgetDelayMillis = 200;
 const waitForEnter = (findWidgetDelayMillis < 0);
 
 // tabIndex=-1 on the checkbox labels is necessary so when clicking on the label
 // the focusout handler is called with relatedTarget equal to the label instead
-// of undefined. It's -1 instead of > 0 so they don't tabstop
-const TEMPLATE = `<div style="contain: none;">
-<div id="findBox" style="padding: 10px; border-top: 1px solid var(--main-border-color); ">
-    <input type="text" id="input">
-    <label tabIndex="-1" id="caseLabel"><input type="checkbox" id="caseCheck"> case</label>
-    <label tabIndex="-1" id="wordLabel"><input type="checkbox" id="wordCheck"> word</label>
-    <label tabIndex="-1" id="regexpLabel"><input type="checkbox" id="regexpCheck" disabled> regexp</label>
-    <span style="font-weight: bold;" id="curFound">0</span>/<span style="font-weight: bold;" id="numFound">0</span>
-</div>
+// of undefined. It's -1 instead of > 0, so they don't tabstop
+const TEMPLATE = `
+<div style="contain: none;">
+    <div id="findBox" style="padding: 10px; border-top: 1px solid var(--main-border-color); ">
+        <input type="text" id="input">
+        <label tabIndex="-1" id="caseLabel"><input type="checkbox" id="caseCheck"> case sensitive</label>
+        <label tabIndex="-1" id="wordLabel"><input type="checkbox" id="wordCheck"> match words</label>
+        <label tabIndex="-1" id="regexpLabel"><input type="checkbox" id="regexpCheck" disabled> regexp</label>
+        <span style="font-weight: bold;" id="curFound">0</span>/<span style="font-weight: bold;" id="numFound">0</span>
+    </div>
 </div>`;
-
-const tag = "FindWidget";
-const debugLevels = ["error", "warn", "info", "log", "debug"];
-const debugLevel = "info";
-
-let warn = function() {};
-if (debugLevel >= debugLevels.indexOf("warn")) {
-    warn = console.warn.bind(console, tag + ": ");
-}
-
-let info = function() {};
-if (debugLevel >= debugLevels.indexOf("info")) {
-    info = console.info.bind(console, tag + ": ");
-}
-
-let log = function() {};
-if (debugLevel >= debugLevels.indexOf("log")) {
-    log = console.log.bind(console, tag + ": ");
-}
-
-let dbg = function() {};
-if (debugLevel >= debugLevels.indexOf("debug")) {
-    dbg = console.debug.bind(console, tag + ": ");
-}
-
-function assert(e, msg) {
-    console.assert(e, tag + ": " + msg);
-}
-
-function debugbreak() {
-    debugger;
-}
-
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-async function getActiveContextCodeEditor() {
-    return await appContext.tabManager.getActiveContextCodeEditor();
-}
-
-async function getActiveContextTextEditor() {
-    return await appContext.tabManager.getActiveContextTextEditor();
-}
+const getActiveContextCodeEditor = async () => await appContext.tabManager.getActiveContextCodeEditor();
+const getActiveContextTextEditor = async () => await appContext.tabManager.getActiveContextTextEditor();
 
 // ck-find-result and ck-find-result_selected are the styles ck-editor
 // uses for highlighting matches, use the same one on CodeMirror
@@ -123,17 +79,16 @@ export default class FindWidget extends NoteContextAwareWidget {
 
         // XXX Use api.bindGlobalShortcut?
         $(window).keydown(async function (e){
-            dbg("keydown on window " + e.key);
-            if ((e.key == 'F3') ||
+            if ((e.key === 'F3') ||
                 // Note that for ctrl+f to work, needs to be disabled in Trilium's
                 // shortcut config menu
                 // XXX Maybe not if using bindShorcut?
-                ((e.metaKey || e.ctrlKey) && ((e.key == 'f') || (e.key == 'F')))) {
+                ((e.metaKey || e.ctrlKey) && ((e.key === 'f') || (e.key === 'F')))) {
 
                 const note = appContext.tabManager.getActiveContextNote();
                 // Only writeable text and code supported
                 const readOnly = note.getAttribute("label", "readOnly");
-                if (!readOnly && ((note.type == "code") || (note.type == "text"))) {
+                if (!readOnly && (note.type === "code" || note.type === "text")) {
                     if (findWidget.$findBox.is(":hidden")) {
 
                         findWidget.$findBox.show();
@@ -142,7 +97,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                         findWidget.$curFound.text(0);
 
                         // Initialize the input field to the text selection, if any
-                        if (note.type == "code") {
+                        if (note.type === "code") {
                             let codeEditor = getActiveContextCodeEditor();
 
                             // highlightSelectionMatches is the overlay that highlights
@@ -154,13 +109,13 @@ export default class FindWidget extends NoteContextAwareWidget {
 
                             // Fill in the findbox with the current selection if any
                             const selectedText = codeEditor.getSelection()
-                            if (selectedText != "") {
+                            if (selectedText !== "") {
                                 findWidget.$input.val(selectedText);
                             }
                             // Directly perform the search if there's some text to find,
                             // without delaying or waiting for enter
                             const needle = findWidget.$input.val();
-                            if (needle != "") {
+                            if (needle !== "") {
                                 findWidget.$input.select();
                                 await findWidget.performFind(needle);
                             }
@@ -179,7 +134,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                             // Directly perform the search if there's some text to
                             // find, without delaying or waiting for enter
                             const needle = findWidget.$input.val();
-                            if (needle != "") {
+                            if (needle !== "") {
                                 findWidget.$input.select();
                                 await findWidget.performFind(needle);
                             }
@@ -193,19 +148,18 @@ export default class FindWidget extends NoteContextAwareWidget {
         });
 
         findWidget.$input.keydown(async function (e) {
-            dbg("keydown on input " + e.key);
-            if ((e.metaKey || e.ctrlKey) && ((e.key == 'F') || (e.key == 'f'))) {
+            if ((e.metaKey || e.ctrlKey) && ((e.key === 'F') || (e.key === 'f'))) {
                 // If ctrl+f is pressed when the findbox is shown, select the
                 // whole input to find
                 findWidget.$input.select();
-            } else if ((e.key == 'Enter') || (e.key == 'F3')) {
+            } else if ((e.key === 'Enter') || (e.key === 'F3')) {
                 const needle = findWidget.$input.val();
-                if (waitForEnter && (findWidget.needle != needle)) {
+                if (waitForEnter && (findWidget.needle !== needle)) {
                     await findWidget.performFind(needle);
                 }
                 let numFound = parseInt(findWidget.$numFound.text());
                 let curFound = parseInt(findWidget.$curFound.text()) - 1;
-                dbg("Finding " + curFound + "/" + numFound + " occurrence of " + findWidget.$input.val());
+
                 if (numFound > 0) {
                     let delta =  e.shiftKey ? -1 : 1;
                     let nextFound = curFound + delta;
@@ -220,7 +174,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                     findWidget.$curFound.text(nextFound + 1);
 
                     const note = appContext.tabManager.getActiveContextNote();
-                    if (note.type == "code") {
+                    if (note.type === "code") {
                         let codeEditor = getActiveContextCodeEditor();
                         let doc = codeEditor.doc;
 
@@ -248,7 +202,6 @@ export default class FindWidget extends NoteContextAwareWidget {
 
                         codeEditor.scrollIntoView(pos.from);
                     } else {
-                        assert(note.type == "text", "Expected text note, found " + note.type);
                         const textEditor = await getActiveContextTextEditor();
 
                         // There are no parameters for findNext/findPrev
@@ -264,16 +217,15 @@ export default class FindWidget extends NoteContextAwareWidget {
                 }
                 e.preventDefault();
                 return false;
-            } else if (e.key == 'Escape') {
+            } else if (e.key === 'Escape') {
                 let numFound = parseInt(findWidget.$numFound.text());
 
                 const note = appContext.tabManager.getActiveContextNote();
-                if (note.type == "code") {
+                if (note.type === "code") {
                     let codeEditor = getActiveContextCodeEditor();
 
                     codeEditor.focus();
                 } else {
-                    assert(note.type == "text", "Expected text note, found " + note.type);
                     const textEditor = await getActiveContextTextEditor();
                     textEditor.focus();
                 }
@@ -305,12 +257,10 @@ export default class FindWidget extends NoteContextAwareWidget {
         });
 
         findWidget.$caseCheck.change(function() {
-            log("caseCheck change");
             findWidget.performFind();
         });
 
         findWidget.$wordCheck.change(function() {
-            log("wordCheck change");
             findWidget.performFind();
         });
 
@@ -320,10 +270,8 @@ export default class FindWidget extends NoteContextAwareWidget {
         findWidget.$findBox.focusout(async function (e) {
             // e.relatedTarget is the new focused element, note it can be null
             // if nothing is being focused
-            log(`focusout ${e.target.id} related ${e.relatedTarget?.id}`);
             if (findWidget.$findBox[0].contains(e.relatedTarget)) {
                 // The focused element is inside this div, ignore
-                log("focusout to child, ignoring");
                 return;
             }
             findWidget.$findBox.hide();
@@ -337,7 +285,7 @@ export default class FindWidget extends NoteContextAwareWidget {
             let numFound = parseInt(findWidget.$numFound.text());
             let curFound = parseInt(findWidget.$curFound.text()) - 1;
             const note = appContext.tabManager.getActiveContextNote();
-            if (note.type == "code") {
+            if (note.type === "code") {
                 let codeEditor = await getActiveContextCodeEditor();
                 if (numFound > 0) {
                     let doc = codeEditor.doc;
@@ -359,7 +307,6 @@ export default class FindWidget extends NoteContextAwareWidget {
                 findWidget.findResult = null;
                 findWidget.needle = null;
             } else {
-                assert(note.type == "text", "Expected text note, found " + note.type);
                 if (numFound > 0) {
                     const textEditor = await getActiveContextTextEditor();
                     // Clear the markers and set the caret to the
@@ -397,12 +344,10 @@ export default class FindWidget extends NoteContextAwareWidget {
         let curFound = -1;
 
         // Clear
-        let findAndReplaceEditing = textEditor.plugins.get('FindAndReplaceEditing');
-        log("findAndReplace clearing");
+        const findAndReplaceEditing = textEditor.plugins.get('FindAndReplaceEditing');
         findAndReplaceEditing.state.clear(model);
-        log("findAndReplace stopping");
         findAndReplaceEditing.stop();
-        if (needle != "") {
+        if (needle !== "") {
             // Parameters are callback/text, options.matchCase=false, options.wholeWords=false
             // See https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/findcommand.js#L44
             // XXX Need to use the callback version for regexp
@@ -410,23 +355,19 @@ export default class FindWidget extends NoteContextAwareWidget {
             // let re = new RegExp(needle, 'gi');
             // let m = text.match(re);
             // numFound = m ? m.length : 0;
-            log("findAndReplace starts");
             const options = { "matchCase" : matchCase, "wholeWords" : wholeWord };
             findResult = textEditor.execute('find', needle, options);
-            log("findAndReplace ends");
             numFound = findResult.results.length;
             // Find the result beyond the cursor
-            log("findAndReplace positioning");
-            let cursorPos = model.document.selection.getLastPosition();
+            const cursorPos = model.document.selection.getLastPosition();
             for (let i = 0; i < findResult.results.length; ++i) {
-                let marker = findResult.results.get(i).marker;
-                let fromPos = marker.getStart();
-                if (fromPos.compareWith(cursorPos) != "before") {
+                const marker = findResult.results.get(i).marker;
+                const fromPos = marker.getStart();
+                if (fromPos.compareWith(cursorPos) !== "before") {
                     curFound = i;
                     break;
                 }
             }
-            log("findAndReplace positioned");
         }
 
         this.findResult = findResult;
@@ -452,16 +393,16 @@ export default class FindWidget extends NoteContextAwareWidget {
         let curFound = -1;
 
         // See https://codemirror.net/addon/search/searchcursor.js for tips
-        let codeEditor = await getActiveContextCodeEditor();
-        let doc = codeEditor.doc;
-        let text = doc.getValue();
+        const codeEditor = await getActiveContextCodeEditor();
+        const doc = codeEditor.doc;
+        const text = doc.getValue();
 
         // Clear all markers
         if (this.findResult != null) {
             const findWidget = this;
             codeEditor.operation(function() {
                 for (let i = 0; i < findWidget.findResult.length; ++i) {
-                    let marker = findWidget.findResult[i];
+                    const marker = findWidget.findResult[i];
                     marker.clear();
                 }
             });
@@ -477,7 +418,7 @@ export default class FindWidget extends NoteContextAwareWidget {
             //     complicated regexp, see
             //     https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/utils.js#L145
             const wholeWordChar = wholeWord ? "\\b" : "";
-            let re = new RegExp(wholeWordChar + needle + wholeWordChar,
+            const re = new RegExp(wholeWordChar + needle + wholeWordChar,
                 'g' + (matchCase ? '' : 'i'));
             let curLine = 0;
             let curChar = 0;
@@ -500,7 +441,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                     }
                     // Create a non-selected highlight marker for the match, the
                     // selected marker highlight will be done later
-                    if (i == curMatch.index) {
+                    if (i === curMatch.index) {
                         let fromPos = { "line" : curLine, "ch" : curChar };
                         // XXX If multiline is supported, this needs to
                         //     recalculate curLine since the match may span
@@ -512,8 +453,8 @@ export default class FindWidget extends NoteContextAwareWidget {
 
                         // Set the first match beyond the cursor as current
                         // match
-                        if (curFound == -1) {
-                            let cursorPos = codeEditor.getCursor();
+                        if (curFound === -1) {
+                            const cursorPos = codeEditor.getCursor();
                             if ((fromPos.line > cursorPos.line) ||
                                 ((fromPos.line == cursorPos.line) &&
                                     (fromPos.ch >= cursorPos.ch))){
@@ -524,7 +465,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                         numFound++;
                     }
                     // Do line and char position tracking
-                    if (text[i] == "\n") {
+                    if (text[i] === "\n") {
                         curLine++;
                         curChar = 0;
                     } else {
@@ -562,38 +503,29 @@ export default class FindWidget extends NoteContextAwareWidget {
      *        state if missing.
      */
     async performFind(needle, matchCase, wholeWord) {
-        needle = (needle == undefined) ? this.$input.val() : needle;
+        needle = (needle === undefined) ? this.$input.val() : needle;
         matchCase = (matchCase === undefined) ? this.$caseCheck.prop("checked") : matchCase;
         wholeWord = (wholeWord === undefined) ? this.$wordCheck.prop("checked") : wholeWord;
-        log(`performFind needle:${needle} case:${matchCase} word:${wholeWord}`);
         const note = appContext.tabManager.getActiveContextNote();
-        if (note.type == "code") {
+        if (note.type === "code") {
             await this.performCodeNoteFind(needle, matchCase, wholeWord);
         } else {
-            assert(note.type == "text", "Expected text note, found " + note.type);
             await this.performTextNoteFind(needle, matchCase, wholeWord);
         }
     }
 
     isEnabled() {
-        dbg("isEnabled");
         return super.isEnabled()
             && ((this.note.type === 'text') || (this.note.type === 'code'))
             && !this.note.hasLabel('noFindWidget');
     }
 
     doRender() {
-        dbg("doRender");
         this.$findBox.hide();
         return this.$widget;
     }
 
-    async refreshWithNote(note) {
-        dbg("refreshWithNote");
-    }
-
     async entitiesReloadedEvent({loadResults}) {
-        dbg("entitiesReloadedEvent");
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             this.refresh();
         }
