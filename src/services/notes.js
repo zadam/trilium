@@ -17,7 +17,7 @@ const becca = require('../becca/becca');
 const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
-const TaskContext = require("./task_context.js");
+const dayjs = require("dayjs");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -79,6 +79,28 @@ function copyChildAttributes(parentNote, childNote) {
     }
 }
 
+function getNewNoteTitle(parentNote) {
+    let title = "new note";
+
+    const titleTemplate = parentNote.getLabelValue('titleTemplate');
+
+    if (titleTemplate !== null) {
+        try {
+            const now = dayjs(cls.getLocalNowDateTime() || new Date());
+
+            // "officially" injected values:
+            // - now
+            // - parentNote
+
+            title = eval('`' + titleTemplate + '`');
+        } catch (e) {
+            log.error(`Title template of note '${parentNote.noteId}' failed with: ${e.message}`);
+        }
+    }
+
+    return title;
+}
+
 /**
  * Following object properties are mandatory:
  * - {string} parentNoteId
@@ -104,8 +126,7 @@ function createNewNote(params) {
     }
 
     if (params.title === null || params.title === undefined) {
-        // empty title is allowed since it's possible to create such in the UI
-        throw new Error(`Note title must be set`);
+        params.title = getNewNoteTitle(parentNote);
     }
 
     if (params.content === null || params.content === undefined) {
