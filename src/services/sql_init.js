@@ -153,10 +153,11 @@ function setDbAsInitialized() {
 
 function optimize() {
     log.info("Optimizing database");
+    const start = Date.now();
 
     sql.execute("PRAGMA optimize");
 
-    log.info("Optimization finished.");
+    log.info(`Optimization finished in ${Date.now() - start}ms.`);
 }
 
 dbReady.then(() => {
