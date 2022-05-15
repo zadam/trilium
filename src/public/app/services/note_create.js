@@ -28,8 +28,6 @@ async function createNote(parentNotePath, options = {}) {
         [options.title, options.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
     }
 
-    const newNoteName = options.title || "new note";
-
     const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
 
     if (options.type === 'mermaid' && !options.content) {
@@ -41,7 +39,7 @@ async function createNote(parentNotePath, options = {}) {
     }
 
     const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${options.target}&targetBranchId=${options.targetBranchId || ""}`, {
-        title: newNoteName,
+        title: options.title,
         content: options.content || "",
         isProtected: options.isProtected,
         type: options.type,

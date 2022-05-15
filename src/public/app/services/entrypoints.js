@@ -43,7 +43,6 @@ export default class Entrypoints extends Component {
         const inboxNote = await dateNoteService.getInboxNote();
 
         const {note} = await server.post(`notes/${inboxNote.noteId}/children?target=into`, {
-            title: 'new note',
             content: '',
             type: 'text',
             isProtected: inboxNote.isProtected && protectedSessionHolder.isProtectedSessionAvailable()
