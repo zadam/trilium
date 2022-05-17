@@ -80,7 +80,6 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.$caseSensitiveCheckbox.change(() => this.performFind());
         this.$matchWordsCheckbox = this.$widget.find(".find-widget-match-words-checkbox");
         this.$matchWordsCheckbox.change(() => this.performFind());
-        this.findResult = null;
         this.searchTerm = null;
 
         this.$input.keydown(async e => {

@@ -45,7 +45,7 @@
     "express-rate-limit": "6.4.0",
     "express-session": "1.17.3",
     "fs-extra": "10.1.0",
-    "helmet": "5.0.2",
+    "helmet": "5.1.0",
     "html": "1.0.0",
     "html2plaintext": "2.1.4",
     "http-proxy-agent": "5.0.0",
