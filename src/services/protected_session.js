@@ -3,6 +3,7 @@
 const log = require('./log');
 const dataEncryptionService = require('./data_encryption');
 const options = require("./options");
+const sqlInit = require("./sql_init");
 
 let dataKey = null;
 
@@ -63,17 +64,19 @@ function touchProtectedSession() {
     }
 }
 
-setInterval(() => {
-    const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
-    if (isProtectedSessionAvailable()
-        && lastProtectedSessionOperationDate
-        && Date.now() - lastProtectedSessionOperationDate > protectedSessionTimeout * 1000) {
+sqlInit.dbReady.then(() => {
+    setInterval(() => {
+        const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
+        if (isProtectedSessionAvailable()
+            && lastProtectedSessionOperationDate
+            && Date.now() - lastProtectedSessionOperationDate > protectedSessionTimeout * 1000) {
 
-        resetDataKey();
+            resetDataKey();
 
-        require('./ws').reloadFrontend();
-    }
-}, 30000);
+            require('./ws').reloadFrontend();
+        }
+    }, 30000);
+});
 
 
 module.exports = {
