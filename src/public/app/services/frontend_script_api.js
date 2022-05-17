@@ -384,7 +384,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getActiveTabTextEditor = callback => {
         console.warn("api.getActiveTabTextEditor() is deprecated, use getActiveContextTextEditor() instead.");
 
-        return appContext.tabManager.getActiveContextTextEditor(callback);
+        return appContext.tabManager.getActiveContext()?.getTextEditor(callback);
     };
 
     /**
@@ -393,7 +393,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<CKEditor>} instance of CKEditor
      */
-    this.getActiveContextTextEditor = () => appContext.tabManager.getActiveContextTextEditor();
+    this.getActiveContextTextEditor = () => appContext.tabManager.getActiveContext()?.getTextEditor();
 
     /**
      * See https://codemirror.net/doc/manual.html#api
@@ -401,7 +401,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<CodeMirror>} instance of CodeMirror
      */
-    this.getActiveContextCodeEditor = () => appContext.tabManager.getActiveContextCodeEditor();
+    this.getActiveContextCodeEditor = () => appContext.tabManager.getActiveContext()?.getCodeEditor();
 
     /**
      * Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the

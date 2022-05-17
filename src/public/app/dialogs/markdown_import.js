@@ -16,7 +16,7 @@ async function convertMarkdownToHtml(text) {
 
     const result = writer.render(parsed);
 
-    appContext.triggerCommand('executeInActiveTextEditor', {
+    appContext.triggerCommand('executeInTextEditor', {
         callback: textEditor => {
             const viewFragment = textEditor.data.processor.toView(result);
             const modelFragment = textEditor.data.toModel(viewFragment);
@@ -24,7 +24,8 @@ async function convertMarkdownToHtml(text) {
             textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);
 
             toastService.showMessage("Markdown content has been imported into the document.");
-        }
+        },
+        ntxId: this.ntxId
     });
 }
 

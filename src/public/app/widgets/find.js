@@ -78,8 +78,8 @@ export default class FindWidget extends NoteContextAwareWidget {
 
         this.searchTerm = null;
 
-        this.textHandler = new FindInText();
-        this.codeHandler = new FindInCode();
+        this.textHandler = new FindInText(this);
+        this.codeHandler = new FindInCode(this);
     }
 
     doRender() {
@@ -155,11 +155,15 @@ export default class FindWidget extends NoteContextAwareWidget {
 
             this.$currentFound.text(nextFound + 1);
 
-            await this.getHandler().findNext(direction, currentFound, nextFound);
+            await this.handler.findNext(direction, currentFound, nextFound);
         }
     }
 
     async findInTextEvent() {
+        if (!this.isActiveNoteContext()) {
+            return;
+        }
+
         // Only writeable text and code supported
         const readOnly = await this.noteContext.isReadOnly();
 
@@ -172,7 +176,7 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.$totalFound.text(0);
         this.$currentFound.text(0);
 
-        const searchTerm = await this.getHandler().getInitialSearchTerm();
+        const searchTerm = await this.handler.getInitialSearchTerm();
 
         this.$input.val(searchTerm || "");
 
@@ -190,7 +194,7 @@ export default class FindWidget extends NoteContextAwareWidget {
         const matchCase = this.$caseSensitiveCheckbox.prop("checked");
         const wholeWord = this.$matchWordsCheckbox.prop("checked");
 
-        const {totalFound, currentFound} = await this.getHandler().performFind(searchTerm, matchCase, wholeWord);
+        const {totalFound, currentFound} = await this.handler.performFind(searchTerm, matchCase, wholeWord);
 
         this.$totalFound.text(totalFound);
         this.$currentFound.text(currentFound);
@@ -207,7 +211,7 @@ export default class FindWidget extends NoteContextAwareWidget {
         const currentFound = parseInt(this.$currentFound.text()) - 1;
 
         if (totalFound > 0) {
-            await this.getHandler().cleanup(totalFound, currentFound);
+            await this.handler.cleanup(totalFound, currentFound);
         }
 
         this.searchTerm = null;
@@ -223,7 +227,7 @@ export default class FindWidget extends NoteContextAwareWidget {
         return super.isEnabled() && ['text', 'code'].includes(this.note.type);
     }
 
-    getHandler() {
+    get handler() {
         return this.note.type === "code"
             ? this.codeHandler
             : this.textHandler;

@@ -1,10 +1,14 @@
-import appContext from "../services/app_context.js";
-
-const getActiveContextTextEditor = async () => await appContext.tabManager.getActiveContextTextEditor();
-
 export default class FindInText {
+    constructor(parent) {
+        this.parent = parent;
+    }
+
+    async getTextEditor() {
+        return this.parent.noteContext.getTextEditor();
+    }
+
     async getInitialSearchTerm() {
-        const textEditor = await getActiveContextTextEditor();
+        const textEditor = await this.getTextEditor();
 
         const selection = textEditor.model.document.selection;
         const range = selection.getFirstRange();
@@ -19,7 +23,7 @@ export default class FindInText {
     async performFind(searchTerm, matchCase, wholeWord) {
         // Do this even if the searchTerm is empty so the markers are cleared and
         // the counters updated
-        const textEditor = await getActiveContextTextEditor();
+        const textEditor = await this.getTextEditor();
         const model = textEditor.model;
         let findResult = null;
         let totalFound = 0;
@@ -73,7 +77,7 @@ export default class FindInText {
     }
 
     async findNext(direction, currentFound, nextFound) {
-        const textEditor = await getActiveContextTextEditor();
+        const textEditor = await this.getTextEditor();
 
         // There are no parameters for findNext/findPrev
         // See https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/findnextcommand.js#L57
@@ -88,7 +92,7 @@ export default class FindInText {
 
     async cleanup(totalFound, currentFound) {
         if (totalFound > 0) {
-            const textEditor = await getActiveContextTextEditor();
+            const textEditor = await this.getTextEditor();
             // Clear the markers and set the caret to the
             // current occurrence
             const model = textEditor.model;
@@ -110,7 +114,7 @@ export default class FindInText {
     }
 
     async close() {
-        const textEditor = await getActiveContextTextEditor();
+        const textEditor = await this.getTextEditor();
         textEditor.focus();
     }
 }

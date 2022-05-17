@@ -229,8 +229,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         return !selection.isCollapsed;
     }
 
-    async executeInActiveTextEditorEvent({callback, resolve}) {
-        if (!this.isActive()) {
+    async executeInTextEditorEvent({callback, resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 

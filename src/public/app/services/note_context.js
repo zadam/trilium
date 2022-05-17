@@ -226,6 +226,21 @@ class NoteContext extends Component {
             && this.note.mime !== 'text/x-sqlite;schema=trilium'
             && !this.note.hasLabel('hideChildrenOverview');
     }
+
+    async getTextEditor(callback) {
+        return new Promise(resolve => appContext.triggerCommand('executeInTextEditor', {
+            callback,
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
+
+    async getCodeEditor() {
+        return new Promise(resolve => appContext.triggerCommand('executeInCodeEditor', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
 }
 
 export default NoteContext;

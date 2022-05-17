@@ -171,8 +171,8 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         }
     }
 
-    async executeInActiveCodeEditorEvent({resolve}) {
-        if (!this.isActive()) {
+    async executeInCodeEditorEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 

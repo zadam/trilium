@@ -1,17 +1,22 @@
-import appContext from "../services/app_context.js";
-
 // ck-find-result and ck-find-result_selected are the styles ck-editor
 // uses for highlighting matches, use the same one on CodeMirror
 // for consistency
 const FIND_RESULT_SELECTED_CSS_CLASSNAME = "ck-find-result_selected";
 const FIND_RESULT_CSS_CLASSNAME = "ck-find-result";
 
-const getActiveContextCodeEditor = async () => await appContext.tabManager.getActiveContextCodeEditor();
 const escapeRegExp = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default class FindInCode {
+    constructor(parent) {
+        this.parent = parent;
+    }
+
+    async getCodeEditor() {
+        return this.parent.noteContext.getCodeEditor();
+    }
+
     async getInitialSearchTerm() {
-        const codeEditor = await getActiveContextCodeEditor();
+        const codeEditor = await this.getCodeEditor();
 
         // highlightSelectionMatches is the overlay that highlights
         // the words under the cursor. This occludes the search
@@ -33,7 +38,7 @@ export default class FindInCode {
         let currentFound = -1;
 
         // See https://codemirror.net/addon/search/searchcursor.js for tips
-        const codeEditor = await getActiveContextCodeEditor();
+        const codeEditor = await this.getCodeEditor();
         const doc = codeEditor.doc;
         const text = doc.getValue();
 
@@ -135,7 +140,7 @@ export default class FindInCode {
     }
 
     async findNext(direction, currentFound, nextFound) {
-        const codeEditor = await getActiveContextCodeEditor();
+        const codeEditor = await this.getCodeEditor();
         const doc = codeEditor.doc;
 
         //
@@ -164,7 +169,7 @@ export default class FindInCode {
     }
 
     async cleanup(totalFound, currentFound) {
-        const codeEditor = await getActiveContextCodeEditor();
+        const codeEditor = await this.getCodeEditor();
 
         if (totalFound > 0) {
             const doc = codeEditor.doc;
@@ -187,7 +192,7 @@ export default class FindInCode {
     }
 
     async close() {
-        const codeEditor = await getActiveContextCodeEditor();
+        const codeEditor = await this.getCodeEditor();
         codeEditor.focus();
     }
 }
