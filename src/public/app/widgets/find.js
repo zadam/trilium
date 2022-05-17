@@ -4,7 +4,6 @@
  */
 
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import appContext from "../services/app_context.js";
 import FindInText from "./find_in_text.js";
 import FindInCode from "./find_in_code.js";
 
@@ -34,10 +33,18 @@ const TPL = `
         .find-widget-found-wrapper {
             font-weight: bold;
         }
+        
+        .find-widget-search-term-input {
+            max-width: 250px;
+        }
+        
+        .find-widget-spacer {
+            flex-grow: 1;
+        }
     </style>
 
     <div class="find-widget-box">
-        <input type="text" class="font-control find-widget-search-term-input">
+        <input type="text" class="form-control find-widget-search-term-input">
         
         <div class="form-check">
             <label tabIndex="-1" class="form-check-label">
@@ -58,12 +65,18 @@ const TPL = `
             /
             <span class="find-widget-total-found">0</span>
         </div>
+        
+        <div class="find-widget-spacer"></div>
+        
+        <div class="find-widget-close-button"><button class="btn icon-action bx bx-x"></button></div>
     </div>
 </div>`;
 
 export default class FindWidget extends NoteContextAwareWidget {
     constructor() {
         super();
+
+        this.searchTerm = null;
 
         this.textHandler = new FindInText();
         this.codeHandler = new FindInCode();
@@ -80,7 +93,8 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.$caseSensitiveCheckbox.change(() => this.performFind());
         this.$matchWordsCheckbox = this.$widget.find(".find-widget-match-words-checkbox");
         this.$matchWordsCheckbox.change(() => this.performFind());
-        this.searchTerm = null;
+        this.$closeButton = this.$widget.find(".find-widget-close-button");
+        this.$closeButton.on("click", () => this.closeSearch());
 
         this.$input.keydown(async e => {
             if ((e.metaKey || e.ctrlKey) && (e.key === 'F' || e.key === 'f')) {
@@ -92,25 +106,11 @@ export default class FindWidget extends NoteContextAwareWidget {
                 e.preventDefault();
                 return false;
             } else if (e.key === 'Escape') {
-                await this.getHandler().close();
+                await this.closeSearch();
             }
         });
 
         this.$input.on('input', () => this.startSearch());
-
-        // Note blur doesn't bubble to parent div, but the parent div needs to
-        // detect when any of the children are not focused and hide. Use
-        // focusout instead which does bubble to the parent div.
-        this.$findBox.on('focusout', async e => {
-            // e.relatedTarget is the new focused element, note it can be null
-            // if nothing is being focused
-            if (this.$findBox[0].contains(e.relatedTarget)) {
-                // The focused element is inside this div, ignore
-                return;
-            }
-
-            await this.closeSearch();
-        });
 
         return this.$widget;
     }
@@ -128,12 +128,9 @@ export default class FindWidget extends NoteContextAwareWidget {
             // immediately, as this can cause search word typing lag with
             // one or two-char searchwords and long notes
             // See https://github.com/antoniotejada/Trilium-FindWidget/issues/1
-            const searchTerm = this.$input.val();
-            const matchCase = this.$caseSensitiveCheckbox.prop("checked");
-            const wholeWord = this.$matchWordsCheckbox.prop("checked");
             this.timeoutId = setTimeout(async () => {
                 this.timeoutId = null;
-                await this.performFind(searchTerm, matchCase, wholeWord);
+                await this.performFind();
             }, findWidgetDelayMillis);
         }
     }
@@ -141,7 +138,7 @@ export default class FindWidget extends NoteContextAwareWidget {
     async findNext(e) {
         const searchTerm = this.$input.val();
         if (waitForEnter && this.searchTerm !== searchTerm) {
-            await this.performFind(searchTerm);
+            await this.performFind();
         }
         const totalFound = parseInt(this.$totalFound.text());
         const currentFound = parseInt(this.$currentFound.text()) - 1;
@@ -163,41 +160,35 @@ export default class FindWidget extends NoteContextAwareWidget {
     }
 
     async findInTextEvent() {
-        const note = appContext.tabManager.getActiveContextNote();
         // Only writeable text and code supported
-        const readOnly = note.getAttribute("label", "readOnly");
-        if (!readOnly && (note.type === "code" || note.type === "text")) {
-            if (this.$findBox.is(":hidden")) {
-                this.$findBox.show();
-                this.$input.focus();
-                this.$totalFound.text(0);
-                this.$currentFound.text(0);
+        const readOnly = await this.noteContext.isReadOnly();
 
-                const searchTerm = await this.getHandler().getInitialSearchTerm();
+        if (readOnly || !['text', 'code'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
+            return;
+        }
 
-                this.$input.val(searchTerm || "");
+        this.$findBox.show();
+        this.$input.focus();
+        this.$totalFound.text(0);
+        this.$currentFound.text(0);
 
-                // Directly perform the search if there's some text to
-                // find, without delaying or waiting for enter
-                if (searchTerm !== "") {
-                    this.$input.select();
-                    await this.performFind(searchTerm);
-                }
-            }
+        const searchTerm = await this.getHandler().getInitialSearchTerm();
+
+        this.$input.val(searchTerm || "");
+
+        // Directly perform the search if there's some text to
+        // find, without delaying or waiting for enter
+        if (searchTerm !== "") {
+            this.$input.select();
+            await this.performFind();
         }
     }
 
-    /**
-     * Perform the find and highlight the find results.
-     *
-     * @param [searchTerm] {string} taken from the input box if missing.
-     * @param [matchCase] {boolean} taken from the checkbox state if missing.
-     * @param [wholeWord] {boolean} taken from the checkbox state if missing.
-     */
-    async performFind(searchTerm, matchCase, wholeWord) {
-        searchTerm = (searchTerm === undefined) ? this.$input.val() : searchTerm;
-        matchCase = (matchCase === undefined) ? this.$caseSensitiveCheckbox.prop("checked") : matchCase;
-        wholeWord = (wholeWord === undefined) ? this.$matchWordsCheckbox.prop("checked") : wholeWord;
+    /** Perform the find and highlight the find results. */
+    async performFind() {
+        const searchTerm = this.$input.val();
+        const matchCase = this.$caseSensitiveCheckbox.prop("checked");
+        const wholeWord = this.$matchWordsCheckbox.prop("checked");
 
         const {totalFound, currentFound} = await this.getHandler().performFind(searchTerm, matchCase, wholeWord);
 
@@ -212,10 +203,6 @@ export default class FindWidget extends NoteContextAwareWidget {
 
         // Restore any state, if there's a current occurrence clear markers
         // and scroll to and select the last occurrence
-
-        // XXX Switching to a different tab with crl+tab doesn't invoke
-        //     blur and leaves a stale search which then breaks when
-        //     navigating it
         const totalFound = parseInt(this.$totalFound.text());
         const currentFound = parseInt(this.$currentFound.text()) - 1;
 
@@ -226,23 +213,19 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.searchTerm = null;
     }
 
-    isEnabled() {
-        return super.isEnabled() && (this.note.type === 'text' || this.note.type === 'code');
-    }
-
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             this.refresh();
         }
     }
 
-    getHandler() {
-        const note = appContext.tabManager.getActiveContextNote();
+    isEnabled() {
+        return super.isEnabled() && ['text', 'code'].includes(this.note.type);
+    }
 
-        if (note.type === "code") {
-            return this.codeHandler;
-        } else {
-            return this.textHandler;
-        }
+    getHandler() {
+        return this.note.type === "code"
+            ? this.codeHandler
+            : this.textHandler;
     }
 }
