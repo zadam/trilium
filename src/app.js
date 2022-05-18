@@ -20,7 +20,8 @@ app.set('view engine', 'ejs');
 
 app.use(helmet({
     hidePoweredBy: false, // errors out in electron
-    contentSecurityPolicy: false
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
 }));
 
 app.use(express.text({limit: '500mb'}));
