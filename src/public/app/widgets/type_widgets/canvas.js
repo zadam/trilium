@@ -33,42 +33,42 @@ const TPL = `
 /**
  * # Canvas note with excalidraw
  * @author thfrei 2022-05-11
- * 
+ *
  * Background:
  * excalidraw gives great support for hand drawn notes. It also allows to include images and support
  * for sketching. Excalidraw has a vibrant and active community.
- * 
+ *
  * Functionality:
- * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we 
+ * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we
  * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used
  * for displaying any canvas note inside of a text note as an image.
- * 
+ *
  * Paths not taken.
  *  - excalidraw-to-svg (node.js) could be used to avoid storing the svg in the backend.
  *    We could render the SVG on the fly. However, as of now, it does not render any hand drawn
- *    (freedraw) paths. There is an issue with Path2D object not present in node-canvas library 
+ *    (freedraw) paths. There is an issue with Path2D object not present in node-canvas library
  *    used by jsdom. (See Trilium PR for samples and other issues in respective library.
  *    Link will be added later). Related links:
  *     - https://github.com/Automattic/node-canvas/pull/2013
- *     - https://github.com/google/canvas-5-polyfill 
- *     - https://github.com/Automattic/node-canvas/issues/1116 
- *     - https://www.npmjs.com/package/path2d-polyfill 
+ *     - https://github.com/google/canvas-5-polyfill
+ *     - https://github.com/Automattic/node-canvas/issues/1116
+ *     - https://www.npmjs.com/package/path2d-polyfill
  *  - excalidraw-to-svg (node.js) takes quite some time to load an image (1-2s)
  *  - excalidraw-utils (browser) does render freedraw, however NOT freedraw with background. It is not
  *    used, since it is a big dependency, and has the same functionality as react + excalidraw.
  *  - infinite-drawing-canvas with fabric.js. This library lacked a lot of feature, excalidraw already
  *    has.
- * 
+ *
  * Known issues:
  *  - v0.11.0 of excalidraw does not render freedraw backgrounds in the svg
  *  - the 3 excalidraw fonts should be included in the share and everywhere, so that it is shown
  *    when requiring svg.
- * 
+ *
  * Discussion of storing svg in the note:
  *  - Pro: we will combat bit-rot. Showing the SVG will be very fast and easy, since it is already there.
- *  - Con: The note will get bigger (~40-50%?), we will generate more bandwith. However, using trilium 
+ *  - Con: The note will get bigger (~40-50%?), we will generate more bandwith. However, using trilium
  *         desktop instance mitigates that issue.
- * 
+ *
  * Roadmap:
  *  - Support image-notes as reference in excalidraw
  *  - Support canvas note as reference (svg) in other canvas notes.
@@ -95,52 +95,42 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         // will be overwritten
         this.excalidrawRef;
         this.$render;
-        this.renderElement;
         this.$widget;
         this.reactHandlers; // used to control react state
-        
+
         this.createExcalidrawReactApp = this.createExcalidrawReactApp.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
     }
 
-    /**
-     * (trilium)
-     * @returns {string} "canvas"
-     */
     static getType() {
         return "canvas";
     }
 
-    /**
-     * (trilium)
-     * renders note
-     */
     doRender() {
         this.$widget = $(TPL);
 
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-render');
-        this.renderElement = this.$render.get(0);
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
             .then(() => {
                 const React = window.React;
                 const ReactDOM = window.ReactDOM;
-                
-                ReactDOM.unmountComponentAtNode(this.renderElement);
-                ReactDOM.render(React.createElement(this.createExcalidrawReactApp), this.renderElement);
-            })
+                const renderElement = this.$render.get(0);
+
+                ReactDOM.unmountComponentAtNode(renderElement);
+                ReactDOM.render(React.createElement(this.createExcalidrawReactApp), renderElement);
+            });
 
         return this.$widget;
     }
 
     /**
-     * (trilium)
      * called to populate the widget container with the note content
-     * 
-     * @param {note} note 
+     *
+     * @param {note} note
      */
     async doRefresh(note) {
         // see if note changed, since we do not get a new class for a new note
@@ -150,7 +140,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             this.currentSceneVersion = this.SCENE_VERSION_INITIAL;
         }
         this.currentNoteId = note.noteId;
-        
+
         // get note from backend and put into canvas
         const noteComplement = await froca.getNoteComplement(note.noteId);
 
@@ -166,25 +156,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * note into this fresh note. Probably due to that this note-instance does not get
          * newly instantiated?
          */
-        if (this.excalidrawRef.current && noteComplement.content === "") {
+        if (this.excalidrawRef.current && noteComplement.content?.trim() === "") {
             const sceneData = {
-                elements: [], 
+                elements: [],
                 appState: {},
                 collaborators: []
             };
-            
+
             this.excalidrawRef.current.updateScene(sceneData);
         }
-
-        /**
-         * load saved content into excalidraw canvas
-         */
         else if (this.excalidrawRef.current && noteComplement.content) {
-            let content ={
-                elements: [],
-                appState: [],
-                files: [],
-            };
+            // load saved content into excalidraw canvas
+            let content;
 
             try {
                 content = JSON.parse(noteComplement.content || "");
@@ -192,6 +175,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 console.error("Error parsing content. Probably note.type changed",
                               "Starting with empty canvas"
                               , note, noteComplement, err);
+
+                content = {
+                    elements: [],
+                    appState: [],
+                    files: [],
+                };
             }
 
             const {elements, appState, files} = content;
@@ -207,7 +196,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             appState.offsetTop = boundingClientRect.top;
 
             const sceneData = {
-                elements, 
+                elements,
                 appState,
                 collaborators: []
             };
@@ -225,12 +214,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 fileArray.push(file);
             }
 
-            this.sceneVersion = window.Excalidraw.getSceneVersion(elements);
-
             this.excalidrawRef.current.updateScene(sceneData);
             this.excalidrawRef.current.addFiles(fileArray);
         }
-        
+
         // set initial scene version
         if (this.currentSceneVersion === this.SCENE_VERSION_INITIAL) {
             this.currentSceneVersion = this.getSceneVersion();
@@ -238,20 +225,19 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     /**
-     * (trilium)
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
      * this is automatically called after this.saveData();
      */
     async getContent() {
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
-        
+
         /**
          * A file is not deleted, even though removed from canvas. therefore we only keep
          * files that are referenced by an element. Maybe this will change with new excalidraw version?
          */
         const files = this.excalidrawRef.current.getFiles();
-        
+
         /**
          * parallel svg export to combat bitrot and enable rendering image for note inclusion,
          * preview and share.
@@ -285,13 +271,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             svg: svgSafeString, // not needed for excalidraw, used for note_short, content, and image api
         };
 
-        const contentString = JSON.stringify(content);
-
-        return contentString;
+        return JSON.stringify(content);
     }
 
     /**
-     * (trilium)
      * save content to backend
      * spacedUpdate is kind of a debouncer.
      */
@@ -300,8 +283,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     }
 
     onChangeHandler() {
-        const appState = this.excalidrawRef.current.getAppState() || {};
-
         // changeHandler is called upon any tiny change in excalidraw. button clicked, hover, etc.
         // make sure only when a new element is added, we actually save something.
         const isNewSceneVersion = this.isNewSceneVersion();
@@ -336,11 +317,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             height: undefined
         });
 
-        const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
-        const [zenModeEnabled, setZenModeEnabled] = React.useState(false);
-        const [gridModeEnabled, setGridModeEnabled] = React.useState(false);
-        const [synchronized, setSynchronized] = React.useState(true);
-        
         React.useEffect(() => {
             const dimensions = {
                 width: excalidrawWrapperRef.current.getBoundingClientRect().width,
@@ -355,9 +331,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 };
                 setDimensions(dimensions);
             };
-            
+
             window.addEventListener("resize", onResize);
-            
+
             return () => window.removeEventListener("resize", onResize);
         }, [excalidrawWrapperRef]);
 
@@ -366,9 +342,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             const { nativeEvent } = event.detail;
             const isNewTab = nativeEvent.ctrlKey || nativeEvent.metaKey;
             const isNewWindow = nativeEvent.shiftKey;
-            const isInternalLink = link.startsWith("/") 
+            const isInternalLink = link.startsWith("/")
                 || link.includes(window.location.origin);
-                
+
             if (isInternalLink && !isNewTab && !isNewWindow) {
                 // signal that we're handling the redirect ourselves
                 event.preventDefault();
@@ -401,9 +377,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     onCollabButtonClick: () => {
                         window.alert("You clicked on collab button. No collaboration is implemented.");
                     },
-                    viewModeEnabled: viewModeEnabled,
-                    zenModeEnabled: zenModeEnabled,
-                    gridModeEnabled: gridModeEnabled,
+                    viewModeEnabled: false,
+                    zenModeEnabled: false,
+                    gridModeEnabled: false,
                     isCollaborating: false,
                     detectScroll: false,
                     handleKeyboardGlobally: false,
@@ -412,18 +388,18 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 })
             )
         );
-    }    
+    }
 
     /**
      * needed to ensure, that multipleOnChangeHandler calls do not trigger a safe.
      * we compare the scene version as suggested in:
      * https://github.com/excalidraw/excalidraw/issues/3014#issuecomment-778115329
-     * 
+     *
      * info: sceneVersions are not incrementing. it seems to be a pseudo-random number
      */
      isNewSceneVersion() {
         const sceneVersion = this.getSceneVersion();
-        
+
         return this.currentSceneVersion === this.SCENE_VERSION_INITIAL // initial scene version update
             || this.currentSceneVersion !== sceneVersion // ensure scene changed
         ;
@@ -432,8 +408,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     getSceneVersion() {
         if (this.excalidrawRef) {
             const elements = this.excalidrawRef.current.getSceneElements();
-            const sceneVersion = window.Excalidraw.getSceneVersion(elements);
-            return sceneVersion;
+            return window.Excalidraw.getSceneVersion(elements);
         } else {
             return this.SCENE_VERSION_ERROR;
         }
@@ -442,11 +417,11 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     updateSceneVersion() {
         this.currentSceneVersion = this.getSceneVersion();
     }
-    
+
     /**
      * logs to console.log with some predefined title
-     * 
-     * @param  {...any} args 
+     *
+     * @param  {...any} args
      */
     log(...args) {
         let title = '';
@@ -461,12 +436,12 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     /**
      * replaces exlicraw.com with own assets
-     * 
+     *
      * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
      * needed for v0.11.0
-     * 
-     * @param {string} string 
-     * @returns 
+     *
+     * @param {string} string
+     * @returns
      */
     replaceExternalAssets = (string) => {
         let result = string;
