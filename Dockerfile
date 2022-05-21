@@ -21,10 +21,15 @@ RUN set -x \
     && npm install --production \
     && apk del .build-dependencies
 
+# Some setup tools need to be kept
+RUN apk add --no-cache su-exec
+
 # Bundle app source
 COPY . .
 
-USER node
+# Add application user and setup proper volume permissions
+RUN adduser -s /bin/false node; exit 0
 
+# Start the application
 EXPOSE 8080
-CMD [ "node", "./src/www" ]
+CMD [ "./start-docker.sh" ]
