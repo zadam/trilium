@@ -33,7 +33,13 @@ const TPL = `
 </div>
 
 <div>
-    <h4>Image compression</h4>
+    <h4>Images</h4>
+    
+    <div class="form-group">
+        <input id="download-images-automatically" type="checkbox" name="download-images-automatically">
+        <label for="download-images-automatically">Download images automatically for offline use.</label>
+        <p>(pasted HTML can contain references to online images, Trilium will find those references and download the images so that they are available offline)</p>
+    </div>
     
     <div class="form-group">
         <input id="image-compresion-enabled" type="checkbox" name="image-compression-enabled">
@@ -216,6 +222,15 @@ export default class ProtectedSessionOptions {
             return false;
         });
 
+        this.$downloadImagesAutomatically = $("#download-images-automatically");
+
+        this.$downloadImagesAutomatically.on("change", () => {
+            const isChecked = this.$downloadImagesAutomatically.prop("checked");
+            const opts = { 'downloadImagesAutomatically': isChecked ? 'true' : 'false' };
+
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+        });
+
         this.$enableImageCompression = $("#image-compresion-enabled");
         this.$imageCompressionWrapper = $("#image-compression-enabled-wraper");
 
@@ -225,7 +240,7 @@ export default class ProtectedSessionOptions {
             } else {
                 this.$imageCompressionWrapper.addClass("disabled-field");
             }
-        }
+        };
 
         this.$enableImageCompression.on("change", () => {
             const isChecked = this.$enableImageCompression.prop("checked");
@@ -234,7 +249,7 @@ export default class ProtectedSessionOptions {
             server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
 
             this.setImageCompression(isChecked);
-        })
+        });
     }
 
     optionsLoaded(options) {
@@ -250,6 +265,9 @@ export default class ProtectedSessionOptions {
 
         this.$autoReadonlySizeText.val(options['autoReadonlySizeText']);
         this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
+
+        const downloadImagesAutomatically = options['downloadImagesAutomatically'] === 'true';
+        this.$downloadImagesAutomatically.prop('checked', downloadImagesAutomatically);
 
         const compressImages = options['compressImages'] === 'true';
         this.$enableImageCompression.prop('checked', compressImages);

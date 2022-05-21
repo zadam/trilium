@@ -29,13 +29,13 @@ function initNotSyncedOptions(initialized, opts = {}) {
     optionService.createOption('lastSyncedPush', '0', false);
 
     let theme = 'dark'; // default based on the poll in https://github.com/zadam/trilium/issues/2516
-    
+
     if (utils.isElectron()) {
         const {nativeTheme} = require('electron');
-        
+
         theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
     }
-    
+
     optionService.createOption('theme', theme, false);
 
     optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
@@ -83,7 +83,8 @@ const defaultOptions = [
     { name: 'weeklyBackupEnabled', value: 'true', isSynced: false },
     { name: 'monthlyBackupEnabled', value: 'true', isSynced: false },
     { name: 'maxContentWidth', value: '1200', isSynced: false },
-    { name: 'compressImages', value: 'true', isSynced: true }
+    { name: 'compressImages', value: 'true', isSynced: true },
+    { name: 'downloadImagesAutomatically', value: 'true', isSynced: true }
 ];
 
 function initStartupOptions() {

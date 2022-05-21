@@ -323,6 +323,10 @@ function replaceUrl(content, url, imageNote) {
 }
 
 function downloadImages(noteId, content) {
+    if (!optionService.getOptionBool("downloadImagesAutomatically")) {
+        return content;
+    }
+
     const imageRe = /<img[^>]*?\ssrc=['"]([^'">]+)['"]/ig;
     let imageMatch;
 
