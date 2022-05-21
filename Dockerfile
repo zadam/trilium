@@ -18,7 +18,6 @@ RUN set -x \
         nasm \
         libpng-dev \
         python3 \
-        wget \
     && npm install --production \
     && apk del .build-dependencies
 
