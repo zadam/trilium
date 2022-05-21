@@ -23,6 +23,11 @@ const TPL = `
         .zen-mode-transition.App-menu_bottom--transition-left {
             transform: none;
         }
+        
+        /* collaboration not possible so hide the button */
+        .CollabButton {
+            display: none !important;
+        }
 
         </style>
         <!-- height here necessary. otherwise excalidraw not shown -->
@@ -112,6 +117,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-render');
+        const documentStyle = window.getComputedStyle(document.documentElement);
+        this.themeStyle = documentStyle.getPropertyValue('--theme-style')?.trim();
 
         libraryLoader
             .requireLibrary(libraryLoader.EXCALIDRAW)
@@ -184,6 +191,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             }
 
             const {elements, appState, files} = content;
+
+            appState.theme = this.themeStyle;
 
             /**
              * use widths and offsets of current view, since stored appState has the state from
@@ -365,18 +374,14 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     ref: excalidrawWrapperRef
                 },
                 React.createElement(Excalidraw.default, {
+                    theme: "light", // not in effect, but causes the theme toggle button to disappear
                     ref: excalidrawRef,
                     width: dimensions.width,
                     height: dimensions.height,
-                    // initialData: InitialData,
                     onPaste: (data, event) => {
                         this.log("Verbose: excalidraw internal paste. No trilium action implemented.", data, event);
                     },
                     onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
-                    // onPointerUpdate: (payload) => console.log(payload),
-                    onCollabButtonClick: () => {
-                        window.alert("You clicked on collab button. No collaboration is implemented.");
-                    },
                     viewModeEnabled: false,
                     zenModeEnabled: false,
                     gridModeEnabled: false,

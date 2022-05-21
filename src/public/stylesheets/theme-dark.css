@@ -79,3 +79,7 @@ body ::-webkit-calendar-picker-indicator {
 body .CodeMirror {
     filter: invert(90%) hue-rotate(180deg);
 }
+
+.excalidraw.theme--dark {
+    --theme-filter: invert(80%) hue-rotate(180deg) !important;
+}
