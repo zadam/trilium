@@ -153,7 +153,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         // before we load content into excalidraw, make sure excalidraw has loaded
         while (!this.excalidrawRef || !this.excalidrawRef.current) {
-            this.log("excalidrawRef not yet loeaded, sleep 200ms...");
+            console.log("excalidrawRef not yet loaded, sleep 200ms...");
             await sleep(200);
         }
 
@@ -166,7 +166,9 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         if (this.excalidrawRef.current && noteComplement.content?.trim() === "") {
             const sceneData = {
                 elements: [],
-                appState: {},
+                appState: {
+                    theme: this.themeStyle
+                },
                 collaborators: []
             };
 
@@ -379,7 +381,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     width: dimensions.width,
                     height: dimensions.height,
                     onPaste: (data, event) => {
-                        this.log("Verbose: excalidraw internal paste. No trilium action implemented.", data, event);
+                        console.log("Verbose: excalidraw internal paste. No trilium action implemented.", data, event);
                     },
                     onChange: debounce(this.onChangeHandler, this.DEBOUNCE_TIME_ONCHANGEHANDLER),
                     viewModeEnabled: false,
@@ -421,22 +423,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     updateSceneVersion() {
         this.currentSceneVersion = this.getSceneVersion();
-    }
-
-    /**
-     * logs to console.log with some predefined title
-     *
-     * @param  {...any} args
-     */
-    log(...args) {
-        let title = '';
-        if (this.note) {
-            title = this.note.title;
-        } else {
-            title = this.noteId + "nt/na";
-        }
-
-        console.log(title, "=", this.noteId, "==",  ...args);
     }
 
     /**
