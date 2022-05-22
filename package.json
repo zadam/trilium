@@ -21,7 +21,8 @@
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
     "test": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
-    "test-all": "npm run test && npm run test-es6"
+    "test-all": "npm run test && npm run test-es6",
+    "postinstall": "rimraf ./node_modules/canvas"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.11.0",
