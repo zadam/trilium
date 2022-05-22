@@ -182,6 +182,10 @@ span.fancytree-selected {
     font-style: italic;
 }
 
+span.fancytree-selected .fancytree-title {
+    text-decoration: underline;
+}
+
 span.fancytree-node:hover {
     border: 1px solid var(--main-border-color);
 }
