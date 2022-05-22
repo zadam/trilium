@@ -187,7 +187,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
                 content = {
                     elements: [],
-                    appState: [],
+                    appState: {},
                     files: [],
                 };
             }
@@ -376,7 +376,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     ref: excalidrawWrapperRef
                 },
                 React.createElement(Excalidraw.default, {
-                    theme: "light", // not in effect, but causes the theme toggle button to disappear
+                    // this makes sure that 1) manual theme switch button is hidden 2) theme stays as it should after opening menu
+                    theme: this.themeStyle,
                     ref: excalidrawRef,
                     width: dimensions.width,
                     height: dimensions.height,
