@@ -15,25 +15,36 @@ export default class NoteWrapperWidget extends FlexContainer {
     }
 
     setNoteContextEvent({noteContext}) {
-        this.refresh(noteContext);
+        this.noteContext = noteContext;
+
+        this.refresh();
     }
 
-    noteSwitchedAndActivatedEvent({noteContext}) {
-        this.refresh(noteContext);
+    noteSwitchedAndActivatedEvent() {
+        this.refresh();
     }
 
-    noteSwitchedEvent({noteContext}) {
-        this.refresh(noteContext);
+    noteSwitchedEvent() {
+        this.refresh();
     }
 
-    activeContextChangedEvent({noteContext}) {
-        this.refresh(noteContext);
+    activeContextChangedEvent() {
+        this.refresh();
     }
 
-    refresh(noteContext) {
+    refresh() {
+        const note = this.noteContext?.note;
+
         this.$widget.toggleClass("full-content-width",
-            ['image', 'mermaid', 'book', 'render', 'canvas'].includes(noteContext?.note?.type)
-            || !!noteContext?.note?.hasLabel('fullContentWidth')
+            ['image', 'mermaid', 'book', 'render', 'canvas'].includes(note?.type)
+            || !!note?.hasLabel('fullContentWidth')
         );
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
+        // listening on changes of note.type
+        if (loadResults.isNoteReloaded(this.noteContext?.noteId)) {
+            this.refresh();
+        }
     }
 }
