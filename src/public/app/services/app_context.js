@@ -11,7 +11,6 @@ import Component from "../widgets/component.js";
 import keyboardActionsService from "./keyboard_actions.js";
 import MobileScreenSwitcherExecutor from "../widgets/mobile_widgets/mobile_screen_switcher.js";
 import MainTreeExecutors from "./main_tree_executors.js";
-import protectedSessionHolder from "./protected_session_holder.js";
 import toast from "./toast.js";
 
 class AppContext extends Component {
