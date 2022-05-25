@@ -34,8 +34,8 @@ const TPL = `
             font-weight: bold;
         }
         
-        .find-widget-search-term-input {
-            max-width: 250px;
+        .find-widget-search-term-input-group {
+            max-width: 300px;
         }
         
         .find-widget-spacer {
@@ -44,7 +44,13 @@ const TPL = `
     </style>
 
     <div class="find-widget-box">
-        <input type="text" class="form-control find-widget-search-term-input">
+        <div class="input-group find-widget-search-term-input-group">
+            <input type="text" class="form-control find-widget-search-term-input">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary bx bxs-chevron-up find-widget-previous-button" type="button"></button>
+                <button class="btn btn-outline-secondary bx bxs-chevron-down find-widget-next-button" type="button"></button>
+            </div>
+        </div>
         
         <div class="form-check">
             <label tabIndex="-1" class="form-check-label">
@@ -93,6 +99,10 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.$caseSensitiveCheckbox.change(() => this.performFind());
         this.$matchWordsCheckbox = this.$widget.find(".find-widget-match-words-checkbox");
         this.$matchWordsCheckbox.change(() => this.performFind());
+        this.$previousButton = this.$widget.find(".find-widget-previous-button");
+        this.$previousButton.on("click", () => this.findNext(-1));
+        this.$nextButton = this.$widget.find(".find-widget-next-button");
+        this.$nextButton.on("click", () => this.findNext(1));
         this.$closeButton = this.$widget.find(".find-widget-close-button");
         this.$closeButton.on("click", () => this.closeSearch());
 
@@ -102,7 +112,7 @@ export default class FindWidget extends NoteContextAwareWidget {
                 // whole input to find
                 this.$input.select();
             } else if (e.key === 'Enter' || e.key === 'F3') {
-                await this.findNext(e);
+                await this.findNext(e?.shiftKey ? -1 : 1);
                 e.preventDefault();
                 return false;
             } else if (e.key === 'Escape') {
@@ -135,7 +145,11 @@ export default class FindWidget extends NoteContextAwareWidget {
         }
     }
 
-    async findNext(e) {
+    /**
+     * @param direction +1 for next, -1 for previous
+     * @returns {Promise<void>}
+     */
+    async findNext(direction) {
         const searchTerm = this.$input.val();
         if (waitForEnter && this.searchTerm !== searchTerm) {
             await this.performFind();
@@ -144,7 +158,6 @@ export default class FindWidget extends NoteContextAwareWidget {
         const currentFound = parseInt(this.$currentFound.text()) - 1;
 
         if (totalFound > 0) {
-            const direction = e.shiftKey ? -1 : 1;
             let nextFound = currentFound + direction;
             // Wrap around
             if (nextFound > totalFound - 1) {
