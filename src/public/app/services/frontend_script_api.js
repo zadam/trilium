@@ -339,25 +339,61 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Adds given text to the editor cursor
      *
+     * @deprecated use addTextToActiveContextEditor() instead
      * @param {string} text - this must be clear text, HTML is not supported.
      * @method
      */
-    this.addTextToActiveTabEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
+    this.addTextToActiveTabEditor = text => {
+        console.warn("api.addTextToActiveTabEditor() is deprecated, use addTextToActiveContextEditor() instead.");
+
+        return appContext.triggerCommand('addTextToActiveEditor', {text});
+    };
+
+    /**
+     * Adds given text to the editor cursor
+     *
+     * @param {string} text - this must be clear text, HTML is not supported.
+     * @method
+     */
+    this.addTextToActiveContextEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
+
+    /**
+     * @method
+     * @deprecated use getActiveContextNote() instead
+     * @returns {NoteShort} active note (loaded into right pane)
+     */
+    this.getActiveTabNote = () => {
+        console.warn("api.getActiveTabNote() is deprecated, use getActiveContextNote() instead.");
+
+        return appContext.tabManager.getActiveContextNote();
+    };
 
     /**
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = () => appContext.tabManager.getActiveContextNote();
+    this.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
+
+    /**
+     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+     *
+     * @deprecated use getActiveContextTextEditor()
+     * @method
+     * @param [callback] - callback receiving "textEditor" instance
+     */
+    this.getActiveTabTextEditor = callback => {
+        console.warn("api.getActiveTabTextEditor() is deprecated, use getActiveContextTextEditor() instead.");
+
+        return appContext.tabManager.getActiveContext()?.getTextEditor(callback);
+    };
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
      * @method
-     * @param [callback] - deprecated (use returned promise): callback receiving "textEditor" instance
      * @returns {Promise<CKEditor>} instance of CKEditor
      */
-    this.getActiveTabTextEditor = callback => new Promise(resolve => appContext.triggerCommand('executeInActiveTextEditor', {callback, resolve}));
+    this.getActiveContextTextEditor = () => appContext.tabManager.getActiveContext()?.getTextEditor();
 
     /**
      * See https://codemirror.net/doc/manual.html#api
@@ -365,7 +401,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<CodeMirror>} instance of CodeMirror
      */
-    this.getActiveTabCodeEditor = () => new Promise(resolve => appContext.triggerCommand('executeInActiveCodeEditor', {callback: resolve}));
+    this.getActiveContextCodeEditor = () => appContext.tabManager.getActiveContext()?.getCodeEditor();
 
     /**
      * Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
@@ -378,9 +414,20 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
+     * @deprecated use getActiveContextNotePath() instead
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = () => appContext.tabManager.getActiveContextNotePath();
+    this.getActiveTabNotePath = () => {
+        console.warn("api.getActiveTabNotePath() is deprecated, use getActiveContextNotePath() instead.");
+
+        return appContext.tabManager.getActiveContextNotePath();
+    };
+
+    /**
+     * @method
+     * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
+     */
+    this.getActiveContextNotePath = () => appContext.tabManager.getActiveContextNotePath();
 
     /**
      * Returns component which owns given DOM element (the nearest parent component in DOM tree)
