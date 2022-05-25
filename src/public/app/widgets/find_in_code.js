@@ -1,13 +1,14 @@
 // ck-find-result and ck-find-result_selected are the styles ck-editor
 // uses for highlighting matches, use the same one on CodeMirror
 // for consistency
+import utils from "../services/utils.js";
+
 const FIND_RESULT_SELECTED_CSS_CLASSNAME = "ck-find-result_selected";
 const FIND_RESULT_CSS_CLASSNAME = "ck-find-result";
 
-const escapeRegExp = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 export default class FindInCode {
     constructor(parent) {
+        /** @property {FindWidget} */
         this.parent = parent;
     }
 
@@ -53,7 +54,7 @@ export default class FindInCode {
         }
 
         if (searchTerm !== "") {
-            searchTerm = escapeRegExp(searchTerm);
+            searchTerm = utils.escapeRegExp(searchTerm);
 
             // Find and highlight matches
             // Find and highlight matches

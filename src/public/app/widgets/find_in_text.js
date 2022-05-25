@@ -1,5 +1,6 @@
 export default class FindInText {
     constructor(parent) {
+        /** @property {FindWidget} */
         this.parent = parent;
     }
 

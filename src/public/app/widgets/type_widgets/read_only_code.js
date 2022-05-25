@@ -30,4 +30,14 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
 
         this.$content.text(noteComplement.content);
     }
+
+    async executeWithContentElementEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        await this.initialized;
+
+        resolve(this.$content);
+    }
 }

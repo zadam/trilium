@@ -61,10 +61,13 @@ const EXCALIDRAW = {
         "node_modules/react/umd/react.production.min.js",
         "node_modules/react-dom/umd/react-dom.production.min.js",
         "node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js",
-    ],
-    // css: [
-    //     "stylesheets/somestyle.css"
-    // ]
+    ]
+};
+
+const MARKJS = {
+    js: [
+        "libraries/jquery.mark.es6.min.js"
+    ]
 };
 
 async function requireLibrary(library) {
@@ -118,5 +121,6 @@ export default {
     WHEEL_ZOOM,
     FORCE_GRAPH,
     MERMAID,
-    EXCALIDRAW
+    EXCALIDRAW,
+    MARKJS
 }

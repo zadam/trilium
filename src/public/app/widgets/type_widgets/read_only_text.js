@@ -114,4 +114,14 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
     async refreshIncludedNoteEvent({noteId}) {
         this.refreshIncludedNote(this.$content, noteId);
     }
+
+    async executeWithContentElementEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        await this.initialized;
+
+        resolve(this.$content);
+    }
 }

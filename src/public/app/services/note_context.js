@@ -228,7 +228,7 @@ class NoteContext extends Component {
     }
 
     async getTextEditor(callback) {
-        return new Promise(resolve => appContext.triggerCommand('executeInTextEditor', {
+        return new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
             callback,
             resolve,
             ntxId: this.ntxId
@@ -236,7 +236,14 @@ class NoteContext extends Component {
     }
 
     async getCodeEditor() {
-        return new Promise(resolve => appContext.triggerCommand('executeInCodeEditor', {
+        return new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
+
+    async getContentElement() {
+        return new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
             resolve,
             ntxId: this.ntxId
         }));

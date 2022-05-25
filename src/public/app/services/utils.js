@@ -365,6 +365,10 @@ function sleep(time_ms) {
     });
 }
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
 export default {
     reloadFrontendApp,
     parseDate,
@@ -410,4 +414,5 @@ export default {
     filterAttributeName,
     isValidAttributeName,
     sleep,
+    escapeRegExp
 };

@@ -6,6 +6,7 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import FindInText from "./find_in_text.js";
 import FindInCode from "./find_in_code.js";
+import FindInHtml from "./find_in_html.js";
 
 const findWidgetDelayMillis = 200;
 const waitForEnter = (findWidgetDelayMillis < 0);
@@ -86,6 +87,13 @@ export default class FindWidget extends NoteContextAwareWidget {
 
         this.textHandler = new FindInText(this);
         this.codeHandler = new FindInCode(this);
+        this.htmlHandler = new FindInHtml(this);
+    }
+
+    async noteSwitched() {
+        await super.noteSwitched();
+
+        await this.closeSearch();
     }
 
     doRender() {
@@ -123,6 +131,42 @@ export default class FindWidget extends NoteContextAwareWidget {
         this.$input.on('input', () => this.startSearch());
 
         return this.$widget;
+    }
+
+    async findInTextEvent() {
+        if (!this.isActiveNoteContext()) {
+            return;
+        }
+
+        if (!['text', 'code'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
+            return;
+        }
+
+        const readOnly = await this.noteContext.isReadOnly();
+
+        if (readOnly) {
+            this.handler = this.htmlHandler;
+        } else {
+            this.handler = this.note.type === "code"
+                ? this.codeHandler
+                : this.textHandler;
+        }
+
+        this.$findBox.show();
+        this.$input.focus();
+        this.$totalFound.text(0);
+        this.$currentFound.text(0);
+
+        const searchTerm = await this.handler.getInitialSearchTerm();
+
+        this.$input.val(searchTerm || "");
+
+        // Directly perform the search if there's some text to
+        // find, without delaying or waiting for enter
+        if (searchTerm !== "") {
+            this.$input.select();
+            await this.performFind();
+        }
     }
 
     startSearch() {
@@ -172,35 +216,6 @@ export default class FindWidget extends NoteContextAwareWidget {
         }
     }
 
-    async findInTextEvent() {
-        if (!this.isActiveNoteContext()) {
-            return;
-        }
-
-        // Only writeable text and code supported
-        const readOnly = await this.noteContext.isReadOnly();
-
-        if (readOnly || !['text', 'code'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
-            return;
-        }
-
-        this.$findBox.show();
-        this.$input.focus();
-        this.$totalFound.text(0);
-        this.$currentFound.text(0);
-
-        const searchTerm = await this.handler.getInitialSearchTerm();
-
-        this.$input.val(searchTerm || "");
-
-        // Directly perform the search if there's some text to
-        // find, without delaying or waiting for enter
-        if (searchTerm !== "") {
-            this.$input.select();
-            await this.performFind();
-        }
-    }
-
     /** Perform the find and highlight the find results. */
     async performFind() {
         const searchTerm = this.$input.val();
@@ -216,33 +231,23 @@ export default class FindWidget extends NoteContextAwareWidget {
     }
 
     async closeSearch() {
-        this.$findBox.hide();
+        if (this.$findBox.is(":visible")) {
+            this.$findBox.hide();
 
-        // Restore any state, if there's a current occurrence clear markers
-        // and scroll to and select the last occurrence
-        const totalFound = parseInt(this.$totalFound.text());
-        const currentFound = parseInt(this.$currentFound.text()) - 1;
+            // Restore any state, if there's a current occurrence clear markers
+            // and scroll to and select the last occurrence
+            const totalFound = parseInt(this.$totalFound.text());
+            const currentFound = parseInt(this.$currentFound.text()) - 1;
 
-        if (totalFound > 0) {
-            await this.handler.cleanup(totalFound, currentFound);
-        }
+            if (totalFound > 0) {
+                await this.handler.cleanup(totalFound, currentFound);
+            }
 
-        this.searchTerm = null;
-    }
-
-    async entitiesReloadedEvent({loadResults}) {
-        if (loadResults.isNoteContentReloaded(this.noteId)) {
-            this.refresh();
+            this.searchTerm = null;
         }
     }
 
     isEnabled() {
         return super.isEnabled() && ['text', 'code'].includes(this.note.type);
-    }
-
-    get handler() {
-        return this.note.type === "code"
-            ? this.codeHandler
-            : this.textHandler;
     }
 }
