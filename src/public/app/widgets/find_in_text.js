@@ -91,9 +91,10 @@ export default class FindInText {
         }
     }
 
-    async cleanup(totalFound, currentFound) {
+    async findBoxClosed(totalFound, currentFound) {
+        const textEditor = await this.getTextEditor();
+
         if (totalFound > 0) {
-            const textEditor = await this.getTextEditor();
             // Clear the markers and set the caret to the
             // current occurrence
             const model = textEditor.model;
@@ -112,10 +113,7 @@ export default class FindInText {
         }
 
         this.findResult = null;
-    }
 
-    async close() {
-        const textEditor = await this.getTextEditor();
         textEditor.focus();
     }
 }

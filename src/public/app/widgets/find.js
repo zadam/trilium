@@ -123,7 +123,11 @@ export default class FindWidget extends NoteContextAwareWidget {
                 await this.findNext(e?.shiftKey ? -1 : 1);
                 e.preventDefault();
                 return false;
-            } else if (e.key === 'Escape') {
+            }
+        });
+
+        this.$findBox.keydown(async e => {
+            if (e.key === 'Escape') {
                 await this.closeSearch();
             }
         });
@@ -239,11 +243,9 @@ export default class FindWidget extends NoteContextAwareWidget {
             const totalFound = parseInt(this.$totalFound.text());
             const currentFound = parseInt(this.$currentFound.text()) - 1;
 
-            if (totalFound > 0) {
-                await this.handler.cleanup(totalFound, currentFound);
-            }
-
             this.searchTerm = null;
+
+            await this.handler.findBoxClosed(totalFound, currentFound);
         }
     }
 

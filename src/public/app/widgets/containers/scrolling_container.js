@@ -5,6 +5,7 @@ export default class ScrollingContainer extends Container {
         super();
 
         this.css('overflow', 'auto');
+        this.css('position', 'relative');
     }
 
     setNoteContextEvent({noteContext}) {
@@ -35,7 +36,7 @@ export default class ScrollingContainer extends Container {
 
             const promise = super.handleEventInChildren(name, data);
 
-            // there seems to be some asynchronicity and we need to wait a bit before scrolling
+            // there seems to be some asynchronicity, and we need to wait a bit before scrolling
             promise.then(() => setTimeout(() => this.$widget.scrollTop(scrollTop), 500));
 
             return promise;
@@ -43,5 +44,9 @@ export default class ScrollingContainer extends Container {
         else {
             return super.handleEventInChildren(name, data);
         }
+    }
+
+    scrollContainerToCommand({position}) {
+        this.$widget.scrollTop(position);
     }
 }

@@ -169,7 +169,7 @@ export default class FindInCode {
         codeEditor.scrollIntoView(pos.from);
     }
 
-    async cleanup(totalFound, currentFound) {
+    async findBoxClosed(totalFound, currentFound) {
         const codeEditor = await this.getCodeEditor();
 
         if (totalFound > 0) {
@@ -190,10 +190,7 @@ export default class FindInCode {
         // Restore the highlightSelectionMatches setting
         codeEditor.setOption("highlightSelectionMatches", this.oldHighlightSelectionMatches);
         this.findResult = null;
-    }
 
-    async close() {
-        const codeEditor = await this.getCodeEditor();
         codeEditor.focus();
     }
 }
