@@ -5,6 +5,7 @@ const TPL = `
     <style>
     .note-detail-readonly-code {
         min-height: 50px;
+        position: relative;
     }
     
     .note-detail-readonly-code-content {
