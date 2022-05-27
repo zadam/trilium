@@ -213,7 +213,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
 
         let centerEl = linkEl;
 
-        while (centerEl.tagName !== 'BODY' && centerEl.parentElement.textContent.length <= EXCERPT_CHAR_LIMIT) {
+        while (centerEl.tagName !== 'BODY' && centerEl.parentElement?.textContent?.length <= EXCERPT_CHAR_LIMIT) {
             centerEl = centerEl.parentElement;
         }
 
