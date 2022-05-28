@@ -35,6 +35,7 @@ class TreeContextMenu {
             { title: "Book", command: command, type: "book", uiIcon: "book" },
             { title: "Mermaid diagram", command: command, type: "mermaid", uiIcon: "selection" },
             { title: "Canvas", command: command, type: "canvas", uiIcon: "pen" },
+            { title: "IFrame", command: command, type: "iframe", uiIcon: "globe-alt" },
         ];
     }
 

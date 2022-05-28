@@ -336,6 +336,10 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             setDimensions(dimensions);
 
             const onResize = () => {
+                if (this.note?.type !== 'canvas') {
+                    return;
+                }
+
                 const dimensions = {
                     width: excalidrawWrapperRef.current.getBoundingClientRect().width,
                     height: excalidrawWrapperRef.current.getBoundingClientRect().height

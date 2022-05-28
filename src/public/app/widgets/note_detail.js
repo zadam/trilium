@@ -3,6 +3,12 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
+import appContext from "../services/app_context.js";
+import keyboardActionsService from "../services/keyboard_actions.js";
+import noteCreateService from "../services/note_create.js";
+import attributeService from "../services/attributes.js";
+import attributeRenderer from "../services/attribute_renderer.js";
+
 import EmptyTypeWidget from "./type_widgets/empty.js";
 import EditableTextTypeWidget from "./type_widgets/editable_text.js";
 import EditableCodeTypeWidget from "./type_widgets/editable_code.js";
@@ -13,16 +19,12 @@ import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import CanvasTypeWidget from "./type_widgets/canvas.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
-import appContext from "../services/app_context.js";
-import keyboardActionsService from "../services/keyboard_actions.js";
-import noteCreateService from "../services/note_create.js";
 import DeletedTypeWidget from "./type_widgets/deleted.js";
 import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
-import attributeService from "../services/attributes.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
-import attributeRenderer from "../services/attribute_renderer.js";
+import IframeTypeWidget from "./type_widgets/iframe.js";
 
 const TPL = `
 <div class="note-detail">
@@ -54,7 +56,8 @@ const typeWidgetClasses = {
     'canvas': CanvasTypeWidget,
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget
+    'note-map': NoteMapTypeWidget,
+    'iframe': IframeTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -154,7 +157,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
-            && ['editable-text', 'editable-code', 'canvas'].includes(this.type)
+            && ['editable-text', 'editable-code', 'canvas', 'iframe'].includes(this.type)
             && this.mime !== 'text/x-sqlite;schema=trilium');
     }
 

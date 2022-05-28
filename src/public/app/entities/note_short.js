@@ -17,7 +17,8 @@ const NOTE_TYPE_ICONS = {
     "book": "bx bx-book",
     "note-map": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
-    "canvas": "bx bx-pen"
+    "canvas": "bx bx-pen",
+    "iframe": "bx bx-globe-alt"
 };
 
 /**
