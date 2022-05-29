@@ -9,6 +9,9 @@ const WIDGET_TPL = `
     </div>
 </div>`;
 
+/**
+ * TODO: rename, it's not collapsible anymore
+ */
 export default class CollapsibleWidget extends NoteContextAwareWidget {
     get widgetTitle() { return "Untitled widget"; }
 
