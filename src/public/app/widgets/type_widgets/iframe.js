@@ -9,7 +9,7 @@ const TPL = `
         <p>Please create label with a URL address you want to embed, e.g. <code>#iframeSrc="http://www.google.com"</code></p>
     </div>
 
-    <iframe class="note-detail-iframe-content"></iframe>
+    <webview class="note-detail-iframe-content"></webview>
 </div>`;
 
 export default class IframeTypeWidget extends TypeWidget {
