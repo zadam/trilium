@@ -1,4 +1,5 @@
 import BasicWidget from "../basic_widget.js";
+import protectedSessionHolder from "../../services/protected_session_holder.js";
 
 const WIDGET_TPL = `
 <div id="global-buttons">
@@ -39,6 +40,8 @@ const WIDGET_TPL = `
 
         <div class="dropdown-menu dropdown-menu-right">
             <a class="dropdown-item" data-trigger-command="switchToDesktopVersion"><span class="bx bx-laptop"></span> Switch to desktop version</a>
+            <a class="dropdown-item" data-trigger-command="enterProtectedSession"><span class="bx bx-shield-quarter"></span> Enter protected session</a>
+            <a class="dropdown-item" data-trigger-command="leaveProtectedSession"><span class="bx bx-check-shield"></span> Leave protected session</a>
             <a class="dropdown-item" data-trigger-command="logout"><span class="bx bx-log-out"></span> Logout</a>
         </div>
     </div>
@@ -48,6 +51,18 @@ const WIDGET_TPL = `
 class MobileGlobalButtonsWidget extends BasicWidget {
     doRender() {
         this.$widget = $(WIDGET_TPL);
+        this.updateSettings();
+    }
+
+    protectedSessionStartedEvent() {
+        this.updateSettings();
+    }
+
+    updateSettings() {
+        const protectedSession = protectedSessionHolder.isProtectedSessionAvailable();
+
+        this.$widget.find('[data-trigger-command="enterProtectedSession"]').toggle(!protectedSession);
+        this.$widget.find('[data-trigger-command="leaveProtectedSession"]').toggle(protectedSession);
     }
 }
 
