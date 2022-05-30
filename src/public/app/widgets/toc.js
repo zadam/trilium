@@ -76,8 +76,6 @@ function findHeadingElementByIndex(parent, headingIndex) {
         // heading level. If a heading node is found, decrement the headingIndex
         // until zero is reached
 
-        console.log(child.tagName, headingIndex);
-
         if (child.tagName.match(/H\d+/i) !== null) {
             if (headingIndex === 0) {
                 headingElement = child;
