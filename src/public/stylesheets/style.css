@@ -241,8 +241,8 @@ body .CodeMirror {
     background-color: #eeeeee
 }
 
-.CodeMirror pre.CodeMirror-placeholder { 
-    color: #999 !important; 
+.CodeMirror pre.CodeMirror-placeholder {
+    color: #999 !important;
 }
 
 #sql-console-query {
@@ -943,7 +943,6 @@ input {
     border: 0;
     height: 100%;
     overflow: auto;
-    max-height: 300px;
 }
 
 #right-pane .card-body ul {

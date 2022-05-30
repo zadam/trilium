@@ -35,8 +35,4 @@ export default class CollapsibleWidget extends NoteContextAwareWidget {
 
     /** for overriding */
     async doRenderBody() {}
-
-    isExpanded() {
-        return this.$bodyWrapper.hasClass("show");
-    }
 }
