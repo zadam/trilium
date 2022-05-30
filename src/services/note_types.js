@@ -10,5 +10,5 @@ module.exports = [
     'note-map',
     'mermaid',
     'canvas',
-    'iframe'
+    'web-view'
 ];

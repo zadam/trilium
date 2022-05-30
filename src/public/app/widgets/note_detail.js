@@ -24,7 +24,7 @@ import ReadOnlyTextTypeWidget from "./type_widgets/read_only_text.js";
 import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
-import IframeTypeWidget from "./type_widgets/iframe.js";
+import WebViewTypeWidget from "./type_widgets/web_view.js";
 
 const TPL = `
 <div class="note-detail">
@@ -57,7 +57,7 @@ const typeWidgetClasses = {
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
     'note-map': NoteMapTypeWidget,
-    'iframe': IframeTypeWidget
+    'web-view': WebViewTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -157,7 +157,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
-            && ['editable-text', 'editable-code', 'canvas', 'iframe'].includes(this.type)
+            && ['editable-text', 'editable-code', 'canvas', 'web-view'].includes(this.type)
             && this.mime !== 'text/x-sqlite;schema=trilium');
     }
 

@@ -14,7 +14,7 @@ const NOTE_TYPES = [
     { type: "canvas", mime: 'application/json', title: "Canvas", selectable: true },
     { type: "mermaid", mime: 'text/mermaid', title: "Mermaid Diagram", selectable: true },
     { type: "book", mime: '', title: "Book", selectable: true },
-    { type: "iframe", mime: '', title: "IFrame", selectable: true },
+    { type: "web-view", mime: '', title: "Web View", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 

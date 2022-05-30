@@ -28,14 +28,14 @@ class TreeContextMenu {
         return [
             { title: "Text", command: command, type: "text", uiIcon: "note" },
             { title: "Code", command: command, type: "code", uiIcon: "code" },
-            { title: "Saved search", command: command, type: "search", uiIcon: "file-find" },
+            { title: "Saved Search", command: command, type: "search", uiIcon: "file-find" },
             { title: "Relation Map", command: command, type: "relation-map", uiIcon: "map-alt" },
             { title: "Note Map", command: command, type: "note-map", uiIcon: "map-alt" },
-            { title: "Render HTML note", command: command, type: "render", uiIcon: "extension" },
+            { title: "Render Note", command: command, type: "render", uiIcon: "extension" },
             { title: "Book", command: command, type: "book", uiIcon: "book" },
-            { title: "Mermaid diagram", command: command, type: "mermaid", uiIcon: "selection" },
+            { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "selection" },
             { title: "Canvas", command: command, type: "canvas", uiIcon: "pen" },
-            { title: "IFrame", command: command, type: "iframe", uiIcon: "globe-alt" },
+            { title: "Web View", command: command, type: "iframe", uiIcon: "globe-alt" },
         ];
     }
 
