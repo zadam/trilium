@@ -426,6 +426,15 @@ function BackendScriptApi(currentNote, apiParams) {
      * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
      */
     this.getAppInfo = () => appInfo
+
+    /**
+     * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.
+     *
+     * @type {{becca: Becca}}
+     */
+    this.__private = {
+        becca
+    }
 }
 
 module.exports = BackendScriptApi;
