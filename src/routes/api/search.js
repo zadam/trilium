@@ -293,10 +293,20 @@ function getRelatedNotes(req) {
     };
 }
 
+function searchTemplates() {
+    const query = formatAttrForSearch({type: 'label', name: "template"}, false);
+
+    return searchService.searchNotes(query, {
+        includeArchivedNotes: true,
+        ignoreHoistedNote: false
+    }).map(note => note.noteId);
+}
+
 module.exports = {
     searchFromNote,
     searchAndExecute,
     getRelatedNotes,
     quickSearch,
-    search
+    search,
+    searchTemplates
 };

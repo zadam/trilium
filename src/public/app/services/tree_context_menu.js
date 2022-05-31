@@ -4,6 +4,7 @@ import clipboard from './clipboard.js';
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
+import server from "./server.js";
 
 class TreeContextMenu {
     /**
@@ -24,19 +25,35 @@ class TreeContextMenu {
         })
     }
 
-    getNoteTypeItems(command) {
-        return [
-            { title: "Text", command: command, type: "text", uiIcon: "note" },
-            { title: "Code", command: command, type: "code", uiIcon: "code" },
-            { title: "Saved Search", command: command, type: "search", uiIcon: "file-find" },
-            { title: "Relation Map", command: command, type: "relation-map", uiIcon: "map-alt" },
-            { title: "Note Map", command: command, type: "note-map", uiIcon: "map-alt" },
-            { title: "Render Note", command: command, type: "render", uiIcon: "extension" },
-            { title: "Book", command: command, type: "book", uiIcon: "book" },
-            { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "selection" },
-            { title: "Canvas", command: command, type: "canvas", uiIcon: "pen" },
-            { title: "Web View", command: command, type: "iframe", uiIcon: "globe-alt" },
+    async getNoteTypeItems(command) {
+        const items = [
+            { title: "Text", command: command, type: "text", uiIcon: "bx bx-note" },
+            { title: "Code", command: command, type: "code", uiIcon: "bx bx-code" },
+            { title: "Saved Search", command: command, type: "search", uiIcon: "bx bx-file-find" },
+            { title: "Relation Map", command: command, type: "relation-map", uiIcon: "bx bx-map-alt" },
+            { title: "Note Map", command: command, type: "note-map", uiIcon: "bx bx-map-alt" },
+            { title: "Render Note", command: command, type: "render", uiIcon: "bx bx-extension" },
+            { title: "Book", command: command, type: "book", uiIcon: "bx bx-book" },
+            { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "bx bx-selection" },
+            { title: "Canvas", command: command, type: "canvas", uiIcon: "bx bx-pen" },
+            { title: "Web View", command: command, type: "iframe", uiIcon: "bx bx-globe-alt" },
         ];
+
+        const templateNoteIds = await server.get("search-templates");
+        const templateNotes = await froca.getNotes(templateNoteIds);
+
+        if (items.length > 0) {
+            items.push({ title: "----" });
+
+            for (const templateNote of templateNotes) {
+                items.push({
+                    title: templateNote.title,
+                    uiIcon: templateNote.getIcon()
+                });
+            }
+        }
+
+        return items;
     }
 
     async getMenuItems() {
@@ -58,60 +75,59 @@ class TreeContextMenu {
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
 
         return [
-            { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
-            { title: 'Open in a new split', command: "openNoteInSplit", uiIcon: "dock-right", enabled: noSelectedNotes },
-            { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "plus",
-                items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
+            { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "bx bx-empty", enabled: noSelectedNotes },
+            { title: 'Open in a new split', command: "openNoteInSplit", uiIcon: "bx bx-dock-right", enabled: noSelectedNotes },
+            { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "bx bx-plus",
+                items: insertNoteAfterEnabled ? await this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
-            { title: 'Insert child note <kbd data-command="createNoteInto"></kbd>', command: "insertChildNote", uiIcon: "plus",
-                items: notSearch ? this.getNoteTypeItems("insertChildNote") : null,
+            { title: 'Insert child note <kbd data-command="createNoteInto"></kbd>', command: "insertChildNote", uiIcon: "bx bx-plus",
+                items: notSearch ? await this.getNoteTypeItems("insertChildNote") : null,
                 enabled: notSearch && noSelectedNotes },
-            { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "trash",
+            { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "----" },
-            { title: 'Search in subtree <kbd data-command="searchInSubtree"></kbd>', command: "searchInSubtree", uiIcon: "search",
+            { title: 'Search in subtree <kbd data-command="searchInSubtree"></kbd>', command: "searchInSubtree", uiIcon: "bx bx-search",
                 enabled: notSearch && noSelectedNotes },
-            isHoisted ? null : { title: 'Hoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
-            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "door-open" },
-            { title: 'Edit branch prefix <kbd data-command="editBranchPrefix"></kbd>', command: "editBranchPrefix", uiIcon: "empty",
+            isHoisted ? null : { title: 'Hoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "bx bx-empty", enabled: noSelectedNotes && notSearch },
+            !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-command="toggleNoteHoisting"></kbd>', command: "toggleNoteHoisting", uiIcon: "bx bx-door-open" },
+            { title: 'Edit branch prefix <kbd data-command="editBranchPrefix"></kbd>', command: "editBranchPrefix", uiIcon: "bx bx-empty",
                 enabled: isNotRoot && parentNotSearch && noSelectedNotes},
-            { title: "Advanced", uiIcon: "empty", enabled: true, items: [
-                    { title: 'Expand subtree <kbd data-command="expandSubtree"></kbd>', command: "expandSubtree", uiIcon: "expand", enabled: noSelectedNotes },
-                    { title: 'Collapse subtree <kbd data-command="collapseSubtree"></kbd>', command: "collapseSubtree", uiIcon: "collapse", enabled: noSelectedNotes },
-                    { title: "Force note sync", command: "forceNoteSync", uiIcon: "refresh", enabled: noSelectedNotes },
-                    { title: 'Sort by ... <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
-                    { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "history", enabled: noSelectedNotes }
+            { title: "Advanced", uiIcon: "bx bx-empty", enabled: true, items: [
+                    { title: 'Expand subtree <kbd data-command="expandSubtree"></kbd>', command: "expandSubtree", uiIcon: "bx bx-expand", enabled: noSelectedNotes },
+                    { title: 'Collapse subtree <kbd data-command="collapseSubtree"></kbd>', command: "collapseSubtree", uiIcon: "bx bx-collapse", enabled: noSelectedNotes },
+                    { title: "Force note sync", command: "forceNoteSync", uiIcon: "bx bx-refresh", enabled: noSelectedNotes },
+                    { title: 'Sort by ... <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "bx bx-empty", enabled: noSelectedNotes && notSearch },
+                    { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "bx bx-history", enabled: noSelectedNotes }
                 ] },
             { title: "----" },
-            { title: "Protect subtree", command: "protectSubtree", uiIcon: "check-shield", enabled: noSelectedNotes },
-            { title: "Unprotect subtree", command: "unprotectSubtree", uiIcon: "shield", enabled: noSelectedNotes },
+            { title: "Protect subtree", command: "protectSubtree", uiIcon: "bx bx-check-shield", enabled: noSelectedNotes },
+            { title: "Unprotect subtree", command: "unprotectSubtree", uiIcon: "bx bx-shield", enabled: noSelectedNotes },
             { title: "----" },
-            { title: 'Copy / clone <kbd data-command="copyNotesToClipboard"></kbd>', command: "copyNotesToClipboard", uiIcon: "copy",
+            { title: 'Copy / clone <kbd data-command="copyNotesToClipboard"></kbd>', command: "copyNotesToClipboard", uiIcon: "bx bx-copy",
                 enabled: isNotRoot && !isHoisted },
-            { title: 'Clone to ... <kbd data-command="cloneNotesTo"></kbd>', command: "cloneNotesTo", uiIcon: "empty",
+            { title: 'Clone to ... <kbd data-command="cloneNotesTo"></kbd>', command: "cloneNotesTo", uiIcon: "bx bx-empty",
                 enabled: isNotRoot && !isHoisted },
-            { title: 'Cut <kbd data-command="cutNotesToClipboard"></kbd>', command: "cutNotesToClipboard", uiIcon: "cut",
+            { title: 'Cut <kbd data-command="cutNotesToClipboard"></kbd>', command: "cutNotesToClipboard", uiIcon: "bx bx-cut",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
-            { title: 'Move to ... <kbd data-command="moveNotesTo"></kbd>', command: "moveNotesTo", uiIcon: "empty",
+            { title: 'Move to ... <kbd data-command="moveNotesTo"></kbd>', command: "moveNotesTo", uiIcon: "bx bx-empty",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
-            { title: 'Paste into <kbd data-command="pasteNotesFromClipboard"></kbd>', command: "pasteNotesFromClipboard", uiIcon: "paste",
+            { title: 'Paste into <kbd data-command="pasteNotesFromClipboard"></kbd>', command: "pasteNotesFromClipboard", uiIcon: "bx bx-paste",
                 enabled: !clipboard.isClipboardEmpty() && notSearch && noSelectedNotes },
-            { title: 'Paste after', command: "pasteNotesAfterFromClipboard", uiIcon: "paste",
+            { title: 'Paste after', command: "pasteNotesAfterFromClipboard", uiIcon: "bx bx-paste",
                 enabled: !clipboard.isClipboardEmpty() && isNotRoot && !isHoisted && parentNotSearch && noSelectedNotes },
-            { title: `Duplicate subtree <kbd data-command="duplicateSubtree">`, command: "duplicateSubtree", uiIcon: "empty",
+            { title: `Duplicate subtree <kbd data-command="duplicateSubtree">`, command: "duplicateSubtree", uiIcon: "bx bx-empty",
                 enabled: parentNotSearch && isNotRoot && !isHoisted },
             { title: "----" },
-            { title: "Export", command: "exportNote", uiIcon: "empty",
+            { title: "Export", command: "exportNote", uiIcon: "bx bx-empty",
                 enabled: notSearch && noSelectedNotes },
-            { title: "Import into note", command: "importIntoNote", uiIcon: "empty",
+            { title: "Import into note", command: "importIntoNote", uiIcon: "bx bx-empty",
                 enabled: notSearch && noSelectedNotes },
-            { title: "Bulk assign attributes", command: "bulkAssignAttributes", uiIcon: "empty",
+            { title: "Bulk assign attributes", command: "bulkAssignAttributes", uiIcon: "bx bx-empty",
                 enabled: true }
         ].filter(row => row !== null);
     }
 
     async selectMenuItemHandler({command, type}) {
-        const noteId = this.node.data.noteId;
         const notePath = treeService.getNotePath(this.node);
 
         if (command === 'openInTab') {

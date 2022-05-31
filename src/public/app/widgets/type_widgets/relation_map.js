@@ -138,9 +138,9 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 x: e.pageX,
                 y: e.pageY,
                 items: [
-                    {title: "Open in new tab", command: "openInNewTab", uiIcon: "empty"},
-                    {title: "Remove note", command: "remove", uiIcon: "trash"},
-                    {title: "Edit title", command: "editTitle", uiIcon: "pencil"},
+                    {title: "Open in new tab", command: "openInNewTab", uiIcon: "bx bx-empty"},
+                    {title: "Remove note", command: "remove", uiIcon: "bx bx-trash"},
+                    {title: "Edit title", command: "editTitle", uiIcon: "bx bx-pencil"},
                 ],
                 selectMenuItemHandler: ({command}) => this.contextMenuHandler(command, e.target)
             });
@@ -446,7 +446,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 contextMenu.show({
                     x: event.pageX,
                     y: event.pageY,
-                    items: [ {title: "Remove relation", command: "remove", uiIcon: "trash"} ],
+                    items: [ {title: "Remove relation", command: "remove", uiIcon: "bx bx-trash"} ],
                     selectMenuItemHandler: async ({command}) => {
                         if (command === 'remove') {
                             const confirmDialog = await import('../../dialogs/confirm.js');

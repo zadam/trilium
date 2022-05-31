@@ -217,11 +217,11 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
             y: e.pageY,
             orientation: 'left',
             items: [
-                {title: `Add new label <kbd data-command="addNewLabel"></kbd>`, command: "addNewLabel", uiIcon: "hash"},
-                {title: `Add new relation <kbd data-command="addNewRelation"></kbd>`, command: "addNewRelation", uiIcon: "transfer"},
+                {title: `Add new label <kbd data-command="addNewLabel"></kbd>`, command: "addNewLabel", uiIcon: "bx bx-hash"},
+                {title: `Add new relation <kbd data-command="addNewRelation"></kbd>`, command: "addNewRelation", uiIcon: "bx bx-transfer"},
                 {title: "----"},
-                {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "empty"},
-                {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "empty"},
+                {title: "Add new label definition", command: "addNewLabelDefinition", uiIcon: "bx bx-empty"},
+                {title: "Add new relation definition", command: "addNewRelationDefinition", uiIcon: "bx bx-empty"},
             ],
             selectMenuItemHandler: ({command}) => this.handleAddNewAttributeCommand(command)
         });

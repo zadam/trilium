@@ -59,8 +59,8 @@
     "joplin-turndown-plugin-gfm": "1.0.12",
     "jsdom": "19.0.0",
     "mime-types": "2.1.35",
-    "multer": "1.4.4",
-    "node-abi": "3.21.0",
+    "multer": "1.4.5-lts.1",
+    "node-abi": "3.22.0",
     "normalize-strings": "1.1.1",
     "open": "8.4.0",
     "portscanner": "2.2.0",
@@ -80,7 +80,7 @@
     "tmp": "0.2.1",
     "turndown": "7.1.1",
     "unescape": "1.0.1",
-    "ws": "8.6.0",
+    "ws": "8.7.0",
     "yauzl": "2.10.0"
   },
   "devDependencies": {
