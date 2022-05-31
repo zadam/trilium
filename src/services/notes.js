@@ -155,6 +155,14 @@ function createNewNote(params) {
 
         scanForLinks(note);
 
+        if (params.templateNoteId) {
+            if (!becca.getNote(params.templateNoteId)) {
+                throw new Error(`Template note '${params.templateNoteId}' does not exist.`);
+            }
+
+            note.addRelation('template', params.templateNoteId);
+        }
+
         copyChildAttributes(parentNote, note);
 
         triggerNoteTitleChanged(note);

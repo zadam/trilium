@@ -43,7 +43,8 @@ async function createNote(parentNotePath, options = {}) {
         content: options.content || "",
         isProtected: options.isProtected,
         type: options.type,
-        mime: options.mime
+        mime: options.mime,
+        templateNoteId: options.templateNoteId
     });
 
     if (options.saveSelection && utils.isCKEditorInitialized()) {

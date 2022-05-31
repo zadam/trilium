@@ -48,7 +48,10 @@ class TreeContextMenu {
             for (const templateNote of templateNotes) {
                 items.push({
                     title: templateNote.title,
-                    uiIcon: templateNote.getIcon()
+                    uiIcon: templateNote.getIcon(),
+                    command: command,
+                    type: templateNote.type,
+                    templateNoteId: templateNote.noteId
                 });
             }
         }
@@ -127,7 +130,7 @@ class TreeContextMenu {
         ].filter(row => row !== null);
     }
 
-    async selectMenuItemHandler({command, type}) {
+    async selectMenuItemHandler({command, type, templateNoteId}) {
         const notePath = treeService.getNotePath(this.node);
 
         if (command === 'openInTab') {
@@ -141,7 +144,8 @@ class TreeContextMenu {
                 target: 'after',
                 targetBranchId: this.node.data.branchId,
                 type: type,
-                isProtected: isProtected
+                isProtected: isProtected,
+                templateNoteId: templateNoteId
             });
         }
         else if (command === "insertChildNote") {
@@ -149,7 +153,8 @@ class TreeContextMenu {
 
             noteCreateService.createNote(parentNotePath, {
                 type: type,
-                isProtected: this.node.data.isProtected
+                isProtected: this.node.data.isProtected,
+                templateNoteId: templateNoteId
             });
         }
         else if (command === 'openNoteInSplit') {
