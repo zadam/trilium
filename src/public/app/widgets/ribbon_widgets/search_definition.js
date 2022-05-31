@@ -134,8 +134,6 @@ const TPL = `
                             Delete note</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteNoteRevisions">
                             Delete note revisions</a>
-                        <a class="dropdown-item" href="#" data-action-add="moveNote">
-                            Delete note revisions</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteLabel">
                             Delete label</a>
                         <a class="dropdown-item" href="#" data-action-add="deleteRelation">
