@@ -367,26 +367,30 @@ class ConsistencyChecks {
                 }
             });
 
-        this.findAndFixIssues(`
-                    SELECT notes.noteId, notes.type, notes.mime
-                    FROM notes
-                      JOIN note_contents USING (noteId)
-                    WHERE isDeleted = 0
-                      AND isProtected = 0
-                      AND content IS NULL`,
-            ({noteId, type, mime}) => {
-                if (this.autoFix) {
-                    const note = becca.getNote(noteId);
-                    const blankContent = getBlankContent(false, type, mime);
-                    note.setContent(blankContent);
+        if (sqlInit.getDbSize() < 500000) {
+            // querying for "content IS NULL" is expensive since content is not indexed. See e.g. https://github.com/zadam/trilium/issues/2887
 
-                    this.reloadNeeded = true;
+            this.findAndFixIssues(`
+                        SELECT notes.noteId, notes.type, notes.mime
+                        FROM notes
+                                 JOIN note_contents USING (noteId)
+                        WHERE isDeleted = 0
+                          AND isProtected = 0
+                          AND content IS NULL`,
+                ({noteId, type, mime}) => {
+                    if (this.autoFix) {
+                        const note = becca.getNote(noteId);
+                        const blankContent = getBlankContent(false, type, mime);
+                        note.setContent(blankContent);
 
-                    logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
-                } else {
-                    logError(`Note ${noteId} content is null even though it is not deleted`);
-                }
-            });
+                        this.reloadNeeded = true;
+
+                        logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
+                    } else {
+                        logError(`Note ${noteId} content is null even though it is not deleted`);
+                    }
+                });
+        }
 
         this.findAndFixIssues(`
                     SELECT note_revisions.noteRevisionId
