@@ -30,46 +30,6 @@ function protectNoteRevisions(note) {
     }
 }
 
-/**
- * @param {Note} note
- * @return {NoteRevision|null}
- */
-function createNoteRevision(note) {
-    if (note.hasLabel("disableVersioning")) {
-        return null;
-    }
-
-    const content = note.getContent();
-
-    if (!content || (Buffer.isBuffer(content) && content.byteLength === 0)) {
-        return null;
-    }
-
-    const contentMetadata = note.getContentMetadata();
-
-    const noteRevision = new NoteRevision({
-        noteId: note.noteId,
-        // title and text should be decrypted now
-        title: note.title,
-        type: note.type,
-        mime: note.mime,
-        isProtected: false, // will be fixed in the protectNoteRevisions() call
-        utcDateLastEdited: note.utcDateModified > contentMetadata.utcDateModified
-            ? note.utcDateModified
-            : contentMetadata.utcDateModified,
-        utcDateCreated: dateUtils.utcNowDateTime(),
-        utcDateModified: dateUtils.utcNowDateTime(),
-        dateLastEdited: note.dateModified > contentMetadata.dateModified
-            ? note.dateModified
-            : contentMetadata.dateModified,
-        dateCreated: dateUtils.localNowDateTime()
-    }).save();
-
-    noteRevision.setContent(content);
-
-    return noteRevision;
-}
-
 function eraseNoteRevisions(noteRevisionIdsToErase) {
     if (noteRevisionIdsToErase.length === 0) {
         return;
@@ -86,6 +46,5 @@ function eraseNoteRevisions(noteRevisionIdsToErase) {
 
 module.exports = {
     protectNoteRevisions,
-    createNoteRevision,
     eraseNoteRevisions
 };
