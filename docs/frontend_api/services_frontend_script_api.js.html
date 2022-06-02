@@ -130,6 +130,26 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
+     * Open a note in a new split.
+     *
+     * @param {string} notePath (or noteId)
+     * @param {boolean} activate - set to true to activate the new split, false to stay on the current split
+     * @return {Promise&lt;void>}
+     */
+    this.openSplitWithNote = async (notePath, activate) => {
+        await ws.waitForMaxKnownEntityChangeId();
+
+        const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
+        const {ntxId} = subContexts[subContexts.length - 1];
+
+        appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath});
+
+        if (activate) {
+            appContext.triggerEvent('focusAndSelectTitle');
+        }
+    };
+
+    /**
      * @typedef {Object} ToolbarButtonOptions
      * @property {string} title
      * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
