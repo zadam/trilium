@@ -192,6 +192,7 @@ div.ui-tooltip {
 .dropdown-menu a:hover:not(.disabled), .dropdown-item:hover:not(.disabled) {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
+    border-color: var(--hover-item-border-color) !important;
     cursor: pointer;
 }
 
@@ -210,17 +211,20 @@ div.ui-tooltip {
     padding-bottom: 0;
 }
 
-.dropdown-item {
+.dropdown-item, .dropdown-header {
     color: var(--menu-text-color) !important;
+    border: 1px solid transparent !important;
 }
 
 .dropdown-item.disabled, .dropdown-item.disabled kbd {
     color: #aaa !important;
 }
 
-.dropdown-item.active {
+.dropdown-item.active, .dropdown-item:focus {
     color: var(--active-item-text-color) !important;
     background-color: var(--active-item-background-color) !important;
+    border-color: var(--active-item-border-color) !important;
+    outline: none;
 }
 
 .CodeMirror {
@@ -473,8 +477,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
-    color: var(--hover-item-text-color);
-    background-color: var(--hover-item-background-color);
+    color: var(--active-item-text-color);
+    background-color: var(--active-item-background-color);
 }
 
 .help-button {

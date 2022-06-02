@@ -4,7 +4,7 @@ import clipboard from './clipboard.js';
 import noteCreateService from "./note_create.js";
 import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
-import server from "./server.js";
+import noteTypesService from "./note_types.js";
 
 class TreeContextMenu {
     /**
@@ -23,40 +23,6 @@ class TreeContextMenu {
             items: await this.getMenuItems(),
             selectMenuItemHandler: (item, e) => this.selectMenuItemHandler(item, e)
         })
-    }
-
-    async getNoteTypeItems(command) {
-        const items = [
-            { title: "Text", command: command, type: "text", uiIcon: "bx bx-note" },
-            { title: "Code", command: command, type: "code", uiIcon: "bx bx-code" },
-            { title: "Saved Search", command: command, type: "search", uiIcon: "bx bx-file-find" },
-            { title: "Relation Map", command: command, type: "relation-map", uiIcon: "bx bx-map-alt" },
-            { title: "Note Map", command: command, type: "note-map", uiIcon: "bx bx-map-alt" },
-            { title: "Render Note", command: command, type: "render", uiIcon: "bx bx-extension" },
-            { title: "Book", command: command, type: "book", uiIcon: "bx bx-book" },
-            { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "bx bx-selection" },
-            { title: "Canvas", command: command, type: "canvas", uiIcon: "bx bx-pen" },
-            { title: "Web View", command: command, type: "iframe", uiIcon: "bx bx-globe-alt" },
-        ];
-
-        const templateNoteIds = await server.get("search-templates");
-        const templateNotes = await froca.getNotes(templateNoteIds);
-
-        if (items.length > 0) {
-            items.push({ title: "----" });
-
-            for (const templateNote of templateNotes) {
-                items.push({
-                    title: templateNote.title,
-                    uiIcon: templateNote.getIcon(),
-                    command: command,
-                    type: templateNote.type,
-                    templateNoteId: templateNote.noteId
-                });
-            }
-        }
-
-        return items;
     }
 
     async getMenuItems() {
@@ -81,10 +47,10 @@ class TreeContextMenu {
             { title: 'Open in a new tab <kbd>Ctrl+Click</kbd>', command: "openInTab", uiIcon: "bx bx-empty", enabled: noSelectedNotes },
             { title: 'Open in a new split', command: "openNoteInSplit", uiIcon: "bx bx-dock-right", enabled: noSelectedNotes },
             { title: 'Insert note after <kbd data-command="createNoteAfter"></kbd>', command: "insertNoteAfter", uiIcon: "bx bx-plus",
-                items: insertNoteAfterEnabled ? await this.getNoteTypeItems("insertNoteAfter") : null,
+                items: insertNoteAfterEnabled ? await noteTypesService.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
             { title: 'Insert child note <kbd data-command="createNoteInto"></kbd>', command: "insertChildNote", uiIcon: "bx bx-plus",
-                items: notSearch ? await this.getNoteTypeItems("insertChildNote") : null,
+                items: notSearch ? await noteTypesService.getNoteTypeItems("insertChildNote") : null,
                 enabled: notSearch && noSelectedNotes },
             { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },

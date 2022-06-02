@@ -75,6 +75,20 @@ async function createNote(parentNotePath, options = {}) {
     };
 }
 
+async function createNoteWithTypePrompt(parentNotePath, options = {}) {
+    const noteTypeChooserDialog = await import('../dialogs/note_type_chooser.js');
+    const {success, noteType, templateNoteId} = await noteTypeChooserDialog.chooseNoteType();
+
+    if (!success) {
+        return;
+    }
+
+    options.type = noteType;
+    options.templateNoteId = templateNoteId;
+
+    return await createNote(parentNotePath, options);
+}
+
 /* If first element is heading, parse it out and use it as a new heading. */
 function parseSelectedHtml(selectedHtml) {
     const dom = $.parseHTML(selectedHtml);
@@ -106,5 +120,6 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
 export default {
     createNote,
+    createNoteWithTypePrompt,
     duplicateSubtree
 };
