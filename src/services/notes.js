@@ -499,7 +499,7 @@ function saveLinks(note, content) {
     return content;
 }
 
-function saveNoteRevision(note) {
+function saveNoteRevisionIfNeeded(note) {
     // files and images are versioned separately
     if (note.type === 'file' || note.type === 'image' || note.hasLabel('disableVersioning')) {
         return;
@@ -516,7 +516,7 @@ function saveNoteRevision(note) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-        noteRevisionService.createNoteRevision(note);
+        note.saveNoteRevision();
     }
 }
 
@@ -527,7 +527,7 @@ function updateNote(noteId, noteUpdates) {
         throw new Error(`Note '${noteId}' is not available for change!`);
     }
 
-    saveNoteRevision(note);
+    saveNoteRevisionIfNeeded(note);
 
     // if protected status changed, then we need to encrypt/decrypt the content anyway
     if (['file', 'image'].includes(note.type) && note.isProtected !== noteUpdates.isProtected) {
@@ -918,6 +918,6 @@ module.exports = {
     triggerNoteTitleChanged,
     eraseDeletedNotesNow,
     eraseNotesWithDeleteId,
-    saveNoteRevision,
+    saveNoteRevisionIfNeeded,
     downloadImages
 };

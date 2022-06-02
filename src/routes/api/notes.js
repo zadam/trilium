@@ -206,7 +206,7 @@ function changeTitle(req) {
     const noteTitleChanged = note.title !== title;
 
     if (noteTitleChanged) {
-        noteService.saveNoteRevision(note);
+        noteService.saveNoteRevisionIfNeeded(note);
     }
 
     note.title = title;

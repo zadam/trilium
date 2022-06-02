@@ -306,7 +306,8 @@ export default class TabManager extends Component {
                 const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
 
                 if (mainNoteContexts.length === 1) {
-                    mainNoteContexts[0].setEmpty();
+                    await this.clearLastMainNoteContext(noteContextToRemove);
+
                     return;
                 }
             }
@@ -317,7 +318,7 @@ export default class TabManager extends Component {
             const noteContextsToRemove = noteContextToRemove.getSubContexts();
             const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
-            await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
+            await this.triggerEvent('beforeNoteContextRemove', { ntxIds: ntxIdsToRemove });
 
             if (!noteContextToRemove.isMainContext()) {
                 await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
@@ -336,14 +337,37 @@ export default class TabManager extends Component {
                 }
             }
 
-            this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
-
-            this.recentlyClosedTabs.push(noteContextsToRemove);
-
-            this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
-
-            this.tabsUpdate.scheduleUpdate();
+            this.removeNoteContexts(noteContextsToRemove);
         });
+    }
+
+    async clearLastMainNoteContext(noteContextToClear) {
+        noteContextToClear.setEmpty();
+
+        // activate main split
+        await this.activateNoteContext(noteContextToClear.ntxId);
+
+        // remove all other splits
+        const noteContextsToRemove = noteContextToClear.getSubContexts()
+            .filter(ntx => ntx.ntxId !== noteContextToClear.ntxId);
+
+        const ntxIdsToRemove = noteContextsToRemove.map(ntx => ntx.ntxId);
+
+        await this.triggerEvent('beforeNoteContextRemove', {ntxIds: ntxIdsToRemove});
+
+        this.removeNoteContexts(noteContextsToRemove);
+    }
+
+    removeNoteContexts(noteContextsToRemove) {
+        const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
+
+        this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
+
+        this.recentlyClosedTabs.push(noteContextsToRemove);
+
+        this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
+
+        this.tabsUpdate.scheduleUpdate();
     }
 
     tabReorderEvent({ntxIdsInOrder}) {
