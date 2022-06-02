@@ -140,7 +140,6 @@ function initNoteAutocomplete($el, options) {
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
-        openOnFocus: true,
         minLength: 0,
         tabAutocomplete: false
     }, [
@@ -270,7 +269,6 @@ function init() {
 }
 
 export default {
-    autocompleteSource,
     autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,
