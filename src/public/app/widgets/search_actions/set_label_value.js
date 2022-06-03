@@ -39,6 +39,7 @@ const TPL = `
 
 export default class SetLabelValueSearchAction extends AbstractSearchAction {
     static get actionName() { return "setLabelValue"; }
+    static get actionTitle() { return "Set label value"; }
 
     doRender() {
         const $action = $(TPL);

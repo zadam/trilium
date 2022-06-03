@@ -35,6 +35,7 @@ const TPL = `
 
 export default class MoveNoteSearchAction extends AbstractSearchAction {
     static get actionName() { return "moveNote"; }
+    static get actionTitle() { return "Move note"; }
 
     doRender() {
         const $action = $(TPL);

@@ -539,6 +539,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         subNode.load();
                     }
                 });
+            },
+            select: () => {
+                // TODO
             }
         });
 

@@ -14,6 +14,7 @@ const TPL = `
 
 export default class DeleteNoteSearchAction extends AbstractSearchAction {
     static get actionName() { return "deleteNote"; }
+    static get actionTitle() { return "Delete note"; }
 
     doRender() {
         return $(TPL);

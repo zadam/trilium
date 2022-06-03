@@ -219,10 +219,28 @@ function getShareRoot() {
     return shareRoot;
 }
 
+function getBulkActionNote() {
+    let bulkActionNote = becca.getNote('bulkaction');
+
+    if (!bulkActionNote) {
+        bulkActionNote = noteService.createNewNote({
+            branchId: 'bulkaction',
+            noteId: 'bulkaction',
+            title: 'Bulk action',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return bulkActionNote;
+}
+
 function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSqlConsoleRoot();
     getGlobalNoteMap();
+    getBulkActionNote();
     // share root is not automatically created since it's visible in the tree and many won't need it/use it
 
     const hidden = getHiddenRoot();
@@ -239,5 +257,6 @@ module.exports = {
     createSearchNote,
     saveSearchNote,
     createMissingSpecialNotes,
-    getShareRoot
+    getShareRoot,
+    getBulkActionNote,
 };

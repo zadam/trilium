@@ -29,6 +29,7 @@ const TPL = `
 
 export default class RenameLabelSearchAction extends AbstractSearchAction {
     static get actionName() { return "renameLabel"; }
+    static get actionTitle() { return "Rename label"; }
 
     doRender() {
         const $action = $(TPL);

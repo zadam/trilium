@@ -3,10 +3,8 @@ import ws from "../../services/ws.js";
 import Component from "../component.js";
 import utils from "../../services/utils.js";
 
-export default class AbstractSearchAction extends Component {
+export default class AbstractSearchAction {
     constructor(attribute, actionDef) {
-        super();
-
         this.attribute = attribute;
         this.actionDef = actionDef;
     }

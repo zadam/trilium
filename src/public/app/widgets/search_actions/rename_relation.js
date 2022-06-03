@@ -29,6 +29,7 @@ const TPL = `
 
 export default class RenameRelationSearchAction extends AbstractSearchAction {
     static get actionName() { return "renameRelation"; }
+    static get actionTitle() { return "Rename relation"; }
 
     doRender() {
         const $action = $(TPL);

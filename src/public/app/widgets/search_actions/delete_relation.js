@@ -22,6 +22,7 @@ const TPL = `
 
 export default class DeleteRelationSearchAction extends AbstractSearchAction {
     static get actionName() { return "deleteRelation"; }
+    static get actionTitle() { return "Delete relation"; }
 
     doRender() {
         const $action = $(TPL);

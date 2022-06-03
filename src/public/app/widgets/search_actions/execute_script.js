@@ -35,6 +35,7 @@ const TPL = `
 
 export default class ExecuteScriptSearchAction extends AbstractSearchAction {
     static get actionName() { return "executeScript"; }
+    static get actionTitle() { return "Execute script"; }
 
     doRender() {
         const $action = $(TPL);

@@ -41,6 +41,7 @@ const TPL = `
 
 export default class SetRelationTargetSearchAction extends AbstractSearchAction {
     static get actionName() { return "setRelationTarget"; }
+    static get actionTitle() { return "Set relation target"; }
 
     doRender() {
         const $action = $(TPL);

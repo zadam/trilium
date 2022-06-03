@@ -20,6 +20,7 @@ const TPL = `
 
 export default class DeleteLabelSearchAction extends AbstractSearchAction {
     static get actionName() { return "deleteLabel"; }
+    static get actionTitle() { return "Delete label"; }
 
     doRender() {
         const $action = $(TPL);
