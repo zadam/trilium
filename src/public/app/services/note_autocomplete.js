@@ -140,6 +140,9 @@ function initNoteAutocomplete($el, options) {
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
+        // openOnFocus has to be false, otherwise re-focus (after return from note type chooser dialog) forces
+        // re-querying of the autocomplete source which then changes currently selected suggestion
+        openOnFocus: false,
         minLength: 0,
         tabAutocomplete: false
     }, [
