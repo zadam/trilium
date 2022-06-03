@@ -292,10 +292,6 @@ function copySelectionToClipboard() {
     }
 }
 
-function isCKEditorInitialized() {
-    return !!(window && window.cutToNote);
-}
-
 function dynamicRequire(moduleName) {
     if (typeof __non_webpack_require__ !== 'undefined') {
         return __non_webpack_require__(moduleName);
@@ -405,7 +401,6 @@ export default {
     clearBrowserCache,
     normalizeShortcut,
     copySelectionToClipboard,
-    isCKEditorInitialized,
     dynamicRequire,
     timeLimit,
     initHelpDropdown,

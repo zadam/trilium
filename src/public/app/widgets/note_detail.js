@@ -327,7 +327,8 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // without await as this otherwise causes deadlock through component mutex
         noteCreateService.createNote(appContext.tabManager.getActiveContextNotePath(), {
             isProtected: note.isProtected,
-            saveSelection: true
+            saveSelection: true,
+            textEditor: await this.noteContext.getTextEditor()
         });
     }
 
@@ -340,5 +341,17 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         if (this.noteContext.isActive()) {
             this.refresh();
         }
+    }
+
+    async executeWithTypeWidgetEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        await this.initialized;
+
+        await this.getWidgetType();
+
+        resolve(this.getTypeWidget());
     }
 }

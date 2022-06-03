@@ -248,6 +248,13 @@ class NoteContext extends Component {
             ntxId: this.ntxId
         }));
     }
+
+    async getTypeWidget() {
+        return new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
 }
 
 export default NoteContext;

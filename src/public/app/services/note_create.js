@@ -24,8 +24,8 @@ async function createNote(parentNotePath, options = {}) {
         options.saveSelection = false;
     }
 
-    if (options.saveSelection && utils.isCKEditorInitialized()) {
-        [options.title, options.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
+    if (options.saveSelection) {
+        [options.title, options.content] = parseSelectedHtml(options.textEditor.getSelectedHtml());
     }
 
     const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
@@ -46,9 +46,9 @@ async function createNote(parentNotePath, options = {}) {
         mime: options.mime
     });
 
-    if (options.saveSelection && utils.isCKEditorInitialized()) {
+    if (options.saveSelection) {
         // we remove the selection only after it was saved to server to make sure we don't lose anything
-        window.cutToNote.removeSelection();
+        options.textEditor.removeSelection();
     }
 
     await ws.waitForMaxKnownEntityChangeId();
