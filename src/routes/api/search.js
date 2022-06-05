@@ -78,21 +78,33 @@ const ACTION_HANDLERS = {
     },
     renameLabel: (action, note) => {
         for (const label of note.getOwnedLabels(action.oldLabelName)) {
-            label.name = action.newLabelName;
-            label.save();
+            // attribute name is immutable, renaming means delete old + create new
+            const newLabel = label.createClone('label', action.newLabelName, label.value);
+
+            newLabel.save();
+            label.markAsDeleted();
         }
     },
     renameRelation: (action, note) => {
         for (const relation of note.getOwnedRelations(action.oldRelationName)) {
-            relation.name = action.newRelationName;
-            relation.save();
+            // attribute name is immutable, renaming means delete old + create new
+            const newRelation = relation.createClone('relation', action.newRelationName, relation.value);
+
+            newRelation.save();
+            relation.markAsDeleted();
         }
     },
-    setLabelValue: (action, note) => {
-        note.setLabel(action.labelName, action.labelValue);
+    updateLabelValue: (action, note) => {
+        for (const label of note.getOwnedLabels(action.labelName)) {
+            label.value = action.labelValue;
+            label.save();
+        }
     },
-    setRelationTarget: (action, note) => {
-        note.setRelation(action.relationName, action.targetNoteId);
+    updateRelationTarget: (action, note) => {
+        for (const relation of note.getOwnedLabels(action.relationName)) {
+            relation.value = action.targetNoteId;
+            relation.save();
+        }
     },
     moveNote: (action, note) => {
         const targetParentNote = becca.getNote(action.targetParentNoteId);
