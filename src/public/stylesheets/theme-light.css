@@ -25,10 +25,11 @@ html {
     --more-accented-background-color: #ddd;
 
     --button-background-color: transparent;
-    --button-disabled-background-color: #ddd;
     --button-border-color: #ddd;
     --button-text-color: black;
     --button-border-radius: 5px;
+    --button-disabled-background-color: #ddd;
+    --button-disabled-text-color: black;
 
     --primary-button-background-color: #6c757d;
     --primary-button-text-color: white;

@@ -241,8 +241,8 @@ body .CodeMirror {
     background-color: #eeeeee
 }
 
-.CodeMirror pre.CodeMirror-placeholder { 
-    color: #999 !important; 
+.CodeMirror pre.CodeMirror-placeholder {
+    color: #999 !important;
 }
 
 #sql-console-query {
@@ -359,7 +359,9 @@ pre:not(.CodeMirror-line) {
 
 .go-to-selected-note-button.disabled, .go-to-selected-note-button.disabled:hover {
     cursor: inherit;
-    color: var(--button-disabled-background-color) !important;
+    color: var(--button-disabled-text-color) !important;
+    background-color: var(--button-disabled-background-color) !important;
+    text-decoration: none;
 }
 
 .note-autocomplete-input {
