@@ -5,9 +5,9 @@ const AbstractEntity = require("./abstract_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const utils = require("../../services/utils.js");
-const TaskContext = require("../../services/task_context.js");
-const cls = require("../../services/cls.js");
-const log = require("../../services/log.js");
+const TaskContext = require("../../services/task_context");
+const cls = require("../../services/cls");
+const log = require("../../services/log");
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
@@ -137,6 +137,18 @@ class Branch extends AbstractEntity {
 
         taskContext.increaseProgressCount();
 
+        const note = this.getNote();
+
+        if (!taskContext.noteDeletionHandlerTriggered) {
+            const parentBranches = note.getParentBranches();
+
+            if (parentBranches.length === 1 && parentBranches[0] === this) {
+                // needs to be run before branches and attributes are deleted and thus attached relations disappear
+                const handlers = require("../../services/handlers");
+                handlers.runAttachedRelations(note, 'runOnNoteDeletion', note);
+            }
+        }
+
         if (this.branchId === 'root'
             || this.noteId === 'root'
             || this.noteId === cls.getHoistedNoteId()) {
@@ -146,7 +158,6 @@ class Branch extends AbstractEntity {
 
         this.markAsDeleted(deleteId);
 
-        const note = this.getNote();
         const notDeletedBranches = note.getParentBranches();
 
         if (notDeletedBranches.length === 0) {
