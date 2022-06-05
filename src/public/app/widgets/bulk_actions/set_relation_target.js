@@ -1,5 +1,5 @@
 import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractSearchAction from "./abstract_search_action.js";
+import AbstractBulkAction from "./abstract_bulk_action.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 
 const TPL = `
@@ -39,7 +39,7 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class SetRelationTargetSearchAction extends AbstractSearchAction {
+export default class SetRelationTargetSearchAction extends AbstractBulkAction {
     static get actionName() { return "setRelationTarget"; }
     static get actionTitle() { return "Set relation target"; }
 

@@ -1,4 +1,4 @@
-import AbstractSearchAction from "./abstract_search_action.js";
+import AbstractBulkAction from "./abstract_bulk_action.js";
 
 const TPL = `
 <tr>
@@ -19,7 +19,7 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class DeleteNoteRevisionsSearchAction extends AbstractSearchAction {
+export default class DeleteNoteRevisionsBulkAction extends AbstractBulkAction {
     static get actionName() { return "deleteNoteRevisions"; }
     static get actionTitle() { return "Delete note revisions"; }
 

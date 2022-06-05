@@ -1,5 +1,5 @@
 import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractSearchAction from "./abstract_search_action.js";
+import AbstractBulkAction from "./abstract_bulk_action.js";
 
 const TPL = `
 <tr>
@@ -27,7 +27,7 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class RenameRelationSearchAction extends AbstractSearchAction {
+export default class RenameRelationBulkAction extends AbstractBulkAction {
     static get actionName() { return "renameRelation"; }
     static get actionTitle() { return "Rename relation"; }
 

@@ -1,27 +1,27 @@
 import server from "./server.js";
 import ws from "./ws.js";
-import MoveNoteSearchAction from "../widgets/search_actions/move_note.js";
-import DeleteNoteSearchAction from "../widgets/search_actions/delete_note.js";
-import DeleteNoteRevisionsSearchAction from "../widgets/search_actions/delete_note_revisions.js";
-import DeleteLabelSearchAction from "../widgets/search_actions/delete_label.js";
-import DeleteRelationSearchAction from "../widgets/search_actions/delete_relation.js";
-import RenameLabelSearchAction from "../widgets/search_actions/rename_label.js";
-import RenameRelationSearchAction from "../widgets/search_actions/rename_relation.js";
-import SetLabelValueSearchAction from "../widgets/search_actions/set_label_value.js";
-import SetRelationTargetSearchAction from "../widgets/search_actions/set_relation_target.js";
-import ExecuteScriptSearchAction from "../widgets/search_actions/execute_script.js";
+import MoveNoteBulkAction from "../widgets/bulk_actions/move_note.js";
+import DeleteNoteBulkAction from "../widgets/bulk_actions/delete_note.js";
+import DeleteNoteRevisionsBulkAction from "../widgets/bulk_actions/delete_note_revisions.js";
+import DeleteLabelBulkAction from "../widgets/bulk_actions/delete_label.js";
+import DeleteRelationBulkAction from "../widgets/bulk_actions/delete_relation.js";
+import RenameLabelBulkAction from "../widgets/bulk_actions/rename_label.js";
+import RenameRelationBulkAction from "../widgets/bulk_actions/rename_relation.js";
+import SetLabelValueBulkAction from "../widgets/bulk_actions/set_label_value.js";
+import SetRelationTargetSearchAction from "../widgets/bulk_actions/set_relation_target.js";
+import ExecuteScriptBulkAction from "../widgets/bulk_actions/execute_script.js";
 
 const ACTION_CLASSES = [
-    MoveNoteSearchAction,
-    DeleteNoteSearchAction,
-    DeleteNoteRevisionsSearchAction,
-    DeleteLabelSearchAction,
-    DeleteRelationSearchAction,
-    RenameLabelSearchAction,
-    RenameRelationSearchAction,
-    SetLabelValueSearchAction,
+    MoveNoteBulkAction,
+    DeleteNoteBulkAction,
+    DeleteNoteRevisionsBulkAction,
+    DeleteLabelBulkAction,
+    DeleteRelationBulkAction,
+    RenameLabelBulkAction,
+    RenameRelationBulkAction,
+    SetLabelValueBulkAction,
     SetRelationTargetSearchAction,
-    ExecuteScriptSearchAction
+    ExecuteScriptBulkAction
 ];
 
 async function addAction(noteId, actionName) {

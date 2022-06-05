@@ -8,7 +8,7 @@ const {sleep} = utils;
 
 const TPL = `
     <div class="canvas-widget note-detail-canvas note-detail-printable note-detail">
-        <style type="text/css">
+        <style>
         .excalidraw .App-menu_top .buttonList {
             display: flex;
         }
