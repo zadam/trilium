@@ -1,6 +1,6 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractBulkAction from "./abstract_bulk_action.js";
-import noteAutocompleteService from "../../services/note_autocomplete.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
+import noteAutocompleteService from "../../../services/note_autocomplete.js";
 
 const TPL = `
 <tr>
@@ -26,12 +26,7 @@ const TPL = `
         <div class="dropdown help-dropdown">
             <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
             <div class="dropdown-menu dropdown-menu-right p-4">
-                <p>On all matched notes:</p>
-                
-                <ul>
-                    <li>create given relation if note doesn't have one yet</li>
-                    <li>or change target note of the existing relation</li>
-                </ul>
+                <p>On all matched notes create given relation.</p>
             </div> 
         </div>
     
@@ -39,9 +34,9 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class SetRelationTargetSearchAction extends AbstractBulkAction {
-    static get actionName() { return "setRelationTarget"; }
-    static get actionTitle() { return "Set relation target"; }
+export default class AddRelationBulkAction extends AbstractBulkAction {
+    static get actionName() { return "addRelation"; }
+    static get actionTitle() { return "Add relation"; }
 
     doRender() {
         const $action = $(TPL);

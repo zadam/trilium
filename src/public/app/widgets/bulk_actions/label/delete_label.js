@@ -1,5 +1,5 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractBulkAction from "./abstract_bulk_action.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
 
 const TPL = `
 <tr>

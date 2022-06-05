@@ -1,15 +1,17 @@
 import server from "./server.js";
 import ws from "./ws.js";
-import MoveNoteBulkAction from "../widgets/bulk_actions/move_note.js";
-import DeleteNoteBulkAction from "../widgets/bulk_actions/delete_note.js";
-import DeleteNoteRevisionsBulkAction from "../widgets/bulk_actions/delete_note_revisions.js";
-import DeleteLabelBulkAction from "../widgets/bulk_actions/delete_label.js";
-import DeleteRelationBulkAction from "../widgets/bulk_actions/delete_relation.js";
-import RenameLabelBulkAction from "../widgets/bulk_actions/rename_label.js";
-import RenameRelationBulkAction from "../widgets/bulk_actions/rename_relation.js";
-import SetLabelValueBulkAction from "../widgets/bulk_actions/set_label_value.js";
-import SetRelationTargetSearchAction from "../widgets/bulk_actions/set_relation_target.js";
+import MoveNoteBulkAction from "../widgets/bulk_actions/note/move_note.js";
+import DeleteNoteBulkAction from "../widgets/bulk_actions/note/delete_note.js";
+import DeleteNoteRevisionsBulkAction from "../widgets/bulk_actions/note/delete_note_revisions.js";
+import DeleteLabelBulkAction from "../widgets/bulk_actions/label/delete_label.js";
+import DeleteRelationBulkAction from "../widgets/bulk_actions/relation/delete_relation.js";
+import RenameLabelBulkAction from "../widgets/bulk_actions/label/rename_label.js";
+import RenameRelationBulkAction from "../widgets/bulk_actions/relation/rename_relation.js";
+import UpdateLabelValueBulkAction from "../widgets/bulk_actions/label/update_label_value.js";
+import UpdateRelationTargetBulkAction from "../widgets/bulk_actions/relation/update_relation_target.js";
 import ExecuteScriptBulkAction from "../widgets/bulk_actions/execute_script.js";
+import AddLabelBulkAction from "../widgets/bulk_actions/label/add_label.js";
+import AddRelationBulkAction from "../widgets/bulk_actions/relation/add_relation.js";
 
 const ACTION_CLASSES = [
     MoveNoteBulkAction,
@@ -19,8 +21,10 @@ const ACTION_CLASSES = [
     DeleteRelationBulkAction,
     RenameLabelBulkAction,
     RenameRelationBulkAction,
-    SetLabelValueBulkAction,
-    SetRelationTargetSearchAction,
+    AddLabelBulkAction,
+    AddRelationBulkAction,
+    UpdateLabelValueBulkAction,
+    UpdateRelationTargetBulkAction,
     ExecuteScriptBulkAction
 ];
 

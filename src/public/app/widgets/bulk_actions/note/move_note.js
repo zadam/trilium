@@ -1,6 +1,6 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractBulkAction from "./abstract_bulk_action.js";
-import noteAutocompleteService from "../../services/note_autocomplete.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
+import noteAutocompleteService from "../../../services/note_autocomplete.js";
 
 const TPL = `
 <tr>

@@ -1,5 +1,5 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractBulkAction from "./abstract_bulk_action.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
 
 const TPL = `
 <tr>
@@ -37,9 +37,9 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class SetLabelValueBulkAction extends AbstractBulkAction {
-    static get actionName() { return "setLabelValue"; }
-    static get actionTitle() { return "Set label value"; }
+export default class AddLabelBulkAction extends AbstractBulkAction {
+    static get actionName() { return "addLabel"; }
+    static get actionTitle() { return "Add label"; }
 
     doRender() {
         const $action = $(TPL);
