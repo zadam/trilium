@@ -16,27 +16,25 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="clone-to-form">
-                <div class="modal-body">
-                    Affected notes: <span id="affected-note-count">0</span>
+            <div class="modal-body">
+                Affected notes: <span id="affected-note-count">0</span>
 
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="include-descendants">
-                        <label class="form-check-label" for="include-descendants">
-                            Include descendant notes
-                        </label>
-                    </div>
-
-                    Available actions:
-
-                    <div id="bulk-available-action-list"></div>
-
-                    <div id="bulk-existing-action-list"></div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="include-descendants">
+                    <label class="form-check-label" for="include-descendants">
+                        Include descendant notes
+                    </label>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Execute bulk actions</button>
-                </div>
-            </form>
+
+                Available actions:
+
+                <table id="bulk-available-action-list"></table>
+
+                <div id="bulk-existing-action-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Execute bulk actions</button>
+            </div>
         </div>
     </div>
 </div>

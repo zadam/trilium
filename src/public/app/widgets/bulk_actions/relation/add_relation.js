@@ -6,8 +6,8 @@ const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 10px;" class="text-nowrap">Set relation</div> 
-            
+            <div style="margin-right: 10px;" class="text-nowrap">Add relation</div> 
+
             <input type="text" 
                 class="form-control relation-name" 
                 placeholder="relation name"

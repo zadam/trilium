@@ -64,6 +64,10 @@ const TPL = `
     .add-search-option button {
         margin-top: 5px; /* to give some spacing when buttons overflow on the next line */
     }
+    
+    .dropdown-header {
+        background-color: var(--accented-background-color);
+    }
     </style>
 
     <div class="search-settings">
@@ -183,12 +187,16 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         this.$component = this.$widget.find('.search-definition-widget');
         this.$actionList = this.$widget.find('.action-list');
 
-        for (const action of bulkActionService.ACTION_CLASSES) {
-            this.$actionList.append(
-                $('<a class="dropdown-item" href="#">')
-                    .attr('data-action-add', action.actionName)
-                    .text(action.actionTitle)
-            );
+        for (const actionGroup of bulkActionService.ACTION_GROUPS) {
+            this.$actionList.append($('<h6 class="dropdown-header">').append(actionGroup.title));
+
+            for (const action of actionGroup.actions) {
+                this.$actionList.append(
+                    $('<a class="dropdown-item" href="#">')
+                        .attr('data-action-add', action.actionName)
+                        .text(action.actionTitle)
+                );
+            }
         }
 
         this.$widget.on('click', '[data-search-option-add]', async event => {

@@ -13,6 +13,25 @@ import ExecuteScriptBulkAction from "../widgets/bulk_actions/execute_script.js";
 import AddLabelBulkAction from "../widgets/bulk_actions/label/add_label.js";
 import AddRelationBulkAction from "../widgets/bulk_actions/relation/add_relation.js";
 
+const ACTION_GROUPS = [
+    {
+        title: 'Labels',
+        actions: [AddLabelBulkAction, UpdateLabelValueBulkAction, RenameLabelBulkAction, DeleteLabelBulkAction]
+    },
+    {
+        title: 'Relations',
+        actions: [AddRelationBulkAction, UpdateRelationTargetBulkAction, RenameRelationBulkAction, DeleteRelationBulkAction]
+    },
+    {
+        title: 'Notes',
+        actions: [DeleteNoteBulkAction, DeleteNoteRevisionsBulkAction, MoveNoteBulkAction],
+    },
+    {
+        title: 'Other',
+        actions: [ExecuteScriptBulkAction]
+    }
+];
+
 const ACTION_CLASSES = [
     MoveNoteBulkAction,
     DeleteNoteBulkAction,
@@ -68,5 +87,6 @@ function parseActions(note) {
 export default {
     addAction,
     parseActions,
-    ACTION_CLASSES
+    ACTION_CLASSES,
+    ACTION_GROUPS
 };

@@ -14,12 +14,21 @@ $dialog.on('click', '[data-action-add]', async event => {
     await refresh();
 });
 
-for (const action of bulkActionService.ACTION_CLASSES) {
-    $availableActionList.append(
-        $('<button class="btn btn-sm">')
-            .attr('data-action-add', action.actionName)
-            .text(action.actionTitle)
-    );
+for (const actionGroup of bulkActionService.ACTION_GROUPS) {
+    const $actionGroupList = $("<td>");
+    const $actionGroup = $("<tr>")
+        .append($("<td>").text(actionGroup.title + ": "))
+        .append($actionGroupList);
+
+    for (const action of actionGroup.actions) {
+        $actionGroupList.append(
+            $('<button class="btn btn-sm">')
+                .attr('data-action-add', action.actionName)
+                .text(action.actionTitle)
+        );
+    }
+
+    $availableActionList.append($actionGroup);
 }
 
 async function refresh() {
