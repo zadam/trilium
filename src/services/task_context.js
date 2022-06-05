@@ -10,6 +10,7 @@ class TaskContext {
         this.taskId = taskId;
         this.taskType = taskType;
         this.data = data;
+        this.noteDeletionHandlerTriggered = false;
 
         // progressCount is meant to represent just some progress - to indicate the task is not stuck
         this.progressCount = -1; // we're incrementing immediatelly

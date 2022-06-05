@@ -49,6 +49,7 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
         }
     }
     else if (entityName === 'notes') {
+        // ENTITY_DELETED won't trigger anything since all branches/attributes are already deleted at this point
         runAttachedRelations(entity, 'runOnNoteChange', entity);
     }
 });
@@ -93,6 +94,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         else if (entity.type === 'label' && entity.name === 'sorted') {
             handleSortedAttribute(entity);
         }
+    }
+    else if (entityName === 'branches') {
+        runAttachedRelations(entity.getNote(), 'runOnBranchCreation', entity);
     }
     else if (entityName === 'notes') {
         runAttachedRelations(entity, 'runOnNoteCreation', entity);
@@ -167,4 +171,12 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
             }
         }
     });
+
+    if (entityName === 'branches') {
+        runAttachedRelations(entity.getNote(), 'runOnBranchDeletion', entity);
+    }
 });
+
+module.exports = {
+    runAttachedRelations
+};
