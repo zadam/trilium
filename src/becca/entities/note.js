@@ -9,7 +9,6 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity");
 const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
-const handlers = require("../../services/handlers");
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -1143,6 +1142,7 @@ class Note extends AbstractEntity {
         }
 
         // needs to be run before branches and attributes are deleted and thus attached relations disappear
+        const handlers = require("../../services/handlers");
         handlers.runAttachedRelations(this, 'runOnNoteDeletion', this);
         taskContext.noteDeletionHandlerTriggered = true;
 
