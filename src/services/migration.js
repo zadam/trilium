@@ -102,7 +102,7 @@ function isDbUpToDate() {
 async function migrateIfNecessary() {
     const currentDbVersion = getDbVersion();
 
-    if (currentDbVersion > appInfo.dbVersion) {
+    if (currentDbVersion > appInfo.dbVersion && process.env.TRILIUM_IGNORE_DB_VERSION !== 'true') {
         log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
 
         utils.crash();
