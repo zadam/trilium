@@ -968,3 +968,8 @@ input {
 .note-split.full-content-width {
     max-width: 999999px;
 }
+
+button.close:hover {
+    text-shadow: none;
+    color: currentColor;
+}
