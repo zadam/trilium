@@ -1133,6 +1133,10 @@ class Note extends AbstractEntity {
      * @param {TaskContext} [taskContext]
      */
     deleteNote(deleteId, taskContext) {
+        if (this.isDeleted) {
+            return;
+        }
+
         if (!deleteId) {
             deleteId = utils.randomString(10);
         }

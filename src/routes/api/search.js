@@ -9,15 +9,16 @@ const noteRevisionService = require("../../services/note_revisions");
 const branchService = require("../../services/branches");
 const cloningService = require("../../services/cloning");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
+const utils = require("../../services/utils.js");
 
-async function searchFromNoteInt(note) {
+function searchFromNoteInt(note) {
     let searchResultNoteIds;
 
     const searchScript = note.getRelationValue('searchScript');
     const searchString = note.getLabelValue('searchString');
 
     if (searchScript) {
-        searchResultNoteIds = await searchFromRelation(note, 'searchScript');
+        searchResultNoteIds = searchFromRelation(note, 'searchScript');
     } else {
         const searchContext = new SearchContext({
             fastSearch: note.hasLabel('fastSearch'),
@@ -61,7 +62,9 @@ async function searchFromNote(req) {
 
 const ACTION_HANDLERS = {
     deleteNote: (action, note) => {
-        note.markAsDeleted();
+        const deleteId = 'searchbulkaction-' + utils.randomString(10);
+
+        note.deleteNote(deleteId);
     },
     deleteNoteRevisions: (action, note) => {
         noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
@@ -149,7 +152,7 @@ function getActions(note) {
         .filter(a => !!a);
 }
 
-async function searchAndExecute(req) {
+function searchAndExecute(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
@@ -165,7 +168,7 @@ async function searchAndExecute(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    const searchResultNoteIds = await searchFromNoteInt(note);
+    const searchResultNoteIds = searchFromNoteInt(note);
 
     const actions = getActions(note);
 

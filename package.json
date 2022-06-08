@@ -36,7 +36,7 @@
     "commonmark": "0.30.0",
     "cookie-parser": "1.4.6",
     "csurf": "1.11.0",
-    "dayjs": "1.11.2",
+    "dayjs": "1.11.3",
     "ejs": "3.1.8",
     "electron-debug": "3.2.0",
     "electron-dl": "3.3.1",
@@ -80,7 +80,7 @@
     "tmp": "0.2.1",
     "turndown": "7.1.1",
     "unescape": "1.0.1",
-    "ws": "8.6.0",
+    "ws": "8.7.0",
     "yauzl": "2.10.0"
   },
   "devDependencies": {
@@ -94,7 +94,7 @@
     "jsdoc": "3.6.10",
     "lorem-ipsum": "2.0.4",
     "rcedit": "3.0.1",
-    "webpack": "5.72.1",
+    "webpack": "5.73.0",
     "webpack-cli": "4.9.2"
   },
   "optionalDependencies": {

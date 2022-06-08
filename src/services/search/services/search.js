@@ -78,6 +78,10 @@ function findResultsWithExpression(expression, searchContext) {
 
     const searchResults = noteSet.notes
         .map(note => {
+            if (note.isDeleted) {
+                return null;
+            }
+
             const notePathArray = executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note);
 
             if (!notePathArray) {
@@ -85,7 +89,8 @@ function findResultsWithExpression(expression, searchContext) {
             }
 
             return new SearchResult(notePathArray);
-        });
+        })
+        .filter(note => !!note);
 
     for (const res of searchResults) {
         res.computeScore(searchContext.highlightedTokens);
@@ -129,7 +134,7 @@ function parseQueryToExpression(query, searchContext) {
             structuredExpressionTokens,
             expression
         };
-        
+
         log.info("Search debug: " + JSON.stringify(searchContext.debugInfo, null, 4));
     }
 
