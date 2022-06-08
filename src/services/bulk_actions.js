@@ -1,8 +1,9 @@
-const log = require("./log.js");
-const noteRevisionService = require("./note_revisions.js");
-const becca = require("../becca/becca.js");
-const cloningService = require("./cloning.js");
-const branchService = require("./branches.js");
+const log = require("./log");
+const noteRevisionService = require("./note_revisions");
+const becca = require("../becca/becca");
+const cloningService = require("./cloning");
+const branchService = require("./branches");
+const utils = require("./utils");
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {
@@ -12,7 +13,9 @@ const ACTION_HANDLERS = {
         note.addRelation(action.relationName, action.targetNoteId);
     },
     deleteNote: (action, note) => {
-        note.markAsDeleted();
+        const deleteId = 'searchbulkaction-' + utils.randomString(10);
+
+        note.deleteNote(deleteId);
     },
     deleteNoteRevisions: (action, note) => {
         noteRevisionService.eraseNoteRevisions(note.getNoteRevisions().map(rev => rev.noteRevisionId));
