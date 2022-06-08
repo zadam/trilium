@@ -7,15 +7,16 @@ const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const bulkActionService = require("../../services/bulk_actions");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
+const utils = require("../../services/utils.js");
 
-async function searchFromNoteInt(note) {
+function searchFromNoteInt(note) {
     let searchResultNoteIds;
 
     const searchScript = note.getRelationValue('searchScript');
     const searchString = note.getLabelValue('searchString');
 
     if (searchScript) {
-        searchResultNoteIds = await searchFromRelation(note, 'searchScript');
+        searchResultNoteIds = searchFromRelation(note, 'searchScript');
     } else {
         const searchContext = new SearchContext({
             fastSearch: note.hasLabel('fastSearch'),
@@ -57,7 +58,7 @@ async function searchFromNote(req) {
     return await searchFromNoteInt(note);
 }
 
-async function searchAndExecute(req) {
+function searchAndExecute(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
@@ -73,7 +74,7 @@ async function searchAndExecute(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    const searchResultNoteIds = await searchFromNoteInt(note);
+    const searchResultNoteIds = searchFromNoteInt(note);
 
     bulkActionService.executeActions(note, searchResultNoteIds);
 }

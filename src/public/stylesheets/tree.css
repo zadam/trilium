@@ -170,7 +170,6 @@ span.fancytree-active .fancytree-title {
 }
 
 span.fancytree-selected {
-    color: var(--hover-item-text-color) !important;
     border-color: var(--main-border-color) !important;
     border-radius: 5px;
 }
