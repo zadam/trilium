@@ -195,6 +195,12 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         }
     }
 
+    async noteSwitched() {
+        this.lastActiveComponentId = null;
+
+        await super.noteSwitched();
+    }
+
     async refreshWithNote(note, noExplicitActivation = false) {
         this.lastNoteType = note.type;
 

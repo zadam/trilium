@@ -168,6 +168,10 @@ const OPTION_CLASSES = [
 ];
 
 export default class SearchDefinitionWidget extends NoteContextAwareWidget {
+    get name() {
+        return "searchDefinition";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'search';
     }
