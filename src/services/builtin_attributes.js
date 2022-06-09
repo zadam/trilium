@@ -50,7 +50,7 @@ module.exports = [
     { type: 'label', name: 'shareDisallowRobotIndexing' },
     { type: 'label', name: 'displayRelations' },
     { type: 'label', name: 'hideRelations' },
-    { type: 'label', name: 'titleTemplate' },
+    { type: 'label', name: 'titleTemplate', isDangerous: true },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
