@@ -742,6 +742,19 @@ class NoteShort {
                 || this.mime === "text/javascript");
     }
 
+    /** @returns {boolean} true if this note is TypeScript (code or attachment) */
+    isTypeScript() {
+        return (this.type === "code" || this.type === "file")
+        && (this.mime.startsWith("application/typescript")
+            || this.mime === "application/x-typescript"
+            || this.mime === "text/typescript");
+    }
+
+    /** @returns {boolean} true if this note is executable (code or attachment) */
+    isExecutableScript() {
+        return this.isJavaScript() || this.isTypeScript()
+    }
+
     /** @returns {boolean} true if this note is HTML */
     isHtml() {
         return (this.type === "code" || this.type === "file" || this.type === "render") && this.mime === "text/html";
@@ -749,7 +762,7 @@ class NoteShort {
 
     /** @returns {string|null} JS script environment - either "frontend" or "backend" */
     getScriptEnv() {
-        if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
+        if (this.isHtml() || (this.isExecutableScript() && this.mime.endsWith('env=frontend'))) {
             return "frontend";
         }
 
@@ -757,7 +770,7 @@ class NoteShort {
             return "frontend";
         }
 
-        if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
+        if (this.isExecutableScript() && this.mime.endsWith('env=backend')) {
             return "backend";
         }
 
@@ -765,7 +778,7 @@ class NoteShort {
     }
 
     async executeScript() {
-        if (!this.isJavaScript()) {
+        if (!this.isExecutableScript()) {
             throw new Error(`Note ${this.noteId} is of type ${this.type} and mime ${this.mime} and thus cannot be executed`);
         }
 

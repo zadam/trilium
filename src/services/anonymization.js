@@ -36,10 +36,10 @@ VACUUM;
 function getLightAnonymizationScript() {
     return `
          UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL AND noteId NOT IN (
-                SELECT noteId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+                SELECT noteId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend', 'application/typescript;env=backend', 'application/typescript;env=frontend')
          );
          UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL AND noteRevisionId NOT IN (
-                SELECT noteRevisionId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+                SELECT noteRevisionId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend', 'application/typescript;env=backend', 'application/typescript;env=frontend')
          );
      `;
 }

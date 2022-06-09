@@ -21,6 +21,8 @@ const CODE_MIME_TYPES = {
     'text/x-java': true,
     'application/javascript': 'application/javascript;env=frontend',
     'application/x-javascript': 'application/javascript;env=frontend',
+    'application/typescript': 'application/typescript;env=frontend',
+    'application/x-typescript': 'application/typescript;env=frontend',
     'application/json': true,
     'text/x-kotlin': true,
     'text/x-stex': true,

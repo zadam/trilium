@@ -300,6 +300,19 @@ class Note extends AbstractEntity {
                 || this.mime === "text/javascript");
     }
 
+    /** @returns {boolean} true if this note is TypeScript (code or attachment) */
+    isTypeScript() {
+        return (this.type === "code" || this.type === "file")
+        && (this.mime.startsWith("application/typescript")
+            || this.mime === "application/x-typescript"
+            || this.mime === "text/typescript");
+    }
+
+    /** @returns {boolean} true if this note is executable (code or attachment) */
+    isExecutableScript() {
+        return this.isJavaScript() || this.isTypeScript()
+    }
+
     /** @returns {boolean} true if this note is HTML */
     isHtml() {
         return ["code", "file", "render"].includes(this.type)
@@ -311,9 +324,17 @@ class Note extends AbstractEntity {
         return utils.isStringNote(this.type, this.mime);
     }
 
+    getExecutableScriptLanguage() {
+        if(!this.isExecutableScript) {
+            return null;
+        }
+
+
+    }
+
     /** @returns {string|null} JS script environment - either "frontend" or "backend" */
     getScriptEnv() {
-        if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
+        if (this.isHtml() || (this.isExecutableScript() && this.mime.endsWith('env=frontend'))) {
             return "frontend";
         }
 
@@ -321,7 +342,7 @@ class Note extends AbstractEntity {
             return "frontend";
         }
 
-        if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
+        if (this.isExecutableScript() && this.mime.endsWith('env=backend')) {
             return "backend";
         }
 

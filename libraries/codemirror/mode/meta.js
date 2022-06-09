@@ -152,7 +152,7 @@
     {name: "TTCN", mime: "text/x-ttcn", mode: "ttcn", ext: ["ttcn", "ttcn3", "ttcnpp"]},
     {name: "TTCN_CFG", mime: "text/x-ttcn-cfg", mode: "ttcn-cfg", ext: ["cfg"]},
     {name: "Turtle", mime: "text/turtle", mode: "turtle", ext: ["ttl"]},
-    {name: "TypeScript", mime: "application/typescript", mode: "javascript", ext: ["ts"], alias: ["ts"]},
+    {name: "TypeScript", mimes: ["text/typescript", "application/x-typescript", "application/typescript", "application/typescript;env=frontend", "application/typescript;env=backend"], mode: "javascript", ext: ["ts"], alias: ["ts"]},
     {name: "TypeScript-JSX", mime: "text/typescript-jsx", mode: "jsx", ext: ["tsx"], alias: ["tsx"]},
     {name: "Twig", mime: "text/x-twig", mode: "twig"},
     {name: "Web IDL", mime: "text/x-webidl", mode: "webidl", ext: ["webidl"]},

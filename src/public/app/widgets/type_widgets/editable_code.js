@@ -116,7 +116,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
 
     async doRefresh(note) {
         this.$executeButton.toggle(
-            note.mime.startsWith('application/javascript')
+            note.isExecutableScript()
             || note.mime === 'text/x-sqlite;schema=trilium'
         );
 
@@ -125,7 +125,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             && !note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden"))
         );
 
-        this.$openTriliumApiDocsButton.toggle(note.mime.startsWith('application/javascript;env='));
+        this.$openTriliumApiDocsButton.toggle(note.isExecutableScript());
 
         const noteComplement = await this.noteContext.getNoteComplement();
 

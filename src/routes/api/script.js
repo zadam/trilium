@@ -91,7 +91,7 @@ function getRelationBundles(req) {
     for (const noteId of uniqueNoteIds) {
         const note = becca.getNote(noteId);
 
-        if (!note.isJavaScript() || note.getScriptEnv() !== 'frontend') {
+        if (!note.isExecutableScript() || note.getScriptEnv() !== 'frontend') {
             continue;
         }
 

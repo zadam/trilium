@@ -1,11 +1,13 @@
+const ts = require('typescript');
+const fs = require('fs');
 const ScriptContext = require('./script_context');
 const cls = require('./cls');
 const log = require('./log');
 const becca = require("../becca/becca");
 
 function executeNote(note, apiParams) {
-    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
-        log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS backend"`);
+    if (!note.isExecutableScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable()) {
+        log.info(`Cannot execute note ${note.noteId} "${note.title}", note must be of type "Code: JS backend or TS backend"`);
 
         return;
     }
@@ -114,7 +116,7 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
         return;
     }
 
-    if (!note.isJavaScript() && !note.isHtml()) {
+    if (!note.isExecutableScript() && !note.isHtml()) {
         return;
     }
 
@@ -163,13 +165,23 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
     // only frontend scripts are async. Backend cannot be async because of transaction management.
     const isFrontend = scriptEnv === 'frontend';
 
-    if (note.isJavaScript()) {
+    if (note.isExecutableScript()) {
+        // JavaScript code. In the case of TypeScript, we need to compile it first.
+        var code = ""
+
+        if(note.isJavaScript()) {
+            code = note.getContent();
+        }
+        else if(note.isTypeScript()) {
+            code = ts.transpileModule(note.getContent(), { compilerOptions: { module: ts.ModuleKind.CommonJS } })["outputText"];
+        }
+
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
 ${root ? 'return ' : ''}${isFrontend ? 'await' : ''} ((${isFrontend ? 'async' : ''} function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
-${backendOverrideContent || note.getContent()};
+${backendOverrideContent || code};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];

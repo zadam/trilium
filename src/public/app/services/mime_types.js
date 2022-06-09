@@ -62,6 +62,8 @@ const MIME_TYPES_DICT = [
     { title: "Java Server Pages", mime: "application/x-jsp" },
     { default: true, title: 'JS frontend', mime: 'application/javascript;env=frontend' },
     { default: true, title: 'JS backend', mime: 'application/javascript;env=backend' },
+    { default: true, title: 'TS frontend', mime: 'application/typescript;env=frontend' },
+    { default: true, title: 'TS backend', mime: 'application/typescript;env=backend' },
     { default: true, title: "JSON", mime: "application/json" },
     { title: "JSON-LD", mime: "application/ld+json" },
     { title: "JSX", mime: "text/jsx" },

@@ -201,7 +201,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    if (!scriptNote.isJavaScript() || scriptNote.getScriptEnv() !== 'backend') {
+    if (!scriptNote.isExecutableScript() || scriptNote.getScriptEnv() !== 'backend') {
         log.info(`Note ${scriptNote.noteId} is not executable.`);
 
         return [];

@@ -1,5 +1,5 @@
 const eventService = require('./events');
-const scriptService = require('./script');
+const scriptService = require('./script').default;
 const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
