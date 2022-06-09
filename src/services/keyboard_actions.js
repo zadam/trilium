@@ -98,25 +98,25 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "moveNoteUp",
-        defaultShortcuts: ["CommandOrControl+Up"],
+        defaultShortcuts: isMac ? ["Alt+Up"] : ["CommandOrControl+Up"],
         description: "Move note up",
         scope: "note-tree"
     },
     {
         actionName: "moveNoteDown",
-        defaultShortcuts: ["CommandOrControl+Down"],
+        defaultShortcuts: isMac ? ["Alt+Down"] : ["CommandOrControl+Down"],
         description: "Move note down",
         scope: "note-tree"
     },
     {
         actionName: "moveNoteUpInHierarchy",
-        defaultShortcuts: ["CommandOrControl+Left"],
+        defaultShortcuts: isMac ? ["Alt+Left"] : ["CommandOrControl+Left"],
         description: "Move note up in hierarchy",
         scope: "note-tree"
     },
     {
         actionName: "moveNoteDownInHierarchy",
-        defaultShortcuts: ["CommandOrControl+Right"],
+        defaultShortcuts: isMac ? ["Alt+Right"] : ["CommandOrControl+Right"],
         description: "Move note down in hierarchy",
         scope: "note-tree"
     },
