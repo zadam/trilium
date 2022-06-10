@@ -65,8 +65,8 @@ export default class HistoryNavigationWidget extends BasicWidget {
             items.push({
                 title,
                 idx,
-                uiIcon: idx == activeIndex ? "radio-circle-marked" : // compare with type coercion!
-                    (idx < activeIndex ? "left-arrow-alt" : "right-arrow-alt")
+                uiIcon: idx == activeIndex ? "bx bx-radio-circle-marked" : // compare with type coercion!
+                    (idx < activeIndex ? "bx bx-left-arrow-alt" : "bx bx-right-arrow-alt")
             });
         }
 

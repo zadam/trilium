@@ -1,11 +1,11 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractSearchAction from "./abstract_search_action.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
 
 const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 10px;" class="text-nowrap">Set label</div> 
+            <div style="margin-right: 10px;" class="text-nowrap">Update label value</div> 
             
             <input type="text" 
                 class="form-control label-name" 
@@ -22,12 +22,7 @@ const TPL = `
         <div class="dropdown help-dropdown">
             <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
             <div class="dropdown-menu dropdown-menu-right p-4">
-                <p>On all matched notes:</p>
-                
-                <ul>
-                    <li>create given label if note doesn't have one yet</li>
-                    <li>or change value of the existing label</li>
-                </ul>
+                <p>On all matched notes, change value of the existing label.</p>
                 
                 <p>You can also call this method without value, in such case label will be assigned to the note without value.</p>
             </div> 
@@ -37,8 +32,9 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class SetLabelValueSearchAction extends AbstractSearchAction {
-    static get actionName() { return "setLabelValue"; }
+export default class UpdateLabelValueBulkAction extends AbstractBulkAction {
+    static get actionName() { return "updateLabelValue"; }
+    static get actionTitle() { return "Update label value"; }
 
     doRender() {
         const $action = $(TPL);

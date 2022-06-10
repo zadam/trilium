@@ -9,8 +9,9 @@ let parentNoteId = null;
 $form.on('submit', async () => {
     const sortBy = $form.find("input[name='sort-by']:checked").val();
     const sortDirection = $form.find("input[name='sort-direction']:checked").val();
+    const foldersFirst = $form.find("input[name='sort-folders-first']").is(":checked");
 
-    await server.put(`notes/${parentNoteId}/sort-children`, {sortBy, sortDirection});
+    await server.put(`notes/${parentNoteId}/sort-children`, {sortBy, sortDirection, foldersFirst});
 
     utils.closeActiveDialog();
 });

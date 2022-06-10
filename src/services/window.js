@@ -67,7 +67,8 @@ async function createMainWindow() {
             enableRemoteModule: true,
             nodeIntegration: true,
             contextIsolation: false,
-            spellcheck: spellcheckEnabled
+            spellcheck: spellcheckEnabled,
+            webviewTag: true
         },
         frame: optionService.getOptionBool('nativeTitleBarVisible'),
         icon: getIcon()

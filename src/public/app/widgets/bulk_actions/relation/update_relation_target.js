@@ -1,12 +1,12 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractSearchAction from "./abstract_search_action.js";
-import noteAutocompleteService from "../../services/note_autocomplete.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
+import noteAutocompleteService from "../../../services/note_autocomplete.js";
 
 const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 10px;" class="text-nowrap">Set relation</div> 
+            <div style="margin-right: 10px;" class="text-nowrap">Update relation</div> 
             
             <input type="text" 
                 class="form-control relation-name" 
@@ -39,8 +39,9 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class SetRelationTargetSearchAction extends AbstractSearchAction {
-    static get actionName() { return "setRelationTarget"; }
+export default class UpdateRelationTargetBulkAction extends AbstractBulkAction {
+    static get actionName() { return "updateRelationTarget"; }
+    static get actionTitle() { return "Update relation target"; }
 
     doRender() {
         const $action = $(TPL);

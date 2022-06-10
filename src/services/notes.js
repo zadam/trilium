@@ -55,7 +55,7 @@ function deriveMime(type, mime) {
         mime = 'text/plain';
     } else if (['relation-map', 'search', 'canvas'].includes(type)) {
         mime = 'application/json';
-    } else if (['render', 'book'].includes(type)) {
+    } else if (['render', 'book', 'iframe'].includes(type)) {
         mime = '';
     } else {
         mime = 'application/octet-stream';
@@ -154,6 +154,14 @@ function createNewNote(params) {
         }).save();
 
         scanForLinks(note);
+
+        if (params.templateNoteId) {
+            if (!becca.getNote(params.templateNoteId)) {
+                throw new Error(`Template note '${params.templateNoteId}' does not exist.`);
+            }
+
+            note.addRelation('template', params.templateNoteId);
+        }
 
         copyChildAttributes(parentNote, note);
 

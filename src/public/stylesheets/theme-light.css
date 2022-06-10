@@ -41,10 +41,12 @@ html {
     --input-background-color: transparent;
 
     --hover-item-text-color: black;
-    --hover-item-background-color: #ddd;
+    --hover-item-background-color: transparent;
+    --hover-item-border-color: #ccc;
 
     --active-item-text-color: black;
     --active-item-background-color: #ddd;
+    --active-item-border-color: transparent;
 
     --menu-text-color: black;
     --menu-background-color: white;

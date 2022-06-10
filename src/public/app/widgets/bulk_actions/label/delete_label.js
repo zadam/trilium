@@ -1,5 +1,5 @@
-import SpacedUpdate from "../../services/spaced_update.js";
-import AbstractSearchAction from "./abstract_search_action.js";
+import SpacedUpdate from "../../../services/spaced_update.js";
+import AbstractBulkAction from "../abstract_bulk_action.js";
 
 const TPL = `
 <tr>
@@ -18,8 +18,9 @@ const TPL = `
     </td>
 </tr>`;
 
-export default class DeleteLabelSearchAction extends AbstractSearchAction {
+export default class DeleteLabelBulkAction extends AbstractBulkAction {
     static get actionName() { return "deleteLabel"; }
+    static get actionTitle() { return "Delete label"; }
 
     doRender() {
         const $action = $(TPL);

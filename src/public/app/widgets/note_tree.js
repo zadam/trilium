@@ -309,12 +309,38 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 if (targetType === 'title' || targetType === 'icon') {
                     if (event.shiftKey) {
-                        node.setSelected(!node.isSelected());
+                        const activeNode = this.getActiveNode();
+
+                        if (activeNode.getParent() !== node.getParent()) {
+                            return;
+                        }
+
+                        this.clearSelectedNodes();
+
+                        function selectInBetween(first, second) {
+                            for (let i = 0; first && first !== second && i < 10000; i++) {
+                                first.setSelected(true);
+                                first = first.getNextSibling();
+                            }
+
+                            second.setSelected();
+                        }
+
+                        if (activeNode.getIndex() < node.getIndex()) {
+                            selectInBetween(activeNode, node);
+                        } else {
+                            selectInBetween(node, activeNode);
+                        }
+
                         node.setFocus(true);
                     }
                     else if (event.ctrlKey) {
                         const notePath = treeService.getNotePath(node);
                         appContext.tabManager.openTabWithNoteWithHoisting(notePath);
+                    }
+                    else if (event.altKey) {
+                        node.setSelected(!node.isSelected());
+                        node.setFocus(true);
                     }
                     else if (data.node.isActive()) {
                         // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note
@@ -513,6 +539,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         subNode.load();
                     }
                 });
+            },
+            select: () => {
+                // TODO
             }
         });
 
@@ -1420,6 +1449,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     async importIntoNoteCommand({node}) {
         const importDialog = await import('../dialogs/import.js');
         importDialog.showDialog(node.data.noteId);
+    }
+
+    async bulkAssignAttributesCommand({node}) {
+        const bulkAssignAttributesDialog = await import('../dialogs/bulk_assign_attributes.js');
+        bulkAssignAttributesDialog.showDialog(this.getSelectedOrActiveNodes(node));
     }
 
     forceNoteSyncCommand({node}) {

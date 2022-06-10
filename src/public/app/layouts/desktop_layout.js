@@ -49,6 +49,7 @@ import NoteWrapperWidget from "../widgets/note_wrapper.js";
 import BacklinksWidget from "../widgets/backlinks.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
+import TocWidget from "../widgets/toc.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -169,6 +170,7 @@ export default class DesktopLayout {
                         .child(...this.customWidgets.get('center-pane'))
                     )
                     .child(new RightPaneContainer()
+                        .child(new TocWidget())
                         .child(...this.customWidgets.get('right-pane'))
                     )
                 )

@@ -82,7 +82,7 @@ class ContextMenu {
                 const $icon = $("<span>");
 
                 if (item.uiIcon) {
-                    $icon.addClass("bx bx-" + item.uiIcon);
+                    $icon.addClass(item.uiIcon);
                 } else {
                     $icon.append("&nbsp;");
                 }

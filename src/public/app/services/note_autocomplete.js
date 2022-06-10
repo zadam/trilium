@@ -140,7 +140,9 @@ function initNoteAutocomplete($el, options) {
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
-        openOnFocus: true,
+        // openOnFocus has to be false, otherwise re-focus (after return from note type chooser dialog) forces
+        // re-querying of the autocomplete source which then changes currently selected suggestion
+        openOnFocus: false,
         minLength: 0,
         tabAutocomplete: false
     }, [
@@ -170,9 +172,18 @@ function initNoteAutocomplete($el, options) {
         }
 
         if (suggestion.action === 'create-note') {
+            const noteTypeChooserDialog = await import('../dialogs/note_type_chooser.js');
+            const {success, noteType, templateNoteId} = await noteTypeChooserDialog.chooseNoteType();
+
+            if (!success) {
+                return;
+            }
+
             const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
                 title: suggestion.noteTitle,
-                activate: false
+                activate: false,
+                type: noteType,
+                templateNoteId: templateNoteId
             });
 
             suggestion.notePath = treeService.getSomeNotePath(note);
@@ -261,7 +272,6 @@ function init() {
 }
 
 export default {
-    autocompleteSource,
     autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,

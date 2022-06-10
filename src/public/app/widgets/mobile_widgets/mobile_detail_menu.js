@@ -18,9 +18,9 @@ class MobileDetailMenuWidget extends BasicWidget {
                 x: e.pageX,
                 y: e.pageY,
                 items: [
-                    { title: "Insert child note", command: "insertChildNote", uiIcon: "plus",
+                    { title: "Insert child note", command: "insertChildNote", uiIcon: "bx bx-plus",
                         enabled: note.type !== 'search' },
-                    { title: "Delete this note", command: "delete", uiIcon: "trash",
+                    { title: "Delete this note", command: "delete", uiIcon: "bx bx-trash",
                         enabled: note.noteId !== 'root' }
                 ],
                 selectMenuItemHandler: async ({command}) => {

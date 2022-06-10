@@ -51,6 +51,7 @@ module.exports = [
     { type: 'label', name: 'displayRelations' },
     { type: 'label', name: 'hideRelations' },
     { type: 'label', name: 'titleTemplate', isDangerous: true },
+    { type: 'label', name: 'template' },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
