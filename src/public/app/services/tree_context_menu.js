@@ -130,7 +130,17 @@ class TreeContextMenu {
             this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
         }
         else {
-            this.treeWidget.triggerCommand(command, {node: this.node, notePath: notePath});
+            const selectedOrActiveBranchIds = this.treeWidget.getSelectedOrActiveBranchIds(this.node);
+            const selectedOrActiveNoteIds = selectedOrActiveBranchIds
+                .map(branchId => froca.getBranch(branchId).noteId)
+                .filter(noteId => !!noteId);
+
+            this.treeWidget.triggerCommand(command, {
+                node: this.node,
+                notePath: notePath,
+                selectedOrActiveBranchIds,
+                selectedOrActiveNoteIds
+            });
         }
     }
 }

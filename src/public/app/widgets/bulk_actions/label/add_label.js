@@ -55,7 +55,7 @@ export default class AddLabelBulkAction extends AbstractBulkAction {
                 labelName: $labelName.val(),
                 labelValue: $labelValue.val()
             });
-        }, 1000)
+        }, 1000);
 
         $labelName.on('input', () => spacedUpdate.scheduleUpdate());
         $labelValue.on('input', () => spacedUpdate.scheduleUpdate());

@@ -31,6 +31,7 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
+const bulkActionRoute = require('./api/bulk_action');
 const specialNotesRoute = require('./api/special_notes');
 const noteMapRoute = require('./api/note_map');
 const clipperRoute = require('./api/clipper');
@@ -356,6 +357,8 @@ function register(app) {
     apiRoute(POST, '/api/search-related', searchRoute.getRelatedNotes);
     apiRoute(GET, '/api/search/:searchString', searchRoute.search);
     apiRoute(GET, '/api/search-templates', searchRoute.searchTemplates);
+
+    apiRoute(POST, '/api/bulk-action', bulkActionRoute.execute);
 
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)

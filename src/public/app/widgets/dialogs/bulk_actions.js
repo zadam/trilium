@@ -2,6 +2,8 @@ import BasicWidget from "../basic_widget.js";
 import froca from "../../services/froca.js";
 import bulkActionService from "../../services/bulk_action.js";
 import utils from "../../services/utils.js";
+import server from "../../services/server.js";
+import toastService from "../../services/toast.js";
 
 const TPL = `
 <div class="bulk-assign-attributes-dialog modal mx-auto" tabindex="-1" role="dialog">
@@ -60,7 +62,7 @@ const TPL = `
                 <table class="bulk-existing-action-list"></table>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Execute bulk actions</button>
+                <button type="submit" class="execute-bulk-actions btn btn-primary">Execute bulk actions</button>
             </div>
         </div>
     </div>
@@ -78,6 +80,15 @@ export default class BulkActionsDialog extends BasicWidget {
             await bulkActionService.addAction('bulkaction', actionName);
 
             await this.refresh();
+        });
+
+        this.$executeButton = this.$widget.find(".execute-bulk-actions");
+        this.$executeButton.on("click", async () => {
+            await server.post("bulk-action", { noteIds: this.selectedOrActiveNoteIds });
+
+            toastService.showMessage("Bulk actions have been executed successfully.", 3000);
+
+            utils.closeActiveDialog();
         });
     }
 
@@ -119,12 +130,15 @@ export default class BulkActionsDialog extends BasicWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'action')) {
+        // only refreshing deleted attrs, otherwise components update themselves
+        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'action' && attr.isDeleted)) {
             this.refresh();
         }
     }
 
-    async bulkActionsEvent({node}) {
+    async bulkActionsEvent({selectedOrActiveNoteIds}) {
+        this.selectedOrActiveNoteIds = selectedOrActiveNoteIds;
+
         await this.refresh();
 
         utils.openDialog(this.$widget);
