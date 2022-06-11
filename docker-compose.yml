@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 services:
   trilium:
     build:
@@ -8,10 +8,9 @@ services:
     environment:
       - TRILIUM_DATA_DIR=/data
     ports:
-      - "8080:8080"
+      - "9080:8080"
     volumes:
-      - trilium:/data
+      - /home/oric/Docker/trilium:/data
 
 volumes:
   trilium:
-
