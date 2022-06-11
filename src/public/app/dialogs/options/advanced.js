@@ -65,12 +65,16 @@ export default class AdvancedOptions {
         });
 
         this.$fillEntityChangesButton.on('click', async () => {
+            toastService.showMessage("Filling entity changes rows...");
+
             await server.post('sync/fill-entity-changes');
 
             toastService.showMessage("Sync rows filled successfully");
         });
 
         this.$anonymizeFullButton.on('click', async () => {
+            toastService.showMessage("Creating fully anonymized database...");
+
             const resp = await server.post('database/anonymize/full');
 
             if (!resp.success) {
@@ -82,6 +86,8 @@ export default class AdvancedOptions {
         });
 
         this.$anonymizeLightButton.on('click', async () => {
+            toastService.showMessage("Creating lightly anonymized database...");
+
             const resp = await server.post('database/anonymize/light');
 
             if (!resp.success) {
@@ -93,18 +99,24 @@ export default class AdvancedOptions {
         });
 
         this.$vacuumDatabaseButton.on('click', async () => {
+            toastService.showMessage("Vacuuming database...");
+
             await server.post('database/vacuum-database');
 
             toastService.showMessage("Database has been vacuumed");
         });
 
         this.$findAndFixConsistencyIssuesButton.on('click', async () => {
+            toastService.showMessage("Finding and fixing consistency issues...");
+
             await server.post('database/find-and-fix-consistency-issues');
 
             toastService.showMessage("Consistency issues should be fixed.");
         });
 
         this.$checkIntegrityButton.on('click', async () => {
+            toastService.showMessage("Checking database integrity...");
+
             const {results} = await server.get('database/check-integrity');
 
             if (results.length === 1 && results[0].integrity_check === "ok") {
