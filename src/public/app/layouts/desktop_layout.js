@@ -50,6 +50,7 @@ import BacklinksWidget from "../widgets/backlinks.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
+import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -174,6 +175,7 @@ export default class DesktopLayout {
                         .child(...this.customWidgets.get('right-pane'))
                     )
                 )
-            );
+            )
+            .child(new BulkActionsDialog());
     }
 }

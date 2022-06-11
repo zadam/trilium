@@ -1451,11 +1451,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         importDialog.showDialog(node.data.noteId);
     }
 
-    async bulkAssignAttributesCommand({node}) {
-        const bulkAssignAttributesDialog = await import('../dialogs/bulk_assign_attributes.js');
-        bulkAssignAttributesDialog.showDialog(this.getSelectedOrActiveNodes(node));
-    }
-
     forceNoteSyncCommand({node}) {
         syncService.forceNoteSync(node.data.noteId);
     }

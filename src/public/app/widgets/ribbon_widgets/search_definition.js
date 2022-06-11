@@ -305,4 +305,10 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
         toastService.showMessage('Actions have been executed.', 3000);
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'action')) {
+            this.refresh();
+        }
+    }
 }

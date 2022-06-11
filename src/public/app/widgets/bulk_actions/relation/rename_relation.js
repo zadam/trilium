@@ -5,7 +5,7 @@ const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 10px;">Rename relation from:</div> 
+            <div style="margin-right: 10px; flex-shrink: 0;">Rename relation from:</div> 
             
             <input type="text" 
                 class="form-control old-relation-name" 

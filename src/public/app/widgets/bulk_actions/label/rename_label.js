@@ -5,7 +5,7 @@ const TPL = `
 <tr>
     <td colspan="2">
         <div style="display: flex; align-items: center">
-            <div style="margin-right: 10px;">Rename label from:</div> 
+            <div style="margin-right: 10px; flex-shrink: 0;">Rename label from:</div> 
             
             <input type="text" 
                 class="form-control old-label-name" 
@@ -45,7 +45,7 @@ export default class RenameLabelBulkAction extends AbstractBulkAction {
                 oldLabelName: $oldLabelName.val(),
                 newLabelName: $newLabelName.val()
             });
-        }, 1000)
+        }, 1000);
 
         $oldLabelName.on('input', () => spacedUpdate.scheduleUpdate());
         $newLabelName.on('input', () => spacedUpdate.scheduleUpdate());

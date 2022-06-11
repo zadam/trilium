@@ -1,6 +1,5 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
-import Component from "../component.js";
 import utils from "../../services/utils.js";
 
 export default class AbstractBulkAction {
@@ -48,6 +47,6 @@ export default class AbstractBulkAction {
 
         await ws.waitForMaxKnownEntityChangeId();
 
-        await this.triggerCommand('refreshSearchDefinition');
+        //await this.triggerCommand('refreshSearchDefinition');
     }
 }

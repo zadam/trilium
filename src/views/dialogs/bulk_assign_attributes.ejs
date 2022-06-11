@@ -1,13 +1,32 @@
 <style>
+    #bulk-assign-attributes-dialog .modal-body h4:not(:first-child) {
+        margin-top: 20px;
+    }
+
     #bulk-available-action-list button {
         padding: 2px 7px;
         margin-right: 10px;
         margin-bottom: 5px;
     }
+
+    #bulk-existing-action-list {
+        width: 100%;
+    }
+
+    #bulk-existing-action-list td {
+        padding: 7px;
+    }
+
+    #bulk-existing-action-list .button-column {
+        /* minimal width so that table remains static sized and most space remains for middle column with settings */
+        width: 50px;
+        white-space: nowrap;
+        text-align: right;
+    }
 </style>
 
 <div id="bulk-assign-attributes-dialog" class="modal mx-auto" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title mr-auto">Bulk assign attributes</h5>
@@ -17,7 +36,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                Affected notes: <span id="affected-note-count">0</span>
+                <h4>Affected notes: <span id="affected-note-count">0</span></h4>
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="" id="include-descendants">
@@ -26,11 +45,13 @@
                     </label>
                 </div>
 
-                Available actions:
+                <h4>Available actions</h4>
 
                 <table id="bulk-available-action-list"></table>
 
-                <div id="bulk-existing-action-list"></div>
+                <h4>Chosen actions</h4>
+
+                <table id="bulk-existing-action-list"></table>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary">Execute bulk actions</button>

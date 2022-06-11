@@ -91,7 +91,7 @@ class TreeContextMenu {
                 enabled: notSearch && noSelectedNotes },
             { title: "Import into note", command: "importIntoNote", uiIcon: "bx bx-empty",
                 enabled: notSearch && noSelectedNotes },
-            { title: "Bulk assign attributes", command: "bulkAssignAttributes", uiIcon: "bx bx-empty",
+            { title: "Bulk actions", command: "bulkActions", uiIcon: "bx bx-empty",
                 enabled: true }
         ].filter(row => row !== null);
     }
