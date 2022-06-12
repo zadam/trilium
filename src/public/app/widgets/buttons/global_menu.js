@@ -132,8 +132,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         $button.tooltip({ trigger: "hover" });
         $button.on("click", () => $button.tooltip("hide"));
 
-        this.$widget.find(".show-about-dialog-button").on('click',
-            () => import("../../dialogs/about.js").then(d => d.showDialog()));
+        this.$widget.find(".show-about-dialog-button").on('click', () => this.triggerCommand("openAboutDialog"));
 
         const isElectron = utils.isElectron();
 

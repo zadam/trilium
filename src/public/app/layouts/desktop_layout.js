@@ -51,6 +51,7 @@ import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
 import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
+import AboutDialog from "../widgets/dialogs/about.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -176,6 +177,7 @@ export default class DesktopLayout {
                     )
                 )
             )
-            .child(new BulkActionsDialog());
+            .child(new BulkActionsDialog())
+            .child(new AboutDialog());
     }
 }
