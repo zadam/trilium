@@ -10,7 +10,7 @@ export default class ShowNoteSourceButton extends ButtonWidget {
 
         this.icon('bx bx-code')
             .title("Show Note Source")
-            .command("showNoteSource")
+            .command("openNoteSourceDialog")
             .titlePlacement("bottom");
     }
 }

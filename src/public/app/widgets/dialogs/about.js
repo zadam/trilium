@@ -54,8 +54,6 @@ const TPL = `
 export default class AboutDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-
-        this.$dialog = this.$widget.find(".about-dialog");
         this.$appVersion = this.$widget.find(".app-version");
         this.$dbVersion = this.$widget.find(".db-version");
         this.$syncVersion = this.$widget.find(".sync-version");

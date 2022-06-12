@@ -20,10 +20,6 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
     }
 
-    showNoteSourceCommand() {
-        import("../dialogs/note_source.js").then(d => d.showDialog());
-    }
-
     pasteMarkdownIntoTextCommand() {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }

@@ -169,12 +169,6 @@ div.ui-tooltip {
     float: right;
 }
 
-#note-source {
-    height: 98%;
-    width: 100%;
-    overflow: scroll;
-}
-
 .suppressed {
     display: none;
 }
