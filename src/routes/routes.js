@@ -358,7 +358,8 @@ function register(app) {
     apiRoute(GET, '/api/search/:searchString', searchRoute.search);
     apiRoute(GET, '/api/search-templates', searchRoute.searchTemplates);
 
-    apiRoute(POST, '/api/bulk-action', bulkActionRoute.execute);
+    apiRoute(POST, '/api/bulk-action/execute', bulkActionRoute.execute);
+    apiRoute(POST, '/api/bulk-action/affected-notes', bulkActionRoute.getAffectedNoteCount);
 
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)

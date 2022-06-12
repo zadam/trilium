@@ -47,8 +47,8 @@ const TPL = `
                 <h4>Affected notes: <span class="affected-note-count">0</span></h4>
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" class="include-descendants">
-                    <label class="form-check-label" for="include-descendants">
+                    <label class="form-check-label">
+                        <input class="include-descendants form-check-input" type="checkbox" value="">
                         Include descendant notes
                     </label>
                 </div>
@@ -71,6 +71,12 @@ const TPL = `
 export default class BulkActionsDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+
+        this.$includeDescendants = this.$widget.find(".include-descendants");
+        this.$includeDescendants.on("change", () => this.refresh());
+
+        this.$affectedNoteCount = this.$widget.find(".affected-note-count");
+
         this.$availableActionList = this.$widget.find(".bulk-available-action-list");
         this.$existingActionList = this.$widget.find(".bulk-existing-action-list");
 
@@ -84,7 +90,10 @@ export default class BulkActionsDialog extends BasicWidget {
 
         this.$executeButton = this.$widget.find(".execute-bulk-actions");
         this.$executeButton.on("click", async () => {
-            await server.post("bulk-action", { noteIds: this.selectedOrActiveNoteIds });
+            await server.post("bulk-action/execute", {
+                noteIds: this.selectedOrActiveNoteIds,
+                includeDescendants: this.$includeDescendants.is(":checked")
+            });
 
             toastService.showMessage("Bulk actions have been executed successfully.", 3000);
 
@@ -94,6 +103,13 @@ export default class BulkActionsDialog extends BasicWidget {
 
     async refresh() {
         this.renderAvailableActions();
+
+        const {affectedNoteCount} = await server.post('bulk-action/affected-notes', {
+            noteIds: this.selectedOrActiveNoteIds,
+            includeDescendants: this.$includeDescendants.is(":checked")
+        });
+
+        this.$affectedNoteCount.text(affectedNoteCount);
 
         const bulkActionNote = await froca.getNote('bulkaction');
 
@@ -138,6 +154,7 @@ export default class BulkActionsDialog extends BasicWidget {
 
     async bulkActionsEvent({selectedOrActiveNoteIds}) {
         this.selectedOrActiveNoteIds = selectedOrActiveNoteIds;
+        this.$includeDescendants.prop("checked", false);
 
         await this.refresh();
 
