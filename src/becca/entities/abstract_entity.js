@@ -14,16 +14,19 @@ let becca = null;
  * Base class for all backend entities.
  */
 class AbstractEntity {
+    /** @protected */
     beforeSaving() {
         this.generateIdIfNecessary();
     }
 
+    /** @protected */
     generateIdIfNecessary() {
         if (!this[this.constructor.primaryKeyName]) {
             this[this.constructor.primaryKeyName] = utils.newEntityId();
         }
     }
 
+    /** @protected */
     generateHash(isDeleted = false) {
         let contentToHash = "";
 
@@ -38,10 +41,12 @@ class AbstractEntity {
         return utils.hash(contentToHash).substr(0, 10);
     }
 
+    /** @protected */
     getUtcDateChanged() {
         return this.utcDateModified || this.utcDateCreated;
     }
 
+    /** @protected */
     get becca() {
         if (!becca) {
             becca = require('../becca');
@@ -50,6 +55,7 @@ class AbstractEntity {
         return becca;
     }
 
+    /** @protected */
     addEntityChange(isDeleted = false) {
         entityChangesService.addEntityChange({
             entityName: this.constructor.entityName,
@@ -61,6 +67,7 @@ class AbstractEntity {
         });
     }
 
+    /** @protected */
     getPojoToSave() {
         return this.getPojo();
     }

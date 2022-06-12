@@ -12,6 +12,7 @@ import UpdateRelationTargetBulkAction from "../widgets/bulk_actions/relation/upd
 import ExecuteScriptBulkAction from "../widgets/bulk_actions/execute_script.js";
 import AddLabelBulkAction from "../widgets/bulk_actions/label/add_label.js";
 import AddRelationBulkAction from "../widgets/bulk_actions/relation/add_relation.js";
+import RenameNoteBulkAction from "../widgets/bulk_actions/note/rename_note.js";
 
 const ACTION_GROUPS = [
     {
@@ -24,7 +25,7 @@ const ACTION_GROUPS = [
     },
     {
         title: 'Notes',
-        actions: [DeleteNoteBulkAction, DeleteNoteRevisionsBulkAction, MoveNoteBulkAction],
+        actions: [RenameNoteBulkAction, MoveNoteBulkAction, DeleteNoteBulkAction, DeleteNoteRevisionsBulkAction],
     },
     {
         title: 'Other',
@@ -33,6 +34,7 @@ const ACTION_GROUPS = [
 ];
 
 const ACTION_CLASSES = [
+    RenameNoteBulkAction,
     MoveNoteBulkAction,
     DeleteNoteBulkAction,
     DeleteNoteRevisionsBulkAction,

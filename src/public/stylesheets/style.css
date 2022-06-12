@@ -868,6 +868,7 @@ body {
     box-shadow: 10px 10px 93px -25px black;
     padding: 10px 15px 10px 15px !important;
     width: 600px;
+    white-space: normal;
 }
 
 .help-dropdown .dropdown-menu pre {

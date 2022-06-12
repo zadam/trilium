@@ -9,6 +9,17 @@ const TPL = `
     </td>
     <td class="button-column">
         <span class="bx bx-x icon-action action-conf-del"></span>
+        
+        <div class="dropdown help-dropdown">
+            <span class="bx bx-help-circle icon-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
+            <div class="dropdown-menu dropdown-menu-right p-4">
+                <p>This will delete matched notes.</p>
+                 
+                <p>After the deletion, it's possible to undelete them from <span class="bx bx-history"></span> Recent Notes dialog.</p>
+                
+                <p>To erase notes permanently, you can go after the deletion to the Option -> Other and click the "Erase deleted notes now" button.</p>
+            </div>
+        </div>
     </td>
 </tr>`;
 

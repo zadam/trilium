@@ -4,6 +4,8 @@ const becca = require("../becca/becca");
 const cloningService = require("./cloning");
 const branchService = require("./branches");
 const utils = require("./utils");
+const dayjs = require("dayjs");
+const cls = require("./cls.js");
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {
@@ -28,6 +30,17 @@ const ACTION_HANDLERS = {
     deleteRelation: (action, note) => {
         for (const relation of note.getOwnedRelations(action.relationName)) {
             relation.markAsDeleted();
+        }
+    },
+    renameNote: (action, note) => {
+        // "officially" injected value:
+        // - note
+
+        const newTitle = eval('`' + action.newTitle + '`');
+
+        if (note.title !== newTitle) {
+            note.title = newTitle;
+            note.save();
         }
     },
     renameLabel: (action, note) => {

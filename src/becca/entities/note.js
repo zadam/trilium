@@ -9,6 +9,9 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity");
 const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
+const dayjs = require("dayjs");
+const utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -84,13 +87,17 @@ class Note extends AbstractEntity {
     }
 
     init() {
-        /** @type {Branch[]} */
+        /** @type {Branch[]}
+         * @private */
         this.parentBranches = [];
-        /** @type {Note[]} */
+        /** @type {Note[]}
+         * @private */
         this.parents = [];
-        /** @type {Note[]} */
+        /** @type {Note[]}
+         * @private*/
         this.children = [];
-        /** @type {Attribute[]} */
+        /** @type {Attribute[]}
+         * @private */
         this.ownedAttributes = [];
 
         /** @type {Attribute[]|null}
@@ -100,7 +107,8 @@ class Note extends AbstractEntity {
          * @private*/
         this.inheritableAttributeCache = null;
 
-        /** @type {Attribute[]} */
+        /** @type {Attribute[]}
+         * @private*/
         this.targetRelations = [];
 
         this.becca.addNote(this.noteId, this);
@@ -114,16 +122,19 @@ class Note extends AbstractEntity {
         /**
          * size of the content in bytes
          * @type {int|null}
+         * @private
          */
         this.contentSize = null;
         /**
          * size of the content and note revision contents in bytes
          * @type {int|null}
+         * @private
          */
         this.noteSize = null;
         /**
          * number of note revisions for this note
          * @type {int|null}
+         * @private
          */
         this.revisionCount = null;
     }
@@ -223,6 +234,22 @@ class Note extends AbstractEntity {
                 utcDateModified 
             FROM note_contents 
             WHERE noteId = ?`, [this.noteId]);
+    }
+
+    get dateCreatedObj() {
+        return this.dateCreated === null ? null : dayjs(this.dateCreated);
+    }
+
+    get utcDateCreatedObj() {
+        return this.utcDateCreated === null ? null : dayjs.utc(this.utcDateCreated);
+    }
+
+    get dateModifiedObj() {
+        return this.dateModified === null ? null : dayjs(this.dateModified);
+    }
+
+    get utcDateModifiedObj() {
+        return this.utcDateModified === null ? null : dayjs.utc(this.utcDateModified);
     }
 
     /** @returns {*} */
@@ -350,6 +377,7 @@ class Note extends AbstractEntity {
         }
     }
 
+    /** @private */
     __getAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
@@ -401,7 +429,10 @@ class Note extends AbstractEntity {
         return this.__attributeCache;
     }
 
-    /** @returns {Attribute[]} */
+    /**
+     * @private
+     * @returns {Attribute[]}
+     */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
