@@ -1,4 +1,8 @@
-<div id="help-dialog" class="modal" tabindex="-1" role="dialog">
+import utils from "../../services/utils.js";
+import BasicWidget from "../basic_widget.js";
+
+const TPL = `
+<div class="help-dialog modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document" style="min-width: 100%; height: 100%; margin: 0;">
         <div class="modal-content" style="height: auto;">
             <div class="modal-header">
@@ -146,4 +150,14 @@
             </div>
         </div>
     </div>
-</div>
+</div>`;
+
+export default class HelpDialog extends BasicWidget {
+    doRender() {
+        this.$widget = $(TPL);
+    }
+
+    showHelpEvent() {
+        utils.openDialog(this.$widget);
+    }
+}

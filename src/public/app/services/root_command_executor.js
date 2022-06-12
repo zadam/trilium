@@ -54,10 +54,6 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/options.js").then(d => d.showDialog(openTab));
     }
 
-    showHelpCommand() {
-        import("../dialogs/help.js").then(d => d.showDialog());
-    }
-
     async showSQLConsoleCommand() {
         const sqlConsoleNote = await dateNoteService.createSqlConsole();
 
