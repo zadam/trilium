@@ -179,6 +179,12 @@ span.fancytree-selected .fancytree-title {
     font-style: italic;
 }
 
+span.fancytree-selected .fancytree-custom-icon::before {
+    content: "\eb43";
+    border: 1px solid var(--main-border-color);
+    border-radius: 3px;
+}
+
 span.fancytree-node:hover {
     border: 1px solid var(--main-border-color);
 }

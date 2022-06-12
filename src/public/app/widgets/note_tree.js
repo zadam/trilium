@@ -307,7 +307,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 const targetType = data.targetType;
                 const node = data.node;
 
-                if (targetType === 'title' || targetType === 'icon') {
+                if (node.isSelected() && targetType === 'icon') {
+                    this.triggerCommand('openBulkActionsDialog', {
+                        selectedOrActiveNoteIds: this.getSelectedOrActiveNoteIds(node)
+                    });
+
+                    return false;
+                }
+                else if (targetType === 'title' || targetType === 'icon') {
                     if (event.shiftKey) {
                         const activeNode = this.getActiveNode();
 
@@ -540,8 +547,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     }
                 });
             },
-            select: () => {
-                // TODO
+            select: (event, {node}) => {
+                $(node.span).find(".fancytree-custom-icon").attr("title",
+                    node.isSelected() ? "Apply bulk actions on selected notes" : "");
             }
         });
 
@@ -1286,6 +1294,15 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const nodes = this.getSelectedOrActiveNodes(node);
 
         return nodes.map(node => node.data.branchId);
+    }
+
+    /**
+     * @param {FancytreeNode} node
+     */
+    getSelectedOrActiveNoteIds(node) {
+        const nodes = this.getSelectedOrActiveNodes(node);
+
+        return nodes.map(node => node.data.noteId);
     }
 
     async deleteNotesCommand({node}) {

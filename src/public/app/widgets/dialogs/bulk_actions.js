@@ -49,7 +49,7 @@ const TPL = `
                 <div class="form-check">
                     <label class="form-check-label">
                         <input class="include-descendants form-check-input" type="checkbox" value="">
-                        Include descendant notes
+                        Include descendants of the selected notes
                     </label>
                 </div>
 
@@ -152,7 +152,7 @@ export default class BulkActionsDialog extends BasicWidget {
         }
     }
 
-    async bulkActionsEvent({selectedOrActiveNoteIds}) {
+    async openBulkActionsDialogEvent({selectedOrActiveNoteIds}) {
         this.selectedOrActiveNoteIds = selectedOrActiveNoteIds;
         this.$includeDescendants.prop("checked", false);
 

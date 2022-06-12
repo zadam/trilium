@@ -91,7 +91,7 @@ class TreeContextMenu {
                 enabled: notSearch && noSelectedNotes },
             { title: "Import into note", command: "importIntoNote", uiIcon: "bx bx-empty",
                 enabled: notSearch && noSelectedNotes },
-            { title: "Bulk actions", command: "bulkActions", uiIcon: "bx bx-empty",
+            { title: "Apply bulk actions", command: "openBulkActionsDialog", uiIcon: "bx bx-list-plus",
                 enabled: true }
         ].filter(row => row !== null);
     }
@@ -130,16 +130,11 @@ class TreeContextMenu {
             this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
         }
         else {
-            const selectedOrActiveBranchIds = this.treeWidget.getSelectedOrActiveBranchIds(this.node);
-            const selectedOrActiveNoteIds = selectedOrActiveBranchIds
-                .map(branchId => froca.getBranch(branchId).noteId)
-                .filter(noteId => !!noteId);
-
             this.treeWidget.triggerCommand(command, {
                 node: this.node,
                 notePath: notePath,
-                selectedOrActiveBranchIds,
-                selectedOrActiveNoteIds
+                selectedOrActiveBranchIds: this.treeWidget.getSelectedOrActiveBranchIds(this.node),
+                selectedOrActiveNoteIds: this.treeWidget.getSelectedOrActiveNoteIds(this.node)
             });
         }
     }
