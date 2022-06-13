@@ -22,7 +22,7 @@ RUN set -x \
     && apk del .build-dependencies
 
 # Some setup tools need to be kept
-RUN apk add --no-cache su-exec
+RUN apk add --no-cache su-exec shadow
 
 # Bundle app source
 COPY . .
