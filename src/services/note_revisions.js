@@ -1,9 +1,8 @@
 "use strict";
 
-const NoteRevision = require('../becca/entities/note_revision');
-const dateUtils = require('./date_utils');
 const log = require('./log');
 const sql = require('./sql');
+const protectedSession = require("./protected_session");
 
 /**
  * @param {Note} note
@@ -11,6 +10,12 @@ const sql = require('./sql');
 function protectNoteRevisions(note) {
     for (const revision of note.getNoteRevisions()) {
         if (note.isProtected !== revision.isProtected) {
+            if (!protectedSession.isProtectedSessionAvailable()) {
+                log.error("Protected session is not available to fix note revisions.");
+
+                return;
+            }
+
             try {
                 const content = revision.getContent();
 
