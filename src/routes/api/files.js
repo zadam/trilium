@@ -21,7 +21,8 @@ function updateFile(req) {
         return [404, `Note ${noteId} doesn't exist.`];
     }
 
-    noteRevisionService.createNoteRevision(note);
+    note.saveNoteRevision();
+    noteRevisionService.protectNoteRevisions(note);
 
     note.mime = file.mimetype.toLowerCase();
     note.save();

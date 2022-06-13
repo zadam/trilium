@@ -97,7 +97,8 @@ function restoreNoteRevision(req) {
     if (noteRevision) {
         const note = noteRevision.getNote();
 
-        noteRevisionService.createNoteRevision(note);
+        note.saveNoteRevision();
+        noteRevisionService.protectNoteRevisions(note);
 
         note.title = noteRevision.title;
         note.setContent(noteRevision.getContent());

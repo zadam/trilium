@@ -294,7 +294,8 @@ function uploadModifiedFile(req) {
 
     log.info(`Updating note '${noteId}' with content from ${filePath}`);
 
-    noteRevisionService.createNoteRevision(note);
+    note.saveNoteRevision();
+    noteRevisionService.protectNoteRevisions(note);
 
     const fileContent = fs.readFileSync(filePath);
 
