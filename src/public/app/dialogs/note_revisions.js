@@ -4,6 +4,7 @@ import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import libraryLoader from "../services/library_loader.js";
 import openService from "../services/open.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
@@ -114,9 +115,13 @@ async function setContentPane() {
         }
     });
 
+    if (!revisionItem.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) {
+        $titleButtons
+            .append($restoreRevisionButton)
+            .append(' &nbsp; ');
+    }
+
     $titleButtons
-        .append($restoreRevisionButton)
-        .append(' &nbsp; ')
         .append($eraseRevisionButton)
         .append(' &nbsp; ');
 
@@ -124,7 +129,9 @@ async function setContentPane() {
 
     $downloadButton.on('click', () => openService.downloadNoteRevision(revisionItem.noteId, revisionItem.noteRevisionId));
 
-    $titleButtons.append($downloadButton);
+    if (!revisionItem.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) {
+        $titleButtons.append($downloadButton);
+    }
 
     const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
