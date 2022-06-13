@@ -228,7 +228,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 return;
             }
 
-            await server.put(`notes/${noteId}/change-title`, { title });
+            await server.put(`notes/${noteId}/title`, { title });
 
             $title.text(title);
         }

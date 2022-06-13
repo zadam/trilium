@@ -53,11 +53,11 @@ function createNote(req) {
     };
 }
 
-function updateNote(req) {
-    const note = req.body;
-    const noteId = req.params.noteId;
+function updateNoteContent(req) {
+    const {content} = req.body;
+    const {noteId} = req.params;
 
-    return noteService.updateNote(noteId, note);
+    return noteService.updateNoteContent(noteId, content);
 }
 
 function deleteNote(req) {
@@ -294,7 +294,7 @@ function uploadModifiedFile(req) {
 
     log.info(`Updating note '${noteId}' with content from ${filePath}`);
 
-    noteRevisionService.createNoteRevision(note);
+    note.saveNoteRevision();
 
     const fileContent = fs.readFileSync(filePath);
 
@@ -322,7 +322,7 @@ function getBacklinkCount(req) {
 
 module.exports = {
     getNote,
-    updateNote,
+    updateNoteContent,
     deleteNote,
     undeleteNote,
     createNote,

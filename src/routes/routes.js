@@ -218,7 +218,7 @@ function register(app) {
     apiRoute(GET, '/api/autocomplete', autocompleteApiRoute.getAutocomplete);
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
-    apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
+    apiRoute(PUT, '/api/notes/:noteId/content', notesApiRoute.updateNoteContent);
     apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
@@ -234,7 +234,7 @@ function register(app) {
     apiRoute(GET, '/api/notes/:noteId/backlink-count', notesApiRoute.getBacklinkCount);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(POST, '/api/notes/erase-deleted-notes-now', notesApiRoute.eraseDeletedNotesNow);
-    apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
+    apiRoute(PUT, '/api/notes/:noteId/title', notesApiRoute.changeTitle);
     apiRoute(POST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateSubtree);
     apiRoute(POST, '/api/notes/:noteId/upload-modified-file', notesApiRoute.uploadModifiedFile);
 

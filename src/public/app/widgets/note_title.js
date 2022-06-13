@@ -38,7 +38,7 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
 
             protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
-            await server.put(`notes/${this.noteId}/change-title`, {title}, this.componentId);
+            await server.put(`notes/${this.noteId}/title`, {title}, this.componentId);
         });
 
         this.deleteNoteOnEscape = false;

@@ -1222,7 +1222,7 @@ class Note extends AbstractEntity {
             title: this.title,
             type: this.type,
             mime: this.mime,
-            isProtected: false, // will be fixed in the protectNoteRevisions() call
+            isProtected: this.isProtected,
             utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
                 ? this.utcDateModified
                 : contentMetadata.utcDateModified,
