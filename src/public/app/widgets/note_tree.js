@@ -1424,10 +1424,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.collapseTree(node);
     }
 
-    sortChildNotesCommand({node}) {
-        import("../dialogs/sort_child_notes.js").then(d => d.showDialog(node.data.noteId));
-    }
-
     async recentChangesInSubtreeCommand({node}) {
         this.triggerCommand("showRecentChanges", {ancestorNoteId: node.data.noteId});
     }
