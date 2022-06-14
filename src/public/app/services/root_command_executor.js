@@ -20,15 +20,6 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
 
-    async editBranchPrefixCommand() {
-        const notePath = appContext.tabManager.getActiveContextNotePath();
-
-        if (notePath) {
-            const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
-            editBranchPrefixDialog.showDialog(notePath);
-        }
-    }
-
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
         noteContext.readOnlyTemporarilyDisabled = true;
