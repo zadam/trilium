@@ -4,4 +4,4 @@
 [[ ! -z "${USER_GID}" ]] && groupmod -g ${USER_GID} node || echo "No USER_GID specified, leaving 1000"
 
 chown -R node:node /home/node
-su-exec node node ./src/www
+exec su-exec node node ./src/www
