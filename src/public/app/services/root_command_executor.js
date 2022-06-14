@@ -78,10 +78,6 @@ export default class RootCommandExecutor extends Component {
         this.searchNotesCommand({ancestorNoteId: noteId});
     }
 
-    showBackendLogCommand() {
-        import("../dialogs/backend_log.js").then(d => d.showDialog());
-    }
-
     openNoteExternallyCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
 

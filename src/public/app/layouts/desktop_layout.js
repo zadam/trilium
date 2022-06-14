@@ -55,6 +55,7 @@ import AboutDialog from "../widgets/dialogs/about.js";
 import NoteSourceDialog from "../dialogs/note_source.js";
 import HelpDialog from "../widgets/dialogs/help.js";
 import RecentChangesDialog from "../widgets/dialogs/recent_changes.js";
+import BackendLogDialog from "../widgets/dialogs/backend_log.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -184,6 +185,7 @@ export default class DesktopLayout {
             .child(new AboutDialog())
             .child(new NoteSourceDialog())
             .child(new HelpDialog())
-            .child(new RecentChangesDialog());
+            .child(new RecentChangesDialog())
+            .child(new BackendLogDialog());
     }
 }
