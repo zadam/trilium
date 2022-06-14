@@ -12,10 +12,6 @@ export default class RootCommandExecutor extends Component {
         import("../dialogs/jump_to_note.js").then(d => d.showDialog());
     }
 
-    showRecentChangesCommand() {
-        import("../dialogs/recent_changes.js").then(d => d.showDialog());
-    }
-
     showNoteRevisionsCommand() {
         import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
     }

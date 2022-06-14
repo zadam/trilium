@@ -54,6 +54,7 @@ import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 import AboutDialog from "../widgets/dialogs/about.js";
 import NoteSourceDialog from "../dialogs/note_source.js";
 import HelpDialog from "../widgets/dialogs/help.js";
+import RecentChangesDialog from "../widgets/dialogs/recent_changes.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -182,6 +183,7 @@ export default class DesktopLayout {
             .child(new BulkActionsDialog())
             .child(new AboutDialog())
             .child(new NoteSourceDialog())
-            .child(new HelpDialog());
+            .child(new HelpDialog())
+            .child(new RecentChangesDialog());
     }
 }

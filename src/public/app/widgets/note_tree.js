@@ -1429,9 +1429,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     async recentChangesInSubtreeCommand({node}) {
-        const recentChangesDialog = await import('../dialogs/recent_changes.js');
-
-        recentChangesDialog.showDialog(node.data.noteId);
+        this.triggerCommand("showRecentChanges", {ancestorNoteId: node.data.noteId});
     }
 
     selectAllNotesInParentCommand({node}) {
