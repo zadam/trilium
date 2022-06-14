@@ -20,7 +20,7 @@ function enterProtectedSession() {
     const dfd = $.Deferred();
 
     if (!options.is("isPasswordSet")) {
-        import("../dialogs/password_not_set.js").then(dialog => dialog.show());
+        appContext.triggerCommand("showPasswordNotSet");
         return dfd;
     }
 

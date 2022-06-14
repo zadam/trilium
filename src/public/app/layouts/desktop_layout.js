@@ -58,6 +58,7 @@ import RecentChangesDialog from "../widgets/dialogs/recent_changes.js";
 import BackendLogDialog from "../widgets/dialogs/backend_log.js";
 import BranchPrefixDialog from "../widgets/dialogs/branch_prefix.js";
 import SortChildNotesDialog from "../widgets/dialogs/sort_child_notes.js";
+import PasswordNoteSetDialog from "../widgets/dialogs/password_not_set.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -190,6 +191,7 @@ export default class DesktopLayout {
             .child(new RecentChangesDialog())
             .child(new BackendLogDialog())
             .child(new BranchPrefixDialog())
-            .child(new SortChildNotesDialog());
+            .child(new SortChildNotesDialog())
+            .child(new PasswordNoteSetDialog());
     }
 }
