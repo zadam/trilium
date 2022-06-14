@@ -1,6 +1,6 @@
-import appContext from "../services/app_context.js";
-import BasicWidget from "../widgets/basic_widget.js";
-import utils from "../services/utils.js";
+import appContext from "../../services/app_context.js";
+import BasicWidget from "../basic_widget.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <div class="note-source-dialog modal fade mx-auto" tabindex="-1" role="dialog">

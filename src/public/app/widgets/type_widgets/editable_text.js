@@ -278,7 +278,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     addIncludeNoteToTextCommand() {
-        import("../../dialogs/include_note.js").then(d => d.showDialog(this));
+        this.triggerCommand("showIncludeNoteDialog", {textTypeWidget: this});
     }
 
     addIncludeNote(noteId, boxSize) {
