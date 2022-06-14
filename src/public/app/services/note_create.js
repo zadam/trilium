@@ -75,9 +75,14 @@ async function createNote(parentNotePath, options = {}) {
     };
 }
 
+async function chooseNoteType() {
+    return new Promise(res => {
+        appContext.triggerCommand("chooseNoteType", {callback: res});
+    });
+}
+
 async function createNoteWithTypePrompt(parentNotePath, options = {}) {
-    const noteTypeChooserDialog = await import('../dialogs/note_type_chooser.js');
-    const {success, noteType, templateNoteId} = await noteTypeChooserDialog.chooseNoteType();
+    const {success, noteType, templateNoteId} = await chooseNoteType();
 
     if (!success) {
         return;
@@ -121,5 +126,6 @@ async function duplicateSubtree(noteId, parentNotePath) {
 export default {
     createNote,
     createNoteWithTypePrompt,
-    duplicateSubtree
+    duplicateSubtree,
+    chooseNoteType
 };

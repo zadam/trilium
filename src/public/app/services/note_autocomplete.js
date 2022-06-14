@@ -172,8 +172,7 @@ function initNoteAutocomplete($el, options) {
         }
 
         if (suggestion.action === 'create-note') {
-            const noteTypeChooserDialog = await import('../dialogs/note_type_chooser.js');
-            const {success, noteType, templateNoteId} = await noteTypeChooserDialog.chooseNoteType();
+            const {success, noteType, templateNoteId} = await noteCreateService.chooseNoteType();
 
             if (!success) {
                 return;

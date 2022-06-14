@@ -60,6 +60,7 @@ import BranchPrefixDialog from "../widgets/dialogs/branch_prefix.js";
 import SortChildNotesDialog from "../widgets/dialogs/sort_child_notes.js";
 import PasswordNoteSetDialog from "../widgets/dialogs/password_not_set.js";
 import IncludeNoteDialog from "../widgets/dialogs/include_note.js";
+import NoteTypeChooserDialog from "../widgets/dialogs/note_type_chooser.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -194,6 +195,7 @@ export default class DesktopLayout {
             .child(new BranchPrefixDialog())
             .child(new SortChildNotesDialog())
             .child(new PasswordNoteSetDialog())
-            .child(new IncludeNoteDialog());
+            .child(new IncludeNoteDialog())
+            .child(new NoteTypeChooserDialog());
     }
 }
