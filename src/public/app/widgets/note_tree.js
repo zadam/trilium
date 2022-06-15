@@ -706,7 +706,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             const notSearchParents = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
-                .map(note => note.type !== 'search');
+                .filter(note => note.type !== 'search');
 
             if (notSearchParents.length > 1) {
                 extraClasses.push("multiple-parents");
