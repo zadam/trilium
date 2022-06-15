@@ -88,6 +88,10 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
+            if (notePathArray.includes("hidden")) {
+                return null;
+            }
+
             return new SearchResult(notePathArray);
         })
         .filter(note => !!note);
@@ -176,8 +180,7 @@ function searchNotesForAutocomplete(query) {
         fuzzyAttributeSearch: true
     });
 
-    const allSearchResults = findResultsWithQuery(query, searchContext)
-        .filter(res => !res.notePathArray.includes("hidden"));
+    const allSearchResults = findResultsWithQuery(query, searchContext);
 
     const trimmed = allSearchResults.slice(0, 200);
 
