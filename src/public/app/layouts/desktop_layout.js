@@ -67,6 +67,7 @@ import CloneToDialog from "../widgets/dialogs/clone_to.js";
 import MoveToDialog from "../widgets/dialogs/move_to.js";
 import ImportDialog from "../widgets/dialogs/import.js";
 import ExportDialog from "../widgets/dialogs/export.js";
+import MarkdownImportDialog from "../widgets/dialogs/markdown_import.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -208,6 +209,7 @@ export default class DesktopLayout {
             .child(new CloneToDialog())
             .child(new MoveToDialog())
             .child(new ImportDialog())
-            .child(new ExportDialog());
+            .child(new ExportDialog())
+            .child(new MarkdownImportDialog());
     }
 }

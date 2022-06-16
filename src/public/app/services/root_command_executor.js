@@ -13,7 +13,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     pasteMarkdownIntoTextCommand() {
-        import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
+        import("../widgets/dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
 
     editReadOnlyNoteCommand() {
