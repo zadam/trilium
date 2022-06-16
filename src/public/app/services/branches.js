@@ -4,6 +4,7 @@ import toastService from "./toast.js";
 import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
+import appContext from "./app_context.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
@@ -81,8 +82,8 @@ async function deleteNotes(branchIdsToDelete) {
         deleteAllClones = false;
     }
     else {
-        const deleteNotesDialog = await import("../dialogs/delete_notes.js");
-        ({proceed, deleteAllClones, eraseNotes} = await deleteNotesDialog.showDialog(branchIdsToDelete));
+        ({proceed, deleteAllClones, eraseNotes} = await new Promise(res =>
+            appContext.triggerCommand('showDeleteNotesDialog', {branchIdsToDelete, callback: res})));
     }
 
     if (!proceed) {

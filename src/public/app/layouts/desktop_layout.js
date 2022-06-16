@@ -70,6 +70,7 @@ import ExportDialog from "../widgets/dialogs/export.js";
 import MarkdownImportDialog from "../widgets/dialogs/markdown_import.js";
 import ProtectedSessionPasswordDialog from "../widgets/dialogs/protected_session_password.js";
 import NoteRevisionsDialog from "../widgets/dialogs/note_revisions.js";
+import DeleteNotesDialog from "../widgets/dialogs/delete_notes.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -214,6 +215,7 @@ export default class DesktopLayout {
             .child(new ExportDialog())
             .child(new MarkdownImportDialog())
             .child(new ProtectedSessionPasswordDialog())
-            .child(new NoteRevisionsDialog());
+            .child(new NoteRevisionsDialog())
+            .child(new DeleteNotesDialog());
     }
 }
