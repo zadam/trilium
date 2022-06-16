@@ -9,7 +9,7 @@ const TPL = `
             z-index: 1100 !important;
         }
         
-        .note-type-dropdown {
+        .note-type-chooser-dialog .note-type-dropdown {
             position: relative;
             font-size: large;
             padding: 20px;

@@ -1,5 +1,6 @@
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
+import dialogService from "../../widgets/dialog.js";
 
 const TPL = `
 <h4>Keyboard shortcuts</h4>
@@ -87,9 +88,7 @@ export default class KeyboardShortcutsOptions {
         });
 
         $("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
-            const confirmDialog = await import('../confirm.js');
-
-            if (!await confirmDialog.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
+            if (!await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
                 return;
             }
 

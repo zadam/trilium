@@ -1,5 +1,6 @@
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
+import dialogService from "../widgets/dialog.js";
 
 function getHoistedNoteId() {
     const activeNoteContext = appContext.tabManager.getActiveContext();
@@ -36,9 +37,7 @@ async function checkNoteAccess(notePath, noteContext) {
     const hoistedNoteId = noteContext.hoistedNoteId;
 
     if (!resolvedNotePath.includes(hoistedNoteId) && !resolvedNotePath.includes("hidden")) {
-        const confirmDialog = await import('../dialogs/confirm.js');
-
-        if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?")) {
+        if (!await dialogService.confirm("Requested note is outside of hoisted note subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?")) {
             return false;
         }
 

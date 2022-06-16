@@ -197,9 +197,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             appContext.tabManager.openTabWithNoteWithHoisting(noteId);
         }
         else if (command === "remove") {
-            const confirmDialog = await import('../../dialogs/confirm.js');
-
-            if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
+            if (!await dialogService.confirmDeleteNoteBoxWithNote($title.text())) {
                 return;
             }
 
@@ -450,9 +448,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                     items: [ {title: "Remove relation", command: "remove", uiIcon: "bx bx-trash"} ],
                     selectMenuItemHandler: async ({command}) => {
                         if (command === 'remove') {
-                            const confirmDialog = await import('../../dialogs/confirm.js');
-
-                            if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {
+                            if (!await dialogService.confirm("Are you sure you want to remove the relation?")) {
                                 return;
                             }
 

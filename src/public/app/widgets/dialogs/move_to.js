@@ -49,7 +49,6 @@ export default class MoveToDialog extends BasicWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$dialog = this.$widget.find(".move-to-dialog");
         this.$form = this.$widget.find(".move-to-form");
         this.$noteAutoComplete = this.$widget.find(".move-to-note-autocomplete");
         this.$noteList = this.$widget.find(".move-to-note-list");

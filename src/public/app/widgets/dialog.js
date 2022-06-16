@@ -5,6 +5,12 @@ async function info(message) {
         appContext.triggerCommand("showInfoDialog", {message, callback: res}));
 }
 
+async function confirm(message) {
+    return new Promise(res =>
+        appContext.triggerCommand("showConfirmDialog", {message, callback: res}));
+}
+
 export default {
-    info
+    info,
+    confirm
 };

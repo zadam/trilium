@@ -6,6 +6,7 @@ import froca from "../../services/froca.js";
 import appContext from "../../services/app_context.js";
 import hoistedNoteService from "../../services/hoisted_note.js";
 import BasicWidget from "../basic_widget.js";
+import dialogService from "../dialog.js";
 
 const TPL = `
 <div class="recent-changes-dialog modal fade mx-auto" tabindex="-1" role="dialog">
@@ -71,13 +72,12 @@ export default class RecentChangesDialog extends BasicWidget {
                         const $undeleteLink = $(`<a href="javascript:">`)
                             .text("undelete")
                             .on('click', async () => {
-                                const confirmDialog = await import('../../dialogs/confirm.js');
                                 const text = 'Do you want to undelete this note and its sub-notes?';
 
-                                if (await confirmDialog.confirm(text)) {
+                                if (await dialogService.confirm(text)) {
                                     await server.put(`notes/${change.noteId}/undelete`);
 
-                                    $dialog.modal('hide');
+                                    this.$widget.modal('hide');
 
                                     await froca.reloadNotes([change.noteId]);
 

@@ -6,6 +6,7 @@ import libraryLoader from "../../services/library_loader.js";
 import openService from "../../services/open.js";
 import protectedSessionHolder from "../../services/protected_session_holder.js";
 import BasicWidget from "../basic_widget.js";
+import dialogService from "../dialog.js";
 
 const TPL = `
 <div class="note-revisions-dialog modal fade mx-auto" tabindex="-1" role="dialog">
@@ -104,10 +105,9 @@ export default class NoteRevisionsDialog extends BasicWidget {
         });
 
         this.$eraseAllRevisionsButton.on('click', async () => {
-            const confirmDialog = await import('../../dialogs/confirm.js');
             const text = 'Do you want to delete all revisions of this note? This action will erase revision title and content, but still preserve revision metadata.';
 
-            if (await confirmDialog.confirm(text)) {
+            if (await dialogService.confirm(text)) {
                 await server.remove(`notes/${this.note.noteId}/revisions`);
 
                 this.$widget.modal('hide');
@@ -180,10 +180,9 @@ export default class NoteRevisionsDialog extends BasicWidget {
         const $restoreRevisionButton = $('<button class="btn btn-sm" type="button">Restore this revision</button>');
 
         $restoreRevisionButton.on('click', async () => {
-            const confirmDialog = await import('../../dialogs/confirm.js');
             const text = 'Do you want to restore this revision? This will overwrite current title/content of the note with this revision.';
 
-            if (await confirmDialog.confirm(text)) {
+            if (await dialogService.confirm(text)) {
                 await server.put(`notes/${revisionItem.noteId}/restore-revision/${revisionItem.noteRevisionId}`);
 
                 this.$widget.modal('hide');
@@ -195,10 +194,9 @@ export default class NoteRevisionsDialog extends BasicWidget {
         const $eraseRevisionButton = $('<button class="btn btn-sm" type="button">Delete this revision</button>');
 
         $eraseRevisionButton.on('click', async () => {
-            const confirmDialog = await import('../../dialogs/confirm.js');
             const text = 'Do you want to delete this revision? This action will delete revision title and content, but still preserve revision metadata.';
 
-            if (await confirmDialog.confirm(text)) {
+            if (await dialogService.confirm(text)) {
                 await server.remove(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
                 this.loadNoteRevisions(revisionItem.noteId);

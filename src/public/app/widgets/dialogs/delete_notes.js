@@ -72,7 +72,6 @@ export default class DeleteNotesDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$content = this.$widget.find(".recent-changes-content");
-        this.$dialog = this.$widget.find(".delete-notes-dialog");
         this.$okButton = this.$widget.find(".delete-notes-dialog-ok-button");
         this.$cancelButton = this.$widget.find(".delete-notes-dialog-cancel-button");
         this.$deleteNotesList = this.$widget.find(".delete-notes-list");
@@ -85,7 +84,7 @@ export default class DeleteNotesDialog extends BasicWidget {
         this.$deleteAllClones = this.$widget.find(".delete-all-clones");
         this.$eraseNotes = this.$widget.find(".erase-notes");
 
-        this.$dialog.on('shown.bs.modal', () => this.$okButton.trigger("focus"));
+        this.$widget.on('shown.bs.modal', () => this.$okButton.trigger("focus"));
 
         this.$cancelButton.on('click', () => {
             utils.closeActiveDialog();
