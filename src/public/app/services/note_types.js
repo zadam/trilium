@@ -18,7 +18,7 @@ async function getNoteTypeItems(command) {
     const templateNoteIds = await server.get("search-templates");
     const templateNotes = await froca.getNotes(templateNoteIds);
 
-    if (items.length > 0) {
+    if (templateNotes.length > 0) {
         items.push({ title: "----" });
 
         for (const templateNote of templateNotes) {

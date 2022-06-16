@@ -4,6 +4,11 @@ import BasicWidget from "../basic_widget.js";
 const TPL = `
 <div class="note-type-chooser-dialog modal mx-auto" tabindex="-1" role="dialog">
     <style>
+        .note-type-chooser-dialog {
+            /* note type chooser needs to be higher than other dialogs from which it is triggered, e.g. "add link"*/
+            z-index: 1100 !important;
+        }
+        
         .note-type-dropdown {
             position: relative;
             font-size: large;
