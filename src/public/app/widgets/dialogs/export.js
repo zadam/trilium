@@ -9,22 +9,22 @@ import BasicWidget from "../basic_widget.js";
 const TPL = `
 <div class="export-dialog modal fade mx-auto" tabindex="-1" role="dialog">
     <style>
-    .export-form .form-check {
+    .export-dialog .export-form .form-check {
         padding-top: 10px;
         padding-bottom: 10px;
     }
     
-    .export-form .format-choice {
+    .export-dialog .export-form .format-choice {
         padding-left: 40px;
         display: none;
     }
     
-    .export-form .opml-versions {
+    .export-dialog .export-form .opml-versions {
         padding-left: 60px;
         display: none;
     }
     
-    .export-form .form-check-label {
+    .export-dialog .export-form .form-check-label {
         padding: 2px;
     }
     </style>

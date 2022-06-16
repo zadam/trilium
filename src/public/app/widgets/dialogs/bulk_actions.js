@@ -12,21 +12,21 @@ const TPL = `
             margin-top: 20px;
         }
     
-        .bulk-available-action-list button {
+        .bulk-assign-attributes-dialog .bulk-available-action-list button {
             padding: 2px 7px;
             margin-right: 10px;
             margin-bottom: 5px;
         }
     
-        .bulk-existing-action-list {
+        .bulk-assign-attributes-dialog .bulk-existing-action-list {
             width: 100%;
         }
     
-        .bulk-existing-action-list td {
+        .bulk-assign-attributes-dialog .bulk-existing-action-list td {
             padding: 7px;
         }
     
-        .bulk-existing-action-list .button-column {
+        .bulk-assign-attributes-dialog .bulk-existing-action-list .button-column {
             /* minimal width so that table remains static sized and most space remains for middle column with settings */
             width: 50px;
             white-space: nowrap;

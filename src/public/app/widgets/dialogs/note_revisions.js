@@ -11,7 +11,7 @@ import dialogService from "../dialog.js";
 const TPL = `
 <div class="note-revisions-dialog modal fade mx-auto" tabindex="-1" role="dialog">
     <style>
-        .note-revision-content-wrapper {
+        .note-revisions-dialog .note-revision-content-wrapper {
             flex-grow: 1;
             margin-left: 20px;
             display: flex;
@@ -19,17 +19,17 @@ const TPL = `
             min-width: 0;
         }
 
-        .note-revision-content {
+        .note-revisions-dialog .note-revision-content {
             overflow: auto;
             word-break: break-word;
         }
 
-        .note-revision-content img {
+        .note-revisions-dialog .note-revision-content img {
             max-width: 100%;
             object-fit: contain;
         }
 
-        .note-revision-content pre {
+        .note-revisions-dialog .note-revision-content pre {
             max-width: 100%;
             word-break: break-all;
             white-space: pre-wrap;
