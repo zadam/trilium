@@ -1458,8 +1458,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     async importIntoNoteCommand({node}) {
-        const importDialog = await import('../dialogs/import.js');
-        importDialog.showDialog(node.data.noteId);
+        this.triggerCommand("showImportDialog", {noteId: node.data.noteId});
     }
 
     forceNoteSyncCommand({node}) {

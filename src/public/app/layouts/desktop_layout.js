@@ -65,6 +65,7 @@ import JumpToNoteDialog from "../widgets/dialogs/jump_to_note.js";
 import AddLinkDialog from "../widgets/dialogs/add_link.js";
 import CloneToDialog from "../widgets/dialogs/clone_to.js";
 import MoveToDialog from "../widgets/dialogs/move_to.js";
+import ImportDialog from "../widgets/dialogs/import.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -204,6 +205,7 @@ export default class DesktopLayout {
             .child(new JumpToNoteDialog())
             .child(new AddLinkDialog())
             .child(new CloneToDialog())
-            .child(new MoveToDialog());
+            .child(new MoveToDialog())
+            .child(new ImportDialog());
     }
 }
