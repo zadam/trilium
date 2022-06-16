@@ -62,6 +62,7 @@ import PasswordNoteSetDialog from "../widgets/dialogs/password_not_set.js";
 import IncludeNoteDialog from "../widgets/dialogs/include_note.js";
 import NoteTypeChooserDialog from "../widgets/dialogs/note_type_chooser.js";
 import JumpToNoteDialog from "../widgets/dialogs/jump_to_note.js";
+import AddLinkDialog from "../widgets/dialogs/add_link.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -198,6 +199,7 @@ export default class DesktopLayout {
             .child(new PasswordNoteSetDialog())
             .child(new IncludeNoteDialog())
             .child(new NoteTypeChooserDialog())
-            .child(new JumpToNoteDialog());
+            .child(new JumpToNoteDialog())
+            .child(new AddLinkDialog());
     }
 }

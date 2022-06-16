@@ -246,7 +246,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     addLinkToTextCommand() {
         const selectedText = this.getSelectedText();
 
-        import("../../dialogs/add_link.js").then(d => d.showDialog(this, selectedText));
+        this.triggerCommand('showAddLinkDialog', {textTypeWidget: this, text: selectedText})
     }
 
     getSelectedText() {
