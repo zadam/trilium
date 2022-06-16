@@ -79,22 +79,27 @@ export default class ConfirmDialog extends BasicWidget {
         this.resolve = callback;
     }
 
-    confirmDeleteNoteBoxWithNoteEvent({title, callback}) {
+    showConfirmDeleteNoteBoxWithNoteDialogEvent({title, callback}) {
         glob.activeDialog = this.$widget;
 
         this.$confirmContent.text(`Are you sure you want to remove the note "${title}" from relation map?`);
 
         this.$custom.empty()
             .append("<br/>")
-            .append($("<div>").addClass("form-check")
-                .append($("<label>")
-                    .addClass("form-check-label")
-                    .attr("style", "text-decoration: underline dotted black")
-                    .attr("title", "If you don't check this, note will be only removed from relation map, but will stay as a note.")
-                    .append($("<input>")
-                        .attr("type", "checkbox")
-                        .addClass("form-check-input " + DELETE_NOTE_BUTTON_CLASS))
-                    .text("Also delete note")));
+            .append($("<div>")
+                .addClass("form-check")
+                .append(
+                    $("<label>")
+                        .addClass("form-check-label")
+                        .attr("style", "text-decoration: underline dotted var(--main-text-color)")
+                        .attr("title", "If you don't check this, the note will be only removed from the relation map.")
+                        .append(
+                            $("<input>")
+                                .attr("type", "checkbox")
+                                .addClass("form-check-input " + DELETE_NOTE_BUTTON_CLASS)
+                        )
+                        .append("Also delete the note")
+                ));
 
         this.$custom.show();
 
@@ -103,12 +108,12 @@ export default class ConfirmDialog extends BasicWidget {
         this.resolve = callback;
     }
 
-    isDeleteNoteChecked() {
-        return this.$widget.find("." + DELETE_NOTE_BUTTON_CLASS + ":checked").length > 0;
-    }
-
     doResolve(ret) {
-        this.resolve(ret);
+        this.resolve({
+            confirmed: ret,
+            isDeleteNoteChecked: this.$widget.find("." + DELETE_NOTE_BUTTON_CLASS + ":checked").length > 0
+        });
+
         this.resolve = null;
 
         this.$widget.modal("hide");

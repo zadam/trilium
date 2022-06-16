@@ -196,13 +196,15 @@ export default class RelationMapTypeWidget extends TypeWidget {
             appContext.tabManager.openTabWithNoteWithHoisting(noteId);
         }
         else if (command === "remove") {
-            if (!await dialogService.confirmDeleteNoteBoxWithNote($title.text())) {
+            const result = await dialogService.confirmDeleteNoteBoxWithNote($title.text());
+
+            if (!result.confirmed) {
                 return;
             }
 
             this.jsPlumbInstance.remove(this.noteIdToId(noteId));
 
-            if (confirmDialog.isDeleteNoteChecked()) {
+            if (result.isDeleteNoteChecked) {
                 const taskId = utils.randomString(10);
 
                 await server.remove(`notes/${noteId}?taskId=${taskId}&last=true`);

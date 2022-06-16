@@ -7,7 +7,15 @@ async function info(message) {
 
 async function confirm(message) {
     return new Promise(res =>
-        appContext.triggerCommand("showConfirmDialog", {message, callback: res}));
+        appContext.triggerCommand("showConfirmDialog", {
+            message,
+            callback: x => res(x.confirmed)
+        }));
+}
+
+async function confirmDeleteNoteBoxWithNote(title) {
+    return new Promise(res =>
+        appContext.triggerCommand("showConfirmDeleteNoteBoxWithNoteDialog", {title, callback: res}));
 }
 
 async function prompt(props) {
@@ -18,5 +26,6 @@ async function prompt(props) {
 export default {
     info,
     confirm,
+    confirmDeleteNoteBoxWithNote,
     prompt
 };
