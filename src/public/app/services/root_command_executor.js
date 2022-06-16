@@ -23,11 +23,6 @@ export default class RootCommandExecutor extends Component {
         appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
     }
 
-    async cloneNoteIdsToCommand({noteIds}) {
-        const d = await import("../dialogs/clone_to.js");
-        d.showDialog(noteIds);
-    }
-
     async moveBranchIdsToCommand({branchIds}) {
         const d = await import("../dialogs/move_to.js");
         d.showDialog(branchIds);
