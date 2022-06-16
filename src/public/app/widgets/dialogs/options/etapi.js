@@ -1,5 +1,5 @@
-import server from "../../services/server.js";
-import dialogService from "../../widgets/dialog.js";
+import server from "../../../services/server.js";
+import dialogService from "../../dialog.js";
 
 const TPL = `
 <h4>ETAPI</h4>

@@ -1,5 +1,5 @@
-import server from "../../services/server.js";
-import toastService from "../../services/toast.js";
+import server from "../../../services/server.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <h4>Automatic backup</h4>

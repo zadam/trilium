@@ -1,8 +1,8 @@
-import mimeTypesService from "../../services/mime_types.js";
-import options from "../../services/options.js";
-import server from "../../services/server.js";
-import toastService from "../../services/toast.js";
-import utils from "../../services/utils.js";
+import mimeTypesService from "../../../services/mime_types.js";
+import options from "../../../services/options.js";
+import server from "../../../services/server.js";
+import toastService from "../../../services/toast.js";
+import utils from "../../../services/utils.js";
 
 const TPL = `
 <h4>Use vim keybindings in CodeNotes (no ex mode)</h4>

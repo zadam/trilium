@@ -1,6 +1,6 @@
-import utils from "../../services/utils.js";
-import server from "../../services/server.js";
-import toastService from "../../services/toast.js";
+import utils from "../../../services/utils.js";
+import server from "../../../services/server.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <style>

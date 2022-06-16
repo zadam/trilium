@@ -1,6 +1,6 @@
-import server from "../../services/server.js";
-import utils from "../../services/utils.js";
-import dialogService from "../../widgets/dialog.js";
+import server from "../../../services/server.js";
+import utils from "../../../services/utils.js";
+import dialogService from "../../dialog.js";
 
 const TPL = `
 <h4>Keyboard shortcuts</h4>

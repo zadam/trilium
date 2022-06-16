@@ -15,10 +15,6 @@ export default class RootCommandExecutor extends Component {
         appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
     }
 
-    showOptionsCommand({openTab}) {
-        import("../dialogs/options.js").then(d => d.showDialog(openTab));
-    }
-
     async showSQLConsoleCommand() {
         const sqlConsoleNote = await dateNoteService.createSqlConsole();
 

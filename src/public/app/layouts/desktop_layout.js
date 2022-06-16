@@ -74,6 +74,7 @@ import DeleteNotesDialog from "../widgets/dialogs/delete_notes.js";
 import InfoDialog from "../widgets/dialogs/info.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
 import PromptDialog from "../widgets/dialogs/prompt.js";
+import OptionsDialog from "../widgets/dialogs/options.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -222,6 +223,7 @@ export default class DesktopLayout {
             .child(new DeleteNotesDialog())
             .child(new InfoDialog())
             .child(new ConfirmDialog())
-            .child(new PromptDialog());
+            .child(new PromptDialog())
+            .child(new OptionsDialog());
     }
 }

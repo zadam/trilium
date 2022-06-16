@@ -1,6 +1,6 @@
-import server from "../../services/server.js";
-import utils from "../../services/utils.js";
-import appContext from "../../services/app_context.js";
+import server from "../../../services/server.js";
+import utils from "../../../services/utils.js";
+import appContext from "../../../services/app_context.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },

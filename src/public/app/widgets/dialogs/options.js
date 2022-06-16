@@ -1,4 +1,11 @@
-<div id="options-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+"use strict";
+
+import server from '../../services/server.js';
+import utils from "../../services/utils.js";
+import BasicWidget from "../basic_widget.js";
+
+const TPL = `
+<div class="options-dialog modal fade mx-auto" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-dialog-scrollable" style="min-width: 1000px;" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -54,4 +61,39 @@
             </div>
         </div>
     </div>
-</div>
+</div>`;
+
+
+export default class OptionsDialog extends BasicWidget {
+    doRender() {
+        this.$widget = $(TPL);
+    }
+
+    async showOptionsEvent({openTab}) {
+        const options = await server.get('options');
+
+        utils.openDialog(this.$widget);
+
+        (await Promise.all([
+            import('./options/appearance.js'),
+            import('./options/shortcuts.js'),
+            import('./options/code_notes.js'),
+            import('./options/password.js'),
+            import('./options/etapi.js'),
+            import('./options/backup.js'),
+            import('./options/sync.js'),
+            import('./options/other.js'),
+            import('./options/advanced.js')
+        ]))
+            .map(m => new m.default)
+            .forEach(tab => {
+                if (tab.optionsLoaded) {
+                    tab.optionsLoaded(options)
+                }
+            });
+
+        if (openTab) {
+            $(`.nav-link[href='#options-${openTab}']`).trigger("click");
+        }
+    }
+}

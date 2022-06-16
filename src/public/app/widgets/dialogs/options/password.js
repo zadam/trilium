@@ -1,6 +1,6 @@
-import server from "../../services/server.js";
-import protectedSessionHolder from "../../services/protected_session_holder.js";
-import toastService from "../../services/toast.js";
+import server from "../../../services/server.js";
+import protectedSessionHolder from "../../../services/protected_session_holder.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <h3 id="password-heading"></h3>
