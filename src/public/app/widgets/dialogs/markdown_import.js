@@ -64,6 +64,10 @@ export default class MarkdownImportDialog extends BasicWidget {
         toastService.showMessage("Markdown content has been imported into the document.");
     }
 
+    async pasteMarkdownIntoTextEvent() {
+        await this.importMarkdownInlineEvent(); // BC with keyboard shortcuts command
+    }
+
     async importMarkdownInlineEvent() {
         if (appContext.tabManager.getActiveContextNoteType() !== 'text') {
             return;

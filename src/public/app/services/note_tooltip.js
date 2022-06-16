@@ -22,8 +22,7 @@ async function mouseEnterHandler() {
     const $link = $(this);
 
     if ($link.hasClass("no-tooltip-preview")
-        || $link.hasClass("disabled")
-        || $link.attr("data-action") === 'note-revision') {
+        || $link.hasClass("disabled")) {
         return;
     }
 

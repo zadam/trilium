@@ -8,14 +8,6 @@ import options from "./options.js";
 import froca from "./froca.js";
 
 export default class RootCommandExecutor extends Component {
-    showNoteRevisionsCommand() {
-        import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
-    }
-
-    pasteMarkdownIntoTextCommand() {
-        import("../widgets/dialogs/markdown_import.js").then(d => d.importMarkdownInline());
-    }
-
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
         noteContext.readOnlyTemporarilyDisabled = true;

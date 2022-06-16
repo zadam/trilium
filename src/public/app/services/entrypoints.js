@@ -5,7 +5,6 @@ import server from "./server.js";
 import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
 import toastService from "./toast.js";
-import noteCreateService from "./note_create.js";
 import ws from "./ws.js";
 import bundleService from "./bundle.js";
 
@@ -19,18 +18,6 @@ export default class Entrypoints extends Component {
             jQuery.hotkeys.options.filterContentEditable = false;
             jQuery.hotkeys.options.filterTextInputs = false;
         }
-
-        $(document).on('click', "a[data-action='note-revision']", async event => {
-            const linkEl = $(event.target);
-            const noteId = linkEl.attr('data-note-path');
-            const noteRevisionId = linkEl.attr('data-note-revision-id');
-
-            const attributesDialog = await import("../dialogs/note_revisions.js");
-
-            attributesDialog.showNoteRevisionsDialog(noteId, noteRevisionId);
-
-            return false;
-        });
     }
 
     openDevToolsCommand() {
