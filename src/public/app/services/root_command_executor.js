@@ -23,11 +23,6 @@ export default class RootCommandExecutor extends Component {
         appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
     }
 
-    async moveBranchIdsToCommand({branchIds}) {
-        const d = await import("../dialogs/move_to.js");
-        d.showDialog(branchIds);
-    }
-
     showOptionsCommand({openTab}) {
         import("../dialogs/options.js").then(d => d.showDialog(openTab));
     }
