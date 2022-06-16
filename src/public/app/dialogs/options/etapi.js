@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import utils from "../../services/utils.js";
+import dialogService from "../../widgets/dialog.js";
 
 const TPL = `
 <h4>ETAPI</h4>
@@ -42,16 +42,14 @@ const TPL = `
     .token-table-button:hover {
         border: 1px solid var(--main-border-color);
     }
-</style>
-`;
+</style>`;
 
 export default class EtapiOptions {
     constructor() {
         $("#options-etapi").html(TPL);
 
         $("#create-etapi-token").on("click", async () => {
-            const promptDialog = await import('../../dialogs/prompt.js');
-            const tokenName = await promptDialog.ask({
+            const tokenName = await dialogService.prompt({
                 title: "New ETAPI token",
                 message: "Please enter new token's name",
                 defaultValue: "new token"
@@ -64,7 +62,7 @@ export default class EtapiOptions {
 
             const {authToken} = await server.post('etapi-tokens', {tokenName});
 
-            await promptDialog.ask({
+            await dialogService.prompt({
                 title: "ETAPI token created",
                 message: 'Copy the created token into clipboard. Trilium stores the token hashed and this is the last time you see it.',
                 defaultValue: authToken
@@ -104,8 +102,7 @@ export default class EtapiOptions {
     }
 
     async renameToken(etapiTokenId, oldName) {
-        const promptDialog = await import('../../dialogs/prompt.js');
-        const tokenName = await promptDialog.ask({
+        const tokenName = await dialogService.prompt({
             title: "Rename token",
             message: "Please enter new token's name",
             defaultValue: oldName

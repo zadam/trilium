@@ -73,6 +73,7 @@ import NoteRevisionsDialog from "../widgets/dialogs/note_revisions.js";
 import DeleteNotesDialog from "../widgets/dialogs/delete_notes.js";
 import InfoDialog from "../widgets/dialogs/info.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
+import PromptDialog from "../widgets/dialogs/prompt.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -220,6 +221,7 @@ export default class DesktopLayout {
             .child(new NoteRevisionsDialog())
             .child(new DeleteNotesDialog())
             .child(new InfoDialog())
-            .child(new ConfirmDialog());
+            .child(new ConfirmDialog())
+            .child(new PromptDialog());
     }
 }

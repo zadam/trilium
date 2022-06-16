@@ -152,8 +152,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         this.clipboard = null;
 
         this.$createChildNote.on('click', async () => {
-            const promptDialog = await import('../../dialogs/prompt.js');
-            const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
+            const title = await dialogService.prompt({ message: "Enter title of new note",  defaultValue: "new note" });
 
             if (!title.trim()) {
                 return;
@@ -216,8 +215,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             this.saveData();
         }
         else if (command === "editTitle") {
-            const promptDialog = await import("../../dialogs/prompt.js");
-            const title = await promptDialog.ask({
+            const title = await dialogService.prompt({
                 title: "Rename note",
                 message: "Enter new note title:",
                 defaultValue: $title.text()
@@ -470,8 +468,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             return;
         }
 
-        const promptDialog = await import("../../dialogs/prompt.js");
-        let name = await promptDialog.ask({
+        let name = await dialogService.prompt({
             message: "Specify new relation name (allowed characters: alphanumeric, colon and underscore):",
             shown: ({ $answer }) => {
                 $answer.on('keyup', () => {

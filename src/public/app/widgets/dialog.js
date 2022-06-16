@@ -10,7 +10,13 @@ async function confirm(message) {
         appContext.triggerCommand("showConfirmDialog", {message, callback: res}));
 }
 
+async function prompt(props) {
+    return new Promise(res =>
+        appContext.triggerCommand("showPromptDialog", {...props, callback: res}));
+}
+
 export default {
     info,
-    confirm
+    confirm,
+    prompt
 };
