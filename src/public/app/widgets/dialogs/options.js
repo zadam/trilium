@@ -6,7 +6,18 @@ import BasicWidget from "../basic_widget.js";
 
 const TPL = `
 <div class="options-dialog modal fade mx-auto" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="min-width: 1000px;" role="document">
+    <style>
+        .options-dialog .nav {
+            margin-right: 20px;
+        }
+        
+        .options-dialog .tab-content {
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+    </style>
+
+    <div class="modal-dialog modal-lg" style="min-width: 1000px;" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Options</h5>
@@ -15,8 +26,8 @@ const TPL = `
                 </button>
             </div>
             <div class="modal-body">
-                <div>
-                    <ul class="nav nav-tabs">
+                <div style="display: flex">
+                    <ul class="nav nav-tabs flex-column">
                         <li class="nav-item">
                             <a class="nav-link active" data-toggle="tab" href="#options-appearance">Appearance</a>
                         </li>
