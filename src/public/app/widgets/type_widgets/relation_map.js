@@ -8,6 +8,7 @@ import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
 import froca from "../../services/froca.js";
+import dialogService from "../../widgets/dialog.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -509,8 +510,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             && rel.name === name);
 
         if (relationExists) {
-            const infoDialog = await import('../../dialogs/info.js');
-            await infoDialog.info("Connection '" + name + "' between these notes already exists.");
+            await dialogService.info(`Connection '${name}' between these notes already exists.`);
 
             this.jsPlumbInstance.deleteConnection(connection);
 

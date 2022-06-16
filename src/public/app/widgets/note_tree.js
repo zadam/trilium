@@ -16,6 +16,7 @@ import protectedSessionService from "../services/protected_session.js";
 import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import dialogService from "./dialog.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -401,9 +402,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         (['after', 'before'].includes(data.hitMode)
                             && (node.data.noteId === hoistedNoteService.getHoistedNoteId() || node.getParent().data.noteType === 'search'))) {
 
-                        const infoDialog = await import('../dialogs/info.js');
-
-                        await infoDialog.info("Dropping notes into this location is not allowed.");
+                        await dialogService.info("Dropping notes into this location is not allowed.");
 
                         return;
                     }
