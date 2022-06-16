@@ -68,6 +68,7 @@ import MoveToDialog from "../widgets/dialogs/move_to.js";
 import ImportDialog from "../widgets/dialogs/import.js";
 import ExportDialog from "../widgets/dialogs/export.js";
 import MarkdownImportDialog from "../widgets/dialogs/markdown_import.js";
+import ProtectedSessionPasswordDialog from "../widgets/dialogs/protected_session_password.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -210,6 +211,7 @@ export default class DesktopLayout {
             .child(new MoveToDialog())
             .child(new ImportDialog())
             .child(new ExportDialog())
-            .child(new MarkdownImportDialog());
+            .child(new MarkdownImportDialog())
+            .child(new ProtectedSessionPasswordDialog());
     }
 }
