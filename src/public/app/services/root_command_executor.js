@@ -8,10 +8,6 @@ import options from "./options.js";
 import froca from "./froca.js";
 
 export default class RootCommandExecutor extends Component {
-    jumpToNoteCommand() {
-        import("../dialogs/jump_to_note.js").then(d => d.showDialog());
-    }
-
     showNoteRevisionsCommand() {
         import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
     }
