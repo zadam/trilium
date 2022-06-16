@@ -540,25 +540,6 @@ div[data-notify="container"] {
     font-size: 150%;
 }
 
-#export-form .form-check {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-#export-form .format-choice {
-    padding-left: 40px;
-    display: none;
-}
-
-#export-form #opml-versions {
-    padding-left: 60px;
-    display: none;
-}
-
-#export-form .form-check-label {
-    padding: 2px;
-}
-
 .ck-editor__is-empty.ck-content.ck-editor__editable::before {
     content: 'You can start writing note here ...';
     position: absolute;

@@ -1451,10 +1451,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     async exportNoteCommand({node}) {
-        const exportDialog = await import('../dialogs/export.js');
         const notePath = treeService.getNotePath(node);
 
-        exportDialog.showDialog(notePath,"subtree");
+        this.triggerCommand("showExportDialog", {notePath, defaultType: "subtree"});
     }
 
     async importIntoNoteCommand({node}) {

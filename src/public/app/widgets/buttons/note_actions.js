@@ -53,7 +53,10 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
                 return;
             }
 
-            import('../../dialogs/export.js').then(d => d.showDialog(this.noteContext.notePath, 'single'));
+            this.triggerCommand("showExportDialog", {
+                notePath: this.noteContext.notePath,
+                defaultType: "single"
+            });
         });
 
         this.$importNoteButton = this.$widget.find('.import-files-button');
