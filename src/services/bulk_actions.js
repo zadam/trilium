@@ -66,7 +66,7 @@ const ACTION_HANDLERS = {
         }
     },
     updateRelationTarget: (action, note) => {
-        for (const relation of note.getOwnedLabels(action.relationName)) {
+        for (const relation of note.getOwnedRelations(action.relationName)) {
             relation.value = action.targetNoteId;
             relation.save();
         }
