@@ -4,8 +4,6 @@ const becca = require("../becca/becca");
 const cloningService = require("./cloning");
 const branchService = require("./branches");
 const utils = require("./utils");
-const dayjs = require("dayjs");
-const cls = require("./cls.js");
 
 const ACTION_HANDLERS = {
     addLabel: (action, note) => {
@@ -77,6 +75,8 @@ const ACTION_HANDLERS = {
         const targetParentNote = becca.getNote(action.targetParentNoteId);
 
         if (!targetParentNote) {
+            log.info(`Cannot execute moveNote because note ${action.targetParentNoteId} doesn't exist.`);
+
             return;
         }
 

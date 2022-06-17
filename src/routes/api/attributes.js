@@ -91,10 +91,7 @@ function addNoteAttribute(req) {
     const noteId = req.params.noteId;
     const body = req.body;
 
-    const attr = new Attribute(body);
-    attr.noteId = noteId;
-
-    attr.save();
+    new Attribute({...body, noteId}).save();
 }
 
 function deleteNoteAttribute(req) {

@@ -44,7 +44,7 @@ export default class ExecuteScriptBulkAction extends AbstractBulkAction {
 
         const spacedUpdate = new SpacedUpdate(async () => {
             await this.saveAction({ script: $script.val() });
-        }, 1000)
+        }, 1000);
 
         $script.on('input', () => spacedUpdate.scheduleUpdate());
 

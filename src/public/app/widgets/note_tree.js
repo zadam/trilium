@@ -431,7 +431,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                             notes = JSON.parse(jsonStr);
                         }
                         catch (e) {
-                            logError(`Cannot parse ${jsonStr} into notes for drop`);
+                            logError(`Cannot parse JSON '${jsonStr}' into notes for drop`);
                             return;
                         }
 
