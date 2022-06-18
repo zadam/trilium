@@ -3,10 +3,16 @@ import attributeService from "../../services/attributes.js";
 
 const TPL = `
 <div class="note-detail-web-view note-detail-printable" style="height: 100%">
-    <div class="note-detail-web-view-help alert alert-warning" style="margin: 50px; padding: 20px;">
-        <p><strong>This help note is shown because this note of type WebView HTML doesn't have required label to function properly.</strong></p>
+    <div class="note-detail-web-view-help alert alert-warning" style="margin: 50px; padding: 20px 20px 0px 20px;">
+        <h4>Web View</h4>
+        
+        <p>Note of type Web View allow you to embed websites into Trilium.</p>
 
-        <p>Please create label with a URL address you want to embed, e.g. <code>#webViewSrc="http://www.google.com"</code></p>
+        <p>To start, please create a label with a URL address you want to embed, e.g. <code>#webViewSrc="http://www.google.com"</code></p>
+
+        <h4>Disclaimer on the experimental status</h4>
+        
+        <p>Web View is an experimental note type, and it might be removed or substantially changed in the future. Web View works also only in the desktop build.</p>
     </div>
 
     <webview class="note-detail-web-view-content"></webview>

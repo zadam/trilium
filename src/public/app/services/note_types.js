@@ -12,7 +12,7 @@ async function getNoteTypeItems(command) {
         { title: "Book", command: command, type: "book", uiIcon: "bx bx-book" },
         { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "bx bx-selection" },
         { title: "Canvas", command: command, type: "canvas", uiIcon: "bx bx-pen" },
-        { title: "Web View", command: command, type: "iframe", uiIcon: "bx bx-globe-alt" },
+        { title: "Web View", command: command, type: "web-view", uiIcon: "bx bx-globe-alt" },
     ];
 
     const templateNoteIds = await server.get("search-templates");
