@@ -400,7 +400,11 @@ class Note extends AbstractEntity {
                     const templateNote = this.becca.notes[ownedAttr.value];
 
                     if (templateNote) {
-                        templateAttributes.push(...templateNote.__getAttributes(newPath));
+                        templateAttributes.push(
+                            ...templateNote.__getAttributes(newPath)
+                                // template attr is used as a marker for templates, but it's not meant to be inherited
+                                .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                        );
                     }
                 }
             }

@@ -263,7 +263,11 @@ class NoteShort {
                 const templateNote = this.froca.notes[templateAttr.value];
 
                 if (templateNote && templateNote.noteId !== this.noteId) {
-                    attrArrs.push(templateNote.__getCachedAttributes(newPath));
+                    attrArrs.push(
+                        templateNote.__getCachedAttributes(newPath)
+                            // template attr is used as a marker for templates, but it's not meant to be inherited
+                            .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                    );
                 }
             }
 
