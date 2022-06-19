@@ -449,8 +449,18 @@ class Note extends AbstractEntity {
         return this.inheritableAttributeCache;
     }
 
-    hasAttribute(type, name) {
-        return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
+    /**
+     * @param type
+     * @param name
+     * @param [value]
+     * @returns {boolean}
+     */
+    hasAttribute(type, name, value) {
+        return !!this.getAttributes().find(attr =>
+            attr.type === type
+            && attr.name === name
+            && (value === undefined || value === null || attr.value === value)
+        );
     }
 
     getAttributeCaseInsensitive(type, name, value) {
@@ -471,27 +481,31 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} name - label name
+     * @param {string} [value] - label value
      * @returns {boolean} true if label exists (including inherited)
      */
-    hasLabel(name) { return this.hasAttribute(LABEL, name); }
+    hasLabel(name, value) { return this.hasAttribute(LABEL, name, value); }
 
     /**
      * @param {string} name - label name
+     * @param {string} [value] - label value
      * @returns {boolean} true if label exists (excluding inherited)
      */
-    hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
+    hasOwnedLabel(name, value) { return this.hasOwnedAttribute(LABEL, name, value); }
 
     /**
      * @param {string} name - relation name
+     * @param {string} [value] - relation value
      * @returns {boolean} true if relation exists (including inherited)
      */
-    hasRelation(name) { return this.hasAttribute(RELATION, name); }
+    hasRelation(name, value) { return this.hasAttribute(RELATION, name, value); }
 
     /**
      * @param {string} name - relation name
+     * @param {string} [value] - relation value
      * @returns {boolean} true if relation exists (excluding inherited)
      */
-    hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
+    hasOwnedRelation(name, value) { return this.hasOwnedAttribute(RELATION, name, value); }
 
     /**
      * @param {string} name - label name
@@ -544,10 +558,11 @@ class Note extends AbstractEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
+     * @param {string} [value] - attribute value
      * @returns {boolean} true if note has an attribute with given type and name (excluding inherited)
      */
-    hasOwnedAttribute(type, name) {
-        return !!this.getOwnedAttribute(type, name);
+    hasOwnedAttribute(type, name, value) {
+        return !!this.getOwnedAttribute(type, name, value);
     }
 
     /**
@@ -634,15 +649,19 @@ class Note extends AbstractEntity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
+     * @param {string} [value] - (optional) attribute value to filter
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
-    getOwnedAttributes(type, name) {
+    getOwnedAttributes(type, name, value) {
         // it's a common mistake to include # or ~ into attribute name
         if (name && ["#", "~"].includes(name[0])) {
             name = name.substr(1);
         }
 
-        if (type && name) {
+        if (type && name && value !== undefined && value !== null) {
+            return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name && attr.value === value);
+        }
+        else if (type && name) {
             return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name);
         }
         else if (type) {
@@ -661,8 +680,8 @@ class Note extends AbstractEntity {
      *
      * This method can be significantly faster than the getAttribute()
      */
-    getOwnedAttribute(type, name) {
-        const attrs = this.getOwnedAttributes(type, name);
+    getOwnedAttribute(type, name, value) {
+        const attrs = this.getOwnedAttributes(type, name, value);
 
         return attrs.length > 0 ? attrs[0] : null;
     }

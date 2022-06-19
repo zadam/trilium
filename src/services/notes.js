@@ -155,15 +155,18 @@ function createNewNote(params) {
 
         scanForLinks(note);
 
+        copyChildAttributes(parentNote, note);
+
         if (params.templateNoteId) {
             if (!becca.getNote(params.templateNoteId)) {
                 throw new Error(`Template note '${params.templateNoteId}' does not exist.`);
             }
 
-            note.addRelation('template', params.templateNoteId);
+            // could be already copied from the parent via `child:`, no need to have 2
+            if (!note.hasOwnedRelation('template', params.templateNoteId)) {
+                note.addRelation('template', params.templateNoteId);
+            }
         }
-
-        copyChildAttributes(parentNote, note);
 
         triggerNoteTitleChanged(note);
         triggerChildNoteCreated(note, parentNote);

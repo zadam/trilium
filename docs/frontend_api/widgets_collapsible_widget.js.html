@@ -37,6 +37,9 @@ const WIDGET_TPL = `
     &lt;/div>
 &lt;/div>`;
 
+/**
+ * TODO: rename, it's not collapsible anymore
+ */
 export default class CollapsibleWidget extends NoteContextAwareWidget {
     get widgetTitle() { return "Untitled widget"; }
 
@@ -60,10 +63,6 @@ export default class CollapsibleWidget extends NoteContextAwareWidget {
 
     /** for overriding */
     async doRenderBody() {}
-
-    isExpanded() {
-        return this.$bodyWrapper.hasClass("show");
-    }
 }
 </code></pre>
         </article>
@@ -75,7 +74,7 @@ export default class CollapsibleWidget extends NoteContextAwareWidget {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="module.exports.html">exports</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">
