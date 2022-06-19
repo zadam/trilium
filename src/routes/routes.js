@@ -318,6 +318,9 @@ function register(app) {
     apiRoute(POST, '/api/recent-notes', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
+    // docker health check
+    route(GET, '/api/health-check', [], () => ({"status": "ok"}), apiResultHandler);
+
     // group of services below are meant to be executed from outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
     route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler, false);
