@@ -640,13 +640,18 @@ class NoteShort {
             return [];
         }
 
-        return this.getAttributes()
+        const promotedAttrs = this.getAttributes()
             .filter(attr => attr.isDefinition())
             .filter(attr => {
                 const def = attr.getDefinition();
 
                 return def && def.isPromoted;
             });
+
+        // attrs are not resorted if position changes after initial load
+        promotedAttrs.sort((a, b) => a.position < b.position ? -1 : 1);
+
+        return promotedAttrs;
     }
 
     hasAncestor(ancestorNoteId, visitedNoteIds = null) {
