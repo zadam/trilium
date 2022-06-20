@@ -136,7 +136,7 @@ const TPL = `
             </div>
         </div>
         
-        <h5>Monospace font</h5>
+        <h5>Monospace (code) font</h5>
         
         <div class="form-group row">
             <div class="col-4">

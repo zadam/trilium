@@ -266,10 +266,25 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         await this.initialized;
 
         const selection = this.textEditor.model.document.selection;
-        if (!selection.hasAttribute('linkHref')) return;
+        const selectedElement = selection.getSelectedElement();
+
+        if (selectedElement?.name === 'reference') {
+            // reference link
+            const notePath = selectedElement.getAttribute('notePath');
+
+            if (notePath) {
+                await appContext.tabManager.getActiveContext().setNote(notePath);
+                return;
+            }
+        }
+
+        if (!selection.hasAttribute('linkHref')) {
+            return;
+        }
 
         const selectedLinkUrl = selection.getAttribute('linkHref');
         const notePath = link.getNotePathFromUrl(selectedLinkUrl);
+
         if (notePath) {
             await appContext.tabManager.getActiveContext().setNote(notePath);
         } else {
