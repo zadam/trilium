@@ -12,9 +12,11 @@ require('electron-debug')();
 appIconService.installLocalAppIcon();
 
 require('electron-dl')({ saveAs: true });
-
+if (process.platform === 'darwin') {
+    app.dock.hide()
+}
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (process.platform === 'darwin') {
         app.quit();
     }
     else if (process.platform === 'win32') {

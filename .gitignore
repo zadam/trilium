@@ -11,3 +11,9 @@ cert.crt
 server-package.json
 .idea/httpRequests/
 data/
+*.log
+pnpm-lock.yaml
+package.json
+.gitignore
+.gitignore
+package.json

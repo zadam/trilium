@@ -42,6 +42,7 @@
     "electron-debug": "3.2.0",
     "electron-dl": "3.3.1",
     "electron-window-state": "5.0.3",
+    "escape-html": "^1.0.3",
     "express": "4.18.1",
     "express-partial-content": "1.0.2",
     "express-rate-limit": "6.4.0",
@@ -82,6 +83,7 @@
     "turndown": "7.1.1",
     "unescape": "1.0.1",
     "ws": "8.8.0",
+    "xml2js": "^0.4.23",
     "yauzl": "2.10.0"
   },
   "devDependencies": {

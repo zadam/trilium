@@ -51,43 +51,47 @@ const registerVisibilityListener = () => {
 }
 
 const updateTrayMenu = () => {
-    const mainWindow = windowService.getMainWindow();
+    if (process.platform != 'darwin') {
+        // Menus under macos cause multiple changeVisibility triggers 
+        const mainWindow = windowService.getMainWindow();
 
-    const contextMenu = Menu.buildFromTemplate([
-        {
-            label: isVisible ? 'Hide' : 'Show',
-            type: 'normal',
-            click: () => {
-                if (isVisible) {
-                    mainWindow.hide();
-                } else {
-                    mainWindow.show();
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: isVisible ? 'Hide' : 'Show',
+                type: 'normal',
+                click: () => {
+                    if (isVisible) {
+                        mainWindow.hide();
+                    } else {
+                        mainWindow.show();
+                        mainWindow.focus();
+                    }
                 }
-            }
-        },
-        {
-            type: 'separator'
-        },
-        {
-            label: 'Quit',
-            type: 'normal',
-            click: () => {
-                mainWindow.close();
-            }
-        },
-    ]);
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'Quit',
+                type: 'normal',
+                click: () => {
+                    mainWindow.close();
+                }
+            },
+        ]);
 
-    tray?.setContextMenu(contextMenu);
+        tray?.setContextMenu(contextMenu);
+    }
 }
 const changeVisibility = () => {
     const window = windowService.getMainWindow();
 
-    if (isVisible) {
-        window.hide();
-    } else {
-        window.show();
-        window.focus();
-    }
+     if (isVisible) {
+         window.hide();
+     } else {
+         window.show();
+         window.focus();
+     }
 }
 
 function createTray() {
