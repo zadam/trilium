@@ -194,7 +194,10 @@ export default class DesktopLayout {
                                         .child(new SqlResultWidget())
                                 )
                                 .child(new FindWidget())
-                                .child(...this.customWidgets.get('node-detail-pane'))
+                                .child(
+                                    ...this.customWidgets.get('node-detail-pane'), // typo, let's keep it for a while as BC
+                                    ...this.customWidgets.get('note-detail-pane')
+                                )
                             )
                         )
                         .child(...this.customWidgets.get('center-pane'))
