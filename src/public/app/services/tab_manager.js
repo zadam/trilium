@@ -142,6 +142,11 @@ export default class TabManager extends Component {
         return this.noteContexts;
     }
 
+    /** @returns {NoteContext[]} */
+    getMainNoteContexts() {
+        return this.noteContexts.filter(nc => nc.isMainContext());
+    }
+
     /** @returns {NoteContext} */
     getNoteContextById(ntxId) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId);
@@ -294,11 +299,23 @@ export default class TabManager extends Component {
         this.setCurrentNotePathToHash();
     }
 
+    /**
+     * @param ntxId
+     * @returns {Promise<boolean>} true if note context has been removed, false otherwise
+     */
     async removeNoteContext(ntxId) {
         // removing note context is async process which can take some time, if users presses CTRL-W quickly, two
         // close events could interleave which would then lead to attempting to activate already removed context.
-        await this.mutex.runExclusively(async () => {
-            const noteContextToRemove = this.getNoteContextById(ntxId);
+        return await this.mutex.runExclusively(async () => {
+            let noteContextToRemove;
+
+            try {
+                noteContextToRemove = this.getNoteContextById(ntxId);
+            }
+            catch {
+                // note context not found
+                return false;
+            }
 
             if (noteContextToRemove.isMainContext()) {
                 // forbid removing last main note context
@@ -308,7 +325,7 @@ export default class TabManager extends Component {
                 if (mainNoteContexts.length === 1) {
                     await this.clearLastMainNoteContext(noteContextToRemove);
 
-                    return;
+                    return false;
                 }
             }
 
@@ -338,6 +355,8 @@ export default class TabManager extends Component {
             }
 
             this.removeNoteContexts(noteContextsToRemove);
+
+            return true;
         });
     }
 
@@ -445,12 +464,14 @@ export default class TabManager extends Component {
         }
     }
 
-    moveTabToNewWindowCommand({ntxId}) {
+    async moveTabToNewWindowCommand({ntxId}) {
         const {notePath, hoistedNoteId} = this.getNoteContextById(ntxId);
 
-        this.removeNoteContext(ntxId);
+        const removed = await this.removeNoteContext(ntxId);
 
-        this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+        if (removed) {
+            this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+        }
     }
 
     async reopenLastTabCommand() {
