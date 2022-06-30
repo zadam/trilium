@@ -39,9 +39,9 @@ function register(router) {
         addNoIndexHeader(note, res);
 
         if (note.hasLabel('shareRaw') || ['image', 'file'].includes(note.type)) {
-            res.setHeader('Content-Type', note.mime);
+            res.setHeader('Content-Type', note.mime)
+                .send(note.getContent());
 
-            res.send(note.getContent());
             return;
         }
 
@@ -83,7 +83,9 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+            return res.setHeader("Content-Type", "text/plain")
+                .status(404)
+                .send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -98,7 +100,9 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+            return res.setHeader("Content-Type", "text/plain")
+                .status(404)
+                .send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);
@@ -122,13 +126,17 @@ function register(router) {
         const image = shaca.getNote(req.params.noteId);
 
         if (!image) {
-            return res.status(404).send(`Note '${req.params.noteId}' not found`);
+            return res.setHeader('Content-Type', 'text/plain')
+                .status(404)
+                .send(`Note '${req.params.noteId}' not found`);
         }
         else if (!["image", "canvas"].includes(image.type)) {
-            return res.status(400).send("Requested note is not a shareable image");
+            return res.setHeader('Content-Type', 'text/plain')
+                .status(400)
+                .send("Requested note is not a shareable image");
         } else if (image.type === "canvas") {
             /**
-             * special "image" type. the canvas is actually type application/json 
+             * special "image" type. the canvas is actually type application/json
              * to avoid bitrot and enable usage as referenced image the svg is included.
              */
             const content = image.getContent();
@@ -141,7 +149,9 @@ function register(router) {
                 res.set("Cache-Control", "no-cache, no-store, must-revalidate");
                 res.send(svg);
             } catch(err) {
-                res.status(500).send("there was an error parsing excalidraw to svg");
+                res.setHeader('Content-Type', 'text/plain')
+                    .status(500)
+                    .send("there was an error parsing excalidraw to svg");
             }
         } else {
             // normal image
@@ -159,7 +169,9 @@ function register(router) {
         const note = shaca.getNote(noteId);
 
         if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+            return res.setHeader('Content-Type', 'text/plain')
+                .status(404)
+                .send(`Note '${noteId}' not found`);
         }
 
         addNoIndexHeader(note, res);

@@ -49,7 +49,9 @@ function handleRequest(req, res) {
             catch (e) {
                 log.error(`Custom handler ${note.noteId} failed with ${e.message}`);
 
-                res.status(500).send(e.message);
+                res.setHeader("Content-Type", "text/plain")
+                    .status(500)
+                    .send(e.message);
             }
         }
         else if (attr.name === 'customResourceProvider') {
@@ -65,7 +67,9 @@ function handleRequest(req, res) {
     const message = `No handler matched for custom ${path} request.`;
 
     log.info(message);
-    res.status(404).send(message);
+    res.setHeader("Content-Type", "text/plain")
+        .status(404)
+        .send(message);
 }
 
 function register(router) {

@@ -15,7 +15,9 @@ function exportBranch(req, res) {
         const message = `Cannot export branch ${branchId} since it does not exist.`;
         log.error(message);
 
-        res.status(500).send(message);
+        res.setHeader("Content-Type", "text/plain")
+            .status(500)
+            .send(message);
         return;
     }
 
@@ -41,7 +43,9 @@ function exportBranch(req, res) {
 
         log.error(message + e.stack);
 
-        res.status(500).send(message);
+        res.setHeader("Content-Type", "text/plain")
+            .status(500)
+            .send(message);
     }
 }
 
