@@ -1255,7 +1255,7 @@ class Note extends AbstractEntity {
                 ? this.dateModified
                 : contentMetadata.dateModified,
             dateCreated: dateUtils.localNowDateTime()
-        }).save();
+        }, true).save();
 
         noteRevision.setContent(content);
 
