@@ -121,6 +121,10 @@ function apiResultHandler(req, res, result) {
 
 function send(res, statusCode, response) {
     if (typeof response === 'string') {
+        if (statusCode >= 400) {
+            res.setHeader("Content-Type", "text/plain");
+        }
+
         res.status(statusCode).send(response);
 
         return response.length;
@@ -168,7 +172,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
                         .catch(e => {
                             log.error(`${method} ${path} threw exception: ` + e.stack);
 
-                            res.status(500).send(e.message);
+                            res.setHeader("Content-Type", "text/plain")
+                                .status(500)
+                                .send(e.message);
                         });
                 }
                 else {
@@ -181,7 +187,9 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
         catch (e) {
             log.error(`${method} ${path} threw exception: ` + e.stack);
 
-            res.status(500).send(e.message);
+            res.setHeader("Content-Type", "text/plain")
+                .status(500)
+                .send(e.message);
         }
     });
 }

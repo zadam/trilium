@@ -48,7 +48,7 @@ function decrypt(key, cipherText, ivLength = 13) {
     }
     catch (e) {
         // recovery from https://github.com/zadam/trilium/issues/510
-        if (e.message && e.message.includes("WRONG_FINAL_BLOCK_LENGTH")) {
+        if (e.message?.includes("WRONG_FINAL_BLOCK_LENGTH") || e.message?.includes("wrong final block length")) {
             log.info("Caught WRONG_FINAL_BLOCK_LENGTH, returning cipherText instead");
 
             return cipherText;
