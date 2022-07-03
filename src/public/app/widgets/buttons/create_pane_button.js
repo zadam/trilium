@@ -7,6 +7,6 @@ export default class CreatePaneButton extends ButtonWidget {
         this.icon("bx-dock-right")
             .title("Create new split")
             .titlePlacement("bottom")
-            .onClick(widget => widget.triggerCommand("openNewNoteSplit", { ntxId: widget.getNtxId() }));
+            .onClick(widget => widget.triggerCommand("openNewNoteSplit", { ntxId: widget.getClosestNtxId() }));
     }
 }

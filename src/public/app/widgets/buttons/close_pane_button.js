@@ -18,7 +18,7 @@ export default class ClosePaneButton extends ButtonWidget {
                 // pane (which is being removed)
                 e.stopPropagation();
 
-                widget.triggerCommand("closeThisNoteSplit", { ntxId: widget.getNtxId() });
+                widget.triggerCommand("closeThisNoteSplit", { ntxId: widget.getClosestNtxId() });
             });
     }
 }

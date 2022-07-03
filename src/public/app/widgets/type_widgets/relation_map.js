@@ -589,4 +589,52 @@ export default class RelationMapTypeWidget extends TypeWidget {
     getContent() {
         return JSON.stringify(this.mapData);
     }
+
+    async relationMapCreateChildNoteEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        const title = await dialogService.prompt({ message: "Enter title of new note",  defaultValue: "new note" });
+
+        if (!title.trim()) {
+            return;
+        }
+
+        const {note} = await server.post(`notes/${this.noteId}/children?target=into`, {
+            title,
+            content: '',
+            type: 'text'
+        });
+
+        toastService.showMessage("Click on canvas to place new note");
+
+        this.clipboard = { noteId: note.noteId, title };
+    }
+
+    relationMapResetPanZoomEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        // reset to initial pan & zoom state
+        this.pzInstance.zoomTo(0, 0, 1 / this.getZoom());
+        this.pzInstance.moveTo(0, 0);
+    }
+
+    relationMapResetZoomInEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        this.pzInstance.zoomTo(0, 0, 1.2);
+    }
+
+    relationMapResetZoomOutEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        this.pzInstance.zoomTo(0, 0, 0.8);
+    }
 }
