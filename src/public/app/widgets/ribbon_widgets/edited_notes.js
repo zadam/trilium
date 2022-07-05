@@ -77,7 +77,9 @@ export default class EditedNotesWidget extends CollapsibleWidget {
                 );
             }
             else {
-                $item.append(editedNote.notePath ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true}) : editedNote.title);
+                $item.append(editedNote.notePath
+                    ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true})
+                    : $("<span>").text(editedNote.title));
             }
 
             if (i < editedNotes.length - 1) {

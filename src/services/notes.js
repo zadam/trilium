@@ -341,8 +341,10 @@ function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true, true);
 
+            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+
             content = content.substr(0, imageMatch.index)
-                + `<img src="api/images/${note.noteId}/${note.title}"`
+                + `<img src="api/images/${note.noteId}/${sanitizedTitle}"`
                 + content.substr(imageMatch.index + imageMatch[0].length);
         }
         else if (!url.includes('api/images/')

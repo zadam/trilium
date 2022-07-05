@@ -79,7 +79,7 @@ export default class EmptyTypeWidget extends TypeWidget {
             this.$workspaceNotes.append(
                 $('<div class="workspace-note">')
                     .append($("<div>").addClass(workspaceNote.getIcon() + " workspace-icon"))
-                    .append($("<div>").append(workspaceNote.title))
+                    .append($("<div>").text(workspaceNote.title))
                     .attr("title", "Enter workspace " + workspaceNote.title)
                     .on('click', () => this.triggerCommand('hoistNote', {noteId: workspaceNote.noteId}))
             );
