@@ -11,8 +11,8 @@ export default class LeftPaneToggleWidget extends ButtonWidget {
             : "bx-chevrons-right";
 
         this.settings.title = isLeftPaneVisible
-            ? "Hide panel."
-            : "Open panel.";
+            ? "Hide panel"
+            : "Open panel";
 
         this.settings.command = isLeftPaneVisible
             ? "hideLeftPane"
