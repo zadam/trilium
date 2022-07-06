@@ -12,6 +12,7 @@ const sanitizeFilename = require('sanitize-filename');
 const noteRevisionService = require('./note_revisions');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
+const htmlSanitizer = require("./html_sanitizer");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -65,6 +66,8 @@ function getImageMimeFromExtension(ext) {
 
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
+
+    originalName = htmlSanitizer.sanitize(originalName);
 
     const note = becca.getNote(noteId);
 
