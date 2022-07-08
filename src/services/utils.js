@@ -241,7 +241,7 @@ function getNoteTitle(filePath, replaceUnderscoresWithSpaces, noteMeta) {
         return noteMeta.title;
     } else {
         const basename = path.basename(removeTextFileExtension(filePath));
-        if(replaceUnderscoresWithSpaces) {
+        if (replaceUnderscoresWithSpaces) {
             return basename.replace(/_/g, ' ').trim();
         }
         return basename;

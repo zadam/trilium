@@ -18,6 +18,7 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
+const htmlSanitizer = require("./html_sanitizer.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -97,6 +98,11 @@ function getNewNoteTitle(parentNote) {
             log.error(`Title template of note '${parentNote.noteId}' failed with: ${e.message}`);
         }
     }
+
+    // this isn't in theory a good place to sanitize title, but this will catch a lot of XSS attempts
+    // title is supposed to contain text only (not HTML) and be printed text only, but given the number of usages
+    // it's difficult to guarantee correct handling in all cases
+    title = htmlSanitizer.sanitize(title);
 
     return title;
 }
@@ -352,8 +358,10 @@ function downloadImages(noteId, content) {
             const imageService = require('../services/image');
             const {note} = imageService.saveImage(noteId, imageBuffer, "inline image", true, true);
 
+            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+
             content = content.substr(0, imageMatch.index)
-                + `<img src="api/images/${note.noteId}/${note.title}"`
+                + `<img src="api/images/${note.noteId}/${sanitizedTitle}"`
                 + content.substr(imageMatch.index + imageMatch[0].length);
         }
         else if (!url.includes('api/images/')

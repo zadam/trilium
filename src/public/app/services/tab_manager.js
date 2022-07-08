@@ -503,7 +503,7 @@ export default class TabManager extends Component {
 
     updateDocumentTitle(activeNoteContext) {
         const titleFragments = [
-            // it helps navigating in history if note title is included in the title
+            // it helps to navigate in history if note title is included in the title
             activeNoteContext.note?.title,
             "Trilium Notes"
         ].filter(Boolean);

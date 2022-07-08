@@ -61,9 +61,11 @@ async function getRenderedContent(note, options = {}) {
         $renderedContent.append($("<pre>").text(trim(fullNote.content, options.trim)));
     }
     else if (type === 'image') {
+        const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+
         $renderedContent.append(
             $("<img>")
-                .attr("src", `api/images/${note.noteId}/${note.title}`)
+                .attr("src", `api/images/${note.noteId}/${sanitizedTitle}`)
                 .css("max-width", "100%")
         );
     }
@@ -144,7 +146,7 @@ async function getRenderedContent(note, options = {}) {
     else if (type === 'canvas') {
         // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
         $renderedContent.css({height: "100%", width:"100%"});
-        
+
         const noteComplement = await froca.getNoteComplement(note.noteId);
         const content = noteComplement.content || "";
 

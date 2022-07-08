@@ -311,7 +311,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const note = await froca.getNote(noteId);
 
         this.textEditor.model.change( writer => {
-            const src = `api/images/${note.noteId}/${note.title}`;
+            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+            const src = `api/images/${note.noteId}/${sanitizedTitle}`;
 
             const imageElement = writer.createElement( 'image',  { 'src': src } );
 

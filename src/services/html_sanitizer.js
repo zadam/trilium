@@ -2,6 +2,8 @@ const sanitizeHtml = require('sanitize-html');
 
 // intended mainly as protection against XSS via import
 // secondarily it (partly) protects against "CSS takeover"
+// sanitize also note titles, label values etc. - there's so many usage which make it difficult to guarantee all of them
+// are properly handled
 function sanitize(dirtyHtml) {
     if (!dirtyHtml) {
         return dirtyHtml;

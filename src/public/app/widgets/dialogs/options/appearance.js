@@ -297,7 +297,7 @@ export default class ApperanceOptions {
             this.$themeSelect.append($("<option>")
                 .attr("value", theme.val)
                 .attr("data-note-id", theme.noteId)
-                .html(theme.title));
+                .text(theme.title));
         }
 
         this.$themeSelect.val(options.theme);
