@@ -67,26 +67,6 @@ function findHeadingNodeByIndex(parent, headingIndex) {
     return headingNode;
 }
 
-function findHeadingElementByIndex(parent, headingIndex) {
-    let headingElement = null;
-    for (let i = 0; i < parent.children.length; ++i) {
-        const child = parent.children[i];
-        // Headings appear as flattened top level children in the DOM named as
-        // "H" plus the level, eg "H2", "H3", "H2", etc and not nested wrt the
-        // heading level. If a heading node is found, decrement the headingIndex
-        // until zero is reached
-
-        if (child.tagName.match(/H\d+/i) !== null) {
-            if (headingIndex === 0) {
-                headingElement = child;
-                break;
-            }
-            headingIndex--;
-        }
-    }
-    return headingElement;
-}
-
 const MIN_HEADING_COUNT = 3;
 
 export default class TocWidget extends CollapsibleWidget {
@@ -190,9 +170,8 @@ export default class TocWidget extends CollapsibleWidget {
         const isReadOnly = await this.noteContext.isReadOnly();
 
         if (isReadOnly) {
-            const $readonlyTextContent = await this.noteContext.getContentElement();
-
-            const headingElement = findHeadingElementByIndex($readonlyTextContent[0], headingIndex);
+            const $container = await this.noteContext.getContentElement();
+            const headingElement = $container.find(":header")[headingIndex];
 
             if (headingElement != null) {
                 headingElement.scrollIntoView();
