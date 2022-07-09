@@ -7,15 +7,15 @@
 		exports["renderMathInElement"] = factory(require("katex"));
 	else
 		root["renderMathInElement"] = factory(root["katex"]);
-})((typeof self !== 'undefined' ? self : this), function(__WEBPACK_EXTERNAL_MODULE__974__) {
+})((typeof self !== 'undefined' ? self : this), function(__WEBPACK_EXTERNAL_MODULE__771__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 974:
+/***/ 771:
 /***/ (function(module) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE__974__;
+module.exports = __WEBPACK_EXTERNAL_MODULE__771__;
 
 /***/ })
 
@@ -86,7 +86,7 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 // EXTERNAL MODULE: external "katex"
-var external_katex_ = __webpack_require__(974);
+var external_katex_ = __webpack_require__(771);
 var external_katex_default = /*#__PURE__*/__webpack_require__.n(external_katex_);
 ;// CONCATENATED MODULE: ./contrib/auto-render/splitAtDelimiters.js
 /* eslint no-constant-condition:0 */
@@ -320,7 +320,7 @@ var renderMathInElement = function renderMathInElement(elem, options) {
 
 /* harmony default export */ var auto_render = (renderMathInElement);
 }();
-__webpack_exports__ = __webpack_exports__.default;
+__webpack_exports__ = __webpack_exports__["default"];
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
