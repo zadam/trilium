@@ -10,7 +10,11 @@ function buildDescendantCountMap() {
         if (!(noteId in noteIdToCountMap)) {
             const note = becca.getNote(noteId);
 
-            noteIdToCountMap[noteId] = note.children.length;
+            const hiddenImageNoteIds = note.getRelations('imageLink').map(rel => rel.value);
+            const childNoteIds = note.children.map(child => child.noteId);
+            const nonHiddenNoteIds = childNoteIds.filter(childNoteId => !hiddenImageNoteIds.includes(childNoteId));
+
+            noteIdToCountMap[noteId] = nonHiddenNoteIds.length;
 
             for (const child of note.children) {
                 noteIdToCountMap[noteId] += getCount(child.noteId);
