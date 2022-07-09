@@ -16,7 +16,7 @@ export default class Component {
         this.componentId = `comp-` + this.sanitizedClassName + '-' + utils.randomString(8);
         /** @type Component[] */
         this.children = [];
-        this.initialized = Promise.resolve();
+        this.initialized = null;
     }
 
     get sanitizedClassName() {
@@ -42,10 +42,16 @@ export default class Component {
 
     /** @returns {Promise} */
     handleEvent(name, data) {
-        return Promise.all([
-            this.initialized.then(() => this.callMethod(this[name + 'Event'], data)),
-            this.handleEventInChildren(name, data)
-        ]);
+        const callMethodPromise = this.initialized
+            ? this.initialized.then(() => this.callMethod(this[name + 'Event'], data))
+            : this.callMethod(this[name + 'Event'], data);
+
+        const childrenPromise = this.handleEventInChildren(name, data);
+
+        // don't create promises if not needed (optimization)
+        return callMethodPromise && childrenPromise
+            ? Promise.all([callMethodPromise, childrenPromise])
+            : null;
     }
 
     /** @returns {Promise} */
@@ -61,7 +67,8 @@ export default class Component {
             promises.push(child.handleEvent(name, data));
         }
 
-        return Promise.all(promises);
+        // don't create promises if not needed (optimization)
+        return promises.find(p => p) ? Promise.all(promises) : null;
     }
 
     /** @returns {Promise} */

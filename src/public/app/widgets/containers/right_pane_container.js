@@ -23,7 +23,12 @@ export default class RightPaneContainer extends FlexContainer {
             // right pane is displayed only if some child widget is active
             // we'll reevaluate the visibility based on events which are probable to cause visibility change
             // but these events needs to be finished and only then we check
-            promise.then(() => this.reevaluateIsEnabledCommand());
+            if (promise) {
+                promise.then(() => this.reevaluateIsEnabledCommand());
+            }
+            else {
+                this.reevaluateIsEnabledCommand();
+            }
         }
 
         return promise;

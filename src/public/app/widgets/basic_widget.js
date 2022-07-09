@@ -133,7 +133,7 @@ class BasicWidget extends Component {
         }
     }
 
-    getNtxId() {
+    getClosestNtxId() {
         if (this.$widget) {
             return this.$widget.closest("[data-ntx-id]").attr("data-ntx-id");
         }

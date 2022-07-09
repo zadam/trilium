@@ -20,19 +20,23 @@ export default class NoteContextAwareWidget extends BasicWidget {
     }
 
     get note() {
-        return this.noteContext && this.noteContext.note;
+        return this.noteContext?.note;
     }
 
     get noteId() {
-        return this.note && this.note.noteId;
+        return this.note?.noteId;
     }
 
     get notePath() {
-        return this.noteContext && this.noteContext.notePath;
+        return this.noteContext.notePath && this.noteContext;
     }
 
     get hoistedNoteId() {
-        return this.noteContext && this.noteContext.hoistedNoteId;
+        return this.noteContext?.hoistedNoteId;
+    }
+
+    get ntxId() {
+        return this.noteContext?.ntxId;
     }
 
     isEnabled() {

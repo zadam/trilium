@@ -46,7 +46,7 @@ import OpenNoteButtonWidget from "../widgets/buttons/open_note_button_widget.js"
 import MermaidWidget from "../widgets/mermaid.js";
 import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
-import BacklinksWidget from "../widgets/backlinks.js";
+import BacklinksWidget from "../widgets/floating_buttons/backlinks.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
@@ -75,6 +75,8 @@ import InfoDialog from "../widgets/dialogs/info.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
 import PromptDialog from "../widgets/dialogs/prompt.js";
 import OptionsDialog from "../widgets/dialogs/options.js";
+import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
+import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -177,7 +179,10 @@ export default class DesktopLayout {
                                 )
                                 .child(new SharedInfoWidget())
                                 .child(new NoteUpdateStatusWidget())
-                                .child(new BacklinksWidget())
+                                .child(new FloatingButtons()
+                                    .child(new BacklinksWidget())
+                                    .child(new RelationMapButtons())
+                                )
                                 .child(new MermaidWidget())
                                 .child(
                                     new ScrollingContainer()
@@ -189,7 +194,10 @@ export default class DesktopLayout {
                                         .child(new SqlResultWidget())
                                 )
                                 .child(new FindWidget())
-                                .child(...this.customWidgets.get('node-detail-pane'))
+                                .child(
+                                    ...this.customWidgets.get('node-detail-pane'), // typo, let's keep it for a while as BC
+                                    ...this.customWidgets.get('note-detail-pane')
+                                )
                             )
                         )
                         .child(...this.customWidgets.get('center-pane'))

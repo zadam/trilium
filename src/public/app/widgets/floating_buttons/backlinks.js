@@ -1,7 +1,7 @@
-import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import linkService from "../services/link.js";
-import server from "../services/server.js";
-import froca from "../services/froca.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
+import linkService from "../../services/link.js";
+import server from "../../services/server.js";
+import froca from "../../services/froca.js";
 
 const TPL = `
 <div class="backlinks-widget">
@@ -11,10 +11,6 @@ const TPL = `
         }
     
         .backlinks-ticker {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 130px;
             border-radius: 10px;
             border-color: var(--main-border-color);
             background-color: var(--more-accented-background-color);
@@ -29,11 +25,7 @@ const TPL = `
         .backlinks-count {
             cursor: pointer;
         }
-        
-        .backlinks-close-ticker {
-            cursor: pointer;
-        }
-                
+                        
         .backlinks-items {
             z-index: 10;
             position: absolute;
@@ -58,16 +50,10 @@ const TPL = `
             font-weight: bold;
             background-color: yellow;
         }
-        
-        /* relation map has already buttons in that position */
-        .type-relation-map .backlinks-ticker { top: 50px; }
-        .type-relation-map .backlinks-items { top: 100px; }
     </style>
     
     <div class="backlinks-ticker">
         <span class="backlinks-count"></span>
-        
-        <span class="bx bx-x backlinks-close-ticker"></span> 
     </div>   
     
     <div class="backlinks-items" style="display: none;"></div>
@@ -88,13 +74,6 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
             if (this.$items.is(":visible")) {
                 this.renderBacklinks();
             }
-        });
-
-        this.$closeTickerButton = this.$widget.find('.backlinks-close-ticker');
-        this.$closeTickerButton.on("click", () => {
-            this.$ticker.hide();
-
-            this.clearItems();
         });
 
         this.contentSized();
