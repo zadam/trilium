@@ -142,19 +142,11 @@ export default class FindWidget extends NoteContextAwareWidget {
             return;
         }
 
-        if (!['text', 'code'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
+        if (!['text', 'code', 'render'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
             return;
         }
 
-        const readOnly = await this.noteContext.isReadOnly();
-
-        if (readOnly) {
-            this.handler = this.htmlHandler;
-        } else {
-            this.handler = this.note.type === "code"
-                ? this.codeHandler
-                : this.textHandler;
-        }
+        this.handler = await this.getHandler();
 
         this.$findBox.show();
         this.$input.focus();
@@ -170,6 +162,22 @@ export default class FindWidget extends NoteContextAwareWidget {
         if (searchTerm !== "") {
             this.$input.select();
             await this.performFind();
+        }
+    }
+
+    async getHandler() {
+        if (this.note.type === 'render') {
+            return this.htmlHandler;
+        }
+
+        const readOnly = await this.noteContext.isReadOnly();
+
+        if (readOnly) {
+            return this.htmlHandler;
+        } else {
+            return this.note.type === "code"
+                ? this.codeHandler
+                : this.textHandler;
         }
     }
 
@@ -250,6 +258,6 @@ export default class FindWidget extends NoteContextAwareWidget {
     }
 
     isEnabled() {
-        return super.isEnabled() && ['text', 'code'].includes(this.note.type);
+        return super.isEnabled() && ['text', 'code', 'render'].includes(this.note.type);
     }
 }
