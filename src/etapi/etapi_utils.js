@@ -106,7 +106,7 @@ function getAndCheckAttribute(attributeId) {
 function validateAndPatch(target, source, allowedProperties) {
     for (const key of Object.keys(source)) {
         if (!(key in allowedProperties)) {
-            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for PATCH.`);
+            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for this method.`);
         }
         else {
             for (const validator of allowedProperties[key]) {

@@ -2,8 +2,6 @@ const becca = require("../becca/becca");
 const eu = require("./etapi_utils");
 const mappers = require("./mappers");
 const Branch = require("../becca/entities/branch");
-const noteService = require("../services/notes");
-const TaskContext = require("../services/task_context");
 const entityChangesService = require("../services/entity_changes");
 const v = require("./validators");
 
