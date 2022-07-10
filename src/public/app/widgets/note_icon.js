@@ -178,6 +178,8 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
                     .attr("title", icon.name)
             );
         }
+
+        this.$iconSearch.focus();
     }
 
     getIconLabels() {
