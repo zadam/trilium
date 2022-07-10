@@ -7,16 +7,16 @@ const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const bulkActionService = require("../../services/bulk_actions");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
-const utils = require("../../services/utils.js");
 
 function searchFromNoteInt(note) {
-    let searchResultNoteIds;
+    let searchResultNoteIds, highlightedTokens;
 
     const searchScript = note.getRelationValue('searchScript');
     const searchString = note.getLabelValue('searchString');
 
     if (searchScript) {
         searchResultNoteIds = searchFromRelation(note, 'searchScript');
+        highlightedTokens = [];
     } else {
         const searchContext = new SearchContext({
             fastSearch: note.hasLabel('fastSearch'),
@@ -32,14 +32,19 @@ function searchFromNoteInt(note) {
 
         searchResultNoteIds = searchService.findResultsWithQuery(searchString, searchContext)
             .map(sr => sr.noteId);
+
+        highlightedTokens = searchContext.highlightedTokens;
     }
 
     // we won't return search note's own noteId
     // also don't allow root since that would force infinite cycle
-    return searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId));
+    return {
+        searchResultNoteIds: searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId)),
+        highlightedTokens
+    };
 }
 
-async function searchFromNote(req) {
+function searchFromNote(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
@@ -47,7 +52,7 @@ async function searchFromNote(req) {
     }
 
     if (note.isDeleted) {
-        // this can be triggered from recent changes and it's harmless to return empty list rather than fail
+        // this can be triggered from recent changes, and it's harmless to return empty list rather than fail
         return [];
     }
 
@@ -55,7 +60,7 @@ async function searchFromNote(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    return await searchFromNoteInt(note);
+    return searchFromNoteInt(note);
 }
 
 function searchAndExecute(req) {
@@ -74,7 +79,7 @@ function searchAndExecute(req) {
         return [400, `Note ${req.params.noteId} is not a search note.`]
     }
 
-    const searchResultNoteIds = searchFromNoteInt(note);
+    const {searchResultNoteIds} = searchFromNoteInt(note);
 
     bulkActionService.executeActions(note, searchResultNoteIds);
 }
