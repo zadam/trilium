@@ -28,7 +28,7 @@ export default class NoteContextAwareWidget extends BasicWidget {
     }
 
     get notePath() {
-        return this.noteContext.notePath && this.noteContext;
+        return this.noteContext?.notePath;
     }
 
     get hoistedNoteId() {
@@ -64,7 +64,7 @@ export default class NoteContextAwareWidget extends BasicWidget {
     async refreshWithNote(note) {}
 
     async noteSwitchedEvent({noteContext, notePath}) {
-        // if notePath does not match then the noteContext has been switched to another note in the mean time
+        // if notePath does not match then the noteContext has been switched to another note in the meantime
         if (noteContext.notePath === notePath) {
             await this.noteSwitched();
         }
@@ -88,7 +88,7 @@ export default class NoteContextAwareWidget extends BasicWidget {
     async noteSwitchedAndActivatedEvent({noteContext, notePath}) {
         this.noteContext = noteContext;
 
-        // if notePath does not match then the noteContext has been switched to another note in the mean time
+        // if notePath does not match then the noteContext has been switched to another note in the meantime
         if (this.notePath === notePath) {
             await this.refresh();
         }
