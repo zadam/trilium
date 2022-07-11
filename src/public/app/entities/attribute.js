@@ -33,8 +33,19 @@ class Attribute {
         return this.froca.notes[this.noteId];
     }
 
+    /** @returns {Promise<NoteShort>} */
+    async getTargetNote() {
+        const targetNoteId = this.targetNoteId;
+
+        return await this.froca.getNote(targetNoteId, true);
+    }
+
     get targetNoteId() { // alias
-        return this.type === 'relation' ? this.value : undefined;
+        if (this.type !== 'relation') {
+            throw new Error(`Attribute ${this.attributeId} is not a relation`);
+        }
+
+        return this.value;
     }
 
     get isAutoLink() {

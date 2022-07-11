@@ -477,6 +477,12 @@ class Note extends AbstractEntity {
         return this.inheritableAttributeCache;
     }
 
+    /**
+     * @param type
+     * @param name
+     * @param [value]
+     * @returns {boolean}
+     */
     hasAttribute(type, name, value) {
         return !!this.getAttributes().find(attr =>
             attr.type === type
@@ -1277,7 +1283,7 @@ class Note extends AbstractEntity {
                 ? this.dateModified
                 : contentMetadata.dateModified,
             dateCreated: dateUtils.localNowDateTime()
-        }).save();
+        }, true).save();
 
         noteRevision.setContent(content);
 
