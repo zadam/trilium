@@ -143,7 +143,9 @@ export default class TocWidget extends CollapsibleWidget {
             //
             // Create the list item and set up the click callback
             //
-            const $li = $('<li style="cursor:pointer">' + m[2] + '</li>');
+
+            const headingText = $("<div>").html(m[2]).text();
+            const $li = $('<li style="cursor:pointer">').text(headingText);
             // XXX Do this with CSS? How to inject CSS in doRender?
             $li.hover(function () {
                 $(this).css("font-weight", "bold");
