@@ -61,7 +61,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             gantt: { useMaxWidth: false },
             "class": { useMaxWidth: false },
             state: { useMaxWidth: false },
-            pie: { useMaxWidth: false },
+            pie: { useMaxWidth: true },
             journey: { useMaxWidth: false },
             git: { useMaxWidth: false },
         });
