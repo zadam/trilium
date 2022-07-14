@@ -253,7 +253,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * parallel svg export to combat bitrot and enable rendering image for note inclusion,
          * preview and share.
          */
-        const svg = await window.Excalidraw.exportToSvg({
+        const svg = await window.ExcalidrawLib.exportToSvg({
             elements,
             appState,
             exportPadding: 5, // 5 px padding
@@ -317,7 +317,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     createExcalidrawReactApp() {
         const React = window.React;
-        const Excalidraw = window.Excalidraw;
+        const { Excalidraw } = window.ExcalidrawLib;
 
         const excalidrawRef = React.useRef(null);
         this.excalidrawRef = excalidrawRef;
@@ -379,7 +379,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     className: "excalidraw-wrapper",
                     ref: excalidrawWrapperRef
                 },
-                React.createElement(Excalidraw.default, {
+                React.createElement(Excalidraw, {
                     // this makes sure that 1) manual theme switch button is hidden 2) theme stays as it should after opening menu
                     theme: this.themeStyle,
                     ref: excalidrawRef,
@@ -420,7 +420,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     getSceneVersion() {
         if (this.excalidrawRef) {
             const elements = this.excalidrawRef.current.getSceneElements();
-            return window.Excalidraw.getSceneVersion(elements);
+            return window.ExcalidrawLib.getSceneVersion(elements);
         } else {
             return this.SCENE_VERSION_ERROR;
         }
