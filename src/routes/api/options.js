@@ -56,7 +56,8 @@ const ALLOWED_OPTIONS = new Set([
     'monthlyBackupEnabled',
     'maxContentWidth',
     'compressImages',
-    'downloadImagesAutomatically'
+    'downloadImagesAutomatically',
+    'minTocHeadings'
 ]);
 
 function getOptions() {

@@ -35,6 +35,9 @@ const TPL = `
                             <a class="nav-link" data-toggle="tab" href="#options-shortcuts">Shortcuts</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#options-text-notes">Text notes</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" data-toggle="tab" href="#options-code-notes">Code notes</a>
                         </li>
                         <li class="nav-item">
@@ -60,6 +63,7 @@ const TPL = `
                     <div class="tab-content">
                         <div id="options-appearance" class="tab-pane active"></div>
                         <div id="options-shortcuts" class="tab-pane"></div>
+                        <div id="options-text-notes" class="tab-pane"></div>
                         <div id="options-code-notes" class="tab-pane"></div>
                         <div id="options-password" class="tab-pane"></div>
                         <div id="options-etapi" class="tab-pane"></div>
@@ -88,6 +92,7 @@ export default class OptionsDialog extends BasicWidget {
         (await Promise.all([
             import('./options/appearance.js'),
             import('./options/shortcuts.js'),
+            import('./options/text_notes.js'),
             import('./options/code_notes.js'),
             import('./options/password.js'),
             import('./options/etapi.js'),

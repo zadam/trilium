@@ -32,22 +32,13 @@ const TPL = `
 
 <form>
     <div class="form-group row">
-        <div class="col-4">
-            <label for="heading-style">Heading style</label>
-            <select class="form-control" id="heading-style">
-                <option value="plain">Plain</option>
-                <option value="underline">Underline</option>
-                <option value="markdown">Markdown-style</option>
-            </select>
-        </div>
-    
-        <div class="col-4">
+        <div class="col-6">
             <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
 
             <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
         </div>
         
-        <div class="col-4">
+        <div class="col-6">
             <label for="native-title-bar-select">Native title bar (requires app restart)</label>
 
             <select class="form-control" id="native-title-bar-select">
@@ -62,12 +53,12 @@ const TPL = `
     <h4>Theme</h4>
 
     <div class="form-group row">
-        <div class="col-4">
+        <div class="col-6">
             <label for="theme-select">Theme</label>
             <select class="form-control" id="theme-select"></select>
         </div>
         
-        <div class="col-4">
+        <div class="col-6">
             <label for="override-theme-fonts">Override theme fonts</label>
             <input type="checkbox" class="form-control" id="override-theme-fonts">
         </div>
@@ -79,12 +70,12 @@ const TPL = `
         <h5>Main font</h5>
         
         <div class="form-group row">
-            <div class="col-4">
+            <div class="col-6">
                 <label for="main-font-family">Font family</label>
                 <select class="form-control" id="main-font-family"></select>
             </div>
         
-            <div class="col-4">
+            <div class="col-6">
                 <label for="main-font-size">Size</label>
     
                 <div class="input-group">
@@ -189,7 +180,6 @@ export default class ApperanceOptions {
 
         this.$zoomFactorSelect = $("#zoom-factor-select");
         this.$nativeTitleBarSelect = $("#native-title-bar-select");
-        this.$headingStyle = $("#heading-style");
 
         this.$themeSelect = $("#theme-select");
         this.$overrideThemeFonts = $("#override-theme-fonts");
@@ -236,14 +226,6 @@ export default class ApperanceOptions {
             server.put('options/nativeTitleBarVisible/' + nativeTitleBarVisible);
         });
 
-        this.$headingStyle.on('change', () => {
-            const newHeadingStyle = this.$headingStyle.val();
-
-            this.toggleBodyClass("heading-style-", newHeadingStyle);
-
-            server.put('options/headingStyle/' + newHeadingStyle);
-        });
-
         const optionsToSave = [
             'mainFontFamily', 'mainFontSize',
             'treeFontFamily', 'treeFontSize',
@@ -283,8 +265,6 @@ export default class ApperanceOptions {
         }
 
         this.$nativeTitleBarSelect.val(options.nativeTitleBarVisible === 'true' ? 'show' : 'hide');
-
-        this.$headingStyle.val(options.headingStyle);
 
         const themes = [
             { val: 'light', title: 'Light' },

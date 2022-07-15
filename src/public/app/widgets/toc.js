@@ -16,6 +16,7 @@
 
 import attributeService from "../services/attributes.js";
 import CollapsibleWidget from "./collapsible_widget.js";
+import options from "../services/options.js";
 
 const TPL = `<div class="toc-widget">
     <style>
@@ -67,8 +68,6 @@ function findHeadingNodeByIndex(parent, headingIndex) {
     return headingNode;
 }
 
-const MIN_HEADING_COUNT = 3;
-
 export default class TocWidget extends CollapsibleWidget {
     get widgetTitle() {
         return "Table of Contents";
@@ -94,7 +93,7 @@ export default class TocWidget extends CollapsibleWidget {
         }
 
         this.$toc.html($toc);
-        this.toggleInt(headingCount >= MIN_HEADING_COUNT);
+        this.toggleInt(headingCount >= options.getInt('minTocHeadings'));
         this.triggerCommand("reevaluateIsEnabled");
     }
 
