@@ -37,10 +37,7 @@ const App = () => {
         };
         
         window.addEventListener("resize", onResize);
-        // ensure that resize is also called for split creation and deletion
-        // not really the problem. problem is saved appState!
-        // self.$renderElement.addEventListener("resize", onResize);
-        
+                
         return () => window.removeEventListener("resize", onResize);
     }, [excalidrawWrapperRef]);
 
@@ -53,7 +50,7 @@ const App = () => {
                 className: "excalidraw-wrapper",
                 ref: excalidrawWrapperRef
             },        
-            React.createElement(Excalidraw.default, {
+            React.createElement(ExcalidrawLib.Excalidraw, {
                 ref: excalidrawRef,
                 width: dimensions.width,
                 height: dimensions.height,
