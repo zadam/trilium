@@ -45,8 +45,8 @@ const TPL = `
  *
  * Functionality:
  * We store the excalidraw assets (elements, appState, files) in the note. In addition to that, we
- * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used
- * for displaying any canvas note inside of a text note as an image.
+ * export the SVG from the canvas on every update. The SVG is also saved in the note. It is used when
+ * calling api/images and makes referencing very easy.
  *
  * Paths not taken.
  *  - excalidraw-to-svg (node.js) could be used to avoid storing the svg in the backend.
@@ -65,7 +65,6 @@ const TPL = `
  *    has.
  *
  * Known issues:
- *  - v0.11.0 of excalidraw does not render freedraw backgrounds in the svg
  *  - the 3 excalidraw fonts should be included in the share and everywhere, so that it is shown
  *    when requiring svg.
  *
@@ -85,8 +84,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         super();
 
         // constants
-        this.SCENE_VERSION_INITIAL = -1;
-        this.SCENE_VERSION_ERROR = -2;
+        this.SCENE_VERSION_INITIAL = -1; // -1 indicates, that it is fresh. excalidraw scene version is always >0
+        this.SCENE_VERSION_ERROR = -2; // -2 indicates error
 
         // config
         this.DEBOUNCE_TIME_ONCHANGEHANDLER = 750; // ms
@@ -103,6 +102,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget;
         this.reactHandlers; // used to control react state
 
+        // binds
         this.createExcalidrawReactApp = this.createExcalidrawReactApp.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
@@ -253,7 +253,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * parallel svg export to combat bitrot and enable rendering image for note inclusion,
          * preview and share.
          */
-        const svg = await window.Excalidraw.exportToSvg({
+        const svg = await window.ExcalidrawLib.exportToSvg({
             elements,
             appState,
             exportPadding: 5, // 5 px padding
@@ -261,11 +261,6 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             files
         });
         const svgString = svg.outerHTML;
-
-        /**
-         * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
-         */
-        const svgSafeString = this.replaceExternalAssets(svgString);
 
         const activeFiles = {};
         elements.forEach((element) => {
@@ -279,7 +274,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
             elements, // excalidraw
             appState, // excalidraw
             files: activeFiles, // excalidraw
-            svg: svgSafeString, // not needed for excalidraw, used for note_short, content, and image api
+            svg: svgString, // not needed for excalidraw, used for note_short, content, and image api
         };
 
         return JSON.stringify(content);
@@ -317,7 +312,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     createExcalidrawReactApp() {
         const React = window.React;
-        const Excalidraw = window.Excalidraw;
+        const { Excalidraw } = window.ExcalidrawLib;
 
         const excalidrawRef = React.useRef(null);
         this.excalidrawRef = excalidrawRef;
@@ -379,7 +374,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                     className: "excalidraw-wrapper",
                     ref: excalidrawWrapperRef
                 },
-                React.createElement(Excalidraw.default, {
+                React.createElement(Excalidraw, {
                     // this makes sure that 1) manual theme switch button is hidden 2) theme stays as it should after opening menu
                     theme: this.themeStyle,
                     ref: excalidrawRef,
@@ -420,7 +415,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     getSceneVersion() {
         if (this.excalidrawRef) {
             const elements = this.excalidrawRef.current.getSceneElements();
-            return window.Excalidraw.getSceneVersion(elements);
+            return window.ExcalidrawLib.getSceneVersion(elements);
         } else {
             return this.SCENE_VERSION_ERROR;
         }
@@ -428,21 +423,5 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     updateSceneVersion() {
         this.currentSceneVersion = this.getSceneVersion();
-    }
-
-    /**
-     * replaces exlicraw.com with own assets
-     *
-     * workaround until https://github.com/excalidraw/excalidraw/pull/5065 is merged and published
-     * needed for v0.11.0
-     *
-     * @param {string} string
-     * @returns
-     */
-    replaceExternalAssets = (string) => {
-        let result = string;
-        // exlidraw.com asset in react usage
-        result = result.replaceAll("https://excalidraw.com/", window.EXCALIDRAW_ASSET_PATH+"excalidraw-assets/");
-        return result;
     }
 }
