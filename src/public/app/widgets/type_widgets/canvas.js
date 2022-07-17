@@ -84,8 +84,8 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         super();
 
         // constants
-        this.SCENE_VERSION_INITIAL = -1;
-        this.SCENE_VERSION_ERROR = -2;
+        this.SCENE_VERSION_INITIAL = -1; // -1 indicates, that it is fresh. excalidraw scene version is always >0
+        this.SCENE_VERSION_ERROR = -2; // -2 indicates error
 
         // config
         this.DEBOUNCE_TIME_ONCHANGEHANDLER = 750; // ms
@@ -102,6 +102,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.$widget;
         this.reactHandlers; // used to control react state
 
+        // binds
         this.createExcalidrawReactApp = this.createExcalidrawReactApp.bind(this);
         this.onChangeHandler = this.onChangeHandler.bind(this);
         this.isNewSceneVersion = this.isNewSceneVersion.bind(this);
