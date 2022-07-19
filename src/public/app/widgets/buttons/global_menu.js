@@ -1,6 +1,7 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <div class="dropdown global-menu dropright">
@@ -156,12 +157,14 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     async updateVersionStatus() {
-        const latestVersion = await this.fetchLatestVersion();
+        if (!options.get("checkForUpdates")) {
+            const latestVersion = await this.fetchLatestVersion();
 
-        this.updateAvailableWidget.updateVersionStatus(latestVersion);
+            this.updateAvailableWidget.updateVersionStatus(latestVersion);
 
-        this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
-        this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
+            this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
+            this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
+        }
     }
 
     async fetchLatestVersion() {

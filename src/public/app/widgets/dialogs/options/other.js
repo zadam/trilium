@@ -116,7 +116,17 @@ const TPL = `
         <label for="auto-readonly-size-code">Automatic readonly size (code notes)</label>
         <input class="form-control" id="auto-readonly-size-code" type="number" min="0">
     </div>
-</div>`;
+</div>
+<div>
+<h4>Network connections</h4>
+    
+<div class="form-group">
+    <input id="check-for-updates" type="checkbox" name="check-for-updates">
+    <label for="check-for-updates">Check for updates automatically</label>
+</div>
+</div>
+
+`;
 
 export default class ProtectedSessionOptions {
     constructor() {
@@ -142,7 +152,7 @@ export default class ProtectedSessionOptions {
         this.$availableLanguageCodes = $("#available-language-codes");
 
         if (utils.isElectron()) {
-            const {webContents} = utils.dynamicRequire('@electron/remote').getCurrentWindow();
+            const { webContents } = utils.dynamicRequire('@electron/remote').getCurrentWindow();
 
             this.$availableLanguageCodes.text(webContents.session.availableSpellCheckerLanguages.join(', '));
         }
@@ -250,6 +260,14 @@ export default class ProtectedSessionOptions {
 
             this.setImageCompression(isChecked);
         });
+
+        this.$checkForUpdates = $("#check-for-updates");
+        this.$checkForUpdates.on("change", () => {
+            const isChecked = this.$checkForUpdates.prop("checked");
+            const opts = { 'checkForUpdates': isChecked ? 'true' : 'false' };
+
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+        });
     }
 
     optionsLoaded(options) {
@@ -272,5 +290,10 @@ export default class ProtectedSessionOptions {
         const compressImages = options['compressImages'] === 'true';
         this.$enableImageCompression.prop('checked', compressImages);
         this.setImageCompression(compressImages);
+
+
+        const checkForUpdates = options['checkForUpdates'] === 'true';
+        this.$checkForUpdates.prop('checked', checkForUpdates);
+
     }
 }
