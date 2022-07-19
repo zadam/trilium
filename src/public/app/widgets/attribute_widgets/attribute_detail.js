@@ -227,7 +227,9 @@ const ATTR_HELP = {
                             <li><code>Log for \${now.format('YYYY-MM-DD HH:mm:ss')}</code></li>
                         </ul>
                         
-                        See <a href="https://github.com/zadam/trilium/wiki/Default-note-title">wiki with details</a>, API docs for <a href="https://zadam.github.io/trilium/backend_api/Note.html">parentNote</a> and <a href="https://day.js.org/docs/en/display/format">now</a> for details.`
+                        See <a href="https://github.com/zadam/trilium/wiki/Default-note-title">wiki with details</a>, API docs for <a href="https://zadam.github.io/trilium/backend_api/Note.html">parentNote</a> and <a href="https://day.js.org/docs/en/display/format">now</a> for details.`,
+        "template": "This note will appear in the selection of available template when creating new note",
+        "toc": "<code>#toc</code> or <code>#toc=show</code> will force the Table of Contents to be shown, <code>#toc=hide</code> will force hiding it. If the label doesn't exist, the global setting is observed"
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",

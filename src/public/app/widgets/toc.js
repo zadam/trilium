@@ -74,9 +74,7 @@ export default class TocWidget extends CollapsibleWidget {
     }
 
     isEnabled() {
-        return super.isEnabled()
-            && this.note.type === 'text'
-            && !this.note.hasLabel('noToc');
+        return super.isEnabled() && this.note.type === 'text';
     }
 
     async doRenderBody() {
@@ -85,6 +83,14 @@ export default class TocWidget extends CollapsibleWidget {
     }
 
     async refreshWithNote(note) {
+        const tocLabel = note.getLabel('toc');
+
+        if (tocLabel?.value === 'hide') {
+            this.toggleInt(false);
+            this.triggerCommand("reevaluateIsEnabled");
+            return;
+        }
+
         let $toc = "", headingCount = 0;
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
@@ -93,7 +99,11 @@ export default class TocWidget extends CollapsibleWidget {
         }
 
         this.$toc.html($toc);
-        this.toggleInt(headingCount >= options.getInt('minTocHeadings'));
+        this.toggleInt(
+            ["", "show"].includes(tocLabel?.value)
+            || headingCount >= options.getInt('minTocHeadings')
+        );
+
         this.triggerCommand("reevaluateIsEnabled");
     }
 
@@ -241,7 +251,7 @@ export default class TocWidget extends CollapsibleWidget {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
         } else if (loadResults.getAttributes().find(attr => attr.type === 'label'
-            && (attr.name.toLowerCase().includes('readonly') || attr.name === 'noToc')
+            && (attr.name.toLowerCase().includes('readonly') || attr.name === 'toc')
             && attributeService.isAffecting(attr, this.note))) {
 
             await this.refresh();
