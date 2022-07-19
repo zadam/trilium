@@ -1172,6 +1172,10 @@ class Note extends AbstractEntity {
         return this.searchNotesInSubtree(searchString)[0];
     }
 
+    /**
+     * @param parentNoteId
+     * @returns {{success: boolean, message: string}}
+     */
     cloneTo(parentNoteId) {
         const cloningService = require("../../services/cloning");
 
