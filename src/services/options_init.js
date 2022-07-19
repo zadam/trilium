@@ -85,7 +85,8 @@ const defaultOptions = [
     { name: 'maxContentWidth', value: '1200', isSynced: false },
     { name: 'compressImages', value: 'true', isSynced: true },
     { name: 'downloadImagesAutomatically', value: 'true', isSynced: true },
-    { name: 'minTocHeadings', value: '5', isSynced: true }
+    { name: 'minTocHeadings', value: '5', isSynced: true },
+    { name: 'checkForUpdates', value: 'true', isSynced: true },
 ];
 
 function initStartupOptions() {
