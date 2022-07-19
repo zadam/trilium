@@ -157,7 +157,7 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     async updateVersionStatus() {
-        if (!options.get("checkForUpdates")) {
+        if (options.get("checkForUpdates") == 'true') {
             const latestVersion = await this.fetchLatestVersion();
 
             this.updateAvailableWidget.updateVersionStatus(latestVersion);
