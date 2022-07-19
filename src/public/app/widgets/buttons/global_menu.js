@@ -157,14 +157,14 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     async updateVersionStatus() {
-        if (options.get("checkForUpdates") == 'true') {
-            const latestVersion = await this.fetchLatestVersion();
-
-            this.updateAvailableWidget.updateVersionStatus(latestVersion);
-
-            this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
-            this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
+        if (options.get("checkForUpdates") !== 'true') {
+            return;
         }
+
+        const latestVersion = await this.fetchLatestVersion();
+        this.updateAvailableWidget.updateVersionStatus(latestVersion);
+        this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
+        this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
     }
 
     async fetchLatestVersion() {
