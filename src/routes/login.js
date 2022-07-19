@@ -5,6 +5,7 @@ const optionService = require('../services/options');
 const myScryptService = require('../services/my_scrypt');
 const log = require('../services/log');
 const passwordService = require("../services/password");
+const options = require('../services/options');
 
 function loginPage(req, res) {
     res.render('login', { failedAuth: false });
@@ -36,6 +37,7 @@ function setPassword(req, res) {
         return;
     }
 
+    options.setOption("checkForUpdates", req.body['check-for-updates'] == 'on');
     passwordService.setPassword(password1);
 
     res.redirect('login');

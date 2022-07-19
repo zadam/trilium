@@ -57,7 +57,8 @@ const ALLOWED_OPTIONS = new Set([
     'maxContentWidth',
     'compressImages',
     'downloadImagesAutomatically',
-    'minTocHeadings'
+    'minTocHeadings',
+    'checkForUpdates'
 ]);
 
 function getOptions() {
