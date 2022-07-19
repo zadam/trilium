@@ -37,7 +37,7 @@ function setPassword(req, res) {
         return;
     }
 
-    options.setOption("checkForUpdates", req.body['check-for-updates'] == true);
+    options.setOption("checkForUpdates", req.body['check-for-updates'] == 'on');
     passwordService.setPassword(password1);
 
     res.redirect('login');
