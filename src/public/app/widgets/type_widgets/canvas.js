@@ -114,6 +114,13 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$widget.bind('mousewheel DOMMouseScroll', event => {
+            if (event.ctrlKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+        });
 
         this.$widget.toggleClass("full-height", true); // only add
         this.$render = this.$widget.find('.canvas-render');
