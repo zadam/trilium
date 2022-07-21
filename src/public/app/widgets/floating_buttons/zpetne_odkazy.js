@@ -1,3 +1,7 @@
+/**
+ * !!! Filename is intentionally mangled, because some adblockers don't like the word "backlinks".
+ */
+
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import linkService from "../../services/link.js";
 import server from "../../services/server.js";
