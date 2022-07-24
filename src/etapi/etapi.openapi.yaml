@@ -228,6 +228,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /notes/{noteId}/export:
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+      - name: format
+        in: query
+        required: false
+        schema:
+          enum:
+            - html
+            - markdown
+          default: html
+    get:
+      description: Exports ZIP file export of a given note subtree. To export whole document, use "root" for noteId
+      operationId: exportNoteSubtree
+      responses:
+        '200':
+          description: export ZIP file
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /branches/{branchId}:
     parameters:
       - name: branchId
