@@ -25,9 +25,9 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
         }
     </style>
     
-    <div class="btn-group btn-group-sm map-type-switcher floating-button" role="group">
-      <button type="button" class="btn icon-button bx bx-network-chart" title="Link Map" data-type="link"></button>
-      <button type="button" class="btn icon-button bx bx-sitemap" title="Tree map" data-type="tree"></button>
+    <div class="btn-group btn-group-sm map-type-switcher" role="group">
+      <button type="button" class="btn bx bx-network-chart" title="Link Map" data-type="link"></button>
+      <button type="button" class="btn bx bx-sitemap" title="Tree map" data-type="tree"></button>
     </div>
 
     <div class="style-resolver"></div>

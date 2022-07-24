@@ -15,6 +15,11 @@ const TPL = `
             flex-direction: row;
             z-index: 100;
         }
+        
+        .floating-buttons .floating-button {
+            font-size: 130%;
+            padding: 5px 10px 4px 10px;
+        }
     </style>
     
     <div class="floating-buttons-children"></div>
