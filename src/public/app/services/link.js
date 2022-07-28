@@ -85,10 +85,15 @@ function getNotePathFromLink($link) {
 }
 
 function goToLink(e) {
+    const $link = $(e.target).closest("a,.block-link");
+    const address = $link.attr('href');
+
+    if (address.startsWith("data:")) {
+        return true;
+    }
+
     e.preventDefault();
     e.stopPropagation();
-
-    const $link = $(e.target).closest("a,.block-link");
 
     const notePath = getNotePathFromLink($link);
 
@@ -115,8 +120,6 @@ function goToLink(e) {
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {
-            const address = $link.attr('href');
-
             if (address) {
                 if (address.toLowerCase().startsWith('http')) {
                     window.open(address, '_blank');

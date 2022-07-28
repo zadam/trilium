@@ -77,6 +77,7 @@ import PromptDialog from "../widgets/dialogs/prompt.js";
 import OptionsDialog from "../widgets/dialogs/options.js";
 import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
 import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
+import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -181,6 +182,7 @@ export default class DesktopLayout {
                                 .child(new NoteUpdateStatusWidget())
                                 .child(new FloatingButtons()
                                     .child(new RelationMapButtons())
+                                    .child(new MermaidExportButton())
                                     .child(new BacklinksWidget())
                                 )
                                 .child(new MermaidWidget())

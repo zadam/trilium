@@ -68,29 +68,23 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             git: { useMaxWidth: false },
         });
 
-        const noteComplement = await froca.getNoteComplement(note.noteId);
-        const content = noteComplement.content || "";
-
         this.$display.empty();
 
-        const libLoaded = libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM);
+        const wheelZoomLoaded = libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM);
 
         try {
-            const idNumber = idCounter++;
+            const renderedSvg = await this.renderSvg();
+            this.$display.html(renderedSvg);
 
-            mermaid.mermaidAPI.render('mermaid-graph-' + idNumber, content, async content => {
-                this.$display.html(content);
+            await wheelZoomLoaded;
 
-                await libLoaded;
+            this.$display.attr("id", 'mermaid-render-' + idCounter);
 
-                this.$display.attr("id", 'mermaid-render-' + idNumber);
-
-                WZoom.create('#mermaid-render-' + idNumber, {
-                    type: 'html',
-                    maxScale: 10,
-                    speed: 20,
-                    zoomOnClick: false
-                });
+            WZoom.create('#mermaid-render-' + idCounter, {
+                type: 'html',
+                maxScale: 10,
+                speed: 20,
+                zoomOnClick: false
             });
 
             this.$errorContainer.hide();
@@ -100,9 +94,43 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         }
     }
 
+    renderSvg() {
+        return new Promise(async res => {
+            idCounter++;
+
+            const noteComplement = await froca.getNoteComplement(this.noteId);
+            const content = noteComplement.content || "";
+
+            mermaid.mermaidAPI.render('mermaid-graph-' + idCounter, content, res);
+        });
+    }
+
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
         }
+    }
+
+    async exportMermaidEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        const renderedSvg = await this.renderSvg();
+
+        this.download(this.note.title + ".svg", renderedSvg);
+    }
+
+    download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     }
 }
