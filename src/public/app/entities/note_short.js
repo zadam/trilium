@@ -3,6 +3,7 @@ import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
 import options from "../services/options.js";
 import froca from "../services/froca.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -811,6 +812,10 @@ class NoteShort {
         }
 
         return false;
+    }
+
+    isContentAvailable() {
+        return !this.isProtected || protectedSessionHolder.isProtectedSessionAvailable()
     }
 }
 

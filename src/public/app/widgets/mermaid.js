@@ -33,7 +33,9 @@ let idCounter = 1;
 
 export default class MermaidWidget extends NoteContextAwareWidget {
     isEnabled() {
-        return super.isEnabled() && this.note && this.note.type === 'mermaid';
+        return super.isEnabled()
+            && this.note?.type === 'mermaid'
+            && this.note.isContentAvailable();
     }
 
     doRender() {

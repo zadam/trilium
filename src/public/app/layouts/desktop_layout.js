@@ -180,8 +180,8 @@ export default class DesktopLayout {
                                 .child(new SharedInfoWidget())
                                 .child(new NoteUpdateStatusWidget())
                                 .child(new FloatingButtons()
-                                    .child(new BacklinksWidget())
                                     .child(new RelationMapButtons())
+                                    .child(new BacklinksWidget())
                                 )
                                 .child(new MermaidWidget())
                                 .child(

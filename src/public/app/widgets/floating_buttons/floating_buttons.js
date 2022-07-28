@@ -16,6 +16,10 @@ const TPL = `
             z-index: 100;
         }
         
+        .floating-buttons-children > * {
+            margin-left: 10px;
+        }
+        
         .floating-buttons .floating-button {
             font-size: 130%;
             padding: 5px 10px 4px 10px;
