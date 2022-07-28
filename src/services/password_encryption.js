@@ -18,7 +18,7 @@ function verifyPassword(password) {
 function setDataKey(password, plainTextDataKey) {
     const passwordDerivedKey = myScryptService.getPasswordDerivedKey(password);
 
-    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, plainTextDataKey, 16);
+    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, plainTextDataKey);
 
     optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }
