@@ -6,27 +6,27 @@ import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 
 const TPL = `
-<div class="bulk-assign-attributes-dialog modal mx-auto" tabindex="-1" role="dialog">
+<div class="bulk-actions-dialog modal mx-auto" tabindex="-1" role="dialog">
     <style>
-        .bulk-assign-attributes-dialog .modal-body h4:not(:first-child) {
+        .bulk-actions-dialog .modal-body h4:not(:first-child) {
             margin-top: 20px;
         }
     
-        .bulk-assign-attributes-dialog .bulk-available-action-list button {
+        .bulk-actions-dialog .bulk-available-action-list button {
             padding: 2px 7px;
             margin-right: 10px;
             margin-bottom: 5px;
         }
     
-        .bulk-assign-attributes-dialog .bulk-existing-action-list {
+        .bulk-actions-dialog .bulk-existing-action-list {
             width: 100%;
         }
     
-        .bulk-assign-attributes-dialog .bulk-existing-action-list td {
+        .bulk-actions-dialog .bulk-existing-action-list td {
             padding: 7px;
         }
     
-        .bulk-assign-attributes-dialog .bulk-existing-action-list .button-column {
+        .bulk-actions-dialog .bulk-existing-action-list .button-column {
             /* minimal width so that table remains static sized and most space remains for middle column with settings */
             width: 50px;
             white-space: nowrap;
@@ -147,8 +147,16 @@ export default class BulkActionsDialog extends BasicWidget {
 
     entitiesReloadedEvent({loadResults}) {
         // only refreshing deleted attrs, otherwise components update themselves
-        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'action' && attr.isDeleted)) {
-            this.refresh();
+        if (loadResults.getAttributes().find(attr =>
+            attr.type === 'label'
+            && attr.name === 'action'
+            && attr.noteId === 'bulkaction'
+            && attr.isDeleted)) {
+
+            // this may be triggered from e.g. sync without open widget, then no need to refresh the widget
+            if (this.selectedOrActiveNoteIds && this.$widget.is(":visible")) {
+                this.refresh();
+            }
         }
     }
 
