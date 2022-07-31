@@ -29,6 +29,7 @@ module.exports = [
     { type: 'label', name: 'workspace' },
     { type: 'label', name: 'workspaceIconClass' },
     { type: 'label', name: 'workspaceTabBackgroundColor' },
+    { type: 'label', name: 'workspaceCalendarRoot' },
     { type: 'label', name: 'searchHome' },
     { type: 'label', name: 'hoistedInbox' },
     { type: 'label', name: 'hoistedSearchHome' },

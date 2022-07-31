@@ -173,6 +173,17 @@ function findResultsWithQuery(query, searchContext) {
     return findResultsWithExpression(expression, searchContext);
 }
 
+/**
+ * @param {string} query
+ * @param {SearchContext} searchContext
+ * @return {Note|null}
+ */
+function findFirstNoteWithQuery(query, searchContext) {
+    const searchResults = findResultsWithQuery(query, searchContext);
+
+    return searchResults.length > 0 ? becca.notes[searchResults[0].noteId] : null;
+}
+
 function searchNotesForAutocomplete(query) {
     const searchContext = new SearchContext({
         fastSearch: true,
@@ -279,5 +290,6 @@ function formatAttribute(attr) {
 module.exports = {
     searchNotesForAutocomplete,
     findResultsWithQuery,
+    findFirstNoteWithQuery,
     searchNotes
 };
