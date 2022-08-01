@@ -5,6 +5,7 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
+const sql = require("../../services/sql");
 const Branch = require('../../becca/entities/branch');
 const path = require('path');
 const commonmark = require('commonmark');
@@ -479,44 +480,52 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         zipfile.readEntry();
     });
 
+    const tasks = [];
+
     await readZipFile(fileBuffer, async (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (/\/$/.test(entry.fileName)) {
-            saveDirectory(filePath);
+            tasks.push(() => saveDirectory(filePath));
         }
         else if (filePath !== '!!!meta.json') {
             const content = await readContent(zipfile, entry);
 
-            saveNote(filePath, content);
+            tasks.push(() => saveNote(filePath, content));
         }
 
         taskContext.increaseProgressCount();
         zipfile.readEntry();
     });
 
-    for (const noteId in createdNoteIds) { // now the noteIds are unique
-        noteService.scanForLinks(becca.getNote(noteId));
-
-        if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that zip file but that
-            // is usually quite random so we sort the notes in the way they would appear in the file manager
-            treeService.sortNotes(noteId, 'title', false, true);
+    sql.transactional(() => {
+        for (const task of tasks) {
+            task();
         }
 
-        taskContext.increaseProgressCount();
-    }
-
-    // we're saving attributes and links only now so that all relation and link target notes
-    // are already in the database (we don't want to have "broken" relations, not even transitionally)
-    for (const attr of attributes) {
-        if (attr.type !== 'relation' || attr.value in createdNoteIds) {
-            new Attribute(attr).save();
+        for (const noteId in createdNoteIds) { // now the noteIds are unique
+            noteService.scanForLinks(becca.getNote(noteId));
+    
+            if (!metaFile) {
+                // if there's no meta file then the notes are created based on the order in that zip file but that
+                // is usually quite random so we sort the notes in the way they would appear in the file manager
+                treeService.sortNotes(noteId, 'title', false, true);
+            }
+    
+            taskContext.increaseProgressCount();
         }
-        else {
-            log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));
+    
+        // we're saving attributes and links only now so that all relation and link target notes
+        // are already in the database (we don't want to have "broken" relations, not even transitionally)
+        for (const attr of attributes) {
+            if (attr.type !== 'relation' || attr.value in createdNoteIds) {
+                new Attribute(attr).save();
+            }
+            else {
+                log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));
+            }
         }
-    }
+    });
 
     return firstNote;
 }
