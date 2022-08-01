@@ -30,7 +30,7 @@ function addNoIndexHeader(note, res) {
     }
 }
 
-function reject(res) {
+function requestCredentials(res) {
     res.setHeader('WWW-Authenticate', 'Basic realm="User Visible Realm", charset="UTF-8"')
         .sendStatus(401);
 }
@@ -55,7 +55,7 @@ function checkNoteAccess(noteId, req, res) {
     const header = req.header("Authorization");
 
     if (!header?.startsWith("Basic ")) {
-        reject(res);
+        requestCredentials(res);
         return false;
     }
 
@@ -80,6 +80,8 @@ function register(router) {
         }
 
         if (!checkNoteAccess(note.noteId, req, res)) {
+            requestCredentials(res);
+
             return;
         }
 
