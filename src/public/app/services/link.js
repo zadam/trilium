@@ -88,7 +88,7 @@ function goToLink(e) {
     const $link = $(e.target).closest("a,.block-link");
     const address = $link.attr('href');
 
-    if (address.startsWith("data:")) {
+    if (address?.startsWith("data:")) {
         return true;
     }
 
