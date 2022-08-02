@@ -65,7 +65,6 @@
     "node-abi": "3.22.0",
     "normalize-strings": "1.1.1",
     "open": "8.4.0",
-    "portscanner": "2.2.0",
     "rand-token": "1.0.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
