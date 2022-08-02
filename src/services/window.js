@@ -44,7 +44,7 @@ ipcMain.on('create-extra-window', (event, arg) => {
     createExtraWindow(arg.notePath, arg.hoistedNoteId);
 });
 
-async function createMainWindow() {
+async function createMainWindow(app) {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
 
     const mainWindowState = windowStateKeeper({
@@ -81,6 +81,18 @@ async function createMainWindow() {
     mainWindow.on('closed', () => mainWindow = null);
 
     configureWebContents(mainWindow.webContents, spellcheckEnabled);
+
+    app.on('second-instance', () => {
+        // Someone tried to run a second instance, we should focus our window.
+        // see www.js "requestSingleInstanceLock" for the rest of this logic with explanation
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
+
+            mainWindow.focus();
+        }
+    });
 }
 
 function configureWebContents(webContents, spellcheckEnabled) {

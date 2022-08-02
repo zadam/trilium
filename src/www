@@ -38,6 +38,21 @@ if (!semver.satisfies(process.version, ">=10.5.0")) {
 let httpServer;
 
 async function startTrilium() {
+    /**
+     * The intended behavior is to detect when a second instance is running, in that case open the old instance
+     * instead of the new one. This is complicated by the fact that it is possible to run multiple instances of Trilium
+     * if port and data dir is configured separately. This complication is the source of the following weird usage.
+     *
+     * The line below makes sure that the "second-instance" (process in window.js) is fired. Normally it returns a boolean
+     * indicating whether another instance is running or not, but we ignore that and kill the app only based on the port conflict.
+     *
+     * A bit weird is that "second-instance" is triggered also on the valid usecases (different port/data dir) and
+     * focuses the existing window. But the new process is start as well and will steal the focus too, it will win, because
+     * its startup is slower than focusing the existing process/window. So in the end it works out without having
+     * to do complex evaluation.
+     */
+    require("electron").app.requestSingleInstanceLock();
+
     const usedPort = await port;
     const usedHost = await host;
 

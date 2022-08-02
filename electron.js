@@ -29,7 +29,7 @@ app.on('ready', async () => {
     if (await sqlInit.isDbInitialized()) {
         await sqlInit.dbReady;
 
-        await windowService.createMainWindow();
+        await windowService.createMainWindow(app);
 
         tray.createTray();
     }
