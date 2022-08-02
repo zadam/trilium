@@ -19,6 +19,11 @@ function init(app) {
             getHeader: name => respHeaders[name],
             setHeader: (name, value) => {
                 respHeaders[name] = value.toString();
+                return res;
+            },
+            header: (name, value) => {
+                respHeaders[name] = value.toString();
+                return res;
             },
             status: statusCode => {
                 res.statusCode = statusCode;
