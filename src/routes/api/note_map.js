@@ -142,7 +142,6 @@ function getTreeMap(req) {
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
-    const noteIds = new Set();
 
     const notes = mapRootNote.getSubtreeNotes(false)
         .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
@@ -159,13 +158,14 @@ function getTreeMap(req) {
 
             return !note.getParentNotes().find(parentNote => parentNote.noteId === imageLinkRelation.noteId);
         })
-        .concat(...mapRootNote.getParentNotes())
+        .concat(...mapRootNote.getParentNotes().filter(note => note.noteId !== 'none'))
         .map(note => [
             note.noteId,
             note.getTitleOrProtected(),
             note.type
         ]);
 
+    const noteIds = new Set();
     notes.forEach(([noteId]) => noteIds.add(noteId));
 
     const links = [];
