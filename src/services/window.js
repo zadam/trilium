@@ -35,7 +35,7 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
     });
 
     win.setMenuBarVisibility(false);
-    win.loadURL('http://127.0.0.1:' + await port + '/?extra=1&extraHoistedNoteId=' + hoistedNoteId + '#' + notePath);
+    win.loadURL(`http://127.0.0.1:${port}/?extra=1&extraHoistedNoteId=${hoistedNoteId}#${notePath}`);
 
     configureWebContents(win.webContents, spellcheckEnabled);
 }
@@ -77,7 +77,7 @@ async function createMainWindow(app) {
     mainWindowState.manage(mainWindow);
 
     mainWindow.setMenuBarVisibility(false);
-    mainWindow.loadURL('http://127.0.0.1:' + await port);
+    mainWindow.loadURL('http://127.0.0.1:' + port);
     mainWindow.on('closed', () => mainWindow = null);
 
     configureWebContents(mainWindow.webContents, spellcheckEnabled);
@@ -143,7 +143,7 @@ async function createSetupWindow() {
     });
 
     setupWindow.setMenuBarVisibility(false);
-    setupWindow.loadURL('http://127.0.0.1:' + await port);
+    setupWindow.loadURL('http://127.0.0.1:' + port);
     setupWindow.on('closed', () => setupWindow = null);
 }
 
