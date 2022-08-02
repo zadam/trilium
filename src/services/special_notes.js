@@ -236,11 +236,76 @@ function getBulkActionNote() {
     return bulkActionNote;
 }
 
+function getLaunchBarRoot() {
+    let note = becca.getNote('launchbar');
+
+    if (!note) {
+        note = noteService.createNewNote({
+            branchId: 'launchbar',
+            noteId: 'launchbar',
+            title: 'Launch bar',
+            type: 'text',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+    }
+
+    return note;
+}
+
+function getLaunchBarAvailableShortcutsRoot() {
+    let note = becca.getNote('lb_availableshortcuts');
+
+    if (!note) {
+        note = noteService.createNewNote({
+            branchId: 'lb_availableshortcuts',
+            noteId: 'lb_availableshortcuts',
+            title: 'Available shortcuts',
+            type: 'text',
+            content: '',
+            parentNoteId: getLaunchBarRoot().noteId
+        }).note;
+    }
+
+    return note;
+}
+
+function getLaunchBarVisibleShortcutsRoot() {
+    let note = becca.getNote('lb_visibleshortcuts');
+
+    if (!note) {
+        note = noteService.createNewNote({
+            branchId: 'lb_visibleshortcuts',
+            noteId: 'lb_visibleshortcuts',
+            title: 'Visible shortcuts',
+            type: 'text',
+            content: '',
+            parentNoteId: getLaunchBarRoot().noteId
+        }).note;
+    }
+
+    return note;
+}
+
+const shortcuts = [
+    { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank' },
+    { id: 'lb_searcj', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search' },
+    { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send' },
+    { id: 'lb_notemap', targetNote: 'globalnotemap', title: 'Note map', icon: 'bx bx-map' },
+    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Show recent changes', icon: 'bx bx-history' },
+    { id: 'lb_recentchanges', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send' },
+
+];
+
 function createMissingSpecialNotes() {
     getSinglesNoteRoot();
     getSqlConsoleRoot();
     getGlobalNoteMap();
     getBulkActionNote();
+    getLaunchBarRoot();
+    getLaunchBarAvailableShortcutsRoot();
+    getLaunchBarVisibleShortcutsRoot();
+
     // share root is not automatically created since it's visible in the tree and many won't need it/use it
 
     const hidden = getHiddenRoot();
