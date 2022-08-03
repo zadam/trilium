@@ -37,7 +37,7 @@ const TPL = `
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mr-auto">Bulk assign attributes</h5>
+                <h5 class="modal-title mr-auto">Bulk actions</h5>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0 !important;">
                     <span aria-hidden="true">&times;</span>
