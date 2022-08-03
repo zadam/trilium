@@ -36,7 +36,7 @@ const TPL = `
             right: 10px;
             width: 400px;
             border-radius: 10px;
-            background-color: var(--more-accented-background-color);
+            background-color: var(--accented-background-color);
             color: var(--main-text-color);
             padding: 20px;
             overflow-y: auto;

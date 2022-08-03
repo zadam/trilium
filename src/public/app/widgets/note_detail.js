@@ -156,7 +156,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
-            && ['editable-text', 'editable-code', 'canvas', 'web-view'].includes(this.type)
+            && ['editable-text', 'editable-code', 'canvas', 'web-view', 'note-map'].includes(this.type)
             && this.mime !== 'text/x-sqlite;schema=trilium');
     }
 

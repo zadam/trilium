@@ -767,7 +767,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         await this.batchUpdate(async () => {
             await node.load(true);
 
-            if (node.data.noteId !== 'root') { // root is always expanded
+            if (node.data.noteId !== hoistedNoteService.getHoistedNoteId()) { // hoisted note should be always expanded
                 await node.setExpanded(isExpanded, {noEvents: true, noAnimation: true});
             }
         });

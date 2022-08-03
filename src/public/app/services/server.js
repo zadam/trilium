@@ -131,10 +131,10 @@ function ajax(url, method, data, headers) {
                     headers: respHeaders
                 });
             },
-            error: async (jqXhr, status, error) => {
-                await reportError(method, url, status, error);
+            error: async (jqXhr, status) => {
+                await reportError(method, url, status, jqXhr.responseText);
 
-                rej(error);
+                rej(jqXhr.responseText);
             }
         };
 

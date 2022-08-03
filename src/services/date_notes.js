@@ -36,7 +36,7 @@ function getRootCalendarNote() {
         rootNote = searchService.findFirstNoteWithQuery('#workspaceCalendarRoot', new SearchContext({ignoreHoistedNote: false}));
     }
 
-    if (rootNote === null) {
+    if (!rootNote) {
         rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
     }
 

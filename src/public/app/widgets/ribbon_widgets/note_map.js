@@ -77,7 +77,7 @@ export default class NoteMapRibbonWidget extends NoteContextAwareWidget {
 
             this.openState = 'full';
 
-            this.noteMapWidget.setHeight();
+            this.noteMapWidget.setDimensions();
         });
 
         this.$collapseButton = this.$widget.find('.collapse-button');
@@ -89,7 +89,7 @@ export default class NoteMapRibbonWidget extends NoteContextAwareWidget {
 
             this.openState = 'small';
 
-            this.noteMapWidget.setHeight();
+            this.noteMapWidget.setDimensions();
         });
 
         window.addEventListener('resize', () => {
