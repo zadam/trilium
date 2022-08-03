@@ -44,6 +44,14 @@ async function startTrilium() {
     app.set('port', usedPort);
     app.set('host', usedHost);
 
+    // Check from config whether to trust reverse proxies to supply user IPs, hostnames and protocols
+    if (config['Network']['trustedReverseProxy']) {
+        if (config['Network']['trustedReverseProxy'] === true || config['Network']['trustedReverseProxy'].trim().length) {
+            app.set('trust proxy', config['Network']['trustedReverseProxy'])
+        }
+    }
+    log.info('Trusted reverse proxy: ' + app.get('trust proxy'))
+
     if (config['Network']['https']) {
         if (!config['Network']['keyPath'] || !config['Network']['keyPath'].trim().length) {
             throw new Error("keyPath in config.ini is required when https=true, but it's empty");
