@@ -47,6 +47,11 @@ const TPL = `
     </button>
 
     <div class="dropdown-menu dropdown-menu-right">
+        <a class="dropdown-item options-button" data-trigger-command="showLaunchBarShortcuts">
+            <span class="bx bx-slider"></span>
+            Show launchbar shortcuts
+        </a>
+    
         <a class="dropdown-item options-button" data-trigger-command="showOptions">
             <span class="bx bx-slider"></span>
             Options

@@ -11,7 +11,7 @@ export default class LeftPaneContainer extends FlexContainer {
     }
 
     isEnabled() {
-        return super.isEnabled() && options.is( 'leftPaneVisible');
+        return super.isEnabled() && options.is('leftPaneVisible');
     }
 
     entitiesReloadedEvent({loadResults}) {

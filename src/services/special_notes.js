@@ -237,12 +237,12 @@ function getBulkActionNote() {
 }
 
 function getLaunchBarRoot() {
-    let note = becca.getNote('launchbar');
+    let note = becca.getNote('lb_root');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'launchbar',
-            noteId: 'launchbar',
+            branchId: 'lb_root',
+            noteId: 'lb_root',
             title: 'Launch bar',
             type: 'text',
             content: '',
@@ -288,13 +288,11 @@ function getLaunchBarVisibleShortcutsRoot() {
 }
 
 const shortcuts = [
-    { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank' },
-    { id: 'lb_searcj', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search' },
-    { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send' },
-    { id: 'lb_notemap', targetNote: 'globalnotemap', title: 'Note map', icon: 'bx bx-map' },
-    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Show recent changes', icon: 'bx bx-history' },
-    { id: 'lb_recentchanges', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send' },
-
+    { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
+    { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
+    { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
+    { id: 'lb_notemap', targetNote: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
+    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Show recent changes', icon: 'bx bx-history', isVisible: false }
 ];
 
 function createMissingSpecialNotes() {
@@ -304,7 +302,27 @@ function createMissingSpecialNotes() {
     getBulkActionNote();
     getLaunchBarRoot();
     getLaunchBarAvailableShortcutsRoot();
-    getLaunchBarVisibleShortcutsRoot();
+    getLaunchBarVisibleShortcutsRoot()
+
+    for (const shortcut of shortcuts) {
+        let note = becca.getNote(shortcut.id);
+        const parentNoteId = shortcut.isVisible ? getLaunchBarVisibleShortcutsRoot().noteId : getLaunchBarAvailableShortcutsRoot().noteId;
+
+        if (!note) {
+            note = noteService.createNewNote({
+                branchId: shortcut.id,
+                noteId: shortcut.id,
+                title: shortcut.title,
+                type: 'text',
+                content: '',
+                parentNoteId: parentNoteId
+            }).note;
+
+            note.addLabel('builtinShortcut');
+            note.addLabel('iconClass', shortcut.icon);
+            note.addLabel('command', shortcut.command);
+        }
+    }
 
     // share root is not automatically created since it's visible in the tree and many won't need it/use it
 
