@@ -61,7 +61,7 @@
     "jsdom": "20.0.0",
     "mime-types": "2.1.35",
     "multer": "1.4.5-lts.1",
-    "node-abi": "3.22.0",
+    "node-abi": "3.24.0",
     "normalize-strings": "1.1.1",
     "open": "8.4.0",
     "rand-token": "1.0.1",
@@ -87,15 +87,15 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "electron": "16.2.8",
-    "electron-builder": "23.1.0",
+    "electron-builder": "23.3.3",
     "electron-packager": "15.5.1",
-    "electron-rebuild": "3.2.8",
+    "electron-rebuild": "3.2.9",
     "esm": "3.2.25",
     "jasmine": "4.3.0",
     "jsdoc": "3.6.11",
     "lorem-ipsum": "2.0.8",
     "rcedit": "3.0.1",
-    "webpack": "5.73.0",
+    "webpack": "5.74.0",
     "webpack-cli": "4.10.0"
   },
   "optionalDependencies": {
