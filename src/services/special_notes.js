@@ -248,6 +248,8 @@ function getLaunchBarRoot() {
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
+
+        note.addLabel("iconClass", "bx bx-sidebar");
     }
 
     return note;
@@ -265,6 +267,8 @@ function getLaunchBarAvailableShortcutsRoot() {
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
+
+        note.addLabel("iconClass", "bx bx-hide");
     }
 
     const branch = becca.getBranch('lb_availableshortcuts');
@@ -288,6 +292,8 @@ function getLaunchBarVisibleShortcutsRoot() {
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
+
+        note.addLabel("iconClass", "bx bx-show");
     }
 
     const branch = becca.getBranch('lb_visibleshortcuts');
@@ -306,6 +312,12 @@ const shortcuts = [
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
+    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true },
+    { id: 'lb_pluginbuttons', builtinWidget: 'pluginButtons', title: 'Plugin buttons', icon: 'bx bx-move-vertical', isVisible: true },
+    { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
+    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true },
+    { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
+    { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 ];
 
 function createMissingSpecialNotes() {

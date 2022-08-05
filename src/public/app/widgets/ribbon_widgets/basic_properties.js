@@ -68,13 +68,9 @@ export default class BasicPropertiesWidget extends NoteContextAwareWidget {
         return "toggleRibbonBasicProperties";
     }
 
-    isEnabled() {
-        return this.note;
-    }
-
     getTitle() {
         return {
-            show: this.isEnabled(),
+            show: !this.note.isLaunchBarConfig(),
             title: 'Basic Properties',
             icon: 'bx bx-slider'
         };

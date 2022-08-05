@@ -3,6 +3,10 @@ import froca from "../../services/froca.js";
 import ButtonWidget from "../buttons/button_widget.js";
 import CalendarWidget from "../buttons/calendar.js";
 import appContext from "../../services/app_context.js";
+import SpacerWidget from "../spacer.js";
+import BookmarkButtons from "../bookmark_buttons.js";
+import ProtectedSessionStatusWidget from "../buttons/protected_session_status.js";
+import SyncStatusWidget from "../sync_status.js";
 
 export default class ShortcutContainer extends FlexContainer {
     constructor() {
@@ -37,6 +41,18 @@ export default class ShortcutContainer extends FlexContainer {
                 if (builtinWidget) {
                     if (builtinWidget === 'calendar') {
                         this.child(new CalendarWidget(shortcut.title, shortcut.getIcon()));
+                    } else if (builtinWidget === 'spacer') {
+                        this.child(new SpacerWidget(40, 10));
+                    } else if (builtinWidget === 'pluginButtons') {
+                        this.child(new FlexContainer("column")
+                            .id("plugin-buttons")
+                            .contentSized());
+                    } else if (builtinWidget === 'bookmarks') {
+                        this.child(new BookmarkButtons());
+                    } else if (builtinWidget === 'protectedSession') {
+                        this.child(new ProtectedSessionStatusWidget());
+                    } else if (builtinWidget === 'syncStatus') {
+                        this.child(new SyncStatusWidget());
                     } else {
                         console.log(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
                     }

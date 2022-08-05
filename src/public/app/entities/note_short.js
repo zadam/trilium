@@ -817,6 +817,12 @@ class NoteShort {
     isContentAvailable() {
         return !this.isProtected || protectedSessionHolder.isProtectedSessionAvailable()
     }
+
+    isLaunchBarConfig() {
+        // launch bar config should be max 2 levels deep
+        return this.noteId.startsWith("lb_")
+            || this.getParentBranchIds().find(branchId => branchId.startsWith("lb_"));
+    }
 }
 
 export default NoteShort;

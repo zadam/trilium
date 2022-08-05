@@ -43,7 +43,7 @@ export default class InheritedAttributesWidget extends NoteContextAwareWidget {
 
     getTitle() {
         return {
-            show: true,
+            show: !this.note.isLaunchBarConfig(),
             title: "Inherited attributes",
             icon: "bx bx-list-plus"
         };

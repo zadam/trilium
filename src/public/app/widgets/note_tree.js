@@ -506,7 +506,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 const note = await froca.getNote(node.data.noteId, true);
 
-                if (!note || note.isDeleted) {
+                if (!note || note.isDeleted || note.isLaunchBarConfig()) {
                     return;
                 }
 

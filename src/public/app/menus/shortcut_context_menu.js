@@ -33,9 +33,9 @@ export default class ShortcutContextMenu {
         const isItem = isVisibleItem || isAvailableItem;
 
         return [
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add note shortcut' } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget shortcut' } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer' } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add note shortcut', command: 'addNoteShortcut' } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget shortcut', command: 'addWidgetShortcut' } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerShortcut' } : null,
             { title: "----" },
             { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash",
                 enabled: isItem },
