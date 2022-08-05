@@ -1,5 +1,5 @@
 import contextMenu from "./context_menu.js";
-import appContext from "./app_context.js";
+import appContext from "../services/app_context.js";
 
 function openContextMenu(notePath, e) {
     contextMenu.show({

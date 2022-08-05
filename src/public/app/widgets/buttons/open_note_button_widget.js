@@ -2,6 +2,8 @@ import ButtonWidget from "./button_widget.js";
 import appContext from "../../services/app_context.js";
 import froca from "../../services/froca.js";
 
+// FIXME: this widget might not be useful anymore
+
 export default class OpenNoteButtonWidget extends ButtonWidget {
     targetNote(noteId) {
         froca.getNote(noteId).then(note => {

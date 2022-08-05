@@ -52,13 +52,13 @@ function runNotesWithLabel(runAttrValue) {
 
 sqlInit.dbReady.then(() => {
     if (!process.env.TRILIUM_SAFE_MODE) {
+        cls.init(() => specialNotesService.createMissingSpecialNotes());
+
         setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);
-
-        setTimeout(cls.wrap(() => specialNotesService.createMissingSpecialNotes()), 10 * 1000);
     }
 
     setInterval(() => protectedSessionService.checkProtectedSessionExpiration(), 30000);

@@ -1,12 +1,12 @@
-import treeService from './tree.js';
-import froca from "./froca.js";
-import clipboard from './clipboard.js';
-import noteCreateService from "./note_create.js";
+import treeService from '../services/tree.js';
+import froca from "../services/froca.js";
+import clipboard from '../services/clipboard.js';
+import noteCreateService from "../services/note_create.js";
 import contextMenu from "./context_menu.js";
-import appContext from "./app_context.js";
-import noteTypesService from "./note_types.js";
+import appContext from "../services/app_context.js";
+import noteTypesService from "../services/note_types.js";
 
-class TreeContextMenu {
+export default class TreeContextMenu {
     /**
      * @param {NoteTreeWidget} treeWidget
      * @param {FancytreeNode} node
@@ -139,5 +139,3 @@ class TreeContextMenu {
         }
     }
 }
-
-export default TreeContextMenu;

@@ -267,6 +267,12 @@ function getLaunchBarAvailableShortcutsRoot() {
         }).note;
     }
 
+    const branch = becca.getBranch('lb_availableshortcuts');
+    if (!branch.isExpanded) {
+        branch.isExpanded = true;
+        branch.save();
+    }
+
     return note;
 }
 
@@ -284,6 +290,12 @@ function getLaunchBarVisibleShortcutsRoot() {
         }).note;
     }
 
+    const branch = becca.getBranch('lb_visibleshortcuts');
+    if (!branch.isExpanded) {
+        branch.isExpanded = true;
+        branch.save();
+    }
+
     return note;
 }
 
@@ -291,8 +303,9 @@ const shortcuts = [
     { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
     { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
-    { id: 'lb_notemap', targetNote: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
-    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Show recent changes', icon: 'bx bx-history', isVisible: false }
+    { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
+    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
+    { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
 ];
 
 function createMissingSpecialNotes() {
@@ -320,7 +333,16 @@ function createMissingSpecialNotes() {
 
             note.addLabel('builtinShortcut');
             note.addLabel('iconClass', shortcut.icon);
-            note.addLabel('command', shortcut.command);
+
+            if (shortcut.command) {
+                note.addLabel('command', shortcut.command);
+            } else if (shortcut.builtinWidget) {
+                note.addLabel('builtinWidget', shortcut.builtinWidget);
+            } else if (shortcut.targetNoteId) {
+                note.addRelation('targetNote', shortcut.targetNoteId);
+            } else {
+                throw new Error(`No action defined for shortcut ${JSON.stringify(shortcut)}`);
+            }
         }
     }
 

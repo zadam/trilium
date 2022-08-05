@@ -8,7 +8,8 @@ function setupPage(req, res) {
     if (sqlInit.isDbInitialized()) {
         if (utils.isElectron()) {
             const windowService = require('../services/window');
-            windowService.createMainWindow();
+            const {app} = require('electron');
+            windowService.createMainWindow(app);
             windowService.closeSetupWindow();
         }
         else {

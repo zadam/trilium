@@ -1,4 +1,4 @@
-import keyboardActionService from './keyboard_actions.js';
+import keyboardActionService from '../services/keyboard_actions.js';
 
 class ContextMenu {
     constructor() {

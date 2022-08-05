@@ -18,7 +18,7 @@ const TPL = `
 `;
 
 export default class RightDropdownButtonWidget extends BasicWidget {
-    constructor(iconClass, title, dropdownTpl) {
+    constructor(title, iconClass, dropdownTpl) {
         super();
 
         this.iconClass = iconClass;

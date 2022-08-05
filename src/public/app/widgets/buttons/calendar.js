@@ -28,8 +28,8 @@ const DROPDOWN_TPL = `
 </div>`;
 
 export default class CalendarWidget extends RightDropdownButtonWidget {
-    constructor() {
-        super("bx-calendar", "Calendar", DROPDOWN_TPL);
+    constructor(title, icon) {
+        super(title, icon, DROPDOWN_TPL);
     }
 
     doRender() {

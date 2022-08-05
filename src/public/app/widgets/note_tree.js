@@ -1,7 +1,7 @@
 import hoistedNoteService from "../services/hoisted_note.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
-import contextMenu from "../services/context_menu.js";
+import contextMenu from "../menus/context_menu.js";
 import froca from "../services/froca.js";
 import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
@@ -86,6 +86,10 @@ const TPL = `
         z-index: 1000;
         width: 340px; 
         border-radius: 10px;
+    }
+    
+    .tree .hidden-node-is-hidden {
+        display: none;
     }
     </style>
     
@@ -361,6 +365,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     return false;
                 }
             },
+            beforeActivate: (event, data) => {
+                // hidden subtree is hidden hackily, prevent activating it e.g. by keyboard
+                return data.node.data.noteId !== 'hidden';
+            },
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
                 contextMenu.hide();
@@ -569,10 +577,17 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.$tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
-            import("../services/tree_context_menu.js").then(({default: TreeContextMenu}) => {
-                const treeContextMenu = new TreeContextMenu(this, node);
-                treeContextMenu.show(e);
-            });
+            if (hoistedNoteService.getHoistedNoteId() === 'lb_root') {
+                import("../menus/shortcut_context_menu.js").then(({default: ShortcutContextMenu}) => {
+                    const shortcutContextMenu = new ShortcutContextMenu(this, node);
+                    shortcutContextMenu.show(e);
+                });
+            } else {
+                import("../menus/tree_context_menu.js").then(({default: TreeContextMenu}) => {
+                    const treeContextMenu = new TreeContextMenu(this, node);
+                    treeContextMenu.show(e);
+                });
+            }
 
             return false; // blocks default browser right click menu
         });
@@ -1250,12 +1265,20 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         if (this.noteContext.hoistedNoteId === 'root') {
             this.tree.clearFilter();
+            this.toggleHiddenNode(false); // show everything but the hidden subtree
         } else {
             // hack when hoisted note is cloned then it could be filtered multiple times while we want only 1
             this.tree.filterBranches(node =>
                 node.data.noteId === this.noteContext.hoistedNoteId // optimization to not having always resolve the node path
                 && treeService.getNotePath(node) === hoistedNotePath);
+
+            this.toggleHiddenNode(true); // hoisting will handle hidden note visibility
         }
+    }
+
+    toggleHiddenNode(show) {
+        const hiddenNode = this.getNodesByNoteId('hidden')[0];
+        $(hiddenNode.li).toggleClass("hidden-node-is-hidden", !show);
     }
 
     frocaReloadedEvent() {

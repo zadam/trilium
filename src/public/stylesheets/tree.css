@@ -72,11 +72,11 @@ span.fancytree-node.fancytree-hide {
     color: inherit !important;
     display: block;
     border-radius: 50%;
-    border-color: #000 transparent #000 transparent;
+    border-color: var(--main-text-color) transparent var(--main-text-color) transparent;
     animation: lds-dual-ring 1.2s linear infinite;
     width: 12px;
     height: 12px;
-    margin-top: 4px;
+    margin-top: 2px;
     margin-left: 1px;
     border-width: 1px;
     border-style: solid;

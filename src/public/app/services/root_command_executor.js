@@ -71,7 +71,9 @@ export default class RootCommandExecutor extends Component {
         options.toggle('leftPaneVisible');
     }
 
-    showLaunchBarShortcutsCommand() {
-        appContext.tabManager.openContextWithNote('lb_root', true, null, 'lb_root');
+    async showLaunchBarShortcutsCommand() {
+        await appContext.tabManager.openContextWithNote('lb_root', true, null, 'lb_root');
+
+
     }
 }

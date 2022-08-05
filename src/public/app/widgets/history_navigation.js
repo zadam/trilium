@@ -1,6 +1,6 @@
 import BasicWidget from "./basic_widget.js";
 import utils from "../services/utils.js";
-import contextMenu from "../services/context_menu.js";
+import contextMenu from "../menus/context_menu.js";
 import treeService from "../services/tree.js";
 
 const TPL = `
