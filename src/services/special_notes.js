@@ -250,6 +250,7 @@ function getLaunchBarRoot() {
         }).note;
 
         note.addLabel("iconClass", "bx bx-sidebar");
+        note.addLabel("docName", "launchbar_intro");
     }
 
     return note;
@@ -269,6 +270,7 @@ function getLaunchBarAvailableShortcutsRoot() {
         }).note;
 
         note.addLabel("iconClass", "bx bx-hide");
+        note.addLabel("docName", "launchbar_intro");
     }
 
     const branch = becca.getBranch('lb_availableshortcuts');
@@ -294,6 +296,7 @@ function getLaunchBarVisibleShortcutsRoot() {
         }).note;
 
         note.addLabel("iconClass", "bx bx-show");
+        note.addLabel("docName", "launchbar_intro");
     }
 
     const branch = becca.getBranch('lb_visibleshortcuts');
