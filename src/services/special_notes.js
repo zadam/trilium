@@ -312,10 +312,16 @@ const shortcuts = [
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
-    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true },
-    { id: 'lb_pluginbuttons', builtinWidget: 'pluginButtons', title: 'Plugin buttons', icon: 'bx bx-move-vertical', isVisible: true },
+    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true, labels: [
+            { type: "number", name: "baseSize", value: "40" },
+            { type: "number", name: "growthFactor", value: "100" },
+        ] },
+    { id: 'lb_pluginbuttons', builtinWidget: 'pluginButtons', title: 'Plugin buttons', icon: 'bx bx-extension', isVisible: true },
     { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
-    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true },
+    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true, labels: [
+            { type: "number", name: "baseSize", value: "40" },
+            { type: "number", name: "growthFactor", value: "100" },
+        ] },
     { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
     { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 ];
@@ -331,30 +337,37 @@ function createMissingSpecialNotes() {
 
     for (const shortcut of shortcuts) {
         let note = becca.getNote(shortcut.id);
+
+        if (note) {
+            continue;
+        }
+
         const parentNoteId = shortcut.isVisible ? getLaunchBarVisibleShortcutsRoot().noteId : getLaunchBarAvailableShortcutsRoot().noteId;
+        note = noteService.createNewNote({
+            branchId: shortcut.id,
+            noteId: shortcut.id,
+            title: shortcut.title,
+            type: 'text',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
 
-        if (!note) {
-            note = noteService.createNewNote({
-                branchId: shortcut.id,
-                noteId: shortcut.id,
-                title: shortcut.title,
-                type: 'text',
-                content: '',
-                parentNoteId: parentNoteId
-            }).note;
+        note.addLabel('builtinShortcut');
+        note.addLabel('iconClass', shortcut.icon);
 
-            note.addLabel('builtinShortcut');
-            note.addLabel('iconClass', shortcut.icon);
+        if (shortcut.command) {
+            note.addLabel('command', shortcut.command);
+        } else if (shortcut.builtinWidget) {
+            note.addLabel('builtinWidget', shortcut.builtinWidget);
+        } else if (shortcut.targetNoteId) {
+            note.addRelation('targetNote', shortcut.targetNoteId);
+        } else {
+            throw new Error(`No action defined for shortcut ${JSON.stringify(shortcut)}`);
+        }
 
-            if (shortcut.command) {
-                note.addLabel('command', shortcut.command);
-            } else if (shortcut.builtinWidget) {
-                note.addLabel('builtinWidget', shortcut.builtinWidget);
-            } else if (shortcut.targetNoteId) {
-                note.addRelation('targetNote', shortcut.targetNoteId);
-            } else {
-                throw new Error(`No action defined for shortcut ${JSON.stringify(shortcut)}`);
-            }
+        for (const label of shortcut.labels || []) {
+            note.addLabel('label:' + label.name, "promoted," + label.type);
+            note.addLabel(label.name, label.value);
         }
     }
 

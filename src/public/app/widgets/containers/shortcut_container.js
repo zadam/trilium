@@ -42,7 +42,11 @@ export default class ShortcutContainer extends FlexContainer {
                     if (builtinWidget === 'calendar') {
                         this.child(new CalendarWidget(shortcut.title, shortcut.getIcon()));
                     } else if (builtinWidget === 'spacer') {
-                        this.child(new SpacerWidget(40, 10));
+                        // || has to be inside since 0 is a valid value
+                        const baseSize = parseInt(shortcut.getLabelValue("baseSize") || "40");
+                        const growthFactor = parseInt(shortcut.getLabelValue("growthFactor") || "100");
+
+                        this.child(new SpacerWidget(baseSize, growthFactor));
                     } else if (builtinWidget === 'pluginButtons') {
                         this.child(new FlexContainer("column")
                             .id("plugin-buttons")

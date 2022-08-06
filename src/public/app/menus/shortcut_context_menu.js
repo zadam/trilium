@@ -33,15 +33,15 @@ export default class ShortcutContextMenu {
         const isItem = isVisibleItem || isAvailableItem;
 
         return [
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add note shortcut', command: 'addNoteShortcut' } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget shortcut', command: 'addWidgetShortcut' } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerShortcut' } : null,
-            { title: "----" },
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add note shortcut', command: 'addNoteShortcut', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget shortcut', command: 'addWidgetShortcut', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerShortcut', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: "----" } : null,
             { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash",
                 enabled: isItem },
             { title: "----" },
-            isAvailableItem ? { title: 'Move to visible shortcuts', command: "moveNotesTo", uiIcon: "bx bx-empty", enabled: true } : null,
-            isVisibleItem ? { title: 'Move to available shortcuts', command: "moveNotesTo", uiIcon: "bx bx-empty", enabled: true } : null,
+            isAvailableItem ? { title: 'Move to visible shortcuts', command: "moveShortcutToVisible", uiIcon: "bx bx-show", enabled: true } : null,
+            isVisibleItem ? { title: 'Move to available shortcuts', command: "moveShortcutToAvailable", uiIcon: "bx bx-hide", enabled: true } : null,
             { title: `Duplicate shortcut <kbd data-command="duplicateSubtree">`, command: "duplicateSubtree", uiIcon: "bx bx-empty",
                 enabled: isItem }
         ].filter(row => row !== null);
