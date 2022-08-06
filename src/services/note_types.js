@@ -10,5 +10,6 @@ module.exports = [
     'note-map',
     'mermaid',
     'canvas',
-    'web-view'
+    'web-view',
+    'shortcut'
 ];

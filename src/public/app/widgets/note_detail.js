@@ -25,6 +25,7 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
+import DocTypeWidget from "./type_widgets/doc.js";
 
 const TPL = `
 <div class="note-detail">
@@ -57,7 +58,8 @@ const typeWidgetClasses = {
     'protected-session': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
     'note-map': NoteMapTypeWidget,
-    'web-view': WebViewTypeWidget
+    'web-view': WebViewTypeWidget,
+    'doc': DocTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -193,6 +195,10 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         if (type === 'code' || type === 'mermaid') {
             type = 'editable-code';
+        }
+
+        if (type === 'shortcut') {
+            type = 'doc';
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {

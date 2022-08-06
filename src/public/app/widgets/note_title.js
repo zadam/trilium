@@ -72,7 +72,8 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.$noteTitle.val(note.title);
 
-        this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
+        this.$noteTitle.prop("readonly", (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
+                                        || ["lb_root", "lb_availableshortcuts", "lb_visibleshortcuts"].includes(note.noteId));
 
         this.setProtectedStatus(note);
     }

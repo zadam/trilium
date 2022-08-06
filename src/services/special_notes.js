@@ -244,7 +244,7 @@ function getLaunchBarRoot() {
             branchId: 'lb_root',
             noteId: 'lb_root',
             title: 'Launch bar',
-            type: 'text',
+            type: 'shortcut',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
@@ -263,7 +263,7 @@ function getLaunchBarAvailableShortcutsRoot() {
             branchId: 'lb_availableshortcuts',
             noteId: 'lb_availableshortcuts',
             title: 'Available shortcuts',
-            type: 'text',
+            type: 'shortcut',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
@@ -288,7 +288,7 @@ function getLaunchBarVisibleShortcutsRoot() {
             branchId: 'lb_visibleshortcuts',
             noteId: 'lb_visibleshortcuts',
             title: 'Visible shortcuts',
-            type: 'text',
+            type: 'shortcut',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
@@ -347,7 +347,7 @@ function createMissingSpecialNotes() {
             branchId: shortcut.id,
             noteId: shortcut.id,
             title: shortcut.title,
-            type: 'text',
+            type: 'shortcut',
             content: '',
             parentNoteId: parentNoteId
         }).note;

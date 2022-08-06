@@ -19,7 +19,8 @@ const NOTE_TYPE_ICONS = {
     "note-map": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
-    "web-view": "bx bx-globe-alt"
+    "web-view": "bx bx-globe-alt",
+    "shortcut": "bx bx-up-arrow-circle"
 };
 
 /**

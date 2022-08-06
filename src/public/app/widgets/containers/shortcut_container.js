@@ -22,7 +22,13 @@ export default class ShortcutContainer extends FlexContainer {
     async load() {
         this.children = [];
 
-        const visibleShortcutsRoot = await froca.getNote('lb_visibleshortcuts');
+        const visibleShortcutsRoot = await froca.getNote('lb_visibleshortcuts', true);
+
+        if (!visibleShortcutsRoot) {
+            console.log("Visible shortcuts root note doesn't exist.");
+
+            return;
+        }
 
         for (const shortcut of await visibleShortcutsRoot.getChildNotes()) {
             if (shortcut.getLabelValue("command")) {

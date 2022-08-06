@@ -4,6 +4,8 @@ const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
+const debounce = require('debounce');
+const specialNotesService = require("./special_notes");
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
@@ -160,6 +162,8 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
     });
 });
 
+const debouncedCreateMissingSpecialNotes = debounce(() => specialNotesService.createMissingSpecialNotes(), 300);
+
 eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
         // if one inverse attribute is deleted then the other should be deleted as well
@@ -174,6 +178,13 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
     if (entityName === 'branches') {
         runAttachedRelations(entity.getNote(), 'runOnBranchDeletion', entity);
+    }
+
+    if (entityName === 'notes') {
+        if (entity.noteId.startsWith("lb_")) {
+            // if user deletes shortcuts, restore them immediately
+            debouncedCreateMissingSpecialNotes();
+        }
     }
 });
 

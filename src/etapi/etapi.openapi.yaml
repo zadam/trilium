@@ -706,7 +706,7 @@ components:
           type: string
         type:
           type: string
-          enum: [text, code, render, file, image, search, relation-map, book, note-map, mermaid]
+          enum: [text, code, render, file, image, search, relation-map, book, note-map, mermaid, web-view, shortcut]
         mime:
           type: string
         isProtected:

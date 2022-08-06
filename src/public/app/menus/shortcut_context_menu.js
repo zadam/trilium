@@ -25,7 +25,7 @@ export default class ShortcutContextMenu {
 
     async getMenuItems() {
         const note = await froca.getNote(this.node.data.noteId);
-        const branch = froca.getBranch(this.node.data.branchId);
+        const isLbRoot = note.noteId === 'lb_root';
         const isVisibleRoot = note.noteId === 'lb_visibleshortcuts';
         const isAvailableRoot = note.noteId === 'lb_availableshortcuts';
         const isVisibleItem = this.node.getParent().data.noteId === 'lb_visibleshortcuts';
@@ -38,7 +38,7 @@ export default class ShortcutContextMenu {
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerShortcut', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: "----" } : null,
             { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash",
-                enabled: isItem },
+                enabled: !isLbRoot}, // allow everything to be deleted as a form of a reset. Root can't be deleted because it's a hoisted note
             { title: "----" },
             isAvailableItem ? { title: 'Move to visible shortcuts', command: "moveShortcutToVisible", uiIcon: "bx bx-show", enabled: true } : null,
             isVisibleItem ? { title: 'Move to available shortcuts', command: "moveShortcutToAvailable", uiIcon: "bx bx-hide", enabled: true } : null,
@@ -47,46 +47,12 @@ export default class ShortcutContextMenu {
         ].filter(row => row !== null);
     }
 
-    async selectMenuItemHandler({command, type, templateNoteId}) {
-        const notePath = treeService.getNotePath(this.node);
-
-        if (command === 'openInTab') {
-            appContext.tabManager.openTabWithNoteWithHoisting(notePath);
-        }
-        else if (command === "insertNoteAfter") {
-            const parentNotePath = treeService.getNotePath(this.node.getParent());
-            const isProtected = await treeService.getParentProtectedStatus(this.node);
-
-            noteCreateService.createNote(parentNotePath, {
-                target: 'after',
-                targetBranchId: this.node.data.branchId,
-                type: type,
-                isProtected: isProtected,
-                templateNoteId: templateNoteId
-            });
-        }
-        else if (command === "insertChildNote") {
-            const parentNotePath = treeService.getNotePath(this.node);
-
-            noteCreateService.createNote(parentNotePath, {
-                type: type,
-                isProtected: this.node.data.isProtected,
-                templateNoteId: templateNoteId
-            });
-        }
-        else if (command === 'openNoteInSplit') {
-            const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
-            const {ntxId} = subContexts[subContexts.length - 1];
-
-            this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
-        }
-        else {
-            this.treeWidget.triggerCommand(command, {
-                node: this.node,
-                notePath: notePath,
-                selectedOrActiveBranchIds: this.treeWidget.getSelectedOrActiveBranchIds(this.node),
-                selectedOrActiveNoteIds: this.treeWidget.getSelectedOrActiveNoteIds(this.node)
-            });
-        }
+    async selectMenuItemHandler({command}) {
+        this.treeWidget.triggerCommand(command, {
+            node: this.node,
+            notePath: treeService.getNotePath(this.node),
+            selectedOrActiveBranchIds: this.treeWidget.getSelectedOrActiveBranchIds(this.node),
+            selectedOrActiveNoteIds: this.treeWidget.getSelectedOrActiveNoteIds(this.node)
+        });
     }
 }

@@ -8,6 +8,7 @@ const NOTE_TYPES = [
     { type: "image", title: "Image", selectable: false },
     { type: "search", title: "Saved Search", selectable: false },
     { type: "note-map", mime: '', title: "Note Map", selectable: false },
+    { type: "shortcut", mime: '', title: "Shortcut", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
