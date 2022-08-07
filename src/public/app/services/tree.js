@@ -135,10 +135,6 @@ function getSomeNotePath(note, hoistedNotePath = 'root') {
     return notePath === null ? null : notePath.join('/');
 }
 
-async function sortAlphabetically(noteId) {
-    await server.put(`notes/${noteId}/sort`);
-}
-
 ws.subscribeToMessages(message => {
    if (message.type === 'openNote') {
        appContext.tabManager.activateOrOpenNote(message.noteId);
@@ -319,7 +315,6 @@ function parseNotePath(notePath) {
 }
 
 export default {
-    sortAlphabetically,
     resolveNotePath,
     resolveNotePathToSegments,
     getSomeNotePath,

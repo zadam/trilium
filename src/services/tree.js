@@ -204,7 +204,11 @@ function sortNotesIfNeeded(parentNoteId) {
         return;
     }
 
-    sortNotes(parentNoteId, sortedLabel.value);
+    const sortReversed = parentNote.getLabelValue('sortDirection')?.toLowerCase() === "desc";
+    const sortFoldersFirstLabel = parentNote.getLabel('sortFoldersFirst');
+    const sortFoldersFirst = sortFoldersFirstLabel && sortFoldersFirstLabel.value.toLowerCase() !== "false";
+
+    sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst);
 }
 
 /**
