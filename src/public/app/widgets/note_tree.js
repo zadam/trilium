@@ -1535,5 +1535,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         if (!resp.success) {
             alert(resp.message);
         }
+
+        await ws.waitForMaxKnownEntityChangeId();
+
+        appContext.tabManager.getActiveContext().setNote(resp.note.noteId);
     }
 }

@@ -77,9 +77,9 @@ export default class ShortcutContainer extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getNoteIds().find(noteId => noteId.startsWith("lb_"))
-            || loadResults.getBranches().find(branch => branch.branchId.startsWith("lb_"))
-            || loadResults.getAttributes().find(attr => attr.noteId.startsWith("lb_"))) {
+        if (loadResults.getNoteIds().find(noteId => froca.notes[noteId]?.isLaunchBarConfig())
+            || loadResults.getBranches().find(branch => branch.parentNoteId.startsWith("lb_"))
+            || loadResults.getAttributes().find(attr => froca.notes[attr.noteId]?.isLaunchBarConfig())) {
             this.load();
         }
     }

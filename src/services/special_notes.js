@@ -383,9 +383,48 @@ function createMissingSpecialNotes() {
 }
 
 function createShortcut(parentNoteId, type) {
-    if (type === 'note') {
+    let note;
 
+    if (type === 'note') {
+        note = noteService.createNewNote({
+            title: "Note shortcut",
+            type: 'shortcut',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addLabel('relation:targetNote', 'promoted');
+    } else if (type === 'widget') {
+        note = noteService.createNewNote({
+            title: "Widget shortcut",
+            type: 'shortcut',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addLabel('relation:widget', 'promoted');
+    } else if (type === 'spacer') {
+        note = noteService.createNewNote({
+            title: "Spacer",
+            type: 'shortcut',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addLabel('builtinWidget', 'spacer');
+        note.addLabel('iconClass', 'bx bx-move-vertical');
+        note.addLabel('label:baseSize', 'promoted,number');
+        note.addLabel('baseSize', '40');
+        note.addLabel('label:growthFactor', 'promoted,number');
+        note.addLabel('growthFactor', '0');
+    } else {
+        throw new Error(`Unrecognized shortcut type ${type}`);
     }
+
+    return {
+        success: true,
+        note
+    };
 }
 
 module.exports = {
