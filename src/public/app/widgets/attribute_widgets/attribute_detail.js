@@ -189,6 +189,8 @@ const ATTR_HELP = {
         "runAtHour": "On which hour should this run. Should be used together with <code>#run=hourly</code>. Can be defined multiple times for more runs during the day.",
         "disableInclusion": "scripts with this label won't be included into parent script execution.",
         "sorted": "keeps child notes sorted by title alphabetically",
+        "sortDirection": "ASC (the default) or DESC",
+        "sortFoldersFirst": "Folders (notes with children) should be sorted on top",
         "top": "keep given note on top in its parent (applies only on sorted parents)",
         "hidePromotedAttributes": "Hide promoted attributes on this note",
         "readOnly": "editor is in read only mode. Works only for text and code notes.",
