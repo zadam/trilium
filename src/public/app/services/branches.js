@@ -124,7 +124,10 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    const resp = await server.put('branches/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
+    const targetBranchId = node.getParent().data.branchId;
+    const branchIdToMove = node.data.branchId;
+
+    const resp = await server.put(`branches/${branchIdToMove}/move-after/${targetBranchId}`);
 
     if (!resp.success) {
         alert(resp.message);

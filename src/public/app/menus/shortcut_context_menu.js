@@ -25,11 +25,13 @@ export default class ShortcutContextMenu {
 
     async getMenuItems() {
         const note = await froca.getNote(this.node.data.noteId);
+        const parentNoteId = this.node.getParent().data.noteId;
+
         const isLbRoot = note.noteId === 'lb_root';
         const isVisibleRoot = note.noteId === 'lb_visibleshortcuts';
         const isAvailableRoot = note.noteId === 'lb_availableshortcuts';
-        const isVisibleItem = this.node.getParent().data.noteId === 'lb_visibleshortcuts';
-        const isAvailableItem = this.node.getParent().data.noteId === 'lb_availableshortcuts';
+        const isVisibleItem = parentNoteId === 'lb_visibleshortcuts';
+        const isAvailableItem = parentNoteId === 'lb_availableshortcuts';
         const isItem = isVisibleItem || isAvailableItem;
 
         return [

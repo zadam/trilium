@@ -347,7 +347,6 @@ function createMissingSpecialNotes() {
 
         const parentNoteId = shortcut.isVisible ? getLaunchBarVisibleShortcutsRoot().noteId : getLaunchBarAvailableShortcutsRoot().noteId;
         note = noteService.createNewNote({
-            branchId: shortcut.id,
             noteId: shortcut.id,
             title: shortcut.title,
             type: 'shortcut',
@@ -383,6 +382,12 @@ function createMissingSpecialNotes() {
     }
 }
 
+function createShortcut(parentNoteId, type) {
+    if (type === 'note') {
+
+    }
+}
+
 module.exports = {
     getInboxNote,
     createSqlConsole,
@@ -392,4 +397,5 @@ module.exports = {
     createMissingSpecialNotes,
     getShareRoot,
     getBulkActionNote,
+    createShortcut
 };

@@ -1508,4 +1508,32 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             noteCreateService.duplicateSubtree(nodeToDuplicate.data.noteId, branch.parentNoteId);
         }
     }
+
+    moveShortcutToVisibleCommand({node, selectedOrActiveBranchIds}) {
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_visibleshortcuts');
+    }
+
+    moveShortcutToAvailableCommand({node, selectedOrActiveBranchIds}) {
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_availableshortcuts');
+    }
+
+    addNoteShortcutCommand({node}) {
+        this.createShortcutNote(node, 'note');
+    }
+
+    addWidgetShortcutCommand({node}) {
+        this.createShortcutNote(node, 'widget');
+    }
+
+    addSpacerShortcutCommand({node}) {
+        this.createShortcutNote(node, 'spacer');
+    }
+
+    async createShortcutNote(node, type) {
+        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${type}`);
+
+        if (!resp.success) {
+            alert(resp.message);
+        }
+    }
 }

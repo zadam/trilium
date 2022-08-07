@@ -66,6 +66,10 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
+function createShortcut(req) {
+    return specialNotesService.createShortcut(req.params.parentNoteId, req.params.type);
+}
+
 module.exports = {
     getInboxNote,
     getDayNote,
@@ -76,5 +80,6 @@ module.exports = {
     createSqlConsole,
     saveSqlConsole,
     createSearchNote,
-    saveSearchNote
+    saveSearchNote,
+    createShortcut
 };
