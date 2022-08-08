@@ -1,8 +1,6 @@
 import treeService from '../services/tree.js';
 import froca from "../services/froca.js";
-import noteCreateService from "../services/note_create.js";
 import contextMenu from "./context_menu.js";
-import appContext from "../services/app_context.js";
 
 export default class ShortcutContextMenu {
     /**
@@ -36,6 +34,7 @@ export default class ShortcutContextMenu {
 
         return [
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add note shortcut', command: 'addNoteShortcut', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add script shortcut', command: 'addScriptShortcut', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget shortcut', command: 'addWidgetShortcut', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerShortcut', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: "----" } : null,

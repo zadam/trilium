@@ -1521,6 +1521,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.createShortcutNote(node, 'note');
     }
 
+    addScriptShortcutCommand({node}) {
+        this.createShortcutNote(node, 'script');
+    }
+
     addWidgetShortcutCommand({node}) {
         this.createShortcutNote(node, 'widget');
     }

@@ -58,6 +58,16 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         };
     }
 
+    const parentNoteIsShortcut = becca.getNote(parentNoteId).type === 'shortcut';
+    const childNoteIsShortcut = becca.getNote(childNoteId).type === 'shortcut';
+
+    if (parentNoteIsShortcut !== childNoteIsShortcut) {
+        return {
+            success: false,
+            message: 'Moving/cloning is not possible between shortcuts / normal notes.'
+        };
+    }
+
     return { success: true };
 }
 

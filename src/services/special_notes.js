@@ -394,6 +394,17 @@ function createShortcut(parentNoteId, type) {
         }).note;
 
         note.addLabel('relation:targetNote', 'promoted');
+        note.addLabel('docName', 'launchbar_note_shortcut');
+    } else if (type === 'script') {
+        note = noteService.createNewNote({
+            title: "Script shortcut",
+            type: 'shortcut',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addLabel('relation:script', 'promoted');
+        note.addLabel('docName', 'launchbar_script_shortcut');
     } else if (type === 'widget') {
         note = noteService.createNewNote({
             title: "Widget shortcut",
@@ -403,6 +414,7 @@ function createShortcut(parentNoteId, type) {
         }).note;
 
         note.addLabel('relation:widget', 'promoted');
+        note.addLabel('docName', 'launchbar_widget_shortcut');
     } else if (type === 'spacer') {
         note = noteService.createNewNote({
             title: "Spacer",
@@ -417,6 +429,7 @@ function createShortcut(parentNoteId, type) {
         note.addLabel('baseSize', '40');
         note.addLabel('label:growthFactor', 'promoted,number');
         note.addLabel('growthFactor', '0');
+        note.addLabel('docName', 'launchbar_spacer');
     } else {
         throw new Error(`Unrecognized shortcut type ${type}`);
     }
