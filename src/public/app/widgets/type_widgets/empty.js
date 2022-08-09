@@ -63,8 +63,6 @@ export default class EmptyTypeWidget extends TypeWidget {
                 appContext.tabManager.getActiveContext().setNote(suggestion.notePath);
             });
 
-        noteAutocompleteService.showRecentNotes(this.$autoComplete);
-
         this.$workspaceNotes = this.$widget.find('.workspace-notes');
 
         super.doRender();
