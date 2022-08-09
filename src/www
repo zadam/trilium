@@ -51,7 +51,9 @@ async function startTrilium() {
      * its startup is slower than focusing the existing process/window. So in the end it works out without having
      * to do complex evaluation.
      */
-    require("electron").app.requestSingleInstanceLock();
+    if (utils.isElectron()) {
+        require("electron").app.requestSingleInstanceLock();
+    }
 
     app.set('port', port);
     app.set('host', host);
