@@ -31,7 +31,7 @@ class NoteFlatTextExp extends Expression {
                 return;
             }
 
-            if (!note.parents.length === 0 || note.noteId === 'root') {
+            if (note.parents.length === 0 || note.noteId === 'root') {
                 return;
             }
 
