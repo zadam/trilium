@@ -17,7 +17,7 @@ export default class Container extends BasicWidget {
         super.child(...components);
 
         for (const component of components) {
-            if (!component.position) {
+            if (component.position === undefined) {
                 component.position = this.positionCounter;
                 this.positionCounter += 10;
             }
