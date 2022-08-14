@@ -4,7 +4,14 @@ const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
 const utils = require('../services/utils');
-const multer = require('multer')();
+const multer = require('multer')({
+    fileFilter: (req, file, cb) => {
+        // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
+        // See https://github.com/expressjs/multer/pull/1102.
+        file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
+        cb(null, true);
+    }
+});
 
 // API routes
 const treeApiRoute = require('./api/tree');
