@@ -181,6 +181,7 @@ function getRelationMap(req) {
 
             if (def.inverseRelation) {
                 resp.inverseRelations[relationDefinition.getDefinedName()] = def.inverseRelation;
+                resp.inverseRelations[def.inverseRelation] = relationDefinition.getDefinedName();
             }
         }
     }
