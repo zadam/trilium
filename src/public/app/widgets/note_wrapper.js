@@ -10,12 +10,6 @@ export default class NoteWrapperWidget extends FlexContainer {
             .collapsible();
     }
 
-    doRender() {
-        super.doRender();
-
-        this.$widget.addClass("note-split");
-    }
-
     setNoteContextEvent({noteContext}) {
         this.noteContext = noteContext;
 
@@ -42,6 +36,7 @@ export default class NoteWrapperWidget extends FlexContainer {
             return;
         }
 
+        this.$widget.addClass("note-split");
         this.$widget.toggleClass("full-content-width",
             ['image', 'mermaid', 'book', 'render', 'canvas', 'web-view'].includes(note.type)
             || !!note?.hasLabel('fullContentWidth')
