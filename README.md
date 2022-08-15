@@ -41,6 +41,10 @@ Trilium is provided as either desktop application (Linux and Windows) or web app
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
   * Currently only recent Chrome and Firefox are supported (tested) browsers.
 
+Trilium is also provided as a Flatpak:
+
+[<img width="240" src="https://flathub.org/assets/badges/flathub-badge-en.png">](https://flathub.org/apps/details/com.github.zadam.trilium)
+
 ## Documentation
 
 [See wiki for complete list of documentation pages.](https://github.com/zadam/trilium/wiki/)
