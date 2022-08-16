@@ -35,7 +35,7 @@ const TPL = `
     }
     
     .note-detail.full-height {
-        height: 100%;
+        height: calc(100% - 3em);
     }
     </style>
 </div>
