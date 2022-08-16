@@ -107,7 +107,7 @@ class Branch extends AbstractEntity {
 
     /** @returns {Note} */
     get parentNote() {
-        if (!(this.parentNoteId in this.becca.notes)) {
+        if (!(this.parentNoteId in this.becca.notes) && this.parentNoteId !== 'none') {
             // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
         }
