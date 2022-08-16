@@ -281,7 +281,7 @@ async function findSimilarNotes(noteId) {
     }
 
     function gatherAncestorRewards(note) {
-        if (ancestorNoteIds.has(note.noteId)) {
+        if (!note || ancestorNoteIds.has(note.noteId)) {
             return 0;
         }
 

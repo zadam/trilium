@@ -10,7 +10,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     const collectedBranchIds = new Set();
 
     function collectEntityIds(note) {
-        if (collectedNoteIds.has(note.noteId)) {
+        if (!note || collectedNoteIds.has(note.noteId)) {
             return;
         }
 

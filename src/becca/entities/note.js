@@ -699,9 +699,11 @@ class Note extends AbstractEntity {
     sortParents() {
         this.parentBranches.sort((a, b) =>
             a.branchId.startsWith('virt-')
-            || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
+            || a.parentNote?.hasInheritableOwnedArchivedLabel() ? 1 : -1);
 
-        this.parents = this.parentBranches.map(branch => branch.parentNote);
+        this.parents = this.parentBranches
+            .map(branch => branch.parentNote)
+            .filter(note => !!note);
     }
 
     /**
