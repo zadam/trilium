@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <% if (note.hasLabel("shareDescription")) { %>
+        <meta name="description" content="<%= note.getLabelValue("shareDescription") %>">
+    <% } %>
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <% if (note.hasRelation("shareFavicon")) { %>
     <link rel="shortcut icon" href="api/notes/<%= note.getRelation("shareFavicon").value %>/download">

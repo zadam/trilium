@@ -47,6 +47,7 @@ module.exports = [
     { type: 'label', name: 'shareAlias' },
     { type: 'label', name: 'shareOmitDefaultCss' },
     { type: 'label', name: 'shareRoot' },
+    { type: 'label', name: 'shareDescription' },
     { type: 'label', name: 'shareRaw' },
     { type: 'label', name: 'shareDisallowRobotIndexing' },
     { type: 'label', name: 'shareCredentials' },
