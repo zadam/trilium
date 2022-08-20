@@ -315,7 +315,7 @@ function getBacklinkCount(req) {
     }
     else {
         return {
-            count: note.getTargetRelations().length
+            count: note.getTargetRelations().filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).length
         };
     }
 }

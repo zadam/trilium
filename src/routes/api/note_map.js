@@ -299,7 +299,7 @@ function getBacklinks(req) {
 
     let backlinksWithExcerptCount = 0;
 
-    return backlinks.map(backlink => {
+    return backlinks.filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).map(backlink => {
         const sourceNote = backlink.note;
 
         if (sourceNote.type !== 'text' || backlinksWithExcerptCount > 50) {
