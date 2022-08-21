@@ -30,10 +30,8 @@ const TPL = `
     </div>
     
     <div class="search-result-widget-content-count" style="text-align: center;">
-    
     </div>
     <div class="search-result-widget-content">
-
     </div>
 </div>`;
 

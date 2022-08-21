@@ -158,7 +158,7 @@ class NoteListRenderer {
 
         this.noteIds = noteIds.filter(noteId => !includedNoteIds.has(noteId) && noteId !== 'hidden');
 
-        $parentCount.append("Count: " + this.noteIds.length);
+        $parentCount.append("Results: " + this.noteIds.length);
 
         if (this.noteIds.length === 0) {
             return;
