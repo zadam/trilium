@@ -29,7 +29,11 @@ const TPL = `
         Search has not been executed yet. Click on "Search" button above to see the results.
     </div>
     
+    <div class="search-result-widget-content-count" style="text-align: center;">
+    
+    </div>
     <div class="search-result-widget-content">
+
     </div>
 </div>`;
 
@@ -43,16 +47,19 @@ export default class SearchResultWidget extends NoteContextAwareWidget {
         this.$widget = $(TPL);
         this.contentSized();
         this.$content = this.$widget.find('.search-result-widget-content');
+        this.$contentCount = this.$widget.find('.search-result-widget-content-count');
         this.$noResults = this.$widget.find('.search-no-results');
         this.$notExecutedYet = this.$widget.find('.search-not-executed-yet');
     }
 
     async refreshWithNote(note) {
         this.$content.empty();
+        this.$contentCount.empty();
         this.$noResults.toggle(note.getChildNoteIds().length === 0 && !!note.searchResultsLoaded);
+        this.$contentCount.toggle(note.getChildNoteIds().length !== 0 && note.searchResultsLoaded);
         this.$notExecutedYet.toggle(!note.searchResultsLoaded);
 
-        const noteListRenderer = new NoteListRenderer(this.$content, note, note.getChildNoteIds(), true);
+        const noteListRenderer = new NoteListRenderer(this.$content, this.$contentCount, note, note.getChildNoteIds(), true);
         await noteListRenderer.renderList();
     }
 

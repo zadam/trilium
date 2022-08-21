@@ -147,7 +147,7 @@ class NoteListRenderer {
     /*
      * We're using noteIds so that it's not necessary to load all notes at once when paging
      */
-    constructor($parent, parentNote, noteIds, showNotePath = false) {
+    constructor($parent, $parentCount, parentNote, noteIds, showNotePath = false) {
         this.$noteList = $(TPL);
 
         // note list must be added to the DOM immediatelly, otherwise some functionality scripting (canvas) won't work
@@ -157,6 +157,8 @@ class NoteListRenderer {
         const includedNoteIds = this.getIncludedNoteIds();
 
         this.noteIds = noteIds.filter(noteId => !includedNoteIds.has(noteId) && noteId !== 'hidden');
+
+        $parentCount.append("Count: " + this.noteIds.length);
 
         if (this.noteIds.length === 0) {
             return;
