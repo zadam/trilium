@@ -34,6 +34,7 @@
     "chokidar": "3.5.3",
     "cls-hooked": "4.2.2",
     "commonmark": "0.30.0",
+    "compression": "^1.7.4",
     "cookie-parser": "1.4.6",
     "csurf": "1.11.0",
     "dayjs": "1.11.4",

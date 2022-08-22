@@ -19,8 +19,9 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// add compression
-app.use(compression())
+if (!utils.isElectron()) {
+    app.use(compression()); // HTTP compression
+}
 
 app.use(helmet({
     hidePoweredBy: false, // errors out in electron
