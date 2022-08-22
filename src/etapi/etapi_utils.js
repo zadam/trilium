@@ -66,8 +66,8 @@ function route(router, method, path, routeHandler) {
     router[method](path, checkEtapiAuth, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
 }
 
-function NOT_AUTHENTICATED_ROUTE(router, method, path, routeHandler) {
-    router[method](path, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
+function NOT_AUTHENTICATED_ROUTE(router, method, path, middleware, routeHandler) {
+    router[method](path, ...middleware, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
 }
 
 function getAndCheckNote(noteId) {

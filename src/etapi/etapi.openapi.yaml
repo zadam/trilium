@@ -602,6 +602,8 @@ paths:
                   authToken:
                     type: string
                     example: Bc4bFn0Ffiok_4NpbVCDnFz7B2WU+pdhW8B5Ne3DiR5wXrEyqdjgRIsk=
+        '429':
+          description: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later
         default:
           description: unexpected error
           content:
