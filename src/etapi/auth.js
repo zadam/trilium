@@ -3,8 +3,8 @@ const eu = require("./etapi_utils");
 const passwordEncryptionService = require("../services/password_encryption");
 const etapiTokenService = require("../services/etapi_tokens");
 
-function register(router) {
-    eu.NOT_AUTHENTICATED_ROUTE(router, 'post', '/etapi/auth/login', (req, res, next) => {
+function register(router, loginMiddleware) {
+    eu.NOT_AUTHENTICATED_ROUTE(router, 'post', '/etapi/auth/login', loginMiddleware, (req, res, next) => {
         const {password, tokenName} = req.body;
 
         if (!passwordEncryptionService.verifyPassword(password)) {

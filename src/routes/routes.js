@@ -416,7 +416,7 @@ function register(app) {
 
     shareRoutes.register(router);
 
-    etapiAuthRoutes.register(router);
+    etapiAuthRoutes.register(router, [loginRateLimiter]);
     etapiAppInfoRoutes.register(router);
     etapiAttributeRoutes.register(router);
     etapiBranchRoutes.register(router);
