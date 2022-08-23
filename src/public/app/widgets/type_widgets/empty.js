@@ -83,10 +83,8 @@ export default class EmptyTypeWidget extends TypeWidget {
             );
         }
 
-        if (workspaceNotes.length === 0) {
-            this.$autoComplete
-                .trigger('focus')
-                .trigger('select');
-        }
+        this.$autoComplete
+            .trigger('focus')
+            .trigger('select');
     }
 }
