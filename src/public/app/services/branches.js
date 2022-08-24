@@ -11,7 +11,7 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
     if (beforeBranchId === 'root') {
-        alert('Cannot move notes before root note.');
+        toastService.showError('Cannot move notes before root note.');
         return;
     }
 
@@ -19,7 +19,7 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
         const resp = await server.put(`branches/${branchIdToMove}/move-before/${beforeBranchId}`);
 
         if (!resp.success) {
-            alert(resp.message);
+            toastService.showError(resp.message);
             return;
         }
     }
@@ -32,7 +32,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     const afterNote = await froca.getBranch(afterBranchId).getNote();
 
     if (afterNote.noteId === 'root' || afterNote.noteId === hoistedNoteService.getHoistedNoteId()) {
-        alert('Cannot move notes after root note.');
+        toastService.showError('Cannot move notes after root note.');
         return;
     }
 
@@ -42,7 +42,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
         const resp = await server.put(`branches/${branchIdToMove}/move-after/${afterBranchId}`);
 
         if (!resp.success) {
-            alert(resp.message);
+            toastService.showError(resp.message);
             return;
         }
     }
@@ -62,7 +62,7 @@ async function moveToParentNote(branchIdsToMove, newParentBranchId) {
         const resp = await server.put(`branches/${branchIdToMove}/move-to/${newParentBranchId}`);
 
         if (!resp.success) {
-            alert(resp.message);
+            toastService.showError(resp.message);
             return;
         }
     }
@@ -127,7 +127,7 @@ async function moveNodeUpInHierarchy(node) {
     const resp = await server.put('branches/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
 
     if (!resp.success) {
-        alert(resp.message);
+        toastService.showError(resp.message);
         return;
     }
 
@@ -203,7 +203,7 @@ async function cloneNoteToBranch(childNoteId, parentBranchId, prefix) {
     });
 
     if (!resp.success) {
-        alert(resp.message);
+        toastService.showError(resp.message);
     }
 }
 
@@ -213,7 +213,7 @@ async function cloneNoteToNote(childNoteId, parentNoteId, prefix) {
     });
 
     if (!resp.success) {
-        alert(resp.message);
+        toastService.showError(resp.message);
     }
 }
 
@@ -222,7 +222,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
     const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
 
     if (!resp.success) {
-        alert(resp.message);
+        toastService.showError(resp.message);
     }
 }
 

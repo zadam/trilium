@@ -513,8 +513,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 if (isHoistedNote) {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
 
-                    $unhoistButton.on('click', () => alert("bebe"));
-
                     $span.append($unhoistButton);
                 }
 

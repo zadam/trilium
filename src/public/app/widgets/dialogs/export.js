@@ -142,7 +142,7 @@ export default class ExportDialog extends BasicWidget {
 
             if (!exportType) {
                 // this shouldn't happen as we always choose default export type
-                alert("Choose export type first please");
+                toastService.showError("Choose export type first please");
                 return;
             }
 

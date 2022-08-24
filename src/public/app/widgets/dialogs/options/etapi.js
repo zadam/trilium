@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import dialogService from "../../dialog.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <h4>ETAPI</h4>
@@ -56,7 +57,7 @@ export default class EtapiOptions {
             });
 
             if (!tokenName.trim()) {
-                alert("Token name can't be empty");
+                toastService.showError("Token name can't be empty");
                 return;
             }
 

@@ -179,7 +179,7 @@ export default class Entrypoints extends Component {
             const resp = await server.post("sql/execute/" + note.noteId);
 
             if (!resp.success) {
-                alert("Error occurred while executing SQL query: " + resp.message);
+                toastService.showError("Error occurred while executing SQL query: " + resp.message);
             }
 
             await appContext.triggerEvent('sqlQueryResults', {ntxId: ntxId, results: resp.results});
