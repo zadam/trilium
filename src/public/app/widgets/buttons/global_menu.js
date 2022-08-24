@@ -38,6 +38,10 @@ const TPL = `
             
         pointer-events: none;
     }
+
+    .update-to-latest-version-button {
+        display: none;
+    }
     </style>
 
     <button type="button" data-toggle="dropdown" data-placement="right"
