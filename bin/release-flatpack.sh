@@ -26,9 +26,15 @@ if ! git diff-index --quiet HEAD --; then
     exit 1
 fi
 
-xmlstarlet ed --inplace --update "/component/releases/release/@version" --value "${VERSION}" --update "/component/releases/release/@date" --value "${VERSION_DATE}" ./trilium-flathub/com.github.zadam.trilium.metainfo.xml
+flatpak-node-generator npm ../trilium/package-lock.json
 
-yq --inplace "(.modules[0].sources[0].tag = \"v${VERSION}\") | (.modules[0].sources[0].commit = \"${VERSION_COMMIT}\")" ./trilium-flathub/com.github.zadam.trilium.yml
+xmlstarlet ed --inplace --update "/component/releases/release/@version" --value "${VERSION}" --update "/component/releases/release/@date" --value "${VERSION_DATE}" ./com.github.zadam.trilium.metainfo.xml
+
+yq --inplace "(.modules[0].sources[0].tag = \"v${VERSION}\") | (.modules[0].sources[0].commit = \"${VERSION_COMMIT}\")" ./com.github.zadam.trilium.yml
+
+git add ./generated-sources.json
+git add ./com.github.zadam.trilium.metainfo.xml
+git add ./com.github.zadam.trilium.yml
 
 git commit -m "release $VERSION"
 git push
