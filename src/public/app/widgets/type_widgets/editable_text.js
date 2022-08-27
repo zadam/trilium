@@ -229,8 +229,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         return !selection.isCollapsed;
     }
 
-    async executeInActiveTextEditorEvent({callback, resolve}) {
-        if (!this.isActive()) {
+    async executeWithTextEditorEvent({callback, resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 
@@ -246,7 +246,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     addLinkToTextCommand() {
         const selectedText = this.getSelectedText();
 
-        import("../../dialogs/add_link.js").then(d => d.showDialog(this, selectedText));
+        this.triggerCommand('showAddLinkDialog', {textTypeWidget: this, text: selectedText})
     }
 
     getSelectedText() {
@@ -266,10 +266,25 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         await this.initialized;
 
         const selection = this.textEditor.model.document.selection;
-        if (!selection.hasAttribute('linkHref')) return;
+        const selectedElement = selection.getSelectedElement();
+
+        if (selectedElement?.name === 'reference') {
+            // reference link
+            const notePath = selectedElement.getAttribute('notePath');
+
+            if (notePath) {
+                await appContext.tabManager.getActiveContext().setNote(notePath);
+                return;
+            }
+        }
+
+        if (!selection.hasAttribute('linkHref')) {
+            return;
+        }
 
         const selectedLinkUrl = selection.getAttribute('linkHref');
         const notePath = link.getNotePathFromUrl(selectedLinkUrl);
+
         if (notePath) {
             await appContext.tabManager.getActiveContext().setNote(notePath);
         } else {
@@ -278,7 +293,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     addIncludeNoteToTextCommand() {
-        import("../../dialogs/include_note.js").then(d => d.showDialog(this));
+        this.triggerCommand("showIncludeNoteDialog", {textTypeWidget: this});
     }
 
     addIncludeNote(noteId, boxSize) {
@@ -296,7 +311,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const note = await froca.getNote(noteId);
 
         this.textEditor.model.change( writer => {
-            const src = `api/images/${note.noteId}/${note.title}`;
+            const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
+            const src = `api/images/${note.noteId}/${sanitizedTitle}`;
 
             const imageElement = writer.createElement( 'image',  { 'src': src } );
 
@@ -305,7 +321,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async createNoteForReferenceLink(title) {
-        const {note} = await noteCreateService.createNote(this.notePath, {
+        const {note} = await noteCreateService.createNoteWithTypePrompt(this.notePath, {
             activate: false,
             title: title
         });

@@ -30,14 +30,14 @@ function pad(data) {
     return Buffer.from(data);
 }
 
-function encrypt(key, plainText, ivLength = 13) {
+function encrypt(key, plainText) {
     if (!key) {
         throw new Error("No data key!");
     }
 
     const plainTextBuffer = Buffer.from(plainText);
 
-    const iv = crypto.randomBytes(ivLength);
+    const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-128-cbc', pad(key), pad(iv));
 
     const digest = shaArray(plainTextBuffer).slice(0, 4);
@@ -51,7 +51,7 @@ function encrypt(key, plainText, ivLength = 13) {
     return encryptedDataWithIv.toString('base64');
 }
 
-function decrypt(key, cipherText, ivLength = 13) {
+function decrypt(key, cipherText) {
     if (cipherText === null) {
         return null;
     }
@@ -62,6 +62,10 @@ function decrypt(key, cipherText, ivLength = 13) {
 
     try {
         const cipherTextBufferWithIv = Buffer.from(cipherText.toString(), 'base64');
+
+        // old encrypted data can have IV of length 13, see some details here: https://github.com/zadam/trilium/issues/3017
+        const ivLength = cipherTextBufferWithIv.length % 16 === 0 ? 16 : 13;
+
         const iv = cipherTextBufferWithIv.slice(0, ivLength);
 
         const cipherTextBuffer = cipherTextBufferWithIv.slice(ivLength);
@@ -83,7 +87,7 @@ function decrypt(key, cipherText, ivLength = 13) {
     }
     catch (e) {
         // recovery from https://github.com/zadam/trilium/issues/510
-        if (e.message && e.message.includes("WRONG_FINAL_BLOCK_LENGTH")) {
+        if (e.message?.includes("WRONG_FINAL_BLOCK_LENGTH") || e.message?.includes("wrong final block length")) {
             log.info("Caught WRONG_FINAL_BLOCK_LENGTH, returning cipherText instead");
 
             return cipherText;

@@ -33,6 +33,7 @@ const TPL = `
         padding-top: 10px;
         font-family: var(--detail-font-family);
         min-height: 50px;
+        position: relative;
     }
         
     .note-detail-readonly-text p:first-child, .note-detail-readonly-text::before {
@@ -113,5 +114,15 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
 
     async refreshIncludedNoteEvent({noteId}) {
         this.refreshIncludedNote(this.$content, noteId);
+    }
+
+    async executeWithContentElementEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        await this.initialized;
+
+        resolve(this.$content);
     }
 }

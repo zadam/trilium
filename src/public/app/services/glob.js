@@ -23,11 +23,7 @@ function setupGlobs() {
     window.glob.treeCache = froca; // compatibility for CKEditor builds for a while
 
     // for CKEditor integration (button on block toolbar)
-    window.glob.importMarkdownInline = async () => {
-        const dialog = await import("../dialogs/markdown_import.js");
-
-        dialog.importMarkdownInline();
-    };
+    window.glob.importMarkdownInline = async () => appContext.triggerCommand("importMarkdownInline");
 
     window.glob.SEARCH_HELP_TEXT = `
     <strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>

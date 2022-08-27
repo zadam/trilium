@@ -20,20 +20,22 @@ function returnImage(req, res) {
     }
 
     /**
-     * special "image" type. the canvas is actually type application/json 
+     * special "image" type. the canvas is actually type application/json
      * to avoid bitrot and enable usage as referenced image the svg is included.
      */
     if (image.type === 'canvas') {
         const content = image.getContent();
         try {
             const data = JSON.parse(content);
-            
+
             const svg = data.svg || '<svg />'
             res.set('Content-Type', "image/svg+xml");
             res.set("Cache-Control", "no-cache, no-store, must-revalidate");
             res.send(svg);
         } catch(err) {
-            res.status(500).send("there was an error parsing excalidraw to svg");
+            res.setHeader("Content-Type", "text/plain")
+                .status(500)
+                .send("there was an error parsing excalidraw to svg");
         }
     } else {
         res.set('Content-Type', image.mime);

@@ -8,7 +8,10 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractEntity = require("./abstract_entity");
 const NoteRevision = require("./note_revision");
-const TaskContext = require("../../services/task_context.js");
+const TaskContext = require("../../services/task_context");
+const dayjs = require("dayjs");
+const utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -84,13 +87,17 @@ class Note extends AbstractEntity {
     }
 
     init() {
-        /** @type {Branch[]} */
+        /** @type {Branch[]}
+         * @private */
         this.parentBranches = [];
-        /** @type {Note[]} */
+        /** @type {Note[]}
+         * @private */
         this.parents = [];
-        /** @type {Note[]} */
+        /** @type {Note[]}
+         * @private*/
         this.children = [];
-        /** @type {Attribute[]} */
+        /** @type {Attribute[]}
+         * @private */
         this.ownedAttributes = [];
 
         /** @type {Attribute[]|null}
@@ -100,7 +107,8 @@ class Note extends AbstractEntity {
          * @private*/
         this.inheritableAttributeCache = null;
 
-        /** @type {Attribute[]} */
+        /** @type {Attribute[]}
+         * @private*/
         this.targetRelations = [];
 
         this.becca.addNote(this.noteId, this);
@@ -114,16 +122,19 @@ class Note extends AbstractEntity {
         /**
          * size of the content in bytes
          * @type {int|null}
+         * @private
          */
         this.contentSize = null;
         /**
          * size of the content and note revision contents in bytes
          * @type {int|null}
+         * @private
          */
         this.noteSize = null;
         /**
          * number of note revisions for this note
          * @type {int|null}
+         * @private
          */
         this.revisionCount = null;
     }
@@ -223,6 +234,22 @@ class Note extends AbstractEntity {
                 utcDateModified 
             FROM note_contents 
             WHERE noteId = ?`, [this.noteId]);
+    }
+
+    get dateCreatedObj() {
+        return this.dateCreated === null ? null : dayjs(this.dateCreated);
+    }
+
+    get utcDateCreatedObj() {
+        return this.utcDateCreated === null ? null : dayjs.utc(this.utcDateCreated);
+    }
+
+    get dateModifiedObj() {
+        return this.dateModified === null ? null : dayjs(this.dateModified);
+    }
+
+    get utcDateModifiedObj() {
+        return this.utcDateModified === null ? null : dayjs.utc(this.utcDateModified);
     }
 
     /** @returns {*} */
@@ -350,6 +377,7 @@ class Note extends AbstractEntity {
         }
     }
 
+    /** @private */
     __getAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
@@ -372,7 +400,11 @@ class Note extends AbstractEntity {
                     const templateNote = this.becca.notes[ownedAttr.value];
 
                     if (templateNote) {
-                        templateAttributes.push(...templateNote.__getAttributes(newPath));
+                        templateAttributes.push(
+                            ...templateNote.__getAttributes(newPath)
+                                // template attr is used as a marker for templates, but it's not meant to be inherited
+                                .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                        );
                     }
                 }
             }
@@ -401,7 +433,10 @@ class Note extends AbstractEntity {
         return this.__attributeCache;
     }
 
-    /** @returns {Attribute[]} */
+    /**
+     * @private
+     * @returns {Attribute[]}
+     */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
@@ -414,8 +449,18 @@ class Note extends AbstractEntity {
         return this.inheritableAttributeCache;
     }
 
-    hasAttribute(type, name) {
-        return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
+    /**
+     * @param type
+     * @param name
+     * @param [value]
+     * @returns {boolean}
+     */
+    hasAttribute(type, name, value) {
+        return !!this.getAttributes().find(attr =>
+            attr.type === type
+            && attr.name === name
+            && (value === undefined || value === null || attr.value === value)
+        );
     }
 
     getAttributeCaseInsensitive(type, name, value) {
@@ -436,27 +481,31 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} name - label name
+     * @param {string} [value] - label value
      * @returns {boolean} true if label exists (including inherited)
      */
-    hasLabel(name) { return this.hasAttribute(LABEL, name); }
+    hasLabel(name, value) { return this.hasAttribute(LABEL, name, value); }
 
     /**
      * @param {string} name - label name
+     * @param {string} [value] - label value
      * @returns {boolean} true if label exists (excluding inherited)
      */
-    hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
+    hasOwnedLabel(name, value) { return this.hasOwnedAttribute(LABEL, name, value); }
 
     /**
      * @param {string} name - relation name
+     * @param {string} [value] - relation value
      * @returns {boolean} true if relation exists (including inherited)
      */
-    hasRelation(name) { return this.hasAttribute(RELATION, name); }
+    hasRelation(name, value) { return this.hasAttribute(RELATION, name, value); }
 
     /**
      * @param {string} name - relation name
+     * @param {string} [value] - relation value
      * @returns {boolean} true if relation exists (excluding inherited)
      */
-    hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
+    hasOwnedRelation(name, value) { return this.hasOwnedAttribute(RELATION, name, value); }
 
     /**
      * @param {string} name - label name
@@ -509,10 +558,11 @@ class Note extends AbstractEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
+     * @param {string} [value] - attribute value
      * @returns {boolean} true if note has an attribute with given type and name (excluding inherited)
      */
-    hasOwnedAttribute(type, name) {
-        return !!this.getOwnedAttribute(type, name);
+    hasOwnedAttribute(type, name, value) {
+        return !!this.getOwnedAttribute(type, name, value);
     }
 
     /**
@@ -599,15 +649,19 @@ class Note extends AbstractEntity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
+     * @param {string} [value] - (optional) attribute value to filter
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
-    getOwnedAttributes(type, name) {
+    getOwnedAttributes(type, name, value) {
         // it's a common mistake to include # or ~ into attribute name
         if (name && ["#", "~"].includes(name[0])) {
             name = name.substr(1);
         }
 
-        if (type && name) {
+        if (type && name && value !== undefined && value !== null) {
+            return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name && attr.value === value);
+        }
+        else if (type && name) {
             return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name);
         }
         else if (type) {
@@ -626,8 +680,8 @@ class Note extends AbstractEntity {
      *
      * This method can be significantly faster than the getAttribute()
      */
-    getOwnedAttribute(type, name) {
-        const attrs = this.getOwnedAttributes(type, name);
+    getOwnedAttribute(type, name, value) {
+        const attrs = this.getOwnedAttributes(type, name, value);
 
         return attrs.length > 0 ? attrs[0] : null;
     }
@@ -645,9 +699,11 @@ class Note extends AbstractEntity {
     sortParents() {
         this.parentBranches.sort((a, b) =>
             a.branchId.startsWith('virt-')
-            || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
+            || a.parentNote?.hasInheritableOwnedArchivedLabel() ? 1 : -1);
 
-        this.parents = this.parentBranches.map(branch => branch.parentNote);
+        this.parents = this.parentBranches
+            .map(branch => branch.parentNote)
+            .filter(note => !!note);
     }
 
     /**
@@ -1142,6 +1198,10 @@ class Note extends AbstractEntity {
         return this.searchNotesInSubtree(searchString)[0];
     }
 
+    /**
+     * @param parentNoteId
+     * @returns {{success: boolean, message: string}}
+     */
     cloneTo(parentNoteId) {
         const cloningService = require("../../services/cloning");
 
@@ -1157,6 +1217,10 @@ class Note extends AbstractEntity {
      * @param {TaskContext} [taskContext]
      */
     deleteNote(deleteId, taskContext) {
+        if (this.isDeleted) {
+            return;
+        }
+
         if (!deleteId) {
             deleteId = utils.randomString(10);
         }
@@ -1164,6 +1228,11 @@ class Note extends AbstractEntity {
         if (!taskContext) {
             taskContext = new TaskContext('no-progress-reporting');
         }
+
+        // needs to be run before branches and attributes are deleted and thus attached relations disappear
+        const handlers = require("../../services/handlers");
+        handlers.runAttachedRelations(this, 'runOnNoteDeletion', this);
+        taskContext.noteDeletionHandlerTriggered = true;
 
         for (const branch of this.getParentBranches()) {
             branch.deleteBranch(deleteId, taskContext);
@@ -1186,6 +1255,41 @@ class Note extends AbstractEntity {
 
     get isDeleted() {
         return !(this.noteId in this.becca.notes);
+    }
+
+    /**
+     * @return {NoteRevision|null}
+     */
+    saveNoteRevision() {
+        const content = this.getContent();
+
+        if (!content || (Buffer.isBuffer(content) && content.byteLength === 0)) {
+            return null;
+        }
+
+        const contentMetadata = this.getContentMetadata();
+
+        const noteRevision = new NoteRevision({
+            noteId: this.noteId,
+            // title and text should be decrypted now
+            title: this.title,
+            type: this.type,
+            mime: this.mime,
+            isProtected: this.isProtected,
+            utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
+                ? this.utcDateModified
+                : contentMetadata.utcDateModified,
+            utcDateCreated: dateUtils.utcNowDateTime(),
+            utcDateModified: dateUtils.utcNowDateTime(),
+            dateLastEdited: this.dateModified > contentMetadata.dateModified
+                ? this.dateModified
+                : contentMetadata.dateModified,
+            dateCreated: dateUtils.localNowDateTime()
+        }, true).save();
+
+        noteRevision.setContent(content);
+
+        return noteRevision;
     }
 
     beforeSaving() {

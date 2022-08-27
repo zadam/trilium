@@ -61,8 +61,19 @@ class Attribute {
         return this.froca.notes[this.noteId];
     }
 
+    /** @returns {Promise&lt;NoteShort>} */
+    async getTargetNote() {
+        const targetNoteId = this.targetNoteId;
+
+        return await this.froca.getNote(targetNoteId, true);
+    }
+
     get targetNoteId() { // alias
-        return this.type === 'relation' ? this.value : undefined;
+        if (this.type !== 'relation') {
+            throw new Error(`Attribute ${this.attributeId} is not a relation`);
+        }
+
+        return this.value;
     }
 
     get isAutoLink() {
@@ -104,7 +115,7 @@ export default Attribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="module.exports.html">exports</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

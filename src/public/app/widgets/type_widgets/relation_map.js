@@ -8,6 +8,7 @@ import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
 import froca from "../../services/froca.js";
+import dialogService from "../../widgets/dialog.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -65,28 +66,6 @@ const linkOverlays = [
 
 const TPL = `
 <div class="note-detail-relation-map note-detail-printable">
-    <button class="relation-map-create-child-note btn btn-sm floating-button no-print" type="button"
-            title="Create new child note and add it into this relation map">
-        <span class="bx bx-folder-plus"></span>
-
-        Create child note
-    </button>
-
-    <button type="button"
-            class="relation-map-reset-pan-zoom btn icon-button floating-button bx bx-crop no-print"
-            title="Reset pan & zoom to initial coordinates and magnification"
-            style="right: 100px;"></button>
-
-    <div class="btn-group floating-button no-print" style="right: 10px;">
-        <button type="button"
-                class="relation-map-zoom-in btn icon-button bx bx-zoom-in"
-                title="Zoom In"></button>
-
-        <button type="button"
-                class="relation-map-zoom-out btn icon-button bx bx-zoom-out"
-                title="Zoom Out"></button>
-    </div>
-
     <div class="relation-map-wrapper">
        <div class="relation-map-container"></div>
     </div>
@@ -100,10 +79,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$relationMapContainer = this.$widget.find(".relation-map-container");
-        this.$createChildNote = this.$widget.find(".relation-map-create-child-note");
-        this.$zoomInButton = this.$widget.find(".relation-map-zoom-in");
-        this.$zoomOutButton = this.$widget.find(".relation-map-zoom-out");
-        this.$resetPanZoomButton = this.$widget.find(".relation-map-reset-pan-zoom");
 
         this.mapData = null;
         this.jsPlumbInstance = null;
@@ -138,9 +113,9 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 x: e.pageX,
                 y: e.pageY,
                 items: [
-                    {title: "Open in new tab", command: "openInNewTab", uiIcon: "empty"},
-                    {title: "Remove note", command: "remove", uiIcon: "trash"},
-                    {title: "Edit title", command: "editTitle", uiIcon: "pencil"},
+                    {title: "Open in new tab", command: "openInNewTab", uiIcon: "bx bx-empty"},
+                    {title: "Remove note", command: "remove", uiIcon: "bx bx-trash"},
+                    {title: "Edit title", command: "editTitle", uiIcon: "bx bx-pencil"},
                 ],
                 selectMenuItemHandler: ({command}) => this.contextMenuHandler(command, e.target)
             });
@@ -149,31 +124,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
         });
 
         this.clipboard = null;
-
-        this.$createChildNote.on('click', async () => {
-            const promptDialog = await import('../../dialogs/prompt.js');
-            const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
-
-            if (!title.trim()) {
-                return;
-            }
-
-            const {note} = await server.post(`notes/${this.noteId}/children?target=into`, {
-                title,
-                content: '',
-                type: 'text'
-            });
-
-            toastService.showMessage("Click on canvas to place new note");
-
-            this.clipboard = { noteId: note.noteId, title };
-        });
-
-        this.$resetPanZoomButton.on('click', () => {
-            // reset to initial pan & zoom state
-            this.pzInstance.zoomTo(0, 0, 1 / this.getZoom());
-            this.pzInstance.moveTo(0, 0);
-        });
 
         this.$widget.on("drop", ev => this.dropNoteOntoRelationMapHandler(ev));
         this.$widget.on("dragover", ev => ev.preventDefault());
@@ -196,15 +146,15 @@ export default class RelationMapTypeWidget extends TypeWidget {
             appContext.tabManager.openTabWithNoteWithHoisting(noteId);
         }
         else if (command === "remove") {
-            const confirmDialog = await import('../../dialogs/confirm.js');
+            const result = await dialogService.confirmDeleteNoteBoxWithNote($title.text());
 
-            if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
+            if (!result.confirmed) {
                 return;
             }
 
             this.jsPlumbInstance.remove(this.noteIdToId(noteId));
 
-            if (confirmDialog.isDeleteNoteChecked()) {
+            if (result.isDeleteNoteChecked) {
                 const taskId = utils.randomString(10);
 
                 await server.remove(`notes/${noteId}?taskId=${taskId}&last=true`);
@@ -217,8 +167,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             this.saveData();
         }
         else if (command === "editTitle") {
-            const promptDialog = await import("../../dialogs/prompt.js");
-            const title = await promptDialog.ask({
+            const title = await dialogService.prompt({
                 title: "Rename note",
                 message: "Enter new note title:",
                 defaultValue: $title.text()
@@ -228,7 +177,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 return;
             }
 
-            await server.put(`notes/${noteId}/change-title`, { title });
+            await server.put(`notes/${noteId}/title`, { title });
 
             $title.text(title);
         }
@@ -377,9 +326,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
             // set to initial coordinates
             this.pzInstance.moveTo(0, 0);
         }
-
-        this.$zoomInButton.on('click', () => this.pzInstance.zoomTo(0, 0, 1.2));
-        this.$zoomOutButton.on('click', () => this.pzInstance.zoomTo(0, 0, 0.8));
     }
 
     saveCurrentTransform() {
@@ -446,12 +392,10 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 contextMenu.show({
                     x: event.pageX,
                     y: event.pageY,
-                    items: [ {title: "Remove relation", command: "remove", uiIcon: "trash"} ],
+                    items: [ {title: "Remove relation", command: "remove", uiIcon: "bx bx-trash"} ],
                     selectMenuItemHandler: async ({command}) => {
                         if (command === 'remove') {
-                            const confirmDialog = await import('../../dialogs/confirm.js');
-
-                            if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {
+                            if (!await dialogService.confirm("Are you sure you want to remove the relation?")) {
                                 return;
                             }
 
@@ -473,8 +417,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             return;
         }
 
-        const promptDialog = await import("../../dialogs/prompt.js");
-        let name = await promptDialog.ask({
+        let name = await dialogService.prompt({
             message: "Specify new relation name (allowed characters: alphanumeric, colon and underscore):",
             shown: ({ $answer }) => {
                 $answer.on('keyup', () => {
@@ -509,8 +452,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
             && rel.name === name);
 
         if (relationExists) {
-            const infoDialog = await import('../../dialogs/info.js');
-            await infoDialog.info("Connection '" + name + "' between these notes already exists.");
+            await dialogService.info(`Connection '${name}' between these notes already exists.`);
 
             this.jsPlumbInstance.deleteConnection(connection);
 
@@ -646,5 +588,53 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
     getContent() {
         return JSON.stringify(this.mapData);
+    }
+
+    async relationMapCreateChildNoteEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        const title = await dialogService.prompt({ message: "Enter title of new note",  defaultValue: "new note" });
+
+        if (!title.trim()) {
+            return;
+        }
+
+        const {note} = await server.post(`notes/${this.noteId}/children?target=into`, {
+            title,
+            content: '',
+            type: 'text'
+        });
+
+        toastService.showMessage("Click on canvas to place new note");
+
+        this.clipboard = { noteId: note.noteId, title };
+    }
+
+    relationMapResetPanZoomEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        // reset to initial pan & zoom state
+        this.pzInstance.zoomTo(0, 0, 1 / this.getZoom());
+        this.pzInstance.moveTo(0, 0);
+    }
+
+    relationMapResetZoomInEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        this.pzInstance.zoomTo(0, 0, 1.2);
+    }
+
+    relationMapResetZoomOutEvent({ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        this.pzInstance.zoomTo(0, 0, 0.8);
     }
 }

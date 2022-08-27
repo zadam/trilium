@@ -142,6 +142,11 @@ export default class TabManager extends Component {
         return this.noteContexts;
     }
 
+    /** @returns {NoteContext[]} */
+    getMainNoteContexts() {
+        return this.noteContexts.filter(nc => nc.isMainContext());
+    }
+
     /** @returns {NoteContext} */
     getNoteContextById(ntxId) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId);
@@ -294,11 +299,23 @@ export default class TabManager extends Component {
         this.setCurrentNotePathToHash();
     }
 
+    /**
+     * @param ntxId
+     * @returns {Promise<boolean>} true if note context has been removed, false otherwise
+     */
     async removeNoteContext(ntxId) {
         // removing note context is async process which can take some time, if users presses CTRL-W quickly, two
         // close events could interleave which would then lead to attempting to activate already removed context.
-        await this.mutex.runExclusively(async () => {
-            const noteContextToRemove = this.getNoteContextById(ntxId);
+        return await this.mutex.runExclusively(async () => {
+            let noteContextToRemove;
+
+            try {
+                noteContextToRemove = this.getNoteContextById(ntxId);
+            }
+            catch {
+                // note context not found
+                return false;
+            }
 
             if (noteContextToRemove.isMainContext()) {
                 // forbid removing last main note context
@@ -306,8 +323,9 @@ export default class TabManager extends Component {
                 const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
 
                 if (mainNoteContexts.length === 1) {
-                    mainNoteContexts[0].setEmpty();
-                    return;
+                    await this.clearLastMainNoteContext(noteContextToRemove);
+
+                    return false;
                 }
             }
 
@@ -317,7 +335,7 @@ export default class TabManager extends Component {
             const noteContextsToRemove = noteContextToRemove.getSubContexts();
             const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
-            await this.triggerEvent('beforeTabRemove', { ntxIds: ntxIdsToRemove });
+            await this.triggerEvent('beforeNoteContextRemove', { ntxIds: ntxIdsToRemove });
 
             if (!noteContextToRemove.isMainContext()) {
                 await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
@@ -336,14 +354,39 @@ export default class TabManager extends Component {
                 }
             }
 
-            this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
+            this.removeNoteContexts(noteContextsToRemove);
 
-            this.recentlyClosedTabs.push(noteContextsToRemove);
-
-            this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
-
-            this.tabsUpdate.scheduleUpdate();
+            return true;
         });
+    }
+
+    async clearLastMainNoteContext(noteContextToClear) {
+        noteContextToClear.setEmpty();
+
+        // activate main split
+        await this.activateNoteContext(noteContextToClear.ntxId);
+
+        // remove all other splits
+        const noteContextsToRemove = noteContextToClear.getSubContexts()
+            .filter(ntx => ntx.ntxId !== noteContextToClear.ntxId);
+
+        const ntxIdsToRemove = noteContextsToRemove.map(ntx => ntx.ntxId);
+
+        await this.triggerEvent('beforeNoteContextRemove', {ntxIds: ntxIdsToRemove});
+
+        this.removeNoteContexts(noteContextsToRemove);
+    }
+
+    removeNoteContexts(noteContextsToRemove) {
+        const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
+
+        this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
+
+        this.recentlyClosedTabs.push(noteContextsToRemove);
+
+        this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
+
+        this.tabsUpdate.scheduleUpdate();
     }
 
     tabReorderEvent({ntxIdsInOrder}) {
@@ -421,12 +464,14 @@ export default class TabManager extends Component {
         }
     }
 
-    moveTabToNewWindowCommand({ntxId}) {
+    async moveTabToNewWindowCommand({ntxId}) {
         const {notePath, hoistedNoteId} = this.getNoteContextById(ntxId);
 
-        this.removeNoteContext(ntxId);
+        const removed = await this.removeNoteContext(ntxId);
 
-        this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+        if (removed) {
+            this.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+        }
     }
 
     async reopenLastTabCommand() {
@@ -458,7 +503,7 @@ export default class TabManager extends Component {
 
     updateDocumentTitle(activeNoteContext) {
         const titleFragments = [
-            // it helps navigating in history if note title is included in the title
+            // it helps to navigate in history if note title is included in the title
             activeNoteContext.note?.title,
             "Trilium Notes"
         ].filter(Boolean);

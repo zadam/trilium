@@ -175,7 +175,7 @@ async function consumeFrontendUpdateData() {
             else {
                 console.log("nonProcessedEntityChanges causing the timeout", nonProcessedEntityChanges);
 
-                alert(`Encountered error "${e.message}", check out the console.`);
+                toastService.showError(`Encountered error "${e.message}", check out the console.`);
             }
         }
 

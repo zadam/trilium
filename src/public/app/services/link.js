@@ -85,10 +85,15 @@ function getNotePathFromLink($link) {
 }
 
 function goToLink(e) {
+    const $link = $(e.target).closest("a,.block-link");
+    const address = $link.attr('href');
+
+    if (address?.startsWith("data:")) {
+        return true;
+    }
+
     e.preventDefault();
     e.stopPropagation();
-
-    const $link = $(e.target).closest("a,.block-link");
 
     const notePath = getNotePathFromLink($link);
 
@@ -115,8 +120,6 @@ function goToLink(e) {
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {
-            const address = $link.attr('href');
-
             if (address) {
                 if (address.toLowerCase().startsWith('http')) {
                     window.open(address, '_blank');
@@ -175,6 +178,16 @@ $(document).on('dblclick', "a", e => {
 
     if (address && address.startsWith('http')) {
         window.open(address, '_blank');
+    }
+});
+
+$(document).on('mousedown', 'a', e => {
+    if (e.which === 2) {
+        // prevent paste on middle click
+        // https://github.com/zadam/trilium/issues/2995
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/auxclick_event#preventing_default_actions
+        e.preventDefault();
+        return false;
     }
 });
 

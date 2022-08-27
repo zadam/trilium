@@ -66,8 +66,8 @@ function route(router, method, path, routeHandler) {
     router[method](path, checkEtapiAuth, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
 }
 
-function NOT_AUTHENTICATED_ROUTE(router, method, path, routeHandler) {
-    router[method](path, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
+function NOT_AUTHENTICATED_ROUTE(router, method, path, middleware, routeHandler) {
+    router[method](path, ...middleware, (req, res, next) => processRequest(req, res, routeHandler, next, method, path));
 }
 
 function getAndCheckNote(noteId) {
@@ -106,7 +106,7 @@ function getAndCheckAttribute(attributeId) {
 function validateAndPatch(target, source, allowedProperties) {
     for (const key of Object.keys(source)) {
         if (!(key in allowedProperties)) {
-            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for PATCH.`);
+            throw new EtapiError(400, "PROPERTY_NOT_ALLOWED", `Property '${key}' is not allowed for this method.`);
         }
         else {
             for (const validator of allowedProperties[key]) {

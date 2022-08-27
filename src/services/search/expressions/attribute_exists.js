@@ -26,7 +26,9 @@ class AttributeExistsExp extends Expression {
             if (attr.isInheritable) {
                 resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
             }
-            else if (note.isTemplate()) {
+            else if (note.isTemplate() &&
+                // template attr is used as a marker for templates, but it's not meant to be inherited
+                !(this.attributeType === 'label' && this.attributeName === 'template')) {
                 resultNoteSet.addAll(note.getTemplatedNotes());
             }
             else {

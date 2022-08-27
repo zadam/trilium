@@ -63,7 +63,7 @@ function touchProtectedSession() {
     }
 }
 
-setInterval(() => {
+function checkProtectedSessionExpiration() {
     const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
     if (isProtectedSessionAvailable()
         && lastProtectedSessionOperationDate
@@ -71,10 +71,11 @@ setInterval(() => {
 
         resetDataKey();
 
+        log.info("Expiring protected session");
+
         require('./ws').reloadFrontend();
     }
-}, 30000);
-
+}
 
 module.exports = {
     setDataKey,
@@ -84,5 +85,6 @@ module.exports = {
     decrypt,
     decryptString,
     decryptNotes,
-    touchProtectedSession
+    touchProtectedSession,
+    checkProtectedSessionExpiration
 };

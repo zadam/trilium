@@ -24,8 +24,8 @@ async function createNote(parentNotePath, options = {}) {
         options.saveSelection = false;
     }
 
-    if (options.saveSelection && utils.isCKEditorInitialized()) {
-        [options.title, options.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
+    if (options.saveSelection) {
+        [options.title, options.content] = parseSelectedHtml(options.textEditor.getSelectedHtml());
     }
 
     const parentNoteId = treeService.getNoteIdFromNotePath(parentNotePath);
@@ -43,12 +43,13 @@ async function createNote(parentNotePath, options = {}) {
         content: options.content || "",
         isProtected: options.isProtected,
         type: options.type,
-        mime: options.mime
+        mime: options.mime,
+        templateNoteId: options.templateNoteId
     });
 
-    if (options.saveSelection && utils.isCKEditorInitialized()) {
+    if (options.saveSelection) {
         // we remove the selection only after it was saved to server to make sure we don't lose anything
-        window.cutToNote.removeSelection();
+        options.textEditor.removeSelection();
     }
 
     await ws.waitForMaxKnownEntityChangeId();
@@ -72,6 +73,25 @@ async function createNote(parentNotePath, options = {}) {
         note: noteEntity,
         branch: branchEntity
     };
+}
+
+async function chooseNoteType() {
+    return new Promise(res => {
+        appContext.triggerCommand("chooseNoteType", {callback: res});
+    });
+}
+
+async function createNoteWithTypePrompt(parentNotePath, options = {}) {
+    const {success, noteType, templateNoteId} = await chooseNoteType();
+
+    if (!success) {
+        return;
+    }
+
+    options.type = noteType;
+    options.templateNoteId = templateNoteId;
+
+    return await createNote(parentNotePath, options);
 }
 
 /* If first element is heading, parse it out and use it as a new heading. */
@@ -105,5 +125,7 @@ async function duplicateSubtree(noteId, parentNotePath) {
 
 export default {
     createNote,
-    duplicateSubtree
+    createNoteWithTypePrompt,
+    duplicateSubtree,
+    chooseNoteType
 };

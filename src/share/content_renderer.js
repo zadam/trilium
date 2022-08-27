@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function() {
         header += `<script src="../../node_modules/react/umd/react.production.min.js"></script>`;
         header += `<script src="../../node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
         header += `<script src="../../node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
-        header += `<style type="text/css">
+        header += `<style>
 
             .excalidraw-wrapper {
                 height: 100%;

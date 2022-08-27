@@ -270,9 +270,9 @@ function transactional(func) {
         return ret;
     }
     catch (e) {
-        const entityChanges = cls.getAndClearEntityChangeIds();
+        const entityChangeIds = cls.getAndClearEntityChangeIds();
 
-        if (entityChanges.length > 0) {
+        if (entityChangeIds.length > 0) {
             log.info("Transaction rollback dirtied the becca, forcing reload.");
 
             require('../becca/becca_loader').load();

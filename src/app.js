@@ -5,6 +5,7 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const session = require('express-session');
+const compression = require('compression')
 const FileStore = require('session-file-store')(session);
 const sessionSecret = require('./services/session_secret');
 const dataDir = require('./services/data_dir');
@@ -18,9 +19,14 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+if (!utils.isElectron()) {
+    app.use(compression()); // HTTP compression
+}
+
 app.use(helmet({
     hidePoweredBy: false, // errors out in electron
-    contentSecurityPolicy: false
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
 }));
 
 app.use(express.text({limit: '500mb'}));

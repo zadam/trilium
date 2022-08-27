@@ -5,9 +5,9 @@ const AbstractEntity = require("./abstract_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const utils = require("../../services/utils.js");
-const TaskContext = require("../../services/task_context.js");
-const cls = require("../../services/cls.js");
-const log = require("../../services/log.js");
+const TaskContext = require("../../services/task_context");
+const cls = require("../../services/cls");
+const log = require("../../services/log");
 
 /**
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
@@ -70,19 +70,20 @@ class Branch extends AbstractEntity {
 
         this.becca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
 
+        const childNote = this.childNote;
+
+        if (!childNote.parentBranches.includes(this)) {
+            childNote.parentBranches.push(this);
+        }
+
         if (this.branchId === 'root') {
             return;
         }
 
-        const childNote = this.childNote;
         const parentNote = this.parentNote;
 
         if (!childNote.parents.includes(parentNote)) {
             childNote.parents.push(parentNote);
-        }
-
-        if (!childNote.parentBranches.includes(this)) {
-            childNote.parentBranches.push(this);
         }
 
         if (!parentNote.children.includes(childNote)) {
@@ -104,9 +105,9 @@ class Branch extends AbstractEntity {
         return this.childNote;
     }
 
-    /** @returns {Note} */
+    /** @returns {Note|undefined} - root branch will have undefined parent, all other branches have to have a parent note */
     get parentNote() {
-        if (!(this.parentNoteId in this.becca.notes)) {
+        if (!(this.parentNoteId in this.becca.notes) && this.parentNoteId !== 'none') {
             // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
         }
@@ -137,6 +138,18 @@ class Branch extends AbstractEntity {
 
         taskContext.increaseProgressCount();
 
+        const note = this.getNote();
+
+        if (!taskContext.noteDeletionHandlerTriggered) {
+            const parentBranches = note.getParentBranches();
+
+            if (parentBranches.length === 1 && parentBranches[0] === this) {
+                // needs to be run before branches and attributes are deleted and thus attached relations disappear
+                const handlers = require("../../services/handlers");
+                handlers.runAttachedRelations(note, 'runOnNoteDeletion', note);
+            }
+        }
+
         if (this.branchId === 'root'
             || this.noteId === 'root'
             || this.noteId === cls.getHoistedNoteId()) {
@@ -146,7 +159,6 @@ class Branch extends AbstractEntity {
 
         this.markAsDeleted(deleteId);
 
-        const note = this.getNote();
         const notDeletedBranches = note.getParentBranches();
 
         if (notDeletedBranches.length === 0) {

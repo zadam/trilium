@@ -10,7 +10,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
     const collectedBranchIds = new Set();
 
     function collectEntityIds(note) {
-        if (collectedNoteIds.has(note.noteId)) {
+        if (!note || collectedNoteIds.has(note.noteId)) {
             return;
         }
 
@@ -96,6 +96,11 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
     for (const attributeId of collectedAttributeIds) {
         const attribute = becca.attributes[attributeId];
+
+        if (!attribute) {
+            log.error(`Could not find attribute for attributeId=${attributeId}`);
+            continue;
+        }
 
         attributes.push({
             attributeId: attribute.attributeId,

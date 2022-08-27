@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <link rel="shortcut icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.webmanifest">
     <title>Trilium Notes</title>
 </head>
 <body class="desktop heading-style-<%= headingStyle %>">
@@ -16,30 +17,6 @@
 <div id="toast-container" class="d-flex flex-column justify-content-center align-items-center"></div>
 
 <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
-
-<%- include('dialogs/about.ejs') %>
-<%- include('dialogs/add_link.ejs') %>
-<%- include('dialogs/branch_prefix.ejs') %>
-<%- include('dialogs/export.ejs') %>
-<%- include('dialogs/import.ejs') %>
-<%- include('dialogs/jump_to_note.ejs') %>
-<%- include('dialogs/markdown_import.ejs') %>
-<%- include('dialogs/note_revisions.ejs') %>
-<%- include('dialogs/note_source.ejs') %>
-<%- include('dialogs/options.ejs') %>
-<%- include('dialogs/protected_session_password.ejs') %>
-<%- include('dialogs/recent_changes.ejs') %>
-<%- include('dialogs/info.ejs') %>
-<%- include('dialogs/prompt.ejs') %>
-<%- include('dialogs/confirm.ejs') %>
-<%- include('dialogs/help.ejs') %>
-<%- include('dialogs/clone_to.ejs') %>
-<%- include('dialogs/move_to.ejs') %>
-<%- include('dialogs/backend_log.ejs') %>
-<%- include('dialogs/include_note.ejs') %>
-<%- include('dialogs/sort_child_notes.ejs') %>
-<%- include('dialogs/delete_notes.ejs') %>
-<%- include('dialogs/password_not_set.ejs') %>
 
 <script type="text/javascript">
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */

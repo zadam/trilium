@@ -226,6 +226,35 @@ class NoteContext extends Component {
             && this.note.mime !== 'text/x-sqlite;schema=trilium'
             && !this.note.hasLabel('hideChildrenOverview');
     }
+
+    async getTextEditor(callback) {
+        return new Promise(resolve => appContext.triggerCommand('executeWithTextEditor', {
+            callback,
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
+
+    async getCodeEditor() {
+        return new Promise(resolve => appContext.triggerCommand('executeWithCodeEditor', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
+
+    async getContentElement() {
+        return new Promise(resolve => appContext.triggerCommand('executeWithContentElement', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
+
+    async getTypeWidget() {
+        return new Promise(resolve => appContext.triggerCommand('executeWithTypeWidget', {
+            resolve,
+            ntxId: this.ntxId
+        }));
+    }
 }
 
 export default NoteContext;

@@ -160,6 +160,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 attr.name = 'disabled:' + attr.name;
             }
 
+            if (taskContext.data.safeImport) {
+                attr.name = htmlSanitizer.sanitize(attr.name);
+                attr.value = htmlSanitizer.sanitize(attr.value);
+            }
+
             attributes.push(attr);
         }
     }

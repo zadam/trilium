@@ -1,10 +1,14 @@
 "use strict";
 
 const noteService = require('./notes');
+const becca = require('../becca/becca');
 const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
 const sql = require('./sql');
 const protectedSessionService = require('./protected_session');
+const cls = require("./cls");
+const searchService = require('../services/search/services/search');
+const SearchContext = require('../services/search/search_context');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -26,7 +30,15 @@ function createNote(parentNote, noteTitle) {
 
 /** @returns {Note} */
 function getRootCalendarNote() {
-    let rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
+    let rootNote;
+
+    if (cls.getHoistedNoteId() !== 'root') {
+        rootNote = searchService.findFirstNoteWithQuery('#workspaceCalendarRoot', new SearchContext({ignoreHoistedNote: false}));
+    }
+
+    if (!rootNote) {
+        rootNote = attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
+    }
 
     if (!rootNote) {
         sql.transactional(() => {
@@ -55,7 +67,8 @@ function getYearNote(dateStr, rootNote = null) {
 
     const yearStr = dateStr.trim().substr(0, 4);
 
-    let yearNote = attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
+    let yearNote = searchService.findFirstNoteWithQuery(`#${YEAR_LABEL}="${yearStr}"`,
+            new SearchContext({ancestorNoteId: rootNote.noteId}));
 
     if (yearNote) {
         return yearNote;
@@ -95,7 +108,8 @@ function getMonthNote(dateStr, rootNote = null) {
     const monthStr = dateStr.substr(0, 7);
     const monthNumber = dateStr.substr(5, 2);
 
-    let monthNote = attributeService.getNoteWithLabel(MONTH_LABEL, monthStr);
+    let monthNote = searchService.findFirstNoteWithQuery(`#${MONTH_LABEL}="${monthStr}"`,
+        new SearchContext({ancestorNoteId: rootNote.noteId}));
 
     if (monthNote) {
         return monthNote;
@@ -137,15 +151,16 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
 
 /** @returns {Note} */
 function getDayNote(dateStr) {
+    const rootNote = getRootCalendarNote();
     dateStr = dateStr.trim().substr(0, 10);
 
-    let dateNote = attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
+    let dateNote = searchService.findFirstNoteWithQuery(`#${DATE_LABEL}="${dateStr}"`,
+        new SearchContext({ancestorNoteId: rootNote.noteId}));
 
     if (dateNote) {
         return dateNote;
     }
 
-    const rootNote = getRootCalendarNote();
     const monthNote = getMonthNote(dateStr, rootNote);
     const dayNumber = dateStr.substr(8, 2);
 

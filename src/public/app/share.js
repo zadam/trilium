@@ -17,5 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleMenuButton = document.getElementById('toggleMenuButton');
     const layout = document.getElementById('layout');
 
-    toggleMenuButton.addEventListener('click', () => layout.classList.toggle('showMenu'));
+    if (toggleMenuButton && layout) {
+        toggleMenuButton.addEventListener('click', () => layout.classList.toggle('showMenu'));
+    }
 }, false);

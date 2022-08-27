@@ -171,13 +171,13 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         }
     }
 
-    async executeInActiveCodeEditorEvent({callback}) {
-        if (!this.isActive()) {
+    async executeWithCodeEditorEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
             return;
         }
 
         await this.initialized;
 
-        callback(this.codeEditor);
+        resolve(this.codeEditor);
     }
 }

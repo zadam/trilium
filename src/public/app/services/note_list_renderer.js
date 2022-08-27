@@ -2,6 +2,7 @@ import linkService from "./link.js";
 import noteContentRenderer from "./note_content_renderer.js";
 import froca from "./froca.js";
 import attributeRenderer from "./attribute_renderer.js";
+import libraryLoader from "./library_loader.js";
 
 const TPL = `
 <div class="note-list">
@@ -60,27 +61,27 @@ const TPL = `
         padding-top: 10px;
     }
     
-    .note-book-title {
+    .note-book-header {
         margin-bottom: 0;
         word-break: break-all;
     }
     
     /* not-expanded title is limited to one line only */
-    .note-book-card:not(.expanded) .note-book-title {
+    .note-book-card:not(.expanded) .note-book-header {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
     
-    .note-book-title .rendered-note-attributes {
+    .note-book-header .rendered-note-attributes {
         font-size: medium;
     }
     
-    .note-book-title .rendered-note-attributes:before {
+    .note-book-header .rendered-note-attributes:before {
         content: "\\00a0\\00a0";
     }
     
-    .note-book-title .note-icon {
+    .note-book-header .note-icon {
         font-size: 100%;
         display: inline-block;
         padding-right: 7px;
@@ -112,7 +113,7 @@ const TPL = `
         max-height: 100%;
     }
     
-    .note-book-title {
+    .note-book-header {
         flex-grow: 0;
     }
     
@@ -198,6 +199,15 @@ class NoteListRenderer {
             return;
         }
 
+        const highlightedTokens = this.parentNote.highlightedTokens || [];
+        if (highlightedTokens.length > 0) {
+            await libraryLoader.requireLibrary(libraryLoader.MARKJS);
+
+            this.highlightRegex = new RegExp(highlightedTokens.join("|"), 'gi');
+        } else {
+            this.highlightRegex = null;
+        }
+
         this.$noteList.show();
 
         const $container = this.$noteList.find('.note-list-container').empty();
@@ -262,12 +272,13 @@ class NoteListRenderer {
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)
             .append(
-                $('<h5 class="note-book-title">')
+                $('<h5 class="note-book-header">')
                     .append($expander)
                     .append($('<span class="note-icon">').addClass(note.getIcon()))
                     .append(this.viewType === 'grid'
-                        ? note.title
-                        : await linkService.createNoteLink(notePath, {showTooltip: false, showNotePath: this.showNotePath})
+                        ? $('<span class="note-book-title">').text(note.title)
+                        : (await linkService.createNoteLink(notePath, {showTooltip: false, showNotePath: this.showNotePath}))
+                            .addClass("note-book-title")
                     )
                     .append($renderedAttributes)
             );
@@ -281,6 +292,15 @@ class NoteListRenderer {
 
         $expander.on('click', () => this.toggleContent($card, note, !$card.hasClass("expanded")));
 
+        if (this.highlightRegex) {
+            $card.find(".note-book-title").markRegExp(this.highlightRegex, {
+                element: "span",
+                className: "ck-find-result",
+                separateWordSearch: false,
+                caseSensitive: false
+            });
+        }
+
         await this.toggleContent($card, note, expand);
 
         return $card;
@@ -291,7 +311,7 @@ class NoteListRenderer {
             return;
         }
 
-        const $expander = $card.find('> .note-book-title .note-expander');
+        const $expander = $card.find('> .note-book-header .note-expander');
 
         if (expand || this.viewType === 'grid') {
             $card.addClass("expanded");
@@ -314,6 +334,15 @@ class NoteListRenderer {
             const {$renderedContent, type} = await noteContentRenderer.getRenderedContent(note, {
                 trim: this.viewType === 'grid' // for grid only short content is needed
             });
+
+            if (this.highlightRegex) {
+                $renderedContent.markRegExp(this.highlightRegex, {
+                    element: "span",
+                    className: "ck-find-result",
+                    separateWordSearch: false,
+                    caseSensitive: false
+                });
+            }
 
             $content.append($renderedContent);
             $content.addClass("type-" + type);

@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const safeCompare = require('safe-compare');
 
 const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
@@ -29,19 +30,67 @@ function addNoIndexHeader(note, res) {
     }
 }
 
+function requestCredentials(res) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="User Visible Realm", charset="UTF-8"')
+        .sendStatus(401);
+}
+
+function checkNoteAccess(noteId, req, res) {
+    const note = shaca.getNote(noteId);
+
+    if (!note) {
+        res.setHeader("Content-Type", "text/plain")
+            .status(404)
+            .send(`Note '${noteId}' not found`);
+
+        return false;
+    }
+
+    const credentials = note.getCredentials();
+
+    if (credentials.length === 0) {
+        return note;
+    }
+
+    const header = req.header("Authorization");
+
+    if (!header?.startsWith("Basic ")) {
+        requestCredentials(res);
+        return false;
+    }
+
+    const base64Str = header.substring("Basic ".length);
+    const buffer = Buffer.from(base64Str, 'base64');
+    const authString = buffer.toString('utf-8');
+
+    for (const credentialLabel of credentials) {
+        if (safeCompare(authString, credentialLabel.value)) {
+            return note; // success;
+        }
+    }
+
+    return false;
+}
+
 function register(router) {
-    function renderNote(note, res) {
+    function renderNote(note, req, res) {
         if (!note) {
             res.status(404).render("share/404");
+            return;
+        }
+
+        if (!checkNoteAccess(note.noteId, req, res)) {
+            requestCredentials(res);
+
             return;
         }
 
         addNoIndexHeader(note, res);
 
         if (note.hasLabel('shareRaw') || ['image', 'file'].includes(note.type)) {
-            res.setHeader('Content-Type', note.mime);
+            res.setHeader('Content-Type', note.mime)
+                .send(note.getContent());
 
-            res.send(note.getContent());
             return;
         }
 
@@ -63,7 +112,7 @@ function register(router) {
     router.get(['/share', '/share/'], (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        renderNote(shaca.shareRootNote, res);
+        renderNote(shaca.shareRootNote, req, res);
     });
 
     router.get('/share/:shareId', (req, res, next) => {
@@ -73,17 +122,15 @@ function register(router) {
 
         const note = shaca.aliasToNote[shareId] || shaca.notes[shareId];
 
-        renderNote(note, res);
+        renderNote(note, req, res);
     });
 
     router.get('/share/api/notes/:noteId', (req, res, next) => {
         shacaLoader.ensureLoad();
+        let note;
 
-        const {noteId} = req.params;
-        const note = shaca.getNote(noteId);
-
-        if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+        if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
+            return;
         }
 
         addNoIndexHeader(note, res);
@@ -94,11 +141,10 @@ function register(router) {
     router.get('/share/api/notes/:noteId/download', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        const {noteId} = req.params;
-        const note = shaca.getNote(noteId);
+        let note;
 
-        if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+        if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
+            return;
         }
 
         addNoIndexHeader(note, res);
@@ -119,16 +165,19 @@ function register(router) {
     router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        const image = shaca.getNote(req.params.noteId);
+        let image;
 
-        if (!image) {
-            return res.status(404).send(`Note '${req.params.noteId}' not found`);
+        if (!(image = checkNoteAccess(req.params.noteId, req, res))) {
+            return;
         }
-        else if (!["image", "canvas"].includes(image.type)) {
-            return res.status(400).send("Requested note is not a shareable image");
+
+        if (!["image", "canvas"].includes(image.type)) {
+            return res.setHeader('Content-Type', 'text/plain')
+                .status(400)
+                .send("Requested note is not a shareable image");
         } else if (image.type === "canvas") {
             /**
-             * special "image" type. the canvas is actually type application/json 
+             * special "image" type. the canvas is actually type application/json
              * to avoid bitrot and enable usage as referenced image the svg is included.
              */
             const content = image.getContent();
@@ -141,7 +190,9 @@ function register(router) {
                 res.set("Cache-Control", "no-cache, no-store, must-revalidate");
                 res.send(svg);
             } catch(err) {
-                res.status(500).send("there was an error parsing excalidraw to svg");
+                res.setHeader('Content-Type', 'text/plain')
+                    .status(500)
+                    .send("there was an error parsing excalidraw to svg");
             }
         } else {
             // normal image
@@ -155,11 +206,10 @@ function register(router) {
     router.get('/share/api/notes/:noteId/view', (req, res, next) => {
         shacaLoader.ensureLoad();
 
-        const {noteId} = req.params;
-        const note = shaca.getNote(noteId);
+        let note;
 
-        if (!note) {
-            return res.status(404).send(`Note '${noteId}' not found`);
+        if (!(note = checkNoteAccess(req.params.noteId, req, res))) {
+            return;
         }
 
         addNoIndexHeader(note, res);

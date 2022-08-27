@@ -7,7 +7,6 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 const fs = require('fs');
-const noteRevisionService = require("../../services/note_revisions");
 const becca = require("../../becca/becca");
 
 function getNote(req) {
@@ -53,11 +52,11 @@ function createNote(req) {
     };
 }
 
-function updateNote(req) {
-    const note = req.body;
-    const noteId = req.params.noteId;
+function updateNoteContent(req) {
+    const {content} = req.body;
+    const {noteId} = req.params;
 
-    return noteService.updateNote(noteId, note);
+    return noteService.updateNoteContent(noteId, content);
 }
 
 function deleteNote(req) {
@@ -94,13 +93,13 @@ function undeleteNote(req) {
 
 function sortChildNotes(req) {
     const noteId = req.params.noteId;
-    const {sortBy, sortDirection} = req.body;
+    const {sortBy, sortDirection, foldersFirst} = req.body;
 
-    log.info(`Sorting '${noteId}' children with ${sortBy} ${sortDirection}`);
+    log.info(`Sorting '${noteId}' children with ${sortBy} ${sortDirection}, foldersFirst=${foldersFirst}`);
 
     const reverse = sortDirection === 'desc';
 
-    treeService.sortNotes(noteId, sortBy, reverse);
+    treeService.sortNotes(noteId, sortBy, reverse, foldersFirst);
 }
 
 function protectNote(req) {
@@ -182,6 +181,7 @@ function getRelationMap(req) {
 
             if (def.inverseRelation) {
                 resp.inverseRelations[relationDefinition.getDefinedName()] = def.inverseRelation;
+                resp.inverseRelations[def.inverseRelation] = relationDefinition.getDefinedName();
             }
         }
     }
@@ -206,7 +206,7 @@ function changeTitle(req) {
     const noteTitleChanged = note.title !== title;
 
     if (noteTitleChanged) {
-        noteService.saveNoteRevision(note);
+        noteService.saveNoteRevisionIfNeeded(note);
     }
 
     note.title = title;
@@ -294,7 +294,7 @@ function uploadModifiedFile(req) {
 
     log.info(`Updating note '${noteId}' with content from ${filePath}`);
 
-    noteRevisionService.createNoteRevision(note);
+    note.saveNoteRevision();
 
     const fileContent = fs.readFileSync(filePath);
 
@@ -315,14 +315,14 @@ function getBacklinkCount(req) {
     }
     else {
         return {
-            count: note.getTargetRelations().length
+            count: note.getTargetRelations().filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).length
         };
     }
 }
 
 module.exports = {
     getNote,
-    updateNote,
+    updateNoteContent,
     deleteNote,
     undeleteNote,
     createNote,

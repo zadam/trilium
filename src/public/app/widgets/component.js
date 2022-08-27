@@ -16,7 +16,7 @@ export default class Component {
         this.componentId = `comp-` + this.sanitizedClassName + '-' + utils.randomString(8);
         /** @type Component[] */
         this.children = [];
-        this.initialized = Promise.resolve();
+        this.initialized = null;
     }
 
     get sanitizedClassName() {
@@ -42,10 +42,16 @@ export default class Component {
 
     /** @returns {Promise} */
     handleEvent(name, data) {
-        return Promise.all([
-            this.initialized.then(() => this.callMethod(this[name + 'Event'], data)),
-            this.handleEventInChildren(name, data)
-        ]);
+        const callMethodPromise = this.initialized
+            ? this.initialized.then(() => this.callMethod(this[name + 'Event'], data))
+            : this.callMethod(this[name + 'Event'], data);
+
+        const childrenPromise = this.handleEventInChildren(name, data);
+
+        // don't create promises if not needed (optimization)
+        return callMethodPromise && childrenPromise
+            ? Promise.all([callMethodPromise, childrenPromise])
+            : (callMethodPromise || childrenPromise);
     }
 
     /** @returns {Promise} */
@@ -58,10 +64,15 @@ export default class Component {
         const promises = [];
 
         for (const child of this.children) {
-            promises.push(child.handleEvent(name, data));
+            const ret = child.handleEvent(name, data);
+
+            if (ret) {
+                promises.push(ret);
+            }
         }
 
-        return Promise.all(promises);
+        // don't create promises if not needed (optimization)
+        return promises.length > 0 ? Promise.all(promises) : null;
     }
 
     /** @returns {Promise} */
@@ -76,9 +87,9 @@ export default class Component {
         }
     }
 
-    async callMethod(fun, data) {
+    callMethod(fun, data) {
         if (typeof fun !== 'function') {
-            return false;
+            return;
         }
 
         const startTime = Date.now();
@@ -91,14 +102,10 @@ export default class Component {
             console.log(`Call to ${fun.name} in ${this.componentId} took ${took}ms`);
         }
 
-        if (glob.isDev) {
-            await utils.timeLimit(promise, 20000, `Time limit failed on ${this.constructor.name} with ${fun.name}`);
-        }
-        else {
-            // cheaper and in non-dev the extra reporting is lost anyway through reload
-            await promise;
+        if (glob.isDev && promise) {
+            return utils.timeLimit(promise, 20000, `Time limit failed on ${this.constructor.name} with ${fun.name}`);
         }
 
-        return true;
+        return promise;
     }
 }

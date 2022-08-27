@@ -16,6 +16,7 @@ import protectedSessionService from "../services/protected_session.js";
 import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import dialogService from "./dialog.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -307,14 +308,47 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 const targetType = data.targetType;
                 const node = data.node;
 
-                if (targetType === 'title' || targetType === 'icon') {
+                if (node.isSelected() && targetType === 'icon') {
+                    this.triggerCommand('openBulkActionsDialog', {
+                        selectedOrActiveNoteIds: this.getSelectedOrActiveNoteIds(node)
+                    });
+
+                    return false;
+                }
+                else if (targetType === 'title' || targetType === 'icon') {
                     if (event.shiftKey) {
-                        node.setSelected(!node.isSelected());
+                        const activeNode = this.getActiveNode();
+
+                        if (activeNode.getParent() !== node.getParent()) {
+                            return;
+                        }
+
+                        this.clearSelectedNodes();
+
+                        function selectInBetween(first, second) {
+                            for (let i = 0; first && first !== second && i < 10000; i++) {
+                                first.setSelected(true);
+                                first = first.getNextSibling();
+                            }
+
+                            second.setSelected();
+                        }
+
+                        if (activeNode.getIndex() < node.getIndex()) {
+                            selectInBetween(activeNode, node);
+                        } else {
+                            selectInBetween(node, activeNode);
+                        }
+
                         node.setFocus(true);
                     }
                     else if (event.ctrlKey) {
                         const notePath = treeService.getNotePath(node);
                         appContext.tabManager.openTabWithNoteWithHoisting(notePath);
+                    }
+                    else if (event.altKey) {
+                        node.setSelected(!node.isSelected());
+                        node.setFocus(true);
                     }
                     else if (data.node.isActive()) {
                         // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note
@@ -368,9 +402,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         (['after', 'before'].includes(data.hitMode)
                             && (node.data.noteId === hoistedNoteService.getHoistedNoteId() || node.getParent().data.noteType === 'search'))) {
 
-                        const infoDialog = await import('../dialogs/info.js');
-
-                        await infoDialog.info("Dropping notes into this location is not allowed.");
+                        await dialogService.info("Dropping notes into this location is not allowed.");
 
                         return;
                     }
@@ -399,7 +431,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                             notes = JSON.parse(jsonStr);
                         }
                         catch (e) {
-                            logError(`Cannot parse ${jsonStr} into notes for drop`);
+                            logError(`Cannot parse JSON '${jsonStr}' into notes for drop`);
                             return;
                         }
 
@@ -481,8 +513,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 if (isHoistedNote) {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
 
-                    $unhoistButton.on('click', () => alert("bebe"));
-
                     $span.append($unhoistButton);
                 }
 
@@ -513,6 +543,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         subNode.load();
                     }
                 });
+            },
+            select: (event, {node}) => {
+                $(node.span).find(".fancytree-custom-icon").attr("title",
+                    node.isSelected() ? "Apply bulk actions on selected notes" : "");
             }
         });
 
@@ -669,7 +703,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             const notSearchParents = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
-                .map(note => note.type !== 'search');
+                .filter(note => note.type !== 'search');
 
             if (notSearchParents.length > 1) {
                 extraClasses.push("multiple-parents");
@@ -731,7 +765,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         await this.batchUpdate(async () => {
             await node.load(true);
 
-            if (node.data.noteId !== 'root') { // root is always expanded
+            if (node.data.noteId !== hoistedNoteService.getHoistedNoteId()) { // hoisted note should be always expanded
                 await node.setExpanded(isExpanded, {noEvents: true, noAnimation: true});
             }
         });
@@ -1259,6 +1293,15 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         return nodes.map(node => node.data.branchId);
     }
 
+    /**
+     * @param {FancytreeNode} node
+     */
+    getSelectedOrActiveNoteIds(node) {
+        const nodes = this.getSelectedOrActiveNodes(node);
+
+        return nodes.map(node => node.data.noteId);
+    }
+
     async deleteNotesCommand({node}) {
         const branchIds = this.getSelectedOrActiveBranchIds(node)
             .filter(branchId => !branchId.startsWith('virt-')); // search results can't be deleted
@@ -1378,14 +1421,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.collapseTree(node);
     }
 
-    sortChildNotesCommand({node}) {
-        import("../dialogs/sort_child_notes.js").then(d => d.showDialog(node.data.noteId));
-    }
-
     async recentChangesInSubtreeCommand({node}) {
-        const recentChangesDialog = await import('../dialogs/recent_changes.js');
-
-        recentChangesDialog.showDialog(node.data.noteId);
+        this.triggerCommand("showRecentChanges", {ancestorNoteId: node.data.noteId});
     }
 
     selectAllNotesInParentCommand({node}) {
@@ -1411,15 +1448,13 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     async exportNoteCommand({node}) {
-        const exportDialog = await import('../dialogs/export.js');
         const notePath = treeService.getNotePath(node);
 
-        exportDialog.showDialog(notePath,"subtree");
+        this.triggerCommand("showExportDialog", {notePath, defaultType: "subtree"});
     }
 
     async importIntoNoteCommand({node}) {
-        const importDialog = await import('../dialogs/import.js');
-        importDialog.showDialog(node.data.noteId);
+        this.triggerCommand("showImportDialog", {noteId: node.data.noteId});
     }
 
     forceNoteSyncCommand({node}) {

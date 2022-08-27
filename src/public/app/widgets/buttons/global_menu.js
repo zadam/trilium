@@ -1,6 +1,7 @@
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 import UpdateAvailableWidget from "./update_available.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <div class="dropdown global-menu dropright">
@@ -36,6 +37,10 @@ const TPL = `
         height: 100%;
             
         pointer-events: none;
+    }
+
+    .update-to-latest-version-button {
+        display: none;
     }
     </style>
 
@@ -132,8 +137,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         $button.tooltip({ trigger: "hover" });
         $button.on("click", () => $button.tooltip("hide"));
 
-        this.$widget.find(".show-about-dialog-button").on('click',
-            () => import("../../dialogs/about.js").then(d => d.showDialog()));
+        this.$widget.find(".show-about-dialog-button").on('click', () => this.triggerCommand("openAboutDialog"));
 
         const isElectron = utils.isElectron();
 
@@ -157,10 +161,12 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     async updateVersionStatus() {
+        if (options.get("checkForUpdates") !== 'true') {
+            return;
+        }
+
         const latestVersion = await this.fetchLatestVersion();
-
         this.updateAvailableWidget.updateVersionStatus(latestVersion);
-
         this.$updateToLatestVersionButton.toggle(latestVersion > glob.triliumVersion);
         this.$updateToLatestVersionButton.find(".version-text").text(`Version ${latestVersion} is available, click to download.`);
     }

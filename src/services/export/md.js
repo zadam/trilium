@@ -7,7 +7,7 @@ let instance = null;
 
 function toMarkdown(content) {
     if (instance === null) {
-        instance = new TurndownService();
+        instance = new TurndownService({ codeBlockStyle: 'fenced' });
         instance.use(turndownPluginGfm.gfm);
     }
 

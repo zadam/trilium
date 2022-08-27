@@ -3,6 +3,7 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import toastService from "../../services/toast.js";
 import openService from "../../services/open.js";
 import utils from "../../services/utils.js";
+import protectedSessionHolder from "../../services/protected_session_holder.js";
 
 const TPL = `
 <div class="file-properties-widget">
@@ -139,5 +140,7 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         this.$openButton.toggle(!note.isProtected);
+        this.$downloadButton.toggle(!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable())
+        this.$uploadNewRevisionButton.toggle(!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable())
     }
 }

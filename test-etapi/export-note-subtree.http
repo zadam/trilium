@@ -1,0 +1,37 @@
+GET {{triliumHost}}/etapi/notes/root/export
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.headers.valueOf("Content-Type") == "application/zip");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root/export?format=html
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.headers.valueOf("Content-Type") == "application/zip");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root/export?format=markdown
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.headers.valueOf("Content-Type") == "application/zip");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/root/export?format=wrong
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 400);
+    client.assert(response.body.code === "UNRECOGNIZED_EXPORT_FORMAT");
+%}

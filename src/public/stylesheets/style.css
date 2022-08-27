@@ -169,12 +169,6 @@ div.ui-tooltip {
     float: right;
 }
 
-#note-source {
-    height: 98%;
-    width: 100%;
-    overflow: scroll;
-}
-
 .suppressed {
     display: none;
 }
@@ -192,6 +186,7 @@ div.ui-tooltip {
 .dropdown-menu a:hover:not(.disabled), .dropdown-item:hover:not(.disabled) {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
+    border-color: var(--hover-item-border-color) !important;
     cursor: pointer;
 }
 
@@ -210,17 +205,20 @@ div.ui-tooltip {
     padding-bottom: 0;
 }
 
-.dropdown-item {
+.dropdown-item, .dropdown-header {
     color: var(--menu-text-color) !important;
+    border: 1px solid transparent !important;
 }
 
 .dropdown-item.disabled, .dropdown-item.disabled kbd {
     color: #aaa !important;
 }
 
-.dropdown-item.active {
+.dropdown-item.active, .dropdown-item:focus {
     color: var(--active-item-text-color) !important;
     background-color: var(--active-item-background-color) !important;
+    border-color: var(--active-item-border-color) !important;
+    outline: none;
 }
 
 .CodeMirror {
@@ -241,8 +239,8 @@ body .CodeMirror {
     background-color: #eeeeee
 }
 
-.CodeMirror pre.CodeMirror-placeholder { 
-    color: #999 !important; 
+.CodeMirror pre.CodeMirror-placeholder {
+    color: #999 !important;
 }
 
 #sql-console-query {
@@ -359,7 +357,9 @@ pre:not(.CodeMirror-line) {
 
 .go-to-selected-note-button.disabled, .go-to-selected-note-button.disabled:hover {
     cursor: inherit;
-    color: var(--button-disabled-background-color) !important;
+    color: var(--button-disabled-text-color) !important;
+    background-color: var(--button-disabled-background-color) !important;
+    text-decoration: none;
 }
 
 .note-autocomplete-input {
@@ -473,8 +473,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
-    color: var(--hover-item-text-color);
-    background-color: var(--hover-item-background-color);
+    color: var(--active-item-text-color);
+    background-color: var(--active-item-background-color);
 }
 
 .help-button {
@@ -540,25 +540,6 @@ div[data-notify="container"] {
     font-size: 150%;
 }
 
-#export-form .form-check {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-#export-form .format-choice {
-    padding-left: 40px;
-    display: none;
-}
-
-#export-form #opml-versions {
-    padding-left: 60px;
-    display: none;
-}
-
-#export-form .form-check-label {
-    padding: 2px;
-}
-
 .ck-editor__is-empty.ck-content.ck-editor__editable::before {
     content: 'You can start writing note here ...';
     position: absolute;
@@ -619,11 +600,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 
 .modal-header {
     padding: 0.7rem 1rem 0 1rem !important; /* make modal header padding slightly smaller */
-}
-
-.floating-button {
-    position: absolute !important;
-    z-index: 100;
 }
 
 #toast-container {
@@ -868,6 +844,7 @@ body {
     box-shadow: 10px 10px 93px -25px black;
     padding: 10px 15px 10px 15px !important;
     width: 600px;
+    white-space: normal;
 }
 
 .help-dropdown .dropdown-menu pre {
@@ -943,7 +920,6 @@ input {
     border: 0;
     height: 100%;
     overflow: auto;
-    max-height: 300px;
 }
 
 #right-pane .card-body ul {
@@ -965,4 +941,9 @@ input {
 
 .note-split.full-content-width {
     max-width: 999999px;
+}
+
+button.close:hover {
+    text-shadow: none;
+    color: currentColor;
 }

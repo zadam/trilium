@@ -103,8 +103,20 @@ class BasicWidget extends Component {
         this.$widget.toggleClass('hidden-int', !show);
     }
 
+    isHiddenInt() {
+        return this.$widget.hasClass('hidden-int');
+    }
+
     toggleExt(show) {
         this.$widget.toggleClass('hidden-ext', !show);
+    }
+
+    isHiddenExt() {
+        return this.$widget.hasClass('hidden-ext');
+    }
+
+    canBeShown() {
+        return !this.isHiddenInt() && !this.isHiddenExt();
     }
 
     isVisible() {
@@ -121,7 +133,7 @@ class BasicWidget extends Component {
         }
     }
 
-    getNtxId() {
+    getClosestNtxId() {
         if (this.$widget) {
             return this.$widget.closest("[data-ntx-id]").attr("data-ntx-id");
         }

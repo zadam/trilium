@@ -3,6 +3,7 @@ import branchService from "../services/branches.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
 import syncService from "../services/sync.js";
+import dialogService from "./dialog.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
     isEnabled() {
@@ -36,11 +37,9 @@ export default class SharedSwitchWidget extends SwitchWidget {
         }
 
         if (this.note.getParentBranches().length === 1) {
-            const confirmDialog = await import('../dialogs/confirm.js');
-
             const text = "This note exists only as a shared note, unsharing would delete it. Do you want to continue and thus delete this note?";
 
-            if (!await confirmDialog.confirm(text)) {
+            if (!await dialogService.confirm(text)) {
                 return;
             }
         }

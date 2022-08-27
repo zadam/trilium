@@ -6,6 +6,7 @@ const log = require('./log');
 const sql = require("./sql");
 const becca = require("../becca/becca");
 const specialNotesService = require("../services/special_notes");
+const protectedSessionService = require("../services/protected_session");
 
 function getRunAtHours(note) {
     try {
@@ -59,4 +60,6 @@ sqlInit.dbReady.then(() => {
 
         setTimeout(cls.wrap(() => specialNotesService.createMissingSpecialNotes()), 10 * 1000);
     }
+
+    setInterval(() => protectedSessionService.checkProtectedSessionExpiration(), 30000);
 });

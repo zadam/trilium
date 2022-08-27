@@ -5,14 +5,6 @@ import ws from "../../services/ws.js";
 import toastService from "../../services/toast.js";
 import treeService from "../../services/tree.js";
 
-import DeleteNoteSearchAction from "../search_actions/delete_note.js";
-import DeleteLabelSearchAction from "../search_actions/delete_label.js";
-import DeleteRelationSearchAction from "../search_actions/delete_relation.js";
-import RenameLabelSearchAction from "../search_actions/rename_label.js";
-import SetLabelValueSearchAction from "../search_actions/set_label_value.js";
-import SetRelationTargetSearchAction from "../search_actions/set_relation_target.js";
-import RenameRelationSearchAction from "../search_actions/rename_relation.js";
-import ExecuteScriptSearchAction from "../search_actions/execute_script.js"
 import SearchString from "../search_options/search_string.js";
 import FastSearch from "../search_options/fast_search.js";
 import Ancestor from "../search_options/ancestor.js";
@@ -20,10 +12,9 @@ import IncludeArchivedNotes from "../search_options/include_archived_notes.js";
 import OrderBy from "../search_options/order_by.js";
 import SearchScript from "../search_options/search_script.js";
 import Limit from "../search_options/limit.js";
-import DeleteNoteRevisionsSearchAction from "../search_actions/delete_note_revisions.js";
 import Debug from "../search_options/debug.js";
 import appContext from "../../services/app_context.js";
-import MoveNoteSearchAction from "../search_actions/move_note.js";
+import bulkActionService from "../../services/bulk_action.js";
 
 const TPL = `
 <div class="search-definition-widget">
@@ -72,6 +63,10 @@ const TPL = `
 
     .add-search-option button {
         margin-top: 5px; /* to give some spacing when buttons overflow on the next line */
+    }
+    
+    .dropdown-header {
+        background-color: var(--accented-background-color);
     }
     </style>
 
@@ -127,30 +122,7 @@ const TPL = `
                         <span class="bx bxs-zap"></span>
                         action
                       </button>
-                      <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" data-action-add="moveNote">
-                            Move note</a>
-                        <a class="dropdown-item" href="#" data-action-add="deleteNote">
-                            Delete note</a>
-                        <a class="dropdown-item" href="#" data-action-add="deleteNoteRevisions">
-                            Delete note revisions</a>
-                        <a class="dropdown-item" href="#" data-action-add="moveNote">
-                            Delete note revisions</a>
-                        <a class="dropdown-item" href="#" data-action-add="deleteLabel">
-                            Delete label</a>
-                        <a class="dropdown-item" href="#" data-action-add="deleteRelation">
-                            Delete relation</a>
-                        <a class="dropdown-item" href="#" data-action-add="renameLabel">
-                            Rename label</a>
-                        <a class="dropdown-item" href="#" data-action-add="renameRelation">
-                            Rename relation</a>
-                        <a class="dropdown-item" href="#" data-action-add="setLabelValue">
-                            Set label value</a>
-                        <a class="dropdown-item" href="#" data-action-add="setRelationTarget">
-                            Set relation target</a>
-                        <a class="dropdown-item" href="#" data-action-add="executeScript">
-                            Execute script</a>
-                      </div>
+                      <div class="dropdown-menu action-list"></div>
                     </div>
                 </td>
             </tr>
@@ -195,24 +167,11 @@ const OPTION_CLASSES = [
     Debug
 ];
 
-const ACTION_CLASSES = {};
-
-for (const clazz of [
-    MoveNoteSearchAction,
-    DeleteNoteSearchAction,
-    DeleteNoteRevisionsSearchAction,
-    DeleteLabelSearchAction,
-    DeleteRelationSearchAction,
-    RenameLabelSearchAction,
-    RenameRelationSearchAction,
-    SetLabelValueSearchAction,
-    SetRelationTargetSearchAction,
-    ExecuteScriptSearchAction
-]) {
-    ACTION_CLASSES[clazz.actionName] = clazz;
-}
-
 export default class SearchDefinitionWidget extends NoteContextAwareWidget {
+    get name() {
+        return "searchDefinition";
+    }
+
     isEnabled() {
         return this.note && this.note.type === 'search';
     }
@@ -230,6 +189,19 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         this.$widget = $(TPL);
         this.contentSized();
         this.$component = this.$widget.find('.search-definition-widget');
+        this.$actionList = this.$widget.find('.action-list');
+
+        for (const actionGroup of bulkActionService.ACTION_GROUPS) {
+            this.$actionList.append($('<h6 class="dropdown-header">').append(actionGroup.title));
+
+            for (const action of actionGroup.actions) {
+                this.$actionList.append(
+                    $('<a class="dropdown-item" href="#">')
+                        .attr('data-action-add', action.actionName)
+                        .text(action.actionTitle)
+                );
+            }
+        }
 
         this.$widget.on('click', '[data-search-option-add]', async event => {
             const searchOptionName = $(event.target).attr('data-search-option-add');
@@ -246,19 +218,11 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         });
 
         this.$widget.on('click', '[data-action-add]', async event => {
-            const actionName = $(event.target).attr('data-action-add');
-
-            await server.post(`notes/${this.noteId}/attributes`, {
-                type: 'label',
-                name: 'action',
-                value: JSON.stringify({
-                    name: actionName
-                })
-            });
-
             this.$widget.find('.action-add-toggle').dropdown('toggle');
 
-            await ws.waitForMaxKnownEntityChangeId();
+            const actionName = $(event.target).attr('data-action-add');
+
+            await bulkActionService.addAction(this.noteId, actionName);
 
             this.refresh();
         });
@@ -321,35 +285,13 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
             }
         }
 
-        this.$actionOptions.empty();
+        const actions = bulkActionService.parseActions(this.note);
 
-        const actionLabels = this.note.getLabels('action');
+        this.$actionOptions
+            .empty()
+            .append(...actions.map(action => action.render()));
 
-        for (const actionAttr of actionLabels) {
-            let actionDef;
-
-            try {
-                actionDef = JSON.parse(actionAttr.value);
-            }
-            catch (e) {
-                logError(`Parsing of attribute: '${actionAttr.value}' failed with error: ${e.message}`);
-                continue;
-            }
-
-            const ActionClass = ACTION_CLASSES[actionDef.name];
-
-            if (!ActionClass) {
-                logError(`No action class for '${actionDef.name}' found.`);
-                continue;
-            }
-
-            const action = new ActionClass(actionAttr, actionDef).setParent(this);
-            this.child(action);
-
-            this.$actionOptions.append(action.render());
-        }
-
-        this.$searchAndExecuteButton.css('visibility', actionLabels.length > 0 ? 'visible' : 'hidden');
+        this.$searchAndExecuteButton.css('visibility', actions.length > 0 ? 'visible' : 'hidden');
     }
 
     getContent() {
@@ -362,5 +304,12 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
         this.triggerCommand('refreshResults');
 
         toastService.showMessage('Actions have been executed.', 3000);
+    }
+
+    entitiesReloadedEvent({loadResults}) {
+        // only refreshing deleted attrs, otherwise components update themselves
+        if (loadResults.getAttributes().find(attr => attr.type === 'label' && attr.name === 'action' && attr.isDeleted)) {
+            this.refresh();
+        }
     }
 }

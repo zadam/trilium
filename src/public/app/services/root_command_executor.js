@@ -8,58 +8,11 @@ import options from "./options.js";
 import froca from "./froca.js";
 
 export default class RootCommandExecutor extends Component {
-    jumpToNoteCommand() {
-        import("../dialogs/jump_to_note.js").then(d => d.showDialog());
-    }
-
-    showRecentChangesCommand() {
-        import("../dialogs/recent_changes.js").then(d => d.showDialog());
-    }
-
-    showNoteRevisionsCommand() {
-        import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
-    }
-
-    showNoteSourceCommand() {
-        import("../dialogs/note_source.js").then(d => d.showDialog());
-    }
-
-    pasteMarkdownIntoTextCommand() {
-        import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
-    }
-
-    async editBranchPrefixCommand() {
-        const notePath = appContext.tabManager.getActiveContextNotePath();
-
-        if (notePath) {
-            const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
-            editBranchPrefixDialog.showDialog(notePath);
-        }
-    }
-
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
         noteContext.readOnlyTemporarilyDisabled = true;
 
         appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
-    }
-
-    async cloneNoteIdsToCommand({noteIds}) {
-        const d = await import("../dialogs/clone_to.js");
-        d.showDialog(noteIds);
-    }
-
-    async moveBranchIdsToCommand({branchIds}) {
-        const d = await import("../dialogs/move_to.js");
-        d.showDialog(branchIds);
-    }
-
-    showOptionsCommand({openTab}) {
-        import("../dialogs/options.js").then(d => d.showDialog(openTab));
-    }
-
-    showHelpCommand() {
-        import("../dialogs/help.js").then(d => d.showDialog());
     }
 
     async showSQLConsoleCommand() {
@@ -88,10 +41,6 @@ export default class RootCommandExecutor extends Component {
         const noteId = treeService.getNoteIdFromNotePath(notePath);
 
         this.searchNotesCommand({ancestorNoteId: noteId});
-    }
-
-    showBackendLogCommand() {
-        import("../dialogs/backend_log.js").then(d => d.showDialog());
     }
 
     openNoteExternallyCommand() {

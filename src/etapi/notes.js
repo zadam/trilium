@@ -7,6 +7,7 @@ const TaskContext = require("../services/task_context");
 const v = require("./validators");
 const searchService = require("../services/search/services/search");
 const SearchContext = require("../services/search/search_context");
+const zipExportService = require("../services/export/zip");
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
@@ -122,6 +123,25 @@ function register(router) {
         note.setContent(req.body);
 
         return res.sendStatus(204);
+    });
+
+    eu.route(router, 'get' ,'/etapi/notes/:noteId/export', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+        const format = req.query.format || "html";
+
+        if (!["html", "markdown"].includes(format)) {
+            throw new eu.EtapiError(400, "UNRECOGNIZED_EXPORT_FORMAT", `Unrecognized export format '${format}', supported values are 'html' (default) or 'markdown'`);
+        }
+
+        const taskContext = new TaskContext('no-progress-reporting');
+
+        // technically a branch is being exported (includes prefix), but it's such a minor difference yet usability pain
+        // (e.g. branchIds are not seen in UI), that we export "note export" instead.
+        const branch = note.getParentBranches()[0];
+
+        console.log(note.getParentBranches());
+
+        zipExportService.exportToZip(taskContext, branch, format, res);
     });
 }
 

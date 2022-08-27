@@ -8,8 +8,9 @@ import linkContextMenuService from "../services/link_context_menu.js";
 
 const TPL = `<div class="note-map-widget" style="position: relative;">
     <style>
-        .type-special .note-detail, .note-detail-note-map {
+        .note-detail-note-map {
             height: 100%;
+            overflow: hidden;
         }
         
         .map-type-switcher {
@@ -25,9 +26,9 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
         }
     </style>
     
-    <div class="btn-group btn-group-sm map-type-switcher floating-button" role="group">
-      <button type="button" class="btn icon-button bx bx-network-chart" title="Link Map" data-type="link"></button>
-      <button type="button" class="btn icon-button bx bx-sitemap" title="Tree map" data-type="tree"></button>
+    <div class="btn-group btn-group-sm map-type-switcher" role="group">
+      <button type="button" class="btn bx bx-network-chart" title="Link Map" data-type="link"></button>
+      <button type="button" class="btn bx bx-sitemap" title="Tree map" data-type="tree"></button>
     </div>
 
     <div class="style-resolver"></div>
@@ -51,7 +52,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         this.$container = this.$widget.find(".note-map-container");
         this.$styleResolver = this.$widget.find('.style-resolver');
 
-        window.addEventListener('resize', () => this.setHeight(), false);
+        window.addEventListener('resize', () => this.setDimensions(), false);
 
         this.$widget.find(".map-type-switcher button").on("click",  async e => {
             const type = $(e.target).closest("button").attr("data-type");
@@ -62,7 +63,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         super.doRender();
     }
 
-    setHeight() {
+    setDimensions() {
         if (!this.graph) { // no graph has been even rendered
             return;
         }
@@ -85,7 +86,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         this.mapType = this.note.getLabelValue("mapType") === "tree" ? "tree" : "link";
 
-        this.setHeight();
+        this.setDimensions();
 
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 

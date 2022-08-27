@@ -5,7 +5,7 @@ import noteCreateService from './note_create.js';
 import treeService from './tree.js';
 import froca from "./froca.js";
 
-// this key needs to have this value so it's hit by the tooltip
+// this key needs to have this value, so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
 const SELECTED_EXTERNAL_LINK_KEY = "data-external-link";
@@ -89,6 +89,11 @@ function showRecentNotes($el) {
     $el.setSelectedNotePath("");
     $el.autocomplete("val", "");
     $el.trigger('focus');
+
+    // simulate pressing down arrow to trigger autocomplete
+    const e = $.Event('keydown');
+    e.which = 40; // arrow down
+    $el.trigger(e);
 }
 
 function initNoteAutocomplete($el, options) {
@@ -140,7 +145,9 @@ function initNoteAutocomplete($el, options) {
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
-        openOnFocus: true,
+        // openOnFocus has to be false, otherwise re-focus (after return from note type chooser dialog) forces
+        // re-querying of the autocomplete source which then changes currently selected suggestion
+        openOnFocus: false,
         minLength: 0,
         tabAutocomplete: false
     }, [
@@ -170,9 +177,17 @@ function initNoteAutocomplete($el, options) {
         }
 
         if (suggestion.action === 'create-note') {
+            const {success, noteType, templateNoteId} = await noteCreateService.chooseNoteType();
+
+            if (!success) {
+                return;
+            }
+
             const {note} = await noteCreateService.createNote(suggestion.parentNoteId, {
                 title: suggestion.noteTitle,
-                activate: false
+                activate: false,
+                type: noteType,
+                templateNoteId: templateNoteId
             });
 
             suggestion.notePath = treeService.getSomeNotePath(note);
@@ -261,7 +276,6 @@ function init() {
 }
 
 export default {
-    autocompleteSource,
     autocompleteSourceForCKEditor,
     initNoteAutocomplete,
     showRecentNotes,

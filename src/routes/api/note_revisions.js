@@ -65,11 +65,15 @@ function downloadNoteRevision(req, res) {
     const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.noteId !== req.params.noteId) {
-        return res.status(400).send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
+        return res.setHeader("Content-Type", "text/plain")
+            .status(400)
+            .send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
     }
 
     if (noteRevision.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
-        return res.status(401).send("Protected session not available");
+        return res.setHeader("Content-Type", "text/plain")
+            .status(401)
+            .send("Protected session not available");
     }
 
     const filename = getRevisionFilename(noteRevision);
@@ -97,7 +101,7 @@ function restoreNoteRevision(req) {
     if (noteRevision) {
         const note = noteRevision.getNote();
 
-        noteRevisionService.createNoteRevision(note);
+        note.saveNoteRevision();
 
         note.title = noteRevision.title;
         note.setContent(noteRevision.getContent());

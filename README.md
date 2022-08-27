@@ -7,7 +7,7 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
 
-Ukraine is currently suffering from Russian aggression, please consider donating to [one of these charities](https://old.reddit.com/r/ukraine/comments/s6g5un/want_to_support_ukraine_heres_a_list_of_charities/).
+Ukraine is currently defending itself from Russian aggression, please consider [donating to Ukrainian Army or humanitarian charities](https://standforukraine.com/).
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Flag_of_Ukraine.svg" alt="drawing" width="600"/>
 
@@ -23,6 +23,7 @@ Ukraine is currently suffering from Russian aggression, please consider donating
   * there's a [3rd party service for hosting synchronisation server](https://trilium.cc/paid-hosting)
 * [Sharing](https://github.com/zadam/trilium/wiki/Sharing) (publishing) notes to public internet
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes) with per-note granularity
+* Sketching diagrams with bult-in Excalidraw (note type "canvas")
 * [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map) for visualizing notes and their relations
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * [REST API](https://github.com/zadam/trilium/wiki/ETAPI) for automation
@@ -39,6 +40,10 @@ Trilium is provided as either desktop application (Linux and Windows) or web app
 * If you want to use Trilium on the desktop, download binary release for your platform from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
   * Currently only recent Chrome and Firefox are supported (tested) browsers.
+
+Trilium is also provided as a Flatpak:
+
+[<img width="240" src="https://flathub.org/assets/badges/flathub-badge-en.png">](https://flathub.org/apps/details/com.github.zadam.trilium)
 
 ## Documentation
 

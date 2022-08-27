@@ -71,7 +71,7 @@ katex.__defineMacro("\\tripledash", "{\\vphantom{-}\\raisebox{2.56mu}{$\\mkern2m
 var chemParse = function chemParse(tokens, stateMachine) {
   // Recreate the argument string from KaTeX's array of tokens.
   var str = "";
-  var expectedLoc = tokens[tokens.length - 1].loc.start;
+  var expectedLoc = tokens.length && tokens[tokens.length - 1].loc.start;
 
   for (var i = tokens.length - 1; i >= 0; i--) {
     if (tokens[i].loc.start > expectedLoc) {

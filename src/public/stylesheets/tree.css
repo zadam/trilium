@@ -157,29 +157,32 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     padding-left: 20px;
 }
 
+span.fancytree-active {
+    color: var(--active-item-text-color) !important;
+    background-color: var(--active-item-background-color) !important;
+    border-color: transparent; /* invisible border */
+    border-radius: 5px;
+}
+
 span.fancytree-active .fancytree-title {
     font-weight: bold;
     border: 0;
 }
 
-span.fancytree-active {
+span.fancytree-selected {
     border-color: var(--main-border-color) !important;
     border-radius: 5px;
 }
 
-span.fancytree-active, span.fancytree-active.fancytree-selected {
-    color: var(--active-item-text-color) !important;
-    background-color: var(--active-item-background-color) !important;
-    border-color: var(--main-background-color) !important; /* invisible border */
-    border-radius: 5px;
+span.fancytree-selected .fancytree-title {
+    text-decoration: underline;
+    font-style: italic;
 }
 
-span.fancytree-selected {
-    color: var(--hover-item-text-color) !important;
-    background-color: var(--hover-item-background-color) !important;
-    border-color: var(--main-background-color) !important; /* invisible border */
-    border-radius: 5px;
-    font-style: italic;
+span.fancytree-selected .fancytree-custom-icon::before {
+    content: "\eb43";
+    border: 1px solid var(--main-border-color);
+    border-radius: 3px;
 }
 
 span.fancytree-node:hover {

@@ -19,7 +19,7 @@ export default class Mutex {
         const unlock = await this.lock();
 
         try {
-            await cb();
+            return await cb();
         }
         finally {
             unlock();

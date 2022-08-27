@@ -1,6 +1,7 @@
 import server from '../services/server.js';
 import mimeTypesService from '../services/mime_types.js';
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import dialogService from "./dialog.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -12,8 +13,9 @@ const NOTE_TYPES = [
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
     { type: "render", mime: '', title: "Render Note", selectable: true },
     { type: "canvas", mime: 'application/json', title: "Canvas", selectable: true },
-    { type: "book", mime: '', title: "Book", selectable: true },
     { type: "mermaid", mime: 'text/mermaid', title: "Mermaid Diagram", selectable: true },
+    { type: "book", mime: '', title: "Book", selectable: true },
+    { type: "web-view", mime: '', title: "Web View", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 
@@ -144,8 +146,7 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
             return true;
         }
 
-        const confirmDialog = await import("../dialogs/confirm.js");
-        return await confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
+        return await dialogService.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
     }
 
     async entitiesReloadedEvent({loadResults}) {

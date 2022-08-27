@@ -178,7 +178,11 @@ dbReady.then(() => {
     setInterval(() => optimize(), 10 * 60 * 60 * 1000);
 });
 
-log.info("DB size: " + sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
+function getDbSize() {
+    return sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()");
+}
+
+log.info(`DB size: ${getDbSize()} KB`);
 
 module.exports = {
     dbReady,
@@ -186,5 +190,6 @@ module.exports = {
     isDbInitialized,
     createInitialDatabase,
     createDatabaseForSync,
-    setDbAsInitialized
+    setDbAsInitialized,
+    getDbSize
 };

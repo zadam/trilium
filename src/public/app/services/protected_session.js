@@ -20,7 +20,7 @@ function enterProtectedSession() {
     const dfd = $.Deferred();
 
     if (!options.is("isPasswordSet")) {
-        import("../dialogs/password_not_set.js").then(dialog => dialog.show());
+        appContext.triggerCommand("showPasswordNotSet");
         return dfd;
     }
 
@@ -31,7 +31,7 @@ function enterProtectedSession() {
         // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
 
-        import("../dialogs/protected_session.js").then(dialog => dialog.show());
+        appContext.triggerCommand("showProtectedSessionPasswordDialog");
     }
 
     return dfd.promise();
@@ -61,13 +61,13 @@ ws.subscribeToMessages(async message => {
     if (message.type === 'protectedSessionLogin') {
         await reloadData();
 
-    await appContext.triggerEvent('frocaReloaded');
+        await appContext.triggerEvent('frocaReloaded');
 
         appContext.triggerEvent('protectedSessionStarted');
 
-        if (protectedSessionDeferred !== null) {
-            import("../dialogs/protected_session.js").then(dialog => dialog.close());
+        appContext.triggerCommand("closeProtectedSessionPasswordDialog");
 
+        if (protectedSessionDeferred !== null) {
             protectedSessionDeferred.resolve(true);
             protectedSessionDeferred = null;
         }

@@ -5,6 +5,7 @@ const TPL = `
     <style>
     .note-detail-readonly-code {
         min-height: 50px;
+        position: relative;
     }
     
     .note-detail-readonly-code-content {
@@ -29,5 +30,15 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
         const noteComplement = await this.noteContext.getNoteComplement();
 
         this.$content.text(noteComplement.content);
+    }
+
+    async executeWithContentElementEvent({resolve, ntxId}) {
+        if (!this.isNoteContext(ntxId)) {
+            return;
+        }
+
+        await this.initialized;
+
+        resolve(this.$content);
     }
 }

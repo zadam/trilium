@@ -102,8 +102,6 @@
 
 <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
 
-<%- include('dialogs/confirm.ejs') %>
-
 <script type="text/javascript">
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */
 
@@ -116,7 +114,8 @@
         instanceName: '<%= instanceName %>',
         csrfToken: '<%= csrfToken %>',
         isDev: <%= isDev %>,
-        appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>
+        appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>,
+        isProtectedSessionAvailable: <%= isProtectedSessionAvailable %>
     };
 </script>
 

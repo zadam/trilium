@@ -21,10 +21,11 @@
     --more-accented-background-color: #777;
 
     --button-background-color: transparent;
-    --button-disabled-background-color: #222;
     --button-border-color: #ccc;
     --button-text-color: currentColor;
     --button-border-radius: 5px;
+    --button-disabled-background-color: transparent;
+    --button-disabled-text-color: #999;
 
     --primary-button-background-color: #888;
     --primary-button-text-color: white;
@@ -35,11 +36,13 @@
     --input-text-color: #ccc;
     --input-background-color: #333;
 
-    --hover-item-text-color: black;
-    --hover-item-background-color: #777;
+    --hover-item-text-color: #ccc;
+    --hover-item-background-color: transparent;
+    --hover-item-border-color: #aaa;
 
     --active-item-text-color: black;
     --active-item-background-color: #777;
+    --active-item-border-color: transparent;
 
     --menu-text-color: white;
     --menu-background-color: #222;
@@ -78,4 +81,8 @@ body ::-webkit-calendar-picker-indicator {
 
 body .CodeMirror {
     filter: invert(90%) hue-rotate(180deg);
+}
+
+.excalidraw.theme--dark {
+    --theme-filter: invert(80%) hue-rotate(180deg) !important;
 }
