@@ -1582,19 +1582,147 @@
     
 
     
-    <h4 class="name" id="addAttribute"><span class="type-signature"></span>addAttribute<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Attribute.html">Attribute</a>}</span></h4>
+    <h4 class="name" id="addAttribute"><span class="type-signature"></span>addAttribute<span class="signature">(type, name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Attribute.html">Attribute</a>}</span></h4>
     
 
     
 
 
 
+<div class="description">
+    Adds a new attribute to this note. The attribute is saved and returned.
+See addLabel, addRelation for more specific methods.
+</div>
 
 
 
 
 
 
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">attribute type (label / relation)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">name of the attribute, not including the leading ~/#</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">value of the attribute - text for labels, target note ID for relations; optional.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -1630,7 +1758,384 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1023">line 1023</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1030">line 1030</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attribute.html">Attribute</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addLabel"><span class="type-signature"></span>addLabel<span class="signature">(name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Attribute.html">Attribute</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds a new label to this note. The label attribute is saved and returned.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">name of the label, not including the leading #</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">text value of the label; optional</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1051">line 1051</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attribute.html">Attribute</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addRelation"><span class="type-signature"></span>addRelation<span class="signature">(name, value)</span><span class="type-signature"> &rarr; {<a href="Attribute.html">Attribute</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds a new relation to this note. The relation attribute is saved and
+returned.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">name of the relation, not including the leading ~</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">ID of the target note of the relation</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1064">line 1064</a>
     </li></ul></dd>
     
 
@@ -1830,7 +2335,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1135">line 1135</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1159">line 1159</a>
     </li></ul></dd>
     
 
@@ -9036,7 +9541,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1101">line 1101</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1125">line 1125</a>
     </li></ul></dd>
     
 
@@ -9216,7 +9721,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1109">line 1109</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1133">line 1133</a>
     </li></ul></dd>
     
 
@@ -9718,7 +10223,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1085">line 1085</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1109">line 1109</a>
     </li></ul></dd>
     
 
@@ -9878,7 +10383,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1093">line 1093</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1117">line 1117</a>
     </li></ul></dd>
     
 
@@ -10120,7 +10625,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1052">line 1052</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1076">line 1076</a>
     </li></ul></dd>
     
 
@@ -10331,7 +10836,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1068">line 1068</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1092">line 1092</a>
     </li></ul></dd>
     
 
@@ -10542,7 +11047,7 @@ This is a low level method, for notes and branches use `note.deleteNote()` and '
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1077">line 1077</a>
+        <a href="becca_entities_note.js.html">becca/entities/note.js</a>, <a href="becca_entities_note.js.html#line1101">line 1101</a>
     </li></ul></dd>
     
 
