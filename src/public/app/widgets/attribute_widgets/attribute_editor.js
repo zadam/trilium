@@ -297,6 +297,12 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async save() {
+        if (this.lastUpdatedNoteId !== this.noteId) {
+            // https://github.com/zadam/trilium/issues/3090
+            console.warn("Ignoring blur event because a different note is loaded.");
+            return;
+        }
+
         const attributes = this.parseAttributes();
 
         if (attributes) {
@@ -354,6 +360,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     dataChanged() {
+        this.lastUpdatedNoteId = this.noteId;
+
         if (this.lastSavedContent === this.textEditor.getData()) {
             this.$saveAttributesButton.fadeOut();
         }
