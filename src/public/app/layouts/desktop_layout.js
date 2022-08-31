@@ -47,6 +47,7 @@ import MermaidWidget from "../widgets/mermaid.js";
 import BookmarkButtons from "../widgets/bookmark_buttons.js";
 import NoteWrapperWidget from "../widgets/note_wrapper.js";
 import BacklinksWidget from "../widgets/floating_buttons/zpetne_odkazy.js";
+import UnlinkedRefsWidget from "../widgets/floating_buttons/unlinked_reference.js";
 import SharedInfoWidget from "../widgets/shared_info.js";
 import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
@@ -184,6 +185,7 @@ export default class DesktopLayout {
                                     .child(new RelationMapButtons())
                                     .child(new MermaidExportButton())
                                     .child(new BacklinksWidget())
+                                    .child(new UnlinkedRefsWidget())
                                 )
                                 .child(new MermaidWidget())
                                 .child(
