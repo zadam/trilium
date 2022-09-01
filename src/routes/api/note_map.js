@@ -1,6 +1,8 @@
 "use strict";
 
 const becca = require("../../becca/becca");
+const search = require("./search");
+
 const { JSDOM } = require("jsdom");
 
 function buildDescendantCountMap() {
@@ -296,7 +298,6 @@ function getBacklinks(req) {
     }
 
     let backlinks = note.getTargetRelations();
-
     let backlinksWithExcerptCount = 0;
 
     return backlinks.filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).map(backlink => {
@@ -320,8 +321,47 @@ function getBacklinks(req) {
     });
 }
 
+
+//WIP
+function getUnlinkedRefs(req) {
+    const {noteId} = req.params;
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} was not found`];
+    }
+    const {title} = note
+//
+    let unlinkedrefs = search.search({req:{params:{searchString:title}}});
+    
+    console.log(unlinkedrefs);
+
+    let unlinkedrefsWithExcerptCount = 0;
+
+    return unlinkedrefs.filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).map(backlink => {
+        const sourceNote = backlink.note;
+
+        if (sourceNote.type !== 'text' || unlinkedrefsWithExcerptCount > 50) {
+            return {
+                noteId: sourceNote.noteId,
+                relationName: backlink.name
+            };
+        }
+
+        unlinkedrefsWithExcerptCount++;
+
+        const excerpts = findExcerpts(sourceNote, noteId);
+
+        return {
+            noteId: sourceNote.noteId,
+            excerpts
+        };
+    });
+}
+
 module.exports = {
     getLinkMap,
     getTreeMap,
-    getBacklinks
+    getBacklinks,
+    getUnlinkedRefs
 };
