@@ -14,11 +14,10 @@ appIconService.installLocalAppIcon();
 require('electron-dl')({ saveAs: true });
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (process.platform === 'win32') {
+        app.exit(0); // attempt to fix the issue when app.quit() won't terminate processes on windows
+    } else {
         app.quit();
-    }
-    else if (process.platform === 'win32') {
-        app.exit(0); // attempt to fix the issue when app.quite() won't terminate processes on windows
     }
 });
 
@@ -30,7 +29,7 @@ app.on('ready', async () => {
     if (await sqlInit.isDbInitialized()) {
         await sqlInit.dbReady;
 
-        await windowService.createMainWindow();
+        await windowService.createMainWindow(app);
 
         tray.createTray();
     }

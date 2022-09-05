@@ -35,7 +35,7 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
     });
 
     win.setMenuBarVisibility(false);
-    win.loadURL('http://127.0.0.1:' + await port + '/?extra=1&extraHoistedNoteId=' + hoistedNoteId + '#' + notePath);
+    win.loadURL(`http://127.0.0.1:${port}/?extra=1&extraHoistedNoteId=${hoistedNoteId}#${notePath}`);
 
     configureWebContents(win.webContents, spellcheckEnabled);
 }
@@ -44,7 +44,7 @@ ipcMain.on('create-extra-window', (event, arg) => {
     createExtraWindow(arg.notePath, arg.hoistedNoteId);
 });
 
-async function createMainWindow() {
+async function createMainWindow(app) {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
 
     const mainWindowState = windowStateKeeper({
@@ -77,10 +77,22 @@ async function createMainWindow() {
     mainWindowState.manage(mainWindow);
 
     mainWindow.setMenuBarVisibility(false);
-    mainWindow.loadURL('http://127.0.0.1:' + await port);
+    mainWindow.loadURL('http://127.0.0.1:' + port);
     mainWindow.on('closed', () => mainWindow = null);
 
     configureWebContents(mainWindow.webContents, spellcheckEnabled);
+
+    app.on('second-instance', () => {
+        // Someone tried to run a second instance, we should focus our window.
+        // see www.js "requestSingleInstanceLock" for the rest of this logic with explanation
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
+
+            mainWindow.focus();
+        }
+    });
 }
 
 function configureWebContents(webContents, spellcheckEnabled) {
@@ -131,7 +143,7 @@ async function createSetupWindow() {
     });
 
     setupWindow.setMenuBarVisibility(false);
-    setupWindow.loadURL('http://127.0.0.1:' + await port);
+    setupWindow.loadURL('http://127.0.0.1:' + port);
     setupWindow.on('closed', () => setupWindow = null);
 }
 

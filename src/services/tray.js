@@ -62,6 +62,7 @@ const updateTrayMenu = () => {
                     mainWindow.hide();
                 } else {
                     mainWindow.show();
+                    mainWindow.focus();
                 }
             }
         },

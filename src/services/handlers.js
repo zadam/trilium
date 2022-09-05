@@ -44,7 +44,7 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
     if (entityName === 'attributes') {
         runAttachedRelations(entity.getNote(), 'runOnAttributeChange', entity);
 
-        if (entity.type === 'label' && entity.name === 'sorted') {
+        if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst'].includes(entity.name)) {
             handleSortedAttribute(entity);
         }
     }

@@ -38,11 +38,25 @@ if (!semver.satisfies(process.version, ">=10.5.0")) {
 let httpServer;
 
 async function startTrilium() {
-    const usedPort = await port;
-    const usedHost = await host;
+    /**
+     * The intended behavior is to detect when a second instance is running, in that case open the old instance
+     * instead of the new one. This is complicated by the fact that it is possible to run multiple instances of Trilium
+     * if port and data dir is configured separately. This complication is the source of the following weird usage.
+     *
+     * The line below makes sure that the "second-instance" (process in window.js) is fired. Normally it returns a boolean
+     * indicating whether another instance is running or not, but we ignore that and kill the app only based on the port conflict.
+     *
+     * A bit weird is that "second-instance" is triggered also on the valid usecases (different port/data dir) and
+     * focuses the existing window. But the new process is start as well and will steal the focus too, it will win, because
+     * its startup is slower than focusing the existing process/window. So in the end it works out without having
+     * to do complex evaluation.
+     */
+    if (utils.isElectron()) {
+        require("electron").app.requestSingleInstanceLock();
+    }
 
-    app.set('port', usedPort);
-    app.set('host', usedHost);
+    app.set('port', port);
+    app.set('host', host);
 
     // Check from config whether to trust reverse proxies to supply user IPs, hostnames and protocols
     if (config['Network']['trustedReverseProxy']) {
@@ -68,12 +82,12 @@ async function startTrilium() {
 
         httpServer = https.createServer(options, app);
 
-        log.info("App HTTPS server starting up at port " + usedPort);
+        log.info("App HTTPS server starting up at port " + port);
     }
     else {
         httpServer = http.createServer(app);
 
-        log.info("App HTTP server starting up at port " + usedPort);
+        log.info("App HTTP server starting up at port " + port);
     }
 
     log.info(JSON.stringify(appInfo, null, 2));
@@ -86,7 +100,7 @@ async function startTrilium() {
      */
 
     httpServer.keepAliveTimeout = 120000 * 5;
-    httpServer.listen(usedPort, usedHost);
+    httpServer.listen(port, host);
     httpServer.on('error', error => {
             if (error.syscall !== 'listen') {
                 throw error;
@@ -95,12 +109,12 @@ async function startTrilium() {
             // handle specific listen errors with friendly messages
             switch (error.code) {
                 case 'EACCES':
-                    console.error(`Port ${usedPort} requires elevated privileges`);
+                    console.error(`Port ${port} requires elevated privileges`);
                     process.exit(1);
                     break;
 
                 case 'EADDRINUSE':
-                    console.error(`Port ${usedPort} is already in use`);
+                    console.error(`Port ${port} is already in use`);
                     process.exit(1);
                     break;
 

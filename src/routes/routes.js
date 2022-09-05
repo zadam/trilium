@@ -4,14 +4,7 @@ const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
 const utils = require('../services/utils');
-const multer = require('multer')({
-    fileFilter: (req, file, cb) => {
-        // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
-        // See https://github.com/expressjs/multer/pull/1102.
-        file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
-        cb(null, true);
-    }
-});
+const multer = require('multer');
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -201,8 +194,33 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
     });
 }
 
+const MAX_ALLOWED_FILE_SIZE_MB = 250;
+
 const GET = 'get', POST = 'post', PUT = 'put', PATCH = 'patch', DELETE = 'delete';
-const uploadMiddleware = multer.single('upload');
+const uploadMiddleware = multer({
+    fileFilter: (req, file, cb) => {
+        // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
+        // See https://github.com/expressjs/multer/pull/1102.
+        file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
+        cb(null, true);
+    },
+    limits: {
+        fileSize: MAX_ALLOWED_FILE_SIZE_MB * 1024 * 1024
+    }
+}).single('upload');
+
+const uploadMiddlewareWithErrorHandling = function (req, res, next) {
+    uploadMiddleware(req, res, function (err) {
+        if (err?.code === 'LIMIT_FILE_SIZE') {
+            res.setHeader("Content-Type", "text/plain")
+                .status(400)
+                .send(`Cannot upload file because it excceeded max allowed file size of ${MAX_ALLOWED_FILE_SIZE_MB} MiB`);
+        }
+        else {
+            next();
+        }
+    });
+};
 
 function register(app) {
     route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
@@ -260,9 +278,9 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
     route(GET, '/api/notes/:branchId/export/:type/:format/:version/:taskId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
-    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], importRoute.importToBranch, apiResultHandler);
+    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importToBranch, apiResultHandler);
 
-    route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
+    route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware],
         filesRoute.updateFile, apiResultHandler);
 
     route(GET, '/api/notes/:noteId/open', [auth.checkApiAuthOrElectron], filesRoute.openFile);
@@ -301,10 +319,10 @@ function register(app) {
     apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
     apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
 
-    // :filename is not used by trilium, but instead used for "save as" to assign a human readable filename
+    // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
-    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
-    route(PUT, '/api/images/:noteId', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
+    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
+    route(PUT, '/api/images/:noteId', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
 
     apiRoute(GET, '/api/recent-changes/:ancestorNoteId', recentChangesApiRoute.getRecentChanges);
 
@@ -366,7 +384,7 @@ function register(app) {
 
     // no CSRF since this is called from android app
     route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
-    route(POST, '/api/sender/image', [auth.checkEtapiToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/sender/image', [auth.checkEtapiToken, uploadMiddlewareWithErrorHandling], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
     apiRoute(GET, '/api/quick-search/:searchString', searchRoute.quickSearch);

@@ -215,7 +215,7 @@ function update(req) {
 
 setInterval(() => {
     for (const key in partialRequests) {
-        if (Date.now() - partialRequests[key].createdAt > 5 * 60 * 1000) {
+        if (Date.now() - partialRequests[key].createdAt > 20 * 60 * 1000) {
             log.info(`Cleaning up unfinished partial requests for ${key}`);
 
             delete partialRequests[key];

@@ -79,6 +79,7 @@ import OptionsDialog from "../widgets/dialogs/options.js";
 import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
 import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
 import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
+import EditableCodeButtonsWidget from "../widgets/type_widgets/editable_code_buttons.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -197,6 +198,7 @@ export default class DesktopLayout {
                                         .child(new SearchResultWidget())
                                         .child(new SqlResultWidget())
                                 )
+                                .child(new EditableCodeButtonsWidget())
                                 .child(new FindWidget())
                                 .child(
                                     ...this.customWidgets.get('node-detail-pane'), // typo, let's keep it for a while as BC
