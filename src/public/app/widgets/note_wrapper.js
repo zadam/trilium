@@ -29,14 +29,19 @@ export default class NoteWrapperWidget extends FlexContainer {
     }
 
     refresh() {
+        const isHiddenExt = this.isHiddenExt(); // preserve through class reset
+
         this.$widget.removeClass();
+
+        this.toggleExt(!isHiddenExt);
+
+        this.$widget.addClass("component note-split");
 
         const note = this.noteContext?.note;
         if (!note) {
             return;
         }
 
-        this.$widget.addClass("note-split");
         this.$widget.toggleClass("full-content-width",
             ['image', 'mermaid', 'book', 'render', 'canvas', 'web-view'].includes(note.type)
             || !!note?.hasLabel('fullContentWidth')
