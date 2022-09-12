@@ -39,8 +39,12 @@ function getFulltext(tokens, searchContext) {
     }
 }
 
-function isOperator(str) {
-    return str.match(/^[!=<>*%]+$/);
+function isOperator(token) {
+    if (Array.isArray(token)) {
+        return false;
+    }
+
+    return token.token.match(/^[!=<>*%]+$/);
 }
 
 function getExpression(tokens, searchContext, level = 0) {
@@ -129,16 +133,16 @@ function getExpression(tokens, searchContext, level = 0) {
 
             i += 1;
 
-            const operator = tokens[i].token;
+            const operator = tokens[i];
 
             if (!isOperator(operator)) {
-                searchContext.addError(`After content expected operator, but got "${tokens[i].token}" in ${context(i)}`);
+                searchContext.addError(`After content expected operator, but got "${operator.token}" in ${context(i)}`);
                 return;
             }
 
             i++;
 
-            return new NoteContentFulltextExp(operator, {tokens: [tokens[i].token], raw });
+            return new NoteContentFulltextExp(operator.token, {tokens: [tokens[i].token], raw });
         }
 
         if (tokens[i].token === 'parents') {
@@ -228,7 +232,7 @@ function getExpression(tokens, searchContext, level = 0) {
     function parseLabel(labelName) {
         searchContext.highlightedTokens.push(labelName);
 
-        if (i < tokens.length - 2 && isOperator(tokens[i + 1].token)) {
+        if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
             let operator = tokens[i + 1].token;
 
             i += 2;
@@ -265,7 +269,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
             return new RelationWhereExp(relationName, parseNoteProperty());
         }
-        else if (i < tokens.length - 2 && isOperator(tokens[i + 1].token)) {
+        else if (i < tokens.length - 2 && isOperator(tokens[i + 1])) {
             searchContext.addError(`Relation can be compared only with property, e.g. ~relation.title=hello in ${context(i)}`);
 
             return null;
@@ -384,7 +388,7 @@ function getExpression(tokens, searchContext, level = 0) {
                 searchContext.addError('Mixed usage of AND/OR - always use parenthesis to group AND/OR expressions.');
             }
         }
-        else if (isOperator(token)) {
+        else if (isOperator({token: token})) {
             searchContext.addError(`Misplaced or incomplete expression "${token}"`);
         }
         else {

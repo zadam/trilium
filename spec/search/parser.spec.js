@@ -211,6 +211,35 @@ describe("Parser", () => {
         expect(secondSubSub.constructor.name).toEqual("LabelComparisonExp");
         expect(secondSubSub.attributeName).toEqual("third");
     });
+
+    it("label sub-expression without explicit operator", () => {
+        const rootExp = parse({
+            fulltextTokens: [],
+            expressionTokens: tokens(["#first", ["#second", "or", "#third"], "#fourth"]),
+            searchContext: new SearchContext()
+        });
+
+        expect(rootExp.constructor.name).toEqual("AndExp");
+        assertIsArchived(rootExp.subExpressions[0]);
+
+        expect(rootExp.subExpressions[1].constructor.name).toEqual("AndExp");
+        const [firstSub, secondSub, thirdSub] = rootExp.subExpressions[1].subExpressions;
+
+        expect(firstSub.constructor.name).toEqual("AttributeExistsExp");
+        expect(firstSub.attributeName).toEqual("first");
+
+        expect(secondSub.constructor.name).toEqual("OrExp");
+        const [firstSubSub, secondSubSub] = secondSub.subExpressions;
+
+        expect(firstSubSub.constructor.name).toEqual("AttributeExistsExp");
+        expect(firstSubSub.attributeName).toEqual("second");
+
+        expect(secondSubSub.constructor.name).toEqual("AttributeExistsExp");
+        expect(secondSubSub.attributeName).toEqual("third");
+
+        expect(thirdSub.constructor.name).toEqual("AttributeExistsExp");
+        expect(thirdSub.attributeName).toEqual("fourth");
+    });
 });
 
 describe("Invalid expressions", () => {
