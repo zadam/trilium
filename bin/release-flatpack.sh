@@ -13,11 +13,6 @@ then
     exit 1
 fi
 
-VERSION_DATE=$(git log -1 --format=%aI v${VERSION} | cut -c -10)
-VERSION_COMMIT=$(git rev-list -n 1 v${VERSION})
-
-echo "Updating files with version ${VERSION}, date ${VERSION_DATE} and commit ${VERSION_COMMIT}"
-
 # expecting the directory at a specific path
 cd ~/trilium-flathub
 
@@ -25,6 +20,19 @@ if ! git diff-index --quiet HEAD --; then
     echo "There are uncommitted changes"
     exit 1
 fi
+
+if [[ $VERSION == *"beta"* ]]; then
+    git switch beta
+else
+    git switch master
+fi
+
+git pull
+
+VERSION_DATE=$(git log -1 --format=%aI v${VERSION} | cut -c -10)
+VERSION_COMMIT=$(git rev-list -n 1 v${VERSION})
+
+echo "Updating files with version ${VERSION}, date ${VERSION_DATE} and commit ${VERSION_COMMIT}"
 
 flatpak-node-generator npm ../trilium/package-lock.json
 
