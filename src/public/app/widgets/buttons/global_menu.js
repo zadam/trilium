@@ -35,12 +35,30 @@ const TPL = `
         bottom: -30px;
         width: 100%;
         height: 100%;
-            
         pointer-events: none;
     }
 
     .update-to-latest-version-button {
         display: none;
+    }
+    
+    .global-menu .zoom-buttons a {
+        display: inline-block;
+        border: 1px solid var(--button-border-color);
+        border-radius: 3px;
+        padding: 3px;
+        margin-left: 3px;
+        color: var(--button-text-color);
+        background-color: var(--button-background-color);
+    }
+    
+    .global-menu .zoom-buttons a:hover {
+        text-decoration: none;
+    }
+    
+    .global-menu .zoom-state {
+        margin-left: 5px;
+        margin-right: 5px;
     }
     </style>
 
@@ -91,11 +109,30 @@ const TPL = `
             Reload frontend
             <kbd data-command="reloadFrontendApp"></kbd>
         </a>
+        
+        <span class="zoom-container dropdown-item" style="display: flex; flex-direction: row; justify-content: space-between;">
+            <div>
+                <span class="bx bx-empty"></span>
+                Zoom
+            </div>
+            
+            <div class="zoom-buttons">
+                <a data-trigger-command="toggleFullscreen" title="Toggle fullscreen" class="bx bx-expand-alt"></a>
+                
+                &nbsp;
+                
+                <a data-trigger-command="zoomOut" title="Zoom out" class="bx bx-minus"></a>
+                
+                <span class="zoom-state"></span>
+                
+                <a data-trigger-command="zoomIn" title="Zoom in" class="bx bx-plus"></a>
+            </div>
+        </span>
 
         <a class="dropdown-item" data-trigger-command="toggleFullscreen">
             <span class="bx bx-empty"></span>
             Toggle fullscreen
-            <kbd data-command="toggleFullscreen"></kbd>
+            <kbd ></kbd>
         </a>
 
         <a class="dropdown-item" data-trigger-command="showHelp">
@@ -145,9 +182,13 @@ export default class GlobalMenuWidget extends BasicWidget {
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
         this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
 
+        this.$widget.on('click', '.dropdown-item', e => {
+            if ($(e.target).parent(".zoom-buttons")) {
+                return;
+            }
 
-        this.$widget.on('click', '.dropdown-item',
-            () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
+            this.$widget.find("[data-toggle='dropdown']").dropdown('toggle');
+        });
 
         this.$widget.find(".global-menu-button-update-available").append(
             this.updateAvailableWidget.render()
@@ -155,9 +196,28 @@ export default class GlobalMenuWidget extends BasicWidget {
 
         this.$updateToLatestVersionButton = this.$widget.find(".update-to-latest-version-button");
 
+        if (!utils.isElectron()) {
+            this.$widget.find(".zoom-container").hide();
+        }
+
+        this.$zoomState = this.$widget.find(".zoom-state");
+        this.$widget.on('show.bs.dropdown', () => this.updateZoomState());
+
+        this.$widget.find(".zoom-buttons").on("click",
+            // delay to wait for the actual zoom change
+            () => setTimeout(() => this.updateZoomState(), 300)
+        );
+
         this.updateVersionStatus();
 
         setInterval(() => this.updateVersionStatus(), 8 * 60 * 60 * 1000);
+    }
+
+    updateZoomState() {
+        const zoomFactor = utils.dynamicRequire('electron').webFrame.getZoomFactor();
+        const zoomPercent = Math.round(zoomFactor * 100);
+
+        this.$zoomState.text(zoomPercent + "%");
     }
 
     async updateVersionStatus() {
