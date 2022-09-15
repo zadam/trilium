@@ -214,6 +214,10 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     updateZoomState() {
+        if (!utils.isElectron()) {
+            return;
+        }
+
         const zoomFactor = utils.dynamicRequire('electron').webFrame.getZoomFactor();
         const zoomPercent = Math.round(zoomFactor * 100);
 
