@@ -68,7 +68,7 @@ async function moveToParentNote(branchIdsToMove, newParentBranchId) {
     }
 }
 
-async function deleteNotes(branchIdsToDelete) {
+async function deleteNotes(branchIdsToDelete, forceDeleteAllClones = false) {
     branchIdsToDelete = filterRootNote(branchIdsToDelete);
 
     if (branchIdsToDelete.length === 0) {
@@ -83,7 +83,7 @@ async function deleteNotes(branchIdsToDelete) {
     }
     else {
         ({proceed, deleteAllClones, eraseNotes} = await new Promise(res =>
-            appContext.triggerCommand('showDeleteNotesDialog', {branchIdsToDelete, callback: res})));
+            appContext.triggerCommand('showDeleteNotesDialog', {branchIdsToDelete, callback: res, forceDeleteAllClones})));
     }
 
     if (!proceed) {

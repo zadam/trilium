@@ -946,7 +946,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         if (this.noteContext
             && this.noteContext.notePath
-            && !this.noteContext.note.isDeleted
+            && !this.noteContext.note?.isDeleted
             && !this.noteContext.notePath.includes("root/hidden")
         ) {
             const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
