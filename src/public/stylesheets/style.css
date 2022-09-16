@@ -747,7 +747,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 }
 
 .dropdown-submenu {
-    position:relative;
+    position: relative;
 }
 
 .dropdown-submenu > .dropdown-menu {
@@ -755,6 +755,9 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     left: 100%;
     margin-top: -6px;
     min-width: 15rem;
+    /* to make submenu scrollable https://github.com/zadam/trilium/issues/3136 */
+    max-height: 600px;
+    overflow: auto;
 }
 
 /* rotate caret on hover */
