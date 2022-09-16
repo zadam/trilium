@@ -267,7 +267,7 @@ class NoteShort {
                     attrArrs.push(
                         templateNote.__getCachedAttributes(newPath)
                             // template attr is used as a marker for templates, but it's not meant to be inherited
-                            .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                            .filter(attr => !(attr.type === 'label' && (attr.name === 'template' || attr.name === 'workspacetemplate')))
                     );
                 }
             }
