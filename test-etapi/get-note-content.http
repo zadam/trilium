@@ -1,0 +1,25 @@
+POST {{triliumHost}}/etapi/create-note
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "parentNoteId": "root",
+  "title": "Hello",
+  "type": "text",
+  "content": "Hi there!"
+}
+
+> {%
+    client.global.set("createdNoteId", response.body.note.noteId);
+    client.global.set("createdBranchId", response.body.branch.branchId);
+%}
+
+###
+
+GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+Authorization: {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body === "<p>Hi there!</p>");
+%}
