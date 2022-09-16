@@ -228,6 +228,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /notes/{noteId}/content:
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+    get:
+      description: Returns note content idenfied by its ID
+      operationId: getNoteContent
+      responses:
+        '200':
+          description: note content response
+          content:
+            text/html:
+              schema:
+                type: string
   /notes/{noteId}/export:
     parameters:
       - name: noteId
