@@ -207,6 +207,7 @@ const ATTR_HELP = {
         "workspaceIconClass": "defines box icon CSS class which will be used in tab when hoisted to this note",
         "workspaceTabBackgroundColor": "CSS color used in the note tab when hoisted to this note",
         "workspaceCalendarRoot": "Defines per-workspace calendar root",
+        "workspaceTemplate": "This note will appear in the selection of available template when creating new note, but only when hoisted into a workspace containing this template",
         "searchHome": "new search notes will be created as children of this note",
         "hoistedSearchHome": "new search notes will be created as children of this note when hoisted to some ancestor of this note",
         "inbox": "default inbox location for new notes",

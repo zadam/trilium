@@ -6,6 +6,7 @@ const log = require('../../services/log');
 const scriptService = require('../../services/script');
 const searchService = require('../../services/search/services/search');
 const bulkActionService = require("../../services/bulk_actions");
+const cls = require("../../services/cls");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
 function searchFromNoteInt(note) {
@@ -189,7 +190,9 @@ function getRelatedNotes(req) {
 }
 
 function searchTemplates() {
-    const query = formatAttrForSearch({type: 'label', name: "template"}, false);
+    const query = cls.getHoistedNoteId() === 'root'
+        ? '#template'
+        : '#template OR #workspaceTemplate';
 
     return searchService.searchNotes(query, {
         includeArchivedNotes: true,
