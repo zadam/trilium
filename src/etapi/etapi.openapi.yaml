@@ -245,6 +245,19 @@ paths:
             text/html:
               schema:
                 type: string
+    put:
+      description: Updates note content idenfied by its ID
+      operationId: putNoteContentById
+      requestBody:
+        description: html content of note
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '204':
+          description: note content updated
   /notes/{noteId}/export:
     parameters:
       - name: noteId
