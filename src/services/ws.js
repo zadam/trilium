@@ -67,7 +67,7 @@ function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
     if (webSocketServer) {
-        if (message.type !== 'sync-failed') {
+        if (message.type !== 'sync-failed' && message.type !== 'api-log-messages') {
             log.info("Sending message to all clients: " + jsonStr);
         }
 

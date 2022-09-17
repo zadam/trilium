@@ -14,6 +14,8 @@ const appInfo = require('./app_info');
 const searchService = require('./search/services/search');
 const SearchContext = require("./search/search_context");
 const becca = require("../becca/becca");
+const ws = require("./ws");
+const SpacedUpdate = require("./spaced_update");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -288,12 +290,34 @@ function BackendScriptApi(currentNote, apiParams) {
         });
     };
 
+    this.logMessages = {};
+    this.logSpacedUpdates = {};
+
     /**
-     * Log given message to trilium logs.
+     * Log given message to trilium logs and log pane in UI
      *
      * @param message
      */
-    this.log = message => log.info(message);
+    this.log = message => {
+        log.info(message);
+
+        const {noteId} = this.startNote;
+
+        this.logMessages[noteId] = this.logMessages[noteId] || [];
+        this.logSpacedUpdates[noteId] = this.logSpacedUpdates[noteId] || new SpacedUpdate(() => {
+            const messages = this.logMessages[noteId];
+            this.logMessages[noteId] = [];
+
+            ws.sendMessageToAllClients({
+                type: 'api-log-messages',
+                noteId,
+                messages
+            });
+        }, 100);
+
+        this.logMessages[noteId].push(message);
+        this.logSpacedUpdates[noteId].scheduleUpdate();
+    };
 
     /**
      * Returns root note of the calendar.
