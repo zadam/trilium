@@ -87,4 +87,10 @@ export default class EditableCodeButtonsWidget extends NoteContextAwareWidget {
 
         this.$openTriliumApiDocsButton.toggle(note.mime.startsWith('application/javascript;env='));
     }
+
+    async noteTypeMimeChangedEvent({noteId}) {
+        if (this.isNote(noteId)) {
+            await this.refresh();
+        }
+    }
 }

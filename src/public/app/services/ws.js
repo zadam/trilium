@@ -3,6 +3,7 @@ import toastService from "./toast.js";
 import server from "./server.js";
 import options from "./options.js";
 import frocaUpdater from "./froca_updater.js";
+import appContext from "./app_context.js";
 
 const messageHandlers = [];
 
@@ -117,6 +118,9 @@ async function handleMessage(event) {
     }
     else if (message.type === 'consistency-checks-failed') {
         toastService.showError("Consistency checks failed! See logs for details.", 50 * 60000);
+    }
+    else if (message.type === 'api-log-messages') {
+        appContext.triggerEvent("apiLogMessages", {noteId: message.noteId, messages: message.messages});
     }
 }
 
