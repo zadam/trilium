@@ -957,3 +957,7 @@ button.close:hover {
     text-shadow: none;
     color: currentColor;
 }
+
+.hidden-no-content {
+    display: none;
+}

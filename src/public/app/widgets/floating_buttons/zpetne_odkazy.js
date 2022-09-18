@@ -89,15 +89,19 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
         const resp = await server.get(`notes/${this.noteId}/backlink-count`);
 
         if (!resp || !resp.count) {
-            this.$ticker.hide();
+            this.toggle(false);
             return;
         }
 
-        this.$ticker.show();
+        this.$ticker.toggle(true);
         this.$count.text(
             `${resp.count} backlink`
             + (resp.count === 1 ? '' : 's')
         );
+    }
+
+    toggle(show) {
+        this.$widget.toggleClass("hidden-no-content", !show);
     }
 
     clearItems() {
