@@ -7,6 +7,7 @@ const TPL = `
         padding: 15px;
         flex-grow: 1;
         max-height: 40%;
+        position: relative;
     }
     
     .hidden-api-log {
@@ -17,7 +18,21 @@ const TPL = `
         overflow: auto;
         height: 100%;
     }
+    
+    .close-api-log-button {
+        padding: 5px;
+        border: 1px solid var(--button-border-color);
+        background-color: var(--button-background-color);
+        border-radius: 4px;
+        color: var(--button-text-color);
+        position: absolute;
+        top: 10px;
+        right: 40px;
+        cursor: pointer;
+    }
     </style>
+    
+    <div class="bx bx-x close-api-log-button" title="Close"></div>
    
     <div class="api-log-container"></div>
 </div>`;
@@ -31,9 +46,11 @@ export default class ApiLogWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$widget.addClass("hidden-api-log");
+        this.toggle(false);
 
         this.$logContainer = this.$widget.find('.api-log-container');
+        this.$closeButton = this.$widget.find(".close-api-log-button");
+        this.$closeButton.on("click", () => this.toggle(false));
     }
 
     async refreshWithNote(note) {
@@ -45,10 +62,14 @@ export default class ApiLogWidget extends NoteContextAwareWidget {
             return;
         }
 
-        this.$widget.removeClass("hidden-api-log");
+        this.toggle(true);
 
         for (const message of messages) {
             this.$logContainer.append(message).append($("<br>"));
         }
+    }
+
+    toggle(show) {
+        this.$widget.toggleClass("hidden-api-log", !show);
     }
 }
