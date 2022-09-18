@@ -13,11 +13,12 @@ appIconService.installLocalAppIcon();
 
 require('electron-dl')({ saveAs: true });
 
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-    if (process.platform === 'win32') {
-        app.exit(0); // attempt to fix the issue when app.quit() won't terminate processes on windows
-    } else {
-        app.quit();
+    if (process.platform !== 'darwin') {
+        app.quit()
     }
 });
 
