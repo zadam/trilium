@@ -3,7 +3,7 @@ import BasicWidget from "../basic_widget.js";
 const DELETE_NOTE_BUTTON_CLASS = "confirm-dialog-delete-note";
 
 const TPL = `
-<div class="confirm-dialog modal mx-auto" tabindex="-1" role="dialog">
+<div class="confirm-dialog modal mx-auto" tabindex="-1" role="dialog" style="z-index: 2000;">
     <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">

@@ -37,11 +37,11 @@ const TPL = `
         margin-right: 20px;
         font-size: large;
         border: 1px solid transparent;
-        border-radius: 5px;
+        border-radius: var(--button-border-radius);
     }
     
     .token-table-button:hover {
-        border: 1px solid var(--main-border-color);
+        border: 1px solid var(--button-border-color);
     }
 </style>`;
 

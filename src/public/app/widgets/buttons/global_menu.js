@@ -45,11 +45,11 @@ const TPL = `
     .global-menu .zoom-buttons a {
         display: inline-block;
         border: 1px solid var(--button-border-color);
-        border-radius: 3px;
-        padding: 3px;
-        margin-left: 3px;
+        border-radius: var(--button-border-radius);
         color: var(--button-text-color);
         background-color: var(--button-background-color);
+        padding: 3px;
+        margin-left: 3px;
     }
     
     .global-menu .zoom-buttons a:hover {

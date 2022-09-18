@@ -93,7 +93,7 @@ const TAB_ROW_TPL = `
     
     .note-new-tab:hover {
         background-color: var(--accented-background-color);
-        border-radius: 5px;
+        border-radius: var(--button-border-radius);
     }
     
     .tab-row-filler {

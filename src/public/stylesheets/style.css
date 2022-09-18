@@ -109,7 +109,6 @@ button.close:hover {
 
 .icon-action {
     border: 1px solid transparent;
-    border-radius: 3px;
     padding: 5px;
     width: 35px;
     height: 35px;
@@ -117,6 +116,7 @@ button.close:hover {
     font-size: 1.5em;
     color: var(--button-text-color);
     background: var(--button-background-color);
+    border-radius: var(--button-border-radius);
 }
 
 .icon-action:hover:not(.disabled) {

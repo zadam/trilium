@@ -57,8 +57,10 @@ const TPL = `
     }
     
     .add-new-attribute-button:hover, .save-attributes-button:hover {
-        border: 1px solid var(--main-border-color);
-        border-radius: 2px;
+        border: 1px solid var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        background: var(--button-background-color);
+        color: var(--button-text-color);
     }
     
     .attribute-errors {

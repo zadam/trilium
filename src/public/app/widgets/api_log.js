@@ -23,7 +23,7 @@ const TPL = `
         padding: 5px;
         border: 1px solid var(--button-border-color);
         background-color: var(--button-background-color);
-        border-radius: 4px;
+        border-radius: var(--button-border-radius);
         color: var(--button-text-color);
         position: absolute;
         top: 10px;

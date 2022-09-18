@@ -2,10 +2,10 @@ import utils from "../../services/utils.js";
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `
-<div class="prompt-dialog modal mx-auto" tabindex="-1" role="dialog">
+<div class="prompt-dialog modal mx-auto" tabindex="-1" role="dialog" style="z-index: 2000;">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form id="prompt-dialog-form">
+            <form class="prompt-dialog-form">
                 <div class="modal-header">
                     <h5 class="prompt-title modal-title mr-auto">Prompt</h5>
 
@@ -34,7 +34,7 @@ export default class PromptDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$dialogBody = this.$widget.find(".modal-body");
-        this.$form = this.$widget.find("#prompt-dialog-form");
+        this.$form = this.$widget.find(".prompt-dialog-form");
         this.$question = null;
         this.$answer = null;
 
