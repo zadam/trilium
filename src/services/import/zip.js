@@ -292,7 +292,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             content = content.replace(/<\/body>.*<\/html>/gis, "");
 
             content = content.replace(/src="([^"]*)"/g, (match, url) => {
-                url = decodeURIComponent(url);
+                try {
+                    url = decodeURIComponent(url);
+                } catch (e) {
+                    log.error(`Cannot parse image URL '${url}', keeping original (${e}).`);
+                    return `src="${url}"`;
+                }
 
                 if (isUrlAbsolute(url) || url.startsWith("/")) {
                     return match;
@@ -304,7 +309,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             });
 
             content = content.replace(/href="([^"]*)"/g, (match, url) => {
-                url = decodeURIComponent(url);
+                try {
+                    url = decodeURIComponent(url);
+                } catch (e) {
+                    log.error(`Cannot parse link URL '${url}', keeping original (${e}).`);
+                    return `href="${url}"`;
+                }
 
                 if (isUrlAbsolute(url)) {
                     return match;
