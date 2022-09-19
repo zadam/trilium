@@ -27,6 +27,8 @@ class Becca {
         /** @type {Object.<String, EtapiToken>} */
         this.etapiTokens = {};
 
+        this.dirtyNoteSetCache();
+
         this.loaded = false;
     }
 
