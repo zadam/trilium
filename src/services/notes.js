@@ -735,10 +735,6 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
         const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
         eraseAttributes(attributeIdsToErase);
-
-        if (noteIdsToErase.length > 0 || branchIdsToErase.length > 0 || attributeIdsToErase.length > 0) {
-            require('../becca/becca_loader').reload();
-        }
     });
 }
 
@@ -754,10 +750,6 @@ function eraseNotesWithDeleteId(deleteId) {
     const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE  deleteId = ?", [deleteId]);
 
     eraseAttributes(attributeIdsToErase);
-
-    if (noteIdsToErase.length > 0 || branchIdsToErase.length > 0 || attributeIdsToErase.length > 0) {
-        require('../becca/becca_loader').reload();
-    }
 }
 
 function eraseDeletedNotesNow() {

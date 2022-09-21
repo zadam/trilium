@@ -670,7 +670,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const note = branch.getNoteFromCache();
 
         if (!note) {
-            throw new Error(`Branch "${branch.branchId}" has no note "${branch.noteId}"`);
+            throw new Error(`Branch "${branch.branchId}" has no child note "${branch.noteId}"`);
         }
 
         const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
