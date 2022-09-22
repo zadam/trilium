@@ -45,9 +45,10 @@ export default class RootCommandExecutor extends Component {
 
     openNoteExternallyCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
-
+        const mime = appContext.tabManager.getActiveContextNoteMime()
+        
         if (noteId) {
-            openService.openNoteExternally(noteId);
+            openService.openNoteExternally(noteId, mime);
         }
     }
 

@@ -197,6 +197,12 @@ export default class TabManager extends Component {
 
         return activeNote ? activeNote.type : null;
     }
+    /** @returns {string|null} */
+    getActiveContextNoteMime() {
+        const activeNote = this.getActiveContextNote();
+
+        return activeNote ? activeNote.mime : null;
+    }
 
     async switchToNoteContext(ntxId, notePath) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
