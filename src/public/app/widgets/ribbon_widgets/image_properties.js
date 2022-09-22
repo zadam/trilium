@@ -69,7 +69,7 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
         this.$fileSize = this.$widget.find(".image-filesize");
 
         this.$openButton = this.$widget.find(".image-open");
-        this.$openButton.on('click', () => openService.openNoteExternally(this.noteId));
+        this.$openButton.on('click', () => openService.openNoteExternally(this.noteId, this.note.mime ));
 
         this.$imageDownloadButton = this.$widget.find(".image-download");
         this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));
