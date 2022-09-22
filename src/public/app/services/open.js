@@ -4,6 +4,9 @@ import server from "./server.js";
 function getFileUrl(noteId) {
     return getUrlForDownload("api/notes/" + noteId + "/download");
 }
+function getOpenFileUrl(noteId) {
+    return getUrlForDownload("api/notes/" + noteId + "/open");
+}
 
 function download(url) {
     if (utils.isElectron()) {
@@ -21,7 +24,7 @@ function downloadFileNote(noteId) {
     download(url);
 }
 
-async function openNoteExternally(noteId) {
+async function openNoteExternally(noteId, mime) {
     if (utils.isElectron()) {
         const resp = await server.post("notes/" + noteId + "/save-to-tmp-dir");
 
@@ -34,7 +37,13 @@ async function openNoteExternally(noteId) {
         }
     }
     else {
-        window.location.href = getFileUrl(noteId);
+        // allow browser to handle opening common file
+         if (mime === "application/pdf" ||  mime.startsWith("image") || mime.startsWith("audio") || mime.startsWith("video")){
+            window.open(getOpenFileUrl(noteId));
+        }
+         else {
+            window.location.href = getFileUrl(noteId);
+        }
     }
 }
 
