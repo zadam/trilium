@@ -163,6 +163,8 @@ async function loadReferenceLinkTitle(noteId, $el) {
     }
 
     $el.text(title);
+
+    $el.prepend($("<span>").addClass(note.getIcon()));
 }
 
 $(document).on('click', "a", goToLink);

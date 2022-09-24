@@ -961,3 +961,9 @@ button.close:hover {
 .hidden-no-content {
     display: none;
 }
+
+.reference-link .bx {
+    position: relative;
+    top: 1px;
+    margin-right: 3px;
+}
