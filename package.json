@@ -57,7 +57,7 @@
     "ini": "3.0.1",
     "is-animated": "2.0.2",
     "is-svg": "4.3.2",
-    "jimp": "0.16.1",
+    "jimp": "0.16.2",
     "joplin-turndown-plugin-gfm": "1.0.12",
     "jsdom": "20.0.0",
     "mime-types": "2.1.35",
@@ -72,7 +72,7 @@
     "rimraf": "3.0.2",
     "safe-compare": "1.1.4",
     "sanitize-filename": "1.6.3",
-    "sanitize-html": "2.7.1",
+    "sanitize-html": "2.7.2",
     "sax": "1.2.4",
     "semver": "7.3.7",
     "serve-favicon": "2.5.0",
@@ -82,7 +82,7 @@
     "tmp": "0.2.1",
     "turndown": "7.1.1",
     "unescape": "1.0.1",
-    "ws": "8.8.1",
+    "ws": "8.9.0",
     "yauzl": "2.10.0"
   },
   "devDependencies": {

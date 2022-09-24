@@ -698,7 +698,7 @@ class Note extends AbstractEntity {
     // this is done so that non-search & non-archived paths are always explored as first when looking for note path
     sortParents() {
         this.parentBranches.sort((a, b) =>
-            a.branchId.startsWith('virt-')
+            a.branchId.startsWith('virt-') // FIXME: search virtual notes appear only in froca so this is probably not necessary
             || a.parentNote?.hasInheritableOwnedArchivedLabel() ? 1 : -1);
 
         this.parents = this.parentBranches
