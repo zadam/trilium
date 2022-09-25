@@ -739,6 +739,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             extraClasses.push("archived");
         }
 
+        const colorClass = note.getColorClass();
+
+        if (colorClass) {
+            extraClasses.push(colorClass);
+        }
+
         return extraClasses.join(" ");
     }
 
@@ -1041,7 +1047,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const noteIdsToReload = new Set();
 
         for (const ecAttr of loadResults.getAttributes()) {
-            if (ecAttr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived'].includes(ecAttr.name)) {
+            if (ecAttr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived', 'color'].includes(ecAttr.name)) {
                 if (ecAttr.isInheritable) {
                     noteIdsToReload.add(ecAttr.noteId);
                 }

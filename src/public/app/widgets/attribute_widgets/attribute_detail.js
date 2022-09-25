@@ -235,7 +235,8 @@ const ATTR_HELP = {
                         
                         See <a href="https://github.com/zadam/trilium/wiki/Default-note-title">wiki with details</a>, API docs for <a href="https://zadam.github.io/trilium/backend_api/Note.html">parentNote</a> and <a href="https://day.js.org/docs/en/display/format">now</a> for details.`,
         "template": "This note will appear in the selection of available template when creating new note",
-        "toc": "<code>#toc</code> or <code>#toc=show</code> will force the Table of Contents to be shown, <code>#toc=hide</code> will force hiding it. If the label doesn't exist, the global setting is observed"
+        "toc": "<code>#toc</code> or <code>#toc=show</code> will force the Table of Contents to be shown, <code>#toc=hide</code> will force hiding it. If the label doesn't exist, the global setting is observed",
+        "color": "defines color of the note in note tree, links etc. Use any valid CSS color value like 'red' or #a13d5f"
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend",

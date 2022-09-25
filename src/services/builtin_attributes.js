@@ -59,6 +59,7 @@ module.exports = [
     { type: 'label', name: 'titleTemplate', isDangerous: true },
     { type: 'label', name: 'template' },
     { type: 'label', name: 'toc' },
+    { type: 'label', name: 'color' },
 
     // relation names
     { type: 'relation', name: 'internalLink' },
