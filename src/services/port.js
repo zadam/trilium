@@ -1,15 +1,27 @@
 const config = require('./config');
 const utils = require('./utils');
 const env = require('./env');
+const dataDir = require('./data_dir');
+
+function parseAndValidate(portStr, source) {
+    const portNum = parseInt(portStr);
+
+    if (!portNum || portNum < 0 || portNum >= 65536) {
+        console.log(`FATAL ERROR: Invalid port value "${portStr}" from ${source}, should be a number between 0 and 65536.`);
+        process.exit(-1);
+    }
+
+    return portNum;
+}
+
+let port;
 
 if (process.env.TRILIUM_PORT) {
-    module.exports = parseInt(process.env.TRILIUM_PORT);
-    return;
+    port = parseAndValidate(process.env.TRILIUM_PORT, "environment variable TRILIUM_PORT");
+} else if (utils.isElectron()) {
+    port = env.isDev() ? 37740 : 37840;
+} else {
+    port = parseAndValidate(config['Network']['port'] || '3000', "Network.port in " + dataDir.CONFIG_INI_PATH);
 }
 
-if (utils.isElectron()) {
-    module.exports = env.isDev() ? 37740 : 37840;
-}
-else {
-    module.exports = config['Network']['port'] || '3000';
-}
+module.exports = port;
