@@ -48,7 +48,7 @@ function getNeighbors(note, depth) {
 
         const targetNote = relation.getTargetNote();
 
-        if (targetNote.hasLabel('excludeFromNoteMap')) {
+        if (!targetNote || targetNote.hasLabel('excludeFromNoteMap')) {
             continue;
         }
 
@@ -67,7 +67,7 @@ function getNeighbors(note, depth) {
 
         const sourceNote = relation.getNote();
 
-        if (sourceNote.hasLabel('excludeFromNoteMap')) {
+        if (!sourceNote || sourceNote.hasLabel('excludeFromNoteMap')) {
             continue;
         }
 
