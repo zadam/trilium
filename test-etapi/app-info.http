@@ -3,5 +3,5 @@ Authorization: {{authToken}}
 
 > {%
     client.assert(response.status === 200);
-    client.assert(response.body == "Hi there!");
+    client.assert(response.body.clipperProtocolVersion === "1.0");
 %}

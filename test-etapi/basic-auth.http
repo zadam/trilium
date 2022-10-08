@@ -1,0 +1,14 @@
+GET {{triliumHost}}/etapi/app-info
+Authorization: Basic whatever {{authToken}}
+
+> {%
+    client.assert(response.status === 200);
+    client.assert(response.body.clipperProtocolVersion === "1.0");
+%}
+
+###
+
+GET {{triliumHost}}/etapi/app-info
+Authorization: Basic whatever wrong pass
+
+> {% client.assert(response.status === 401); %}

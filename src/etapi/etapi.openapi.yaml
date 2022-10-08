@@ -15,6 +15,7 @@ servers:
   - url: http://localhost:8080/etapi
 security:
   - EtapiTokenAuth: []
+  - EtapiBasicAuth: []
 paths:
   /create-note:
     post:
@@ -677,6 +678,14 @@ components:
       type: apiKey
       in: header
       name: Authorization
+    EtapiBasicAuth:
+      type: http
+      scheme: basic
+      description: >
+        Basic Auth where username is arbitrary string (e.g. "trilium", not checked), 
+        username is the ETAPI token. 
+        To emphasize, do not use Trilium password here (won't work), only the generated
+        ETAPI token (from Options -> ETAPI)
   schemas:
     CreateNoteDef:
       type: object
