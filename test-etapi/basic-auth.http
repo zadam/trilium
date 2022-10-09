@@ -1,5 +1,5 @@
 GET {{triliumHost}}/etapi/app-info
-Authorization: Basic whatever {{authToken}}
+Authorization: Basic etapi {{authToken}}
 
 > {%
     client.assert(response.status === 200);
@@ -9,6 +9,13 @@ Authorization: Basic whatever {{authToken}}
 ###
 
 GET {{triliumHost}}/etapi/app-info
-Authorization: Basic whatever wrong pass
+Authorization: Basic etapi wrong
+
+> {% client.assert(response.status === 401); %}
+
+###
+
+GET {{triliumHost}}/etapi/app-info
+Authorization: Basic wrong {{authToken}}
 
 > {% client.assert(response.status === 401); %}

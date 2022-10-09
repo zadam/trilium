@@ -37,11 +37,15 @@ function parseAuthToken(auth) {
         const basicAuthStr = utils.fromBase64(auth.substring(6)).toString("UTF-8");
         const basicAuthChunks = basicAuthStr.split(":");
 
-        if (basicAuthChunks.length === 2) {
-            auth = basicAuthChunks[1];
-        } else {
+        if (basicAuthChunks.length !== 2) {
             return null;
         }
+
+        if (basicAuthChunks[0] !== "etapi") {
+            return null;
+        }
+
+        auth = basicAuthChunks[1];
     }
 
     const chunks = auth.split("_");
