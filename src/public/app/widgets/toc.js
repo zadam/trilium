@@ -23,7 +23,7 @@ const TPL = `<div class="toc-widget">
         .toc-widget {
             padding: 10px;
             contain: none; 
-            overflow:auto;
+            overflow: auto;
         }
         
         .toc ol {
@@ -31,7 +31,15 @@ const TPL = `<div class="toc-widget">
         }
         
         .toc > ol {
-            padding-left: 10px;
+            padding-left: 20px;
+        }
+        
+        .toc li {
+            cursor: pointer;
+        }
+        
+        .toc li:hover {
+            font-weight: bold;
         }
     </style>
 
@@ -154,13 +162,7 @@ export default class TocWidget extends CollapsibleWidget {
             //
 
             const headingText = $("<div>").html(m[2]).text();
-            const $li = $('<li style="cursor:pointer">').text(headingText);
-            // XXX Do this with CSS? How to inject CSS in doRender?
-            $li.hover(function () {
-                $(this).css("font-weight", "bold");
-            }).mouseout(function () {
-                $(this).css("font-weight", "normal");
-            });
+            const $li = $('<li>').text(headingText);
             $li.on("click", () => this.jumpToHeading(headingIndex));
             $ols[$ols.length - 1].append($li);
             headingCount = headingIndex;
