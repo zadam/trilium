@@ -5,8 +5,8 @@
 }
 
 /*
- * CKEditor 5 (v35.1.0) content styles.
- * Generated on Tue, 20 Sep 2022 05:36:21 GMT.
+ * CKEditor 5 (v35.2.1) content styles.
+ * Generated on Fri, 14 Oct 2022 09:47:42 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
@@ -28,6 +28,12 @@
     --ck-todo-list-checkmark-size: 16px;
 }
 
+/* ckeditor5-basic-styles/theme/code.css */
+.ck-content code {
+    background-color: hsla(0, 0%, 78%, 0.3);
+    padding: .15em;
+    border-radius: 2px;
+}
 /* ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
     overflow: hidden;
@@ -42,12 +48,6 @@
 .ck-content[dir="rtl"] blockquote {
     border-left: 0;
     border-right: solid 5px hsl(0, 0%, 80%);
-}
-/* ckeditor5-basic-styles/theme/code.css */
-.ck-content code {
-    background-color: hsla(0, 0%, 78%, 0.3);
-    padding: .15em;
-    border-radius: 2px;
 }
 /* ckeditor5-font/theme/fontsize.css */
 .ck-content .text-tiny {
@@ -128,6 +128,17 @@
     flex-shrink: 1;
     max-width: 100%;
 }
+/* ckeditor5-image/theme/imagecaption.css */
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: var(--ck-color-image-caption-text);
+    background-color: var(--ck-color-image-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
 /* ckeditor5-image/theme/imageresize.css */
 .ck-content .image.image_resized {
     max-width: 100%;
@@ -141,17 +152,6 @@
 /* ckeditor5-image/theme/imageresize.css */
 .ck-content .image.image_resized > figcaption {
     display: block;
-}
-/* ckeditor5-image/theme/imagecaption.css */
-.ck-content .image > figcaption {
-    display: table-caption;
-    caption-side: bottom;
-    word-break: break-word;
-    color: var(--ck-color-image-caption-text);
-    background-color: var(--ck-color-image-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
 }
 /* ckeditor5-image/theme/imagestyle.css */
 .ck-content .image-style-block-align-left,
@@ -328,6 +328,18 @@
     -ms-user-select: none;
     user-select: none;
 }
+/* ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-table-caption-text);
+    background-color: var(--ck-color-table-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
 /* ckeditor5-table/theme/table.css */
 .ck-content .table {
     margin: 0.9em auto;
@@ -374,18 +386,6 @@
 .ck-content .table th {
     position: relative;
 }
-/* ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-table-caption-text);
-    background-color: var(--ck-color-table-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
-}
 /* ckeditor5-code-block/theme/codeblock.css */
 .ck-content pre {
     padding: 1em;
@@ -412,6 +412,42 @@
     height: 4px;
     background: hsl(0, 0%, 87%);
     border: 0;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol {
+    list-style-type: decimal;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol {
+    list-style-type: lower-latin;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol {
+    list-style-type: lower-roman;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol ol {
+    list-style-type: upper-latin;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol ol ol {
+    list-style-type: upper-roman;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul {
+    list-style-type: circle;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul {
+    list-style-type: disc;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul ul {
+    list-style-type: square;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul ul ul {
+    list-style-type: square;
 }
 /* ckeditor5-mention/theme/mention.css */
 .ck-content .mention {
