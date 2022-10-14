@@ -121,7 +121,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
     async refresh() {
         this.type = await this.getWidgetType();
-        this.mime = this.note ? this.note.mime : null;
+        this.mime = this.note?.mime;
 
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
@@ -273,10 +273,14 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)
-            || (loadResults.isNoteReloaded(this.noteId, this.componentId) && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime))) {
+        // we're detecting note type change on the note_detail level, but triggering the noteTypeMimeChanged
+        // globally, so it gets also to e.g. ribbon components. But this means that the event can be generated multiple
+        // times if the same note is open in several tabs.
 
-            this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)
+            && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
+
+            this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else {
             const attrs = loadResults.getAttributes();
@@ -294,7 +298,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             if (label || relation) {
                 // probably incorrect event
                 // calling this.refresh() is not enough since the event needs to be propagated to children as well
-                this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
+                this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
             }
         }
     }
