@@ -4,8 +4,8 @@
   "theme_color": "DarkGray",
   "background_color": "DarkGray",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
+  "scope": "./",
+  "start_url": "./",
   "icons": [{
     "src": "images/app-icons/ios/apple-touch-icon.png",
     "sizes": "180x180",
