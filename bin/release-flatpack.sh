@@ -17,20 +17,26 @@ VERSION_DATE=$(git log -1 --format=%aI "v${VERSION}" | cut -c -10)
 VERSION_COMMIT=$(git rev-list -n 1 "v${VERSION}")
 
 # expecting the directory at a specific path
-cd ~/trilium-flathub
+cd ~/trilium-flathub || exit
 
 if ! git diff-index --quiet HEAD --; then
     echo "There are uncommitted changes"
     exit 1
 fi
 
+BASE_BRANCH=master
+
 if [[ "$VERSION" == *"beta"* ]]; then
-    git switch beta
-else
-    git switch master
+    BASE_BRANCH=beta
 fi
 
+git switch "${BASE_BRANCH}"
 git pull
+
+BRANCH=b${VERSION}
+
+git branch "${BRANCH}"
+git switch "${BRANCH}"
 
 echo "Updating files with version ${VERSION}, date ${VERSION_DATE} and commit ${VERSION_COMMIT}"
 
@@ -45,4 +51,7 @@ git add ./com.github.zadam.trilium.metainfo.xml
 git add ./com.github.zadam.trilium.yml
 
 git commit -m "release $VERSION"
-git push
+git push --set-upstream origin "${BRANCH}"
+
+gh pr create --fill -B "${BASE_BRANCH}"
+gh pr merge --auto --merge --delete-branch
