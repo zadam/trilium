@@ -5,7 +5,7 @@ import noteCreateService from './note_create.js';
 import treeService from './tree.js';
 import froca from "./froca.js";
 
-// this key needs to have this value so it's hit by the tooltip
+// this key needs to have this value, so it's hit by the tooltip
 const SELECTED_NOTE_PATH_KEY = "data-note-path";
 
 const SELECTED_EXTERNAL_LINK_KEY = "data-external-link";
@@ -89,6 +89,11 @@ function showRecentNotes($el) {
     $el.setSelectedNotePath("");
     $el.autocomplete("val", "");
     $el.trigger('focus');
+
+    // simulate pressing down arrow to trigger autocomplete
+    const e = $.Event('keydown');
+    e.which = 40; // arrow down
+    $el.trigger(e);
 }
 
 function initNoteAutocomplete($el, options) {

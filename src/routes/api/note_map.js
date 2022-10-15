@@ -48,7 +48,7 @@ function getNeighbors(note, depth) {
 
         const targetNote = relation.getTargetNote();
 
-        if (targetNote.hasLabel('excludeFromNoteMap')) {
+        if (!targetNote || targetNote.hasLabel('excludeFromNoteMap')) {
             continue;
         }
 
@@ -67,7 +67,7 @@ function getNeighbors(note, depth) {
 
         const sourceNote = relation.getNote();
 
-        if (sourceNote.hasLabel('excludeFromNoteMap')) {
+        if (!sourceNote || sourceNote.hasLabel('excludeFromNoteMap')) {
             continue;
         }
 
@@ -299,7 +299,7 @@ function getBacklinks(req) {
 
     let backlinksWithExcerptCount = 0;
 
-    return backlinks.map(backlink => {
+    return backlinks.filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).map(backlink => {
         const sourceNote = backlink.note;
 
         if (sourceNote.type !== 'text' || backlinksWithExcerptCount > 50) {

@@ -64,11 +64,13 @@ const DOCUMENT_PATH = TRILIUM_DATA_DIR + path.sep + "document.db";
 const BACKUP_DIR = TRILIUM_DATA_DIR + path.sep + "backup";
 const LOG_DIR = TRILIUM_DATA_DIR + path.sep + "log";
 const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + path.sep + "anonymized-db";
+const CONFIG_INI_PATH = TRILIUM_DATA_DIR + '/config.ini';
 
 module.exports = {
     TRILIUM_DATA_DIR,
     DOCUMENT_PATH,
     BACKUP_DIR,
     LOG_DIR,
-    ANONYMIZED_DB_DIR
+    ANONYMIZED_DB_DIR,
+    CONFIG_INI_PATH
 };

@@ -97,7 +97,7 @@ export default class DeleteNotesDialog extends BasicWidget {
 
             this.resolve({
                 proceed: true,
-                deleteAllClones: this.isDeleteAllClonesChecked(),
+                deleteAllClones: this.forceDeleteAllClones || this.isDeleteAllClonesChecked(),
                 eraseNotes: this.isEraseNotesChecked()
             });
         });
@@ -108,7 +108,7 @@ export default class DeleteNotesDialog extends BasicWidget {
     async renderDeletePreview() {
         const response = await server.post('delete-notes-preview', {
             branchIdsToDelete: this.branchIds,
-            deleteAllClones: this.isDeleteAllClonesChecked()
+            deleteAllClones: this.forceDeleteAllClones || this.isDeleteAllClonesChecked()
         });
 
         this.$deleteNotesList.empty();
@@ -143,14 +143,18 @@ export default class DeleteNotesDialog extends BasicWidget {
         }
     }
 
-    async showDeleteNotesDialogEvent({branchIdsToDelete, callback}) {
+    async showDeleteNotesDialogEvent({branchIdsToDelete, callback, forceDeleteAllClones}) {
         this.branchIds = branchIdsToDelete;
+        this.forceDeleteAllClones = forceDeleteAllClones;
 
         await this.renderDeletePreview();
 
         utils.openDialog(this.$widget);
 
-        this.$deleteAllClones.prop("checked", false);
+        this.$deleteAllClones
+            .prop("checked", !!forceDeleteAllClones)
+            .prop("disabled", !!forceDeleteAllClones);
+
         this.$eraseNotes.prop("checked", false);
 
         this.resolve = callback;

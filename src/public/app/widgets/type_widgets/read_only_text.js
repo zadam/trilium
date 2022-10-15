@@ -53,11 +53,12 @@ const TPL = `
         padding: 5px;
         cursor: pointer;
         border: 1px solid transparent;
-        border-radius: 5px;
+        border-radius: var(--button-border-radius);
+        color: var(--button-text-color);
     }
     
     .edit-text-note-button:hover {
-        border-color: var(--main-border-color);
+        border-color: var(--button-border-color);
     }
     </style>
 

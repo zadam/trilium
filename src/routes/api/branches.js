@@ -194,10 +194,15 @@ function deleteBranch(req) {
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
     const deleteId = utils.randomString(10);
-    const noteDeleted = branch.deleteBranch(deleteId, taskContext);
+    let noteDeleted;
 
     if (eraseNotes) {
+        // erase automatically means deleting all clones + note itself
+        branch.getNote().deleteNote(deleteId, taskContext);
         noteService.eraseNotesWithDeleteId(deleteId);
+        noteDeleted = true;
+    } else {
+        noteDeleted = branch.deleteBranch(deleteId, taskContext);
     }
 
     if (last) {

@@ -1,6 +1,13 @@
 @font-face {
-    font-family: MontserratLight;
+    font-family: Montserrat;
     src: url(../fonts/Montserrat-Light.ttf);
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: Montserrat;
+    src: url(../fonts/Montserrat-Regular.ttf);
+    font-weight: bold;
 }
 
 @font-face {
@@ -102,7 +109,6 @@ button.close:hover {
 
 .icon-action {
     border: 1px solid transparent;
-    border-radius: 3px;
     padding: 5px;
     width: 35px;
     height: 35px;
@@ -110,6 +116,7 @@ button.close:hover {
     font-size: 1.5em;
     color: var(--button-text-color);
     background: var(--button-background-color);
+    border-radius: var(--button-border-radius);
 }
 
 .icon-action:hover:not(.disabled) {
@@ -740,7 +747,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 }
 
 .dropdown-submenu {
-    position:relative;
+    position: relative;
 }
 
 .dropdown-submenu > .dropdown-menu {
@@ -748,6 +755,9 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     left: 100%;
     margin-top: -6px;
     min-width: 15rem;
+    /* to make submenu scrollable https://github.com/zadam/trilium/issues/3136 */
+    max-height: 600px;
+    overflow: auto;
 }
 
 /* rotate caret on hover */
@@ -946,4 +956,14 @@ input {
 button.close:hover {
     text-shadow: none;
     color: currentColor;
+}
+
+.hidden-no-content {
+    display: none;
+}
+
+.reference-link .bx {
+    position: relative;
+    top: 1px;
+    margin-right: 3px;
 }

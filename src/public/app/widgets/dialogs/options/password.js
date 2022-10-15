@@ -49,7 +49,7 @@ export default class ChangePasswordOptions {
                 const options = await server.get('options');
                 this.optionsLoaded(options);
 
-                alert("Password has been reset. Please set new password");
+                toastService.showError("Password has been reset. Please set new password");
             }
         });
 
@@ -74,7 +74,7 @@ export default class ChangePasswordOptions {
         this.$newPassword2.val('');
 
         if (newPassword1 !== newPassword2) {
-            alert("New passwords are not the same.");
+            toastService.showError("New passwords are not the same.");
             return false;
         }
 
@@ -83,7 +83,7 @@ export default class ChangePasswordOptions {
             'new_password': newPassword1
         }).then(result => {
             if (result.success) {
-                alert("Password has been changed. Trilium will be reloaded after you press OK.");
+                toastService.showError("Password has been changed. Trilium will be reloaded after you press OK.");
 
                 // password changed so current protected session is invalid and needs to be cleared
                 protectedSessionHolder.resetProtectedSession();

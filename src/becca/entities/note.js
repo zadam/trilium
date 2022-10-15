@@ -403,7 +403,7 @@ class Note extends AbstractEntity {
                         templateAttributes.push(
                             ...templateNote.__getAttributes(newPath)
                                 // template attr is used as a marker for templates, but it's not meant to be inherited
-                                .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                                .filter(attr => !(attr.type === 'label' && (attr.name === 'template' || attr.name === 'workspacetemplate')))
                         );
                     }
                 }
@@ -698,10 +698,12 @@ class Note extends AbstractEntity {
     // this is done so that non-search & non-archived paths are always explored as first when looking for note path
     sortParents() {
         this.parentBranches.sort((a, b) =>
-            a.branchId.startsWith('virt-')
-            || a.parentNote.hasInheritableOwnedArchivedLabel() ? 1 : -1);
+            a.branchId.startsWith('virt-') // FIXME: search virtual notes appear only in froca so this is probably not necessary
+            || a.parentNote?.hasInheritableOwnedArchivedLabel() ? 1 : -1);
 
-        this.parents = this.parentBranches.map(branch => branch.parentNote);
+        this.parents = this.parentBranches
+            .map(branch => branch.parentNote)
+            .filter(note => !!note);
     }
 
     /**
@@ -1072,6 +1074,13 @@ class Note extends AbstractEntity {
     }
 
     /**
+     * Adds a new attribute to this note. The attribute is saved and returned.
+     * See addLabel, addRelation for more specific methods.
+     *
+     * @param {string} type - attribute type (label / relation)
+     * @param {string} name - name of the attribute, not including the leading ~/#
+     * @param {string} [value] - value of the attribute - text for labels, target note ID for relations; optional.
+     *
      * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
@@ -1087,10 +1096,27 @@ class Note extends AbstractEntity {
         }).save();
     }
 
+    /**
+     * Adds a new label to this note. The label attribute is saved and returned.
+     *
+     * @param {string} name - name of the label, not including the leading #
+     * @param {string} [value] - text value of the label; optional
+     *
+     * @return {Attribute}
+     */
     addLabel(name, value = "", isInheritable = false) {
         return this.addAttribute(LABEL, name, value, isInheritable);
     }
 
+    /**
+     * Adds a new relation to this note. The relation attribute is saved and
+     * returned.
+     *
+     * @param {string} name - name of the relation, not including the leading ~
+     * @param {string} value - ID of the target note of the relation
+     *
+     * @return {Attribute}
+     */
     addRelation(name, targetNoteId, isInheritable = false) {
         return this.addAttribute(RELATION, name, targetNoteId, isInheritable);
     }

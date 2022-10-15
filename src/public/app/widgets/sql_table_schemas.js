@@ -16,7 +16,10 @@ const TPL = `
         padding: 0.25rem 0.4rem;
         font-size: 0.875rem;
         line-height: 0.5;
-        border-radius: 0.2rem;
+        border: 1px solid var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        background: var(--button-background-color);
+        color: var(--button-text-color);
     }
     
     .sql-console-result-container {

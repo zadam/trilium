@@ -63,8 +63,6 @@ export default class EmptyTypeWidget extends TypeWidget {
                 appContext.tabManager.getActiveContext().setNote(suggestion.notePath);
             });
 
-        noteAutocompleteService.showRecentNotes(this.$autoComplete);
-
         this.$workspaceNotes = this.$widget.find('.workspace-notes');
 
         super.doRender();
@@ -85,10 +83,8 @@ export default class EmptyTypeWidget extends TypeWidget {
             );
         }
 
-        if (workspaceNotes.length === 0) {
-            this.$autoComplete
-                .trigger('focus')
-                .trigger('select');
-        }
+        this.$autoComplete
+            .trigger('focus')
+            .trigger('select');
     }
 }

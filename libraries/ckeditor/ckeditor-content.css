@@ -5,9 +5,9 @@
 }
 
 /*
- * CKEditor 5 (v33.0.0) content styles.
- * Generated on Fri, 11 Mar 2022 14:34:26 GMT.
- * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/content-styles.html
+ * CKEditor 5 (v35.2.1) content styles.
+ * Generated on Fri, 14 Oct 2022 09:47:42 GMT.
+ * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
 :root {
@@ -34,6 +34,21 @@
     padding: .15em;
     border-radius: 2px;
 }
+/* ckeditor5-block-quote/theme/blockquote.css */
+.ck-content blockquote {
+    overflow: hidden;
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    margin-left: 0;
+    margin-right: 0;
+    font-style: italic;
+    border-left: solid 5px hsl(0, 0%, 80%);
+}
+/* ckeditor5-block-quote/theme/blockquote.css */
+.ck-content[dir="rtl"] blockquote {
+    border-left: 0;
+    border-right: solid 5px hsl(0, 0%, 80%);
+}
 /* ckeditor5-font/theme/fontsize.css */
 .ck-content .text-tiny {
     font-size: .7em;
@@ -49,21 +64,6 @@
 /* ckeditor5-font/theme/fontsize.css */
 .ck-content .text-huge {
     font-size: 1.8em;
-}
-/* ckeditor5-block-quote/theme/blockquote.css */
-.ck-content blockquote {
-    overflow: hidden;
-    padding-right: 1.5em;
-    padding-left: 1.5em;
-    margin-left: 0;
-    margin-right: 0;
-    font-style: italic;
-    border-left: solid 5px hsl(0, 0%, 80%);
-}
-/* ckeditor5-block-quote/theme/blockquote.css */
-.ck-content[dir="rtl"] blockquote {
-    border-left: 0;
-    border-right: solid 5px hsl(0, 0%, 80%);
 }
 /* ckeditor5-highlight/theme/highlight.css */
 .ck-content .marker-yellow {
@@ -139,6 +139,20 @@
     font-size: .75em;
     outline-offset: -1px;
 }
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized {
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized img {
+    width: 100%;
+}
+/* ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized > figcaption {
+    display: block;
+}
 /* ckeditor5-image/theme/imagestyle.css */
 .ck-content .image-style-block-align-left,
 .ck-content .image-style-block-align-right {
@@ -199,20 +213,6 @@
 /* ckeditor5-image/theme/imagestyle.css */
 .ck-content .image-inline.image-style-align-right {
     margin-left: var(--ck-inline-image-style-spacing);
-}
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized {
-    max-width: 100%;
-    display: block;
-    box-sizing: border-box;
-}
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized img {
-    width: 100%;
-}
-/* ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized > figcaption {
-    display: block;
 }
 /* ckeditor5-language/theme/language.css */
 .ck-content span[lang] {
@@ -328,6 +328,18 @@
     -ms-user-select: none;
     user-select: none;
 }
+/* ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-table-caption-text);
+    background-color: var(--ck-color-table-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
 /* ckeditor5-table/theme/table.css */
 .ck-content .table {
     margin: 0.9em auto;
@@ -361,17 +373,18 @@
 .ck-content[dir="ltr"] .table th {
     text-align: left;
 }
-/* ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-table-caption-text);
-    background-color: var(--ck-color-table-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
+/* ckeditor5-table/theme/tablecolumnresize.css */
+.ck-content .table .ck-table-resized {
+    table-layout: fixed;
+}
+/* ckeditor5-table/theme/tablecolumnresize.css */
+.ck-content .table table {
+    overflow: hidden;
+}
+/* ckeditor5-table/theme/tablecolumnresize.css */
+.ck-content .table td,
+.ck-content .table th {
+    position: relative;
 }
 /* ckeditor5-code-block/theme/codeblock.css */
 .ck-content pre {
@@ -399,6 +412,42 @@
     height: 4px;
     background: hsl(0, 0%, 87%);
     border: 0;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol {
+    list-style-type: decimal;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol {
+    list-style-type: lower-latin;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol {
+    list-style-type: lower-roman;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol ol {
+    list-style-type: upper-latin;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ol ol ol ol ol {
+    list-style-type: upper-roman;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul {
+    list-style-type: circle;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul {
+    list-style-type: disc;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul ul {
+    list-style-type: square;
+}
+/* ckeditor5-list/theme/liststyles.css */
+.ck-content ul ul ul ul {
+    list-style-type: square;
 }
 /* ckeditor5-mention/theme/mention.css */
 .ck-content .mention {

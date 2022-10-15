@@ -184,7 +184,7 @@ class NoteContext extends Component {
         }
 
         // "readOnly" is a state valid only for text/code notes
-        if (!this.note || this.note.type !== 'text' && this.note.type !== 'code') {
+        if (!this.note || (this.note.type !== 'text' && this.note.type !== 'code')) {
             return false;
         }
 

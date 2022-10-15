@@ -52,6 +52,12 @@ class Branch {
     get toString() {
         return `Branch(branchId=${this.branchId})`;
     }
+
+    get pojo() {
+        const pojo = {...this};
+        delete pojo.froca;
+        return pojo;
+    }
 }
 
 export default Branch;

@@ -105,9 +105,9 @@ class Branch extends AbstractEntity {
         return this.childNote;
     }
 
-    /** @returns {Note} */
+    /** @returns {Note|undefined} - root branch will have undefined parent, all other branches have to have a parent note */
     get parentNote() {
-        if (!(this.parentNoteId in this.becca.notes)) {
+        if (!(this.parentNoteId in this.becca.notes) && this.parentNoteId !== 'none') {
             // entities can come out of order in sync/import, create skeleton which will be filled later
             this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
         }

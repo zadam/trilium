@@ -27,7 +27,7 @@ class ContextMenu {
         // in such case we'll position it above click coordinates so it will fit into client
 
         const CONTEXT_MENU_PADDING = 5; // How many pixels to pad context menu from edge of screen
-        const CONTEXT_MENU_OFFSET = 10; // How many pixels to offset context menu by relative to cursor
+        const CONTEXT_MENU_OFFSET = 0; // How many pixels to offset context menu by relative to cursor, see #3157
 
         const clientHeight = document.documentElement.clientHeight;
         const clientWidth = document.documentElement.clientWidth;

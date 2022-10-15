@@ -2,7 +2,7 @@ import utils from "../../services/utils.js";
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `
-<div class="info-dialog modal mx-auto" tabindex="-1" role="dialog">
+<div class="info-dialog modal mx-auto" tabindex="-1" role="dialog" style="z-index: 2000;">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">

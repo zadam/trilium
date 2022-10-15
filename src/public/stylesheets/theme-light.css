@@ -5,13 +5,13 @@ html {
     /* either light or dark, colored theme with darker tones are also dark, used e.g. for note map node colors */
     --theme-style: light;
 
-    --main-font-family: MontserratLight;
+    --main-font-family: Montserrat;
     --main-font-size: normal;
 
-    --tree-font-family: MontserratLight;
+    --tree-font-family: Montserrat;
     --tree-font-size: normal;
 
-    --detail-font-family: MontserratLight;
+    --detail-font-family: Montserrat;
     --detail-font-size: normal;
 
     --monospace-font-family: JetBrainsLight;

@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import dialogService from "../../dialog.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <h4>ETAPI</h4>
@@ -36,11 +37,11 @@ const TPL = `
         margin-right: 20px;
         font-size: large;
         border: 1px solid transparent;
-        border-radius: 5px;
+        border-radius: var(--button-border-radius);
     }
     
     .token-table-button:hover {
-        border: 1px solid var(--main-border-color);
+        border: 1px solid var(--button-border-color);
     }
 </style>`;
 
@@ -56,7 +57,7 @@ export default class EtapiOptions {
             });
 
             if (!tokenName.trim()) {
-                alert("Token name can't be empty");
+                toastService.showError("Token name can't be empty");
                 return;
             }
 

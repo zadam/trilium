@@ -30,6 +30,7 @@ module.exports = [
     { type: 'label', name: 'workspaceIconClass' },
     { type: 'label', name: 'workspaceTabBackgroundColor' },
     { type: 'label', name: 'workspaceCalendarRoot' },
+    { type: 'label', name: 'workspaceTemplate' },
     { type: 'label', name: 'searchHome' },
     { type: 'label', name: 'hoistedInbox' },
     { type: 'label', name: 'hoistedSearchHome' },
@@ -49,6 +50,7 @@ module.exports = [
     { type: 'label', name: 'shareAlias' },
     { type: 'label', name: 'shareOmitDefaultCss' },
     { type: 'label', name: 'shareRoot' },
+    { type: 'label', name: 'shareDescription' },
     { type: 'label', name: 'shareRaw' },
     { type: 'label', name: 'shareDisallowRobotIndexing' },
     { type: 'label', name: 'shareCredentials' },
@@ -57,6 +59,7 @@ module.exports = [
     { type: 'label', name: 'titleTemplate', isDangerous: true },
     { type: 'label', name: 'template' },
     { type: 'label', name: 'toc' },
+    { type: 'label', name: 'color' },
 
     // relation names
     { type: 'relation', name: 'internalLink' },

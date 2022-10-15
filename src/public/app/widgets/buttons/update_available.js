@@ -8,7 +8,7 @@ const TPL = `
             height: 21px !important;
             padding: 0 !important;
             
-            border-radius: 8px;
+            border-radius: var(--button-border-radius);
             transform: scale(0.9);
             border: none;
             opacity: 0.8;

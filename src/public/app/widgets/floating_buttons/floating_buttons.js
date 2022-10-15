@@ -1,4 +1,4 @@
-import Container from "../containers/container.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <div class="floating-buttons">
@@ -16,7 +16,7 @@ const TPL = `
             z-index: 100;
         }
         
-        .floating-buttons-children > * {
+        .floating-buttons-children > *:not(.hidden-int):not(.no-content-hidden) {
             margin-left: 10px;
         }
         
@@ -24,12 +24,16 @@ const TPL = `
             font-size: 130%;
             padding: 5px 10px 4px 10px;
         }
+        
+        .floating-buttons.temporarily-hidden {
+            display: none;
+        }
     </style>
     
     <div class="floating-buttons-children"></div>
 </div>`;
 
-export default class FloatingButtons extends Container {
+export default class FloatingButtons extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$children = this.$widget.find(".floating-buttons-children");
@@ -37,5 +41,17 @@ export default class FloatingButtons extends Container {
         for (const widget of this.children) {
             this.$children.append(widget.render());
         }
+    }
+
+    async refreshWithNote(note) {
+        this.toggle(true);
+    }
+
+    toggle(show) {
+        this.$widget.toggleClass("temporarily-hidden", !show);
+    }
+
+    hideFloatingButtonsCommand() {
+        this.toggle(false);
     }
 }

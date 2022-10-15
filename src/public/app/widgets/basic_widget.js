@@ -8,6 +8,28 @@ class BasicWidget extends Component {
             style: ''
         };
         this.classes = [];
+
+        this.children = [];
+        this.childPositionCounter = 10;
+    }
+
+    child(...components) {
+        if (!components) {
+            return this;
+        }
+
+        super.child(...components);
+
+        for (const component of components) {
+            if (component.position === undefined) {
+                component.position = this.childPositionCounter;
+                this.childPositionCounter += 10;
+            }
+        }
+
+        this.children.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
+
+        return this;
     }
 
     id(id) {

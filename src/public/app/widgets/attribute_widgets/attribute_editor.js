@@ -57,8 +57,10 @@ const TPL = `
     }
     
     .add-new-attribute-button:hover, .save-attributes-button:hover {
-        border: 1px solid var(--main-border-color);
-        border-radius: 2px;
+        border: 1px solid var(--button-border-color);
+        border-radius: var(--button-border-radius);
+        background: var(--button-background-color);
+        color: var(--button-text-color);
     }
     
     .attribute-errors {
@@ -297,6 +299,12 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     async save() {
+        if (this.lastUpdatedNoteId !== this.noteId) {
+            // https://github.com/zadam/trilium/issues/3090
+            console.warn("Ignoring blur event because a different note is loaded.");
+            return;
+        }
+
         const attributes = this.parseAttributes();
 
         if (attributes) {
@@ -354,6 +362,8 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
     }
 
     dataChanged() {
+        this.lastUpdatedNoteId = this.noteId;
+
         if (this.lastSavedContent === this.textEditor.getData()) {
             this.$saveAttributesButton.fadeOut();
         }

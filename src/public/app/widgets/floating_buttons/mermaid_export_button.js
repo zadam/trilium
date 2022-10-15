@@ -1,7 +1,4 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
-import dialogService from "../dialog.js";
-import server from "../../services/server.js";
-import toastService from "../../services/toast.js";
 
 const TPL = `
 <button type="button"

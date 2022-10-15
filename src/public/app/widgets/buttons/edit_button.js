@@ -49,4 +49,10 @@ export default class EditButton extends ButtonWidget {
             this.refresh();
         }
     }
+
+    async noteTypeMimeChangedEvent({noteId}) {
+        if (this.isNote(noteId)) {
+            await this.refresh();
+        }
+    }
 }

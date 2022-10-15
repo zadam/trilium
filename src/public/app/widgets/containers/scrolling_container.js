@@ -4,6 +4,7 @@ export default class ScrollingContainer extends Container {
     constructor() {
         super();
 
+        this.class("scrolling-container");
         this.css('overflow', 'auto');
         this.css('position', 'relative');
     }

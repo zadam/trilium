@@ -162,7 +162,10 @@ async function loadReferenceLinkTitle(noteId, $el) {
         title = note.isDeleted ? `${note.title} (deleted)` : note.title;
     }
 
+    $el.addClass(note.getColorClass());
     $el.text(title);
+
+    $el.prepend($("<span>").addClass(note.getIcon()));
 }
 
 $(document).on('click', "a", goToLink);

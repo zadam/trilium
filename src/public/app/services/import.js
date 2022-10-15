@@ -32,6 +32,9 @@ export async function uploadFiles(parentNoteId, files, options) {
             dataType: 'json',
             type: 'POST',
             timeout: 60 * 60 * 1000,
+            error: function(xhr) {
+                toastService.showError("Import failed: " + xhr.responseText);
+            },
             contentType: false, // NEEDED, DON'T REMOVE THIS
             processData: false, // NEEDED, DON'T REMOVE THIS
         }));

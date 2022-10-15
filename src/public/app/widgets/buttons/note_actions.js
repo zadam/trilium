@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import utils from "../../services/utils.js";
+import branchService from "../../services/branches.js";
 
 const TPL = `
 <div class="dropdown note-actions">
@@ -30,6 +31,7 @@ const TPL = `
         <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"><kbd data-command="openNoteExternally"></kbd> Open note externally</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
+        <a class="dropdown-item delete-note-button">Delete note</a>
         <a data-trigger-command="printActiveNote" class="dropdown-item print-active-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
     </div>
 </div>`;
@@ -65,6 +67,15 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
 
         this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
+
+        this.$deleteNoteButton = this.$widget.find(".delete-note-button");
+        this.$deleteNoteButton.on("click", () => {
+            if (this.note.noteId === 'root') {
+                return;
+            }
+
+            branchService.deleteNotes([this.note.getParentBranches()[0].branchId], true);
+        });
     }
 
     refreshWithNote(note) {

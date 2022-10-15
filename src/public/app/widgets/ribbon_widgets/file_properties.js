@@ -90,7 +90,7 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
         this.$uploadNewRevisionInput = this.$widget.find(".file-upload-new-revision-input");
 
         this.$downloadButton.on('click', () => openService.downloadFileNote(this.noteId));
-        this.$openButton.on('click', () => openService.openNoteExternally(this.noteId));
+        this.$openButton.on('click', () => openService.openNoteExternally(this.noteId, this.note.mime));
 
         this.$uploadNewRevisionButton.on("click", () => {
             this.$uploadNewRevisionInput.trigger("click");

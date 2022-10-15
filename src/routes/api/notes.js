@@ -181,6 +181,7 @@ function getRelationMap(req) {
 
             if (def.inverseRelation) {
                 resp.inverseRelations[relationDefinition.getDefinedName()] = def.inverseRelation;
+                resp.inverseRelations[def.inverseRelation] = relationDefinition.getDefinedName();
             }
         }
     }
@@ -314,7 +315,7 @@ function getBacklinkCount(req) {
     }
     else {
         return {
-            count: note.getTargetRelations().length
+            count: note.getTargetRelations().filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).length
         };
     }
 }

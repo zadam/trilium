@@ -10,12 +10,6 @@ export default class NoteWrapperWidget extends FlexContainer {
             .collapsible();
     }
 
-    doRender() {
-        super.doRender();
-
-        this.$widget.addClass("note-split");
-    }
-
     setNoteContextEvent({noteContext}) {
         this.noteContext = noteContext;
 
@@ -35,7 +29,13 @@ export default class NoteWrapperWidget extends FlexContainer {
     }
 
     refresh() {
+        const isHiddenExt = this.isHiddenExt(); // preserve through class reset
+
         this.$widget.removeClass();
+
+        this.toggleExt(!isHiddenExt);
+
+        this.$widget.addClass("component note-split");
 
         const note = this.noteContext?.note;
         if (!note) {

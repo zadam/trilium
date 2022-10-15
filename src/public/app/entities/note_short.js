@@ -4,6 +4,7 @@ import ws from "../services/ws.js";
 import options from "../services/options.js";
 import froca from "../services/froca.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import cssClassManager from "../services/css_class_manager.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -268,7 +269,7 @@ class NoteShort {
                     attrArrs.push(
                         templateNote.__getCachedAttributes(newPath)
                             // template attr is used as a marker for templates, but it's not meant to be inherited
-                            .filter(attr => !(attr.type === 'label' && attr.name === 'template'))
+                            .filter(attr => !(attr.type === 'label' && (attr.name === 'template' || attr.name === 'workspacetemplate')))
                     );
                 }
             }
@@ -423,6 +424,11 @@ class NoteShort {
         else {
             return NOTE_TYPE_ICONS[this.type];
         }
+    }
+
+    getColorClass() {
+        const color = this.getLabelValue("color");
+        return cssClassManager.createClassForColor(color);
     }
 
     isFolder() {
