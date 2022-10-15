@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -164,10 +164,10 @@
         } else {
           if(delim = stream.match(/^%([^\w\s=])/)) {
             delim = delim[1];
-          } else if (stream.match(/^%[a-zA-Z0-9_\u009F-\uFFFF]*/)) {
+          } else if (stream.match(/^%[a-zA-Z_\u009F-\uFFFF][\w\u009F-\uFFFF]*/)) {
             // Macro variables
             return "meta";
-          } else {
+          } else if (stream.eat('%')) {
             // '%' operator
             return "operator";
           }

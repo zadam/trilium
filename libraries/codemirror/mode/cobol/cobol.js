@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 /**
  * Author: Gautam Mehta
@@ -195,7 +195,7 @@ CodeMirror.defineMode("cobol", function () {
       case "string": // multi-line string parsing mode
         var next = false;
         while ((next = stream.next()) != null) {
-          if (next == "\"" || next == "\'") {
+          if ((next == "\"" || next == "\'") && !stream.match(/['"]/, false)) {
             state.mode = false;
             break;
           }
