@@ -93,7 +93,7 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
             return;
         }
 
-        this.$ticker.toggle(true);
+        this.toggle(true);
         this.$count.text(
             `${resp.count} backlink`
             + (resp.count === 1 ? '' : 's')
