@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -60,7 +60,7 @@ CodeMirror.defineMode('mllike', function(_config, parserConfig) {
       }
     }
     if (ch === '(') {
-      if (stream.eat('*')) {
+      if (stream.match(/^\*(?!\))/)) {
         state.commentLevel++;
         state.tokenize = tokenComment;
         return state.tokenize(stream, state);

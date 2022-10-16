@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -24,6 +24,8 @@
     "@inject?": paramData,
     "@state": paramData,
     "template": { soyState: "templ-def", variableScope: true},
+    "extern": {soyState: "param-def"},
+    "export": {soyState: "export"},
     "literal": { },
     "msg": {},
     "fallbackmsg": { noEndTag: true, reduceIndent: true},
@@ -31,6 +33,8 @@
     "plural": {},
     "let": { soyState: "var-def" },
     "if": {},
+    "javaimpl": {},
+    "jsimpl": {},
     "elseif": { noEndTag: true, reduceIndent: true},
     "else": { noEndTag: true, reduceIndent: true},
     "switch": {},
@@ -46,6 +50,8 @@
     "delcall": { soyState: "templ-ref" },
     "log": {},
     "element": { variableScope: true },
+    "velog": {},
+    "const": { soyState: "const-def"},
   };
 
   var indentingTags = Object.keys(tags).filter(function(tag) {
@@ -134,10 +140,10 @@
         state.context = new Context(state.context, "list-literal", state.variables);
         state.lookupVariables = false;
         return null;
-      } else if (stream.match(/map\b/)) {
+      } else if (stream.match(/\bmap(?=\()/)) {
         state.soyState.push("map-literal");
         return "keyword";
-      } else if (stream.match(/record\b/)) {
+      } else if (stream.match(/\brecord(?=\()/)) {
         state.soyState.push("record-literal");
         return "keyword";
       } else if (stream.match(/([\w]+)(?=\()/)) {
@@ -448,11 +454,11 @@
               state.indent -= 2 * config.indentUnit;
               return null;
             }
-            if (stream.match(/\w+(?=\s+as)/)) {
+            if (stream.match(/\w+(?=\s+as\b)/)) {
               return "variable";
             }
             if (match = stream.match(/\w+/)) {
-              return /(from|as)/.test(match[0]) ? "keyword" : "def";
+              return /\b(from|as)\b/.test(match[0]) ? "keyword" : "def";
             }
             if (match = stream.match(/^["']/)) {
               state.soyState.push("string");
@@ -522,6 +528,27 @@
               return this.token(stream, state);
             }
             return tokenUntil(stream, state, /\{\/literal}/);
+          case "export":
+            if (match = stream.match(/\w+/)) {
+              state.soyState.pop();
+              if (match == "const") {
+                state.soyState.push("const-def")
+                return "keyword";
+              } else if (match == "extern") {
+                state.soyState.push("param-def")
+                return "keyword";
+              }
+            } else {
+              stream.next();
+            }
+            return null;
+          case "const-def":
+            if (stream.match(/^\w+/)) {
+              state.soyState.pop();
+              return "def";
+            }
+            stream.next();
+            return null;
         }
 
         if (stream.match('{literal}')) {
@@ -552,7 +579,8 @@
               state.context = new Context(state.context, state.tag, tag.variableScope ? state.variables : null);
             // Otherwise close the current context.
             } else if (endTag) {
-              if (!state.context || state.context.tag != tagName) {
+              var isBalancedForExtern = tagName == 'extern' && (state.context && state.context.tag == 'export');
+              if (!state.context || ((state.context.tag != tagName) && !isBalancedForExtern)) {
                 tagError = true;
               } else if (state.context) {
                 if (state.context.kind) {
@@ -577,7 +605,7 @@
           state.indent += 2 * config.indentUnit;
           state.soyState.push("tag");
           return "keyword";
-        } else if (!state.context && stream.match(/\bimport\b/)) {
+        } else if (!state.context && stream.sol() && stream.match(/import\b/)) {
           state.soyState.push("import");
           state.indent += 2 * config.indentUnit;
           return "keyword";

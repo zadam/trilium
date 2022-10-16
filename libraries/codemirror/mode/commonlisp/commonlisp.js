@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -114,6 +114,7 @@ CodeMirror.defineMode("commonlisp", function (config) {
 
     closeBrackets: {pairs: "()[]{}\"\""},
     lineComment: ";;",
+    fold: "brace-paren",
     blockCommentStart: "#|",
     blockCommentEnd: "|#"
   };

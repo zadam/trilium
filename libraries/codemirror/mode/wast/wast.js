@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -18,6 +18,8 @@ var kKeywords = [
     "call(_indirect|_ref)?",
     "current_memory",
     "\\bdata\\b",
+    "catch(_all)?",
+    "delegate",
     "drop",
     "elem",
     "else",
@@ -36,13 +38,17 @@ var kKeywords = [
     "offset",
     "param",
     "result",
+    "rethrow",
     "return(_call(_indirect|_ref)?)?",
     "select",
     "start",
     "table(\\.(size|get|set|size|grow|fill|init|copy))?",
     "then",
+    "throw",
+    "try",
     "type",
     "unreachable",
+    "unwind",
 
     // Numeric opcodes.
     "i(32|64)\\.(store(8|16)|(load(8|16)_[su]))",

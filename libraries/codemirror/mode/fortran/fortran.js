@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -112,7 +112,7 @@ CodeMirror.defineMode("fortran", function() {
                      "c_short", "c_signed_char", "c_size_t", "character",
                      "complex", "double", "integer", "logical", "real"]);
   var isOperatorChar = /[+\-*&=<>\/\:]/;
-  var litOperator = new RegExp("(\.and\.|\.or\.|\.eq\.|\.lt\.|\.le\.|\.gt\.|\.ge\.|\.ne\.|\.not\.|\.eqv\.|\.neqv\.)", "i");
+  var litOperator = /^\.(and|or|eq|lt|le|gt|ge|ne|not|eqv|neqv)\./i;
 
   function tokenBase(stream, state) {
 
