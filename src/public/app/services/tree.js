@@ -314,6 +314,10 @@ function parseNotePath(notePath) {
     return noteIds;
 }
 
+function isNotePathInHiddenSubtree(notePath) {
+    return notePath?.includes("root/hidden");
+}
+
 export default {
     resolveNotePath,
     resolveNotePathToSegments,
@@ -328,5 +332,6 @@ export default {
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,
     getHashValueFromAddress,
-    parseNotePath
+    parseNotePath,
+    isNotePathInHiddenSubtree
 };

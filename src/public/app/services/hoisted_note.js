@@ -1,6 +1,7 @@
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import dialogService from "../widgets/dialog.js";
+import froca from "./froca.js";
 
 function getHoistedNoteId() {
     const activeNoteContext = appContext.tabManager.getActiveContext();
@@ -24,6 +25,19 @@ function isHoistedNode(node) {
     // even though check for 'root' should not be necessary, we keep it just in case
     return node.data.noteId === "root"
         || node.data.noteId === getHoistedNoteId();
+}
+
+async function isHoistedInHiddenSubtree() {
+    const hoistedNoteId = getHoistedNoteId();
+
+    if (hoistedNoteId === 'root') {
+        return false;
+    }
+
+    const hoistedNote = await froca.getNote(hoistedNoteId);
+    const hoistedNotePath = treeService.getSomeNotePath(hoistedNote);
+
+    return treeService.isNotePathInHiddenSubtree(hoistedNotePath);
 }
 
 async function checkNoteAccess(notePath, noteContext) {
@@ -53,5 +67,6 @@ export default {
     unhoist,
     isTopLevelNode,
     isHoistedNode,
-    checkNoteAccess
+    checkNoteAccess,
+    isHoistedInHiddenSubtree
 }

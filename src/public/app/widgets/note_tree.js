@@ -964,7 +964,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         if (this.noteContext
             && this.noteContext.notePath
             && !this.noteContext.note?.isDeleted
-            && !this.noteContext.notePath.includes("root/hidden")
+            && (!treeService.isNotePathInHiddenSubtree(this.noteContext.notePath) || await hoistedNoteService.isHoistedInHiddenSubtree())
         ) {
             const newActiveNode = await this.getNodeFromPath(this.noteContext.notePath);
 
@@ -1058,7 +1058,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const noteIdsToReload = new Set();
 
         for (const ecAttr of loadResults.getAttributes()) {
-            if (ecAttr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived', 'color'].includes(ecAttr.name)) {
+            const dirtyingLabels = ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived', 'color'];
+
+            if (ecAttr.type === 'label' && dirtyingLabels.includes(ecAttr.name)) {
                 if (ecAttr.isInheritable) {
                     noteIdsToReload.add(ecAttr.noteId);
                 }
@@ -1169,7 +1171,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             let node = await this.expandToNote(activeNotePath, false);
 
             if (node && node.data.noteId !== activeNoteId) {
-                // if the active note has been moved elsewhere then it won't be found by the path
+                // if the active note has been moved elsewhere then it won't be found by the path,
                 // so we switch to the alternative of trying to find it by noteId
                 const notesById = this.getNodesByNoteId(activeNoteId);
 
@@ -1186,7 +1188,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 await node.setActive(true, {noEvents: true, noFocus: !activeNodeFocused});
             }
             else {
-                // this is used when original note has been deleted and we want to move the focus to the note above/below
+                // this is used when original note has been deleted, and we want to move the focus to the note above/below
                 node = await this.expandToNote(nextNotePath, false);
 
                 if (node) {
