@@ -28,11 +28,17 @@ function installLocalAppIcon() {
         return;
     }
 
+    if (!fs.existsSync(path.resolve(ELECTRON_APP_ROOT_DIR, "trilium-portable.sh"))) {
+        // simple heuristic to detect ".tar.xz" linux build (i.e. not flatpak, not debian)
+        // only in such case it's necessary to create an icon
+        return;
+    }
+
     const desktopDir = path.resolve(os.homedir(), '.local/share/applications');
 
     fs.stat(desktopDir, function (err, stats) {
         if (err) {
-            // Directory doesn't exist so we won't attempt to create the .desktop file
+            // Directory doesn't exist, so we won't attempt to create the .desktop file
             return;
         }
 
