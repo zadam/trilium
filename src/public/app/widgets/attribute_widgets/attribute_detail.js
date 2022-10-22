@@ -210,7 +210,7 @@ const ATTR_HELP = {
         "workspaceTemplate": "This note will appear in the selection of available template when creating new note, but only when hoisted into a workspace containing this template",
         "searchHome": "new search notes will be created as children of this note",
         "hoistedSearchHome": "new search notes will be created as children of this note when hoisted to some ancestor of this note",
-        "inbox": "default inbox location for new notes",
+        "inbox": "`inbox` - default inbox location for new notes - when you create a note using \"new note\" button in the sidebar, notes will be created as child notes in the note marked as with <code>#inbox</code> label.",
         "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
         "sqlConsoleHome": "default location of SQL console notes",
         "bookmarked": "note with this label will appear in bookmarks",
