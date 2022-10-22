@@ -264,7 +264,6 @@ function register(app) {
     apiRoute(DELETE, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.eraseNoteRevision);
     route(GET, '/api/notes/:noteId/revisions/:noteRevisionId/download', [auth.checkApiAuthOrElectron], noteRevisionsApiRoute.downloadNoteRevision);
     apiRoute(PUT, '/api/notes/:noteId/restore-revision/:noteRevisionId', noteRevisionsApiRoute.restoreNoteRevision);
-    apiRoute(GET, '/api/notes/:noteId/backlink-count', notesApiRoute.getBacklinkCount);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(POST, '/api/notes/erase-deleted-notes-now', notesApiRoute.eraseDeletedNotesNow);
     apiRoute(PUT, '/api/notes/:noteId/title', notesApiRoute.changeTitle);
@@ -306,6 +305,7 @@ function register(app) {
 
     apiRoute(POST, '/api/note-map/:noteId/tree', noteMapRoute.getTreeMap);
     apiRoute(POST, '/api/note-map/:noteId/link', noteMapRoute.getLinkMap);
+    apiRoute(GET, '/api/note-map/:noteId/backlink-count', noteMapRoute.getBacklinkCount);
     apiRoute(GET, '/api/note-map/:noteId/backlinks', noteMapRoute.getBacklinks);
 
     apiRoute(GET, '/api/special-notes/inbox/:date', specialNotesRoute.getInboxNote);

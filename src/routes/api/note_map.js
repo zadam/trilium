@@ -287,6 +287,27 @@ function findExcerpts(sourceNote, referencedNoteId) {
     return excerpts;
 }
 
+function getFilteredBacklinks(note) {
+    return note.getTargetRelations()
+        // search notes have "ancestor" relations which are not interesting
+        .filter(note => note.getNote().type !== 'search');
+}
+
+function getBacklinkCount(req) {
+    const {noteId} = req.params;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, "Not found"];
+    }
+    else {
+        return {
+            count: getFilteredBacklinks(note).length
+        };
+    }
+}
+
 function getBacklinks(req) {
     const {noteId} = req.params;
     const note = becca.getNote(noteId);
@@ -295,11 +316,9 @@ function getBacklinks(req) {
         return [404, `Note ${noteId} was not found`];
     }
 
-    let backlinks = note.getTargetRelations();
-
     let backlinksWithExcerptCount = 0;
 
-    return backlinks.filter(note => !note.getNote().hasLabel('excludeFromNoteMap')).map(backlink => {
+    return getFilteredBacklinks(note).map(backlink => {
         const sourceNote = backlink.note;
 
         if (sourceNote.type !== 'text' || backlinksWithExcerptCount > 50) {
@@ -323,5 +342,6 @@ function getBacklinks(req) {
 module.exports = {
     getLinkMap,
     getTreeMap,
+    getBacklinkCount,
     getBacklinks
 };
