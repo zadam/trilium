@@ -40,6 +40,10 @@ function disableEntityEvents() {
     namespace.set('disableEntityEvents', true);
 }
 
+function enableEntityEvents() {
+    namespace.set('disableEntityEvents', false);
+}
+
 function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
@@ -83,6 +87,7 @@ module.exports = {
     getComponentId,
     getLocalNowDateTime,
     disableEntityEvents,
+    enableEntityEvents,
     isEntityEventsDisabled,
     reset,
     getAndClearEntityChangeIds,
