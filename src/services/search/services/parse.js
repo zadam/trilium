@@ -39,12 +39,25 @@ function getFulltext(tokens, searchContext) {
     }
 }
 
+const OPERATORS = [
+    "=",
+    "!=",
+    "*=*",
+    "*=",
+    "=*",
+    ">",
+    ">=",
+    "<",
+    "<=",
+    "%="
+];
+
 function isOperator(token) {
     if (Array.isArray(token)) {
         return false;
     }
 
-    return token.token.match(/^[!=<>*%]+$/);
+    return OPERATORS.includes(token.token);
 }
 
 function getExpression(tokens, searchContext, level = 0) {
