@@ -33,10 +33,6 @@ function getNewNotePosition(parentNoteId) {
     return maxNotePos + 10;
 }
 
-function triggerChildNoteCreated(childNote, parentNote) {
-    eventService.emit(eventService.CHILD_NOTE_CREATED, { childNote, parentNote });
-}
-
 function triggerNoteTitleChanged(note) {
     eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
@@ -140,24 +136,43 @@ function createNewNote(params) {
     }
 
     return sql.transactional(() => {
-        const note = new Note({
-            noteId: params.noteId, // optionally can force specific noteId
-            title: params.title,
-            isProtected: !!params.isProtected,
-            type: params.type,
-            mime: deriveMime(params.type, params.mime)
-        }).save();
+        let note, branch, isEntityEventsDisabled;
 
-        note.setContent(params.content);
+        try {
+            isEntityEventsDisabled = cls.isEntityEventsDisabled();
 
-        const branch = new Branch({
-            branchId: params.branchId,
-            noteId: note.noteId,
-            parentNoteId: params.parentNoteId,
-            notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
-            prefix: params.prefix,
-            isExpanded: !!params.isExpanded
-        }).save();
+            if (!isEntityEventsDisabled) {
+                // it doesn't make sense to run note creation events on a partially constructed note, so
+                // defer them until note creation is completed
+                cls.disableEntityEvents();
+            }
+
+            note = new Note({
+                noteId: params.noteId, // optionally can force specific noteId
+                title: params.title,
+                isProtected: !!params.isProtected,
+                type: params.type,
+                mime: deriveMime(params.type, params.mime)
+            }).save();
+
+            note.setContent(params.content);
+
+            branch = new Branch({
+                branchId: params.branchId,
+                noteId: note.noteId,
+                parentNoteId: params.parentNoteId,
+                notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
+                prefix: params.prefix,
+                isExpanded: !!params.isExpanded
+            }).save();
+        }
+        finally {
+            if (!isEntityEventsDisabled) {
+                // re-enable entity events only if there were previously enabled
+                // (they can be disabled in case of import)
+                cls.enableEntityEvents();
+            }
+        }
 
         scanForLinks(note);
 
@@ -175,7 +190,21 @@ function createNewNote(params) {
         }
 
         triggerNoteTitleChanged(note);
-        triggerChildNoteCreated(note, parentNote);
+
+        eventService.emit(eventService.ENTITY_CREATED, {
+            entityName: 'notes',
+            entity: note
+        });
+
+        eventService.emit(eventService.ENTITY_CREATED, {
+            entityName: 'branches',
+            entity: branch
+        });
+
+        eventService.emit(eventService.CHILD_NOTE_CREATED, {
+            childNote: note,
+            parentNote: parentNote
+        });
 
         log.info(`Created new note '${note.noteId}', branch '${branch.branchId}' of type '${note.type}', mime '${note.mime}'`);
 

@@ -50,21 +50,25 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         const note = await froca.getNote(noteId);
 
         if (note) {
+            const $wrapper = $('<div class="include-note-wrapper">');
+
             const $link = await linkService.createNoteLink(note.noteId, {
                 showTooltip: false
             });
 
-            $el.empty().append(
+            $wrapper.empty().append(
                 $('<h4 class="include-note-title">')
                     .append($link)
             );
 
             const {$renderedContent, type} = await noteContentRenderer.getRenderedContent(note);
 
-            $el.append(
+            $wrapper.append(
                 $(`<div class="include-note-content type-${type}">`)
                     .append($renderedContent)
             );
+
+            $el.empty().append($wrapper);
         }
     }
 

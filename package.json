@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.56.0-beta",
+  "version": "0.56.1",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
@@ -21,9 +21,9 @@
     "build-frontend-docs": "rm -r ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
-    "test": "jasmine",
+    "test-jasmine": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
-    "test-all": "npm run test && npm run test-es6",
+    "test": "npm run test-jasmine && npm run test-es6",
     "postinstall": "rimraf ./node_modules/canvas"
   },
   "dependencies": {

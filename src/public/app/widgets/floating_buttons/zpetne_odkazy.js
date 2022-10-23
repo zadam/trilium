@@ -86,7 +86,7 @@ export default class BacklinksWidget extends NoteContextAwareWidget {
         this.clearItems();
 
         // can't use froca since that would count only relations from loaded notes
-        const resp = await server.get(`notes/${this.noteId}/backlink-count`);
+        const resp = await server.get(`note-map/${this.noteId}/backlink-count`);
 
         if (!resp || !resp.count) {
             this.toggle(false);
