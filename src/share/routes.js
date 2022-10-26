@@ -6,6 +6,7 @@ const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
+const assetPath = require("../services/asset_path");
 
 function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
@@ -103,7 +104,8 @@ function register(router) {
             header,
             content,
             isEmpty,
-            subRoot
+            subRoot,
+            assetPath
         });
     }
 

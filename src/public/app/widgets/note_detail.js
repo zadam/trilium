@@ -237,15 +237,17 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             $promotedAttributes = (await attributeRenderer.renderNormalAttributes(this.note)).$renderedAttributes;
         }
 
+        const {assetPath} = window.glob;
+
         this.$widget.find('.note-detail-printable:visible').printThis({
             header: $("<div>")
                         .append($("<h2>").text(this.note.title))
                         .append($promotedAttributes)
                         .prop('outerHTML'),
             footer: `
-<script src="libraries/katex/katex.min.js"></script>
-<script src="libraries/katex/mhchem.min.js"></script>
-<script src="libraries/katex/auto-render.min.js"></script>
+<script src="${assetPath}/libraries/katex/katex.min.js"></script>
+<script src="${assetPath}/libraries/katex/mhchem.min.js"></script>
+<script src="${assetPath}/libraries/katex/auto-render.min.js"></script>
 <script>
     document.body.className += ' ck-content printed-content';
     
@@ -254,13 +256,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 `,
             importCSS: false,
             loadCSS: [
-                "libraries/codemirror/codemirror.css",
-                "libraries/ckeditor/ckeditor-content.css",
-                "libraries/bootstrap/css/bootstrap.min.css",
-                "libraries/katex/katex.min.css",
-                "stylesheets/print.css",
-                "stylesheets/relation_map.css",
-                "stylesheets/ckeditor-theme.css"
+                assetPath + "/libraries/codemirror/codemirror.css",
+                assetPath + "/libraries/ckeditor/ckeditor-content.css",
+                assetPath + "/libraries/bootstrap/css/bootstrap.min.css",
+                assetPath + "/libraries/katex/katex.min.css",
+                assetPath + "/stylesheets/print.css",
+                assetPath + "/stylesheets/relation_map.css",
+                assetPath + "/stylesheets/ckeditor-theme.css"
             ],
             debug: true
         });

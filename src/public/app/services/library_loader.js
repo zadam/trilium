@@ -86,6 +86,8 @@ async function requireLibrary(library) {
 const loadedScriptPromises = {};
 
 async function requireScript(url) {
+    url = window.glob.assetPath + "/" + url;
+
     if (!loadedScriptPromises[url]) {
         loadedScriptPromises[url] = $.ajax({
             url: url,
@@ -97,12 +99,16 @@ async function requireScript(url) {
     await loadedScriptPromises[url];
 }
 
-async function requireCss(url) {
+async function requireCss(url, prependAssetPath = true) {
     const cssLinks = Array
         .from(document.querySelectorAll('link'))
         .map(el => el.href);
 
     if (!cssLinks.some(l => l.endsWith(url))) {
+        if (prependAssetPath) {
+            url = window.glob.assetPath + "/" + url;
+        }
+
         $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
     }
 }

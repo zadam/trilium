@@ -1,4 +1,5 @@
 const path = require('path');
+const assetPath = require('./src/services/asset_path');
 
 module.exports = {
     mode: 'production',
@@ -6,7 +7,7 @@ module.exports = {
         mobile: './src/public/app/desktop.js',
     },
     output: {
-        publicPath: 'app-dist/',
+        publicPath: `/${assetPath}/app-dist/`,
         path: path.resolve(__dirname, 'src/public/app-dist'),
         filename: 'desktop.js'
     },
