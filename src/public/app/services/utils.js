@@ -245,6 +245,8 @@ async function openDialog($dialog, closeActDialog = true) {
     $dialog.modal();
 
     $dialog.on('hidden.bs.modal', () => {
+        $(".aa-input").autocomplete("close");
+
         if (!glob.activeDialog || glob.activeDialog === $dialog) {
             focusSavedElement();
         }
