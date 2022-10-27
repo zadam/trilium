@@ -1,7 +1,16 @@
 const {JSDOM} = require("jsdom");
 const shaca = require("./shaca/shaca");
+const assetPath = require("../services/asset_path");
 
 function getContent(note) {
+    if (note.isProtected) {
+        return {
+            header: '',
+            content: '<p>Protected note cannot be displayed</p>',
+            isEmpty: false
+        };
+    }
+
     let content = note.getContent();
     let header = '';
     let isEmpty = false;
@@ -36,10 +45,10 @@ function getContent(note) {
 
             if (content.includes(`<span class="math-tex">`)) {
                 header += `
-<script src="../../libraries/katex/katex.min.js"></script>
-<link rel="stylesheet" href="../../libraries/katex/katex.min.css">
-<script src="../../libraries/katex/auto-render.min.js"></script>
-<script src="../../libraries/katex/mhchem.min.js"></script>
+<script src="../../${assetPath}/libraries/katex/katex.min.js"></script>
+<link rel="stylesheet" href="../../${assetPath}/libraries/katex/katex.min.css">
+<script src="../../${assetPath}/libraries/katex/auto-render.min.js"></script>
+<script src="../../${assetPath}/libraries/katex/mhchem.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     renderMathInElement(document.getElementById('content'));
@@ -69,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <summary>Chart source</summary>
     <pre>${content}</pre>
 </details>`
-        header += `<script src="../../libraries/mermaid.min.js"></script>`;
+        header += `<script src="../../${assetPath}/libraries/mermaid.min.js"></script>`;
     }
     else if (note.type === 'image') {
         content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
@@ -89,9 +98,9 @@ document.addEventListener("DOMContentLoaded", function() {
         header += `<script>
                     window.EXCALIDRAW_ASSET_PATH = window.location.origin + "/node_modules/@excalidraw/excalidraw/dist/";
                    </script>`;
-        header += `<script src="../../node_modules/react/umd/react.production.min.js"></script>`;
-        header += `<script src="../../node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
-        header += `<script src="../../node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
+        header += `<script src="../../${assetPath}/node_modules/react/umd/react.production.min.js"></script>`;
+        header += `<script src="../../${assetPath}/node_modules/react-dom/umd/react-dom.production.min.js"></script>`;
+        header += `<script src="../../${assetPath}/node_modules/@excalidraw/excalidraw/dist/excalidraw.production.min.js"></script>`;
         header += `<style>
 
             .excalidraw-wrapper {

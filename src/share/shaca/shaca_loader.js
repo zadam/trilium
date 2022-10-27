@@ -21,7 +21,7 @@ function load() {
             SELECT ?
             UNION
             SELECT branches.noteId FROM branches
-                JOIN tree ON branches.parentNoteId = tree.noteId
+              JOIN tree ON branches.parentNoteId = tree.noteId
             WHERE branches.isDeleted = 0
         )
         SELECT noteId FROM tree`, [shareRoot.SHARE_ROOT_NOTE_ID]);
@@ -35,7 +35,7 @@ function load() {
     const noteIdStr = noteIds.map(noteId => `'${noteId}'`).join(",");
 
     const rawNoteRows = sql.getRawRows(`
-        SELECT noteId, title, type, mime, utcDateModified 
+        SELECT noteId, title, type, mime, utcDateModified, isProtected
         FROM notes 
         WHERE isDeleted = 0 
           AND noteId IN (${noteIdStr})`);

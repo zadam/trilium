@@ -39,8 +39,11 @@ app.use(express.static(path.join(__dirname, 'public/root')));
 app.use(`/${assetPath}/app`, express.static(path.join(__dirname, 'public/app')));
 app.use(`/${assetPath}/app-dist`, express.static(path.join(__dirname, 'public/app-dist')));
 app.use(`/${assetPath}/fonts`, express.static(path.join(__dirname, 'public/fonts')));
+app.use(`/assets/vX/fonts`, express.static(path.join(__dirname, 'public/fonts')));
 app.use(`/${assetPath}/stylesheets`, express.static(path.join(__dirname, 'public/stylesheets')));
+app.use(`/assets/vX/stylesheets`, express.static(path.join(__dirname, 'public/stylesheets')));
 app.use(`/${assetPath}/libraries`, express.static(path.join(__dirname, '..', 'libraries')));
+app.use(`/assets/vX/libraries`, express.static(path.join(__dirname, '..', 'libraries')));
 // excalidraw-view mode in shared notes
 app.use(`/${assetPath}/node_modules/react/umd/react.production.min.js`, express.static(path.join(__dirname, '..', 'node_modules/react/umd/react.production.min.js')));
 app.use(`/${assetPath}/node_modules/react-dom/umd/react-dom.production.min.js`, express.static(path.join(__dirname, '..', 'node_modules/react-dom/umd/react-dom.production.min.js')));
@@ -48,6 +51,7 @@ app.use(`/${assetPath}/node_modules/react-dom/umd/react-dom.production.min.js`, 
 app.use(`/node_modules/@excalidraw/excalidraw/dist/`, express.static(path.join(__dirname, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
 app.use(`/${assetPath}/node_modules/@excalidraw/excalidraw/dist/`, express.static(path.join(__dirname, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
 app.use(`/${assetPath}/images`, express.static(path.join(__dirname, '..', 'images')));
+app.use(`/assets/vX/images`, express.static(path.join(__dirname, '..', 'images')));
 const sessionParser = session({
     secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.

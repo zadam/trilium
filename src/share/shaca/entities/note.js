@@ -11,19 +11,21 @@ const CREDENTIALS = 'shareCredentials';
 const isCredentials = attr => attr.type === 'label' && attr.name === CREDENTIALS;
 
 class Note extends AbstractEntity {
-    constructor([noteId, title, type, mime, utcDateModified]) {
+    constructor([noteId, title, type, mime, utcDateModified, isProtected]) {
         super();
 
         /** @param {string} */
         this.noteId = noteId;
         /** @param {string} */
-        this.title = title;
+        this.title = isProtected ? "[protected]" : title;
         /** @param {string} */
         this.type = type;
         /** @param {string} */
         this.mime = mime;
         /** @param {string} */
         this.utcDateModified = utcDateModified; // used for caching of images
+        /** @param {boolean} */
+        this.isProtected = isProtected;
 
         /** @param {Branch[]} */
         this.parentBranches = [];
@@ -65,7 +67,7 @@ class Note extends AbstractEntity {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden)
             .map(branch => branch.getNote())
-            .filter(childNote => !childNote.hasLabel('shareHiddenFromTree') && !childNote.isProtected);
+            .filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
     }
 
     hasChildren() {
