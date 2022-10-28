@@ -142,26 +142,27 @@ export default class FindWidget extends NoteContextAwareWidget {
             return;
         }
 
-        if (!['text', 'code', 'render'].includes(this.note.type) || !this.$findBox.is(":hidden")) {
+        if (!['text', 'code', 'render'].includes(this.note.type)) {
             return;
         }
 
-        this.handler = await this.getHandler();
-
         this.$findBox.show();
         this.$input.focus();
-        this.$totalFound.text(0);
-        this.$currentFound.text(0);
+        this.handler = await this.getHandler();
 
-        const searchTerm = await this.handler.getInitialSearchTerm();
+        const isAlreadyVisible = this.$findBox.is(":visible");
 
-        this.$input.val(searchTerm || "");
-
-        // Directly perform the search if there's some text to
-        // find, without delaying or waiting for enter
-        if (searchTerm !== "") {
+        if (isAlreadyVisible) {
             this.$input.select();
-            await this.performFind();
+        } else {
+            this.$totalFound.text(0);
+            this.$currentFound.text(0);
+            const searchTerm = await this.handler.getInitialSearchTerm();
+            this.$input.val(searchTerm || "");
+            if (searchTerm !== "") {
+                this.$input.select();
+                await this.performFind();
+            }
         }
     }
 
