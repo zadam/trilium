@@ -1,6 +1,6 @@
 'use strict';
 
-const {app, globalShortcut} = require('electron');
+const {app, globalShortcut, BrowserWindow} = require('electron');
 const sqlInit = require('./src/services/sql_init');
 const appIconService = require('./src/services/app_icon');
 const windowService = require('./src/services/window');
@@ -31,6 +31,14 @@ app.on('ready', async () => {
         await sqlInit.dbReady;
 
         await windowService.createMainWindow(app);
+
+        if (process.platform === 'darwin') {
+            app.on('activate', async () => {
+                if (BrowserWindow.getAllWindows().length === 0) {
+                    await windowService.createMainWindow(app);
+                }
+            });
+        }
 
         tray.createTray();
     }
