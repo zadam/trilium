@@ -23,7 +23,7 @@ Ukraine is currently defending itself from Russian aggression, please consider [
   * there's a [3rd party service for hosting synchronisation server](https://trilium.cc/paid-hosting)
 * [Sharing](https://github.com/zadam/trilium/wiki/Sharing) (publishing) notes to public internet
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes) with per-note granularity
-* Sketching diagrams with bult-in Excalidraw (note type "canvas")
+* Sketching diagrams with built-in Excalidraw (note type "canvas")
 * [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map) for visualizing notes and their relations
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * [REST API](https://github.com/zadam/trilium/wiki/ETAPI) for automation
