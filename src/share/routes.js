@@ -109,7 +109,12 @@ function register(router) {
 
     router.use('/share/canvas_share.js', express.static(path.join(__dirname, 'canvas_share.js')));
 
-    router.get(['/share', '/share/'], (req, res, next) => {
+    router.get('/share/', (req, res, next) => {
+        if (req.path.substr(-1) !== '/') {
+            res.redirect('../share/');
+            return;
+        }
+
         shacaLoader.ensureLoad();
 
         renderNote(shaca.shareRootNote, req, res);
