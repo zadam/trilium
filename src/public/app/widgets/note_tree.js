@@ -1462,7 +1462,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         clipboard.pasteInto(node.data.branchId);
     }
 
-    pasteNotesAfterFromClipboard({node}) {
+    pasteNotesAfterFromClipboardCommand({node}) {
         clipboard.pasteAfter(node.data.branchId);
     }
 
