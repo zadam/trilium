@@ -49,39 +49,40 @@ class Attribute extends AbstractEntity {
         }
     }
 
+    /** @returns {boolean} */
     get isAffectingSubtree() {
         return this.isInheritable
             || (this.type === 'relation' && this.name === 'template');
     }
 
+    /** @returns {string} */
     get targetNoteId() { // alias
         return this.type === 'relation' ? this.value : undefined;
     }
 
+    /** @returns {boolean} */
     isAutoLink() {
         return this.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(this.name);
     }
 
+    /** @returns {Note|null} */
     get note() {
         return this.shaca.notes[this.noteId];
     }
 
+    /** @returns {Note|null} */
     get targetNote() {
         if (this.type === 'relation') {
             return this.shaca.notes[this.value];
         }
     }
 
-    /**
-     * @returns {Note|null}
-     */
+    /** @returns {Note|null} */
     getNote() {
         return this.shaca.getNote(this.noteId);
     }
 
-    /**
-     * @returns {Note|null}
-     */
+    /** @returns {Note|null} */
     getTargetNote() {
         if (this.type !== 'relation') {
             throw new Error(`Attribute ${this.attributeId} is not relation`);

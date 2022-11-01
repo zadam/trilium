@@ -88,7 +88,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        if (note.hasLabel('shareRaw') || ['image', 'file'].includes(note.type)) {
+        if (note.hasLabel('shareRaw')) {
             res.setHeader('Content-Type', note.mime)
                 .send(note.getContent());
 

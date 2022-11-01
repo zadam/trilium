@@ -23,14 +23,17 @@ class Shaca {
         this.loaded = false;
     }
 
+    /** @returns {Note|null} */
     getNote(noteId) {
         return this.notes[noteId];
     }
 
+    /** @returns {boolean} */
     hasNote(noteId) {
         return noteId in this.notes;
     }
 
+    /** @returns {Note[]} */
     getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
 
@@ -51,16 +54,19 @@ class Shaca {
         return filteredNotes;
     }
 
+    /** @returns {Branch|null} */
     getBranch(branchId) {
         return this.branches[branchId];
     }
 
-    getAttribute(attributeId) {
-        return this.attributes[attributeId];
-    }
-
+    /** @returns {Branch|null} */
     getBranchFromChildAndParent(childNoteId, parentNoteId) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
+    }
+
+    /** @returns {Attribute|null} */
+    getAttribute(attributeId) {
+        return this.attributes[attributeId];
     }
 
     getEntity(entityName, entityId) {

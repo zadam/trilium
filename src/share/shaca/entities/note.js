@@ -3,6 +3,7 @@
 const sql = require('../../sql');
 const utils = require('../../../services/utils');
 const AbstractEntity = require('./abstract_entity');
+const escape = require('escape-html');
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -47,22 +48,32 @@ class Note extends AbstractEntity {
         this.shaca.notes[this.noteId] = this;
     }
 
+    /** @returns {Branch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
+    /** @returns {Branch[]} */
     getBranches() {
         return this.parentBranches;
     }
 
+    /** @returns {Branch[]} */
+    getChildBranches() {
+        return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
+    }
+
+    /** @returns {Note[]} */
     getParentNotes() {
         return this.parents;
     }
 
+    /** @returns {Note[]} */
     getChildNotes() {
         return this.children;
     }
 
+    /** @returns {Note[]} */
     getVisibleChildNotes() {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden)
@@ -70,16 +81,14 @@ class Note extends AbstractEntity {
             .filter(childNote => !childNote.hasLabel('shareHiddenFromTree'));
     }
 
+    /** @returns {boolean} */
     hasChildren() {
         return this.children && this.children.length > 0;
     }
 
+    /** @returns {boolean} */
     hasVisibleChildren() {
         return this.getVisibleChildNotes().length > 0;
-    }
-
-    getChildBranches() {
-        return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
     getContent(silentNotFoundError = false) {
@@ -133,6 +142,7 @@ class Note extends AbstractEntity {
         }
     }
 
+    /** @returns {Attribute[]} */
     getCredentials() {
         this.__getAttributes([]);
 
@@ -203,10 +213,12 @@ class Note extends AbstractEntity {
         return this.inheritableAttributeCache;
     }
 
+    /** @returns {boolean} */
     hasAttribute(type, name) {
         return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
     }
 
+    /** @returns {Note|null} */
     getRelationTarget(name) {
         const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
 
@@ -411,22 +423,27 @@ class Note extends AbstractEntity {
         return attrs.length > 0 ? attrs[0] : null;
     }
 
+    /** @returns {boolean} */
     get isArchived() {
         return this.hasAttribute('label', 'archived');
     }
 
+    /** @returns {boolean} */
     hasInheritableOwnedArchivedLabel() {
         return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
     }
 
+    /** @returns {boolean} */
     isTemplate() {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
+    /** @returns {Attribute[]} */
     getTargetRelations() {
         return this.targetRelations;
     }
 
+    /** @returns {string} */
     get shareId() {
         if (this.hasOwnedLabel('shareRoot')) {
             return "";
@@ -435,6 +452,10 @@ class Note extends AbstractEntity {
         const sharedAlias = this.getOwnedLabelValue("shareAlias");
 
         return sharedAlias || this.noteId;
+    }
+
+    get escapedTitle() {
+        return escape(this.title);
     }
 
     getPojoWithAttributes() {
