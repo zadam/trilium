@@ -131,7 +131,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
 
     /**
-     * Adds new button the the plugin area.
+     * Adds new button to the plugin area.
      *
      * @param {ToolbarButtonOptions} opts
      */

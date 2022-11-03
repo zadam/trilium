@@ -1,11 +1,6 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import server from "../../services/server.js";
-import ws from "../../services/ws.js";
-import appContext from "../../services/app_context.js";
-import toastService from "../../services/toast.js";
-import treeService from "../../services/tree.js";
 import options from "../../services/options.js";
 
 const TPL = `
@@ -49,7 +44,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         delete CodeMirror.keyMap.default["Alt-Left"];
         delete CodeMirror.keyMap.default["Alt-Right"];
 
-        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+        CodeMirror.modeURL = window.glob.assetPath + '/libraries/codemirror/mode/%N/%N.js';
 
         this.codeEditor = CodeMirror(this.$editor[0], {
             value: "",
