@@ -129,7 +129,7 @@ function getEditedNotesOnDate(req) {
 
     // Narrow down the results if a note is hoisted, similar to "Jump to note".
     const hoistedNoteId = cls.getHoistedNoteId();
-    if (hoistedNoteId) {
+    if (hoistedNoteId !== 'root') {
         notes = notes.filter(note => note.hasAncestor(hoistedNoteId));
     }
 
