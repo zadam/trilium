@@ -20,7 +20,7 @@ const TPL = `
                     <label>
                         <input class="delete-all-clones" value="1" type="checkbox">
 
-                        delete also all clones
+                        delete also all clones (can be undone in recent changes)
                     </label>
                 </div>
 
@@ -28,7 +28,7 @@ const TPL = `
                     <label title="Normal (soft) deletion only marks the notes as deleted and they can be undeleted (in recent changes dialog) within a period of time. Checking this option will erase the notes immediatelly and it won't be possible to undelete the notes.">
                         <input class="erase-notes" value="1" type="checkbox">
 
-                        erase notes permanently (can't be undone). This will force application reload.
+                        erase notes permanently (can't be undone), including all clones. This will force application reload.
                     </label>
                 </div>
 
