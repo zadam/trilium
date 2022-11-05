@@ -83,12 +83,13 @@ function getNeighbors(note, depth) {
 
 function getLinkMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
-    // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
+    // if the map root itself has exclude attribute (journal typically) then there wouldn't be anything to display, so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
+    const subtree = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true});
 
     const noteIds = new Set(
-        mapRootNote.getSubtreeNotes(false)
+        subtree.notes
             .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
             .map(note => note.noteId)
     );
@@ -142,8 +143,9 @@ function getTreeMap(req) {
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
+    const subtree = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true});
 
-    const notes = mapRootNote.getSubtreeNotes(false)
+    const notes = subtree.notes
         .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
         .filter(note => {
             if (note.type !== 'image' || note.getChildNotes().length > 0) {
@@ -170,23 +172,38 @@ function getTreeMap(req) {
 
     const links = [];
 
-    for (const branch of Object.values(becca.branches)) {
-        if (!noteIds.has(branch.parentNoteId) || !noteIds.has(branch.noteId)) {
+    for (const {parentNoteId, childNoteId} of subtree.relationships) {
+        if (!noteIds.has(parentNoteId) || !noteIds.has(childNoteId)) {
             continue;
         }
 
         links.push({
-            id: branch.branchId,
-            sourceNoteId: branch.parentNoteId,
-            targetNoteId: branch.noteId
+            sourceNoteId: parentNoteId,
+            targetNoteId: childNoteId
         });
     }
 
+    const noteIdToDescendantCountMap = buildDescendantCountMap();
+
+    updateDescendantCountMapForSearch(noteIdToDescendantCountMap, subtree.relationships);
+
     return {
         notes: notes,
-        noteIdToDescendantCountMap: buildDescendantCountMap(),
+        noteIdToDescendantCountMap: noteIdToDescendantCountMap,
         links: links
     };
+}
+
+function updateDescendantCountMapForSearch(noteIdToDescendantCountMap, relationships) {
+    for (const {parentNoteId, childNoteId} of relationships) {
+        const parentNote = becca.notes[parentNoteId];
+        if (!parentNote || parentNote.type !== 'search') {
+            continue;
+        }
+
+        noteIdToDescendantCountMap[parentNote.noteId] = noteIdToDescendantCountMap[parentNoteId] || 0;
+        noteIdToDescendantCountMap[parentNote.noteId] += noteIdToDescendantCountMap[childNoteId] || 1;
+    }
 }
 
 function removeImages(document) {

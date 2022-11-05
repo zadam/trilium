@@ -23,7 +23,9 @@ class AncestorExp extends Expression {
             return new NoteSet([]);
         }
 
-        const subTreeNoteSet = new NoteSet(ancestorNote.getSubtreeNotes()).intersection(inputNoteSet);
+        const subtree = ancestorNote.getSubtree();
+
+        const subTreeNoteSet = new NoteSet(subtree.notes).intersection(inputNoteSet);
 
         if (!this.ancestorDepthComparator) {
             return subTreeNoteSet;

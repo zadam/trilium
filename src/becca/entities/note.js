@@ -10,7 +10,7 @@ const AbstractEntity = require("./abstract_entity");
 const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
+const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc)
 
 const LABEL = 'label';
@@ -839,30 +839,76 @@ class Note extends AbstractEntity {
         return Array.from(set);
     }
 
-    /** @returns {Note[]} */
-    getSubtreeNotes(includeArchived = true) {
+    /**
+     * @returns {{notes: Note[], relationships: {parentNoteId, childNoteId}[]}}
+     */
+    getSubtree({includeArchived = true, resolveSearch = false} = {}) {
         const noteSet = new Set();
+        const relationships = []; // list of tuples parentNoteId -> childNoteId
 
-        function addSubtreeNotesInner(note) {
+        function resolveSearchNote(searchNote) {
+            try {
+                const searchService = require("../../services/search/services/search");
+                const becca = searchNote.becca;
+                const {searchResultNoteIds} = searchService.searchFromNote(searchNote);
+
+                for (const resultNoteId of searchResultNoteIds) {
+                    const resultNote = becca.notes[resultNoteId];
+
+                    if (resultNote) {
+                        addSubtreeNotesInner(resultNote, searchNote);
+                    }
+                }
+            }
+            catch (e) {
+                log.error(`Could not resolve search note ${searchNote?.noteId}: ${e.message}`);
+            }
+        }
+
+        function addSubtreeNotesInner(note, parentNote = null) {
+            if (parentNote) {
+                // this needs to happen first before noteSet check to include all clone relationships
+                relationships.push({
+                    parentNoteId: parentNote.noteId,
+                    childNoteId: note.noteId
+                });
+            }
+
+            if (noteSet.has(note)) {
+                return;
+            }
+
             if (!includeArchived && note.isArchived) {
                 return;
             }
 
             noteSet.add(note);
 
-            for (const childNote of note.children) {
-                addSubtreeNotesInner(childNote);
+            if (note.type === 'search') {
+                if (resolveSearch) {
+                    resolveSearchNote(note);
+                }
+            }
+            else {
+                for (const childNote of note.children) {
+                    addSubtreeNotesInner(childNote, note);
+                }
             }
         }
 
         addSubtreeNotesInner(this);
 
-        return Array.from(noteSet);
+        return {
+            notes: Array.from(noteSet),
+            relationships
+        };
     }
 
     /** @returns {String[]} */
-    getSubtreeNoteIds(includeArchived = true) {
-        return this.getSubtreeNotes(includeArchived).map(note => note.noteId);
+    getSubtreeNoteIds({includeArchived = true, resolveSearch = false} = {}) {
+        return this.getSubtree({includeArchived, resolveSearch})
+            .notes
+            .map(note => note.noteId);
     }
 
     getDescendantNoteIds() {

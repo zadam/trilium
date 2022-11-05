@@ -86,8 +86,6 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         this.mapType = this.note.getLabelValue("mapType") === "tree" ? "tree" : "link";
 
-        this.setDimensions();
-
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
         this.graph = ForceGraph()(this.$container[0])
@@ -121,7 +119,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 .linkCanvasObjectMode(() => "after");
         }
 
-        let mapRootNoteId = this.getMapRootNoteId();
+        const mapRootNoteId = this.getMapRootNoteId();
         const data = await this.loadNotesAndRelations(mapRootNoteId);
 
         const nodeLinkRatio = data.nodes.length / data.links.length;
@@ -264,7 +262,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         return {
             nodes: this.nodes,
             links: links.map(link => ({
-                id: link.id,
+                id: `${link.sourceNoteId}-${link.targetNoteId}`,
                 source: link.sourceNoteId,
                 target: link.targetNoteId,
                 name: link.names.join(", ")
@@ -333,6 +331,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         if (this.widgetMode === 'ribbon') {
             setTimeout(() => {
+                this.setDimensions();
+
                 const subGraphNoteIds = this.getSubGraphConnectedToCurrentNote(data);
 
                 this.graph.zoomToFit(400, 50, node => subGraphNoteIds.has(node.id));
@@ -345,6 +345,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         else if (this.widgetMode === 'type') {
             if (data.nodes.length > 1) {
                 setTimeout(() => {
+                    this.setDimensions();
+
                     this.graph.zoomToFit(400, 10);
 
                     if (data.nodes.length < 30) {
@@ -398,7 +400,12 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attr.name === 'mapType' && attributeService.isAffecting(attr, this.note))) {
+        if (loadResults.getAttributes(this.componentId).find(
+            attr =>
+                attr.type === 'label'
+                && ['mapType', 'mapRootNoteId'].includes(attr.name)
+                && attributeService.isAffecting(attr, this.note)
+        )) {
             this.refresh();
         }
     }

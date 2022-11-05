@@ -18,7 +18,7 @@ class DescendantOfExp extends Expression {
         const subTreeNoteSet = new NoteSet();
 
         for (const note of subResNoteSet.notes) {
-            subTreeNoteSet.addAll(note.getSubtreeNotes());
+            subTreeNoteSet.addAll(note.getSubtree().notes);
         }
 
         return inputNoteSet.intersection(subTreeNoteSet);
