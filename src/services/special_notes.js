@@ -56,6 +56,7 @@ function getSearchRoot() {
 
     if (!searchRoot) {
         searchRoot = noteService.createNewNote({
+            branchId: 'search',
             noteId: 'search',
             title: 'search',
             type: 'text',
@@ -67,32 +68,17 @@ function getSearchRoot() {
     return searchRoot;
 }
 
-function getSinglesNoteRoot() {
-    let singlesNoteRoot = becca.getNote('singles');
-
-    if (!singlesNoteRoot) {
-        singlesNoteRoot = noteService.createNewNote({
-            noteId: 'singles',
-            title: 'singles',
-            type: 'text',
-            content: '',
-            parentNoteId: getHiddenRoot().noteId
-        }).note;
-    }
-
-    return singlesNoteRoot;
-}
-
 function getGlobalNoteMap() {
     let globalNoteMap = becca.getNote('globalnotemap');
 
     if (!globalNoteMap) {
         globalNoteMap = noteService.createNewNote({
+            branchId: 'globalnotemap',
             noteId: 'globalnotemap',
             title: 'Global Note Map',
             type: 'note-map',
             content: '',
-            parentNoteId: getSinglesNoteRoot().noteId
+            parentNoteId: getHiddenRoot().noteId
         }).note;
 
         globalNoteMap.addLabel('mapRootNoteId', 'hoisted');
@@ -106,6 +92,7 @@ function getSqlConsoleRoot() {
 
     if (!sqlConsoleRoot) {
         sqlConsoleRoot = noteService.createNewNote({
+            branchId: 'sqlconsole',
             noteId: 'sqlconsole',
             title: 'SQL Console',
             type: 'text',
@@ -332,7 +319,6 @@ const shortcuts = [
 ];
 
 function createMissingSpecialNotes() {
-    getSinglesNoteRoot();
     getSqlConsoleRoot();
     getGlobalNoteMap();
     getBulkActionNote();
@@ -450,6 +436,7 @@ module.exports = {
     saveSearchNote,
     createMissingSpecialNotes,
     getShareRoot,
+    getHiddenRoot,
     getBulkActionNote,
     createShortcut
 };
