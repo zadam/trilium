@@ -866,6 +866,11 @@ class Note extends AbstractEntity {
         }
 
         function addSubtreeNotesInner(note, parentNote = null) {
+            // share can be removed after 0.57 since it will be put under hidden
+            if (note.noteId === 'hidden' || note.noteId === 'share') {
+                return;
+            }
+
             if (parentNote) {
                 // this needs to happen first before noteSet check to include all clone relationships
                 relationships.push({
