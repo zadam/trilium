@@ -277,7 +277,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // globally, so it gets also to e.g. ribbon components. But this means that the event can be generated multiple
         // times if the same note is open in several tabs.
 
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)
+        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
+            // probably incorrect event
+            // calling this.refresh() is not enough since the event needs to be propagated to children as well
+            // FIXME: create a separate event to force hierarchical refresh
+            this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
+        }
+        else if (loadResults.isNoteReloaded(this.noteId, this.componentId)
             && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
 
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
