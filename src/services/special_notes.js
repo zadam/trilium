@@ -206,13 +206,15 @@ function getShareRoot() {
     let shareRoot = becca.getNote('share');
 
     if (!shareRoot) {
+        const hiddenRoot = getHiddenRoot();
+
         shareRoot = noteService.createNewNote({
             branchId: 'share',
             noteId: 'share',
             title: 'Shared notes',
             type: 'text',
             content: '',
-            parentNoteId: 'root'
+            parentNoteId: hiddenRoot.noteId
         }).note;
     }
 
