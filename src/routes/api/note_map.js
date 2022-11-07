@@ -94,6 +94,10 @@ function getLinkMap(req) {
             .map(note => note.noteId)
     );
 
+    if (mapRootNote.type === 'search') {
+        noteIds.delete(mapRootNote.noteId);
+    }
+
     for (const noteId of getNeighbors(mapRootNote, 3)) {
         noteIds.add(noteId);
     }

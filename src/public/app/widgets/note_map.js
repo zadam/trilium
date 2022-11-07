@@ -329,7 +329,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     renderData(data) {
         this.graph.graphData(data);
 
-        if (this.widgetMode === 'ribbon') {
+        if (this.widgetMode === 'ribbon' && this.note?.type !== 'search') {
             setTimeout(() => {
                 this.setDimensions();
 
@@ -342,19 +342,34 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 }
             }, 1000);
         }
-        else if (this.widgetMode === 'type') {
+        else {
             if (data.nodes.length > 1) {
                 setTimeout(() => {
                     this.setDimensions();
 
-                    this.graph.zoomToFit(400, 10);
+                    const noteIdsWithLinks = this.getNoteIdsWithLinks(data);
 
-                    if (data.nodes.length < 30) {
+                    if (noteIdsWithLinks.size > 0) {
+                        this.graph.zoomToFit(400, 30, node => noteIdsWithLinks.has(node.id));
+                    }
+
+                    if (noteIdsWithLinks.size < 30) {
                         this.graph.d3VelocityDecay(0.4);
                     }
                 }, 1000);
             }
         }
+    }
+
+    getNoteIdsWithLinks(data) {
+        const noteIds = new Set();
+
+        for (const link of data.links) {
+            noteIds.add(link.source.id);
+            noteIds.add(link.target.id);
+        }
+
+        return noteIds;
     }
 
     getSubGraphConnectedToCurrentNote(data) {
