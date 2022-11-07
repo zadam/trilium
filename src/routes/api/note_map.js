@@ -37,7 +37,7 @@ function getNeighbors(note, depth) {
     const retNoteIds = [];
 
     function isIgnoredRelation(relation) {
-        return ['relationMapLink', 'template', 'image'].includes(relation.name);
+        return ['relationMapLink', 'template', 'image', 'ancestor'].includes(relation.name);
     }
 
     // forward links
@@ -86,10 +86,17 @@ function getLinkMap(req) {
     // if the map root itself has exclude attribute (journal typically) then there wouldn't be anything to display, so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
-    const subtree = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true});
+    let unfilteredNotes;
+
+    if (mapRootNote.type === 'search') {
+        // for search notes we want to consider the direct search results only without the descendants
+        unfilteredNotes = mapRootNote.getSearchResultNotes();
+    } else {
+        unfilteredNotes = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true}).notes;
+    }
 
     const noteIds = new Set(
-        subtree.notes
+        unfilteredNotes
             .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
             .map(note => note.noteId)
     );
@@ -101,6 +108,8 @@ function getLinkMap(req) {
     for (const noteId of getNeighbors(mapRootNote, 3)) {
         noteIds.add(noteId);
     }
+
+    console.log(noteIds);
 
     const notes = Array.from(noteIds).map(noteId => {
         const note = becca.getNote(noteId);
@@ -128,7 +137,7 @@ function getLinkMap(req) {
             return true;
         }
     })
-        .map(rel => ({
+    .map(rel => ({
         id: rel.noteId + "-" + rel.name + "-" + rel.value,
         sourceNoteId: rel.noteId,
         targetNoteId: rel.value,
