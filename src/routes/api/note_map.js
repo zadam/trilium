@@ -160,7 +160,6 @@ function getTreeMap(req) {
 
             return !note.getParentNotes().find(parentNote => parentNote.noteId === imageLinkRelation.noteId);
         })
-        .concat(...mapRootNote.getParentNotes().filter(note => note.noteId !== 'none'))
         .map(note => [
             note.noteId,
             note.getTitleOrProtected(),
