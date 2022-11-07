@@ -840,7 +840,7 @@ class Note extends AbstractEntity {
     }
 
     /**
-     * @returns {{notes: Note[], relationships: {parentNoteId, childNoteId}[]}}
+     * @returns {{notes: Note[], relationships: Array.<{parentNoteId: string, childNoteId: string}>}}
      */
     getSubtree({includeArchived = true, resolveSearch = false} = {}) {
         const noteSet = new Set();
