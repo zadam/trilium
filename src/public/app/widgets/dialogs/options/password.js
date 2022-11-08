@@ -6,8 +6,8 @@ const TPL = `
 <h3 id="password-heading"></h3>
 
 <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
-  Please take care to remember your new password. Password is used to encrypt protected notes. 
-  If you forget your password, then all your protected notes are forever lost. 
+  Please take care to remember your new password. Password is used for logging into the web interface and
+  to encrypt protected notes. If you forget your password, then all your protected notes are forever lost. 
   In case you did forget your password, <a id="reset-password-button" href="javascript:">click here to reset it</a>.
 </div>
 
