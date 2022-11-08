@@ -62,7 +62,7 @@ const defaultOptions = [
     { name: 'imageJpegQuality', value: '75', isSynced: true },
     { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
     { name: 'vimKeymapEnabled', value: 'false', isSynced: false },
-    { name: 'linewrapEnabled', value: 'true', isSynced: false },
+    { name: 'codeLineWrapEnabled', value: 'true', isSynced: false },
     { name: 'codeNotesMimeTypes', value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml"]', isSynced: true },
     { name: 'leftPaneWidth', value: '25', isSynced: false },
     { name: 'leftPaneVisible', value: 'true', isSynced: false },
