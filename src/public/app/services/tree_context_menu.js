@@ -133,6 +133,7 @@ class TreeContextMenu {
             this.treeWidget.triggerCommand(command, {
                 node: this.node,
                 notePath: notePath,
+                noteId: this.node.data.noteId,
                 selectedOrActiveBranchIds: this.treeWidget.getSelectedOrActiveBranchIds(this.node),
                 selectedOrActiveNoteIds: this.treeWidget.getSelectedOrActiveNoteIds(this.node)
             });
