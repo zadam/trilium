@@ -201,4 +201,12 @@ export default class Entrypoints extends Component {
     activeContextChangedEvent() {
         this.hideAllTooltips();
     }
+
+    async forceSaveNoteRevisionCommand() {
+        const noteId = appContext.tabManager.getActiveContextNoteId();
+
+        await server.post(`notes/${noteId}/revision`);
+
+        toastService.showMessage("Note revision has been created.");
+    }
 }

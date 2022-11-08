@@ -254,6 +254,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/content', notesApiRoute.updateNoteContent);
     apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
+    apiRoute(POST, '/api/notes/:noteId/revision', notesApiRoute.forceSaveNoteRevision);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
     apiRoute(PUT, '/api/notes/:noteId/sort-children', notesApiRoute.sortChildNotes);
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectNote);
