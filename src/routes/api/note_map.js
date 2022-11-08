@@ -109,8 +109,6 @@ function getLinkMap(req) {
         noteIds.add(noteId);
     }
 
-    console.log(noteIds);
-
     const notes = Array.from(noteIds).map(noteId => {
         const note = becca.getNote(noteId);
 
