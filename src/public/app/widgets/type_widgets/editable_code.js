@@ -60,7 +60,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             tabindex: 300,
             // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
             // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
-            lineWrapping: true,
+            lineWrapping: options.is('linewrapEnabled'),
             dragDrop: false, // with true the editor inlines dropped files which is not what we expect
             placeholder: "Type the content of your code note here..."
         });

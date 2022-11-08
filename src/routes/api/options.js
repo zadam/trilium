@@ -33,6 +33,7 @@ const ALLOWED_OPTIONS = new Set([
     'editedNotesWidget',
     'calendarWidget',
     'vimKeymapEnabled',
+    'linewrapEnabled',
     'codeNotesMimeTypes',
     'spellCheckEnabled',
     'spellCheckLanguageCode',
