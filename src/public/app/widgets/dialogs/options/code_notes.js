@@ -10,6 +10,11 @@ const TPL = `
     <input type="checkbox" class="custom-control-input" id="vim-keymap-enabled">
     <label class="custom-control-label" for="vim-keymap-enabled">Enable Vim Keybindings</label>
 </div>
+<h4>Wrap lines in CodeNotes</h4>
+<div class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="linewrap-enabled">
+    <label class="custom-control-label" for="linewrap-enabled">Enable Linewrap</label>
+</div>
 <h4>Available MIME types in the dropdown</h4>
 
 <ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>`;
@@ -24,12 +29,19 @@ export default class CodeNotesOptions {
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
             return false;
         });
+        this.$linewrapEnabled = $("#linewrap-enabled");
+        this.$linewrapEnabled.on('change', () => {
+            const opts = { 'linewrapEnabled': this.$linewrapEnabled.is(":checked") ? "true" : "false" };
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            return false;
+        });
         this.$mimeTypes = $("#options-mime-types");
     }
 
     async optionsLoaded(options) {
         this.$mimeTypes.empty();
         this.$vimKeymapEnabled.prop("checked", options['vimKeymapEnabled'] === 'true');
+        this.$linewrapEnabled.prop("checked", options['linewrapEnabled'] === 'true');
         let idCtr = 1;
 
         for (const mimeType of await mimeTypesService.getMimeTypes()) {
