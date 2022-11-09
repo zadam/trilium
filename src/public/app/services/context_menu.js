@@ -76,6 +76,10 @@ class ContextMenu {
 
     addItems($parent, items) {
         for (const item of items) {
+            if (!item) {
+                continue;
+            }
+
             if (item.title === '----') {
                 $parent.append($("<div>").addClass("dropdown-divider"));
             } else {

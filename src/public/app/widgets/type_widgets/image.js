@@ -2,6 +2,7 @@ import utils from "../../services/utils.js";
 import toastService from "../../services/toast.js";
 import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
+import contextMenu from "../../services/context_menu.js";
 
 const TPL = `
 <div class="note-detail-image note-detail-printable">
@@ -54,6 +55,37 @@ class ImageTypeWidget extends TypeWidget {
             });
         });
 
+        if (utils.isElectron()) {
+            // for browser we want to let the native menu
+            this.$imageView.on('contextmenu', e => {
+                e.preventDefault();
+
+                contextMenu.show({
+                    x: e.pageX,
+                    y: e.pageY,
+                    items: [
+                        {
+                            title: "Copy reference to clipboard",
+                            command: "copyImageReferenceToClipboard",
+                            uiIcon: "bx bx-empty"
+                        },
+                        {title: "Copy image to clipboard", command: "copyImageToClipboard", uiIcon: "bx bx-empty"},
+                    ],
+                    selectMenuItemHandler: ({command}) => {
+                        if (command === 'copyImageReferenceToClipboard') {
+                            this.copyImageReferenceToClipboard();
+                        } else if (command === 'copyImageToClipboard') {
+                            const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
+                            utils.dynamicRequire('electron');
+                            webContents.copyImageAt(e.pageX, e.pageY);
+                        } else {
+                            throw new Error(`Unrecognized command ${command}`);
+                        }
+                    }
+                });
+            });
+        }
+
         super.doRender();
     }
 
@@ -61,11 +93,15 @@ class ImageTypeWidget extends TypeWidget {
         this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}`);
     }
 
-    copyImageToClipboardEvent({ntxId}) {
+    copyImageReferenceToClipboardEvent({ntxId}) {
         if (!this.isNoteContext(ntxId)) {
             return;
         }
 
+        this.copyImageReferenceToClipboard();
+    }
+
+    copyImageReferenceToClipboard() {
         this.$imageWrapper.attr('contenteditable','true');
 
         try {
