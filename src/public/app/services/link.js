@@ -97,8 +97,10 @@ function goToLink(e) {
 
     const notePath = getNotePathFromLink($link);
 
+    const ctrlKey = (!utils.isMac() && e.ctrlKey) || (utils.isMac() && e.metaKey);
+
     if (notePath) {
-        if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
+        if ((e.which === 1 && ctrlKey) || e.which === 2) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
         else if (e.which === 1) {
@@ -116,7 +118,7 @@ function goToLink(e) {
         }
     }
     else {
-        if ((e.which === 1 && e.ctrlKey) || e.which === 2
+        if ((e.which === 1 && ctrlKey) || e.which === 2
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {

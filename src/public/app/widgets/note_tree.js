@@ -343,7 +343,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                         node.setFocus(true);
                     }
-                    else if (event.ctrlKey) {
+                    else if ((!utils.isMac() && event.ctrlKey) || (utils.isMac() && event.metaKey)) {
                         const notePath = treeService.getNotePath(node);
                         appContext.tabManager.openTabWithNoteWithHoisting(notePath);
                     }
