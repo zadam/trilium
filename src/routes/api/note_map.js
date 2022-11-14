@@ -317,7 +317,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
 function getFilteredBacklinks(note) {
     return note.getTargetRelations()
         // search notes have "ancestor" relations which are not interesting
-        .filter(note => note.getNote().type !== 'search');
+        .filter(relation => !!relation.getNote() && relation.getNote().type !== 'search');
 }
 
 function getBacklinkCount(req) {
