@@ -17,6 +17,12 @@ async function createNoteLink(notePath, options = {}) {
         return $("<span>").text("[missing note]");
     }
 
+    if (!notePath.startsWith("root")) {
+        // all note paths should start with "root/" (except for "root" itself)
+        // used e.g. to find internal links
+        notePath = "root/" + notePath;
+    }
+
     let noteTitle = options.title;
     const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
