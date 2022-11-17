@@ -14,7 +14,7 @@ const TPL = `
     <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Recent changes</h5>
+                <h5 class="modal-title mr-auto">Recent changes</h5>
                 
                 <button class="erase-deleted-notes-now-button btn btn-xs" style="padding: 0 10px">
                     Erase deleted notes now</button>
