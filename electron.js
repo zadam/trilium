@@ -57,4 +57,3 @@ app.on('will-quit', () => {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 require('./src/www');
-const options = require("./src/public/app/services/options.js");

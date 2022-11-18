@@ -1,4 +1,5 @@
 import server from "../../../services/server.js";
+import toastService from "../../../services/toast.js";
 
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
@@ -22,6 +23,17 @@ const TPL = `
     </div>
     
     <p>You can also use this option to effectively disable TOC by setting a very high number.</p>
+    
+    <div>
+    <h4>Automatic readonly size</h4>
+
+    <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
+
+    <div class="form-group">
+        <label for="auto-readonly-size-text">Automatic readonly size (text notes)</label>
+        <input class="form-control" id="auto-readonly-size-text" type="number" min="0" style="text-align: right;">
+    </div>
+</div>
 </form>`;
 
 export default class TextNotesOptions {
@@ -45,6 +57,15 @@ export default class TextNotesOptions {
 
             server.put('options/minTocHeadings/' + minTocHeadings);
         });
+
+        this.$autoReadonlySizeText = $("#auto-readonly-size-text");
+
+        this.$autoReadonlySizeText.on('change', () => {
+            const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+
+            return false;
+        });
     }
 
     toggleBodyClass(prefix, value) {
@@ -60,5 +81,6 @@ export default class TextNotesOptions {
     async optionsLoaded(options) {
         this.$headingStyle.val(options.headingStyle);
         this.$minTocHeadings.val(options.minTocHeadings);
+        this.$autoReadonlySizeText.val(options.autoReadonlySizeText);
     }
 }

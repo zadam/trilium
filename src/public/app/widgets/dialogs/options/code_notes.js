@@ -4,23 +4,40 @@ import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
 
 const TPL = `
-<h4>Use vim keybindings in code notes (no ex mode)</h4>
-<div class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="vim-keymap-enabled">
-    <label class="custom-control-label" for="vim-keymap-enabled">Enable Vim Keybindings</label>
+<div>
+    <h4>Use vim keybindings in code notes (no ex mode)</h4>
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="vim-keymap-enabled">
+        <label class="custom-control-label" for="vim-keymap-enabled">Enable Vim Keybindings</label>
+    </div>
+    <br/>
 </div>
-<br/>
 
-<h4>Wrap lines in code notes</h4>
-<div class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="line-wrap-enabled">
-    <label class="custom-control-label" for="line-wrap-enabled">Enable Line Wrap (change might need a frontend reload to take effect)</label>
+<div>
+    <h4>Wrap lines in code notes</h4>
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="line-wrap-enabled">
+        <label class="custom-control-label" for="line-wrap-enabled">Enable Line Wrap (change might need a frontend reload to take effect)</label>
+    </div>
+    <br/>
 </div>
-<br/>
 
-<h4>Available MIME types in the dropdown</h4>
+<div>
+    <h4>Automatic readonly size</h4>
 
-<ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>`;
+    <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
+
+    <div class="form-group">
+        <label for="auto-readonly-size-code">Automatic readonly size (code notes)</label>
+        <input class="form-control" id="auto-readonly-size-code" type="number" min="0">
+    </div>
+</div>
+
+<div>
+    <h4>Available MIME types in the dropdown</h4>
+    
+    <ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>
+</div>`;
 
 export default class CodeNotesOptions {
     constructor() {
@@ -32,6 +49,7 @@ export default class CodeNotesOptions {
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
             return false;
         });
+
         this.$codeLineWrapEnabled = $("#line-wrap-enabled");
         this.$codeLineWrapEnabled.on('change', () => {
             const opts = { 'codeLineWrapEnabled': this.$codeLineWrapEnabled.is(":checked") ? "true" : "false" };
@@ -39,12 +57,22 @@ export default class CodeNotesOptions {
             return false;
         });
         this.$mimeTypes = $("#options-mime-types");
+
+        this.$autoReadonlySizeCode = $("#auto-readonly-size-code");
+        this.$autoReadonlySizeCode.on('change', () => {
+            const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeCode.val() };
+            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+
+            return false;
+        });
     }
 
     async optionsLoaded(options) {
         this.$mimeTypes.empty();
         this.$vimKeymapEnabled.prop("checked", options['vimKeymapEnabled'] === 'true');
         this.$codeLineWrapEnabled.prop("checked", options['codeLineWrapEnabled'] === 'true');
+        this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
+
         let idCtr = 1;
 
         for (const mimeType of await mimeTypesService.getMimeTypes()) {

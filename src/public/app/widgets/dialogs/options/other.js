@@ -103,21 +103,6 @@ const TPL = `
 </div>
 
 <div>
-    <h4>Automatic readonly size</h4>
-
-    <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
-
-    <div class="form-group">
-        <label for="auto-readonly-size-text">Automatic readonly size (text notes)</label>
-        <input class="form-control" id="auto-readonly-size-text" type="number" min="0">
-    </div>
-
-    <div class="form-group">
-        <label for="auto-readonly-size-code">Automatic readonly size (code notes)</label>
-        <input class="form-control" id="auto-readonly-size-code" type="number" min="0">
-    </div>
-</div>
-<div>
 <h4>Network connections</h4>
     
 <div class="form-group">
@@ -128,7 +113,7 @@ const TPL = `
 
 `;
 
-export default class ProtectedSessionOptions {
+export default class OtherOptions {
     constructor() {
         $("#options-other").html(TPL);
 
@@ -214,24 +199,6 @@ export default class ProtectedSessionOptions {
             return false;
         });
 
-        this.$autoReadonlySizeText = $("#auto-readonly-size-text");
-
-        this.$autoReadonlySizeText.on('change', () => {
-            const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
-
-            return false;
-        });
-
-        this.$autoReadonlySizeCode = $("#auto-readonly-size-code");
-
-        this.$autoReadonlySizeCode.on('change', () => {
-            const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeText.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
-
-            return false;
-        });
-
         this.$downloadImagesAutomatically = $("#download-images-automatically");
 
         this.$downloadImagesAutomatically.on("change", () => {
@@ -280,9 +247,6 @@ export default class ProtectedSessionOptions {
 
         this.$imageMaxWidthHeight.val(options['imageMaxWidthHeight']);
         this.$imageJpegQuality.val(options['imageJpegQuality']);
-
-        this.$autoReadonlySizeText.val(options['autoReadonlySizeText']);
-        this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
 
         const downloadImagesAutomatically = options['downloadImagesAutomatically'] === 'true';
         this.$downloadImagesAutomatically.prop('checked', downloadImagesAutomatically);

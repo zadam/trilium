@@ -2,7 +2,6 @@ const { Menu, Tray } = require('electron');
 const path = require('path');
 const windowService = require("./window");
 const optionService = require("./options");
-const options = require("../public/app/services/options.js");
 
 const UPDATE_TRAY_EVENTS = [
     'minimize', 'maximize', 'show', 'hide'
