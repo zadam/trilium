@@ -1,6 +1,8 @@
 const { Menu, Tray } = require('electron');
 const path = require('path');
 const windowService = require("./window");
+const optionService = require("./options");
+const options = require("../public/app/services/options.js");
 
 const UPDATE_TRAY_EVENTS = [
     'minimize', 'maximize', 'show', 'hide'
@@ -92,6 +94,10 @@ const changeVisibility = () => {
 }
 
 function createTray() {
+    if (optionService.getOptionBool("disableTray")) {
+        return;
+    }
+
     tray = new Tray(getIconPath());
     tray.setToolTip('Trilium Notes')
     // Restore focus

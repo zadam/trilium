@@ -88,6 +88,7 @@ const defaultOptions = [
     { name: 'downloadImagesAutomatically', value: 'true', isSynced: true },
     { name: 'minTocHeadings', value: '5', isSynced: true },
     { name: 'checkForUpdates', value: 'true', isSynced: true },
+    { name: 'disableTray', value: 'false', isSynced: false },
 ];
 
 function initStartupOptions() {

@@ -27,7 +27,7 @@ app.on('ready', async () => {
 
     // if db is not initialized -> setup process
     // if db is initialized, then we need to wait until the migration process is finished
-    if (await sqlInit.isDbInitialized()) {
+    if (sqlInit.isDbInitialized()) {
         await sqlInit.dbReady;
 
         await windowService.createMainWindow(app);
@@ -57,3 +57,4 @@ app.on('will-quit', () => {
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 require('./src/www');
+const options = require("./src/public/app/services/options.js");
