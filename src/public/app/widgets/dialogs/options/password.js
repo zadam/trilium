@@ -77,7 +77,7 @@ export default class PasswordOptions {
             const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
             server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-                toastService.showMessage("Options changed have been saved.");
+                toastService.showMessage("Options change have been saved.");
             });
 
             return false;

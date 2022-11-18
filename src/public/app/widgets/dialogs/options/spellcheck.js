@@ -41,14 +41,14 @@ export default class SpellcheckOptions {
 
         this.$spellCheckEnabled.on('change', () => {
             const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
         this.$spellCheckLanguageCode.on('change', () => {
             const opts = { 'spellCheckLanguageCode': this.$spellCheckLanguageCode.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });

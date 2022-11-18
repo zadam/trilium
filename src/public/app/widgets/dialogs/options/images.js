@@ -39,14 +39,14 @@ export default class ImageOptions {
 
         this.$imageMaxWidthHeight.on('change', () => {
             const opts = { 'imageMaxWidthHeight': this.$imageMaxWidthHeight.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
         this.$imageJpegQuality.on('change', () => {
             const opts = { 'imageJpegQuality': this.$imageJpegQuality.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
@@ -57,7 +57,7 @@ export default class ImageOptions {
             const isChecked = this.$downloadImagesAutomatically.prop("checked");
             const opts = { 'downloadImagesAutomatically': isChecked ? 'true' : 'false' };
 
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
         });
 
         this.$enableImageCompression = $("#image-compresion-enabled");
@@ -75,7 +75,7 @@ export default class ImageOptions {
             const isChecked = this.$enableImageCompression.prop("checked");
             const opts = { 'compressImages': isChecked ? 'true' : 'false' };
 
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             this.setImageCompression(isChecked);
         });

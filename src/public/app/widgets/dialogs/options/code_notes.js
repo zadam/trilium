@@ -61,7 +61,7 @@ export default class CodeNotesOptions {
         this.$autoReadonlySizeCode = $("#auto-readonly-size-code");
         this.$autoReadonlySizeCode.on('change', () => {
             const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeCode.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options changed have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
