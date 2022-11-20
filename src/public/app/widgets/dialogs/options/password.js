@@ -4,7 +4,7 @@ import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<div>
+<div class="options-section">
     <h4 id="password-heading"></h4>
     
     <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
@@ -33,9 +33,7 @@ const TPL = `
     </form>
 </div>
 
-<br/>
-
-<div>
+<div class="options-section">
     <h4>Protected session timeout</h4>
 
     <p>Protected session timeout is a time period after which the protected session is wiped from
@@ -49,7 +47,7 @@ const TPL = `
 
 export default class PasswordOptions extends OptionsTab {
     get tabTitle() { return "Password" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 

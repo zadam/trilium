@@ -3,17 +3,16 @@ import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<div>
+<div class="options-section">
     <h4>Tray</h4>
 
     <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="tray-enabled">
         <label class="custom-control-label" for="tray-enabled">Enable tray (Trilium needs to be restarted for this change to take effect)</label>
     </div>
-    <br/>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Note erasure timeout</h4>
 
     <p>Deleted notes (and attributes, revisions...) are at first only marked as deleted and it is possible to recover them 
@@ -29,11 +28,9 @@ const TPL = `
     <p>You can also trigger erasing manually:</p>
     
     <button id="erase-deleted-notes-now-button" class="btn">Erase deleted notes now</button>
-    
-    <br/><br/>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Note revisions snapshot interval</h4>
 
     <p>Note revision snapshot time interval is time in seconds after which a new note revision will be created for the note. See <a href="https://github.com/zadam/trilium/wiki/Note-revisions" class="external">wiki</a> for more info.</p>
@@ -44,7 +41,7 @@ const TPL = `
     </div>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Network connections</h4>
         
     <div class="form-group">
@@ -55,7 +52,7 @@ const TPL = `
 
 export default class OtherOptions extends OptionsTab {
     get tabTitle() { return "Other" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 
@@ -66,7 +63,7 @@ export default class OtherOptions extends OptionsTab {
 
             return false;
         });
-        
+
         this.$eraseEntitiesAfterTimeInSeconds = this.$widget.find("#erase-entities-after-time-in-seconds");
 
         this.$eraseEntitiesAfterTimeInSeconds.on('change', () => {

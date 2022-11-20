@@ -11,7 +11,7 @@ const TPL = `
 }
 </style>
 
-<div>
+<div class="options-section">
     <h4>Spell check</h4>
 
     <p>These options apply only for desktop builds, browsers will use their own native spell check. App restart is required after change.</p>
@@ -35,7 +35,7 @@ const TPL = `
 
 export default class SpellcheckOptions extends OptionsTab {
     get tabTitle() { return "Spellcheck" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 

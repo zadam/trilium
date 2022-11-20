@@ -4,40 +4,41 @@ import dialogService from "../../dialog.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<h4>Keyboard shortcuts</h4>
-
-<p>Multiple shortcuts for the same action can be separated by comma.</p>
-
-<div class="form-group">
-    <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
-</div>
-
-<div style="overflow: auto; height: 500px;">
-    <table id="keyboard-shortcut-table" cellpadding="10">
-    <thead>
-        <tr>
-            <th>Action name</th>
-            <th>Shortcuts</th>
-            <th>Default shortcuts</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-    </table>
-</div>
-
-<div style="display: flex; justify-content: space-between">
-    <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
+<div class="options-section">
+    <h4>Keyboard shortcuts</h4>
     
-    <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
-</div>
-`;
+    <p>Multiple shortcuts for the same action can be separated by comma.</p>
+    
+    <div class="form-group">
+        <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
+    </div>
+    
+    <div style="overflow: auto; height: 500px;">
+        <table id="keyboard-shortcut-table" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Action name</th>
+                <th>Shortcuts</th>
+                <th>Default shortcuts</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between">
+        <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
+        
+        <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
+    </div>
+</div>`;
 
 let globActions;
 
 export default class KeyboardShortcutsOptions extends OptionsTab {
     get tabTitle() { return "Shortcuts" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 

@@ -5,16 +5,16 @@ import OptionsTab from "./options_tab.js";
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
 
-<form>
+<div class="options-section">
     <h4>Heading style</h4>
     <select class="form-control" id="heading-style">
         <option value="plain">Plain</option>
         <option value="underline">Underline</option>
         <option value="markdown">Markdown-style</option>
     </select>
+</div>
     
-    <br/>
-    
+<div class="options-section">
     <h4>Table of contents</h4>
     
     Table of contents will appear in text notes when the note has more than a defined number of headings. You can customize this number:
@@ -24,8 +24,9 @@ const TPL = `
     </div>
     
     <p>You can also use this option to effectively disable TOC by setting a very high number.</p>
+</div>
     
-    <div>
+<div class="options-section">
     <h4>Automatic readonly size</h4>
 
     <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
@@ -34,12 +35,11 @@ const TPL = `
         <label for="auto-readonly-size-text">Automatic readonly size (text notes)</label>
         <input class="form-control" id="auto-readonly-size-text" type="number" min="0" style="text-align: right;">
     </div>
-</div>
-</form>`;
+</div>`;
 
 export default class TextNotesOptions extends OptionsTab {
     get tabTitle() { return "Text notes" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 

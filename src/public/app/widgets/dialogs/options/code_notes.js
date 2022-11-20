@@ -5,25 +5,23 @@ import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<div>
+<div class="options-section">
     <h4>Use vim keybindings in code notes (no ex mode)</h4>
     <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="vim-keymap-enabled">
         <label class="custom-control-label" for="vim-keymap-enabled">Enable Vim Keybindings</label>
     </div>
-    <br/>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Wrap lines in code notes</h4>
     <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="line-wrap-enabled">
         <label class="custom-control-label" for="line-wrap-enabled">Enable Line Wrap (change might need a frontend reload to take effect)</label>
     </div>
-    <br/>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Automatic readonly size</h4>
 
     <p>Automatic readonly note size is the size after which notes will be displayed in a readonly mode (for performance reasons).</p>
@@ -34,7 +32,7 @@ const TPL = `
     </div>
 </div>
 
-<div>
+<div class="options-section">
     <h4>Available MIME types in the dropdown</h4>
     
     <ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>
@@ -42,7 +40,7 @@ const TPL = `
 
 export default class CodeNotesOptions extends OptionsTab {
     get tabTitle() { return "Code notes" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 

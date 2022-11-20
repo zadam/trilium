@@ -1,7 +1,7 @@
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<div>
+<div class="options-section">
     <h4>Images</h4>
     
     <div class="form-group">

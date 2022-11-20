@@ -3,39 +3,41 @@ import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<h4>Automatic backup</h4>
-
-<p>Trilium can back up the database automatically:</p>
-
-<div class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="daily-backup-enabled">
-    <label class="custom-control-label" for="daily-backup-enabled">Enable daily backup</label>
+<div class="options-section">
+    <h4>Automatic backup</h4>
+    
+    <p>Trilium can back up the database automatically:</p>
+    
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="daily-backup-enabled">
+        <label class="custom-control-label" for="daily-backup-enabled">Enable daily backup</label>
+    </div>
+    
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="weekly-backup-enabled">
+        <label class="custom-control-label" for="weekly-backup-enabled">Enable weekly backup</label>
+    </div>
+    
+    <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="monthly-backup-enabled">
+        <label class="custom-control-label" for="monthly-backup-enabled">Enable monthly backup</label>
+    </div>
+    
+    <br/>
+    
+    <p>It's recommended to keep the backup turned on, but this can make application startup slow with large databases and/or slow storage devices.</p>
 </div>
 
-<div class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="weekly-backup-enabled">
-    <label class="custom-control-label" for="weekly-backup-enabled">Enable weekly backup</label>
+<div class="options-section">
+    <h4>Backup now</h4>
+    
+    <button id="backup-database-button" class="btn">Backup database now</button>
 </div>
-
-<div class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input" id="monthly-backup-enabled">
-    <label class="custom-control-label" for="monthly-backup-enabled">Enable monthly backup</label>
-</div>
-
-<br/>
-
-<p>It's recommended to keep the backup turned on, but this can make application startup slow with large databases and/or slow storage devices.</p>
-
-<br/>
-
-<h4>Backup now</h4>
-
-<button id="backup-database-button" class="btn">Backup database now</button><br/><br/>
 `;
 
 export default class BackupOptions extends OptionsTab {
     get tabTitle() { return "Backup" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 
