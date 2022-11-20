@@ -42,8 +42,7 @@ export default class TextNotesOptions extends OptionsTab {
 
     lazyRender() {
         this.$widget = $(TPL);
-
-        this.$body = this.$widget.find("body");
+        this.$body = $("body");
 
         this.$headingStyle = this.$widget.find("#heading-style");
         this.$headingStyle.on('change', () => {
@@ -51,24 +50,16 @@ export default class TextNotesOptions extends OptionsTab {
 
             this.toggleBodyClass("heading-style-", newHeadingStyle);
 
-            server.put('options/headingStyle/' + newHeadingStyle);
+            this.updateOption('headingStyle', newHeadingStyle);
         });
 
         this.$minTocHeadings = this.$widget.find("#min-toc-headings");
-        this.$minTocHeadings.on('change', () => {
-            const minTocHeadings = this.$minTocHeadings.val();
-
-            server.put('options/minTocHeadings/' + minTocHeadings);
-        });
+        this.$minTocHeadings.on('change', () =>
+            this.updateOption('minTocHeadings', this.$minTocHeadings.val()));
 
         this.$autoReadonlySizeText = this.$widget.find("#auto-readonly-size-text");
-
-        this.$autoReadonlySizeText.on('change', () => {
-            const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$autoReadonlySizeText.on('change', () =>
+            this.updateOption('autoReadonlySizeText', this.$autoReadonlySizeText.val()));
     }
 
     toggleBodyClass(prefix, value) {

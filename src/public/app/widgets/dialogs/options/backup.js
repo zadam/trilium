@@ -53,31 +53,19 @@ export default class BackupOptions extends OptionsTab {
         this.$weeklyBackupEnabled = this.$widget.find("#weekly-backup-enabled");
         this.$monthlyBackupEnabled = this.$widget.find("#monthly-backup-enabled");
 
-        this.$dailyBackupEnabled.on('change', () => {
-            const opts = { 'dailyBackupEnabled': this.$dailyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+        this.$dailyBackupEnabled.on('change', () =>
+            this.updateCheckboxOption('dailyBackupEnabled', this.$dailyBackupEnabled));
 
-            return false;
-        });
+        this.$weeklyBackupEnabled.on('change', () =>
+            this.updateCheckboxOption('weeklyBackupEnabled', this.$weeklyBackupEnabled));
 
-        this.$weeklyBackupEnabled.on('change', () => {
-            const opts = { 'weeklyBackupEnabled': this.$weeklyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
-
-        this.$monthlyBackupEnabled.on('change', () => {
-            const opts = { 'monthlyBackupEnabled': this.$monthlyBackupEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$monthlyBackupEnabled.on('change', () =>
+            this.updateCheckboxOption('monthlyBackupEnabled', this.$monthlyBackupEnabled));
     }
 
     optionsLoaded(options) {
-        this.$dailyBackupEnabled.prop("checked", options['dailyBackupEnabled'] === 'true');
-        this.$weeklyBackupEnabled.prop("checked", options['weeklyBackupEnabled'] === 'true');
-        this.$monthlyBackupEnabled.prop("checked", options['monthlyBackupEnabled'] === 'true');
+        this.setCheckboxState(this.$dailyBackupEnabled, options.dailyBackupEnabled);
+        this.setCheckboxState(this.$weeklyBackupEnabled, options.weeklyBackupEnabled);
+        this.setCheckboxState(this.$monthlyBackupEnabled, options.monthlyBackupEnabled);
     }
 }

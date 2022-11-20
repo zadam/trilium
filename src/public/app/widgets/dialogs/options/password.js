@@ -73,16 +73,8 @@ export default class PasswordOptions extends OptionsTab {
         this.$changePasswordForm.on('submit', () => this.save());
 
         this.$protectedSessionTimeout = this.$widget.find("#protected-session-timeout-in-seconds");
-
-        this.$protectedSessionTimeout.on('change', () => {
-            const protectedSessionTimeout = this.$protectedSessionTimeout.val();
-
-            server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-                toastService.showMessage("Options change have been saved.");
-            });
-
-            return false;
-        });
+        this.$protectedSessionTimeout.on('change', () =>
+            this.updateOption('protectedSessionTimeout', this.$protectedSessionTimeout.val()));
     }
 
     optionsLoaded(options) {
@@ -91,7 +83,7 @@ export default class PasswordOptions extends OptionsTab {
         this.$widget.find("#old-password-form-group").toggle(isPasswordSet);
         this.$passwordHeading.text(isPasswordSet ? 'Change password' : 'Set password');
         this.$savePasswordButton.text(isPasswordSet ? 'Change password' : 'Set password');
-        this.$protectedSessionTimeout.val(options['protectedSessionTimeout']);
+        this.$protectedSessionTimeout.val(options.protectedSessionTimeout);
     }
 
     save() {

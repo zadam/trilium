@@ -1,16 +1,7 @@
 import utils from "../../../services/utils.js";
-import server from "../../../services/server.js";
-import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<style>
-.disabled-field {
-    opacity: 0.5;
-    pointer-events: none;
-}
-</style>
-
 <div class="options-section">
     <h4>Spell check</h4>
 
@@ -42,19 +33,11 @@ export default class SpellcheckOptions extends OptionsTab {
         this.$spellCheckEnabled = this.$widget.find("#spell-check-enabled");
         this.$spellCheckLanguageCode = this.$widget.find("#spell-check-language-code");
 
-        this.$spellCheckEnabled.on('change', () => {
-            const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+        this.$spellCheckEnabled.on('change', () =>
+            this.updateCheckboxOption('spellCheckEnabled', this.$spellCheckEnabled));
 
-            return false;
-        });
-
-        this.$spellCheckLanguageCode.on('change', () => {
-            const opts = { 'spellCheckLanguageCode': this.$spellCheckLanguageCode.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$spellCheckLanguageCode.on('change', () =>
+            this.updateOption('spellCheckLanguageCode', this.$spellCheckLanguageCode.val()));
 
         this.$availableLanguageCodes = this.$widget.find("#available-language-codes");
 
@@ -66,7 +49,7 @@ export default class SpellcheckOptions extends OptionsTab {
     }
 
     optionsLoaded(options) {
-        this.$spellCheckEnabled.prop("checked", options['spellCheckEnabled'] === 'true');
-        this.$spellCheckLanguageCode.val(options['spellCheckLanguageCode']);
+        this.setCheckboxState(this.$spellCheckEnabled, options.spellCheckEnabled);
+        this.$spellCheckLanguageCode.val(options.spellCheckLanguageCode);
     }
 }

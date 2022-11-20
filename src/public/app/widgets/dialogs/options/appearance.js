@@ -227,11 +227,9 @@ export default class AppearanceOptions extends OptionsTab {
         });
 
         this.$overrideThemeFonts.on('change', async () => {
-            const isOverriden = this.$overrideThemeFonts.is(":checked");
+            this.updateCheckboxOption('overrideThemeFonts', this.$overrideThemeFonts);
 
-            await server.put('options/overrideThemeFonts/' + isOverriden.toString());
-
-            this.$overridenFontSettings.toggle(isOverriden);
+            this.$overridenFontSettings.toggle(this.$overrideThemeFonts.is(":checked"));
         });
 
         this.$zoomFactorSelect.on('change', () => { appContext.triggerCommand('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });
@@ -239,7 +237,7 @@ export default class AppearanceOptions extends OptionsTab {
         this.$nativeTitleBarSelect.on('change', () => {
             const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';
 
-            server.put('options/nativeTitleBarVisible/' + nativeTitleBarVisible);
+            this.updateOption('nativeTitleBarVisible', nativeTitleBarVisible);
         });
 
         const optionsToSave = [
@@ -250,16 +248,14 @@ export default class AppearanceOptions extends OptionsTab {
         ];
 
         for (const optionName of optionsToSave) {
-            this['$' + optionName].on('change', () => server.put(`options/${optionName}/${this['$' + optionName].val()}`));
+            this['$' + optionName].on('change', () =>
+                this.updateOption(optionName, this['$' + optionName].val()));
         }
 
         this.$maxContentWidth = this.$widget.find("#max-content-width");
 
-        this.$maxContentWidth.on('change', async () => {
-            const maxContentWidth = this.$maxContentWidth.val();
-
-            await server.put('options/maxContentWidth/' + maxContentWidth);
-        })
+        this.$maxContentWidth.on('change', async () =>
+            this.updateOption('maxContentWidth', this.$maxContentWidth.val()))
     }
 
     toggleBodyClass(prefix, value) {
@@ -298,7 +294,7 @@ export default class AppearanceOptions extends OptionsTab {
 
         this.$themeSelect.val(options.theme);
 
-        this.$overrideThemeFonts.prop('checked', options.overrideThemeFonts === 'true');
+        this.setCheckboxState(this.$overrideThemeFonts, options.overrideThemeFonts);
         this.$overridenFontSettings.toggle(options.overrideThemeFonts === 'true');
 
         this.$mainFontSize.val(options.mainFontSize);

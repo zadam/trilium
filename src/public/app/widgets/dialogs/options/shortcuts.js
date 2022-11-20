@@ -85,10 +85,9 @@ export default class KeyboardShortcutsOptions extends OptionsTab {
                               .map(shortcut => shortcut.replace("+Comma", "+,"))
                               .filter(shortcut => !!shortcut);
 
-            const opts = {};
-            opts['keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1)] = JSON.stringify(shortcuts);
+            const optionName = 'keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1);
 
-            server.put('options', opts);
+            this.updateOption(optionName, JSON.stringify(shortcuts));
         });
 
         this.$widget.find("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {

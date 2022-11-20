@@ -57,24 +57,11 @@ export default class OtherOptions extends OptionsTab {
         this.$widget = $(TPL);
 
         this.$trayEnabled = this.$widget.find("#tray-enabled");
-        this.$trayEnabled.on('change', () => {
-            const opts = { 'disableTray': !this.$trayEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$trayEnabled.on('change', () =>
+            this.updateOption('disableTray', !this.$trayEnabled.is(":checked") ? "true" : "false"));
 
         this.$eraseEntitiesAfterTimeInSeconds = this.$widget.find("#erase-entities-after-time-in-seconds");
-
-        this.$eraseEntitiesAfterTimeInSeconds.on('change', () => {
-            const eraseEntitiesAfterTimeInSeconds = this.$eraseEntitiesAfterTimeInSeconds.val();
-
-            server.put('options', { 'eraseEntitiesAfterTimeInSeconds': eraseEntitiesAfterTimeInSeconds }).then(() => {
-                toastService.showMessage("Options change have been saved.");
-            });
-
-            return false;
-        });
+        this.$eraseEntitiesAfterTimeInSeconds.on('change', () => this.updateOption('eraseEntitiesAfterTimeInSeconds', this.$eraseEntitiesAfterTimeInSeconds.val()));
 
         this.$eraseDeletedNotesButton = this.$widget.find("#erase-deleted-notes-now-button");
         this.$eraseDeletedNotesButton.on('click', () => {
@@ -85,29 +72,20 @@ export default class OtherOptions extends OptionsTab {
 
         this.$noteRevisionsTimeInterval = this.$widget.find("#note-revision-snapshot-time-interval-in-seconds");
 
-        this.$noteRevisionsTimeInterval.on('change', () => {
-            const opts = { 'noteRevisionSnapshotTimeInterval': this.$noteRevisionsTimeInterval.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$noteRevisionsTimeInterval.on('change', () =>
+            this.updateOption('noteRevisionSnapshotTimeInterval', this.$noteRevisionsTimeInterval.val()));
 
         this.$checkForUpdates = this.$widget.find("#check-for-updates");
-        this.$checkForUpdates.on("change", () => {
-            const isChecked = this.$checkForUpdates.prop("checked");
-            const opts = { 'checkForUpdates': isChecked ? 'true' : 'false' };
-
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-        });
+        this.$checkForUpdates.on("change", () =>
+            this.updateCheckboxOption('checkForUpdates', this.$checkForUpdates));
     }
 
     optionsLoaded(options) {
-        this.$trayEnabled.prop("checked", options['disableTray'] !== 'true');
+        this.$trayEnabled.prop("checked", options.disableTray !== 'true');
 
-        this.$eraseEntitiesAfterTimeInSeconds.val(options['eraseEntitiesAfterTimeInSeconds']);
-        this.$noteRevisionsTimeInterval.val(options['noteRevisionSnapshotTimeInterval']);
+        this.$eraseEntitiesAfterTimeInSeconds.val(options.eraseEntitiesAfterTimeInSeconds);
+        this.$noteRevisionsTimeInterval.val(options.noteRevisionSnapshotTimeInterval);
 
-        const checkForUpdates = options['checkForUpdates'] === 'true';
-        this.$checkForUpdates.prop('checked', checkForUpdates);
+        this.setCheckboxState(this.$checkForUpdates, options.checkForUpdates);
     }
 }

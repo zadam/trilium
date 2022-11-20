@@ -45,34 +45,25 @@ export default class CodeNotesOptions extends OptionsTab {
         this.$widget = $(TPL);
 
         this.$vimKeymapEnabled = this.$widget.find("#vim-keymap-enabled");
-        this.$vimKeymapEnabled.on('change', () => {
-            const opts = { 'vimKeymapEnabled': this.$vimKeymapEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-            return false;
-        });
+        this.$vimKeymapEnabled.on('change', () =>
+            this.updateCheckboxOption('vimKeymapEnabled', this.$vimKeymapEnabled));
 
         this.$codeLineWrapEnabled = this.$widget.find("#line-wrap-enabled");
-        this.$codeLineWrapEnabled.on('change', () => {
-            const opts = { 'codeLineWrapEnabled': this.$codeLineWrapEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-            return false;
-        });
+        this.$codeLineWrapEnabled.on('change', () =>
+            this.updateCheckboxOption('codeLineWrapEnabled', this.$codeLineWrapEnabled));
+
         this.$mimeTypes = this.$widget.find("#options-mime-types");
 
         this.$autoReadonlySizeCode = this.$widget.find("#auto-readonly-size-code");
-        this.$autoReadonlySizeCode.on('change', () => {
-            const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeCode.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
-        });
+        this.$autoReadonlySizeCode.on('change', () =>
+            this.updateOption('autoReadonlySizeCode', this.$autoReadonlySizeCode.val()));
     }
 
     async optionsLoaded(options) {
         this.$mimeTypes.empty();
-        this.$vimKeymapEnabled.prop("checked", options['vimKeymapEnabled'] === 'true');
-        this.$codeLineWrapEnabled.prop("checked", options['codeLineWrapEnabled'] === 'true');
-        this.$autoReadonlySizeCode.val(options['autoReadonlySizeCode']);
+        this.setCheckboxState(this.$vimKeymapEnabled, options.vimKeymapEnabled);
+        this.setCheckboxState(this.$codeLineWrapEnabled, options.codeLineWrapEnabled);
+        this.$autoReadonlySizeCode.val(options.autoReadonlySizeCode);
 
         let idCtr = 1;
 
@@ -99,7 +90,7 @@ export default class CodeNotesOptions extends OptionsTab {
         this.$mimeTypes.find("input:checked").each(
             (i, el) => enabledMimeTypes.push(this.$widget.find(el).attr("data-mime-type")));
 
-        await options.save('codeNotesMimeTypes', JSON.stringify(enabledMimeTypes));
+        await this.updateOption('codeNotesMimeTypes', JSON.stringify(enabledMimeTypes));
 
         mimeTypesService.loadMimeTypes();
     }

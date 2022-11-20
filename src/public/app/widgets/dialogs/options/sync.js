@@ -67,19 +67,17 @@ export default class SyncOptions extends OptionsTab {
     }
 
     optionsLoaded(options) {
-        this.$syncServerHost.val(options['syncServerHost']);
-        this.$syncServerTimeout.val(options['syncServerTimeout']);
-        this.$syncProxy.val(options['syncProxy']);
+        this.$syncServerHost.val(options.syncServerHost);
+        this.$syncServerTimeout.val(options.syncServerTimeout);
+        this.$syncProxy.val(options.syncProxy);
     }
 
     save() {
-        const opts = {
+        this.updateMultipleOptions({
             'syncServerHost': this.$syncServerHost.val(),
             'syncServerTimeout': this.$syncServerTimeout.val(),
             'syncProxy': this.$syncProxy.val()
-        };
-
-        server.put('options', opts).then(()  => toastService.showMessage("Options change have been saved."));
+        });
 
         return false;
     }
