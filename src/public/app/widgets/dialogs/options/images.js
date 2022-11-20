@@ -1,5 +1,3 @@
-import server from "../../../services/server.js";
-import toastService from "../../../services/toast.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `
@@ -33,7 +31,7 @@ const TPL = `
 
 export default class ImageOptions extends OptionsTab {
     get tabTitle() { return "Images" }
-    
+
     lazyRender() {
         this.$widget = $(TPL);
 
@@ -41,47 +39,37 @@ export default class ImageOptions extends OptionsTab {
         this.$imageJpegQuality = this.$widget.find("#image-jpeg-quality");
 
         this.$imageMaxWidthHeight.on('change', () => {
-            const opts = { 'imageMaxWidthHeight': this.$imageMaxWidthHeight.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
+            this.updateOption('imageMaxWidthHeight', this.$imageMaxWidthHeight.val());
         });
 
         this.$imageJpegQuality.on('change', () => {
-            const opts = { 'imageJpegQuality': this.$imageJpegQuality.val() };
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
-
-            return false;
+            this.updateOption('imageJpegQuality', this.$imageJpegQuality.val());
         });
 
         this.$downloadImagesAutomatically = this.$widget.find("#download-images-automatically");
 
         this.$downloadImagesAutomatically.on("change", () => {
             const isChecked = this.$downloadImagesAutomatically.prop("checked");
-            const opts = { 'downloadImagesAutomatically': isChecked ? 'true' : 'false' };
-
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            this.updateOption('downloadImagesAutomatically', isChecked ? 'true' : 'false');
         });
 
         this.$enableImageCompression = this.$widget.find("#image-compresion-enabled");
         this.$imageCompressionWrapper = this.$widget.find("#image-compression-enabled-wraper");
 
-        this.setImageCompression = (isChecked) => {
-            if (isChecked) {
-                this.$imageCompressionWrapper.removeClass("disabled-field");
-            } else {
-                this.$imageCompressionWrapper.addClass("disabled-field");
-            }
-        };
-
         this.$enableImageCompression.on("change", () => {
             const isChecked = this.$enableImageCompression.prop("checked");
-            const opts = { 'compressImages': isChecked ? 'true' : 'false' };
-
-            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
+            this.updateOption('compressImages', isChecked ? 'true' : 'false');
 
             this.setImageCompression(isChecked);
         });
+    }
+
+    setImageCompression(isChecked) {
+        if (isChecked) {
+            this.$imageCompressionWrapper.removeClass("disabled-field");
+        } else {
+            this.$imageCompressionWrapper.addClass("disabled-field");
+        }
     }
 
     optionsLoaded(options) {
