@@ -235,7 +235,8 @@ function register(app) {
 
     const loginRateLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 10 // limit each IP to 10 requests per windowMs
+        max: 10, // limit each IP to 10 requests per windowMs
+        skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However successful auth to /login is still counted!
     });
 
     route(POST, '/login', [loginRateLimiter], loginRoute.login);
@@ -390,7 +391,7 @@ function register(app) {
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     // no CSRF since this is called from android app
-    route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
+    route(POST, '/api/sender/login', [loginRateLimiter], loginApiRoute.token, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkEtapiToken, uploadMiddlewareWithErrorHandling], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
@@ -410,7 +411,7 @@ function register(app) {
     apiRoute(POST, '/api/login/protected/touch', loginApiRoute.touchProtectedSession);
     apiRoute(POST, '/api/logout/protected', loginApiRoute.logoutFromProtectedSession);
 
-    route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
+    route(POST, '/api/login/token', [loginRateLimiter], loginApiRoute.token, apiResultHandler);
 
     // in case of local electron, local calls are allowed unauthenticated, for server they need auth
     const clipperMiddleware = utils.isElectron() ? [] : [auth.checkEtapiToken];
