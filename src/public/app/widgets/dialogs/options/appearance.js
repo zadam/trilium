@@ -1,6 +1,7 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import appContext from "../../../services/app_context.js";
+import OptionsTab from "./options_tab.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },
@@ -174,33 +175,35 @@ const TPL = `
     </p>
 </form>`;
 
-export default class ApperanceOptions {
-    constructor() {
-        $("#options-appearance").html(TPL);
+export default class AppearanceOptions extends OptionsTab {
+    get tabTitle() { return "Appearance" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$zoomFactorSelect = $("#zoom-factor-select");
-        this.$nativeTitleBarSelect = $("#native-title-bar-select");
+        this.$zoomFactorSelect = this.$widget.find("#zoom-factor-select");
+        this.$nativeTitleBarSelect = this.$widget.find("#native-title-bar-select");
 
-        this.$themeSelect = $("#theme-select");
-        this.$overrideThemeFonts = $("#override-theme-fonts");
+        this.$themeSelect = this.$widget.find("#theme-select");
+        this.$overrideThemeFonts = this.$widget.find("#override-theme-fonts");
 
-        this.$overridenFontSettings = $("#overriden-font-settings");
+        this.$overridenFontSettings = this.$widget.find("#overriden-font-settings");
 
-        this.$mainFontSize = $("#main-font-size");
-        this.$mainFontFamily = $("#main-font-family");
+        this.$mainFontSize = this.$widget.find("#main-font-size");
+        this.$mainFontFamily = this.$widget.find("#main-font-family");
 
-        this.$treeFontSize = $("#tree-font-size");
-        this.$treeFontFamily = $("#tree-font-family");
+        this.$treeFontSize = this.$widget.find("#tree-font-size");
+        this.$treeFontFamily = this.$widget.find("#tree-font-family");
 
-        this.$detailFontSize = $("#detail-font-size");
-        this.$detailFontFamily = $("#detail-font-family");
+        this.$detailFontSize = this.$widget.find("#detail-font-size");
+        this.$detailFontFamily = this.$widget.find("#detail-font-family");
 
-        this.$monospaceFontSize = $("#monospace-font-size");
-        this.$monospaceFontFamily = $("#monospace-font-family");
+        this.$monospaceFontSize = this.$widget.find("#monospace-font-size");
+        this.$monospaceFontFamily = this.$widget.find("#monospace-font-family");
 
-        $(".reload-frontend-button").on("click", () => utils.reloadFrontendApp("changes from appearance options"));
+        this.$widget.find(".reload-frontend-button").on("click", () => utils.reloadFrontendApp("changes from appearance options"));
 
-        this.$body = $("body");
+        this.$body = this.$widget.find("body");
 
         this.$themeSelect.on('change', async () => {
             const newTheme = this.$themeSelect.val();
@@ -237,7 +240,7 @@ export default class ApperanceOptions {
             this['$' + optionName].on('change', () => server.put(`options/${optionName}/${this['$' + optionName].val()}`));
         }
 
-        this.$maxContentWidth = $("#max-content-width");
+        this.$maxContentWidth = this.$widget.find("#max-content-width");
 
         this.$maxContentWidth.on('change', async () => {
             const maxContentWidth = this.$maxContentWidth.val();

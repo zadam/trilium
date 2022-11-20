@@ -1,6 +1,7 @@
 import server from "../../../services/server.js";
 import protectedSessionHolder from "../../../services/protected_session_holder.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <div>
@@ -46,17 +47,19 @@ const TPL = `
     </div>
 </div>`;
 
-export default class PasswordOptions {
-    constructor() {
-        $("#options-password").html(TPL);
+export default class PasswordOptions extends OptionsTab {
+    get tabTitle() { return "Password" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$passwordHeading = $("#password-heading");
-        this.$changePasswordForm = $("#change-password-form");
-        this.$oldPassword = $("#old-password");
-        this.$newPassword1 = $("#new-password1");
-        this.$newPassword2 = $("#new-password2");
-        this.$savePasswordButton = $("#save-password-button");
-        this.$resetPasswordButton = $("#reset-password-button");
+        this.$passwordHeading = this.$widget.find("#password-heading");
+        this.$changePasswordForm = this.$widget.find("#change-password-form");
+        this.$oldPassword = this.$widget.find("#old-password");
+        this.$newPassword1 = this.$widget.find("#new-password1");
+        this.$newPassword2 = this.$widget.find("#new-password2");
+        this.$savePasswordButton = this.$widget.find("#save-password-button");
+        this.$resetPasswordButton = this.$widget.find("#reset-password-button");
 
         this.$resetPasswordButton.on("click", async () => {
             if (confirm("By resetting the password you will forever lose access to all your existing protected notes. Do you really want to reset the password?")) {
@@ -71,7 +74,7 @@ export default class PasswordOptions {
 
         this.$changePasswordForm.on('submit', () => this.save());
 
-        this.$protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
+        this.$protectedSessionTimeout = this.$widget.find("#protected-session-timeout-in-seconds");
 
         this.$protectedSessionTimeout.on('change', () => {
             const protectedSessionTimeout = this.$protectedSessionTimeout.val();
@@ -87,7 +90,7 @@ export default class PasswordOptions {
     optionsLoaded(options) {
         const isPasswordSet = options.isPasswordSet === 'true';
 
-        $("#old-password-form-group").toggle(isPasswordSet);
+        this.$widget.find("#old-password-form-group").toggle(isPasswordSet);
         this.$passwordHeading.text(isPasswordSet ? 'Change password' : 'Set password');
         this.$savePasswordButton.text(isPasswordSet ? 'Change password' : 'Set password');
         this.$protectedSessionTimeout.val(options['protectedSessionTimeout']);

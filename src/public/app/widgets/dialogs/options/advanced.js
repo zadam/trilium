@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <h4 style="margin-top: 0;">Sync</h4>
@@ -46,17 +47,19 @@ const TPL = `
 
 <button id="vacuum-database-button" class="btn">Vacuum database</button>`;
 
-export default class AdvancedOptions {
-    constructor() {
-        $("#options-advanced").html(TPL);
+export default class AdvancedOptions extends OptionsTab {
+    get tabTitle() { return "Advanced" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$forceFullSyncButton = $("#force-full-sync-button");
-        this.$fillEntityChangesButton = $("#fill-entity-changes-button");
-        this.$anonymizeFullButton = $("#anonymize-full-button");
-        this.$anonymizeLightButton = $("#anonymize-light-button");
-        this.$vacuumDatabaseButton = $("#vacuum-database-button");
-        this.$findAndFixConsistencyIssuesButton = $("#find-and-fix-consistency-issues-button");
-        this.$checkIntegrityButton = $("#check-integrity-button");
+        this.$forceFullSyncButton = this.$widget.find("#force-full-sync-button");
+        this.$fillEntityChangesButton = this.$widget.find("#fill-entity-changes-button");
+        this.$anonymizeFullButton = this.$widget.find("#anonymize-full-button");
+        this.$anonymizeLightButton = this.$widget.find("#anonymize-light-button");
+        this.$vacuumDatabaseButton = this.$widget.find("#vacuum-database-button");
+        this.$findAndFixConsistencyIssuesButton = this.$widget.find("#find-and-fix-consistency-issues-button");
+        this.$checkIntegrityButton = this.$widget.find("#check-integrity-button");
 
         this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');

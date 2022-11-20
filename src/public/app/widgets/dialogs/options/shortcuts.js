@@ -1,6 +1,7 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import dialogService from "../../dialog.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <h4>Keyboard shortcuts</h4>
@@ -34,13 +35,15 @@ const TPL = `
 
 let globActions;
 
-export default class KeyboardShortcutsOptions {
-    constructor() {
-        $("#options-shortcuts").html(TPL);
+export default class KeyboardShortcutsOptions extends OptionsTab {
+    get tabTitle() { return "Shortcuts" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        $("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
+        this.$widget.find("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
 
-        const $table = $("#keyboard-shortcut-table tbody");
+        const $table = this.$widget.find("#keyboard-shortcut-table tbody");
 
         server.get('keyboard-actions').then(actions => {
             globActions = actions;
@@ -73,7 +76,7 @@ export default class KeyboardShortcutsOptions {
         });
 
         $table.on('change', 'input.form-control', e => {
-            const $input = $(e.target);
+            const $input = this.$widget.find(e.target);
             const actionName = $input.attr('data-keyboard-action-name');
             const shortcuts = $input.val()
                               .replace('+,', "+Comma")
@@ -87,48 +90,48 @@ export default class KeyboardShortcutsOptions {
             server.put('options', opts);
         });
 
-        $("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
+        this.$widget.find("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
             if (!await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
                 return;
             }
 
             $table.find('input.form-control').each(function() {
-                const defaultShortcuts = $(this).attr('data-default-keyboard-shortcuts');
+                const defaultShortcuts = this.$widget.find(this).attr('data-default-keyboard-shortcuts');
 
-                if ($(this).val() !== defaultShortcuts) {
-                    $(this)
+                if (this.$widget.find(this).val() !== defaultShortcuts) {
+                    this.$widget.find(this)
                         .val(defaultShortcuts)
                         .trigger('change');
                 }
             });
         });
 
-        const $filter = $("#keyboard-shortcut-filter");
+        const $filter = this.$widget.find("#keyboard-shortcut-filter");
 
         $filter.on('keyup', () => {
             const filter = $filter.val().trim().toLowerCase();
 
             $table.find("tr").each((i, el) => {
                 if (!filter) {
-                    $(el).show();
+                    this.$widget.find(el).show();
                     return;
                 }
 
-                const actionName = $(el).find('input').attr('data-keyboard-action-name');
+                const actionName = this.$widget.find(el).find('input').attr('data-keyboard-action-name');
 
                 if (!actionName) {
-                    $(el).hide();
+                    this.$widget.find(el).hide();
                     return;
                 }
 
                 const action = globActions.find(act => act.actionName === actionName);
 
                 if (!action) {
-                    $(el).hide();
+                    this.$widget.find(el).hide();
                     return;
                 }
 
-                $(el).toggle(!!( // !! to avoid toggle overloads with different behavior
+                this.$widget.find(el).toggle(!!( // !! to avoid toggle overloads with different behavior
                     action.actionName.toLowerCase().includes(filter)
                     || action.defaultShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))
                     || action.effectiveShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))

@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <h4>Automatic backup</h4>
@@ -32,11 +33,13 @@ const TPL = `
 <button id="backup-database-button" class="btn">Backup database now</button><br/><br/>
 `;
 
-export default class BackupOptions {
-    constructor() {
-        $("#options-backup").html(TPL);
+export default class BackupOptions extends OptionsTab {
+    get tabTitle() { return "Backup" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$backupDatabaseButton = $("#backup-database-button");
+        this.$backupDatabaseButton = this.$widget.find("#backup-database-button");
 
         this.$backupDatabaseButton.on('click', async () => {
             const {backupFile} = await server.post('database/backup-database');
@@ -44,9 +47,9 @@ export default class BackupOptions {
             toastService.showMessage("Database has been backed up to " + backupFile, 10000);
         });
 
-        this.$dailyBackupEnabled = $("#daily-backup-enabled");
-        this.$weeklyBackupEnabled = $("#weekly-backup-enabled");
-        this.$monthlyBackupEnabled = $("#monthly-backup-enabled");
+        this.$dailyBackupEnabled = this.$widget.find("#daily-backup-enabled");
+        this.$weeklyBackupEnabled = this.$widget.find("#weekly-backup-enabled");
+        this.$monthlyBackupEnabled = this.$widget.find("#monthly-backup-enabled");
 
         this.$dailyBackupEnabled.on('change', () => {
             const opts = { 'dailyBackupEnabled': this.$dailyBackupEnabled.is(":checked") ? "true" : "false" };

@@ -1,6 +1,7 @@
 import server from "../../../services/server.js";
 import dialogService from "../../dialog.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <h4>ETAPI</h4>
@@ -45,11 +46,13 @@ const TPL = `
     }
 </style>`;
 
-export default class EtapiOptions {
-    constructor() {
-        $("#options-etapi").html(TPL);
+export default class EtapiOptions extends OptionsTab {
+    get tabTitle() { return "ETAPI" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        $("#create-etapi-token").on("click", async () => {
+        this.$widget.find("#create-etapi-token").on("click", async () => {
             const tokenName = await dialogService.prompt({
                 title: "New ETAPI token",
                 message: "Please enter new token's name",
@@ -76,8 +79,8 @@ export default class EtapiOptions {
     }
 
     async refreshTokens() {
-        const $noTokensYet = $("#no-tokens-yet");
-        const $tokensTable = $("#tokens-table");
+        const $noTokensYet = this.$widget.find("#no-tokens-yet");
+        const $tokensTable = this.$widget.find("#tokens-table");
 
         const tokens = await server.get('etapi-tokens');
 

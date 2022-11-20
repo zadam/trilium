@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <div>
@@ -52,11 +53,13 @@ const TPL = `
     </div>
 </div>`;
 
-export default class OtherOptions {
-    constructor() {
-        $("#options-other").html(TPL);
+export default class OtherOptions extends OptionsTab {
+    get tabTitle() { return "Other" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$trayEnabled = $("#tray-enabled");
+        this.$trayEnabled = this.$widget.find("#tray-enabled");
         this.$trayEnabled.on('change', () => {
             const opts = { 'disableTray': !this.$trayEnabled.is(":checked") ? "true" : "false" };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
@@ -64,7 +67,7 @@ export default class OtherOptions {
             return false;
         });
         
-        this.$eraseEntitiesAfterTimeInSeconds = $("#erase-entities-after-time-in-seconds");
+        this.$eraseEntitiesAfterTimeInSeconds = this.$widget.find("#erase-entities-after-time-in-seconds");
 
         this.$eraseEntitiesAfterTimeInSeconds.on('change', () => {
             const eraseEntitiesAfterTimeInSeconds = this.$eraseEntitiesAfterTimeInSeconds.val();
@@ -76,14 +79,14 @@ export default class OtherOptions {
             return false;
         });
 
-        this.$eraseDeletedNotesButton = $("#erase-deleted-notes-now-button");
+        this.$eraseDeletedNotesButton = this.$widget.find("#erase-deleted-notes-now-button");
         this.$eraseDeletedNotesButton.on('click', () => {
             server.post('notes/erase-deleted-notes-now').then(() => {
                 toastService.showMessage("Deleted notes have been erased.");
             });
         });
 
-        this.$noteRevisionsTimeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
+        this.$noteRevisionsTimeInterval = this.$widget.find("#note-revision-snapshot-time-interval-in-seconds");
 
         this.$noteRevisionsTimeInterval.on('change', () => {
             const opts = { 'noteRevisionSnapshotTimeInterval': this.$noteRevisionsTimeInterval.val() };
@@ -92,7 +95,7 @@ export default class OtherOptions {
             return false;
         });
 
-        this.$checkForUpdates = $("#check-for-updates");
+        this.$checkForUpdates = this.$widget.find("#check-for-updates");
         this.$checkForUpdates.on("change", () => {
             const isChecked = this.$checkForUpdates.prop("checked");
             const opts = { 'checkForUpdates': isChecked ? 'true' : 'false' };

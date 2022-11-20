@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <div>
@@ -30,12 +31,14 @@ const TPL = `
 </div>
 `;
 
-export default class ImageOptions {
-    constructor() {
-        $("#options-images").html(TPL);
+export default class ImageOptions extends OptionsTab {
+    get tabTitle() { return "Images" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$imageMaxWidthHeight = $("#image-max-width-height");
-        this.$imageJpegQuality = $("#image-jpeg-quality");
+        this.$imageMaxWidthHeight = this.$widget.find("#image-max-width-height");
+        this.$imageJpegQuality = this.$widget.find("#image-jpeg-quality");
 
         this.$imageMaxWidthHeight.on('change', () => {
             const opts = { 'imageMaxWidthHeight': this.$imageMaxWidthHeight.val() };
@@ -51,7 +54,7 @@ export default class ImageOptions {
             return false;
         });
 
-        this.$downloadImagesAutomatically = $("#download-images-automatically");
+        this.$downloadImagesAutomatically = this.$widget.find("#download-images-automatically");
 
         this.$downloadImagesAutomatically.on("change", () => {
             const isChecked = this.$downloadImagesAutomatically.prop("checked");
@@ -60,8 +63,8 @@ export default class ImageOptions {
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
         });
 
-        this.$enableImageCompression = $("#image-compresion-enabled");
-        this.$imageCompressionWrapper = $("#image-compression-enabled-wraper");
+        this.$enableImageCompression = this.$widget.find("#image-compresion-enabled");
+        this.$imageCompressionWrapper = this.$widget.find("#image-compression-enabled-wraper");
 
         this.setImageCompression = (isChecked) => {
             if (isChecked) {

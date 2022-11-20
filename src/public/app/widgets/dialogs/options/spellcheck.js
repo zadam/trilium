@@ -1,6 +1,7 @@
 import utils from "../../../services/utils.js";
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <style>
@@ -32,12 +33,14 @@ const TPL = `
     <p><strong>Available language codes: </strong> <span id="available-language-codes"></span></p>
 </div>`;
 
-export default class SpellcheckOptions {
-    constructor() {
-        $("#options-spellcheck").html(TPL);
+export default class SpellcheckOptions extends OptionsTab {
+    get tabTitle() { return "Spellcheck" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$spellCheckEnabled = $("#spell-check-enabled");
-        this.$spellCheckLanguageCode = $("#spell-check-language-code");
+        this.$spellCheckEnabled = this.$widget.find("#spell-check-enabled");
+        this.$spellCheckLanguageCode = this.$widget.find("#spell-check-language-code");
 
         this.$spellCheckEnabled.on('change', () => {
             const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
@@ -53,7 +56,7 @@ export default class SpellcheckOptions {
             return false;
         });
 
-        this.$availableLanguageCodes = $("#available-language-codes");
+        this.$availableLanguageCodes = this.$widget.find("#available-language-codes");
 
         if (utils.isElectron()) {
             const { webContents } = utils.dynamicRequire('@electron/remote').getCurrentWindow();

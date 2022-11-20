@@ -2,6 +2,7 @@ import mimeTypesService from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <div>
@@ -39,26 +40,28 @@ const TPL = `
     <ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>
 </div>`;
 
-export default class CodeNotesOptions {
-    constructor() {
-        $("#options-code-notes").html(TPL);
+export default class CodeNotesOptions extends OptionsTab {
+    get tabTitle() { return "Code notes" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$vimKeymapEnabled = $("#vim-keymap-enabled");
+        this.$vimKeymapEnabled = this.$widget.find("#vim-keymap-enabled");
         this.$vimKeymapEnabled.on('change', () => {
             const opts = { 'vimKeymapEnabled': this.$vimKeymapEnabled.is(":checked") ? "true" : "false" };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
             return false;
         });
 
-        this.$codeLineWrapEnabled = $("#line-wrap-enabled");
+        this.$codeLineWrapEnabled = this.$widget.find("#line-wrap-enabled");
         this.$codeLineWrapEnabled.on('change', () => {
             const opts = { 'codeLineWrapEnabled': this.$codeLineWrapEnabled.is(":checked") ? "true" : "false" };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
             return false;
         });
-        this.$mimeTypes = $("#options-mime-types");
+        this.$mimeTypes = this.$widget.find("#options-mime-types");
 
-        this.$autoReadonlySizeCode = $("#auto-readonly-size-code");
+        this.$autoReadonlySizeCode = this.$widget.find("#auto-readonly-size-code");
         this.$autoReadonlySizeCode.on('change', () => {
             const opts = { 'autoReadonlySizeCode': this.$autoReadonlySizeCode.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
@@ -96,7 +99,7 @@ export default class CodeNotesOptions {
         const enabledMimeTypes = [];
 
         this.$mimeTypes.find("input:checked").each(
-            (i, el) => enabledMimeTypes.push($(el).attr("data-mime-type")));
+            (i, el) => enabledMimeTypes.push(this.$widget.find(el).attr("data-mime-type")));
 
         await options.save('codeNotesMimeTypes', JSON.stringify(enabledMimeTypes));
 

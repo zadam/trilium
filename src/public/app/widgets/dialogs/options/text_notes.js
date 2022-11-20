@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
@@ -36,13 +37,15 @@ const TPL = `
 </div>
 </form>`;
 
-export default class TextNotesOptions {
-    constructor() {
-        $("#options-text-notes").html(TPL);
+export default class TextNotesOptions extends OptionsTab {
+    get tabTitle() { return "Text notes" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$body = $("body");
+        this.$body = this.$widget.find("body");
 
-        this.$headingStyle = $("#heading-style");
+        this.$headingStyle = this.$widget.find("#heading-style");
         this.$headingStyle.on('change', () => {
             const newHeadingStyle = this.$headingStyle.val();
 
@@ -51,14 +54,14 @@ export default class TextNotesOptions {
             server.put('options/headingStyle/' + newHeadingStyle);
         });
 
-        this.$minTocHeadings = $("#min-toc-headings");
+        this.$minTocHeadings = this.$widget.find("#min-toc-headings");
         this.$minTocHeadings.on('change', () => {
             const minTocHeadings = this.$minTocHeadings.val();
 
             server.put('options/minTocHeadings/' + minTocHeadings);
         });
 
-        this.$autoReadonlySizeText = $("#auto-readonly-size-text");
+        this.$autoReadonlySizeText = this.$widget.find("#auto-readonly-size-text");
 
         this.$autoReadonlySizeText.on('change', () => {
             const opts = { 'autoReadonlySizeText': this.$autoReadonlySizeText.val() };
@@ -78,7 +81,7 @@ export default class TextNotesOptions {
         this.$body.addClass(prefix + value);
     }
 
-    async optionsLoaded(options) {
+    optionsLoaded(options) {
         this.$headingStyle.val(options.headingStyle);
         this.$minTocHeadings.val(options.minTocHeadings);
         this.$autoReadonlySizeText.val(options.autoReadonlySizeText);

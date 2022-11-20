@@ -1,5 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
 <h4 style="margin-top: 0px;">Sync configuration</h4>
@@ -37,15 +38,17 @@ const TPL = `
 
 <button id="test-sync-button" class="btn">Test sync</button>`;
 
-export default class SyncOptions {
-    constructor() {
-        $("#options-sync-setup").html(TPL);
+export default class SyncOptions extends OptionsTab {
+    get tabTitle() { return "Sync" }
+    
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$form = $("#sync-setup-form");
-        this.$syncServerHost = $("#sync-server-host");
-        this.$syncServerTimeout = $("#sync-server-timeout");
-        this.$syncProxy = $("#sync-proxy");
-        this.$testSyncButton = $("#test-sync-button");
+        this.$form = this.$widget.find("#sync-setup-form");
+        this.$syncServerHost = this.$widget.find("#sync-server-host");
+        this.$syncServerTimeout = this.$widget.find("#sync-server-timeout");
+        this.$syncProxy = this.$widget.find("#sync-proxy");
+        this.$testSyncButton = this.$widget.find("#test-sync-button");
 
         this.$form.on('submit', () => this.save());
 
