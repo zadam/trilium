@@ -27,6 +27,11 @@ RUN apk add --no-cache su-exec shadow
 # Bundle app source
 COPY . .
 
+RUN sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' src/views/desktop.ejs && \
+    sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' src/views/mobile.ejs && \
+    sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' src/views/setup.ejs && \
+    sed -i -e 's/app\/share.js/app-dist\/share.js/g' src/views/share/*.ejs
+
 # Add application user and setup proper volume permissions
 RUN adduser -s /bin/false node; exit 0
 
