@@ -9,6 +9,11 @@ import DesktopLayout from "./layouts/desktop_layout.js";
 import glob from "./services/glob.js";
 import zoomService from './services/zoom.js';
 
+bundleService.getWidgetBundlesByParent().then(widgetBundles => {
+    appContext.setLayout(new DesktopLayout(widgetBundles));
+    appContext.start();
+});
+
 glob.setupGlobs();
 
 if (utils.isElectron()) {
@@ -17,16 +22,7 @@ if (utils.isElectron()) {
     });
 }
 
-$('[data-toggle="tooltip"]').tooltip({
-    html: true
-});
-
 macInit.init();
-
-bundleService.getWidgetBundlesByParent().then(widgetBundles => {
-    appContext.setLayout(new DesktopLayout(widgetBundles));
-    appContext.start();
-});
 
 noteTooltipService.setupGlobalTooltip();
 
