@@ -53,12 +53,6 @@ class BasicWidget extends Component {
         return this;
     }
 
-    overflowing() {
-        console.log("Using overflowing() is deprecated NOOP and it is recommended to remove its use.");
-
-        return this;
-    }
-
     collapsible() {
         this.css('min-height', '0');
         this.css('min-width', '0');

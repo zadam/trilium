@@ -25,7 +25,6 @@ import RootContainer from "../widgets/containers/root_container.js";
 import NoteUpdateStatusWidget from "../widgets/note_update_status.js";
 import SpacerWidget from "../widgets/spacer.js";
 import QuickSearchWidget from "../widgets/quick_search.js";
-import ButtonWidget from "../widgets/buttons/button_widget.js";
 import SplitNoteContainer from "../widgets/containers/split_note_container.js";
 import LeftPaneToggleWidget from "../widgets/buttons/left_pane_toggle.js";
 import CreatePaneButton from "../widgets/buttons/create_pane_button.js";

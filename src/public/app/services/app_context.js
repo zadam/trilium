@@ -27,9 +27,9 @@ class AppContext extends Component {
     }
 
     async start() {
-        await Promise.all([froca.initializedPromise, options.initializedPromise]);
-
         this.showWidgets();
+
+        await Promise.all([froca.initializedPromise, options.initializedPromise]);
 
         this.tabManager.loadTabs();
 
