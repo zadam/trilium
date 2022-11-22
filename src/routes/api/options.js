@@ -33,6 +33,7 @@ const ALLOWED_OPTIONS = new Set([
     'editedNotesWidget',
     'calendarWidget',
     'vimKeymapEnabled',
+    'codeLineWrapEnabled',
     'codeNotesMimeTypes',
     'spellCheckEnabled',
     'spellCheckLanguageCode',
@@ -58,7 +59,8 @@ const ALLOWED_OPTIONS = new Set([
     'compressImages',
     'downloadImagesAutomatically',
     'minTocHeadings',
-    'checkForUpdates'
+    'checkForUpdates',
+    'disableTray'
 ]);
 
 function getOptions() {

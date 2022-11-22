@@ -332,6 +332,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      * @deprecated use getDayNote instead
      */
@@ -342,6 +343,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      */
     this.getDayNote = dateNoteService.getDayNote;
@@ -350,6 +352,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Returns today's day note. If such note doesn't exist, it is created.
      *
      * @method
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      */
     this.getTodayNote = dateNoteService.getTodayNote;
@@ -359,7 +362,8 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {object} options - "startOfTheWeek" - either "monday" (default) or "sunday"
+     * @param {object} [options] - "startOfTheWeek" - either "monday" (default) or "sunday"
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      */
     this.getWeekNote = dateNoteService.getWeekNote;
@@ -369,6 +373,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM format
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      */
     this.getMonthNote = dateNoteService.getMonthNote;
@@ -378,6 +383,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} year in YYYY format
+     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
      * @returns {Note|null}
      */
     this.getYearNote = dateNoteService.getYearNote;

@@ -131,7 +131,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
 
     /**
-     * Adds new button the the plugin area.
+     * Adds new button to the plugin area.
      *
      * @param {ToolbarButtonOptions} opts
      */
@@ -353,7 +353,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {boolean} [params.showTooltip=true] - enable/disable tooltip on the link
      * @param {boolean} [params.showNotePath=false] - show also whole note's path as part of the link
      * @param {boolean} [params.showNoteIcon=false] - show also note icon before the title
-     * @param {string} [title=] - custom link tile with note's title as default
+     * @param {string} [params.title=] - custom link tile with note's title as default
      */
     this.createNoteLink = linkService.createNoteLink;
 

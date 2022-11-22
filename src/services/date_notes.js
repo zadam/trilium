@@ -150,8 +150,11 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
 }
 
 /** @returns {Note} */
-function getDayNote(dateStr) {
-    const rootNote = getRootCalendarNote();
+function getDayNote(dateStr, rootNote = null) {
+    if (!rootNote) {
+        rootNote = getRootCalendarNote();
+    }
+
     dateStr = dateStr.trim().substr(0, 10);
 
     let dateNote = searchService.findFirstNoteWithQuery(`#${DATE_LABEL}="${dateStr}"`,
@@ -183,8 +186,8 @@ function getDayNote(dateStr) {
     return dateNote;
 }
 
-function getTodayNote() {
-    return getDayNote(dateUtils.localNowDate());
+function getTodayNote(rootNote = null) {
+    return getDayNote(dateUtils.localNowDate(), rootNote);
 }
 
 function getStartOfTheWeek(date, startOfTheWeek) {
@@ -204,14 +207,14 @@ function getStartOfTheWeek(date, startOfTheWeek) {
     return new Date(date.setDate(diff));
 }
 
-function getWeekNote(dateStr, options = {}) {
+function getWeekNote(dateStr, options = {}, rootNote = null) {
     const startOfTheWeek = options.startOfTheWeek || "monday";
 
     const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);
 
     dateStr = dateUtils.utcDateTimeStr(dateObj);
 
-    return getDayNote(dateStr);
+    return getDayNote(dateStr, rootNote);
 }
 
 module.exports = {

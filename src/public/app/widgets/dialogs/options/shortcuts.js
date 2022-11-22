@@ -1,46 +1,50 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import dialogService from "../../dialog.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<h4>Keyboard shortcuts</h4>
-
-<p>Multiple shortcuts for the same action can be separated by comma.</p>
-
-<div class="form-group">
-    <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
-</div>
-
-<div style="overflow: auto; height: 500px;">
-    <table id="keyboard-shortcut-table" cellpadding="10">
-    <thead>
-        <tr>
-            <th>Action name</th>
-            <th>Shortcuts</th>
-            <th>Default shortcuts</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-    </table>
-</div>
-
-<div style="display: flex; justify-content: space-between">
-    <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
+<div class="options-section">
+    <h4>Keyboard shortcuts</h4>
     
-    <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
-</div>
-`;
+    <p>Multiple shortcuts for the same action can be separated by comma.</p>
+    
+    <div class="form-group">
+        <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
+    </div>
+    
+    <div style="overflow: auto; height: 500px;">
+        <table id="keyboard-shortcut-table" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Action name</th>
+                <th>Shortcuts</th>
+                <th>Default shortcuts</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between">
+        <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
+        
+        <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
+    </div>
+</div>`;
 
 let globActions;
 
-export default class KeyboardShortcutsOptions {
-    constructor() {
-        $("#options-shortcuts").html(TPL);
+export default class KeyboardShortcutsOptions extends OptionsTab {
+    get tabTitle() { return "Shortcuts" }
 
-        $("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        const $table = $("#keyboard-shortcut-table tbody");
+        this.$widget.find("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
+
+        const $table = this.$widget.find("#keyboard-shortcut-table tbody");
 
         server.get('keyboard-actions').then(actions => {
             globActions = actions;
@@ -73,7 +77,7 @@ export default class KeyboardShortcutsOptions {
         });
 
         $table.on('change', 'input.form-control', e => {
-            const $input = $(e.target);
+            const $input = this.$widget.find(e.target);
             const actionName = $input.attr('data-keyboard-action-name');
             const shortcuts = $input.val()
                               .replace('+,', "+Comma")
@@ -81,54 +85,53 @@ export default class KeyboardShortcutsOptions {
                               .map(shortcut => shortcut.replace("+Comma", "+,"))
                               .filter(shortcut => !!shortcut);
 
-            const opts = {};
-            opts['keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1)] = JSON.stringify(shortcuts);
+            const optionName = 'keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1);
 
-            server.put('options', opts);
+            this.updateOption(optionName, JSON.stringify(shortcuts));
         });
 
-        $("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
+        this.$widget.find("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
             if (!await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
                 return;
             }
 
             $table.find('input.form-control').each(function() {
-                const defaultShortcuts = $(this).attr('data-default-keyboard-shortcuts');
+                const defaultShortcuts = this.$widget.find(this).attr('data-default-keyboard-shortcuts');
 
-                if ($(this).val() !== defaultShortcuts) {
-                    $(this)
+                if (this.$widget.find(this).val() !== defaultShortcuts) {
+                    this.$widget.find(this)
                         .val(defaultShortcuts)
                         .trigger('change');
                 }
             });
         });
 
-        const $filter = $("#keyboard-shortcut-filter");
+        const $filter = this.$widget.find("#keyboard-shortcut-filter");
 
         $filter.on('keyup', () => {
             const filter = $filter.val().trim().toLowerCase();
 
             $table.find("tr").each((i, el) => {
                 if (!filter) {
-                    $(el).show();
+                    this.$widget.find(el).show();
                     return;
                 }
 
-                const actionName = $(el).find('input').attr('data-keyboard-action-name');
+                const actionName = this.$widget.find(el).find('input').attr('data-keyboard-action-name');
 
                 if (!actionName) {
-                    $(el).hide();
+                    this.$widget.find(el).hide();
                     return;
                 }
 
                 const action = globActions.find(act => act.actionName === actionName);
 
                 if (!action) {
-                    $(el).hide();
+                    this.$widget.find(el).hide();
                     return;
                 }
 
-                $(el).toggle(!!( // !! to avoid toggle overloads with different behavior
+                this.$widget.find(el).toggle(!!( // !! to avoid toggle overloads with different behavior
                     action.actionName.toLowerCase().includes(filter)
                     || action.defaultShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))
                     || action.effectiveShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))

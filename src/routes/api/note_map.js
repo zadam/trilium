@@ -37,7 +37,7 @@ function getNeighbors(note, depth) {
     const retNoteIds = [];
 
     function isIgnoredRelation(relation) {
-        return ['relationMapLink', 'template', 'image'].includes(relation.name);
+        return ['relationMapLink', 'template', 'image', 'ancestor'].includes(relation.name);
     }
 
     // forward links
@@ -83,15 +83,27 @@ function getNeighbors(note, depth) {
 
 function getLinkMap(req) {
     const mapRootNote = becca.getNote(req.params.noteId);
-    // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
+    // if the map root itself has exclude attribute (journal typically) then there wouldn't be anything to display, so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
+    let unfilteredNotes;
+
+    if (mapRootNote.type === 'search') {
+        // for search notes we want to consider the direct search results only without the descendants
+        unfilteredNotes = mapRootNote.getSearchResultNotes();
+    } else {
+        unfilteredNotes = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true}).notes;
+    }
 
     const noteIds = new Set(
-        mapRootNote.getSubtreeNotes(false)
+        unfilteredNotes
             .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
             .map(note => note.noteId)
     );
+
+    if (mapRootNote.type === 'search') {
+        noteIds.delete(mapRootNote.noteId);
+    }
 
     for (const noteId of getNeighbors(mapRootNote, 3)) {
         noteIds.add(noteId);
@@ -123,7 +135,7 @@ function getLinkMap(req) {
             return true;
         }
     })
-        .map(rel => ({
+    .map(rel => ({
         id: rel.noteId + "-" + rel.name + "-" + rel.value,
         sourceNoteId: rel.noteId,
         targetNoteId: rel.value,
@@ -142,8 +154,9 @@ function getTreeMap(req) {
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
+    const subtree = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true});
 
-    const notes = mapRootNote.getSubtreeNotes(false)
+    const notes = subtree.notes
         .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))
         .filter(note => {
             if (note.type !== 'image' || note.getChildNotes().length > 0) {
@@ -158,7 +171,6 @@ function getTreeMap(req) {
 
             return !note.getParentNotes().find(parentNote => parentNote.noteId === imageLinkRelation.noteId);
         })
-        .concat(...mapRootNote.getParentNotes().filter(note => note.noteId !== 'none'))
         .map(note => [
             note.noteId,
             note.getTitleOrProtected(),
@@ -170,23 +182,38 @@ function getTreeMap(req) {
 
     const links = [];
 
-    for (const branch of Object.values(becca.branches)) {
-        if (!noteIds.has(branch.parentNoteId) || !noteIds.has(branch.noteId)) {
+    for (const {parentNoteId, childNoteId} of subtree.relationships) {
+        if (!noteIds.has(parentNoteId) || !noteIds.has(childNoteId)) {
             continue;
         }
 
         links.push({
-            id: branch.branchId,
-            sourceNoteId: branch.parentNoteId,
-            targetNoteId: branch.noteId
+            sourceNoteId: parentNoteId,
+            targetNoteId: childNoteId
         });
     }
 
+    const noteIdToDescendantCountMap = buildDescendantCountMap();
+
+    updateDescendantCountMapForSearch(noteIdToDescendantCountMap, subtree.relationships);
+
     return {
         notes: notes,
-        noteIdToDescendantCountMap: buildDescendantCountMap(),
+        noteIdToDescendantCountMap: noteIdToDescendantCountMap,
         links: links
     };
+}
+
+function updateDescendantCountMapForSearch(noteIdToDescendantCountMap, relationships) {
+    for (const {parentNoteId, childNoteId} of relationships) {
+        const parentNote = becca.notes[parentNoteId];
+        if (!parentNote || parentNote.type !== 'search') {
+            continue;
+        }
+
+        noteIdToDescendantCountMap[parentNote.noteId] = noteIdToDescendantCountMap[parentNoteId] || 0;
+        noteIdToDescendantCountMap[parentNote.noteId] += noteIdToDescendantCountMap[childNoteId] || 1;
+    }
 }
 
 function removeImages(document) {
@@ -290,7 +317,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
 function getFilteredBacklinks(note) {
     return note.getTargetRelations()
         // search notes have "ancestor" relations which are not interesting
-        .filter(note => note.getNote().type !== 'search');
+        .filter(relation => !!relation.getNote() && relation.getNote().type !== 'search');
 }
 
 function getBacklinkCount(req) {

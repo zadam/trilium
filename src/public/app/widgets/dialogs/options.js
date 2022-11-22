@@ -15,6 +15,20 @@ const TPL = `
             overflow-y: auto;
             max-height: 85vh;
         }
+
+        .options-dialog .options-section:first-of-type h4 {
+            margin-top: 0;
+        }
+        
+        .options-dialog .options-section h4 {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .options-dialog .options-section h5 {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 
     <div class="modal-dialog modal-lg" style="min-width: 1000px;" role="document">
@@ -27,51 +41,9 @@ const TPL = `
             </div>
             <div class="modal-body">
                 <div style="display: flex">
-                    <ul class="nav nav-tabs flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" href="#options-appearance">Appearance</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-shortcuts">Shortcuts</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-text-notes">Text notes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-code-notes">Code notes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-password">Password</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-etapi">ETAPI</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-backup">Backup</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-sync-setup">Sync</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-other">Other</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#options-advanced">Advanced</a>
-                        </li>
-                    </ul>
+                    <ul class="nav nav-tabs flex-column"></ul>
                     <br/>
-                    <div class="tab-content">
-                        <div id="options-appearance" class="tab-pane active"></div>
-                        <div id="options-shortcuts" class="tab-pane"></div>
-                        <div id="options-text-notes" class="tab-pane"></div>
-                        <div id="options-code-notes" class="tab-pane"></div>
-                        <div id="options-password" class="tab-pane"></div>
-                        <div id="options-etapi" class="tab-pane"></div>
-                        <div id="options-backup" class="tab-pane"></div>
-                        <div id="options-sync-setup" class="tab-pane"></div>
-                        <div id="options-other" class="tab-pane"></div>
-                        <div id="options-advanced" class="tab-pane"></div>
-                    </div>
+                    <div class="tab-content"></div>
                 </div>
             </div>
         </div>
@@ -82,34 +54,51 @@ const TPL = `
 export default class OptionsDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
+        this.$navTabs = this.$widget.find(".nav-tabs");
+        this.$tabContent = this.$widget.find(".tab-content");
+
+        for (const child of this.children) {
+            this.$navTabs.append(
+                $('<li class="nav-item">')
+                    .append(
+                        $('<a class="nav-link" data-toggle="tab">')
+                            .attr("href", '#options-' + child.constructor.name)
+                            .text(child.tabTitle)
+                    )
+            );
+
+            this.$tabContent.append(
+                $('<div class="tab-pane">')
+                    .attr("id", "options-" + child.constructor.name)
+            );
+        }
     }
 
     async showOptionsEvent({openTab}) {
-        const options = await server.get('options');
+        const optionPromise = server.get('options');
 
-        utils.openDialog(this.$widget);
+        for (const child of this.children) {
+            child.lazyRender();
 
-        (await Promise.all([
-            import('./options/appearance.js'),
-            import('./options/shortcuts.js'),
-            import('./options/text_notes.js'),
-            import('./options/code_notes.js'),
-            import('./options/password.js'),
-            import('./options/etapi.js'),
-            import('./options/backup.js'),
-            import('./options/sync.js'),
-            import('./options/other.js'),
-            import('./options/advanced.js')
-        ]))
-            .map(m => new m.default)
-            .forEach(tab => {
-                if (tab.optionsLoaded) {
-                    tab.optionsLoaded(options)
-                }
-            });
-
-        if (openTab) {
-            $(`.nav-link[href='#options-${openTab}']`).trigger("click");
+            this.$widget.find("#options-" + child.constructor.name)
+                .empty()
+                .append(child.$widget);
         }
+
+        const options = await optionPromise;
+
+        for (const child of this.children) {
+            if (child.optionsLoaded) {
+                child.optionsLoaded(options)
+            }
+        }
+
+        await utils.openDialog(this.$widget);
+
+        if (!openTab) {
+            openTab = "AppearanceOptions";
+        }
+
+        this.$widget.find(`.nav-link[href='#options-${openTab}']`).trigger("click");
     }
 }

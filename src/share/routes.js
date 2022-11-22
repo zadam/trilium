@@ -6,6 +6,7 @@ const shaca = require("./shaca/shaca");
 const shacaLoader = require("./shaca/shaca_loader");
 const shareRoot = require("./share_root");
 const contentRenderer = require("./content_renderer");
+const assetPath = require("../services/asset_path");
 
 function getSharedSubTreeRoot(note) {
     if (note.noteId === shareRoot.SHARE_ROOT_NOTE_ID) {
@@ -87,7 +88,7 @@ function register(router) {
 
         addNoIndexHeader(note, res);
 
-        if (note.hasLabel('shareRaw') || ['image', 'file'].includes(note.type)) {
+        if (note.hasLabel('shareRaw')) {
             res.setHeader('Content-Type', note.mime)
                 .send(note.getContent());
 
@@ -103,13 +104,19 @@ function register(router) {
             header,
             content,
             isEmpty,
-            subRoot
+            subRoot,
+            assetPath
         });
     }
 
     router.use('/share/canvas_share.js', express.static(path.join(__dirname, 'canvas_share.js')));
 
-    router.get(['/share', '/share/'], (req, res, next) => {
+    router.get('/share/', (req, res, next) => {
+        if (req.path.substr(-1) !== '/') {
+            res.redirect('../share/');
+            return;
+        }
+
         shacaLoader.ensureLoad();
 
         renderNote(shaca.shareRootNote, req, res);

@@ -12,13 +12,13 @@
     <% } else { %>
     <link rel="shortcut icon" href="../favicon.ico">
     <% } %>
-    <script src="../app/share.js"></script>
+    <script src="../<%= assetPath %>/app/share.js"></script>
     <% if (!note.hasLabel("shareOmitDefaultCss")) { %>
-        <link href="../libraries/normalize.min.css" rel="stylesheet">
-        <link href="../stylesheets/share.css" rel="stylesheet">
+        <link href="../<%= assetPath %>/libraries/normalize.min.css" rel="stylesheet">
+        <link href="../<%= assetPath %>/stylesheets/share.css" rel="stylesheet">
     <% } %>
     <% if (note.type === 'text' || note.type === 'book') { %>
-        <link href="../libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
+        <link href="../<%= assetPath %>/libraries/ckeditor/ckeditor-content.css" rel="stylesheet">
     <% } %>
     <% for (const cssRelation of note.getRelations("shareCss")) { %>
         <link href="api/notes/<%= cssRelation.value %>/download" rel="stylesheet">

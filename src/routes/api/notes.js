@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
+const protectedSessionService = require('../../services/protected_session');
 const fs = require('fs');
 const becca = require("../../becca/becca");
 
@@ -305,6 +306,21 @@ function uploadModifiedFile(req) {
     note.setContent(fileContent);
 }
 
+function forceSaveNoteRevision(req) {
+    const {noteId} = req.params;
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} not found.`];
+    }
+
+    if (!note.isContentAvailable()) {
+        return [400, `Note revision of a protected note cannot be created outside of a protected session.`];
+    }
+
+    note.saveNoteRevision();
+}
+
 module.exports = {
     getNote,
     updateNoteContent,
@@ -319,5 +335,6 @@ module.exports = {
     duplicateSubtree,
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
-    uploadModifiedFile
+    uploadModifiedFile,
+    forceSaveNoteRevision
 };

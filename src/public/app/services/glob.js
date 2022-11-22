@@ -64,7 +64,7 @@ function setupGlobs() {
     };
 
     for (const appCssNoteId of glob.appCssNoteIds || []) {
-        libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`);
+        libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`, false);
     }
 
     utils.initHelpButtons($(window));

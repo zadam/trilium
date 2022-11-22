@@ -86,8 +86,6 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         this.mapType = this.note.getLabelValue("mapType") === "tree" ? "tree" : "link";
 
-        this.setDimensions();
-
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
         this.graph = ForceGraph()(this.$container[0])
@@ -121,7 +119,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 .linkCanvasObjectMode(() => "after");
         }
 
-        let mapRootNoteId = this.getMapRootNoteId();
+        const mapRootNoteId = this.getMapRootNoteId();
         const data = await this.loadNotesAndRelations(mapRootNoteId);
 
         const nodeLinkRatio = data.nodes.length / data.links.length;
@@ -264,7 +262,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         return {
             nodes: this.nodes,
             links: links.map(link => ({
-                id: link.id,
+                id: `${link.sourceNoteId}-${link.targetNoteId}`,
                 source: link.sourceNoteId,
                 target: link.targetNoteId,
                 name: link.names.join(", ")
@@ -331,8 +329,10 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     renderData(data) {
         this.graph.graphData(data);
 
-        if (this.widgetMode === 'ribbon') {
+        if (this.widgetMode === 'ribbon' && this.note?.type !== 'search') {
             setTimeout(() => {
+                this.setDimensions();
+
                 const subGraphNoteIds = this.getSubGraphConnectedToCurrentNote(data);
 
                 this.graph.zoomToFit(400, 50, node => subGraphNoteIds.has(node.id));
@@ -342,17 +342,34 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 }
             }, 1000);
         }
-        else if (this.widgetMode === 'type') {
+        else {
             if (data.nodes.length > 1) {
                 setTimeout(() => {
-                    this.graph.zoomToFit(400, 10);
+                    this.setDimensions();
 
-                    if (data.nodes.length < 30) {
+                    const noteIdsWithLinks = this.getNoteIdsWithLinks(data);
+
+                    if (noteIdsWithLinks.size > 0) {
+                        this.graph.zoomToFit(400, 30, node => noteIdsWithLinks.has(node.id));
+                    }
+
+                    if (noteIdsWithLinks.size < 30) {
                         this.graph.d3VelocityDecay(0.4);
                     }
                 }, 1000);
             }
         }
+    }
+
+    getNoteIdsWithLinks(data) {
+        const noteIds = new Set();
+
+        for (const link of data.links) {
+            noteIds.add(link.source.id);
+            noteIds.add(link.target.id);
+        }
+
+        return noteIds;
     }
 
     getSubGraphConnectedToCurrentNote(data) {
@@ -398,7 +415,12 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attr.name === 'mapType' && attributeService.isAffecting(attr, this.note))) {
+        if (loadResults.getAttributes(this.componentId).find(
+            attr =>
+                attr.type === 'label'
+                && ['mapType', 'mapRootNoteId'].includes(attr.name)
+                && attributeService.isAffecting(attr, this.note)
+        )) {
             this.refresh();
         }
     }

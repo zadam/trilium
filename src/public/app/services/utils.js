@@ -230,18 +230,7 @@ function focusSavedElement() {
         return;
     }
 
-    if ($lastFocusedElement.hasClass("ck")) {
-        // must handle CKEditor separately because of this bug: https://github.com/ckeditor/ckeditor5/issues/607
-
-        const editor = $lastFocusedElement
-            .closest('.ck-editor__editable')
-            .prop('ckeditorInstance');
-
-        editor.editing.view.focus();
-    } else {
-        $lastFocusedElement.focus();
-    }
-
+    $lastFocusedElement.focus();
     $lastFocusedElement = null;
 }
 
@@ -252,10 +241,12 @@ async function openDialog($dialog, closeActDialog = true) {
     }
 
     saveFocusedElement();
-
+-
     $dialog.modal();
 
     $dialog.on('hidden.bs.modal', () => {
+        $(".aa-input").autocomplete("close");
+
         if (!glob.activeDialog || glob.activeDialog === $dialog) {
             focusSavedElement();
         }

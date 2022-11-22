@@ -43,6 +43,7 @@ class Branch extends AbstractEntity {
         return this.shaca.notes[this.noteId];
     }
 
+    /** @return {Note} */
     getNote() {
         return this.childNote;
     }

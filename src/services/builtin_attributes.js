@@ -54,6 +54,7 @@ module.exports = [
     { type: 'label', name: 'shareRaw' },
     { type: 'label', name: 'shareDisallowRobotIndexing' },
     { type: 'label', name: 'shareCredentials' },
+    { type: 'label', name: 'shareIndex' },
     { type: 'label', name: 'displayRelations' },
     { type: 'label', name: 'hideRelations' },
     { type: 'label', name: 'titleTemplate', isDangerous: true },

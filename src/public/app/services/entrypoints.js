@@ -7,6 +7,7 @@ import Component from "../widgets/component.js";
 import toastService from "./toast.js";
 import ws from "./ws.js";
 import bundleService from "./bundle.js";
+import froca from "./froca.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -46,14 +47,15 @@ export default class Entrypoints extends Component {
         appContext.triggerEvent('focusAndSelectTitle', {isNewNote: true});
     }
 
-    async toggleNoteHoistingCommand() {
-        const noteContext = appContext.tabManager.getActiveContext();
+    async toggleNoteHoistingCommand({noteId = appContext.tabManager.getActiveContextNoteId()}) {
+        const noteToHoist = await froca.getNote(noteId);
+        const activeNoteContext = appContext.tabManager.getActiveContext();
 
-        if (noteContext.note.noteId === noteContext.hoistedNoteId) {
-            await noteContext.unhoist();
+        if (noteToHoist.noteId === activeNoteContext.hoistedNoteId) {
+            await activeNoteContext.unhoist();
         }
-        else if (noteContext.note.type !== 'search') {
-            await noteContext.setHoistedNoteId(noteContext.note.noteId);
+        else if (noteToHoist.type !== 'search') {
+            await activeNoteContext.setHoistedNoteId(noteId);
         }
     }
 
@@ -198,5 +200,13 @@ export default class Entrypoints extends Component {
 
     activeContextChangedEvent() {
         this.hideAllTooltips();
+    }
+
+    async forceSaveNoteRevisionCommand() {
+        const noteId = appContext.tabManager.getActiveContextNoteId();
+
+        await server.post(`notes/${noteId}/revision`);
+
+        toastService.showMessage("Note revision has been created.");
     }
 }

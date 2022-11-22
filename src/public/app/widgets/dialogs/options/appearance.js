@@ -1,6 +1,7 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import appContext from "../../../services/app_context.js";
+import OptionsTab from "./options_tab.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },
@@ -30,17 +31,25 @@ const FONT_FAMILIES = [
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
 
-<form>
+<style>
+    .options-section .row {
+        /* rows otherwise overflow horizontally and force a scrollbar */
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+
+<div class="options-section">
     <div class="form-group row">
         <div class="col-6">
             <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
-
+    
             <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
         </div>
         
         <div class="col-6">
             <label for="native-title-bar-select">Native title bar (requires app restart)</label>
-
+    
             <select class="form-control" id="native-title-bar-select">
                 <option value="show">enabled</option>
                 <option value="hide">disabled</option>
@@ -49,9 +58,11 @@ const TPL = `
     </div>
         
     <p>Zooming can be controlled with CTRL+- and CTRL+= shortcuts as well.</p>
+</div>
 
+<div class="options-section">
     <h4>Theme</h4>
-
+    
     <div class="form-group row">
         <div class="col-6">
             <label for="theme-select">Theme</label>
@@ -63,104 +74,106 @@ const TPL = `
             <input type="checkbox" class="form-control" id="override-theme-fonts">
         </div>
     </div>
+<div class="options-section">
 
-    <div id="overriden-font-settings">
-        <h4>Fonts</h4>
-        
-        <h5>Main font</h5>
-        
-        <div class="form-group row">
-            <div class="col-6">
-                <label for="main-font-family">Font family</label>
-                <select class="form-control" id="main-font-family"></select>
-            </div>
-        
-            <div class="col-6">
-                <label for="main-font-size">Size</label>
+<div id="overriden-font-settings" class="options-section">
+    <h4>Fonts</h4>
     
-                <div class="input-group">
-                    <input type="number" class="form-control" id="main-font-size" min="50" max="200" step="10"/>
-                    <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                    </div>
+    <h5>Main font</h5>
+    
+    <div class="form-group row">
+        <div class="col-6">
+            <label for="main-font-family">Font family</label>
+            <select class="form-control" id="main-font-family"></select>
+        </div>
+    
+        <div class="col-6">
+            <label for="main-font-size">Size</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="main-font-size" min="50" max="200" step="10"/>
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
                 </div>
             </div>
         </div>
+    </div>
+
+    <h5>Note tree font</h5>
+
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="tree-font-family">Font family</label>
+            <select class="form-control" id="tree-font-family"></select>
+        </div>
     
-        <h5>Note tree font</h5>
-    
-        <div class="form-group row">
-            <div class="col-4">
-                <label for="tree-font-family">Font family</label>
-                <select class="form-control" id="tree-font-family"></select>
-            </div>
-        
-            <div class="col-4">
-                <label for="tree-font-size">Size</label>
-    
-                <div class="input-group">
-                    <input type="number" class="form-control" id="tree-font-size" min="50" max="200" step="10"/>
-                    <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                    </div>
+        <div class="col-4">
+            <label for="tree-font-size">Size</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="tree-font-size" min="50" max="200" step="10"/>
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
                 </div>
             </div>
         </div>
-        
-        <h5>Note detail font</h5>
-        
-        <div class="form-group row">
-            <div class="col-4">
-                <label for="detail-font-family">Font family</label>
-                <select class="form-control" id="detail-font-family"></select>
-            </div>
-            
-            <div class="col-4">
-                <label for="detail-font-size">Size</label>
-    
-                <div class="input-group">
-                    <input type="number" class="form-control" id="detail-font-size" min="50" max="200" step="10"/>
-                    <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <h5>Monospace (code) font</h5>
-        
-        <div class="form-group row">
-            <div class="col-4">
-                <label for="monospace-font-family">Font family</label>
-                <select class="form-control" id="monospace-font-family"></select>
-            </div>
-        
-            <div class="col-4">
-                <label for="monospace-font-size">Size</label>
-    
-                <div class="input-group">
-                    <input type="number" class="form-control" id="monospace-font-size" min="50" max="200" step="10"/>
-                    <div class="input-group-append">
-                        <span class="input-group-text">%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    
-        <p>Note that tree and detail font sizing is relative to the main font size setting.</p>
- 
-        <p>Not all listed fonts may be available on your system.</p>
     </div>
     
-    <p>
-        To apply font changes, click on 
-        <button class="btn btn-micro reload-frontend-button">reload frontend</button>
-    </p>
+    <h5>Note detail font</h5>
     
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="detail-font-family">Font family</label>
+            <select class="form-control" id="detail-font-family"></select>
+        </div>
+        
+        <div class="col-4">
+            <label for="detail-font-size">Size</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="detail-font-size" min="50" max="200" step="10"/>
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h5>Monospace (code) font</h5>
+    
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="monospace-font-family">Font family</label>
+            <select class="form-control" id="monospace-font-family"></select>
+        </div>
+    
+        <div class="col-4">
+            <label for="monospace-font-size">Size</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="monospace-font-size" min="50" max="200" step="10"/>
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p>Note that tree and detail font sizing is relative to the main font size setting.</p>
+
+    <p>Not all listed fonts may be available on your system.</p>
+</div>
+
+<p>
+    To apply font changes, click on 
+    <button class="btn btn-micro reload-frontend-button">reload frontend</button>
+</p>
+
+<div class="options-section">
     <h4>Content width</h4>
     
     <p>Trilium by default limits max content width to improve readability for maximized screens on wide screens.</p>
-
+    
     <div class="form-group row">
         <div class="col-4">
             <label for="max-content-width">Max content width in pixels</label>
@@ -172,35 +185,38 @@ const TPL = `
         To content width changes, click on 
         <button class="btn btn-micro reload-frontend-button">reload frontend</button>
     </p>
-</form>`;
+</div>
+`;
 
-export default class ApperanceOptions {
-    constructor() {
-        $("#options-appearance").html(TPL);
+export default class AppearanceOptions extends OptionsTab {
+    get tabTitle() { return "Appearance" }
 
-        this.$zoomFactorSelect = $("#zoom-factor-select");
-        this.$nativeTitleBarSelect = $("#native-title-bar-select");
+    lazyRender() {
+        this.$widget = $(TPL);
 
-        this.$themeSelect = $("#theme-select");
-        this.$overrideThemeFonts = $("#override-theme-fonts");
+        this.$zoomFactorSelect = this.$widget.find("#zoom-factor-select");
+        this.$nativeTitleBarSelect = this.$widget.find("#native-title-bar-select");
 
-        this.$overridenFontSettings = $("#overriden-font-settings");
+        this.$themeSelect = this.$widget.find("#theme-select");
+        this.$overrideThemeFonts = this.$widget.find("#override-theme-fonts");
 
-        this.$mainFontSize = $("#main-font-size");
-        this.$mainFontFamily = $("#main-font-family");
+        this.$overridenFontSettings = this.$widget.find("#overriden-font-settings");
 
-        this.$treeFontSize = $("#tree-font-size");
-        this.$treeFontFamily = $("#tree-font-family");
+        this.$mainFontSize = this.$widget.find("#main-font-size");
+        this.$mainFontFamily = this.$widget.find("#main-font-family");
 
-        this.$detailFontSize = $("#detail-font-size");
-        this.$detailFontFamily = $("#detail-font-family");
+        this.$treeFontSize = this.$widget.find("#tree-font-size");
+        this.$treeFontFamily = this.$widget.find("#tree-font-family");
 
-        this.$monospaceFontSize = $("#monospace-font-size");
-        this.$monospaceFontFamily = $("#monospace-font-family");
+        this.$detailFontSize = this.$widget.find("#detail-font-size");
+        this.$detailFontFamily = this.$widget.find("#detail-font-family");
 
-        $(".reload-frontend-button").on("click", () => utils.reloadFrontendApp("changes from appearance options"));
+        this.$monospaceFontSize = this.$widget.find("#monospace-font-size");
+        this.$monospaceFontFamily = this.$widget.find("#monospace-font-family");
 
-        this.$body = $("body");
+        this.$widget.find(".reload-frontend-button").on("click", () => utils.reloadFrontendApp("changes from appearance options"));
+
+        this.$body = this.$widget.find("body");
 
         this.$themeSelect.on('change', async () => {
             const newTheme = this.$themeSelect.val();
@@ -211,11 +227,9 @@ export default class ApperanceOptions {
         });
 
         this.$overrideThemeFonts.on('change', async () => {
-            const isOverriden = this.$overrideThemeFonts.is(":checked");
+            this.updateCheckboxOption('overrideThemeFonts', this.$overrideThemeFonts);
 
-            await server.put('options/overrideThemeFonts/' + isOverriden.toString());
-
-            this.$overridenFontSettings.toggle(isOverriden);
+            this.$overridenFontSettings.toggle(this.$overrideThemeFonts.is(":checked"));
         });
 
         this.$zoomFactorSelect.on('change', () => { appContext.triggerCommand('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });
@@ -223,7 +237,7 @@ export default class ApperanceOptions {
         this.$nativeTitleBarSelect.on('change', () => {
             const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';
 
-            server.put('options/nativeTitleBarVisible/' + nativeTitleBarVisible);
+            this.updateOption('nativeTitleBarVisible', nativeTitleBarVisible);
         });
 
         const optionsToSave = [
@@ -234,16 +248,14 @@ export default class ApperanceOptions {
         ];
 
         for (const optionName of optionsToSave) {
-            this['$' + optionName].on('change', () => server.put(`options/${optionName}/${this['$' + optionName].val()}`));
+            this['$' + optionName].on('change', () =>
+                this.updateOption(optionName, this['$' + optionName].val()));
         }
 
-        this.$maxContentWidth = $("#max-content-width");
+        this.$maxContentWidth = this.$widget.find("#max-content-width");
 
-        this.$maxContentWidth.on('change', async () => {
-            const maxContentWidth = this.$maxContentWidth.val();
-
-            await server.put('options/maxContentWidth/' + maxContentWidth);
-        })
+        this.$maxContentWidth.on('change', async () =>
+            this.updateOption('maxContentWidth', this.$maxContentWidth.val()))
     }
 
     toggleBodyClass(prefix, value) {
@@ -282,7 +294,7 @@ export default class ApperanceOptions {
 
         this.$themeSelect.val(options.theme);
 
-        this.$overrideThemeFonts.prop('checked', options.overrideThemeFonts === 'true');
+        this.setCheckboxState(this.$overrideThemeFonts, options.overrideThemeFonts);
         this.$overridenFontSettings.toggle(options.overrideThemeFonts === 'true');
 
         this.$mainFontSize.val(options.mainFontSize);

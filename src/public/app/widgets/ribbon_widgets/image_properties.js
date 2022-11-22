@@ -28,7 +28,7 @@ const TPL = `
 
         <button class="image-open btn btn-sm btn-primary" type="button">Open</button>
 
-        <button class="image-copy-to-clipboard btn btn-sm btn-primary" type="button">Copy to clipboard</button>
+        <button class="image-copy-reference-to-clipboard btn btn-sm btn-primary" type="button">Copy reference to clipboard</button>
 
         <button class="image-upload-new-revision btn btn-sm btn-primary" type="button">Upload new revision</button>
     </div>
@@ -61,7 +61,7 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.contentSized();
-        this.$copyToClipboardButton = this.$widget.find(".image-copy-to-clipboard");
+        this.$copyReferenceToClipboardButton = this.$widget.find(".image-copy-reference-to-clipboard");
         this.$uploadNewRevisionButton = this.$widget.find(".image-upload-new-revision");
         this.$uploadNewRevisionInput = this.$widget.find(".image-upload-new-revision-input");
         this.$fileName = this.$widget.find(".image-filename");
@@ -74,7 +74,7 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
         this.$imageDownloadButton = this.$widget.find(".image-download");
         this.$imageDownloadButton.on('click', () => openService.downloadFileNote(this.noteId));
 
-        this.$copyToClipboardButton.on('click', () => this.triggerEvent(`copyImageToClipboard`, {ntxId: this.noteContext.ntxId}));
+        this.$copyReferenceToClipboardButton.on('click', () => this.triggerEvent(`copyImageReferenceToClipboard`, {ntxId: this.noteContext.ntxId}));
 
         this.$uploadNewRevisionButton.on("click", () => {
             this.$uploadNewRevisionInput.trigger("click");
@@ -121,7 +121,5 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileSize.text(noteComplement.contentLength + " bytes");
         this.$fileType.text(note.mime);
-
-        const imageHash = utils.randomString(10);
     }
 }

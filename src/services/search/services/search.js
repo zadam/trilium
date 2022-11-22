@@ -10,6 +10,80 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
+const scriptService = require("../../script.js");
+
+function searchFromNote(note) {
+    let searchResultNoteIds, highlightedTokens;
+
+    const searchScript = note.getRelationValue('searchScript');
+    const searchString = note.getLabelValue('searchString');
+
+    if (searchScript) {
+        searchResultNoteIds = searchFromRelation(note, 'searchScript');
+        highlightedTokens = [];
+    } else {
+        const searchContext = new SearchContext({
+            fastSearch: note.hasLabel('fastSearch'),
+            ancestorNoteId: note.getRelationValue('ancestor'),
+            ancestorDepth: note.getLabelValue('ancestorDepth'),
+            includeArchivedNotes: note.hasLabel('includeArchivedNotes'),
+            orderBy: note.getLabelValue('orderBy'),
+            orderDirection: note.getLabelValue('orderDirection'),
+            limit: note.getLabelValue('limit'),
+            debug: note.hasLabel('debug'),
+            fuzzyAttributeSearch: false
+        });
+
+        searchResultNoteIds = findResultsWithQuery(searchString, searchContext)
+            .map(sr => sr.noteId);
+
+        highlightedTokens = searchContext.highlightedTokens;
+    }
+
+    // we won't return search note's own noteId
+    // also don't allow root since that would force infinite cycle
+    return {
+        searchResultNoteIds: searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId)),
+        highlightedTokens
+    };
+}
+
+function searchFromRelation(note, relationName) {
+    const scriptNote = note.getRelationTarget(relationName);
+
+    if (!scriptNote) {
+        log.info(`Search note's relation ${relationName} has not been found.`);
+
+        return [];
+    }
+
+    if (!scriptNote.isJavaScript() || scriptNote.getScriptEnv() !== 'backend') {
+        log.info(`Note ${scriptNote.noteId} is not executable.`);
+
+        return [];
+    }
+
+    if (!note.isContentAvailable()) {
+        log.info(`Note ${scriptNote.noteId} is not available outside of protected session.`);
+
+        return [];
+    }
+
+    const result = scriptService.executeNote(scriptNote, { originEntity: note });
+
+    if (!Array.isArray(result)) {
+        log.info(`Result from ${scriptNote.noteId} is not an array.`);
+
+        return [];
+    }
+
+    if (result.length === 0) {
+        return [];
+    }
+
+    // we expect either array of noteIds (strings) or notes, in that case we extract noteIds ourselves
+    return typeof result[0] === 'string' ? result : result.map(item => item.noteId);
+}
 
 function loadNeededInfoFromDatabase() {
     const sql = require('../../sql');
@@ -288,6 +362,7 @@ function formatAttribute(attr) {
 }
 
 module.exports = {
+    searchFromNote,
     searchNotesForAutocomplete,
     findResultsWithQuery,
     findFirstNoteWithQuery,

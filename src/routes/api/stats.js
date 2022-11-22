@@ -29,7 +29,7 @@ function getSubtreeSize(req) {
         return [404, `Note ${noteId} was not found.`];
     }
 
-    const subTreeNoteIds = note.getSubtreeNotes().map(note => note.noteId);
+    const subTreeNoteIds = note.getSubtreeNoteIds();
 
     sql.fillParamList(subTreeNoteIds);
 

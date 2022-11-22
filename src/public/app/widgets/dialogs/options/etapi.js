@@ -1,32 +1,33 @@
 import server from "../../../services/server.js";
 import dialogService from "../../dialog.js";
 import toastService from "../../../services/toast.js";
+import OptionsTab from "./options_tab.js";
 
 const TPL = `
-<h4>ETAPI</h4>
+<div class="options-section">
+    <h4>ETAPI</h4>
+    
+    <p>ETAPI is a REST API used to access Trilium instance programmatically, without UI. <br/>
+       See more details on <a href="https://github.com/zadam/trilium/wiki/ETAPI">wiki</a> and <a onclick="window.open('etapi/etapi.openapi.yaml')" href="etapi/etapi.openapi.yaml">ETAPI OpenAPI spec</a>.</p>
+    
+    <button type="button" class="btn btn-sm" id="create-etapi-token">Create new ETAPI token</button>
 
-<p>ETAPI is a REST API used to access Trilium instance programmatically, without UI. <br/>
-   See more details on <a href="https://github.com/zadam/trilium/wiki/ETAPI">wiki</a> and <a onclick="window.open('etapi/etapi.openapi.yaml')" href="etapi/etapi.openapi.yaml">ETAPI OpenAPI spec</a>.</p>
-
-<button type="button" class="btn btn-sm" id="create-etapi-token">Create new ETAPI token</button>
-
-<br/><br/>
-
-<h5>Existing tokens</h5>
-
-<div id="no-tokens-yet">There are no tokens yet. Click on the button above to create one.</div>
-
-<div style="overflow: auto; height: 500px;">
-    <table id="tokens-table" class="table table-stripped">
-    <thead>
-        <tr>
-            <th>Token name</th>
-            <th>Created</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-    </table>
+    <h5>Existing tokens</h5>
+    
+    <div id="no-tokens-yet">There are no tokens yet. Click on the button above to create one.</div>
+    
+    <div style="overflow: auto; height: 500px;">
+        <table id="tokens-table" class="table table-stripped">
+        <thead>
+            <tr>
+                <th>Token name</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <style>
@@ -45,11 +46,13 @@ const TPL = `
     }
 </style>`;
 
-export default class EtapiOptions {
-    constructor() {
-        $("#options-etapi").html(TPL);
+export default class EtapiOptions extends OptionsTab {
+    get tabTitle() { return "ETAPI" }
 
-        $("#create-etapi-token").on("click", async () => {
+    lazyRender() {
+        this.$widget = $(TPL);
+
+        this.$widget.find("#create-etapi-token").on("click", async () => {
             const tokenName = await dialogService.prompt({
                 title: "New ETAPI token",
                 message: "Please enter new token's name",
@@ -76,8 +79,8 @@ export default class EtapiOptions {
     }
 
     async refreshTokens() {
-        const $noTokensYet = $("#no-tokens-yet");
-        const $tokensTable = $("#tokens-table");
+        const $noTokensYet = this.$widget.find("#no-tokens-yet");
+        const $tokensTable = this.$widget.find("#tokens-table");
 
         const tokens = await server.get('etapi-tokens');
 

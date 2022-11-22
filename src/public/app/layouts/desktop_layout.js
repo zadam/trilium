@@ -78,6 +78,18 @@ import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
 import EditableCodeButtonsWidget from "../widgets/type_widgets/editable_code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
+import AppearanceOptions from "../widgets/dialogs/options/appearance.js";
+import KeyboardShortcutsOptions from "../widgets/dialogs/options/shortcuts.js";
+import TextNotesOptions from "../widgets/dialogs/options/text_notes.js";
+import CodeNotesOptions from "../widgets/dialogs/options/code_notes.js";
+import ImageOptions from "../widgets/dialogs/options/images.js";
+import SpellcheckOptions from "../widgets/dialogs/options/spellcheck.js";
+import PasswordOptions from "../widgets/dialogs/options/password.js";
+import EtapiOptions from "../widgets/dialogs/options/etapi.js";
+import BackupOptions from "../widgets/dialogs/options/backup.js";
+import SyncOptions from "../widgets/dialogs/options/sync.js";
+import OtherOptions from "../widgets/dialogs/options/other.js";
+import AdvancedOptions from "../widgets/dialogs/options/advanced.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -120,6 +132,7 @@ export default class DesktopLayout {
                                 new NoteWrapperWidget()
                                     .child(new FlexContainer('row').class('title-row')
                                         .css("height", "50px")
+                                        .css("min-height", "50px")
                                         .css('align-items', "center")
                                         .cssBlock('.title-row > * { margin: 5px; }')
                                         .child(new NoteIconWidget())
@@ -207,6 +220,19 @@ export default class DesktopLayout {
             .child(new InfoDialog())
             .child(new ConfirmDialog())
             .child(new PromptDialog())
-            .child(new OptionsDialog());
+            .child(new OptionsDialog()
+                .child(new AppearanceOptions())
+                .child(new KeyboardShortcutsOptions())
+                .child(new TextNotesOptions())
+                .child(new CodeNotesOptions())
+                .child(new ImageOptions())
+                .child(new SpellcheckOptions())
+                .child(new PasswordOptions())
+                .child(new EtapiOptions())
+                .child(new BackupOptions())
+                .child(new SyncOptions())
+                .child(new OtherOptions())
+                .child(new AdvancedOptions())
+            );
     }
 }

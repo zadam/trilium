@@ -6,7 +6,7 @@ It is meant as a last resort solution when the standard mean to access your data
 
 ## Installation
 
-This tool requires node.js, testing has been done on 16.15.0, but it will probably work on other versions as well.
+This tool requires node.js, testing has been done on 16.18.0, but it will probably work on other versions as well.
 
 ```
 npm install

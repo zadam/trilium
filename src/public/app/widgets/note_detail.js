@@ -243,15 +243,17 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             $promotedAttributes = (await attributeRenderer.renderNormalAttributes(this.note)).$renderedAttributes;
         }
 
+        const {assetPath} = window.glob;
+
         this.$widget.find('.note-detail-printable:visible').printThis({
             header: $("<div>")
                         .append($("<h2>").text(this.note.title))
                         .append($promotedAttributes)
                         .prop('outerHTML'),
             footer: `
-<script src="libraries/katex/katex.min.js"></script>
-<script src="libraries/katex/mhchem.min.js"></script>
-<script src="libraries/katex/auto-render.min.js"></script>
+<script src="${assetPath}/libraries/katex/katex.min.js"></script>
+<script src="${assetPath}/libraries/katex/mhchem.min.js"></script>
+<script src="${assetPath}/libraries/katex/auto-render.min.js"></script>
 <script>
     document.body.className += ' ck-content printed-content';
     
@@ -260,13 +262,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 `,
             importCSS: false,
             loadCSS: [
-                "libraries/codemirror/codemirror.css",
-                "libraries/ckeditor/ckeditor-content.css",
-                "libraries/bootstrap/css/bootstrap.min.css",
-                "libraries/katex/katex.min.css",
-                "stylesheets/print.css",
-                "stylesheets/relation_map.css",
-                "stylesheets/ckeditor-theme.css"
+                assetPath + "/libraries/codemirror/codemirror.css",
+                assetPath + "/libraries/ckeditor/ckeditor-content.css",
+                assetPath + "/libraries/bootstrap/css/bootstrap.min.css",
+                assetPath + "/libraries/katex/katex.min.css",
+                assetPath + "/stylesheets/print.css",
+                assetPath + "/stylesheets/relation_map.css",
+                assetPath + "/stylesheets/ckeditor-theme.css"
             ],
             debug: true
         });
@@ -283,7 +285,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // globally, so it gets also to e.g. ribbon components. But this means that the event can be generated multiple
         // times if the same note is open in several tabs.
 
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)
+        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
+            // probably incorrect event
+            // calling this.refresh() is not enough since the event needs to be propagated to children as well
+            // FIXME: create a separate event to force hierarchical refresh
+            this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
+        }
+        else if (loadResults.isNoteReloaded(this.noteId, this.componentId)
             && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
 
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});

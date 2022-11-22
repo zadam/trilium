@@ -1,11 +1,6 @@
-- drop branches.utcDateCreated - not used for anything
-- drop options.utcDateCreated - not used for anything
 - isDeleted = 0 by default
 - rename openTabs to openNoteContexts
-- migrate black theme to dark theme
 - unify readOnly handling to a single attribute:
   * readOnly - like now
   * readOnly=auto - like without readOnly (used to override inherited readOnly)
   * readOnly=never - like autoReadOnlyDisabled
-- remove focusOnAttributesKeyboardShortcut
-- rename white theme to "light" theme (it's not completely white and matches well to dark theme)

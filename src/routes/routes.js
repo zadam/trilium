@@ -197,17 +197,23 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 const MAX_ALLOWED_FILE_SIZE_MB = 250;
 
 const GET = 'get', POST = 'post', PUT = 'put', PATCH = 'patch', DELETE = 'delete';
-const uploadMiddleware = multer({
+
+const multerOptions = {
     fileFilter: (req, file, cb) => {
         // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
         // See https://github.com/expressjs/multer/pull/1102.
         file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
         cb(null, true);
-    },
-    limits: {
-        fileSize: MAX_ALLOWED_FILE_SIZE_MB * 1024 * 1024
     }
-}).single('upload');
+};
+
+if (!process.env.TRILIUM_NO_UPLOAD_LIMIT) {
+    multerOptions.limits = {
+        fileSize: MAX_ALLOWED_FILE_SIZE_MB * 1024 * 1024
+    };
+}
+
+const uploadMiddleware = multer(multerOptions).single('upload');
 
 const uploadMiddlewareWithErrorHandling = function (req, res, next) {
     uploadMiddleware(req, res, function (err) {
@@ -229,7 +235,8 @@ function register(app) {
 
     const loginRateLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 10 // limit each IP to 10 requests per windowMs
+        max: 10, // limit each IP to 10 requests per windowMs
+        skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However successful auth to /login is still counted!
     });
 
     route(POST, '/login', [loginRateLimiter], loginRoute.login);
@@ -254,6 +261,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/content', notesApiRoute.updateNoteContent);
     apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
+    apiRoute(POST, '/api/notes/:noteId/revision', notesApiRoute.forceSaveNoteRevision);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
     apiRoute(PUT, '/api/notes/:noteId/sort-children', notesApiRoute.sortChildNotes);
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectNote);
@@ -384,7 +392,7 @@ function register(app) {
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     // no CSRF since this is called from android app
-    route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
+    route(POST, '/api/sender/login', [loginRateLimiter], loginApiRoute.token, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkEtapiToken, uploadMiddlewareWithErrorHandling], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
@@ -404,7 +412,7 @@ function register(app) {
     apiRoute(POST, '/api/login/protected/touch', loginApiRoute.touchProtectedSession);
     apiRoute(POST, '/api/logout/protected', loginApiRoute.logoutFromProtectedSession);
 
-    route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
+    route(POST, '/api/login/token', [loginRateLimiter], loginApiRoute.token, apiResultHandler);
 
     // in case of local electron, local calls are allowed unauthenticated, for server they need auth
     const clipperMiddleware = utils.isElectron() ? [] : [auth.checkEtapiToken];

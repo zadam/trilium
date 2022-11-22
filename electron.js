@@ -1,6 +1,6 @@
 'use strict';
 
-const {app, globalShortcut} = require('electron');
+const {app, globalShortcut, BrowserWindow} = require('electron');
 const sqlInit = require('./src/services/sql_init');
 const appIconService = require('./src/services/app_icon');
 const windowService = require('./src/services/window');
@@ -27,10 +27,18 @@ app.on('ready', async () => {
 
     // if db is not initialized -> setup process
     // if db is initialized, then we need to wait until the migration process is finished
-    if (await sqlInit.isDbInitialized()) {
+    if (sqlInit.isDbInitialized()) {
         await sqlInit.dbReady;
 
         await windowService.createMainWindow(app);
+
+        if (process.platform === 'darwin') {
+            app.on('activate', async () => {
+                if (BrowserWindow.getAllWindows().length === 0) {
+                    await windowService.createMainWindow(app);
+                }
+            });
+        }
 
         tray.createTray();
     }

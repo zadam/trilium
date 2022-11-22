@@ -163,13 +163,17 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
 
         const {icons} = (await import('./icon_list.js')).default;
 
+        search = search?.trim()?.toLowerCase();
+
         for (const icon of icons) {
             if (categoryId && icon.category_id !== categoryId) {
                 continue;
             }
 
-            if (search && search.trim() && !icon.name.includes(search.trim().toLowerCase())) {
-                continue;
+            if (search) {
+                if (!icon.name.includes(search) && !icon.term?.find(t => t.includes(search))) {
+                    continue;
+                }
             }
 
             this.$iconList.append(

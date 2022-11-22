@@ -500,6 +500,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+Alt+C"],
         description: "Copy selected text without formatting",
         scope: "text-detail"
+    },
+    {
+        actionName: "forceSaveNoteRevision",
+        defaultShortcuts: [],
+        description: "Force creating / saving new note revision of the active note",
+        scope: "window"
     }
 ];
 

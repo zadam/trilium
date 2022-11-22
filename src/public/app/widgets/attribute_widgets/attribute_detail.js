@@ -223,6 +223,7 @@ const ATTR_HELP = {
         "shareRaw": "note will be served in its raw format, without HTML wrapper",
         "shareDisallowRobotIndexing": `will forbid robot indexing of this note via <code>X-Robots-Tag: noindex</code> header`,
         "shareCredentials": "require credentials to access this shared note. Value is expected to be in format 'username:password'. Don't forget to make this inheritable to apply to child-notes/images.",
+        "shareIndex": "note with this this label will list all roots of shared notes",
         "displayRelations": "comma delimited names of relations which should be displayed. All other ones will be hidden.",
         "hideRelations": "comma delimited names of relations which should be hidden. All other ones will be displayed.",
         "titleTemplate": `default title of notes created as children of this note. The value is evaluated as JavaScript string 

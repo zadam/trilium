@@ -1,11 +1,6 @@
 import libraryLoader from "../../services/library_loader.js";
 import TypeWidget from "./type_widget.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import server from "../../services/server.js";
-import ws from "../../services/ws.js";
-import appContext from "../../services/app_context.js";
-import toastService from "../../services/toast.js";
-import treeService from "../../services/tree.js";
 import options from "../../services/options.js";
 
 const TPL = `
@@ -49,7 +44,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         delete CodeMirror.keyMap.default["Alt-Left"];
         delete CodeMirror.keyMap.default["Alt-Right"];
 
-        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+        CodeMirror.modeURL = window.glob.assetPath + '/libraries/codemirror/mode/%N/%N.js';
 
         this.codeEditor = CodeMirror(this.$editor[0], {
             value: "",
@@ -63,9 +58,9 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             gutters: ["CodeMirror-lint-markers"],
             lineNumbers: true,
             tabindex: 300,
-            // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
+            // we line wrap partly also because without it horizontal scrollbar displays only when you scroll
             // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
-            lineWrapping: true,
+            lineWrapping: options.is('codeLineWrapEnabled'),
             dragDrop: false, // with true the editor inlines dropped files which is not what we expect
             placeholder: "Type the content of your code note here..."
         });

@@ -520,7 +520,174 @@
     border-radius: 50%;
 }
 
-  
+  .bxs-balloon:before {
+    content: "\eb60";
+  }
+  .bxs-castle:before {
+    content: "\eb79";
+  }
+  .bxs-coffee-bean:before {
+    content: "\eb92";
+  }
+  .bxs-objects-horizontal-center:before {
+    content: "\ebab";
+  }
+  .bxs-objects-horizontal-left:before {
+    content: "\ebc4";
+  }
+  .bxs-objects-horizontal-right:before {
+    content: "\ebdd";
+  }
+  .bxs-objects-vertical-bottom:before {
+    content: "\ebf6";
+  }
+  .bxs-objects-vertical-center:before {
+    content: "\ef40";
+  }
+  .bxs-objects-vertical-top:before {
+    content: "\ef41";
+  }
+  .bxs-pear:before {
+    content: "\ef42";
+  }
+  .bxs-shield-minus:before {
+    content: "\ef43";
+  }
+  .bxs-shield-plus:before {
+    content: "\ef44";
+  }
+  .bxs-shower:before {
+    content: "\ef45";
+  }
+  .bxs-sushi:before {
+    content: "\ef46";
+  }
+  .bxs-universal-access:before {
+    content: "\ef47";
+  }
+  .bx-child:before {
+    content: "\ef48";
+  }
+  .bx-horizontal-left:before {
+    content: "\ef49";
+  }
+  .bx-horizontal-right:before {
+    content: "\ef4a";
+  }
+  .bx-objects-horizontal-center:before {
+    content: "\ef4b";
+  }
+  .bx-objects-horizontal-left:before {
+    content: "\ef4c";
+  }
+  .bx-objects-horizontal-right:before {
+    content: "\ef4d";
+  }
+  .bx-objects-vertical-bottom:before {
+    content: "\ef4e";
+  }
+  .bx-objects-vertical-center:before {
+    content: "\ef4f";
+  }
+  .bx-objects-vertical-top:before {
+    content: "\ef50";
+  }
+  .bx-rfid:before {
+    content: "\ef51";
+  }
+  .bx-shield-minus:before {
+    content: "\ef52";
+  }
+  .bx-shield-plus:before {
+    content: "\ef53";
+  }
+  .bx-shower:before {
+    content: "\ef54";
+  }
+  .bx-sushi:before {
+    content: "\ef55";
+  }
+  .bx-universal-access:before {
+    content: "\ef56";
+  }
+  .bx-vertical-bottom:before {
+    content: "\ef57";
+  }
+  .bx-vertical-top:before {
+    content: "\ef58";
+  }
+  .bxl-graphql:before {
+    content: "\ef59";
+  }
+  .bxl-typescript:before {
+    content: "\ef5a";
+  }
+  .bxs-color:before {
+    content: "\ef39";
+  }
+  .bx-reflect-horizontal:before {
+    content: "\ef3a";
+  }
+  .bx-reflect-vertical:before {
+    content: "\ef3b";
+  }
+  .bx-color:before {
+    content: "\ef3c";
+  }
+  .bxl-mongodb:before {
+    content: "\ef3d";
+  }
+  .bxl-postgresql:before {
+    content: "\ef3e";
+  }
+  .bxl-deezer:before {
+    content: "\ef3f";
+  }
+  .bxs-hard-hat:before {
+    content: "\ef2a";
+  }
+  .bxs-home-alt-2:before {
+    content: "\ef2b";
+  }
+  .bxs-cheese:before {
+    content: "\ef2c";
+  }
+  .bx-home-alt-2:before {
+    content: "\ef2d";
+  }
+  .bx-hard-hat:before {
+    content: "\ef2e";
+  }
+  .bx-cheese:before {
+    content: "\ef2f";
+  }
+  .bx-cart-add:before {
+    content: "\ef30";
+  }
+  .bx-cart-download:before {
+    content: "\ef31";
+  }
+  .bx-no-signal:before {
+    content: "\ef32";
+  }
+  .bx-signal-1:before {
+    content: "\ef33";
+  }
+  .bx-signal-2:before {
+    content: "\ef34";
+  }
+  .bx-signal-3:before {
+    content: "\ef35";
+  }
+  .bx-signal-4:before {
+    content: "\ef36";
+  }
+  .bx-signal-5:before {
+    content: "\ef37";
+  }
+  .bxl-xing:before {
+    content: "\ef38";
+  }
   .bxl-meta:before {
     content: "\ef27";
   }
@@ -2436,7 +2603,7 @@
     content: "\eb5f";
   }
   .bx-menu-alt-left:before {
-    content: "\eb60";
+    content: "\ef5b";
   }
   .bx-menu-alt-right:before {
     content: "\eb61";
@@ -2511,7 +2678,7 @@
     content: "\eb78";
   }
   .bx-message-rounded-edit:before {
-    content: "\eb79";
+    content: "\ef5c";
   }
   .bx-message-rounded-error:before {
     content: "\eb7a";
@@ -2586,7 +2753,7 @@
     content: "\eb91";
   }
   .bx-mobile-vibration:before {
-    content: "\eb92";
+    content: "\ef5d";
   }
   .bx-money:before {
     content: "\eb93";
@@ -2661,7 +2828,7 @@
     content: "\ebaa";
   }
   .bx-paper-plane:before {
-    content: "\ebab";
+    content: "\ef61";
   }
   .bx-paragraph:before {
     content: "\ebac";
@@ -2736,7 +2903,7 @@
     content: "\ebc3";
   }
   .bx-pointer:before {
-    content: "\ebc4";
+    content: "\ef5e";
   }
   .bx-poll:before {
     content: "\ebc5";
@@ -2811,7 +2978,7 @@
     content: "\ebdc";
   }
   .bx-reply:before {
-    content: "\ebdd";
+    content: "\ef5f";
   }
   .bx-reply-all:before {
     content: "\ebde";
@@ -2886,7 +3053,7 @@
     content: "\ebf5";
   }
   .bx-screenshot:before {
-    content: "\ebf6";
+    content: "\ef60";
   }
   .bx-search:before {
     content: "\ebf7";
