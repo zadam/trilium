@@ -230,7 +230,19 @@ function focusSavedElement() {
         return;
     }
 
-    $lastFocusedElement.focus();
+    if ($lastFocusedElement.hasClass("ck")) {
+        // must handle CKEditor separately because of this bug: https://github.com/ckeditor/ckeditor5/issues/607
+        // the bug manifests itself in resetting the cursor position to the first character - jumping above
+
+        const editor = $lastFocusedElement
+            .closest('.ck-editor__editable')
+            .prop('ckeditorInstance');
+
+        editor.editing.view.focus();
+    } else {
+        $lastFocusedElement.focus();
+    }
+
     $lastFocusedElement = null;
 }
 
@@ -241,7 +253,7 @@ async function openDialog($dialog, closeActDialog = true) {
     }
 
     saveFocusedElement();
--
+
     $dialog.modal();
 
     $dialog.on('hidden.bs.modal', () => {
