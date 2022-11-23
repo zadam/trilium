@@ -10,6 +10,7 @@ const becca = require('../../../becca/becca');
 const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
+const scriptService = require("../../script.js");
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;
@@ -68,7 +69,6 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const scriptService = require("../../script");
     const result = scriptService.executeNote(scriptNote, { originEntity: note });
 
     if (!Array.isArray(result)) {

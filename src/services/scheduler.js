@@ -1,12 +1,12 @@
 const scriptService = require('./script');
 const cls = require('./cls');
+const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
 const sql = require("./sql");
 const becca = require("../becca/becca");
 const specialNotesService = require("../services/special_notes");
 const protectedSessionService = require("../services/protected_session");
-const beccaLoader = require("../becca/becca_loader");
 
 function getRunAtHours(note) {
     try {
@@ -50,7 +50,7 @@ function runNotesWithLabel(runAttrValue) {
     }
 }
 
-beccaLoader.beccaLoaded.then(() => {
+sqlInit.dbReady.then(() => {
     if (!process.env.TRILIUM_SAFE_MODE) {
         cls.init(() => specialNotesService.createMissingSpecialNotes());
 

@@ -5,7 +5,6 @@ const sqlInit = require('./src/services/sql_init');
 const appIconService = require('./src/services/app_icon');
 const windowService = require('./src/services/window');
 const tray = require('./src/services/tray');
-const beccaLoader = require("./src/becca/becca_loader");
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -29,17 +28,14 @@ app.on('ready', async () => {
     // if db is not initialized -> setup process
     // if db is initialized, then we need to wait until the migration process is finished
     if (sqlInit.isDbInitialized()) {
-        // first let electron open the window, it will probably keep initializing for some time in async
-        windowService.createMainWindow(app);
-
-        // then becca load will block the backend process for a while
         await sqlInit.dbReady;
-        beccaLoader.loadInitially();
+
+        await windowService.createMainWindow(app);
 
         if (process.platform === 'darwin') {
             app.on('activate', async () => {
                 if (BrowserWindow.getAllWindows().length === 0) {
-                    windowService.createMainWindow(app);
+                    await windowService.createMainWindow(app);
                 }
             });
         }

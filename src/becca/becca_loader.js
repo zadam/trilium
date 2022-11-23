@@ -13,19 +13,15 @@ const EtapiToken = require("./entities/etapi_token");
 const cls = require("../services/cls");
 const entityConstructor = require("../becca/entity_constructor");
 
-let setBeccaAsLoaded = null;
-
 const beccaLoaded = new Promise((res, rej) => {
-    setBeccaAsLoaded = res;
+    sqlInit.dbReady.then(() => {
+        load();
+
+        cls.init(() => require('../services/options_init').initStartupOptions());
+
+        res();
+    });
 });
-
-function loadInitially() {
-    load();
-
-    cls.init(() => require('../services/options_init').initStartupOptions());
-
-    setBeccaAsLoaded();
-}
 
 function load() {
     const start = Date.now();
@@ -249,6 +245,5 @@ eventService.subscribeBeccaLoader(eventService.LEAVE_PROTECTED_SESSION, load);
 module.exports = {
     load,
     reload,
-    beccaLoaded,
-    loadInitially
+    beccaLoaded
 };
