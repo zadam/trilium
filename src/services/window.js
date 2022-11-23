@@ -44,11 +44,11 @@ ipcMain.on('create-extra-window', (event, arg) => {
     createExtraWindow(arg.notePath, arg.hoistedNoteId);
 });
 
-async function createMainWindow(app) {
+function createMainWindow(app) {
     const windowStateKeeper = require('electron-window-state'); // should not be statically imported
 
     const mainWindowState = windowStateKeeper({
-        // default window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
+        // default window width & height, so it's usable on 1600 * 900 display (including some extra panels etc.)
         defaultWidth: 1200,
         defaultHeight: 800
     });

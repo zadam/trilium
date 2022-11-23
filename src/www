@@ -25,10 +25,10 @@ const log = require('./services/log');
 const appInfo = require('./services/app_info');
 const ws = require('./services/ws');
 const utils = require('./services/utils');
-const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
 const host = require('./services/host');
 const semver = require('semver');
+const beccaLoader = require("./becca/becca_loader");
 
 if (!semver.satisfies(process.version, ">=10.5.0")) {
     console.error("Trilium only supports node.js 10.5 and later");
@@ -94,6 +94,10 @@ async function startTrilium() {
 
     const cpuInfos = require('os').cpus();
     log.info(`CPU model: ${cpuInfos[0].model}, logical cores: ${cpuInfos.length} freq: ${cpuInfos[0].speed} Mhz`); // for perf. issues it's good to know the rough configuration
+
+    if (!utils.isElectron()) {
+        beccaLoader.loadInitially();
+    }
 
     /**
      * Listen on provided port, on all network interfaces.
