@@ -799,6 +799,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 await node.setExpanded(isExpanded, {noEvents: true, noAnimation: true});
             }
         });
+
+        const activeNode = await this.getNodeFromPath(appContext.tabManager.getActiveContextNotePath());
+
+        if (activeNode) {
+            activeNode.setActive({noEvents: true, noFocus: false});
+        }
     }
 
     async expandTree(node = null) {

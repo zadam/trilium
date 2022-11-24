@@ -68,52 +68,22 @@ const TPL = `
         <div class="global-menu-button-update-available"></div>
     </button>
 
-    <div class="dropdown-menu dropdown-menu-right">
-        <a class="dropdown-item options-button" data-trigger-command="showLaunchBarShortcuts">
-            <span class="bx bx-slider"></span>
-            Show launchbar shortcuts
-        </a>
-    
-        <a class="dropdown-item options-button" data-trigger-command="showOptions">
+    <ul class="dropdown-menu dropdown-menu-right">
+        <li class="dropdown-item options-button" data-trigger-command="showOptions">
             <span class="bx bx-slider"></span>
             Options
-        </a>
+        </li>
 
-        <a class="dropdown-item" data-trigger-command="openNewWindow">
+        <li class="dropdown-item" data-trigger-command="openNewWindow">
             <span class="bx bx-window-open"></span>
             Open new window
             <kbd data-command="openNewWindow"></kbd>
-        </a>
+        </li>
 
-        <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
-            <span class="bx bx-terminal"></span>
-            Open Dev Tools
-            <kbd data-command="openDevTools"></kbd>
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="showSQLConsole">
-            <span class="bx bx-data"></span>
-            Open SQL Console
-            <kbd data-command="showSQLConsole"></kbd>
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="showBackendLog">
-            <span class="bx bx-empty"></span>
-            Show backend log
-            <kbd data-command="showBackendLog"></kbd>
-        </a>
-
-        <a class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
+        <li class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
             <span class="bx bx-empty"></span>
             Switch to mobile version
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
-            title="Reload can help with some visual glitches without restarting the whole app.">
-            <span class="bx bx-empty"></span>
-            Reload frontend
-            <kbd data-command="reloadFrontendApp"></kbd>
-        </a>
+        </li>
         
         <span class="zoom-container dropdown-item" style="display: flex; flex-direction: row; justify-content: space-between;">
             <div>
@@ -134,34 +104,73 @@ const TPL = `
             </div>
         </span>
 
-        <a class="dropdown-item" data-trigger-command="toggleFullscreen">
+        <li class="dropdown-item" data-trigger-command="toggleFullscreen">
             <span class="bx bx-empty"></span>
             Toggle fullscreen
             <kbd ></kbd>
-        </a>
+        </li>
+        
+        <li class="dropdown-item options-button" data-trigger-command="showLaunchBarShortcuts">
+            <span class="bx bx-horizontal-left"></span>
+            Configure launchbar shortcuts
+        </li>
+        
+        <li class="dropdown-item dropdown-submenu">
+            <span class="dropdown-toggle">
+                <span class="bx bx-empty"></span>
+                Advanced
+            </span>
+            
+            <ul class="dropdown-menu">
+                <li class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
+                    <span class="bx bx-terminal"></span>
+                    Open Dev Tools
+                    <kbd data-command="openDevTools"></kbd>
+                </li>
+        
+                <li class="dropdown-item" data-trigger-command="showSQLConsole">
+                    <span class="bx bx-data"></span>
+                    Open SQL Console
+                    <kbd data-command="showSQLConsole"></kbd>
+                </li>
+        
+                <li class="dropdown-item" data-trigger-command="showBackendLog">
+                    <span class="bx bx-empty"></span>
+                    Show backend log
+                    <kbd data-command="showBackendLog"></kbd>
+                </li>
+                
+                <li class="dropdown-item" data-trigger-command="reloadFrontendApp" 
+                    title="Reload can help with some visual glitches without restarting the whole app.">
+                    <span class="bx bx-empty"></span>
+                    Reload frontend
+                    <kbd data-command="reloadFrontendApp"></kbd>
+                </li>
+            </ul>
+        </li>
 
-        <a class="dropdown-item" data-trigger-command="showHelp">
+        <li class="dropdown-item" data-trigger-command="showHelp">
             <span class="bx bx-info-circle"></span>
             Show Help
             <kbd data-command="showHelp"></kbd>
-        </a>
+        </li>
 
-        <a class="dropdown-item show-about-dialog-button">
+        <li class="dropdown-item show-about-dialog-button">
             <span class="bx bx-empty"></span>
             About Trilium Notes
-        </a>
+        </li>
 
-        <a class="dropdown-item update-to-latest-version-button" data-trigger-command="downloadLatestVersion">
+        <li class="dropdown-item update-to-latest-version-button" data-trigger-command="downloadLatestVersion">
             <span class="bx bx-sync"></span>
 
             <span class="version-text"></span>
-        </a>
+        </li>
 
-        <a class="dropdown-item logout-button" data-trigger-command="logout">
+        <li class="dropdown-item logout-button" data-trigger-command="logout">
             <span class="bx bx-log-out"></span>
             Logout
-        </a>
-    </div>
+        </li>
+    </ul>
 </div>
 `;
 
