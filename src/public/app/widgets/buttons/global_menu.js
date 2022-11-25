@@ -42,6 +42,13 @@ const TPL = `
         display: none;
     }
     
+    .global-menu .zoom-container {
+        display: flex; 
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    
     .global-menu .zoom-buttons a {
         display: inline-block;
         border: 1px solid var(--button-border-color);
@@ -58,6 +65,13 @@ const TPL = `
     
     .global-menu .zoom-state {
         margin-left: 5px;
+        margin-right: 5px;
+    }
+    
+    .global-menu .dropdown-item .bx {
+        position: relative;
+        top: 3px;
+        font-size: 120%;
         margin-right: 5px;
     }
     </style>
@@ -85,7 +99,7 @@ const TPL = `
             Switch to mobile version
         </li>
         
-        <span class="zoom-container dropdown-item" style="display: flex; flex-direction: row; justify-content: space-between;">
+        <span class="zoom-container dropdown-item">
             <div>
                 <span class="bx bx-empty"></span>
                 Zoom
@@ -111,7 +125,7 @@ const TPL = `
         </li>
         
         <li class="dropdown-item options-button" data-trigger-command="showLaunchBarShortcuts">
-            <span class="bx bx-horizontal-left"></span>
+            <span class="bx bx-sidebar"></span>
             Configure launchbar shortcuts
         </li>
         
