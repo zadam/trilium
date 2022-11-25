@@ -37,7 +37,7 @@ function getHiddenRoot() {
             branchId: 'hidden',
             noteId: 'hidden',
             title: 'hidden',
-            type: 'text',
+            type: 'doc',
             content: '',
             parentNoteId: 'root'
         }).note;
@@ -46,6 +46,11 @@ function getHiddenRoot() {
         // the flag is not inherited to the children
         hidden.addLabel('archived', "", false);
         hidden.addLabel('excludeFromNoteMap', "", true);
+        hidden.addLabel('iconClass', "bx bx-chip", false);
+    }
+
+    if (!hidden.hasOwnedLabel("docName")) {
+        hidden.addLabel("docName", "hidden");
     }
 
     return hidden;
@@ -59,7 +64,7 @@ function getSearchRoot() {
             branchId: 'search',
             noteId: 'search',
             title: 'search',
-            type: 'text',
+            type: 'doc',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
@@ -95,10 +100,12 @@ function getSqlConsoleRoot() {
             branchId: 'sqlconsole',
             noteId: 'sqlconsole',
             title: 'SQL Console',
-            type: 'text',
+            type: 'doc',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
+
+        sqlConsoleRoot.addLabel('iconClass', 'bx bx-data');
     }
 
     return sqlConsoleRoot;
@@ -114,6 +121,7 @@ function createSqlConsole() {
     });
 
     note.setLabel("sqlConsole", dateUtils.localNowDate());
+    note.setLabel('iconClass', 'bx bx-data');
 
     return note;
 }
@@ -199,10 +207,14 @@ function getShareRoot() {
             branchId: 'share',
             noteId: 'share',
             title: 'Shared notes',
-            type: 'text',
+            type: 'doc',
             content: '',
             parentNoteId: hiddenRoot.noteId
         }).note;
+    }
+
+    if (!shareRoot.hasOwnedLabel("docName")) {
+        shareRoot.addLabel("docName", "share");
     }
 
     return shareRoot;
@@ -233,7 +245,7 @@ function getLaunchBarRoot() {
             branchId: 'lb_root',
             noteId: 'lb_root',
             title: 'Launch bar',
-            type: 'shortcut',
+            type: 'doc',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
@@ -253,7 +265,7 @@ function getLaunchBarAvailableShortcutsRoot() {
             branchId: 'lb_availableshortcuts',
             noteId: 'lb_availableshortcuts',
             title: 'Available shortcuts',
-            type: 'shortcut',
+            type: 'doc',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
@@ -279,7 +291,7 @@ function getLaunchBarVisibleShortcutsRoot() {
             branchId: 'lb_visibleshortcuts',
             noteId: 'lb_visibleshortcuts',
             title: 'Visible shortcuts',
-            type: 'shortcut',
+            type: 'doc',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId
         }).note;
@@ -298,11 +310,11 @@ function getLaunchBarVisibleShortcutsRoot() {
 }
 
 const shortcuts = [
+    // visible shortcuts:
     { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
     { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
-    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
     { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true, labels: [
             { type: "number", name: "baseSize", value: "40" },
@@ -316,6 +328,11 @@ const shortcuts = [
         ] },
     { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
     { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
+
+    // available shortcuts:
+    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
+    { id: 'lb_backinhistory', builtinWidget: 'backInHistoryButton', title: 'Back in history', icon: 'bx bxs-left-arrow-square', isVisible: false },
+    { id: 'lb_forwardinhistory', builtinWidget: 'forwardInHistoryButton', title: 'Forward in history', icon: 'bx bxs-right-arrow-square', isVisible: false },
 ];
 
 function createMissingSpecialNotes() {
@@ -324,7 +341,8 @@ function createMissingSpecialNotes() {
     getBulkActionNote();
     getLaunchBarRoot();
     getLaunchBarAvailableShortcutsRoot();
-    getLaunchBarVisibleShortcutsRoot()
+    getLaunchBarVisibleShortcutsRoot();
+    getShareRoot();
 
     for (const shortcut of shortcuts) {
         let note = becca.getNote(shortcut.id);
@@ -333,7 +351,10 @@ function createMissingSpecialNotes() {
             continue;
         }
 
-        const parentNoteId = shortcut.isVisible ? getLaunchBarVisibleShortcutsRoot().noteId : getLaunchBarAvailableShortcutsRoot().noteId;
+        const parentNoteId = shortcut.isVisible
+            ? getLaunchBarVisibleShortcutsRoot().noteId
+            : getLaunchBarAvailableShortcutsRoot().noteId;
+
         note = noteService.createNewNote({
             noteId: shortcut.id,
             title: shortcut.title,
@@ -428,6 +449,29 @@ function createShortcut(parentNoteId, type) {
     };
 }
 
+function resetShortcut(noteId) {
+    if (noteId.startsWith('lb_')) {
+        const note = becca.getNote(noteId);
+
+        if (note) {
+            if (noteId === 'lb_root') {
+                // deleting hoisted notes are not allowed, so we just reset the children
+                for (const childNote of note.getChildNotes()) {
+                    childNote.deleteNote();
+                }
+            } else {
+                note.deleteNote();
+            }
+        } else {
+            log.info(`Note ${noteId} has not been found and cannot be reset.`);
+        }
+    } else {
+        log.info(`Note ${noteId} is not a resettable shortcut note.`);
+    }
+
+    createMissingSpecialNotes();
+}
+
 module.exports = {
     getInboxNote,
     createSqlConsole,
@@ -438,5 +482,6 @@ module.exports = {
     getShareRoot,
     getHiddenRoot,
     getBulkActionNote,
-    createShortcut
+    createShortcut,
+    resetShortcut
 };

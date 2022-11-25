@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
-import dialogService from "../../dialog.js";
+import dialogService from "../../../services/dialog.js";
 import OptionsTab from "./options_tab.js";
 
 const TPL = `

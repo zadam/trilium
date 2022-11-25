@@ -8,7 +8,7 @@ import TypeWidget from "./type_widget.js";
 import appContext from "../../services/app_context.js";
 import utils from "../../services/utils.js";
 import froca from "../../services/froca.js";
-import dialogService from "../../widgets/dialog.js";
+import dialogService from "../../services/dialog.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {

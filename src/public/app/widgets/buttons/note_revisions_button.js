@@ -11,6 +11,6 @@ export default class NoteRevisionsButton extends ButtonWidget {
     }
 
     isEnabled() {
-        return super.isEnabled() && this.note?.type !== 'shortcut';
+        return super.isEnabled() && !['shortcut', 'doc'].includes(this.note?.type);
     }
 }

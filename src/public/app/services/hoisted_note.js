@@ -1,6 +1,6 @@
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
-import dialogService from "../widgets/dialog.js";
+import dialogService from "./dialog.js";
 import froca from "./froca.js";
 
 function getHoistedNoteId() {

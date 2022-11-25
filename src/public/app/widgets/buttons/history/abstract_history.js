@@ -1,48 +1,17 @@
-import BasicWidget from "./basic_widget.js";
-import utils from "../services/utils.js";
-import contextMenu from "../menus/context_menu.js";
-import treeService from "../services/tree.js";
+import utils from "../../../services/utils.js";
+import contextMenu from "../../../menus/context_menu.js";
+import treeService from "../../../services/tree.js";
+import ButtonFromNoteWidget from "../button_from_note.js";
 
-const TPL = `
-<div class="history-navigation">
-    <style>
-    .history-navigation {
-        margin: 0 15px 0 5px;
+export default class AbstractHistoryNavigationWidget extends ButtonFromNoteWidget {
+    isEnabled() {
+        return super.isEnabled() && utils.isElectron();
     }
-    </style>
 
-    <a title="Go to previous note." data-trigger-command="backInNoteHistory" class="icon-action bx bx-left-arrow-circle"></a>
-
-    <a title="Go to next note." data-trigger-command="forwardInNoteHistory" class="icon-action bx bx-right-arrow-circle"></a>
-</div>
-`;
-
-export default class HistoryNavigationWidget extends BasicWidget {
     doRender() {
-        if (!utils.isElectron()) {
-            this.$widget = $("<div>");
-            return;
-        }
+        super.doRender();
 
-        this.$widget = $(TPL);
-
-        const contextMenuHandler = e => {
-            e.preventDefault();
-
-            if (this.webContents.history.length < 2) {
-                return;
-            }
-
-            this.showContextMenu(e);
-        };
-
-        this.$backInHistory = this.$widget.find("[data-trigger-command='backInNoteHistory']");
-        this.$backInHistory.on('contextmenu', contextMenuHandler);
-
-        this.$forwardInHistory = this.$widget.find("[data-trigger-command='forwardInNoteHistory']");
-        this.$forwardInHistory.on('contextmenu', contextMenuHandler);
-
-        this.webContents = utils.dynamicRequire('@electron/remote').webContents;
+        this.webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
 
         // without this the history is preserved across frontend reloads
         this.webContents.clearHistory();
@@ -51,6 +20,16 @@ export default class HistoryNavigationWidget extends BasicWidget {
     }
 
     async showContextMenu(e) {
+        e.preventDefault();
+
+        // API is broken and will be replaced: https://github.com/electron/electron/issues/33899
+        // until then no context menu
+        return;
+
+        if (this.webContents.history.length < 2) {
+            return;
+        }
+
         let items = [];
 
         const activeIndex = this.webContents.getActiveIndex();

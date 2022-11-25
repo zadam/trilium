@@ -21,7 +21,8 @@ const NOTE_TYPE_ICONS = {
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
     "web-view": "bx bx-globe-alt",
-    "shortcut": "bx bx-up-arrow-circle"
+    "shortcut": "bx bx-up-arrow-circle",
+    "doc": "bx bx-file-doc"
 };
 
 /**

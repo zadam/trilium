@@ -17,7 +17,7 @@ import linkService from "../services/link.js";
 import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
-import dialogService from "./dialog.js";
+import dialogService from "../services/dialog.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -368,7 +368,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             },
             beforeActivate: (event, data) => {
                 // hidden subtree is hidden hackily, prevent activating it e.g. by keyboard
-                return data.node.data.noteId !== 'hidden';
+                return hoistedNoteService.getHoistedNoteId() === 'hidden' || data.node.data.noteId !== 'hidden';
             },
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually

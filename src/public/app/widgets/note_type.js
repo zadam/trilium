@@ -1,7 +1,7 @@
 import server from '../services/server.js';
 import mimeTypesService from '../services/mime_types.js';
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import dialogService from "./dialog.js";
+import dialogService from "../services/dialog.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -9,6 +9,7 @@ const NOTE_TYPES = [
     { type: "search", title: "Saved Search", selectable: false },
     { type: "note-map", mime: '', title: "Note Map", selectable: false },
     { type: "shortcut", mime: '', title: "Shortcut", selectable: false },
+    { type: "doc", mime: '', title: "Doc", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },

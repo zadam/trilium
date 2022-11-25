@@ -1,0 +1,1 @@
+UPDATE notes SET type = 'doc' WHERE noteId IN ('share, hidden', 'sqlconsole', 'search');

@@ -3,7 +3,7 @@ import branchService from "../services/branches.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
 import syncService from "../services/sync.js";
-import dialogService from "./dialog.js";
+import dialogService from "../services/dialog.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
     isEnabled() {

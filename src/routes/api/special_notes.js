@@ -70,6 +70,10 @@ function createShortcut(req) {
     return specialNotesService.createShortcut(req.params.parentNoteId, req.params.type);
 }
 
+function resetShortcut(req) {
+    return specialNotesService.resetShortcut(req.params.noteId);
+}
+
 module.exports = {
     getInboxNote,
     getDayNote,
@@ -81,5 +85,6 @@ module.exports = {
     saveSqlConsole,
     createSearchNote,
     saveSearchNote,
-    createShortcut
+    createShortcut,
+    resetShortcut
 };

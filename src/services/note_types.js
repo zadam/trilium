@@ -11,5 +11,6 @@ module.exports = [
     'mermaid',
     'canvas',
     'web-view',
-    'shortcut'
+    'shortcut',
+    'doc'
 ];

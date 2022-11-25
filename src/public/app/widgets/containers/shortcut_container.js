@@ -7,6 +7,8 @@ import SpacerWidget from "../spacer.js";
 import BookmarkButtons from "../bookmark_buttons.js";
 import ProtectedSessionStatusWidget from "../buttons/protected_session_status.js";
 import SyncStatusWidget from "../sync_status.js";
+import BackInHistoryButtonWidget from "../buttons/history/history_back.js";
+import ForwardInHistoryButtonWidget from "../buttons/history/history_forward.js";
 
 export default class ShortcutContainer extends FlexContainer {
     constructor() {
@@ -63,6 +65,10 @@ export default class ShortcutContainer extends FlexContainer {
                         this.child(new ProtectedSessionStatusWidget());
                     } else if (builtinWidget === 'syncStatus') {
                         this.child(new SyncStatusWidget());
+                    } else if (builtinWidget === 'backInHistoryButton') {
+                        this.child(new BackInHistoryButtonWidget());
+                    } else if (builtinWidget === 'forwardInHistoryButton') {
+                        this.child(new ForwardInHistoryButtonWidget());
                     } else {
                         console.log(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
                     }

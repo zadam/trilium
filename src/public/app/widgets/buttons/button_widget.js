@@ -18,7 +18,12 @@ export default class ButtonWidget extends NoteContextAwareWidget {
         super();
 
         this.settings = {
-            titlePlacement: 'right'
+            titlePlacement: 'right',
+            title: null,
+            icon: null,
+            command: null,
+            onClick: null,
+            onContextMenu: null
         };
     }
 
@@ -36,6 +41,14 @@ export default class ButtonWidget extends NoteContextAwareWidget {
                 this.$widget.tooltip("hide");
 
                 this.triggerCommand(this.settings.command);
+            });
+        }
+
+        if (this.settings.onContextMenu) {
+            this.$widget.on("contextmenu", e => {
+                this.$widget.tooltip("hide");
+
+                this.settings.onContextMenu(e);
             });
         }
 
@@ -70,8 +83,7 @@ export default class ButtonWidget extends NoteContextAwareWidget {
             }
         }
 
-        this.$widget
-            .addClass(this.settings.icon);
+        this.$widget.addClass(this.settings.icon);
     }
 
     initialRenderCompleteEvent() {
@@ -101,5 +113,9 @@ export default class ButtonWidget extends NoteContextAwareWidget {
     onClick(handler) {
         this.settings.onClick = handler;
         return this;
+    }
+
+    onContextMenu(handler) {
+        this.settings.onContextMenu = handler;
     }
 }

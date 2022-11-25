@@ -124,9 +124,14 @@ const TPL = `
             <kbd ></kbd>
         </li>
         
-        <li class="dropdown-item options-button" data-trigger-command="showLaunchBarShortcuts">
+        <li class="dropdown-item" data-trigger-command="showLaunchBarShortcuts">
             <span class="bx bx-sidebar"></span>
             Configure launchbar shortcuts
+        </li>
+        
+        <li class="dropdown-item" data-trigger-command="showShareSubtree">
+            <span class="bx bx-share-alt"></span>
+            Show share subtree
         </li>
         
         <li class="dropdown-item dropdown-submenu">
@@ -159,6 +164,11 @@ const TPL = `
                     <span class="bx bx-empty"></span>
                     Reload frontend
                     <kbd data-command="reloadFrontendApp"></kbd>
+                </li>
+                
+                <li class="dropdown-item" data-trigger-command="showHiddenSubtree">
+                    <span class="bx bx-empty"></span>
+                    Show hidden subtree
                 </li>
             </ul>
         </li>
