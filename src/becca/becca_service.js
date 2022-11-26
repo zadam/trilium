@@ -83,14 +83,19 @@ function getNoteTitleArrayForPath(notePathArray) {
         throw new Error(`${notePathArray} is not an array.`);
     }
 
-    if (notePathArray.length === 1 && notePathArray[0] === cls.getHoistedNoteId()) {
-        return [getNoteTitle(cls.getHoistedNoteId())];
+    const hoistedNoteId = cls.getHoistedNoteId();
+
+    if (notePathArray.length === 1 && notePathArray[0] === hoistedNoteId) {
+        return [getNoteTitle(hoistedNoteId)];
     }
 
     const titles = [];
 
     let parentNoteId = 'root';
     let hoistedNotePassed = false;
+
+    // this is a notePath from outside of hoisted subtree so full title path needs to be returned
+    const outsideOfHoistedSubtree = !notePathArray.includes(hoistedNoteId);
 
     for (const noteId of notePathArray) {
         // start collecting path segment titles only after hoisted note
@@ -100,7 +105,7 @@ function getNoteTitleArrayForPath(notePathArray) {
             titles.push(title);
         }
 
-        if (noteId === cls.getHoistedNoteId()) {
+        if (!hoistedNotePassed && (noteId === hoistedNoteId || outsideOfHoistedSubtree)) {
             hoistedNotePassed = true;
         }
 

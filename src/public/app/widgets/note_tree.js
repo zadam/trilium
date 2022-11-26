@@ -396,6 +396,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
+                    if (['root', 'hidden', 'lb_root', 'lb_availableshortcuts', 'lb_visibleshortcuts'].includes(node.data.noteId)) {
+                        return false;
+                    }
+
                     const notes = this.getSelectedOrActiveNodes(node).map(node => ({
                         noteId: node.data.noteId,
                         branchId: node.data.branchId,
@@ -417,7 +421,19 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     data.dataTransfer.setData("text", JSON.stringify(notes));
                     return true; // allow dragging to start
                 },
-                dragEnter: (node, data) => node.data.noteType !== 'search',
+                dragEnter: (node, data) => {
+                    console.log(data, node.data.noteType);
+
+                    if (node.data.noteType === 'search') {
+                        return false;
+                    } else if (node.data.noteId === 'lb_root') {
+                        return false;
+                    } else if (node.data.noteType === 'shortcut') {
+                        return ['before', 'after'];
+                    } else {
+                        return true;
+                    }
+                },
                 dragDrop: async (node, data) => {
                     if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
                         (['after', 'before'].includes(data.hitMode)

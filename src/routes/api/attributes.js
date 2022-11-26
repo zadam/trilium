@@ -20,8 +20,12 @@ function updateNoteAttribute(req) {
     if (body.attributeId) {
         attribute = becca.getAttribute(body.attributeId);
 
+        if (!attribute) {
+            return [404, `Attribute '${body.attributeId}' does not exist.`];
+        }
+
         if (attribute.noteId !== noteId) {
-            return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
+            return [400, `Attribute '${body.attributeId}' is not owned by ${noteId}`];
         }
 
         if (body.type !== attribute.type

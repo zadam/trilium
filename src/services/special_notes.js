@@ -53,6 +53,16 @@ function getHiddenRoot() {
         hidden.addLabel("docName", "hidden");
     }
 
+    const MAX_POS = 999_999_999;
+
+    const branch = hidden.getBranches()[0];
+    if (branch.notePosition !== MAX_POS) {
+        // we want to keep the hidden subtree always last, otherwise there will be problems with e.g. keyboard navigation
+        // over tree when it's in the middle
+        branch.notePosition = MAX_POS;
+        branch.save();
+    }
+
     return hidden;
 }
 

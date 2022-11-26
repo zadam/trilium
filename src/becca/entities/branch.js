@@ -193,9 +193,15 @@ class Branch extends AbstractEntity {
 
     beforeSaving() {
         if (this.notePosition === undefined || this.notePosition === null) {
-            // TODO finding new position can be refactored into becca
-            const maxNotePos = sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
-            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
+            let maxNotePos = 0;
+
+            for (const childBranch of this.parentNote.getChildBranches()) {
+                if (maxNotePos < childBranch.notePosition && childBranch.branchId !== 'hidden') {
+                    maxNotePos = childBranch.notePosition;
+                }
+            }
+
+            this.notePosition = maxNotePos + 10;
         }
 
         if (!this.isExpanded) {

@@ -73,10 +73,7 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
     const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote.type === 'search') {
-        return {
-            success: false,
-            message: "Can't clone into a search note"
-        };
+        return { success: false, message: "Can't clone into a search note" };
     }
 
     const validationResult = treeService.validateParentChild(parentNoteId, noteId);
@@ -122,6 +119,12 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 }
 
 function cloneNoteAfter(noteId, afterBranchId) {
+    if (['hidden', 'root'].includes(noteId)) {
+        return { success: false, message: 'Cloning the given note is forbidden.' };
+    } else if (afterBranchId === 'hidden') {
+        return { success: false, message: 'Cannot clone after the hidden branch.' };
+    }
+
     const afterNote = becca.getBranch(afterBranchId);
 
     if (isNoteDeleted(noteId) || isNoteDeleted(afterNote.parentNoteId)) {
