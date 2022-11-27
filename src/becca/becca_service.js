@@ -129,8 +129,9 @@ function getNoteTitleForPath(notePathArray) {
  */
 function getSomePath(note, path = []) {
     // first try to find note within hoisted note, otherwise take any existing note path
-    return getSomePathInner(note, path, true)
-        || getSomePathInner(note, path, false);
+    // each branch needs a separate copy since it's mutable
+    return getSomePathInner(note, [...path], true)
+        || getSomePathInner(note, [...path], false);
 }
 
 function getSomePathInner(note, path, respectHoisting) {

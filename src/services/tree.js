@@ -30,7 +30,7 @@ function getNotes(noteIds) {
 }
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
-    if (['root', 'hidden'].includes(childNoteId)) {
+    if (['root', 'hidden', 'share', 'lb_root', 'lb_availableshortcuts', 'lb_visibleshortcuts'].includes(childNoteId)) {
         return { success: false, message: `Cannot change this note's location.`};
     }
 
