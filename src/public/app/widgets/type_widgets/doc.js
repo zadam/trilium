@@ -5,6 +5,13 @@ const TPL = `<div class="note-detail-doc note-detail-printable">
         .note-detail-doc-content {
             padding: 15px;
         }
+        
+        .note-detail-doc-content pre {
+            background-color: var(--accented-background-color);
+            border: 1px solid var(--main-border-color);
+            padding: 15px;
+            border-radius: 5px;
+        }
     </style>
     
     <div class="note-detail-doc-content"></div>

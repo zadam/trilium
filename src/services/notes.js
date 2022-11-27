@@ -103,6 +103,28 @@ function getNewNoteTitle(parentNote) {
     return title;
 }
 
+function getAndValidateParent(params) {
+    const parentNote = becca.notes[params.parentNoteId];
+
+    if (!parentNote) {
+        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
+    }
+
+    if (parentNote.type === 'shortcut') {
+        throw new Error(`Shortcuts should not have child notes.`);
+    }
+
+    if (['hidden', 'lb_root'].includes(parentNote.noteId)) {
+        throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+    }
+
+    if (['lb_availableshortcuts', 'lb_visibleshortcuts'].includes(parentNote.noteId) && params.type !== 'shortcut') {
+        throw new Error(`Creating child notes into '${parentNote.noteId}' is only possible for type 'shortcut'.`);
+    }
+
+    return parentNote;
+}
+
 /**
  * Following object properties are mandatory:
  * - {string} parentNoteId
@@ -121,11 +143,7 @@ function getNewNoteTitle(parentNote) {
  * @return {{note: Note, branch: Branch}}
  */
 function createNewNote(params) {
-    const parentNote = becca.notes[params.parentNoteId];
-
-    if (!parentNote) {
-        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
-    }
+    const parentNote = getAndValidateParent(params);
 
     if (params.title === null || params.title === undefined) {
         params.title = getNewNoteTitle(parentNote);

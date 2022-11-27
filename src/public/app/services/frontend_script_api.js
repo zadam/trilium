@@ -11,7 +11,6 @@ import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import appContext from "./app_context.js";
 import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
-import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
 
@@ -40,23 +39,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
 
-    /**
-     * @property {NoteContextAwareWidget}
-     * @deprecated use NoteContextAwareWidget instead
-     */
-    this.TabAwareWidget = NoteContextAwareWidget;
-
     /** @property {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
-
-    /**
-     * @property {NoteContextCachingWidget}
-     * @deprecated use NoteContextCachingWidget instead
-     */
-    this.TabCachingWidget = NoteContextCachingWidget;
-
-    /** @property {NoteContextAwareWidget} */
-    this.NoteContextCachingWidget = NoteContextCachingWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;

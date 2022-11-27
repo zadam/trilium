@@ -42,16 +42,23 @@ export default class Component {
 
     /** @returns {Promise} */
     handleEvent(name, data) {
-        const callMethodPromise = this.initialized
-            ? this.initialized.then(() => this.callMethod(this[name + 'Event'], data))
-            : this.callMethod(this[name + 'Event'], data);
+        try {
+            const callMethodPromise = this.initialized
+                ? this.initialized.then(() => this.callMethod(this[name + 'Event'], data))
+                : this.callMethod(this[name + 'Event'], data);
 
-        const childrenPromise = this.handleEventInChildren(name, data);
+            const childrenPromise = this.handleEventInChildren(name, data);
 
-        // don't create promises if not needed (optimization)
-        return callMethodPromise && childrenPromise
-            ? Promise.all([callMethodPromise, childrenPromise])
-            : (callMethodPromise || childrenPromise);
+            // don't create promises if not needed (optimization)
+            return callMethodPromise && childrenPromise
+                ? Promise.all([callMethodPromise, childrenPromise])
+                : (callMethodPromise || childrenPromise);
+        }
+        catch (e) {
+            console.error(`Handling of event '${name}' failed in ${this.constructor.name} with error ${e.message} ${e.stack}`);
+
+            return null;
+        }
     }
 
     /** @returns {Promise} */

@@ -422,8 +422,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     return true; // allow dragging to start
                 },
                 dragEnter: (node, data) => {
-                    console.log(data, node.data.noteType);
-
                     if (node.data.noteType === 'search') {
                         return false;
                     } else if (node.data.noteId === 'lb_root') {
@@ -565,7 +563,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     $span.append($refreshSearchButton);
                 }
 
-                if (note.type !== 'search') {
+                if (!['search', 'shortcut'].includes(note.type)) {
                     const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);
