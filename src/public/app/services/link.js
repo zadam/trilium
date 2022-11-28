@@ -5,7 +5,7 @@ import froca from "./froca.js";
 import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
-    const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
+    const notePathMatch = /#(root[A-Za-z0-9_/]*)$/.exec(url);
 
     return notePathMatch === null ? null : notePathMatch[1];
 }

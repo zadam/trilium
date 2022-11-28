@@ -114,7 +114,7 @@ function getAndValidateParent(params) {
         throw new Error(`Shortcuts should not have child notes.`);
     }
 
-    if (['hidden', 'lb_root'].includes(parentNote.noteId)) {
+    if (!params.ignoreForbiddenParents && ['lb_root'].includes(parentNote.noteId)) {
         throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 
@@ -300,7 +300,7 @@ function protectNote(note, protect) {
 }
 
 function findImageLinks(content, foundLinks) {
-    const re = /src="[^"]*api\/images\/([a-zA-Z0-9]+)\//g;
+    const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
 
     while (match = re.exec(content)) {
@@ -316,7 +316,7 @@ function findImageLinks(content, foundLinks) {
 }
 
 function findInternalLinks(content, foundLinks) {
-    const re = /href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
+    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g;
     let match;
 
     while (match = re.exec(content)) {
@@ -331,7 +331,7 @@ function findInternalLinks(content, foundLinks) {
 }
 
 function findIncludeNoteLinks(content, foundLinks) {
-    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9]+)"[^>]*>/g;
+    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9_]+)"[^>]*>/g;
     let match;
 
     while (match = re.exec(content)) {

@@ -32,15 +32,10 @@ export default class ShortcutContainer extends FlexContainer {
             return;
         }
 
-        for (const shortcut of await visibleShortcutsRoot.getChildNotes()) {
-            try {
-                await this.initShortcut(shortcut);
-            }
-            catch (e) {
-                console.error(`Initialization of shortcut '${shortcut.noteId}' with title '${shortcut.title}' failed with error: ${e.message} ${e.stack}`);
-                continue;
-            }
-        }
+        await Promise.allSettled(
+            (await visibleShortcutsRoot.getChildNotes())
+                .map(shortcut => this.initShortcut(shortcut))
+        );
 
         this.$widget.empty();
         this.renderChildren();
@@ -49,76 +44,86 @@ export default class ShortcutContainer extends FlexContainer {
 
         const activeContext = appContext.tabManager.getActiveContext();
 
-        await this.handleEvent('setNoteContext', {
-            noteContext: activeContext
-        });
-        await this.handleEvent('noteSwitched', {
-            noteContext: activeContext,
-            notePath: activeContext.notePath
-        });
+        if (activeContext) {
+            await this.handleEvent('setNoteContext', {
+                noteContext: activeContext
+            });
+
+            if (activeContext.notePath) {
+                await this.handleEvent('noteSwitched', {
+                    noteContext: activeContext,
+                    notePath: activeContext.notePath
+                });
+            }
+        }
     }
 
     async initShortcut(shortcut) {
-        if (shortcut.type !== 'shortcut') {
-            console.warn(`Note ${shortcut.noteId} is not a shortcut even though it's in shortcut subtree`);
-            return;
-        }
+        try {
+            if (shortcut.type !== 'shortcut') {
+                console.warn(`Note ${shortcut.noteId} is not a shortcut even though it's in shortcut subtree`);
+                return;
+            }
 
-        if (shortcut.getLabelValue("command")) {
-            this.child(new ButtonWidget()
-                .title(shortcut.title)
-                .icon(shortcut.getIcon())
-                .command(shortcut.getLabelValue("command")));
-        } else if (shortcut.hasRelation('targetNote')) {
-            this.child(new ButtonWidget()
-                .title(shortcut.title)
-                .icon(shortcut.getIcon())
-                .onClick(() => appContext.tabManager.openTabWithNoteWithHoisting(shortcut.getRelationValue('targetNote'), true)));
-        } else if (shortcut.hasRelation('script')) {
-            this.child(new ButtonWidget()
-                .title(shortcut.title)
-                .icon(shortcut.getIcon())
-                .onClick(async () => {
-                    const script = await shortcut.getRelationTarget('script');
+            if (shortcut.getLabelValue("command")) {
+                this.child(new ButtonWidget()
+                    .title(shortcut.title)
+                    .icon(shortcut.getIcon())
+                    .command(shortcut.getLabelValue("command")));
+            } else if (shortcut.hasRelation('targetNote')) {
+                this.child(new ButtonWidget()
+                    .title(shortcut.title)
+                    .icon(shortcut.getIcon())
+                    .onClick(() => appContext.tabManager.openTabWithNoteWithHoisting(shortcut.getRelationValue('targetNote'), true)));
+            } else if (shortcut.hasRelation('script')) {
+                this.child(new ButtonWidget()
+                    .title(shortcut.title)
+                    .icon(shortcut.getIcon())
+                    .onClick(async () => {
+                        const script = await shortcut.getRelationTarget('script');
 
-                    await script.executeScript();
-                }));
-        } else if (shortcut.hasRelation('widget')) {
-            const widget = await shortcut.getRelationTarget('widget');
+                        await script.executeScript();
+                    }));
+            } else if (shortcut.hasRelation('widget')) {
+                const widget = await shortcut.getRelationTarget('widget');
 
-            const res = await widget.executeScript();
+                const res = await widget.executeScript();
 
-            this.child(res);
-        } else {
-            const builtinWidget = shortcut.getLabelValue("builtinWidget");
+                this.child(res);
+            } else {
+                const builtinWidget = shortcut.getLabelValue("builtinWidget");
 
-            if (builtinWidget) {
-                if (builtinWidget === 'calendar') {
-                    this.child(new CalendarWidget(shortcut.title, shortcut.getIcon()));
-                } else if (builtinWidget === 'spacer') {
-                    // || has to be inside since 0 is a valid value
-                    const baseSize = parseInt(shortcut.getLabelValue("baseSize") || "40");
-                    const growthFactor = parseInt(shortcut.getLabelValue("growthFactor") || "100");
+                if (builtinWidget) {
+                    if (builtinWidget === 'calendar') {
+                        this.child(new CalendarWidget(shortcut.title, shortcut.getIcon()));
+                    } else if (builtinWidget === 'spacer') {
+                        // || has to be inside since 0 is a valid value
+                        const baseSize = parseInt(shortcut.getLabelValue("baseSize") || "40");
+                        const growthFactor = parseInt(shortcut.getLabelValue("growthFactor") || "100");
 
-                    this.child(new SpacerWidget(baseSize, growthFactor));
-                } else if (builtinWidget === 'pluginButtons') {
-                    this.child(new FlexContainer("column")
-                        .id("plugin-buttons")
-                        .contentSized());
-                } else if (builtinWidget === 'bookmarks') {
-                    this.child(new BookmarkButtons());
-                } else if (builtinWidget === 'protectedSession') {
-                    this.child(new ProtectedSessionStatusWidget());
-                } else if (builtinWidget === 'syncStatus') {
-                    this.child(new SyncStatusWidget());
-                } else if (builtinWidget === 'backInHistoryButton') {
-                    this.child(new BackInHistoryButtonWidget());
-                } else if (builtinWidget === 'forwardInHistoryButton') {
-                    this.child(new ForwardInHistoryButtonWidget());
-                } else {
-                    console.log(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
+                        this.child(new SpacerWidget(baseSize, growthFactor));
+                    } else if (builtinWidget === 'pluginButtons') {
+                        this.child(new FlexContainer("column")
+                            .id("plugin-buttons")
+                            .contentSized());
+                    } else if (builtinWidget === 'bookmarks') {
+                        this.child(new BookmarkButtons());
+                    } else if (builtinWidget === 'protectedSession') {
+                        this.child(new ProtectedSessionStatusWidget());
+                    } else if (builtinWidget === 'syncStatus') {
+                        this.child(new SyncStatusWidget());
+                    } else if (builtinWidget === 'backInHistoryButton') {
+                        this.child(new BackInHistoryButtonWidget());
+                    } else if (builtinWidget === 'forwardInHistoryButton') {
+                        this.child(new ForwardInHistoryButtonWidget());
+                    } else {
+                        console.log(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
+                    }
                 }
             }
+        }
+        catch (e) {
+            console.error(`Initialization of shortcut '${shortcut.noteId}' with title '${shortcut.title}' failed with error: ${e.message} ${e.stack}`);
         }
     }
 

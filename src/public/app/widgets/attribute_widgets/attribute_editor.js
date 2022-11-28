@@ -333,7 +333,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     getPreprocessedData() {
         const str = this.textEditor.getData()
-            .replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1")
+            .replace(/<a[^>]+href="(#[A-Za-z0-9_/]*)"[^>]*>[^<]*<\/a>/g, "$1")
             .replace(/&nbsp;/g, " "); // otherwise .text() below outputs non-breaking space in unicode
 
         return $("<div>").html(str).text();

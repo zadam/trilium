@@ -5,6 +5,13 @@ const noteService = require("./notes");
 const cls = require("./cls");
 const dateUtils = require("./date_utils");
 
+const LBTPL_ROOT = "lbtpl_root";
+const LBTPL_NOTE_SHORTCUT = "lbtpl_noteshortcut";
+const LBTPL_SCRIPT = "lbtpl_script";
+const LBTPL_BUILTIN_WIDGET = "lbtpl_builtinwidget";
+const LBTPL_SPACER = "lbtpl_spacer";
+const LBTPL_CUSTOM_WIDGET = "lbtpl_customwidget";
+
 function getInboxNote(date) {
     const hoistedNote = getHoistedNote();
 
@@ -277,7 +284,8 @@ function getLaunchBarAvailableShortcutsRoot() {
             title: 'Available shortcuts',
             type: 'doc',
             content: '',
-            parentNoteId: getLaunchBarRoot().noteId
+            parentNoteId: getLaunchBarRoot().noteId,
+            ignoreForbiddenParents: true
         }).note;
 
         note.addLabel("iconClass", "bx bx-hide");
@@ -303,7 +311,8 @@ function getLaunchBarVisibleShortcutsRoot() {
             title: 'Visible shortcuts',
             type: 'doc',
             content: '',
-            parentNoteId: getLaunchBarRoot().noteId
+            parentNoteId: getLaunchBarRoot().noteId,
+            ignoreForbiddenParents: true
         }).note;
 
         note.addLabel("iconClass", "bx bx-show");
@@ -326,16 +335,10 @@ const shortcuts = [
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
-    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true, labels: [
-            { type: "number", name: "baseSize", value: "40" },
-            { type: "number", name: "growthFactor", value: "100" },
-        ] },
+    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true },
     { id: 'lb_pluginbuttons', builtinWidget: 'pluginButtons', title: 'Plugin buttons', icon: 'bx bx-extension', isVisible: true },
     { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
-    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', icon: 'bx bx-move-vertical', isVisible: true, labels: [
-            { type: "number", name: "baseSize", value: "40" },
-            { type: "number", name: "growthFactor", value: "100" },
-        ] },
+    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true },
     { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
     { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 
@@ -349,6 +352,7 @@ function createMissingSpecialNotes() {
     getSqlConsoleRoot();
     getGlobalNoteMap();
     getBulkActionNote();
+    createShortcutTemplates();
     getLaunchBarRoot();
     getLaunchBarAvailableShortcutsRoot();
     getLaunchBarVisibleShortcutsRoot();
@@ -373,22 +377,26 @@ function createMissingSpecialNotes() {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addLabel('builtinShortcut');
-        note.addLabel('iconClass', shortcut.icon);
+        if (shortcut.icon) {
+            note.addLabel('iconClass', shortcut.icon);
+        }
 
         if (shortcut.command) {
+            note.addRelation('template', LBTPL_NOTE_SHORTCUT);
             note.addLabel('command', shortcut.command);
         } else if (shortcut.builtinWidget) {
+            if (shortcut.builtinWidget === 'spacer') {
+                note.addRelation('template', LBTPL_SPACER);
+            } else {
+                note.addRelation('template', LBTPL_BUILTIN_WIDGET);
+            }
+
             note.addLabel('builtinWidget', shortcut.builtinWidget);
         } else if (shortcut.targetNoteId) {
+            note.addRelation('template', LBTPL_NOTE_SHORTCUT);
             note.addRelation('targetNote', shortcut.targetNoteId);
         } else {
             throw new Error(`No action defined for shortcut ${JSON.stringify(shortcut)}`);
-        }
-
-        for (const label of shortcut.labels || []) {
-            note.addLabel('label:' + label.name, "promoted," + label.type);
-            note.addLabel(label.name, label.value);
         }
     }
 
@@ -411,9 +419,6 @@ function createShortcut(parentNoteId, type) {
             content: '',
             parentNoteId: parentNoteId
         }).note;
-
-        note.addLabel('relation:targetNote', 'promoted');
-        note.addLabel('docName', 'launchbar_note_shortcut');
     } else if (type === 'script') {
         note = noteService.createNewNote({
             title: "Script shortcut",
@@ -457,6 +462,97 @@ function createShortcut(parentNoteId, type) {
         success: true,
         note
     };
+}
+
+function createShortcutTemplates() {
+    if (!(LBTPL_ROOT in becca.notes)) {
+        noteService.createNewNote({
+            branchId: LBTPL_ROOT,
+            noteId: LBTPL_ROOT,
+            title: 'Launch bar templates',
+            type: 'doc',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        });
+    }
+
+    if (!(LBTPL_NOTE_SHORTCUT in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_NOTE_SHORTCUT,
+            noteId: LBTPL_NOTE_SHORTCUT,
+            title: 'Note shortcut',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addLabel('shortcutType', 'note');
+        tpl.addLabel('relation:targetNote', 'promoted');
+        tpl.addLabel('docName', 'launchbar_note_shortcut');
+    }
+
+    if (!(LBTPL_SCRIPT in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_SCRIPT,
+            noteId: LBTPL_SCRIPT,
+            title: 'Script',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addLabel('shortcutType', 'script');
+        tpl.addLabel('relation:script', 'promoted');
+        tpl.addLabel('docName', 'launchbar_script_shortcut');
+    }
+
+    if (!(LBTPL_BUILTIN_WIDGET in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_BUILTIN_WIDGET,
+            noteId: LBTPL_BUILTIN_WIDGET,
+            title: 'Builtin widget',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addLabel('shortcutType', 'builtinWidget');
+    }
+
+    if (!(LBTPL_SPACER in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_SPACER,
+            noteId: LBTPL_SPACER,
+            title: 'Spacer',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addRelation('template', LBTPL_BUILTIN_WIDGET);
+        tpl.addLabel('builtinWidget', 'spacer');
+        tpl.addLabel('iconClass', 'bx bx-move-vertical');
+        tpl.addLabel('label:baseSize', 'promoted,number');
+        tpl.addLabel('baseSize', '40');
+        tpl.addLabel('label:growthFactor', 'promoted,number');
+        tpl.addLabel('growthFactor', '0');
+        tpl.addLabel('docName', 'launchbar_spacer');
+    }
+
+    if (!(LBTPL_CUSTOM_WIDGET in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_CUSTOM_WIDGET,
+            noteId: LBTPL_CUSTOM_WIDGET,
+            title: 'Custom widget',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addLabel('shortcutType', 'builtinWidget');
+        tpl.addLabel('relation:widget', 'promoted');
+        tpl.addLabel('docName', 'launchbar_widget_shortcut');
+    }
 }
 
 function resetShortcut(noteId) {

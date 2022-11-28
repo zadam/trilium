@@ -41,7 +41,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
     }
 
     getNoteIdFromImage(imgSrc) {
-        const match = imgSrc.match(/\/api\/images\/([A-Za-z0-9]+)\//);
+        const match = imgSrc.match(/\/api\/images\/([A-Za-z0-9_]+)\//);
 
         return match ? match[1] : null;
     }

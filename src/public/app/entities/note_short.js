@@ -22,7 +22,7 @@ const NOTE_TYPE_ICONS = {
     "canvas": "bx bx-pen",
     "web-view": "bx bx-globe-alt",
     "shortcut": "bx bx-up-arrow-circle",
-    "doc": "bx bx-file-doc"
+    "doc": "bx bxs-file-doc"
 };
 
 /**
