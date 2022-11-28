@@ -100,7 +100,7 @@ class NoteContentFulltextExp extends Expression {
         if (type === 'text' && mime === 'text/html') {
             if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
                 // allow link to preserve URLs: https://github.com/zadam/trilium/issues/2412
-                content = striptags(content, ['a']);
+                content = striptags(content, ['a'], ' ');
 
                 // at least the closing tag can be easily stripped
                 content = content.replace(/<\/a>/ig, "");
