@@ -67,7 +67,7 @@ function getHoistedNote() {
 }
 
 function createShortcut(req) {
-    return specialNotesService.createShortcut(req.params.parentNoteId, req.params.type);
+    return specialNotesService.createShortcut(req.params.parentNoteId, req.params.shortcutType);
 }
 
 function resetShortcut(req) {

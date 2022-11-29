@@ -6,6 +6,7 @@ const cls = require("./cls");
 const dateUtils = require("./date_utils");
 
 const LBTPL_ROOT = "lbtpl_root";
+const LBTPL_COMMAND = "lbtpl_command";
 const LBTPL_NOTE_SHORTCUT = "lbtpl_noteshortcut";
 const LBTPL_SCRIPT = "lbtpl_script";
 const LBTPL_BUILTIN_WIDGET = "lbtpl_builtinwidget";
@@ -382,7 +383,7 @@ function createMissingSpecialNotes() {
         }
 
         if (shortcut.command) {
-            note.addRelation('template', LBTPL_NOTE_SHORTCUT);
+            note.addRelation('template', LBTPL_COMMAND);
             note.addLabel('command', shortcut.command);
         } else if (shortcut.builtinWidget) {
             if (shortcut.builtinWidget === 'spacer') {
@@ -409,17 +410,19 @@ function createMissingSpecialNotes() {
     }
 }
 
-function createShortcut(parentNoteId, type) {
+function createShortcut(parentNoteId, shortcutType) {
     let note;
 
-    if (type === 'note') {
+    if (shortcutType === 'note') {
         note = noteService.createNewNote({
             title: "Note shortcut",
             type: 'shortcut',
             content: '',
             parentNoteId: parentNoteId
         }).note;
-    } else if (type === 'script') {
+
+        note.addRelation('template', LBTPL_NOTE_SHORTCUT);
+    } else if (shortcutType === 'script') {
         note = noteService.createNewNote({
             title: "Script shortcut",
             type: 'shortcut',
@@ -427,9 +430,8 @@ function createShortcut(parentNoteId, type) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addLabel('relation:script', 'promoted');
-        note.addLabel('docName', 'launchbar_script_shortcut');
-    } else if (type === 'widget') {
+        note.addRelation('template', LBTPL_SCRIPT);
+    } else if (shortcutType === 'customWidget') {
         note = noteService.createNewNote({
             title: "Widget shortcut",
             type: 'shortcut',
@@ -437,9 +439,8 @@ function createShortcut(parentNoteId, type) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addLabel('relation:widget', 'promoted');
-        note.addLabel('docName', 'launchbar_widget_shortcut');
-    } else if (type === 'spacer') {
+        note.addRelation('template', LBTPL_CUSTOM_WIDGET);
+    } else if (shortcutType === 'spacer') {
         note = noteService.createNewNote({
             title: "Spacer",
             type: 'shortcut',
@@ -447,15 +448,9 @@ function createShortcut(parentNoteId, type) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addLabel('builtinWidget', 'spacer');
-        note.addLabel('iconClass', 'bx bx-move-vertical');
-        note.addLabel('label:baseSize', 'promoted,number');
-        note.addLabel('baseSize', '40');
-        note.addLabel('label:growthFactor', 'promoted,number');
-        note.addLabel('growthFactor', '0');
-        note.addLabel('docName', 'launchbar_spacer');
+        note.addRelation('template', LBTPL_SPACER);
     } else {
-        throw new Error(`Unrecognized shortcut type ${type}`);
+        throw new Error(`Unrecognized shortcut type ${shortcutType}`);
     }
 
     return {
@@ -474,6 +469,19 @@ function createShortcutTemplates() {
             content: '',
             parentNoteId: getHiddenRoot().noteId
         });
+    }
+
+    if (!(LBTPL_COMMAND in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_COMMAND,
+            noteId: LBTPL_COMMAND,
+            title: 'Command shortcut',
+            type: 'doc',
+            content: '',
+            parentNoteId: LBTPL_ROOT
+        }).note;
+
+        tpl.addLabel('shortcutType', 'command');
     }
 
     if (!(LBTPL_NOTE_SHORTCUT in becca.notes)) {
@@ -549,7 +557,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
-        tpl.addLabel('shortcutType', 'builtinWidget');
+        tpl.addLabel('shortcutType', 'customWidget');
         tpl.addLabel('relation:widget', 'promoted');
         tpl.addLabel('docName', 'launchbar_widget_shortcut');
     }

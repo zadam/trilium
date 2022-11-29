@@ -1566,15 +1566,15 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     addWidgetShortcutCommand({node}) {
-        this.createShortcutNote(node, 'widget');
+        this.createShortcutNote(node, 'customWidget');
     }
 
     addSpacerShortcutCommand({node}) {
         this.createShortcutNote(node, 'spacer');
     }
 
-    async createShortcutNote(node, type) {
-        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${type}`);
+    async createShortcutNote(node, shortcutType) {
+        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${shortcutType}`);
 
         if (!resp.success) {
             alert(resp.message);

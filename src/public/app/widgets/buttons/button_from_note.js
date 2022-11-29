@@ -6,11 +6,17 @@ export default class ButtonFromNoteWidget extends ButtonWidget {
     constructor() {
         super();
 
-        this.settings.buttonNoteId = null;
+        this.settings.buttonNoteIdProvider = null;
+        this.settings.defaultIconProvider = null;
     }
 
-    buttonNoteId(noteId) {
-        this.settings.buttonNoteId = noteId;
+    buttonNoteIdProvider(provider) {
+        this.settings.buttonNoteIdProvider = provider;
+        return this;
+    }
+
+    defaultIconProvider(provider) {
+        this.settings.defaultIconProvider = provider;
         return this;
     }
 
@@ -21,18 +27,32 @@ export default class ButtonFromNoteWidget extends ButtonWidget {
     }
 
     updateIcon() {
-        froca.getNote(this.settings.buttonNoteId).then(note => {
-            this.settings.icon = note.getLabelValue("iconClass");
+        const buttonNoteId = this.settings.buttonNoteIdProvider();
+
+        if (!buttonNoteId && this.settings.defaultIconProvider()) {
+            this.settings.icon = this.settings.defaultIconProvider();
 
             this.refreshIcon();
-        });
+        } else {
+            froca.getNote(buttonNoteId).then(note => {
+                this.settings.icon = note.getIcon();
+
+                this.refreshIcon();
+            });
+        }
     }
 
     entitiesReloadedEvent({loadResults}) {
+        const buttonNote = froca.getNoteFromCache(this.buttonNoteIdProvider());
+
+        if (!buttonNote) {
+            return;
+        }
+
         if (loadResults.getAttributes(this.componentId).find(attr =>
             attr.type === 'label'
             && attr.name === 'iconClass'
-            && attributeService.isAffecting(attr, this.note))) {
+            && attributeService.isAffecting(attr, buttonNote))) {
 
             this.updateIcon();
         }

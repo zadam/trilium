@@ -9,6 +9,8 @@ import ProtectedSessionStatusWidget from "../buttons/protected_session_status.js
 import SyncStatusWidget from "../sync_status.js";
 import BackInHistoryButtonWidget from "../buttons/history/history_back.js";
 import ForwardInHistoryButtonWidget from "../buttons/history/history_forward.js";
+import dialogService from "../../services/dialog.js";
+import ButtonFromNoteWidget from "../buttons/button_from_note.js";
 
 export default class ShortcutContainer extends FlexContainer {
     constructor() {
@@ -65,17 +67,29 @@ export default class ShortcutContainer extends FlexContainer {
                 return;
             }
 
-            if (shortcut.getLabelValue("command")) {
+            const shortcutType = shortcut.getLabelValue("shortcutType");
+
+            if (shortcutType === 'command') {
                 this.child(new ButtonWidget()
                     .title(shortcut.title)
                     .icon(shortcut.getIcon())
                     .command(shortcut.getLabelValue("command")));
-            } else if (shortcut.hasRelation('targetNote')) {
-                this.child(new ButtonWidget()
+            } else if (shortcutType === 'note') {
+                this.child(new ButtonFromNoteWidget()
                     .title(shortcut.title)
-                    .icon(shortcut.getIcon())
-                    .onClick(() => appContext.tabManager.openTabWithNoteWithHoisting(shortcut.getRelationValue('targetNote'), true)));
-            } else if (shortcut.hasRelation('script')) {
+                    .buttonNoteIdProvider(() => shortcut.getRelationValue('targetNote'))
+                    .defaultIconProvider(() => shortcut.getIcon())
+                    .onClick(() => {
+                        const targetNoteId = shortcut.getRelationValue('targetNote');
+
+                        if (!targetNoteId) {
+                            dialogService.info("This shortcut doesn't define target note.");
+                            return;
+                        }
+
+                        appContext.tabManager.openTabWithNoteWithHoisting(targetNoteId, true)
+                    }));
+            } else if (shortcutType === 'script') {
                 this.child(new ButtonWidget()
                     .title(shortcut.title)
                     .icon(shortcut.getIcon())
@@ -84,13 +98,13 @@ export default class ShortcutContainer extends FlexContainer {
 
                         await script.executeScript();
                     }));
-            } else if (shortcut.hasRelation('widget')) {
+            } else if (shortcutType === 'customWidget') {
                 const widget = await shortcut.getRelationTarget('widget');
 
                 const res = await widget.executeScript();
 
                 this.child(res);
-            } else {
+            } else if (shortcutType === 'builtinWidget') {
                 const builtinWidget = shortcut.getLabelValue("builtinWidget");
 
                 if (builtinWidget) {
@@ -117,9 +131,11 @@ export default class ShortcutContainer extends FlexContainer {
                     } else if (builtinWidget === 'forwardInHistoryButton') {
                         this.child(new ForwardInHistoryButtonWidget());
                     } else {
-                        console.log(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
+                        console.warn(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
                     }
                 }
+            } else {
+                console.warn(`Unrecognized shortcut type ${shortcutType} for shortcut '${shortcut.noteId}' title ${shortcut.title}`);
             }
         }
         catch (e) {

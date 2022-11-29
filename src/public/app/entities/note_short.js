@@ -21,7 +21,7 @@ const NOTE_TYPE_ICONS = {
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
     "web-view": "bx bx-globe-alt",
-    "shortcut": "bx bx-up-arrow-circle",
+    "shortcut": "bx bx-link",
     "doc": "bx bxs-file-doc"
 };
 
@@ -827,9 +827,7 @@ class NoteShort {
     }
 
     isLaunchBarConfig() {
-        // launch bar config should be max 2 levels deep
-        return this.noteId.startsWith("lb_")
-            || this.getParentBranchIds().find(branchId => branchId.startsWith("lb_"));
+        return this.type === 'shortcut' || this.noteId.startsWith("lb_");
     }
 }
 
