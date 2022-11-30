@@ -7,16 +7,10 @@ export default class ButtonFromNoteWidget extends ButtonWidget {
         super();
 
         this.settings.buttonNoteIdProvider = null;
-        this.settings.defaultIconProvider = null;
     }
 
     buttonNoteIdProvider(provider) {
         this.settings.buttonNoteIdProvider = provider;
-        return this;
-    }
-
-    defaultIconProvider(provider) {
-        this.settings.defaultIconProvider = provider;
         return this;
     }
 
@@ -29,17 +23,16 @@ export default class ButtonFromNoteWidget extends ButtonWidget {
     updateIcon() {
         const buttonNoteId = this.settings.buttonNoteIdProvider();
 
-        if (!buttonNoteId && this.settings.defaultIconProvider()) {
-            this.settings.icon = this.settings.defaultIconProvider();
+        if (!buttonNoteId) {
+            console.error(`buttonNoteId for '${this.componentId}' is not defined.`);
+            return;
+        }
+
+        froca.getNote(buttonNoteId).then(note => {
+            this.settings.icon = note.getIcon();
 
             this.refreshIcon();
-        } else {
-            froca.getNote(buttonNoteId).then(note => {
-                this.settings.icon = note.getIcon();
-
-                this.refreshIcon();
-            });
-        }
+        });
     }
 
     entitiesReloadedEvent({loadResults}) {

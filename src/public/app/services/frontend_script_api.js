@@ -21,8 +21,6 @@ import SpacedUpdate from "./spaced_update.js";
  * @hideconstructor
  */
 function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
-    const $pluginButtons = $("#plugin-buttons");
-
     /** @property {jQuery} container of all the rendered script content */
     this.$container = $container;
 
@@ -115,49 +113,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
 
     /**
-     * Adds new button to the plugin area.
-     *
-     * @param {ToolbarButtonOptions} opts
+     * @deprecated this API has no effect anymore. Use bookmarks or launchpad shortcuts instead.
      */
-    this.addButtonToToolbar = opts => {
-        const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
-
-        let button;
-        if (utils.isMobile()) {
-            $('#plugin-buttons-placeholder').remove();
-            button = $('<a class="dropdown-item" href="#">')
-                .on('click', () => {
-                    setTimeout(() => $pluginButtons.dropdown('hide'), 0);
-                });
-
-            if (opts.icon) {
-                button.append($("<span>").addClass("bx bx-" + opts.icon))
-                    .append("&nbsp;");
-            }
-
-            button.append($("<span>").text(opts.title));
-        } else {
-            button = $('<span class="button-widget icon-action bx" data-toggle="tooltip" title="" data-placement="right"></span>')
-                .addClass("bx bx-" + (opts.icon || "question-mark"));
-
-            button.attr("title", opts.title);
-            button.tooltip({html: true});
-        }
-
-        button = button.on('click', opts.action);
-
-        button.attr('id', buttonId);
-
-        if ($("#" + buttonId).replaceWith(button).length === 0) {
-            $pluginButtons.append(button);
-        }
-
-        if (opts.shortcut) {
-            utils.bindGlobalShortcut(opts.shortcut, opts.action);
-
-            button.attr("title", "Shortcut " + opts.shortcut);
-        }
-    };
+    this.addButtonToToolbar = () => console.warn("api.addButtonToToolbar() calls are deprecated and have no effect");
 
     function prepareParams(params) {
         if (!params) {

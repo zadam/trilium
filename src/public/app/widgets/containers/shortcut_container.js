@@ -10,7 +10,6 @@ import SyncStatusWidget from "../sync_status.js";
 import BackInHistoryButtonWidget from "../buttons/history/history_back.js";
 import ForwardInHistoryButtonWidget from "../buttons/history/history_forward.js";
 import dialogService from "../../services/dialog.js";
-import ButtonFromNoteWidget from "../buttons/button_from_note.js";
 
 export default class ShortcutContainer extends FlexContainer {
     constructor() {
@@ -75,10 +74,16 @@ export default class ShortcutContainer extends FlexContainer {
                     .icon(shortcut.getIcon())
                     .command(shortcut.getLabelValue("command")));
             } else if (shortcutType === 'note') {
-                this.child(new ButtonFromNoteWidget()
+                // we're intentionally displaying the shortcut title and icon instead of the target
+                // e.g. you want to make shortcuts to 2 mermaid diagrams which both have mermaid icon (ok),
+                // but on the launchpad you want them distinguishable.
+                // for titles, the note titles may follow a different scheme than maybe desirable on the launchpad
+                // another reason is the discrepancy between what user sees on the launchpad and in the config (esp. icons).
+                // The only (but major) downside is more work in setting up the typical case where you actually want to have both title and icon in sync.
+
+                this.child(new ButtonWidget()
                     .title(shortcut.title)
-                    .buttonNoteIdProvider(() => shortcut.getRelationValue('targetNote'))
-                    .defaultIconProvider(() => shortcut.getIcon())
+                    .icon(shortcut.getIcon())
                     .onClick(() => {
                         const targetNoteId = shortcut.getRelationValue('targetNote');
 
@@ -101,9 +106,11 @@ export default class ShortcutContainer extends FlexContainer {
             } else if (shortcutType === 'customWidget') {
                 const widget = await shortcut.getRelationTarget('widget');
 
-                const res = await widget.executeScript();
+                if (widget) {
+                    const res = await widget.executeScript();
 
-                this.child(res);
+                    this.child(res);
+                }
             } else if (shortcutType === 'builtinWidget') {
                 const builtinWidget = shortcut.getLabelValue("builtinWidget");
 
@@ -116,10 +123,6 @@ export default class ShortcutContainer extends FlexContainer {
                         const growthFactor = parseInt(shortcut.getLabelValue("growthFactor") || "100");
 
                         this.child(new SpacerWidget(baseSize, growthFactor));
-                    } else if (builtinWidget === 'pluginButtons') {
-                        this.child(new FlexContainer("column")
-                            .id("plugin-buttons")
-                            .contentSized());
                     } else if (builtinWidget === 'bookmarks') {
                         this.child(new BookmarkButtons());
                     } else if (builtinWidget === 'protectedSession') {

@@ -6,6 +6,7 @@ const cls = require("./cls");
 const dateUtils = require("./date_utils");
 
 const LBTPL_ROOT = "lbtpl_root";
+const LBTPL_BASE = "lbtpl_base";
 const LBTPL_COMMAND = "lbtpl_command";
 const LBTPL_NOTE_SHORTCUT = "lbtpl_noteshortcut";
 const LBTPL_SCRIPT = "lbtpl_script";
@@ -336,10 +337,9 @@ const shortcuts = [
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
-    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true },
-    { id: 'lb_pluginbuttons', builtinWidget: 'pluginButtons', title: 'Plugin buttons', icon: 'bx bx-extension', isVisible: true },
+    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: 50, growthFactor: 0 },
     { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
-    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true },
+    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: 0, growthFactor: 1 },
     { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
     { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 
@@ -388,6 +388,8 @@ function createMissingSpecialNotes() {
         } else if (shortcut.builtinWidget) {
             if (shortcut.builtinWidget === 'spacer') {
                 note.addRelation('template', LBTPL_SPACER);
+                note.addLabel("baseSize", shortcut.baseSize);
+                note.addLabel("growthFactor", shortcut.growthFactor);
             } else {
                 note.addRelation('template', LBTPL_BUILTIN_WIDGET);
             }
@@ -471,6 +473,19 @@ function createShortcutTemplates() {
         });
     }
 
+    if (!(LBTPL_BASE in becca.notes)) {
+        const tpl = noteService.createNewNote({
+            branchId: LBTPL_BASE,
+            noteId: LBTPL_BASE,
+            title: 'Launch bar base shortcut',
+            type: 'doc',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        }).note;
+
+        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
+    }
+
     if (!(LBTPL_COMMAND in becca.notes)) {
         const tpl = noteService.createNewNote({
             branchId: LBTPL_COMMAND,
@@ -481,6 +496,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
+        tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('shortcutType', 'command');
     }
 
@@ -494,6 +510,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
+        tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('shortcutType', 'note');
         tpl.addLabel('relation:targetNote', 'promoted');
         tpl.addLabel('docName', 'launchbar_note_shortcut');
@@ -509,6 +526,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
+        tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('shortcutType', 'script');
         tpl.addLabel('relation:script', 'promoted');
         tpl.addLabel('docName', 'launchbar_script_shortcut');
@@ -524,6 +542,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
+        tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('shortcutType', 'builtinWidget');
     }
 
@@ -541,9 +560,7 @@ function createShortcutTemplates() {
         tpl.addLabel('builtinWidget', 'spacer');
         tpl.addLabel('iconClass', 'bx bx-move-vertical');
         tpl.addLabel('label:baseSize', 'promoted,number');
-        tpl.addLabel('baseSize', '40');
         tpl.addLabel('label:growthFactor', 'promoted,number');
-        tpl.addLabel('growthFactor', '0');
         tpl.addLabel('docName', 'launchbar_spacer');
     }
 
@@ -557,6 +574,7 @@ function createShortcutTemplates() {
             parentNoteId: LBTPL_ROOT
         }).note;
 
+        tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('shortcutType', 'customWidget');
         tpl.addLabel('relation:widget', 'promoted');
         tpl.addLabel('docName', 'launchbar_widget_shortcut');
