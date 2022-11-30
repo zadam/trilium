@@ -13,6 +13,7 @@ import appContext from "./app_context.js";
 import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
+import shortcutService from "./shortcuts.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -509,7 +510,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
      * @param {function} handler
      */
-    this.bindGlobalShortcut = utils.bindGlobalShortcut;
+    this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 
     /**
      * Trilium runs in backend and frontend process, when something is changed on the backend from script,

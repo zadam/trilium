@@ -8,6 +8,7 @@ import promotedAttributeDefinitionParser from '../../services/promoted_attribute
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
+import shortcutService from "../../services/shortcuts.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -271,8 +272,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$widget = $(TPL);
 
-        utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
-        utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
+        shortcutService.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
+        shortcutService.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
 
         this.$title = this.$widget.find('.attr-detail-title');

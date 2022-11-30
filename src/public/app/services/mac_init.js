@@ -2,15 +2,16 @@
  * Mac specific initialization
  */
 import utils from "./utils.js";
+import shortcutService from "./shortcuts.js";
 
 function init() {
     if (utils.isElectron() && utils.isMac()) {
-        utils.bindGlobalShortcut('meta+c', () => exec("copy"));
-        utils.bindGlobalShortcut('meta+v', () => exec('paste'));
-        utils.bindGlobalShortcut('meta+x', () => exec('cut'));
-        utils.bindGlobalShortcut('meta+a', () => exec('selectAll'));
-        utils.bindGlobalShortcut('meta+z', () => exec('undo'));
-        utils.bindGlobalShortcut('meta+y', () => exec('redo'));
+        shortcutService.bindGlobalShortcut('meta+c', () => exec("copy"));
+        shortcutService.bindGlobalShortcut('meta+v', () => exec('paste'));
+        shortcutService.bindGlobalShortcut('meta+x', () => exec('cut'));
+        shortcutService.bindGlobalShortcut('meta+a', () => exec('selectAll'));
+        shortcutService.bindGlobalShortcut('meta+z', () => exec('undo'));
+        shortcutService.bindGlobalShortcut('meta+y', () => exec('redo'));
     }
 }
 

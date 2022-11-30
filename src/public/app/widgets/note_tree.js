@@ -18,6 +18,7 @@ import syncService from "../services/sync.js";
 import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import dialogService from "../services/dialog.js";
+import shortcutService from "../services/shortcuts.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -1331,7 +1332,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         for (const action of actions) {
             for (const shortcut of action.effectiveShortcuts) {
-                hotKeyMap[utils.normalizeShortcut(shortcut)] = node => {
+                hotKeyMap[shortcutService.normalizeShortcut(shortcut)] = node => {
                     const notePath = treeService.getNotePath(node);
 
                     this.triggerCommand(action.actionName, {node, notePath});
