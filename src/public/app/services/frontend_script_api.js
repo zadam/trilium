@@ -509,6 +509,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
      * @param {function} handler
+     * @param {string} [namespace] - specify namespace of the handler for the cases where call for bind may be repeated.
+     *                               If a handler with this ID exists, it's replaced by the new handler.
      */
     this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 

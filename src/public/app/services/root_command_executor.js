@@ -72,7 +72,7 @@ export default class RootCommandExecutor extends Component {
         options.toggle('leftPaneVisible');
     }
 
-    async showLaunchBarShortcutsCommand() {
+    async showLaunchBarSubtreeCommand() {
         await appContext.tabManager.openContextWithNote('lb_root', true, null, 'lb_root');
     }
 

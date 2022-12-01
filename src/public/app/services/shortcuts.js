@@ -1,19 +1,31 @@
 import utils from "./utils.js";
 
-function bindGlobalShortcut(keyboardShortcut, handler) {
+function bindGlobalShortcut(keyboardShortcut, handler, namespace = null) {
     bindElShortcut($(document), keyboardShortcut, handler);
 }
 
-function bindElShortcut($el, keyboardShortcut, handler) {
+function bindElShortcut($el, keyboardShortcut, handler, namespace = null) {
     if (utils.isDesktop()) {
         keyboardShortcut = normalizeShortcut(keyboardShortcut);
 
-        $el.bind('keydown', keyboardShortcut, e => {
-            handler(e);
+        let eventName = 'keydown';
 
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        if (namespace) {
+            eventName += "." + namespace;
+
+            // if there's a namespace then we replace the existing event handler with the new one
+            $el.off(eventName);
+        }
+
+        // method can be called to remove the shortcut (e.g. when keyboardShortcut label is deleted)
+        if (keyboardShortcut) {
+            $el.on(eventName, keyboardShortcut, e => {
+                handler(e);
+
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        }
     }
 }
 
@@ -21,6 +33,10 @@ function bindElShortcut($el, keyboardShortcut, handler) {
  * Normalize to the form expected by the jquery.hotkeys.js
  */
 function normalizeShortcut(shortcut) {
+    if (!shortcut) {
+        return shortcut;
+    }
+
     return shortcut
         .toLowerCase()
         .replace("enter", "return")

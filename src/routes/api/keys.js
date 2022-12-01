@@ -13,6 +13,13 @@ function getShortcutsForNotes() {
     const map = {};
 
     for (const attr of attrs) {
+        const note = becca.getNote(attr.noteId);
+
+        if (note?.type === 'launcher') {
+            // launchers have different handling
+            continue;
+        }
+
         map[attr.value] = attr.noteId;
     }
 
