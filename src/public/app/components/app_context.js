@@ -12,6 +12,7 @@ import keyboardActionsService from "../services/keyboard_actions.js";
 import MobileScreenSwitcherExecutor from "./mobile_screen_switcher.js";
 import MainTreeExecutors from "./main_tree_executors.js";
 import toast from "../services/toast.js";
+import ShortcutComponent from "./shortcut_component.js";
 
 class AppContext extends Component {
     constructor(isMainWindow) {
@@ -46,7 +47,8 @@ class AppContext extends Component {
             this.tabManager,
             new RootCommandExecutor(),
             new Entrypoints(),
-            new MainTreeExecutors()
+            new MainTreeExecutors(),
+            new ShortcutComponent()
         ];
 
         if (utils.isMobile()) {

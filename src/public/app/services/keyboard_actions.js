@@ -44,24 +44,6 @@ getActionsForScope("window").then(actions => {
 	}
 });
 
-function setElementActionHandler($el, actionName, handler) {
-	keyboardActionsLoaded.then(() => {
-		const action = keyboardActionRepo[actionName];
-
-		if (!action) {
-			throw new Error(`Cannot find keyboard action '${actionName}'`);
-		}
-
-		// not setting action.handler since this is not global
-
-		for (const shortcut of action.effectiveShortcuts) {
-			if (shortcut) {
-				shortcutService.bindElShortcut($el, shortcut, handler);
-			}
-		}
-	});
-}
-
 async function getAction(actionName, silent = false) {
 	await keyboardActionsLoaded;
 
@@ -108,10 +90,8 @@ function updateDisplayedShortcuts($container) {
 }
 
 export default {
-	setElementActionHandler,
 	updateDisplayedShortcuts,
 	setupActionsForElement,
 	getActions,
-	getActionsForScope,
-	getAction
+	getActionsForScope
 };

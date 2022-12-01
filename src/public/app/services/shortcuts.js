@@ -1,5 +1,9 @@
 import utils from "./utils.js";
 
+function removeGlobalShortcut(namespace) {
+    bindGlobalShortcut('', null, namespace);
+}
+
 function bindGlobalShortcut(keyboardShortcut, handler, namespace = null) {
     bindElShortcut($(document), keyboardShortcut, handler, namespace);
 }
@@ -48,5 +52,6 @@ function normalizeShortcut(shortcut) {
 export default {
     bindGlobalShortcut,
     bindElShortcut,
+    removeGlobalShortcut,
     normalizeShortcut
 }
