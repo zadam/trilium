@@ -283,11 +283,15 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             // probably incorrect event
             // calling this.refresh() is not enough since the event needs to be propagated to children as well
             // FIXME: create a separate event to force hierarchical refresh
-            this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
+
+            // this uses handleEvent to make sure that the ordinary content updates are propagated only in the subtree
+            // to avoid problem in #3365
+            this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else if (loadResults.isNoteReloaded(this.noteId, this.componentId)
             && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
 
+            // this needs to have a triggerEvent so that e.g. note type (not in the component subtree) is updated
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else {
@@ -304,6 +308,8 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
                 && attributeService.isAffecting(attr, this.note));
 
             if (label || relation) {
+                console.log("OOOO");
+
                 // probably incorrect event
                 // calling this.refresh() is not enough since the event needs to be propagated to children as well
                 this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
