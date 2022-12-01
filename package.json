@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "16.2.8",
+    "electron": "18.3.7",
     "electron-builder": "23.6.0",
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",
