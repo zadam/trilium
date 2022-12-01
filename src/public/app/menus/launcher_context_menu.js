@@ -36,9 +36,9 @@ export default class LauncherContextMenu {
         const canBeReset = note.noteId.startsWith("lb_");
 
         return [
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add note launcher', command: 'addNoteLauncher', uiIcon: "bx bx-plus" } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add script launcher', command: 'addScriptLauncher', uiIcon: "bx bx-plus" } : null,
-            (isVisibleRoot || isAvailableRoot) ? { title: 'Add widget launcher', command: 'addWidgetLauncher', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add a note launcher', command: 'addNoteLauncher', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add a script launcher', command: 'addScriptLauncher', uiIcon: "bx bx-plus" } : null,
+            (isVisibleRoot || isAvailableRoot) ? { title: 'Add a custom widget', command: 'addWidgetLauncher', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add spacer', command: 'addSpacerLauncher', uiIcon: "bx bx-plus" } : null,
             (isVisibleRoot || isAvailableRoot) ? { title: "----" } : null,
             { title: 'Delete <kbd data-command="deleteNotes"></kbd>', command: "deleteNotes", uiIcon: "bx bx-trash", enabled: canBeDeleted },
@@ -54,7 +54,7 @@ export default class LauncherContextMenu {
     async selectMenuItemHandler({command}) {
         if (command === 'resetLauncher') {
             const confirmed = await dialogService.confirm(`Do you really want to reset "${this.node.title}"? 
-                       All data / settings in this launcher (and its children) will be lost 
+                       All data / settings in this note (and its children) will be lost 
                        and the launcher will be returned to its original location.`);
 
             if (confirmed) {

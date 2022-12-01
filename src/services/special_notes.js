@@ -474,16 +474,14 @@ function createLauncherTemplates() {
     }
 
     if (!(LBTPL_BASE in becca.notes)) {
-        const tpl = noteService.createNewNote({
+        noteService.createNewNote({
             branchId: LBTPL_BASE,
             noteId: LBTPL_BASE,
             title: 'Launch bar base launcher',
             type: 'doc',
             content: '',
             parentNoteId: getHiddenRoot().noteId
-        }).note;
-
-        tpl.addLabel('label:keyboardLauncher', 'promoted,text');
+        });
     }
 
     if (!(LBTPL_COMMAND in becca.notes)) {
@@ -498,6 +496,7 @@ function createLauncherTemplates() {
 
         tpl.addRelation('template', LBTPL_BASE);
         tpl.addLabel('launcherType', 'command');
+        tpl.addLabel('docName', 'launchbar_command_launcher');
     }
 
     if (!(LBTPL_NOTE_LAUNCHER in becca.notes)) {
@@ -514,6 +513,7 @@ function createLauncherTemplates() {
         tpl.addLabel('launcherType', 'note');
         tpl.addLabel('relation:targetNote', 'promoted');
         tpl.addLabel('docName', 'launchbar_note_launcher');
+        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
     }
 
     if (!(LBTPL_SCRIPT in becca.notes)) {
@@ -530,6 +530,7 @@ function createLauncherTemplates() {
         tpl.addLabel('launcherType', 'script');
         tpl.addLabel('relation:script', 'promoted');
         tpl.addLabel('docName', 'launchbar_script_launcher');
+        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
     }
 
     if (!(LBTPL_BUILTIN_WIDGET in becca.notes)) {
