@@ -1,5 +1,5 @@
 import utils from "./utils.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";

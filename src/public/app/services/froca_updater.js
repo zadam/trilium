@@ -76,7 +76,7 @@ async function processEntityChanges(entityChanges) {
             noteAttributeCache.invalidate();
         }
 
-        const appContext = (await import("./app_context.js")).default;
+        const appContext = (await import("../components/app_context.js")).default;
         await appContext.triggerEvent('entitiesReloaded', {loadResults});
     }
 }

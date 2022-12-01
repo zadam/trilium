@@ -1,7 +1,7 @@
 import utils from "./utils.js";
 
 function bindGlobalShortcut(keyboardShortcut, handler, namespace = null) {
-    bindElShortcut($(document), keyboardShortcut, handler);
+    bindElShortcut($(document), keyboardShortcut, handler, namespace);
 }
 
 function bindElShortcut($el, keyboardShortcut, handler, namespace = null) {
@@ -19,7 +19,7 @@ function bindElShortcut($el, keyboardShortcut, handler, namespace = null) {
 
         // method can be called to remove the shortcut (e.g. when keyboardShortcut label is deleted)
         if (keyboardShortcut) {
-            $el.on(eventName, keyboardShortcut, e => {
+            $el.bind(eventName, keyboardShortcut, e => {
                 handler(e);
 
                 e.preventDefault();

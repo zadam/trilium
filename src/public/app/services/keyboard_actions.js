@@ -1,5 +1,5 @@
 import server from "./server.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import shortcutService from "./shortcuts.js";
 
 const keyboardActionRepo = {};
@@ -41,14 +41,6 @@ getActionsForScope("window").then(actions => {
 		for (const shortcut of action.effectiveShortcuts) {
 			shortcutService.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeNtxId}));
 		}
-	}
-});
-
-server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
-	for (const shortcut in shortcutForNotes) {
-		shortcutService.bindGlobalShortcut(shortcut, async () => {
-			appContext.tabManager.getActiveContext().setNote(shortcutForNotes[shortcut]);
-		});
 	}
 });
 

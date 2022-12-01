@@ -1,5 +1,5 @@
 import server from "./server.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import utils from './utils.js';
 import noteCreateService from './note_create.js';
 import treeService from './tree.js';

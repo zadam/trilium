@@ -1,7 +1,7 @@
 import libraryLoader from "../../services/library_loader.js";
 import toastService from "../../services/toast.js";
 import utils from "../../services/utils.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
 import shortcutService from "../../services/shortcuts.js";
 

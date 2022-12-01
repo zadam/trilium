@@ -3,7 +3,7 @@ import server from "../services/server.js";
 import linkService from "../services/link.js";
 import froca from "../services/froca.js";
 import utils from "../services/utils.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import shortcutService from "../services/shortcuts.js";
 
 const TPL = `

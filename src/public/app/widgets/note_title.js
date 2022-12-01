@@ -2,7 +2,7 @@ import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import branchService from "../services/branches.js";
 import shortcutService from "../services/shortcuts.js";
 

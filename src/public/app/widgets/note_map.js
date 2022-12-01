@@ -2,7 +2,7 @@ import libraryLoader from "../services/library_loader.js";
 import server from "../services/server.js";
 import attributeService from "../services/attributes.js";
 import hoistedNoteService from "../services/hoisted_note.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import linkContextMenuService from "../menus/link_context_menu.js";
 

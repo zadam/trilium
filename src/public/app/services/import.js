@@ -2,7 +2,7 @@ import toastService from "./toast.js";
 import server from "./server.js";
 import ws from "./ws.js";
 import utils from "./utils.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 export async function uploadFiles(parentNoteId, files, options) {
     if (files.length === 0) {

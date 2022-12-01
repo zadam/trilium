@@ -10,20 +10,8 @@ function getKeyboardActions() {
 function getShortcutsForNotes() {
     const attrs = becca.findAttributes('label', 'keyboardShortcut');
 
-    const map = {};
-
-    for (const attr of attrs) {
-        const note = becca.getNote(attr.noteId);
-
-        if (note?.type === 'launcher') {
-            // launchers have different handling
-            continue;
-        }
-
-        map[attr.value] = attr.noteId;
-    }
-
-    return map;
+    // launchers have different handling
+    return attrs.filter(attr => becca.getNote(attr.noteId)?.type !== 'launcher');
 }
 
 module.exports = {

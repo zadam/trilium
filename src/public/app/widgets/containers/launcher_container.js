@@ -2,7 +2,7 @@ import FlexContainer from "./flex_container.js";
 import froca from "../../services/froca.js";
 import ButtonWidget from "../buttons/button_widget.js";
 import CalendarWidget from "../buttons/calendar.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import SpacerWidget from "../spacer.js";
 import BookmarkButtons from "../bookmark_buttons.js";
 import ProtectedSessionStatusWidget from "../buttons/protected_session_status.js";

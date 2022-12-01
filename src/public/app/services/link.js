@@ -1,6 +1,6 @@
 import treeService from './tree.js';
 import linkContextMenuService from "../menus/link_context_menu.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 
