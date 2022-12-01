@@ -397,7 +397,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
-                    if (['root', 'hidden', 'lb_root', 'lb_availableshortcuts', 'lb_visibleshortcuts'].includes(node.data.noteId)) {
+                    if (['root', 'hidden', 'lb_root', 'lb_availablelaunchers', 'lb_visiblelaunchers'].includes(node.data.noteId)) {
                         return false;
                     }
 
@@ -427,7 +427,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         return false;
                     } else if (node.data.noteId === 'lb_root') {
                         return false;
-                    } else if (node.data.noteType === 'shortcut') {
+                    } else if (node.data.noteType === 'launcher') {
                         return ['before', 'after'];
                     } else {
                         return true;
@@ -564,7 +564,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     $span.append($refreshSearchButton);
                 }
 
-                if (!['search', 'shortcut'].includes(note.type)) {
+                if (!['search', 'launcher'].includes(note.type)) {
                     const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);
@@ -604,8 +604,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             const node = $.ui.fancytree.getNode(e);
 
             if (hoistedNoteService.getHoistedNoteId() === 'lb_root') {
-                import("../menus/shortcut_context_menu.js").then(({default: ShortcutContextMenu}) => {
-                    const shortcutContextMenu = new ShortcutContextMenu(this, node);
+                import("../menus/launcher_context_menu.js").then(({LauncherContextMenu: ShortcutContextMenu}) => {
+                    const shortcutContextMenu = new LauncherContextMenu(this, node);
                     shortcutContextMenu.show(e);
                 });
             } else {
@@ -1551,11 +1551,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     moveShortcutToVisibleCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_visibleshortcuts');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_visiblelaunchers');
     }
 
     moveShortcutToAvailableCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_availableshortcuts');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_availablelaunchers');
     }
 
     addNoteShortcutCommand({node}) {
@@ -1574,8 +1574,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.createShortcutNote(node, 'spacer');
     }
 
-    async createShortcutNote(node, shortcutType) {
-        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${shortcutType}`);
+    async createShortcutNote(node, launcherType) {
+        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${launcherType}`);
 
         if (!resp.success) {
             alert(resp.message);

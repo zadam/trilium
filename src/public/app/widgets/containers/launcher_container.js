@@ -11,11 +11,11 @@ import BackInHistoryButtonWidget from "../buttons/history/history_back.js";
 import ForwardInHistoryButtonWidget from "../buttons/history/history_forward.js";
 import dialogService from "../../services/dialog.js";
 
-export default class ShortcutContainer extends FlexContainer {
+export default class LauncherContainer extends FlexContainer {
     constructor() {
         super('column');
 
-        this.id('shortcut-container');
+        this.id('launcher-container');
         this.css('height', '100%');
         this.filling();
 
@@ -25,17 +25,17 @@ export default class ShortcutContainer extends FlexContainer {
     async load() {
         this.children = [];
 
-        const visibleShortcutsRoot = await froca.getNote('lb_visibleshortcuts', true);
+        const visibleLaunchersRoot = await froca.getNote('lb_visiblelaunchers', true);
 
-        if (!visibleShortcutsRoot) {
-            console.log("Visible shortcuts root note doesn't exist.");
+        if (!visibleLaunchersRoot) {
+            console.log("Visible launchers root note doesn't exist.");
 
             return;
         }
 
         await Promise.allSettled(
-            (await visibleShortcutsRoot.getChildNotes())
-                .map(shortcut => this.initShortcut(shortcut))
+            (await visibleLaunchersRoot.getChildNotes())
+                .map(launcher => this.initLauncher(launcher))
         );
 
         this.$widget.empty();
@@ -59,68 +59,68 @@ export default class ShortcutContainer extends FlexContainer {
         }
     }
 
-    async initShortcut(shortcut) {
+    async initLauncher(launcher) {
         try {
-            if (shortcut.type !== 'shortcut') {
-                console.warn(`Note ${shortcut.noteId} is not a shortcut even though it's in shortcut subtree`);
+            if (launcher.type !== 'launcher') {
+                console.warn(`Note ${launcher.noteId} is not a launcher even though it's in launcher subtree`);
                 return;
             }
 
-            const shortcutType = shortcut.getLabelValue("shortcutType");
+            const launcherType = launcher.getLabelValue("launcherType");
 
-            if (shortcutType === 'command') {
+            if (launcherType === 'command') {
                 this.child(new ButtonWidget()
-                    .title(shortcut.title)
-                    .icon(shortcut.getIcon())
-                    .command(shortcut.getLabelValue("command")));
-            } else if (shortcutType === 'note') {
-                // we're intentionally displaying the shortcut title and icon instead of the target
-                // e.g. you want to make shortcuts to 2 mermaid diagrams which both have mermaid icon (ok),
+                    .title(launcher.title)
+                    .icon(launcher.getIcon())
+                    .command(launcher.getLabelValue("command")));
+            } else if (launcherType === 'note') {
+                // we're intentionally displaying the launcher title and icon instead of the target
+                // e.g. you want to make launchers to 2 mermaid diagrams which both have mermaid icon (ok),
                 // but on the launchpad you want them distinguishable.
                 // for titles, the note titles may follow a different scheme than maybe desirable on the launchpad
                 // another reason is the discrepancy between what user sees on the launchpad and in the config (esp. icons).
                 // The only (but major) downside is more work in setting up the typical case where you actually want to have both title and icon in sync.
 
                 this.child(new ButtonWidget()
-                    .title(shortcut.title)
-                    .icon(shortcut.getIcon())
+                    .title(launcher.title)
+                    .icon(launcher.getIcon())
                     .onClick(() => {
-                        const targetNoteId = shortcut.getRelationValue('targetNote');
+                        const targetNoteId = launcher.getRelationValue('targetNote');
 
                         if (!targetNoteId) {
-                            dialogService.info("This shortcut doesn't define target note.");
+                            dialogService.info("This launcher doesn't define target note.");
                             return;
                         }
 
                         appContext.tabManager.openTabWithNoteWithHoisting(targetNoteId, true)
                     }));
-            } else if (shortcutType === 'script') {
+            } else if (launcherType === 'script') {
                 this.child(new ButtonWidget()
-                    .title(shortcut.title)
-                    .icon(shortcut.getIcon())
+                    .title(launcher.title)
+                    .icon(launcher.getIcon())
                     .onClick(async () => {
-                        const script = await shortcut.getRelationTarget('script');
+                        const script = await launcher.getRelationTarget('script');
 
                         await script.executeScript();
                     }));
-            } else if (shortcutType === 'customWidget') {
-                const widget = await shortcut.getRelationTarget('widget');
+            } else if (launcherType === 'customWidget') {
+                const widget = await launcher.getRelationTarget('widget');
 
                 if (widget) {
                     const res = await widget.executeScript();
 
                     this.child(res);
                 }
-            } else if (shortcutType === 'builtinWidget') {
-                const builtinWidget = shortcut.getLabelValue("builtinWidget");
+            } else if (launcherType === 'builtinWidget') {
+                const builtinWidget = launcher.getLabelValue("builtinWidget");
 
                 if (builtinWidget) {
                     if (builtinWidget === 'calendar') {
-                        this.child(new CalendarWidget(shortcut.title, shortcut.getIcon()));
+                        this.child(new CalendarWidget(launcher.title, launcher.getIcon()));
                     } else if (builtinWidget === 'spacer') {
                         // || has to be inside since 0 is a valid value
-                        const baseSize = parseInt(shortcut.getLabelValue("baseSize") || "40");
-                        const growthFactor = parseInt(shortcut.getLabelValue("growthFactor") || "100");
+                        const baseSize = parseInt(launcher.getLabelValue("baseSize") || "40");
+                        const growthFactor = parseInt(launcher.getLabelValue("growthFactor") || "100");
 
                         this.child(new SpacerWidget(baseSize, growthFactor));
                     } else if (builtinWidget === 'bookmarks') {
@@ -134,15 +134,15 @@ export default class ShortcutContainer extends FlexContainer {
                     } else if (builtinWidget === 'forwardInHistoryButton') {
                         this.child(new ForwardInHistoryButtonWidget());
                     } else {
-                        console.warn(`Unrecognized builtin widget ${builtinWidget} for shortcut ${shortcut.noteId} "${shortcut.title}"`);
+                        console.warn(`Unrecognized builtin widget ${builtinWidget} for launcher ${launcher.noteId} "${launcher.title}"`);
                     }
                 }
             } else {
-                console.warn(`Unrecognized shortcut type ${shortcutType} for shortcut '${shortcut.noteId}' title ${shortcut.title}`);
+                console.warn(`Unrecognized launcher type ${launcherType} for launcher '${launcher.noteId}' title ${launcher.title}`);
             }
         }
         catch (e) {
-            console.error(`Initialization of shortcut '${shortcut.noteId}' with title '${shortcut.title}' failed with error: ${e.message} ${e.stack}`);
+            console.error(`Initialization of launcher '${launcher.noteId}' with title '${launcher.title}' failed with error: ${e.message} ${e.stack}`);
         }
     }
 

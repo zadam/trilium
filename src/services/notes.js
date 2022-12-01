@@ -110,16 +110,16 @@ function getAndValidateParent(params) {
         throw new Error(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (parentNote.type === 'shortcut') {
-        throw new Error(`Shortcuts should not have child notes.`);
+    if (parentNote.type === 'launcher') {
+        throw new Error(`Launchers should not have child notes.`);
     }
 
     if (!params.ignoreForbiddenParents && ['lb_root'].includes(parentNote.noteId)) {
         throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 
-    if (['lb_availableshortcuts', 'lb_visibleshortcuts'].includes(parentNote.noteId) && params.type !== 'shortcut') {
-        throw new Error(`Creating child notes into '${parentNote.noteId}' is only possible for type 'shortcut'.`);
+    if (['lb_availablelaunchers', 'lb_visiblelaunchers'].includes(parentNote.noteId) && params.type !== 'launcher') {
+        throw new Error(`Creating child notes into '${parentNote.noteId}' is only possible for type 'launcher'.`);
     }
 
     return parentNote;

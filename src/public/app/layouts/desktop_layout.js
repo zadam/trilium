@@ -72,7 +72,7 @@ import OptionsDialog from "../widgets/dialogs/options.js";
 import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
 import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
 import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
-import ShortcutContainer from "../widgets/containers/shortcut_container.js";
+import LauncherContainer from "../widgets/containers/launcher_container.js";
 import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
 import EditableCodeButtonsWidget from "../widgets/type_widgets/editable_code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
@@ -104,7 +104,7 @@ export default class DesktopLayout {
                 .id("launcher-pane")
                 .css("width", "53px")
                 .child(new GlobalMenuWidget())
-                .child(new ShortcutContainer())
+                .child(new LauncherContainer())
                 .child(new LeftPaneToggleWidget())
             )
             .child(new LeftPaneContainer()

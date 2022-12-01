@@ -197,7 +197,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             type = 'editable-code';
         }
 
-        if (type === 'shortcut') {
+        if (type === 'launcher') {
             type = 'doc';
         }
 
