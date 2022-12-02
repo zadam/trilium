@@ -19,6 +19,7 @@ import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import dialogService from "../services/dialog.js";
 import shortcutService from "../services/shortcuts.js";
+import LauncherContextMenu from "../menus/launcher_context_menu.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -1558,24 +1559,24 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_availablelaunchers');
     }
 
-    addNoteShortcutCommand({node}) {
-        this.createShortcutNote(node, 'note');
+    addNoteLauncherCommand({node}) {
+        this.createLauncherNote(node, 'note');
     }
 
-    addScriptShortcutCommand({node}) {
-        this.createShortcutNote(node, 'script');
+    addScriptLauncherCommand({node}) {
+        this.createLauncherNote(node, 'script');
     }
 
-    addWidgetShortcutCommand({node}) {
-        this.createShortcutNote(node, 'customWidget');
+    addWidgetLauncherCommand({node}) {
+        this.createLauncherNote(node, 'customWidget');
     }
 
-    addSpacerShortcutCommand({node}) {
-        this.createShortcutNote(node, 'spacer');
+    addSpacerLauncherCommand({node}) {
+        this.createLauncherNote(node, 'spacer');
     }
 
-    async createShortcutNote(node, launcherType) {
-        const resp = await server.post(`special-notes/shortcuts/${node.data.noteId}/${launcherType}`);
+    async createLauncherNote(node, launcherType) {
+        const resp = await server.post(`special-notes/launchers/${node.data.noteId}/${launcherType}`);
 
         if (!resp.success) {
             alert(resp.message);

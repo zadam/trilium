@@ -1,8 +1,8 @@
-import ButtonWidget from "./button_widget.js";
 import froca from "../../services/froca.js";
 import attributeService from "../../services/attributes.js";
+import CommandButtonWidget from "./command_button.js";
 
-export default class ButtonFromNoteWidget extends ButtonWidget {
+export default class ButtonFromNoteWidget extends CommandButtonWidget {
     constructor() {
         super();
 

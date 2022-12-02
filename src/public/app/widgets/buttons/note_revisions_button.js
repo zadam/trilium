@@ -1,6 +1,6 @@
-import ButtonWidget from "./button_widget.js";
+import CommandButtonWidget from "./command_button.js";
 
-export default class NoteRevisionsButton extends ButtonWidget {
+export default class NoteRevisionsButton extends CommandButtonWidget {
     constructor() {
         super();
 
