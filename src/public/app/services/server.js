@@ -3,7 +3,7 @@ import utils from './utils.js';
 const REQUEST_LOGGING_ENABLED = false;
 
 async function getHeaders(headers) {
-    const appContext = (await import('./app_context.js')).default;
+    const appContext = (await import('../components/app_context.js')).default;
     const activeNoteContext = appContext.tabManager ? appContext.tabManager.getActiveContext() : null;
 
     // headers need to be lowercase because node.js automatically converts them to lower case

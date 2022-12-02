@@ -66,12 +66,12 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
-function createShortcut(req) {
-    return specialNotesService.createShortcut(req.params.parentNoteId, req.params.shortcutType);
+function createLauncher(req) {
+    return specialNotesService.createLauncher(req.params.parentNoteId, req.params.launcherType);
 }
 
-function resetShortcut(req) {
-    return specialNotesService.resetShortcut(req.params.noteId);
+function resetLauncher(req) {
+    return specialNotesService.resetLauncher(req.params.noteId);
 }
 
 module.exports = {
@@ -85,6 +85,6 @@ module.exports = {
     saveSqlConsole,
     createSearchNote,
     saveSearchNote,
-    createShortcut,
-    resetShortcut
+    createLauncher,
+    resetLauncher
 };

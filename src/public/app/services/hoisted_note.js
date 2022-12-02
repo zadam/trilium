@@ -1,4 +1,4 @@
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import treeService from "./tree.js";
 import dialogService from "./dialog.js";
 import froca from "./froca.js";

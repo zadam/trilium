@@ -1,5 +1,5 @@
 import ButtonWidget from "./button_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import attributeService from "../../services/attributes.js";
 import protectedSessionHolder from "../../services/protected_session_holder.js";
 

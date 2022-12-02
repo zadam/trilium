@@ -2,7 +2,7 @@ import BasicWidget from "./basic_widget.js";
 import contextMenu from "../menus/context_menu.js";
 import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import froca from "../services/froca.js";
 import attributeService from "../services/attributes.js";
 

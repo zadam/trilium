@@ -1,6 +1,6 @@
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import TypeWidget from "./type_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import searchService from "../../services/search.js";
 
 const TPL = `

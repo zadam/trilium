@@ -1,8 +1,8 @@
 import appContext from "./app_context.js";
-import noteCreateService from "./note_create.js";
-import treeService from "./tree.js";
-import hoistedNoteService from "./hoisted_note.js";
-import Component from "../widgets/component.js";
+import noteCreateService from "../services/note_create.js";
+import treeService from "../services/tree.js";
+import hoistedNoteService from "../services/hoisted_note.js";
+import Component from "./component.js";
 
 /**
  * This class contains command executors which logically belong to the NoteTree widget, but for better user experience

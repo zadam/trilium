@@ -132,35 +132,6 @@ function randomString(len) {
     return text;
 }
 
-function bindGlobalShortcut(keyboardShortcut, handler) {
-    bindElShortcut($(document), keyboardShortcut, handler);
-}
-
-function bindElShortcut($el, keyboardShortcut, handler) {
-    if (isDesktop()) {
-        keyboardShortcut = normalizeShortcut(keyboardShortcut);
-
-        $el.bind('keydown', keyboardShortcut, e => {
-            handler(e);
-
-            e.preventDefault();
-            e.stopPropagation();
-        });
-    }
-}
-
-/**
- * Normalize to the form expected by the jquery.hotkeys.js
- */
-function normalizeShortcut(shortcut) {
-    return shortcut
-        .toLowerCase()
-        .replace("enter", "return")
-        .replace("delete", "del")
-        .replace("ctrl+alt", "alt+ctrl")
-        .replace("meta+alt", "alt+meta"); // alt needs to be first;
-}
-
 function isMobile() {
     return window.device === "mobile"
         // window.device is not available in setup
@@ -387,8 +358,6 @@ export default {
     formatLabel,
     toObject,
     randomString,
-    bindGlobalShortcut,
-    bindElShortcut,
     isMobile,
     isDesktop,
     setCookie,
@@ -402,7 +371,6 @@ export default {
     focusSavedElement,
     isHtmlEmpty,
     clearBrowserCache,
-    normalizeShortcut,
     copySelectionToClipboard,
     dynamicRequire,
     timeLimit,

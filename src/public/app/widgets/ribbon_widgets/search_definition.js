@@ -13,7 +13,7 @@ import OrderBy from "../search_options/order_by.js";
 import SearchScript from "../search_options/search_script.js";
 import Limit from "../search_options/limit.js";
 import Debug from "../search_options/debug.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import bulkActionService from "../../services/bulk_action.js";
 
 const TPL = `

@@ -3,7 +3,7 @@
 // for consistency
 import libraryLoader from "../services/library_loader.js";
 import utils from "../services/utils.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 
 const FIND_RESULT_SELECTED_CSS_CLASSNAME = "ck-find-result_selected";
 const FIND_RESULT_CSS_CLASSNAME = "ck-find-result";

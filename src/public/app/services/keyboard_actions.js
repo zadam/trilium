@@ -1,6 +1,6 @@
 import server from "./server.js";
-import utils from "./utils.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
+import shortcutService from "./shortcuts.js";
 
 const keyboardActionRepo = {};
 
@@ -31,7 +31,7 @@ async function setupActionsForElement(scope, $el, component) {
 
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeNtxId}));
+			shortcutService.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeNtxId}));
 		}
 	}
 }
@@ -39,36 +39,10 @@ async function setupActionsForElement(scope, $el, component) {
 getActionsForScope("window").then(actions => {
 	for (const action of actions) {
 		for (const shortcut of action.effectiveShortcuts) {
-			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeNtxId}));
+			shortcutService.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, {ntxId: appContext.tabManager.activeNtxId}));
 		}
 	}
 });
-
-server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
-	for (const shortcut in shortcutForNotes) {
-		utils.bindGlobalShortcut(shortcut, async () => {
-			appContext.tabManager.getActiveContext().setNote(shortcutForNotes[shortcut]);
-		});
-	}
-});
-
-function setElementActionHandler($el, actionName, handler) {
-	keyboardActionsLoaded.then(() => {
-		const action = keyboardActionRepo[actionName];
-
-		if (!action) {
-			throw new Error(`Cannot find keyboard action '${actionName}'`);
-		}
-
-		// not setting action.handler since this is not global
-
-		for (const shortcut of action.effectiveShortcuts) {
-			if (shortcut) {
-				utils.bindElShortcut($el, shortcut, handler);
-			}
-		}
-	});
-}
 
 async function getAction(actionName, silent = false) {
 	await keyboardActionsLoaded;
@@ -116,10 +90,8 @@ function updateDisplayedShortcuts($container) {
 }
 
 export default {
-	setElementActionHandler,
 	updateDisplayedShortcuts,
 	setupActionsForElement,
 	getActions,
-	getActionsForScope,
-	getAction
+	getActionsForScope
 };

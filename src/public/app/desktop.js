@@ -1,4 +1,4 @@
-import appContext from "./services/app_context.js";
+import appContext from "./components/app_context.js";
 import utils from './services/utils.js';
 import noteTooltipService from './services/note_tooltip.js';
 import bundleService from "./services/bundle.js";
@@ -7,7 +7,7 @@ import macInit from './services/mac_init.js';
 import contextMenu from "./menus/context_menu.js";
 import DesktopLayout from "./layouts/desktop_layout.js";
 import glob from "./services/glob.js";
-import zoomService from './services/zoom.js';
+import zoomService from './components/zoom.js';
 
 bundleService.getWidgetBundlesByParent().then(widgetBundles => {
     appContext.setLayout(new DesktopLayout(widgetBundles));

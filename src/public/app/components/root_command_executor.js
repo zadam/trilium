@@ -1,11 +1,11 @@
-import Component from "../widgets/component.js";
+import Component from "./component.js";
 import appContext from "./app_context.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
-import openService from "./open.js";
-import protectedSessionService from "./protected_session.js";
-import options from "./options.js";
-import froca from "./froca.js";
+import openService from "../services/open.js";
+import protectedSessionService from "../services/protected_session.js";
+import options from "../services/options.js";
+import froca from "../services/froca.js";
 
 export default class RootCommandExecutor extends Component {
     editReadOnlyNoteCommand() {
@@ -46,7 +46,7 @@ export default class RootCommandExecutor extends Component {
     openNoteExternallyCommand() {
         const noteId = appContext.tabManager.getActiveContextNoteId();
         const mime = appContext.tabManager.getActiveContextNoteMime()
-        
+
         if (noteId) {
             openService.openNoteExternally(noteId, mime);
         }
@@ -72,7 +72,7 @@ export default class RootCommandExecutor extends Component {
         options.toggle('leftPaneVisible');
     }
 
-    async showLaunchBarShortcutsCommand() {
+    async showLaunchBarSubtreeCommand() {
         await appContext.tabManager.openContextWithNote('lb_root', true, null, 'lb_root');
     }
 

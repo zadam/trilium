@@ -8,7 +8,7 @@ const dateUtils = require("./date_utils");
 const LBTPL_ROOT = "lbtpl_root";
 const LBTPL_BASE = "lbtpl_base";
 const LBTPL_COMMAND = "lbtpl_command";
-const LBTPL_NOTE_SHORTCUT = "lbtpl_noteshortcut";
+const LBTPL_NOTE_LAUNCHER = "lbtpl_notelauncher";
 const LBTPL_SCRIPT = "lbtpl_script";
 const LBTPL_BUILTIN_WIDGET = "lbtpl_builtinwidget";
 const LBTPL_SPACER = "lbtpl_spacer";
@@ -276,14 +276,14 @@ function getLaunchBarRoot() {
     return note;
 }
 
-function getLaunchBarAvailableShortcutsRoot() {
-    let note = becca.getNote('lb_availableshortcuts');
+function getLaunchBarAvailableLaunchersRoot() {
+    let note = becca.getNote('lb_availablelaunchers');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'lb_availableshortcuts',
-            noteId: 'lb_availableshortcuts',
-            title: 'Available shortcuts',
+            branchId: 'lb_availablelaunchers',
+            noteId: 'lb_availablelaunchers',
+            title: 'Available launchers',
             type: 'doc',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId,
@@ -294,7 +294,7 @@ function getLaunchBarAvailableShortcutsRoot() {
         note.addLabel("docName", "launchbar_intro");
     }
 
-    const branch = becca.getBranch('lb_availableshortcuts');
+    const branch = becca.getBranch('lb_availablelaunchers');
     if (!branch.isExpanded) {
         branch.isExpanded = true;
         branch.save();
@@ -303,14 +303,14 @@ function getLaunchBarAvailableShortcutsRoot() {
     return note;
 }
 
-function getLaunchBarVisibleShortcutsRoot() {
-    let note = becca.getNote('lb_visibleshortcuts');
+function getLaunchBarVisibleLaunchersRoot() {
+    let note = becca.getNote('lb_visiblelaunchers');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'lb_visibleshortcuts',
-            noteId: 'lb_visibleshortcuts',
-            title: 'Visible shortcuts',
+            branchId: 'lb_visiblelaunchers',
+            noteId: 'lb_visiblelaunchers',
+            title: 'Visible launchers',
             type: 'doc',
             content: '',
             parentNoteId: getLaunchBarRoot().noteId,
@@ -321,7 +321,7 @@ function getLaunchBarVisibleShortcutsRoot() {
         note.addLabel("docName", "launchbar_intro");
     }
 
-    const branch = becca.getBranch('lb_visibleshortcuts');
+    const branch = becca.getBranch('lb_visiblelaunchers');
     if (!branch.isExpanded) {
         branch.isExpanded = true;
         branch.save();
@@ -330,20 +330,20 @@ function getLaunchBarVisibleShortcutsRoot() {
     return note;
 }
 
-const shortcuts = [
-    // visible shortcuts:
+const launchers = [
+    // visible launchers:
     { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
     { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
     { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
-    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: 50, growthFactor: 0 },
+    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "50", growthFactor: "0" },
     { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
-    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: 0, growthFactor: 1 },
+    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "0", growthFactor: "1" },
     { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
     { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 
-    // available shortcuts:
+    // available launchers:
     { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
     { id: 'lb_backinhistory', builtinWidget: 'backInHistoryButton', title: 'Back in history', icon: 'bx bxs-left-arrow-square', isVisible: false },
     { id: 'lb_forwardinhistory', builtinWidget: 'forwardInHistoryButton', title: 'Forward in history', icon: 'bx bxs-right-arrow-square', isVisible: false },
@@ -353,53 +353,53 @@ function createMissingSpecialNotes() {
     getSqlConsoleRoot();
     getGlobalNoteMap();
     getBulkActionNote();
-    createShortcutTemplates();
+    createLauncherTemplates();
     getLaunchBarRoot();
-    getLaunchBarAvailableShortcutsRoot();
-    getLaunchBarVisibleShortcutsRoot();
+    getLaunchBarAvailableLaunchersRoot();
+    getLaunchBarVisibleLaunchersRoot();
     getShareRoot();
 
-    for (const shortcut of shortcuts) {
-        let note = becca.getNote(shortcut.id);
+    for (const launcher of launchers) {
+        let note = becca.getNote(launcher.id);
 
         if (note) {
             continue;
         }
 
-        const parentNoteId = shortcut.isVisible
-            ? getLaunchBarVisibleShortcutsRoot().noteId
-            : getLaunchBarAvailableShortcutsRoot().noteId;
+        const parentNoteId = launcher.isVisible
+            ? getLaunchBarVisibleLaunchersRoot().noteId
+            : getLaunchBarAvailableLaunchersRoot().noteId;
 
         note = noteService.createNewNote({
-            noteId: shortcut.id,
-            title: shortcut.title,
-            type: 'shortcut',
+            noteId: launcher.id,
+            title: launcher.title,
+            type: 'launcher',
             content: '',
             parentNoteId: parentNoteId
         }).note;
 
-        if (shortcut.icon) {
-            note.addLabel('iconClass', shortcut.icon);
+        if (launcher.icon) {
+            note.addLabel('iconClass', launcher.icon);
         }
 
-        if (shortcut.command) {
+        if (launcher.command) {
             note.addRelation('template', LBTPL_COMMAND);
-            note.addLabel('command', shortcut.command);
-        } else if (shortcut.builtinWidget) {
-            if (shortcut.builtinWidget === 'spacer') {
+            note.addLabel('command', launcher.command);
+        } else if (launcher.builtinWidget) {
+            if (launcher.builtinWidget === 'spacer') {
                 note.addRelation('template', LBTPL_SPACER);
-                note.addLabel("baseSize", shortcut.baseSize);
-                note.addLabel("growthFactor", shortcut.growthFactor);
+                note.addLabel("baseSize", launcher.baseSize);
+                note.addLabel("growthFactor", launcher.growthFactor);
             } else {
                 note.addRelation('template', LBTPL_BUILTIN_WIDGET);
             }
 
-            note.addLabel('builtinWidget', shortcut.builtinWidget);
-        } else if (shortcut.targetNoteId) {
-            note.addRelation('template', LBTPL_NOTE_SHORTCUT);
-            note.addRelation('targetNote', shortcut.targetNoteId);
+            note.addLabel('builtinWidget', launcher.builtinWidget);
+        } else if (launcher.targetNoteId) {
+            note.addRelation('template', LBTPL_NOTE_LAUNCHER);
+            note.addRelation('targetNote', launcher.targetNoteId);
         } else {
-            throw new Error(`No action defined for shortcut ${JSON.stringify(shortcut)}`);
+            throw new Error(`No action defined for launcher ${JSON.stringify(launcher)}`);
         }
     }
 
@@ -412,47 +412,47 @@ function createMissingSpecialNotes() {
     }
 }
 
-function createShortcut(parentNoteId, shortcutType) {
+function createLauncher(parentNoteId, launcherType) {
     let note;
 
-    if (shortcutType === 'note') {
+    if (launcherType === 'note') {
         note = noteService.createNewNote({
-            title: "Note shortcut",
-            type: 'shortcut',
+            title: "Note launcher",
+            type: 'launcher',
             content: '',
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', LBTPL_NOTE_SHORTCUT);
-    } else if (shortcutType === 'script') {
+        note.addRelation('template', LBTPL_NOTE_LAUNCHER);
+    } else if (launcherType === 'script') {
         note = noteService.createNewNote({
-            title: "Script shortcut",
-            type: 'shortcut',
+            title: "Script launcher",
+            type: 'launcher',
             content: '',
             parentNoteId: parentNoteId
         }).note;
 
         note.addRelation('template', LBTPL_SCRIPT);
-    } else if (shortcutType === 'customWidget') {
+    } else if (launcherType === 'customWidget') {
         note = noteService.createNewNote({
-            title: "Widget shortcut",
-            type: 'shortcut',
+            title: "Widget launcher",
+            type: 'launcher',
             content: '',
             parentNoteId: parentNoteId
         }).note;
 
         note.addRelation('template', LBTPL_CUSTOM_WIDGET);
-    } else if (shortcutType === 'spacer') {
+    } else if (launcherType === 'spacer') {
         note = noteService.createNewNote({
             title: "Spacer",
-            type: 'shortcut',
+            type: 'launcher',
             content: '',
             parentNoteId: parentNoteId
         }).note;
 
         note.addRelation('template', LBTPL_SPACER);
     } else {
-        throw new Error(`Unrecognized shortcut type ${shortcutType}`);
+        throw new Error(`Unrecognized launcher type ${launcherType}`);
     }
 
     return {
@@ -461,7 +461,7 @@ function createShortcut(parentNoteId, shortcutType) {
     };
 }
 
-function createShortcutTemplates() {
+function createLauncherTemplates() {
     if (!(LBTPL_ROOT in becca.notes)) {
         noteService.createNewNote({
             branchId: LBTPL_ROOT,
@@ -474,46 +474,46 @@ function createShortcutTemplates() {
     }
 
     if (!(LBTPL_BASE in becca.notes)) {
-        const tpl = noteService.createNewNote({
+        noteService.createNewNote({
             branchId: LBTPL_BASE,
             noteId: LBTPL_BASE,
-            title: 'Launch bar base shortcut',
+            title: 'Launch bar base launcher',
             type: 'doc',
             content: '',
             parentNoteId: getHiddenRoot().noteId
-        }).note;
-
-        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
+        });
     }
 
     if (!(LBTPL_COMMAND in becca.notes)) {
         const tpl = noteService.createNewNote({
             branchId: LBTPL_COMMAND,
             noteId: LBTPL_COMMAND,
-            title: 'Command shortcut',
+            title: 'Command launcher',
             type: 'doc',
             content: '',
             parentNoteId: LBTPL_ROOT
         }).note;
 
         tpl.addRelation('template', LBTPL_BASE);
-        tpl.addLabel('shortcutType', 'command');
+        tpl.addLabel('launcherType', 'command');
+        tpl.addLabel('docName', 'launchbar_command_launcher');
     }
 
-    if (!(LBTPL_NOTE_SHORTCUT in becca.notes)) {
+    if (!(LBTPL_NOTE_LAUNCHER in becca.notes)) {
         const tpl = noteService.createNewNote({
-            branchId: LBTPL_NOTE_SHORTCUT,
-            noteId: LBTPL_NOTE_SHORTCUT,
-            title: 'Note shortcut',
+            branchId: LBTPL_NOTE_LAUNCHER,
+            noteId: LBTPL_NOTE_LAUNCHER,
+            title: 'Note launcher',
             type: 'doc',
             content: '',
             parentNoteId: LBTPL_ROOT
         }).note;
 
         tpl.addRelation('template', LBTPL_BASE);
-        tpl.addLabel('shortcutType', 'note');
+        tpl.addLabel('launcherType', 'note');
         tpl.addLabel('relation:targetNote', 'promoted');
-        tpl.addLabel('docName', 'launchbar_note_shortcut');
+        tpl.addLabel('docName', 'launchbar_note_launcher');
+        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
     }
 
     if (!(LBTPL_SCRIPT in becca.notes)) {
@@ -527,9 +527,10 @@ function createShortcutTemplates() {
         }).note;
 
         tpl.addRelation('template', LBTPL_BASE);
-        tpl.addLabel('shortcutType', 'script');
+        tpl.addLabel('launcherType', 'script');
         tpl.addLabel('relation:script', 'promoted');
-        tpl.addLabel('docName', 'launchbar_script_shortcut');
+        tpl.addLabel('docName', 'launchbar_script_launcher');
+        tpl.addLabel('label:keyboardShortcut', 'promoted,text');
     }
 
     if (!(LBTPL_BUILTIN_WIDGET in becca.notes)) {
@@ -543,7 +544,7 @@ function createShortcutTemplates() {
         }).note;
 
         tpl.addRelation('template', LBTPL_BASE);
-        tpl.addLabel('shortcutType', 'builtinWidget');
+        tpl.addLabel('launcherType', 'builtinWidget');
     }
 
     if (!(LBTPL_SPACER in becca.notes)) {
@@ -575,13 +576,13 @@ function createShortcutTemplates() {
         }).note;
 
         tpl.addRelation('template', LBTPL_BASE);
-        tpl.addLabel('shortcutType', 'customWidget');
+        tpl.addLabel('launcherType', 'customWidget');
         tpl.addLabel('relation:widget', 'promoted');
-        tpl.addLabel('docName', 'launchbar_widget_shortcut');
+        tpl.addLabel('docName', 'launchbar_widget_launcher');
     }
 }
 
-function resetShortcut(noteId) {
+function resetLauncher(noteId) {
     if (noteId.startsWith('lb_')) {
         const note = becca.getNote(noteId);
 
@@ -598,7 +599,7 @@ function resetShortcut(noteId) {
             log.info(`Note ${noteId} has not been found and cannot be reset.`);
         }
     } else {
-        log.info(`Note ${noteId} is not a resettable shortcut note.`);
+        log.info(`Note ${noteId} is not a resettable launcher note.`);
     }
 
     createMissingSpecialNotes();
@@ -614,6 +615,6 @@ module.exports = {
     getShareRoot,
     getHiddenRoot,
     getBulkActionNote,
-    createShortcut,
-    resetShortcut
+    createLauncher,
+    resetLauncher
 };

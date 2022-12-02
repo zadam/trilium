@@ -1,12 +1,12 @@
-import protectedSessionHolder from "./protected_session_holder.js";
-import server from "./server.js";
-import utils from "./utils.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
+import server from "../services/server.js";
+import utils from "../services/utils.js";
 import appContext from "./app_context.js";
-import treeService from "./tree.js";
-import Component from "../widgets/component.js";
-import froca from "./froca.js";
-import hoistedNoteService from "./hoisted_note.js";
-import options from "./options.js";
+import treeService from "../services/tree.js";
+import Component from "./component.js";
+import froca from "../services/froca.js";
+import hoistedNoteService from "../services/hoisted_note.js";
+import options from "../services/options.js";
 
 class NoteContext extends Component {
     /**

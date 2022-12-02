@@ -21,7 +21,7 @@ const NOTE_TYPE_ICONS = {
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
     "web-view": "bx bx-globe-alt",
-    "shortcut": "bx bx-link",
+    "launcher": "bx bx-link",
     "doc": "bx bxs-file-doc"
 };
 
@@ -827,7 +827,7 @@ class NoteShort {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'shortcut' || this.noteId.startsWith("lb_");
+        return this.type === 'launcher' || this.noteId.startsWith("lb_");
     }
 }
 

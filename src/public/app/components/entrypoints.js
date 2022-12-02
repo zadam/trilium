@@ -1,13 +1,13 @@
-import utils from "./utils.js";
-import dateNoteService from "./date_notes.js";
-import protectedSessionHolder from './protected_session_holder.js';
-import server from "./server.js";
+import utils from "../services/utils.js";
+import dateNoteService from "../services/date_notes.js";
+import protectedSessionHolder from '../services/protected_session_holder.js';
+import server from "../services/server.js";
 import appContext from "./app_context.js";
-import Component from "../widgets/component.js";
-import toastService from "./toast.js";
-import ws from "./ws.js";
-import bundleService from "./bundle.js";
-import froca from "./froca.js";
+import Component from "./component.js";
+import toastService from "../services/toast.js";
+import ws from "../services/ws.js";
+import bundleService from "../services/bundle.js";
+import froca from "../services/froca.js";
 
 export default class Entrypoints extends Component {
     constructor() {

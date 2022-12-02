@@ -124,9 +124,9 @@ const TPL = `
             <kbd ></kbd>
         </li>
         
-        <li class="dropdown-item" data-trigger-command="showLaunchBarShortcuts">
+        <li class="dropdown-item" data-trigger-command="showLaunchBarSubtree">
             <span class="bx bx-sidebar"></span>
-            Configure launchbar shortcuts
+            Configure launchbar
         </li>
         
         <li class="dropdown-item" data-trigger-command="showShareSubtree">

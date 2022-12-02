@@ -1,7 +1,8 @@
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import utils from "../../services/utils.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
+import shortcutService from "../../services/shortcuts.js";
 
 const TPL = `<div class="jump-to-note-dialog modal mx-auto" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -42,7 +43,7 @@ export default class JumpToNoteDialog extends BasicWidget {
         this.$showInFullTextButton = this.$widget.find(".show-in-full-text-button");
         this.$showInFullTextButton.on('click', e => this.showInFullText(e));
 
-        utils.bindElShortcut(this.$widget, 'ctrl+return', e => this.showInFullText(e));
+        shortcutService.bindElShortcut(this.$widget, 'ctrl+return', e => this.showInFullText(e));
     }
 
     async jumpToNoteEvent() {

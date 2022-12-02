@@ -1,11 +1,11 @@
-import options from "./options.js";
-import Component from "../widgets/component.js";
+import options from "../services/options.js";
+import Component from "./component.js";
 import utils from "../services/utils.js";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
 
-class ZoomService extends Component {
+class ZoomComponent extends Component {
     constructor() {
         super();
 
@@ -59,6 +59,6 @@ class ZoomService extends Component {
     }
 }
 
-const zoomService = new ZoomService();
+const zoomService = new ZoomComponent();
 
 export default zoomService;

@@ -8,7 +8,7 @@ import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import link from "../../services/link.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 
 const ENABLE_INSPECTOR = false;
 

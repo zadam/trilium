@@ -4,13 +4,13 @@ import toastService from "./toast.js";
 import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    if (['root', 'lb_root', 'lb_availableshortcuts', 'lb_visibleshortcuts'].includes(beforeBranchId)) {
+    if (['root', 'lb_root', 'lb_availablelaunchers', 'lb_visiblelaunchers'].includes(beforeBranchId)) {
         toastService.showError('Cannot move notes here.');
         return;
     }
@@ -35,8 +35,8 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
         'root',
         hoistedNoteService.getHoistedNoteId(),
         'lb_root',
-        'lb_availableshortcuts',
-        'lb_visibleshortcuts'
+        'lb_availablelaunchers',
+        'lb_visiblelaunchers'
     ];
 
     if (forbiddenNoteIds.includes(afterNote.noteId)) {

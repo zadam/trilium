@@ -3,7 +3,7 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import noteCreateService from "../services/note_create.js";
 import attributeService from "../services/attributes.js";
@@ -197,7 +197,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             type = 'editable-code';
         }
 
-        if (type === 'shortcut') {
+        if (type === 'launcher') {
             type = 'doc';
         }
 

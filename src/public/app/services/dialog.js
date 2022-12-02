@@ -1,4 +1,4 @@
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 async function info(message) {
     return new Promise(res =>

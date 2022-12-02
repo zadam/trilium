@@ -1,5 +1,5 @@
 import ButtonWidget from "./button_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import froca from "../../services/froca.js";
 
 // FIXME: this widget might not be useful anymore

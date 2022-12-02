@@ -1,4 +1,4 @@
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";

@@ -3,7 +3,7 @@ import froca from "../services/froca.js";
 import clipboard from '../services/clipboard.js';
 import noteCreateService from "../services/note_create.js";
 import contextMenu from "./context_menu.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import noteTypesService from "../services/note_types.js";
 
 export default class TreeContextMenu {

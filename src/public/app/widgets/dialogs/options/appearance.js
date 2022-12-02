@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
-import appContext from "../../../services/app_context.js";
+import appContext from "../../../components/app_context.js";
 import OptionsTab from "./options_tab.js";
 
 const FONT_FAMILIES = [

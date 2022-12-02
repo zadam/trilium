@@ -2,7 +2,7 @@ import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import options from "./options.js";

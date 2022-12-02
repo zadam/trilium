@@ -3,7 +3,7 @@ import utils from './utils.js';
 import server from './server.js';
 import froca from './froca.js';
 import hoistedNoteService from '../services/hoisted_note.js';
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 /**
  * @return {string|null}
