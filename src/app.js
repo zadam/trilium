@@ -52,6 +52,8 @@ app.use(`/node_modules/@excalidraw/excalidraw/dist/`, express.static(path.join(_
 app.use(`/${assetPath}/node_modules/@excalidraw/excalidraw/dist/`, express.static(path.join(__dirname, '..', 'node_modules/@excalidraw/excalidraw/dist/')));
 app.use(`/${assetPath}/images`, express.static(path.join(__dirname, '..', 'images')));
 app.use(`/assets/vX/images`, express.static(path.join(__dirname, '..', 'images')));
+app.use(`/manifest.webmanifest`, express.static(path.join(__dirname, 'public/manifest.webmanifest')));
+app.use(`/robots.txt`, express.static(path.join(__dirname, 'public/robots.txt')));
 const sessionParser = session({
     secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.

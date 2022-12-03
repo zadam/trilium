@@ -7,7 +7,10 @@ const TPL = `
 <div class="options-section">
     <h4>Keyboard shortcuts</h4>
     
-    <p>Multiple shortcuts for the same action can be separated by comma.</p>
+    <p>
+      Multiple shortcuts for the same action can be separated by comma.
+      See <a href="https://www.electronjs.org/docs/latest/api/accelerator">Electron documentation</a> for available modifiers and key codes.
+    </p>
     
     <div class="form-group">
         <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">

@@ -215,13 +215,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "activateNextTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : [],
+        defaultShortcuts: isElectron ? ["CommandOrControl+Tab", "CommandOrControl+PageDown"] : [],
         description: "Activates tab on the right",
         scope: "window"
     },
     {
         actionName: "activatePreviousTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : [],
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab", "CommandOrControl+PageUp"] : [],
         description: "Activates tab on the left",
         scope: "window"
     },
