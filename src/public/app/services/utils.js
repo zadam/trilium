@@ -238,7 +238,11 @@ function focusSavedElement() {
             .closest('.ck-editor__editable')
             .prop('ckeditorInstance');
 
-        editor.editing.view.focus();
+        if (editor) {
+            editor.editing.view.focus();
+        } else {
+            console.log("Could not find CKEditor instance to focus last element");
+        }
     } else {
         $lastFocusedElement.focus();
     }
