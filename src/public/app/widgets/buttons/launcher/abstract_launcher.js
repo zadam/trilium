@@ -7,6 +7,10 @@ export default class AbstractLauncher extends OnClickButtonWidget {
 
         /** @type {NoteShort} */
         this.launcherNote = launcherNote;
+
+        for (const label of launcherNote.getOwnedLabels('keyboardShortcut')) {
+            this.bindNoteShortcutHandler(label);
+        }
     }
 
     launch() {

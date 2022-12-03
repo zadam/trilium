@@ -61,9 +61,9 @@ export default class LauncherContainer extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getNoteIds().find(noteId => froca.notes[noteId]?.isLaunchBarConfig())
-            || loadResults.getBranches().find(branch => branch.parentNoteId.startsWith("lb_"))
-            || loadResults.getAttributes().find(attr => froca.notes[attr.noteId]?.isLaunchBarConfig())) {
+        if (loadResults.getBranches().find(branch => branch.parentNoteId.startsWith("lb_"))) {
+            // changes in note placement requires reload of all launchers, all other changes are handled by individual
+            // launchers
             this.load();
         }
     }
