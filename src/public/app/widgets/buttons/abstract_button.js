@@ -1,15 +1,10 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
-import keyboardActionsService from "../../services/keyboard_actions.js";
 
 const TPL = `<span class="button-widget icon-action bx"
       data-toggle="tooltip"
       title=""></span>`;
 
-let actions;
-
-keyboardActionsService.getActions().then(as => actions = as);
-
-export default class ButtonWidget extends NoteContextAwareWidget {
+export default class AbstractButtonWidget extends NoteContextAwareWidget {
     isEnabled() {
         return true;
     }
@@ -21,28 +16,12 @@ export default class ButtonWidget extends NoteContextAwareWidget {
             titlePlacement: 'right',
             title: null,
             icon: null,
-            command: null,
-            onClick: null,
             onContextMenu: null
         };
     }
 
     doRender() {
         this.$widget = $(TPL);
-
-        if (this.settings.onClick) {
-            this.$widget.on("click", e => {
-                this.$widget.tooltip("hide");
-
-                this.settings.onClick(this, e);
-            });
-        } else {
-            this.$widget.on("click", () => {
-                this.$widget.tooltip("hide");
-
-                this.triggerCommand(this.settings.command);
-            });
-        }
 
         if (this.settings.onContextMenu) {
             this.$widget.on("contextmenu", e => {
@@ -56,24 +35,17 @@ export default class ButtonWidget extends NoteContextAwareWidget {
 
         this.$widget.tooltip({
             html: true,
-            title: () => {
-                const title = typeof this.settings.title === "function"
-                    ? this.settings.title()
-                    : this.settings.title;
-
-                const action = actions.find(act => act.actionName === this.settings.command);
-
-                if (action && action.effectiveShortcuts.length > 0) {
-                    return `${title} (${action.effectiveShortcuts.join(", ")})`;
-                }
-                else {
-                    return title;
-                }
-            },
+            title: () => this.getTitle(),
             trigger: "hover"
         });
 
         super.doRender();
+    }
+
+    getTitle() {
+        return typeof this.settings.title === "function"
+            ? this.settings.title()
+            : this.settings.title;
     }
 
     refreshIcon() {
@@ -83,35 +55,32 @@ export default class ButtonWidget extends NoteContextAwareWidget {
             }
         }
 
-        this.$widget.addClass(this.settings.icon);
+        const icon = typeof this.settings.icon === "function"
+            ? this.settings.icon()
+            : this.settings.icon;
+
+        this.$widget.addClass(icon);
     }
 
     initialRenderCompleteEvent() {
         this.refreshIcon();
     }
 
+    /** @param {string|function} icon */
     icon(icon) {
         this.settings.icon = icon;
         return this;
     }
 
+    /** @param {string|function} title */
     title(title) {
         this.settings.title = title;
         return this;
     }
 
+    /** @param {string} placement - "top", "bottom", "left", "right" */
     titlePlacement(placement) {
         this.settings.titlePlacement = placement;
-        return this;
-    }
-
-    command(command) {
-        this.settings.command = command;
-        return this;
-    }
-
-    onClick(handler) {
-        this.settings.onClick = handler;
         return this;
     }
 

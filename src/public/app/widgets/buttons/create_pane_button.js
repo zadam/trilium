@@ -1,6 +1,6 @@
-import ButtonWidget from "./button_widget.js";
+import OnClickButtonWidget from "./onclick_button.js";
 
-export default class CreatePaneButton extends ButtonWidget {
+export default class CreatePaneButton extends OnClickButtonWidget {
     constructor() {
         super();
 

@@ -29,12 +29,12 @@ export default class LauncherContainer extends FlexContainer {
             (await visibleLaunchersRoot.getChildNotes())
                 .map(async launcherNote => {
                     try {
-                        const launcherWidget = new LauncherWidget(launcherNote);
-                        await launcherWidget.initLauncher();
+                        const launcherWidget = new LauncherWidget();
+                        await launcherWidget.initLauncher(launcherNote);
                         this.child(launcherWidget);
                     }
                     catch (e) {
-                        console.error(e.message);
+                        console.error(e);
                     }
                 })
         );

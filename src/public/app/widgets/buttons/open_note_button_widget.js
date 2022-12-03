@@ -1,10 +1,10 @@
-import ButtonWidget from "./button_widget.js";
+import OnClickButtonWidget from "./onclick_button.js";
 import appContext from "../../components/app_context.js";
 import froca from "../../services/froca.js";
 
 // FIXME: this widget might not be useful anymore
 
-export default class OpenNoteButtonWidget extends ButtonWidget {
+export default class OpenNoteButtonWidget extends OnClickButtonWidget {
     targetNote(noteId) {
         froca.getNote(noteId).then(note => {
             if (!note) {
