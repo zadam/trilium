@@ -238,7 +238,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             this.reloadTreeFromCache();
         });
 
-        this.initFancyTree();
+        froca.initializedPromise.then(() => this.initFancyTree());
 
         this.setupNoteTitleTooltip();
     }
