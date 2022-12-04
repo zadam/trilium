@@ -26,6 +26,7 @@ mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR
 cp bin/tpl/anonymize-database.sql $BUILD_DIR/
 
 cp -r dump-db $BUILD_DIR/
+rm -rf $BUILD_DIR/dump-db/node_modules
 
 echo "Zipping mac x64 electron distribution..."
 
