@@ -480,7 +480,7 @@ function createLauncherTemplates() {
             title: 'Launch bar base launcher',
             type: 'doc',
             content: '',
-            parentNoteId: getHiddenRoot().noteId
+            parentNoteId: LBTPL_ROOT
         });
     }
 

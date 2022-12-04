@@ -214,7 +214,6 @@ const ATTR_HELP = {
         "inbox": "default inbox location for new notes - when you create a note using \"new note\" button in the sidebar, notes will be created as child notes in the note marked as with <code>#inbox</code> label.",
         "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
         "sqlConsoleHome": "default location of SQL console notes",
-        "bookmarked": "note with this label will appear in bookmarks",
         "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)",
         "shareHiddenFromTree": "this note is hidden from left navigation tree, but still accessible with its URL",
         "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",

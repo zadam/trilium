@@ -39,7 +39,6 @@ module.exports = [
     { type: 'label', name: 'pageSize' },
     { type: 'label', name: 'viewType' },
     { type: 'label', name: 'mapRootNoteId' },
-    { type: 'label', name: 'bookmarked' },
     { type: 'label', name: 'bookmarkFolder' },
     { type: 'label', name: 'sorted' },
     { type: 'label', name: 'sortDirection' },
