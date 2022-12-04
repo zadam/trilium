@@ -1,7 +1,14 @@
-import attributeService from "../services/attributes.js";
 import SwitchWidget from "./switch.js";
+import server from "../services/server.js";
+import toastService from "../services/toast.js";
 
 export default class BookmarkSwitchWidget extends SwitchWidget {
+    isEnabled() {
+        return super.isEnabled()
+            // it's not possible to bookmark root because that would clone it under bookmarks and thus create a cycle
+            && !['root', 'hidden'].includes(this.noteId);
+    }
+
     doRender() {
         super.doRender();
 
@@ -12,32 +19,24 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
         this.$switchOffButton.attr("title", "Remove bookmark");
     }
 
-    async switchOff() {
-        for (const label of this.note.getLabels('bookmarked')) {
-            await attributeService.removeAttributeById(this.noteId, label.attributeId);
+    async toggle(state) {
+        const resp = await server.put(`notes/${this.noteId}/toggle-in-parent/lb_bookmarks/` + !!state);
+
+        if (!resp.success) {
+            toastService.showError(resp.message);
         }
     }
 
-    switchOn() {
-        return attributeService.setLabel(this.noteId, 'bookmarked');
-    }
-
     refreshWithNote(note) {
-        const isBookmarked = note.hasLabel('bookmarked');
+        const isBookmarked = !!note.getParentBranches().find(b => b.parentNoteId === 'lb_bookmarks');
 
         this.$switchOn.toggle(!isBookmarked);
         this.$switchOff.toggle(isBookmarked);
     }
 
     entitiesReloadedEvent({loadResults}) {
-        for (const attr of loadResults.getAttributes()) {
-            if (attr.type === 'label'
-                && attr.name === 'bookmarked'
-                && attributeService.isAffecting(attr, this.note)) {
-
-                this.refresh();
-                break;
-            }
+        if (loadResults.getBranches().find(b => b.noteId === this.noteId)) {
+            this.refresh();
         }
     }
 }

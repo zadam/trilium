@@ -22,8 +22,15 @@ function cloneNoteAfter(req) {
     return cloningService.cloneNoteAfter(noteId, afterBranchId);
 }
 
+function toggleNoteInParent(req) {
+    const {noteId, parentNoteId, present} = req.params;
+
+    return cloningService.toggleNoteInParent(present === 'true', noteId, parentNoteId);
+}
+
 module.exports = {
     cloneNoteToBranch,
     cloneNoteToNote,
-    cloneNoteAfter
+    cloneNoteAfter,
+    toggleNoteInParent
 };

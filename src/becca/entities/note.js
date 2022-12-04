@@ -11,7 +11,6 @@ const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
-const searchService = require("../../services/search/services/search.js");
 dayjs.extend(utc)
 
 const LABEL = 'label';
@@ -153,6 +152,15 @@ class Note extends AbstractEntity {
     /** @returns {Branch[]} */
     getParentBranches() {
         return this.parentBranches;
+    }
+
+    /**
+     * Returns <i>strong</i> (as opposed to <i>weak</i>) parent branches. See isWeak for details.
+     *
+     * @returns {Branch[]}
+     */
+    getStrongParentBranches() {
+        return this.getParentBranches().filter(branch => !branch.isWeak);
     }
 
     /**

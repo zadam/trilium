@@ -740,12 +740,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             extraClasses.push("shared");
         }
         else if (note.getParentNoteIds().length > 1) {
-            const notSearchParents = note.getParentNoteIds()
+            const realClones = note.getParentNoteIds()
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
-                .filter(note => note.type !== 'search');
+                .filter(note =>
+                    !['share', 'lb_bookmarks'].includes(note.noteId)
+                    && note.type !== 'search');
 
-            if (notSearchParents.length > 1) {
+            if (realClones.length > 1) {
                 extraClasses.push("multiple-parents");
             }
         }

@@ -7,7 +7,8 @@ import dialogService from "../services/dialog.js";
 
 export default class SharedSwitchWidget extends SwitchWidget {
     isEnabled() {
-        return super.isEnabled() && this.noteId !== 'root' && this.noteId !== 'share';
+        return super.isEnabled()
+            && !['root', 'share', 'hidden'].includes(this.noteId);
     }
 
     doRender() {

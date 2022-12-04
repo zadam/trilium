@@ -281,6 +281,7 @@ function register(app) {
     apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
 
     apiRoute(PUT, '/api/notes/:noteId/clone-to-branch/:parentBranchId', cloningApiRoute.cloneNoteToBranch);
+    apiRoute(PUT, '/api/notes/:noteId/toggle-in-parent/:parentNoteId/:present', cloningApiRoute.toggleNoteInParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-to-note/:parentNoteId', cloningApiRoute.cloneNoteToNote);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 

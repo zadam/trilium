@@ -58,7 +58,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         };
     }
 
-    if (becca.getNote(parentNoteId).type === 'launcher') {
+    if (parentNoteId !== 'lb_bookmarks' && becca.getNote(parentNoteId).type === 'launcher') {
         return {
             success: false,
             message: 'Launcher note cannot have any children.'

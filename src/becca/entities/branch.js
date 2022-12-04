@@ -120,6 +120,19 @@ class Branch extends AbstractEntity {
     }
 
     /**
+     * Branch is weak when its existence should not hinder deletion of its note.
+     * As a result, note with only weak branches should be immediately deleted.
+     * An example is shared or bookmarked clones - they are created automatically and exist for technical reasons,
+     * not as user-intended actions. From user perspective, they don't count as real clones and for the purpose
+     * of deletion should not act as a clone.
+     *
+     * @returns {boolean}
+     */
+    get isWeak() {
+        return ['share', 'lb_bookmarks'].includes(this.parentNoteId);
+    }
+
+    /**
      * Delete a branch. If this is a last note's branch, delete the note as well.
      *
      * @param {string} [deleteId] - optional delete identified
@@ -159,9 +172,13 @@ class Branch extends AbstractEntity {
 
         this.markAsDeleted(deleteId);
 
-        const notDeletedBranches = note.getParentBranches();
+        const notDeletedBranches = note.getStrongParentBranches();
 
         if (notDeletedBranches.length === 0) {
+            for (const weakBranch of note.getParentBranches()) {
+                weakBranch.markAsDeleted(deleteId);
+            }
+
             for (const childBranch of note.getChildBranches()) {
                 childBranch.deleteBranch(deleteId, taskContext);
             }

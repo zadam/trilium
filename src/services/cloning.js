@@ -66,8 +66,10 @@ function cloneNoteToBranch(noteId, parentBranchId, prefix) {
 }
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
-    if (isNoteDeleted(noteId) || isNoteDeleted(parentNoteId)) {
-        return { success: false, message: 'Note is deleted.' };
+    if (isNoteDeleted(noteId)) {
+        return { success: false, message: `Note '${noteId}' is deleted.` };
+    } else if (isNoteDeleted(parentNoteId)) {
+        return { success: false, message: `Note '${parentNoteId}' is deleted.` };
     }
 
     const parentNote = becca.getNote(parentNoteId);
@@ -89,7 +91,7 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
         isExpanded: 0
     }).save();
 
-    log.info(`Ensured note ${noteId} is in parent note ${parentNoteId} with prefix ${prefix}`);
+    log.info(`Ensured note '${noteId}' is in parent note '${parentNoteId}' with prefix '${prefix}'`);
 
     return { success: true };
 }
@@ -99,22 +101,27 @@ function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     const branch = becca.getBranch(branchId);
 
     if (branch) {
-        if (branch.getNote().getParentBranches().length <= 1) {
-            throw new Error(`Cannot remove branch ${branch.branchId} between child ${noteId} and parent ${parentNoteId} because this would delete the note as well.`);
+        if (!branch.isWeak && branch.getNote().getStrongParentBranches().length <= 1) {
+            return {
+                success: false,
+                message: `Cannot remove branch '${branch.branchId}' between child '${noteId}' and parent '${parentNoteId}' because this would delete the note as well.`
+            };
         }
 
         branch.deleteBranch();
 
-        log.info(`Ensured note ${noteId} is NOT in parent note ${parentNoteId}`);
+        log.info(`Ensured note '${noteId}' is NOT in parent note '${parentNoteId}'`);
+
+        return { success: true };
     }
 }
 
 function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
     if (present) {
-        ensureNoteIsPresentInParent(noteId, parentNoteId, prefix);
+        return ensureNoteIsPresentInParent(noteId, parentNoteId, prefix);
     }
     else {
-        ensureNoteIsAbsentFromParent(noteId, parentNoteId);
+        return ensureNoteIsAbsentFromParent(noteId, parentNoteId);
     }
 }
 
@@ -160,7 +167,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
         isExpanded: 0
     }).save();
 
-    log.info(`Cloned note ${noteId} into parent note ${afterNote.parentNoteId} after note ${afterNote.noteId}, branch ${afterBranchId}`);
+    log.info(`Cloned note '${noteId}' into parent note '${afterNote.parentNoteId}' after note '${afterNote.noteId}', branch ${afterBranchId}`);
 
     return { success: true, branchId: branch.branchId };
 }
@@ -168,7 +175,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
 function isNoteDeleted(noteId) {
     const note = becca.getNote(noteId);
 
-    return note.isDeleted;
+    return !note || note.isDeleted;
 }
 
 module.exports = {
