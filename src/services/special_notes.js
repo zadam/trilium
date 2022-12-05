@@ -58,10 +58,6 @@ function getHiddenRoot() {
         hidden.addLabel('iconClass', "bx bx-chip", false);
     }
 
-    if (!hidden.hasOwnedLabel("docName")) {
-        hidden.addLabel("docName", "hidden");
-    }
-
     const MAX_POS = 999_999_999;
 
     const branch = hidden.getBranches()[0];
@@ -349,16 +345,7 @@ const launchers = [
     { id: 'lb_forwardinhistory', builtinWidget: 'forwardInHistoryButton', title: 'Forward in history', icon: 'bx bxs-right-arrow-square', isVisible: false },
 ];
 
-function createMissingSpecialNotes() {
-    getSqlConsoleRoot();
-    getGlobalNoteMap();
-    getBulkActionNote();
-    createLauncherTemplates();
-    getLaunchBarRoot();
-    getLaunchBarAvailableLaunchersRoot();
-    getLaunchBarVisibleLaunchersRoot();
-    getShareRoot();
-
+function createLaunchers() {
     for (const launcher of launchers) {
         let note = becca.getNote(launcher.id);
 
@@ -401,14 +388,6 @@ function createMissingSpecialNotes() {
         } else {
             throw new Error(`No action defined for launcher ${JSON.stringify(launcher)}`);
         }
-    }
-
-    // share root is not automatically created since it's visible in the tree and many won't need it/use it
-
-    const hidden = getHiddenRoot();
-
-    if (!hidden.hasOwnedLabel('excludeFromNoteMap')) {
-        hidden.addLabel('excludeFromNoteMap', "", true);
     }
 }
 
@@ -459,6 +438,18 @@ function createLauncher(parentNoteId, launcherType) {
         success: true,
         note
     };
+}
+
+function initHiddenRoot() {
+    const hidden = getHiddenRoot();
+
+    if (!hidden.hasOwnedLabel("docName")) {
+        hidden.addLabel("docName", "hidden");
+    }
+
+    if (!hidden.hasOwnedLabel('excludeFromNoteMap')) {
+        hidden.addLabel('excludeFromNoteMap', "", true);
+    }
 }
 
 function createLauncherTemplates() {
@@ -580,6 +571,49 @@ function createLauncherTemplates() {
         tpl.addLabel('relation:widget', 'promoted');
         tpl.addLabel('docName', 'launchbar_widget_launcher');
     }
+}
+
+const OPTIONS_ROOT = "opt_root";
+const OPTIONS_APPEARANCE = "opt_appearance";
+
+function createOptionNotes() {
+    if (!(OPTIONS_ROOT in becca.notes)) {
+        noteService.createNewNote({
+            branchId: OPTIONS_ROOT,
+            noteId: OPTIONS_ROOT,
+            title: 'Options',
+            type: 'doc',
+            content: '',
+            parentNoteId: getHiddenRoot().noteId
+        });
+    }
+
+    if (!(OPTIONS_APPEARANCE in becca.notes)) {
+        const note = noteService.createNewNote({
+            branchId: OPTIONS_APPEARANCE,
+            noteId: OPTIONS_APPEARANCE,
+            title: 'Appearance',
+            type: 'widget',
+            content: '',
+            parentNoteId: OPTIONS_ROOT
+        }).note;
+
+        note.addLabel('widget', 'optionsAppearance');
+    }
+}
+
+function createMissingSpecialNotes() {
+    initHiddenRoot();
+    getSqlConsoleRoot();
+    getGlobalNoteMap();
+    getBulkActionNote();
+    createLauncherTemplates();
+    getLaunchBarRoot();
+    getLaunchBarAvailableLaunchersRoot();
+    getLaunchBarVisibleLaunchersRoot();
+    createLaunchers();
+    createOptionNotes();
+    getShareRoot();
 }
 
 function resetLauncher(noteId) {

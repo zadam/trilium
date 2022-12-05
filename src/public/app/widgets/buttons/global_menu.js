@@ -83,9 +83,14 @@ const TPL = `
     </button>
 
     <ul class="dropdown-menu dropdown-menu-right">
-        <li class="dropdown-item options-button" data-trigger-command="showOptions">
+        <li class="dropdown-item" data-trigger-command="showOptions">
             <span class="bx bx-slider"></span>
             Options
+        </li>
+        
+        <li class="dropdown-item" data-trigger-command="showOptionsInHidden">
+            <span class="bx bx-slider"></span>
+            Options in hidden
         </li>
 
         <li class="dropdown-item" data-trigger-command="openNewWindow">

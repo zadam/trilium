@@ -10,6 +10,7 @@ const NOTE_TYPES = [
     { type: "note-map", mime: '', title: "Note Map", selectable: false },
     { type: "launcher", mime: '', title: "Launcher", selectable: false },
     { type: "doc", mime: '', title: "Doc", selectable: false },
+    { type: "widget", mime: '', title: "Widget", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },

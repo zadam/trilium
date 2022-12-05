@@ -26,6 +26,7 @@ import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
 import DocTypeWidget from "./type_widgets/doc.js";
+import WidgetTypeWidget from "./type_widgets/widget.js";
 
 const TPL = `
 <div class="note-detail">
@@ -59,7 +60,8 @@ const typeWidgetClasses = {
     'book': BookTypeWidget,
     'note-map': NoteMapTypeWidget,
     'web-view': WebViewTypeWidget,
-    'doc': DocTypeWidget
+    'doc': DocTypeWidget,
+    'widget': WidgetTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {

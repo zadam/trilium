@@ -12,5 +12,6 @@ module.exports = [
     'canvas',
     'web-view',
     'launcher',
-    'doc'
+    'doc',
+    'widget'
 ];

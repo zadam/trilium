@@ -83,4 +83,8 @@ export default class RootCommandExecutor extends Component {
     async showHiddenSubtreeCommand() {
         await appContext.tabManager.openContextWithNote('hidden', true, null, 'hidden');
     }
+
+    async showOptionsInHiddenCommand() {
+        await appContext.tabManager.openContextWithNote('opt_root', true, null, 'opt_root');
+    }
 }
