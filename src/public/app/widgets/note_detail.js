@@ -26,7 +26,7 @@ import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
 import DocTypeWidget from "./type_widgets/doc.js";
-import ContentWidgetTypeWidget from "./type_widgets/widget.js";
+import ContentWidgetTypeWidget from "./type_widgets/content_widget.js";
 
 const TPL = `
 <div class="note-detail">
