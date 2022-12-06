@@ -83,7 +83,7 @@ const TPL = `
 `;
 
 export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
-    static getType() { return "editable-text"; }
+    static getType() { return "editableText"; }
 
     doRender() {
         this.$widget = $(TPL);

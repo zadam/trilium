@@ -74,7 +74,7 @@ const TPL = `
 let containerCounter = 1;
 
 export default class RelationMapTypeWidget extends TypeWidget {
-    static getType() { return "relation-map"; }
+    static getType() { return "relationMap"; }
 
     doRender() {
         this.$widget = $(TPL);

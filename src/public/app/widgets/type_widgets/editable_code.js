@@ -21,7 +21,7 @@ const TPL = `
 </div>`;
 
 export default class EditableCodeTypeWidget extends TypeWidget {
-    static getType() { return "editable-code"; }
+    static getType() { return "editableCode"; }
 
     doRender() {
         this.$widget = $(TPL);

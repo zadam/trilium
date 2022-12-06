@@ -67,7 +67,7 @@ const TPL = `
 `;
 
 export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
-    static getType() { return "read-only-text"; }
+    static getType() { return "readOnlyText"; }
 
     doRender() {
         this.$widget = $(TPL);

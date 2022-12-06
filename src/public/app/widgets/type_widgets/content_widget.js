@@ -26,7 +26,7 @@ const CONTENT_WIDGETS = {
 };
 
 export default class ContentWidgetTypeWidget extends TypeWidget {
-    static getType() { return "content-widget"; }
+    static getType() { return "contentWidget"; }
 
     doRender() {
         this.$widget = $(TPL);

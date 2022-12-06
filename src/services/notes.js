@@ -50,9 +50,9 @@ function deriveMime(type, mime) {
         mime = 'text/html';
     } else if (type === 'code' || type === 'mermaid') {
         mime = 'text/plain';
-    } else if (['relation-map', 'search', 'canvas'].includes(type)) {
+    } else if (['relationMap', 'search', 'canvas'].includes(type)) {
         mime = 'application/json';
-    } else if (['render', 'book', 'web-view'].includes(type)) {
+    } else if (['render', 'book', 'webView'].includes(type)) {
         mime = '';
     } else {
         mime = 'application/octet-stream';
@@ -130,7 +130,7 @@ function getAndValidateParent(params) {
  * - {string} parentNoteId
  * - {string} title
  * - {*} content
- * - {string} type - text, code, file, image, search, book, relation-map, canvas, render
+ * - {string} type - text, code, file, image, search, book, relationMap, canvas, render
  *
  * Following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type
@@ -495,7 +495,7 @@ function downloadImages(noteId, content) {
 }
 
 function saveLinks(note, content) {
-    if (note.type !== 'text' && note.type !== 'relation-map') {
+    if (note.type !== 'text' && note.type !== 'relationMap') {
         return content;
     }
 
@@ -512,7 +512,7 @@ function saveLinks(note, content) {
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
     }
-    else if (note.type === 'relation-map') {
+    else if (note.type === 'relationMap') {
         findRelationMapLinks(content, foundLinks);
     }
     else {
@@ -683,7 +683,7 @@ function getUndeletedParentBranchIds(noteId, deleteId) {
 }
 
 function scanForLinks(note) {
-    if (!note || !['text', 'relation-map'].includes(note.type)) {
+    if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }
 
@@ -873,7 +873,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
         let content = origNote.getContent();
 
-        if (['text', 'relation-map', 'search'].includes(origNote.type)) {
+        if (['text', 'relationMap', 'search'].includes(origNote.type)) {
             // fix links in the content
             content = replaceByMap(content, noteIdMapping);
         }

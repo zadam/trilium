@@ -89,14 +89,14 @@ function getSearchRoot() {
 }
 
 function getGlobalNoteMap() {
-    let globalNoteMap = becca.getNote('globalnotemap');
+    let globalNoteMap = becca.getNote('globalNoteMap');
 
     if (!globalNoteMap) {
         globalNoteMap = noteService.createNewNote({
-            branchId: 'globalnotemap',
-            noteId: 'globalnotemap',
+            branchId: 'globalNoteMap',
+            noteId: 'globalNoteMap',
             title: 'Global Note Map',
-            type: 'note-map',
+            type: 'noteMap',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         }).note;
@@ -108,12 +108,12 @@ function getGlobalNoteMap() {
 }
 
 function getSqlConsoleRoot() {
-    let sqlConsoleRoot = becca.getNote('sqlconsole');
+    let sqlConsoleRoot = becca.getNote('sqlConsole');
 
     if (!sqlConsoleRoot) {
         sqlConsoleRoot = noteService.createNewNote({
-            branchId: 'sqlconsole',
-            noteId: 'sqlconsole',
+            branchId: 'sqlConsole',
+            noteId: 'sqlConsole',
             title: 'SQL Console',
             type: 'doc',
             content: '',
@@ -236,12 +236,12 @@ function getShareRoot() {
 }
 
 function getBulkActionNote() {
-    let bulkActionNote = becca.getNote('bulkaction');
+    let bulkActionNote = becca.getNote('bulkAction');
 
     if (!bulkActionNote) {
         bulkActionNote = noteService.createNewNote({
-            branchId: 'bulkaction',
-            noteId: 'bulkaction',
+            branchId: 'bulkAction',
+            noteId: 'bulkAction',
             title: 'Bulk action',
             type: 'text',
             content: '',
@@ -331,7 +331,7 @@ const launchers = [
     { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
     { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
     { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
-    { id: 'lb_notemap', targetNoteId: 'globalnotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
+    { id: 'lb_notemap', targetNoteId: 'globalNotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
     { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
     { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "50", growthFactor: "0" },
     { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
@@ -604,7 +604,7 @@ function createOptionNotes() {
             branchId: OPTIONS_APPEARANCE,
             noteId: OPTIONS_APPEARANCE,
             title: 'Appearance',
-            type: 'content-widget',
+            type: 'contentWidget',
             content: '',
             parentNoteId: OPTIONS_ROOT
         }).note;

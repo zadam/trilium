@@ -6,13 +6,13 @@ async function getNoteTypeItems(command) {
         { title: "Text", command: command, type: "text", uiIcon: "bx bx-note" },
         { title: "Code", command: command, type: "code", uiIcon: "bx bx-code" },
         { title: "Saved Search", command: command, type: "search", uiIcon: "bx bx-file-find" },
-        { title: "Relation Map", command: command, type: "relation-map", uiIcon: "bx bx-map-alt" },
-        { title: "Note Map", command: command, type: "note-map", uiIcon: "bx bx-map-alt" },
+        { title: "Relation Map", command: command, type: "relationMap", uiIcon: "bx bx-map-alt" },
+        { title: "Note Map", command: command, type: "noteMap", uiIcon: "bx bx-map-alt" },
         { title: "Render Note", command: command, type: "render", uiIcon: "bx bx-extension" },
         { title: "Book", command: command, type: "book", uiIcon: "bx bx-book" },
         { title: "Mermaid Diagram", command: command, type: "mermaid", uiIcon: "bx bx-selection" },
         { title: "Canvas", command: command, type: "canvas", uiIcon: "bx bx-pen" },
-        { title: "Web View", command: command, type: "web-view", uiIcon: "bx bx-globe-alt" },
+        { title: "Web View", command: command, type: "webView", uiIcon: "bx bx-globe-alt" },
     ];
 
     const templateNoteIds = await server.get("search-templates");

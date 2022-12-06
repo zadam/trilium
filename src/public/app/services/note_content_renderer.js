@@ -148,7 +148,7 @@ async function getRenderedContent(note, options = {}) {
     else if (type === 'book') {
         // nothing, book doesn't have its own content
     }
-    else if (!options.tooltip && type === 'protected-session') {
+    else if (!options.tooltip && type === 'protectedSession') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
 
@@ -219,7 +219,7 @@ function getRenderingType(note) {
             protectedSessionHolder.touchProtectedSession();
         }
         else {
-            type = 'protected-session';
+            type = 'protectedSession';
         }
     }
 

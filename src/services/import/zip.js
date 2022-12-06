@@ -344,7 +344,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
         }
 
-        if (type === 'relation-map' && noteMeta) {
+        if (type === 'relationMap' && noteMeta) {
             const relationMapLinks = (noteMeta.attributes || [])
                 .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
 

@@ -21,7 +21,7 @@ const TPL = `
 </div>`;
 
 export default class ProtectedSessionTypeWidget extends TypeWidget {
-    static getType() { return "protected-session"; }
+    static getType() { return "protectedSession"; }
 
     doRender() {
         this.$widget = $(TPL);

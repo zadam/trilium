@@ -7,18 +7,18 @@ const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
     { type: "image", title: "Image", selectable: false },
     { type: "search", title: "Saved Search", selectable: false },
-    { type: "note-map", mime: '', title: "Note Map", selectable: false },
+    { type: "noteMap", mime: '', title: "Note Map", selectable: false },
     { type: "launcher", mime: '', title: "Launcher", selectable: false },
     { type: "doc", mime: '', title: "Doc", selectable: false },
-    { type: "content-widget", mime: '', title: "Widget", selectable: false },
+    { type: "contentWidget", mime: '', title: "Widget", selectable: false },
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
-    { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
+    { type: "relationMap", mime: "application/json", title: "Relation Map", selectable: true },
     { type: "render", mime: '', title: "Render Note", selectable: true },
     { type: "canvas", mime: 'application/json', title: "Canvas", selectable: true },
     { type: "mermaid", mime: 'text/mermaid', title: "Mermaid Diagram", selectable: true },
     { type: "book", mime: '', title: "Book", selectable: true },
-    { type: "web-view", mime: '', title: "Web View", selectable: true },
+    { type: "webView", mime: '', title: "Web View", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 

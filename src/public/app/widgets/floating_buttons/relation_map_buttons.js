@@ -23,7 +23,7 @@ const TPL = `
 
 export default class RelationMapButtons extends NoteContextAwareWidget {
     isEnabled() {
-        return super.isEnabled() && this.note?.type === 'relation-map';
+        return super.isEnabled() && this.note?.type === 'relationMap';
     }
 
     doRender() {

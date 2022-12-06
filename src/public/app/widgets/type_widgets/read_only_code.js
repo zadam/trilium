@@ -17,7 +17,7 @@ const TPL = `
 </div>`;
 
 export default class ReadOnlyCodeTypeWidget extends TypeWidget {
-    static getType() { return "read-only-code"; }
+    static getType() { return "readOnlyCode"; }
 
     doRender() {
         this.$widget = $(TPL);
