@@ -162,8 +162,6 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
     });
 });
 
-const debouncedCreateMissingSpecialNotes = debounce(() => specialNotesService.createMissingSpecialNotes(), 300);
-
 eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
         // if one inverse attribute is deleted then the other should be deleted as well
@@ -178,13 +176,6 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
     if (entityName === 'branches') {
         runAttachedRelations(entity.getNote(), 'runOnBranchDeletion', entity);
-    }
-
-    if (entityName === 'notes') {
-        if (entity.noteId.startsWith("lb_")) {
-            // if user deletes shortcuts, restore them immediately
-            debouncedCreateMissingSpecialNotes();
-        }
     }
 });
 

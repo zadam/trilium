@@ -398,7 +398,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
-                    if (['root', 'hidden', 'lb_root', 'lb_availablelaunchers', 'lb_visiblelaunchers'].includes(node.data.noteId)) {
+                    if (['root', 'hidden', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(node.data.noteId)) {
                         return false;
                     }
 
@@ -426,7 +426,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 dragEnter: (node, data) => {
                     if (node.data.noteType === 'search') {
                         return false;
-                    } else if (node.data.noteId === 'lb_root') {
+                    } else if (node.data.noteId === 'lbRoot') {
                         return false;
                     } else if (node.data.noteType === 'launcher') {
                         return ['before', 'after'];
@@ -604,7 +604,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.$tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
-            if (hoistedNoteService.getHoistedNoteId() === 'lb_root') {
+            if (hoistedNoteService.getHoistedNoteId() === 'lbRoot') {
                 import("../menus/launcher_context_menu.js").then(({LauncherContextMenu: ShortcutContextMenu}) => {
                     const shortcutContextMenu = new LauncherContextMenu(this, node);
                     shortcutContextMenu.show(e);
@@ -744,7 +744,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
                 .filter(note =>
-                    !['share', 'lb_bookmarks'].includes(note.noteId)
+                    !['share', 'lbBookmarks'].includes(note.noteId)
                     && note.type !== 'search');
 
             if (realClones.length > 1) {
@@ -1554,11 +1554,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     moveShortcutToVisibleCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_visiblelaunchers');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lbVisibleLaunchers');
     }
 
     moveShortcutToAvailableCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lb_availablelaunchers');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lbAvailableLaunchers');
     }
 
     addNoteLauncherCommand({node}) {

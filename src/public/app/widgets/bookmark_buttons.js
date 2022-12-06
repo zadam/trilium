@@ -15,7 +15,7 @@ export default class BookmarkButtons extends FlexContainer {
         this.children = [];
         this.noteIds = [];
 
-        const bookmarkParentNote = await froca.getNote('lb_bookmarks');
+        const bookmarkParentNote = await froca.getNote('lbBookmarks');
 
         for (const note of await bookmarkParentNote.getChildNotes()) {
             this.noteIds.push(note.noteId);
@@ -37,7 +37,7 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.parentNoteId === 'lb_bookmarks')) {
+        if (loadResults.getBranches().find(branch => branch.parentNoteId === 'lbBookmarks')) {
             this.refresh();
         }
 

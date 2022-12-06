@@ -27,13 +27,13 @@ export default class LauncherContextMenu {
         const note = await froca.getNote(this.node.data.noteId);
         const parentNoteId = this.node.getParent().data.noteId;
 
-        const isVisibleRoot = note.noteId === 'lb_visiblelaunchers';
-        const isAvailableRoot = note.noteId === 'lb_availablelaunchers';
-        const isVisibleItem = parentNoteId === 'lb_visiblelaunchers';
-        const isAvailableItem = parentNoteId === 'lb_availablelaunchers';
+        const isVisibleRoot = note.noteId === 'lbVisibleLaunchers';
+        const isAvailableRoot = note.noteId === 'lbAvailableLaunchers';
+        const isVisibleItem = parentNoteId === 'lbVisibleLaunchers';
+        const isAvailableItem = parentNoteId === 'lbAvailableLaunchers';
         const isItem = isVisibleItem || isAvailableItem;
-        const canBeDeleted = !note.noteId.startsWith("lb_");
-        const canBeReset = note.noteId.startsWith("lb_");
+        const canBeDeleted = !note.isLaunchBarConfig();
+        const canBeReset = note.isLaunchBarConfig();
 
         return [
             (isVisibleRoot || isAvailableRoot) ? { title: 'Add a note launcher', command: 'addNoteLauncher', uiIcon: "bx bx-plus" } : null,

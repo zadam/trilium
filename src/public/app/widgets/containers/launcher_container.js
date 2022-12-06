@@ -17,7 +17,7 @@ export default class LauncherContainer extends FlexContainer {
     async load() {
         this.children = [];
 
-        const visibleLaunchersRoot = await froca.getNote('lb_visiblelaunchers', true);
+        const visibleLaunchersRoot = await froca.getNote('lbVisibleLaunchers', true);
 
         if (!visibleLaunchersRoot) {
             console.log("Visible launchers root note doesn't exist.");
@@ -61,7 +61,7 @@ export default class LauncherContainer extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.parentNoteId.startsWith("lb_"))) {
+        if (loadResults.getBranches().find(branch => froca.getNoteFromCache(branch.parentNoteId)?.isLaunchBarConfig())) {
             // changes in note placement requires reload of all launchers, all other changes are handled by individual
             // launchers
             this.load();

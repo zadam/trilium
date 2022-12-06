@@ -828,7 +828,7 @@ class NoteShort {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'launcher' || this.noteId.startsWith("lb_");
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableShortcuts', 'lbVisibleShortcuts'];
     }
 }
 

@@ -8,7 +8,7 @@ export default class BackInHistoryButtonWidget extends AbstractHistoryNavigation
             .title("Go to previous note.")
             .command("backInNoteHistory")
             .titlePlacement("right")
-            .buttonNoteIdProvider(() => 'lb_backinhistory')
+            .buttonNoteIdProvider(() => 'lbBackInHistory')
             .onContextMenu(e => this.showContextMenu(e));
     }
 }

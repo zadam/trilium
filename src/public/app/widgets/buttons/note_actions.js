@@ -38,7 +38,7 @@ const TPL = `
 
 export default class NoteActionsWidget extends NoteContextAwareWidget {
     isEnabled() {
-        return !this.note?.isLaunchBarConfig();
+        return this.note?.type !== 'launcher';
     }
 
     doRender() {

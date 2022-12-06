@@ -73,7 +73,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     async showLaunchBarSubtreeCommand() {
-        await appContext.tabManager.openContextWithNote('lb_root', true, null, 'lb_root');
+        await appContext.tabManager.openContextWithNote('lbRoot', true, null, 'lbRoot');
     }
 
     async showShareSubtreeCommand() {

@@ -8,7 +8,7 @@ export default class ForwardInHistoryButtonWidget extends AbstractHistoryNavigat
             .title("Go to next note.")
             .command("forwardInNoteHistory")
             .titlePlacement("right")
-            .buttonNoteIdProvider(() => 'lb_forwardinhistory')
+            .buttonNoteIdProvider(() => 'lbForwardInHistory')
             .onContextMenu(e => this.showContextMenu(e));
     }
 }

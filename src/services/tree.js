@@ -30,7 +30,7 @@ function getNotes(noteIds) {
 }
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
-    if (['root', 'hidden', 'share', 'lb_root', 'lb_availablelaunchers', 'lb_visiblelaunchers'].includes(childNoteId)) {
+    if (['root', 'hidden', 'share', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(childNoteId)) {
         return { success: false, message: `Cannot change this note's location.`};
     }
 
@@ -58,7 +58,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         };
     }
 
-    if (parentNoteId !== 'lb_bookmarks' && becca.getNote(parentNoteId).type === 'launcher') {
+    if (parentNoteId !== 'lbBookmarks' && becca.getNote(parentNoteId).type === 'launcher') {
         return {
             success: false,
             message: 'Launcher note cannot have any children.'

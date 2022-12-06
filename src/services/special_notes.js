@@ -4,6 +4,7 @@ const becca = require("../becca/becca");
 const noteService = require("./notes");
 const cls = require("./cls");
 const dateUtils = require("./date_utils");
+const log = require("./log.js");
 
 const LBTPL_ROOT = "lbtpl_root";
 const LBTPL_BASE = "lbtpl_base";
@@ -253,12 +254,12 @@ function getBulkActionNote() {
 }
 
 function getLaunchBarRoot() {
-    let note = becca.getNote('lb_root');
+    let note = becca.getNote('lbRoot');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'lb_root',
-            noteId: 'lb_root',
+            branchId: 'lbRoot',
+            noteId: 'lbRoot',
             title: 'Launch bar',
             type: 'doc',
             content: '',
@@ -273,12 +274,12 @@ function getLaunchBarRoot() {
 }
 
 function getLaunchBarAvailableLaunchersRoot() {
-    let note = becca.getNote('lb_availablelaunchers');
+    let note = becca.getNote('lbAvailableLaunchers');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'lb_availablelaunchers',
-            noteId: 'lb_availablelaunchers',
+            branchId: 'lbAvailableLaunchers',
+            noteId: 'lbAvailableLaunchers',
             title: 'Available launchers',
             type: 'doc',
             content: '',
@@ -290,7 +291,7 @@ function getLaunchBarAvailableLaunchersRoot() {
         note.addLabel("docName", "launchbar_intro");
     }
 
-    const branch = becca.getBranch('lb_availablelaunchers');
+    const branch = becca.getBranch('lbAvailableLaunchers');
     if (!branch.isExpanded) {
         branch.isExpanded = true;
         branch.save();
@@ -300,12 +301,12 @@ function getLaunchBarAvailableLaunchersRoot() {
 }
 
 function getLaunchBarVisibleLaunchersRoot() {
-    let note = becca.getNote('lb_visiblelaunchers');
+    let note = becca.getNote('lbVisibleLaunchers');
 
     if (!note) {
         note = noteService.createNewNote({
-            branchId: 'lb_visiblelaunchers',
-            noteId: 'lb_visiblelaunchers',
+            branchId: 'lbVisibleLaunchers',
+            noteId: 'lbVisibleLaunchers',
             title: 'Visible launchers',
             type: 'doc',
             content: '',
@@ -317,7 +318,7 @@ function getLaunchBarVisibleLaunchersRoot() {
         note.addLabel("docName", "launchbar_intro");
     }
 
-    const branch = becca.getBranch('lb_visiblelaunchers');
+    const branch = becca.getBranch('lbVisibleLaunchers');
     if (!branch.isExpanded) {
         branch.isExpanded = true;
         branch.save();
@@ -328,21 +329,21 @@ function getLaunchBarVisibleLaunchersRoot() {
 
 const launchers = [
     // visible launchers:
-    { id: 'lb_newnote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
-    { id: 'lb_search', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
-    { id: 'lb_jumpto', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
-    { id: 'lb_notemap', targetNoteId: 'globalNotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
-    { id: 'lb_calendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
-    { id: 'lb_spacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "50", growthFactor: "0" },
-    { id: 'lb_bookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
-    { id: 'lb_spacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "0", growthFactor: "1" },
-    { id: 'lb_protectedsession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
-    { id: 'lb_syncstatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
+    { id: 'lbNewNote', command: 'createNoteIntoInbox', title: 'New note', icon: 'bx bx-file-blank', isVisible: true },
+    { id: 'lbSearch', command: 'searchNotes', title: 'Search notes', icon: 'bx bx-search', isVisible: true },
+    { id: 'lbJumpTo', command: 'jumpToNote', title: 'Jump to note', icon: 'bx bx-send', isVisible: true },
+    { id: 'lbNoteMap', targetNoteId: 'globalNotemap', title: 'Note map', icon: 'bx bx-map-alt', isVisible: true },
+    { id: 'lbCalendar', builtinWidget: 'calendar', title: 'Calendar', icon: 'bx bx-calendar', isVisible: true },
+    { id: 'lbSpacer1', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "50", growthFactor: "0" },
+    { id: 'lbBookmarks', builtinWidget: 'bookmarks', title: 'Bookmarks', icon: 'bx bx-bookmark', isVisible: true },
+    { id: 'lbSpacer2', builtinWidget: 'spacer', title: 'Spacer', isVisible: true, baseSize: "0", growthFactor: "1" },
+    { id: 'lbProtectedSession', builtinWidget: 'protectedSession', title: 'Protected session', icon: 'bx bx bx-shield-quarter', isVisible: true },
+    { id: 'lbSyncStatus', builtinWidget: 'syncStatus', title: 'Sync status', icon: 'bx bx-wifi', isVisible: true },
 
     // available launchers:
-    { id: 'lb_recentchanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
-    { id: 'lb_backinhistory', builtinWidget: 'backInHistoryButton', title: 'Back in history', icon: 'bx bxs-left-arrow-square', isVisible: false },
-    { id: 'lb_forwardinhistory', builtinWidget: 'forwardInHistoryButton', title: 'Forward in history', icon: 'bx bxs-right-arrow-square', isVisible: false },
+    { id: 'lbRecentChanges', command: 'showRecentChanges', title: 'Recent changes', icon: 'bx bx-history', isVisible: false },
+    { id: 'lbBackInHistory', builtinWidget: 'backInHistoryButton', title: 'Back in history', icon: 'bx bxs-left-arrow-square', isVisible: false },
+    { id: 'lbForwardInHistory', builtinWidget: 'forwardInHistoryButton', title: 'Forward in history', icon: 'bx bxs-right-arrow-square', isVisible: false },
 ];
 
 function createLaunchers() {
@@ -628,11 +629,11 @@ function createMissingSpecialNotes() {
 }
 
 function resetLauncher(noteId) {
-    if (noteId.startsWith('lb_')) {
-        const note = becca.getNote(noteId);
+    const note = becca.getNote(noteId);
 
+    if (note.isLauncherConfig()) {
         if (note) {
-            if (noteId === 'lb_root') {
+            if (noteId === 'lbRoot') {
                 // deleting hoisted notes are not allowed, so we just reset the children
                 for (const childNote of note.getChildNotes()) {
                     childNote.deleteNote();

@@ -10,7 +10,7 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    if (['root', 'lb_root', 'lb_availablelaunchers', 'lb_visiblelaunchers'].includes(beforeBranchId)) {
+    if (['root', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(beforeBranchId)) {
         toastService.showError('Cannot move notes here.');
         return;
     }
@@ -34,9 +34,9 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     const forbiddenNoteIds = [
         'root',
         hoistedNoteService.getHoistedNoteId(),
-        'lb_root',
-        'lb_availablelaunchers',
-        'lb_visiblelaunchers'
+        'lbRoot',
+        'lbAvailableLaunchers',
+        'lbVisibleLaunchers'
     ];
 
     if (forbiddenNoteIds.includes(afterNote.noteId)) {
@@ -57,7 +57,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 }
 
 async function moveToParentNote(branchIdsToMove, newParentBranchId) {
-    if (newParentBranchId === 'lb_root') {
+    if (newParentBranchId === 'lbRoot') {
         toastService.showError('Cannot move notes here.');
         return;
     }

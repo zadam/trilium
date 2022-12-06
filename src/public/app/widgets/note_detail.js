@@ -58,7 +58,7 @@ const typeWidgetClasses = {
     'canvas': CanvasTypeWidget,
     'protectedSession': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget,
+    'noteMap': NoteMapTypeWidget,
     'webView': WebViewTypeWidget,
     'doc': DocTypeWidget,
     'contentWidget': ContentWidgetTypeWidget

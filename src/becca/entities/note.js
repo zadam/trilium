@@ -1328,6 +1328,10 @@ class Note extends AbstractEntity {
         }
     }
 
+    isLaunchBarConfig() {
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableShortcuts', 'lbVisibleShortcuts'];
+    }
+
     get isDeleted() {
         return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
