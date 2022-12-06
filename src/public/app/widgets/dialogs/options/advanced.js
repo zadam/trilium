@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -51,7 +51,7 @@ const TPL = `
     <button id="vacuum-database-button" class="btn">Vacuum database</button>
 </div>`;
 
-export default class AdvancedOptions extends OptionsTab {
+export default class AdvancedOptions extends OptionsWidget {
     get tabTitle() { return "Advanced" }
 
     lazyRender() {

@@ -2,7 +2,7 @@ import mimeTypesService from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -38,7 +38,7 @@ const TPL = `
     <ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>
 </div>`;
 
-export default class CodeNotesOptions extends OptionsTab {
+export default class CodeNotesOptions extends OptionsWidget {
     get tabTitle() { return "Code notes" }
 
     lazyRender() {

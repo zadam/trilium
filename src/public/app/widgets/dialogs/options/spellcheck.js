@@ -1,5 +1,5 @@
 import utils from "../../../services/utils.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -24,7 +24,7 @@ const TPL = `
     <p><strong>Available language codes: </strong> <span id="available-language-codes"></span></p>
 </div>`;
 
-export default class SpellcheckOptions extends OptionsTab {
+export default class SpellcheckOptions extends OptionsWidget {
     get tabTitle() { return "Spellcheck" }
 
     lazyRender() {

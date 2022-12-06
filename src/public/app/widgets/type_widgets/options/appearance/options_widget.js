@@ -1,8 +1,15 @@
-import server from "../../../services/server.js";
-import toastService from "../../../services/toast.js";
-import NoteContextAwareWidget from "../../note_context_aware_widget.js";
+import server from "../../../../services/server.js";
+import toastService from "../../../../services/toast.js";
+import NoteContextAwareWidget from "../../../note_context_aware_widget.js";
+import attributeService from "../../../../services/attributes.js";
 
-export default class OptionsTab extends NoteContextAwareWidget {
+export default class OptionsWidget extends NoteContextAwareWidget {
+    constructor() {
+        super();
+
+        this.contentSized();
+    }
+
     async updateOption(name, value) {
         const opts = { [name]: value };
 
@@ -39,5 +46,11 @@ export default class OptionsTab extends NoteContextAwareWidget {
         const options = await server.get('options');
 
         this.optionsLoaded(options);
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.options.length > 0) {
+            this.refresh();
+        }
     }
 }

@@ -575,6 +575,17 @@ function createLauncherTemplates() {
 
 const OPTIONS_ROOT = "opt_root";
 const OPTIONS_APPEARANCE = "opt_appearance";
+const OPTIONS_ADVANCED = "opt_advanced";
+const OPTIONS_BACKUP = "opt_backup";
+const OPTIONS_CODE_NOTES = "opt_code_notes";
+const OPTIONS_ETAPI = "opt_etapi";
+const OPTIONS_IMAGES = "opt_images";
+const OPTIONS_OTHER = "opt_other";
+const OPTIONS_PASSWORD = "opt_password";
+const OPTIONS_SHORTCUTS = "opt_shortcuts";
+const OPTIONS_SPELLCHECK = "opt_spellcheck";
+const OPTIONS_SYNC = "opt_sync";
+const OPTIONS_TEXT_NOTES = "opt_textnotes";
 
 function createOptionNotes() {
     if (!(OPTIONS_ROOT in becca.notes)) {

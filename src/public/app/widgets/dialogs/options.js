@@ -15,20 +15,6 @@ const TPL = `
             overflow-y: auto;
             max-height: 85vh;
         }
-
-        .options-dialog .options-section:first-of-type h4 {
-            margin-top: 0;
-        }
-        
-        .options-dialog .options-section h4 {
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .options-dialog .options-section h5 {
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
     </style>
 
     <div class="modal-dialog modal-lg" style="min-width: 1000px;" role="document">

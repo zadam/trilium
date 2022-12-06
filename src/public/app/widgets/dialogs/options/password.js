@@ -1,7 +1,7 @@
 import server from "../../../services/server.js";
 import protectedSessionHolder from "../../../services/protected_session_holder.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -45,7 +45,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class PasswordOptions extends OptionsTab {
+export default class PasswordOptions extends OptionsWidget {
     get tabTitle() { return "Password" }
 
     lazyRender() {

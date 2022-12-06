@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -40,7 +40,7 @@ const TPL = `
     <button id="test-sync-button" class="btn">Test sync</button>
 </div>`;
 
-export default class SyncOptions extends OptionsTab {
+export default class SyncOptions extends OptionsWidget {
     get tabTitle() { return "Sync" }
 
     lazyRender() {

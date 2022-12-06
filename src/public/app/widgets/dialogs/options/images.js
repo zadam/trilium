@@ -1,4 +1,4 @@
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <style>
@@ -36,7 +36,7 @@ const TPL = `
 </div>
 `;
 
-export default class ImageOptions extends OptionsTab {
+export default class ImageOptions extends OptionsWidget {
     get tabTitle() { return "Images" }
 
     lazyRender() {

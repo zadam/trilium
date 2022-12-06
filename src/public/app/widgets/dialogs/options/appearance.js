@@ -1,7 +1,7 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import appContext from "../../../components/app_context.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const FONT_FAMILIES = [
     { value: "theme", label: "Theme defined" },
@@ -188,7 +188,7 @@ const TPL = `
 </div>
 `;
 
-export default class AppearanceOptions extends OptionsTab {
+export default class AppearanceOptions extends OptionsWidget {
     get tabTitle() { return "Appearance" }
 
     lazyRender() {

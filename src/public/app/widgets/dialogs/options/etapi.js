@@ -1,7 +1,7 @@
 import server from "../../../services/server.js";
 import dialogService from "../../../services/dialog.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -46,7 +46,7 @@ const TPL = `
     }
 </style>`;
 
-export default class EtapiOptions extends OptionsTab {
+export default class EtapiOptions extends OptionsWidget {
     get tabTitle() { return "ETAPI" }
 
     lazyRender() {

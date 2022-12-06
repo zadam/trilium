@@ -967,3 +967,17 @@ button.close:hover {
     top: 1px;
     margin-right: 3px;
 }
+
+.options-section:first-of-type h4 {
+    margin-top: 0;
+}
+
+.options-section h4 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.options-section h5 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

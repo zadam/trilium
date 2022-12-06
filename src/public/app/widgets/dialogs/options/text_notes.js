@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
@@ -37,7 +37,7 @@ const TPL = `
     </div>
 </div>`;
 
-export default class TextNotesOptions extends OptionsTab {
+export default class TextNotesOptions extends OptionsWidget {
     get tabTitle() { return "Text notes" }
 
     lazyRender() {

@@ -1,7 +1,7 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import dialogService from "../../../services/dialog.js";
-import OptionsTab from "./options_tab.js";
+import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -39,7 +39,7 @@ const TPL = `
 
 let globActions;
 
-export default class KeyboardShortcutsOptions extends OptionsTab {
+export default class KeyboardShortcutsOptions extends OptionsWidget {
     get tabTitle() { return "Shortcuts" }
 
     lazyRender() {
