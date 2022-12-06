@@ -72,6 +72,8 @@ class Note extends AbstractEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
+        /** @type {boolean} - set during the deletion operation, before it is completed (removed from becca completely) */
+        this.isBeingDeleted = false;
 
         // ------ Derived attributes ------
 
@@ -1327,7 +1329,7 @@ class Note extends AbstractEntity {
     }
 
     get isDeleted() {
-        return !(this.noteId in this.becca.notes);
+        return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
 
     /**

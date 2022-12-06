@@ -187,9 +187,7 @@ class Branch extends AbstractEntity {
 
             log.info("Deleting note " + note.noteId);
 
-            // marking note as deleted as a signal to event handlers that the note is being deleted
-            // (isDeleted is being checked against becca)
-            delete this.becca.notes[note.noteId];
+            this.becca.notes[note.noteId].isBeingDeleted = true;
 
             for (const attribute of note.getOwnedAttributes()) {
                 attribute.markAsDeleted(deleteId);

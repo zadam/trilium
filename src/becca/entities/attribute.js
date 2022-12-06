@@ -113,7 +113,13 @@ class Attribute extends AbstractEntity {
      * @returns {Note|null}
      */
     getNote() {
-        return this.becca.getNote(this.noteId);
+        const note = this.becca.getNote(this.noteId);
+
+        if (!note) {
+            throw new Error(`Note '${this.noteId}' of attribute '${this.attributeId}', type '${this.type}', name '${this.name}' does not exist.`);
+        }
+
+        return note;
     }
 
     /**
