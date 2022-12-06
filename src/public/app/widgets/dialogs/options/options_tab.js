@@ -1,8 +1,8 @@
-import BasicWidget from "../../basic_widget.js";
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
+import NoteContextAwareWidget from "../../note_context_aware_widget.js";
 
-export default class OptionsTab extends BasicWidget {
+export default class OptionsTab extends NoteContextAwareWidget {
     async updateOption(name, value) {
         const opts = { [name]: value };
 
@@ -33,5 +33,11 @@ export default class OptionsTab extends BasicWidget {
 
     setCheckboxState($checkbox, optionValue) {
         $checkbox.prop('checked', optionValue === 'true');
+    }
+
+    async refreshWithNote(note) {
+        const options = await server.get('options');
+
+        this.optionsLoaded(options);
     }
 }

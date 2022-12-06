@@ -582,7 +582,7 @@ function createOptionNotes() {
             branchId: OPTIONS_ROOT,
             noteId: OPTIONS_ROOT,
             title: 'Options',
-            type: 'doc',
+            type: 'book',
             content: '',
             parentNoteId: getHiddenRoot().noteId
         });
