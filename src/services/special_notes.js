@@ -593,12 +593,12 @@ function createOptionNotes() {
             branchId: OPTIONS_APPEARANCE,
             noteId: OPTIONS_APPEARANCE,
             title: 'Appearance',
-            type: 'widget',
+            type: 'content-widget',
             content: '',
             parentNoteId: OPTIONS_ROOT
         }).note;
 
-        note.addLabel('widget', 'optionsAppearance');
+        note.addLabel('contentWidget', 'optionsAppearance');
     }
 }
 

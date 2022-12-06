@@ -2,8 +2,8 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `<div class="note-detail-widget note-detail-printable"></div>`;
 
-export default class WidgetTypeWidget extends TypeWidget {
-    static getType() { return "widget"; }
+export default class ContentWidgetTypeWidget extends TypeWidget {
+    static getType() { return "content-widget"; }
 
     doRender() {
         this.$widget = $(TPL);
@@ -12,12 +12,12 @@ export default class WidgetTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const widgetName = note.getLabelValue('widget');
+        const contentWidget = note.getLabelValue('contentWidget');
 
-        if (widgetName === 'optionsAppearance') {
+        if (contentWidget === 'optionsAppearance') {
             this.$widget.empty().append("HI!");
         } else {
-            this.$widget.empty().append(`Unknown widget of type "${widgetName}"`);
+            this.$widget.empty().append(`Unknown widget of type "${contentWidget}"`);
         }
     }
 }

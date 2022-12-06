@@ -13,5 +13,5 @@ module.exports = [
     'web-view',
     'launcher',
     'doc',
-    'widget'
+    'content-widget'
 ];

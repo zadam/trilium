@@ -26,7 +26,7 @@ import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
 import DocTypeWidget from "./type_widgets/doc.js";
-import WidgetTypeWidget from "./type_widgets/widget.js";
+import ContentWidgetTypeWidget from "./type_widgets/widget.js";
 
 const TPL = `
 <div class="note-detail">
@@ -61,7 +61,7 @@ const typeWidgetClasses = {
     'note-map': NoteMapTypeWidget,
     'web-view': WebViewTypeWidget,
     'doc': DocTypeWidget,
-    'widget': WidgetTypeWidget
+    'content-widget': ContentWidgetTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -129,6 +129,10 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
+
+            if (!clazz) {
+                throw new Error(`Cannot find type widget for type '${this.type}'`);
+            }
 
             const typeWidget = this.typeWidgets[this.type] = new clazz();
             typeWidget.spacedUpdate = this.spacedUpdate;
