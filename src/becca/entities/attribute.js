@@ -62,7 +62,6 @@ class Attribute extends AbstractEntity {
         return this;
     }
 
-
     init() {
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
@@ -163,11 +162,11 @@ class Attribute extends AbstractEntity {
     }
 
     beforeSaving() {
-        if (!this.value) {
-            if (this.type === 'relation') {
-                throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
+        if (this.type === 'relation') {
+            if (!(this.value in this.becca.notes)) {
+                throw new Error(`Cannot save relation '${this.name}' since it target not existing note '${this.value}'.`);
             }
-
+        } else if (!this.value) {
             // null value isn't allowed
             this.value = "";
         }

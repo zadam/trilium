@@ -14,7 +14,7 @@ import CommandButtonWidget from "../buttons/command_button.js";
 export default class LauncherWidget extends BasicWidget {
     constructor() {
         super();
-        
+
         this.innerWidget = null;
     }
 
@@ -44,7 +44,7 @@ export default class LauncherWidget extends BasicWidget {
         } else if (launcherType === 'builtinWidget') {
             this.innerWidget = this.initBuiltinWidget(note);
         } else {
-            throw new Error(`Unrecognized launcher type '${launcherType}' for launcher '${note.noteId}' title ${note.title}`);
+            throw new Error(`Unrecognized launcher type '${launcherType}' for launcher '${note.noteId}' title '${note.title}'`);
         }
 
         if (!this.innerWidget) {

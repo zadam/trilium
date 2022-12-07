@@ -5,8 +5,8 @@ const config = require('./config');
 const log = require('./log');
 const sql = require("./sql");
 const becca = require("../becca/becca");
-const specialNotesService = require("../services/special_notes");
 const protectedSessionService = require("../services/protected_session");
+const hiddenSubtreeService = require("./hidden_subtree");
 
 function getRunAtHours(note) {
     try {
@@ -52,7 +52,7 @@ function runNotesWithLabel(runAttrValue) {
 
 sqlInit.dbReady.then(() => {
     if (!process.env.TRILIUM_SAFE_MODE) {
-        cls.init(() => specialNotesService.createMissingSpecialNotes());
+        cls.init(() => hiddenSubtreeService.checkHiddenSubtree());
 
         setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
 

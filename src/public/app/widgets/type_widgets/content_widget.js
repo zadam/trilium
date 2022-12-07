@@ -36,12 +36,10 @@ export default class ContentWidgetTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const contentWidget = note.getLabelValue('contentWidget');
-
         this.$content.empty();
         this.children = [];
 
-        const contentWidgets = CONTENT_WIDGETS[contentWidget];
+        const contentWidgets = CONTENT_WIDGETS[note.noteId];
 
         if (contentWidgets) {
             for (const clazz of contentWidgets) {
@@ -54,7 +52,7 @@ export default class ContentWidgetTypeWidget extends TypeWidget {
                 await widget.refresh();
             }
         } else {
-            this.$content.append(`Unknown widget of type "${contentWidget}"`);
+            this.$content.append(`Unknown widget for "${note.noteId}"`);
         }
     }
 }

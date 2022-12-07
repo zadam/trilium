@@ -13,7 +13,7 @@ export default class OpenNoteButtonWidget extends OnClickButtonWidget {
                 if (!this.retried) {
                     this.retried = true;
 
-                    setTimeout(() => this.targetNote(noteId), 15000); // should be higher than timeout for createMissingSpecialNotes
+                    setTimeout(() => this.targetNote(noteId), 15000); // should be higher than timeout for checkHiddenSubtree
                 }
 
                 return;
