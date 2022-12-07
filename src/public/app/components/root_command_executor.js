@@ -85,6 +85,6 @@ export default class RootCommandExecutor extends Component {
     }
 
     async showOptionsCommand() {
-        await appContext.tabManager.openContextWithNote('options', true, null, 'opt_root')
+        await appContext.tabManager.openContextWithNote('options', true, null, 'options')
     }
 }

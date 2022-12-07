@@ -187,7 +187,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             title: noteTitle,
             content: '',
             noteId: noteId,
-            type: noteMeta ? noteMeta.type : 'text',
+            type: resolveNoteType(noteMeta.type),
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
             isExpanded: noteMeta ? noteMeta.isExpanded : false,
@@ -258,11 +258,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
+        let {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
         }
+
+        type = resolveNoteType(type);
 
         if ((noteMeta && noteMeta.format === 'markdown')
             || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
@@ -530,6 +532,22 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
     return firstNote;
 }
+
+function resolveNoteType(type) {
+    type = type || 'text';
+
+    // BC for ZIPs created in Triliun 0.57 and older
+    if (type === 'relation-map') {
+        type = 'relationMap';
+    } else if (type === 'note-map') {
+        type = 'noteMap';
+    } else if (type === 'web-view') {
+        type = 'webView';
+    }
+
+    return type;
+}
+
 
 module.exports = {
     importZip

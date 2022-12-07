@@ -183,17 +183,17 @@ const HIDDEN_SUBTREE_DEFINITION = {
             title: 'Options',
             type: 'book',
             children: [
-                { id: 'optionsAppearance', title: 'Appearance', type: 'contentWidget' },
-                { id: 'optionsShortcuts', title: 'Shortcuts', type: 'contentWidget' },
-                { id: 'optionsTextNotes', title: 'Text Notes', type: 'contentWidget' },
-                { id: 'optionsCodeNotes', title: 'Code Notes', type: 'contentWidget' },
-                { id: 'optionsImages', title: 'Images', type: 'contentWidget' },
-                { id: 'optionsSpellcheck', title: 'Spellcheck', type: 'contentWidget' },
-                { id: 'optionsPassword', title: 'Password', type: 'contentWidget' },
-                { id: 'optionsEtapi', title: 'ETAPI', type: 'contentWidget' },
-                { id: 'optionsBackup', title: 'Backup', type: 'contentWidget' },
-                { id: 'optionsSync', title: 'Sync', type: 'contentWidget' },
-                { id: 'optionsOther', title: 'Other', type: 'contentWidget' },
+                { id: 'optionsAppearance', title: 'Appearance', type: 'contentWidget', icon: 'bx-layout' },
+                { id: 'optionsShortcuts', title: 'Shortcuts', type: 'contentWidget', icon: 'bxs-keyboard' },
+                { id: 'optionsTextNotes', title: 'Text Notes', type: 'contentWidget', icon: 'bx-text' },
+                { id: 'optionsCodeNotes', title: 'Code Notes', type: 'contentWidget', icon: 'bx-code' },
+                { id: 'optionsImages', title: 'Images', type: 'contentWidget', icon: 'bx-image' },
+                { id: 'optionsSpellcheck', title: 'Spellcheck', type: 'contentWidget', icon: 'bx-check-double' },
+                { id: 'optionsPassword', title: 'Password', type: 'contentWidget', icon: 'bx-lock' },
+                { id: 'optionsEtapi', title: 'ETAPI', type: 'contentWidget', icon: 'bx-extension' },
+                { id: 'optionsBackup', title: 'Backup', type: 'contentWidget', icon: 'bx-data' },
+                { id: 'optionsSync', title: 'Sync', type: 'contentWidget', icon: 'bx-wifi' },
+                { id: 'optionsOther', title: 'Other', type: 'contentWidget', icon: 'bx-dots-horizontal' },
                 { id: 'optionsAdvanced', title: 'Advanced', type: 'contentWidget' }
             ]
         }
