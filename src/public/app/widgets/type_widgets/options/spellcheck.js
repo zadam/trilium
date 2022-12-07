@@ -25,9 +25,7 @@ const TPL = `
 </div>`;
 
 export default class SpellcheckOptions extends OptionsWidget {
-    get tabTitle() { return "Spellcheck" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$spellCheckEnabled = this.$widget.find(".spell-check-enabled");

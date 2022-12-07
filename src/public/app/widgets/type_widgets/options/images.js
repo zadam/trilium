@@ -1,14 +1,14 @@
 import OptionsWidget from "./options_widget.js";
 
 const TPL = `
-<style>
-    .options-section .disabled-field {
-        opacity: 0.5;
-        pointer-events: none;
-    }
-</style>
-
 <div class="options-section">
+    <style>
+        .options-section .disabled-field {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+
     <h4>Images</h4>
     
     <div class="form-group">
@@ -37,9 +37,7 @@ const TPL = `
 `;
 
 export default class ImageOptions extends OptionsWidget {
-    get tabTitle() { return "Images" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$imageMaxWidthHeight = this.$widget.find(".image-max-width-height");

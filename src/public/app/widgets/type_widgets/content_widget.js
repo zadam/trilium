@@ -12,6 +12,21 @@ import VimKeyBindingsOptions from "./options/code_notes/vim_key_bindings.js";
 import WrapLinesOptions from "./options/code_notes/wrap_lines.js";
 import CodeAutoReadOnlySizeOptions from "./options/code_notes/code_auto_read_only_size.js";
 import CodeMimeTypesOptions from "./options/code_notes/code_mime_types.js";
+import ImageOptions from "./options/images.js";
+import SpellcheckOptions from "./options/spellcheck.js";
+import PasswordOptions from "./options/password.js";
+import EtapiOptions from "./options/etapi.js";
+import BackupOptions from "./options/backup.js";
+import SyncOptions from "./options/sync.js";
+import TrayOptions from "./options/other/tray.js";
+import NoteErasureTimeoutOptions from "./options/other/note_erasure_timeout.js";
+import NoteRevisionsSnapshotIntervalOptions from "./options/other/note_revisions_snapshot_interval.js";
+import NetworkConnectionsOptions from "./options/other/network_connections.js";
+import AdvancedSyncOptions from "./options/advanced/sync.js";
+import DatabaseIntegrityCheckOptions from "./options/advanced/database_integrity_check.js";
+import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
+import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
+import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -42,6 +57,25 @@ const CONTENT_WIDGETS = {
         WrapLinesOptions,
         CodeAutoReadOnlySizeOptions,
         CodeMimeTypesOptions
+    ],
+    optionsImages: [ ImageOptions ],
+    optionsSpellcheck: [ SpellcheckOptions ],
+    optionsPassword: [ PasswordOptions ],
+    optionsEtapi: [ EtapiOptions ],
+    optionsBackup: [ BackupOptions ],
+    optionsSync: [ SyncOptions ],
+    optionsOther: [
+        TrayOptions,
+        NoteErasureTimeoutOptions,
+        NoteRevisionsSnapshotIntervalOptions,
+        NetworkConnectionsOptions
+    ],
+    optionsAdvanced: [
+        DatabaseIntegrityCheckOptions,
+        ConsistencyChecksOptions,
+        DatabaseAnonymizationOptions,
+        AdvancedSyncOptions,
+        VacuumDatabaseOptions
     ]
 };
 

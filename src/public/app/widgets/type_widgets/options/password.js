@@ -46,9 +46,7 @@ const TPL = `
 </div>`;
 
 export default class PasswordOptions extends OptionsWidget {
-    get tabTitle() { return "Password" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$passwordHeading = this.$widget.find(".password-heading");

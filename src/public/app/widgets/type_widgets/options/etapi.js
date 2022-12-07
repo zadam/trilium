@@ -47,9 +47,7 @@ const TPL = `
 </style>`;
 
 export default class EtapiOptions extends OptionsWidget {
-    get tabTitle() { return "ETAPI" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$widget.find(".create-etapi-token").on("click", async () => {

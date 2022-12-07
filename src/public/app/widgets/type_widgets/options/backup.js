@@ -36,9 +36,7 @@ const TPL = `
 `;
 
 export default class BackupOptions extends OptionsWidget {
-    get tabTitle() { return "Backup" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$backupDatabaseButton = this.$widget.find(".backup-database-button");

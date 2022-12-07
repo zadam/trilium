@@ -41,9 +41,7 @@ const TPL = `
 </div>`;
 
 export default class SyncOptions extends OptionsWidget {
-    get tabTitle() { return "Sync" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$form = this.$widget.find(".sync-setup-form");
