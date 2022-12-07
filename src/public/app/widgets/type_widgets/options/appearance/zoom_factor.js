@@ -1,5 +1,5 @@
 import appContext from "../../../../components/app_context.js";
-import OptionsWidget from "./options_widget.js";
+import OptionsWidget from "../options_widget.js";
 import utils from "../../../../services/utils.js";
 
 const TPL = `

@@ -1,7 +1,7 @@
-import server from "../../../../services/server.js";
-import toastService from "../../../../services/toast.js";
-import NoteContextAwareWidget from "../../../note_context_aware_widget.js";
-import attributeService from "../../../../services/attributes.js";
+import server from "../../../services/server.js";
+import toastService from "../../../services/toast.js";
+import NoteContextAwareWidget from "../../note_context_aware_widget.js";
+import attributeService from "../../../services/attributes.js";
 
 export default class OptionsWidget extends NoteContextAwareWidget {
     constructor() {
@@ -41,6 +41,8 @@ export default class OptionsWidget extends NoteContextAwareWidget {
     setCheckboxState($checkbox, optionValue) {
         $checkbox.prop('checked', optionValue === 'true');
     }
+
+    optionsLoaded(options) {}
 
     async refreshWithNote(note) {
         const options = await server.get('options');

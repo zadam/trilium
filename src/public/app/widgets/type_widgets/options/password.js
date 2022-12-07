@@ -1,35 +1,35 @@
 import server from "../../../services/server.js";
 import protectedSessionHolder from "../../../services/protected_session_holder.js";
 import toastService from "../../../services/toast.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
-    <h4 id="password-heading"></h4>
+    <h4 class="password-heading"></h4>
     
     <div class="alert alert-warning" role="alert" style="font-weight: bold; color: red !important;">
       Please take care to remember your new password. Password is used for logging into the web interface and
       to encrypt protected notes. If you forget your password, then all your protected notes are forever lost. 
-      In case you did forget your password, <a id="reset-password-button" href="javascript:">click here to reset it</a>.
+      In case you did forget your password, <a class="reset-password-button" href="javascript:">click here to reset it</a>.
     </div>
     
-    <form id="change-password-form">
-        <div class="form-group" id="old-password-form-group">
-            <label for="old-password">Old password</label>
-            <input class="form-control" id="old-password" type="password">
+    <form class="change-password-form">
+        <div class="old-password-form-group form-group">
+            <label>Old password</label>
+            <input class="old-password form-control" type="password">
         </div>
     
         <div class="form-group">
-            <label for="new-password1">New password</label>
-            <input class="form-control" id="new-password1" type="password">
+            <label>New password</label>
+            <input class="new-password1 form-control" type="password">
         </div>
     
         <div class="form-group">
-            <label for="new-password2">New password Confirmation</label>
-            <input class="form-control" id="new-password2" type="password">
+            <label>New password Confirmation</label>
+            <input class="new-password2 form-control" type="password">
         </div>
     
-        <button class="btn btn-primary" id="save-password-button">Change password</button>
+        <button class="save-password-button btn btn-primary">Change password</button>
     </form>
 </div>
 
@@ -40,8 +40,8 @@ const TPL = `
         the browser's memory. This is measured from the last interaction with protected notes. See <a href="https://github.com/zadam/trilium/wiki/Protected-notes" class="external">wiki</a> for more info.</p>
 
     <div class="form-group">
-        <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
-        <input class="form-control" id="protected-session-timeout-in-seconds" type="number" min="60">
+        <label>Protected session timeout (in seconds)</label>
+        <input class="protected-session-timeout-in-seconds form-control" type="number" min="60">
     </div>
 </div>`;
 
@@ -51,13 +51,13 @@ export default class PasswordOptions extends OptionsWidget {
     lazyRender() {
         this.$widget = $(TPL);
 
-        this.$passwordHeading = this.$widget.find("#password-heading");
-        this.$changePasswordForm = this.$widget.find("#change-password-form");
-        this.$oldPassword = this.$widget.find("#old-password");
-        this.$newPassword1 = this.$widget.find("#new-password1");
-        this.$newPassword2 = this.$widget.find("#new-password2");
-        this.$savePasswordButton = this.$widget.find("#save-password-button");
-        this.$resetPasswordButton = this.$widget.find("#reset-password-button");
+        this.$passwordHeading = this.$widget.find(".password-heading");
+        this.$changePasswordForm = this.$widget.find(".change-password-form");
+        this.$oldPassword = this.$widget.find(".old-password");
+        this.$newPassword1 = this.$widget.find(".new-password1");
+        this.$newPassword2 = this.$widget.find(".new-password2");
+        this.$savePasswordButton = this.$widget.find(".save-password-button");
+        this.$resetPasswordButton = this.$widget.find(".reset-password-button");
 
         this.$resetPasswordButton.on("click", async () => {
             if (confirm("By resetting the password you will forever lose access to all your existing protected notes. Do you really want to reset the password?")) {
@@ -72,7 +72,7 @@ export default class PasswordOptions extends OptionsWidget {
 
         this.$changePasswordForm.on('submit', () => this.save());
 
-        this.$protectedSessionTimeout = this.$widget.find("#protected-session-timeout-in-seconds");
+        this.$protectedSessionTimeout = this.$widget.find(".protected-session-timeout-in-seconds");
         this.$protectedSessionTimeout.on('change', () =>
             this.updateOption('protectedSessionTimeout', this.$protectedSessionTimeout.val()));
     }
@@ -80,7 +80,7 @@ export default class PasswordOptions extends OptionsWidget {
     optionsLoaded(options) {
         const isPasswordSet = options.isPasswordSet === 'true';
 
-        this.$widget.find("#old-password-form-group").toggle(isPasswordSet);
+        this.$widget.find(".old-password-form-group").toggle(isPasswordSet);
         this.$passwordHeading.text(isPasswordSet ? 'Change password' : 'Set password');
         this.$savePasswordButton.text(isPasswordSet ? 'Change password' : 'Set password');
         this.$protectedSessionTimeout.val(options.protectedSessionTimeout);

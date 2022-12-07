@@ -1,4 +1,4 @@
-import OptionsWidget from "./options_widget.js";
+import OptionsWidget from "../options_widget.js";
 import utils from "../../../../services/utils.js";
 
 const FONT_FAMILIES = [

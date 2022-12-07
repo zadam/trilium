@@ -1,13 +1,13 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
     <h4>Sync</h4>
-    <button id="force-full-sync-button" class="btn">Force full sync</button> 
+    <button class="force-full-sync-button btn">Force full sync</button> 
     
-    <button id="fill-entity-changes-button" class="btn">Fill entity changes records</button>
+    <button class="fill-entity-changes-button btn">Fill entity changes records</button>
 </div>
 
 <div class="options-section">
@@ -15,13 +15,13 @@ const TPL = `
     
     <p>This will check that the database is not corrupted on the SQLite level. It might take some time, depending on the DB size.</p>
     
-    <button id="check-integrity-button" class="btn">Check database integrity</button>
+    <button class="check-integrity-button btn">Check database integrity</button>
 </div>
 
 <div class="options-section">
     <h4>Consistency checks</h4>
     
-    <button id="find-and-fix-consistency-issues-button" class="btn">Find and fix consistency issues</button>
+    <button class="find-and-fix-consistency-issues-button btn">Find and fix consistency issues</button>
 </div>
 
 <div class="options-section">
@@ -32,7 +32,7 @@ const TPL = `
     <p>This action will create a new copy of the database and anonymize it (remove all note content and leave only structure and some non-sensitive metadata)
         for sharing online for debugging purposes without fear of leaking your personal data.</p>
     
-    <button id="anonymize-full-button" class="btn">Save fully anonymized database</button>
+    <button class="anonymize-full-button btn">Save fully anonymized database</button>
 
     <h5>Light anonymization</h5>
     
@@ -40,7 +40,7 @@ const TPL = `
     
     <p>You can decide yourself if you want to provide fully or lightly anonymized database. Even fully anonymized DB is very useful, however in some cases lightly anonymized database can speed up the process of bug identification and fixing.</p>
     
-    <button id="anonymize-light-button" class="btn">Save lightly anonymized database</button>
+    <button class="anonymize-light-button btn">Save lightly anonymized database</button>
 </div>
 
 <div class="options-section">
@@ -48,7 +48,7 @@ const TPL = `
     
     <p>This will rebuild the database which will typically result in a smaller database file. No data will be actually changed.</p>
     
-    <button id="vacuum-database-button" class="btn">Vacuum database</button>
+    <button class="vacuum-database-button btn">Vacuum database</button>
 </div>`;
 
 export default class AdvancedOptions extends OptionsWidget {
@@ -57,13 +57,13 @@ export default class AdvancedOptions extends OptionsWidget {
     lazyRender() {
         this.$widget = $(TPL);
 
-        this.$forceFullSyncButton = this.$widget.find("#force-full-sync-button");
-        this.$fillEntityChangesButton = this.$widget.find("#fill-entity-changes-button");
-        this.$anonymizeFullButton = this.$widget.find("#anonymize-full-button");
-        this.$anonymizeLightButton = this.$widget.find("#anonymize-light-button");
-        this.$vacuumDatabaseButton = this.$widget.find("#vacuum-database-button");
-        this.$findAndFixConsistencyIssuesButton = this.$widget.find("#find-and-fix-consistency-issues-button");
-        this.$checkIntegrityButton = this.$widget.find("#check-integrity-button");
+        this.$forceFullSyncButton = this.$widget.find(".force-full-sync-button");
+        this.$fillEntityChangesButton = this.$widget.find(".fill-entity-changes-button");
+        this.$anonymizeFullButton = this.$widget.find(".anonymize-full-button");
+        this.$anonymizeLightButton = this.$widget.find(".anonymize-light-button");
+        this.$vacuumDatabaseButton = this.$widget.find(".vacuum-database-button");
+        this.$findAndFixConsistencyIssuesButton = this.$widget.find(".find-and-fix-consistency-issues-button");
+        this.$checkIntegrityButton = this.$widget.find(".check-integrity-button");
 
         this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');

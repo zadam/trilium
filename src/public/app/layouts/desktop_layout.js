@@ -68,7 +68,6 @@ import DeleteNotesDialog from "../widgets/dialogs/delete_notes.js";
 import InfoDialog from "../widgets/dialogs/info.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
 import PromptDialog from "../widgets/dialogs/prompt.js";
-import OptionsDialog from "../widgets/dialogs/options.js";
 import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
 import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
 import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
@@ -77,18 +76,6 @@ import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
 import EditableCodeButtonsWidget from "../widgets/type_widgets/editable_code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
-import AppearanceOptions from "../widgets/dialogs/options/appearance.js";
-import KeyboardShortcutsOptions from "../widgets/dialogs/options/shortcuts.js";
-import TextNotesOptions from "../widgets/dialogs/options/text_notes.js";
-import CodeNotesOptions from "../widgets/dialogs/options/code_notes.js";
-import ImageOptions from "../widgets/dialogs/options/images.js";
-import SpellcheckOptions from "../widgets/dialogs/options/spellcheck.js";
-import PasswordOptions from "../widgets/dialogs/options/password.js";
-import EtapiOptions from "../widgets/dialogs/options/etapi.js";
-import BackupOptions from "../widgets/dialogs/options/backup.js";
-import SyncOptions from "../widgets/dialogs/options/sync.js";
-import OtherOptions from "../widgets/dialogs/options/other.js";
-import AdvancedOptions from "../widgets/dialogs/options/advanced.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -219,19 +206,5 @@ export default class DesktopLayout {
             .child(new InfoDialog())
             .child(new ConfirmDialog())
             .child(new PromptDialog());
-            // .child(new OptionsDialog()
-            //     .child(new AppearanceOptions())
-            //     .child(new KeyboardShortcutsOptions())
-            //     .child(new TextNotesOptions())
-            //     .child(new CodeNotesOptions())
-            //     .child(new ImageOptions())
-            //     .child(new SpellcheckOptions())
-            //     .child(new PasswordOptions())
-            //     .child(new EtapiOptions())
-            //     .child(new BackupOptions())
-            //     .child(new SyncOptions())
-            //     .child(new OtherOptions())
-            //     .child(new AdvancedOptions())
-            // );
     }
 }

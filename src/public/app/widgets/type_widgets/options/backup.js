@@ -1,6 +1,6 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -9,18 +9,18 @@ const TPL = `
     <p>Trilium can back up the database automatically:</p>
     
     <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="daily-backup-enabled">
-        <label class="custom-control-label" for="daily-backup-enabled">Enable daily backup</label>
+        <input type="checkbox" class="daily-backup-enabled custom-control-input">
+        <label class="custom-control-label">Enable daily backup</label>
     </div>
     
     <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="weekly-backup-enabled">
-        <label class="custom-control-label" for="weekly-backup-enabled">Enable weekly backup</label>
+        <input type="checkbox" class="weekly-backup-enabled custom-control-input">
+        <label class="custom-control-label">Enable weekly backup</label>
     </div>
     
     <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="monthly-backup-enabled">
-        <label class="custom-control-label" for="monthly-backup-enabled">Enable monthly backup</label>
+        <input type="checkbox" class="monthly-backup-enabled custom-control-input">
+        <label class="custom-control-label">Enable monthly backup</label>
     </div>
     
     <br/>
@@ -31,7 +31,7 @@ const TPL = `
 <div class="options-section">
     <h4>Backup now</h4>
     
-    <button id="backup-database-button" class="btn">Backup database now</button>
+    <button class="backup-database-button btn">Backup database now</button>
 </div>
 `;
 
@@ -41,7 +41,7 @@ export default class BackupOptions extends OptionsWidget {
     lazyRender() {
         this.$widget = $(TPL);
 
-        this.$backupDatabaseButton = this.$widget.find("#backup-database-button");
+        this.$backupDatabaseButton = this.$widget.find(".backup-database-button");
 
         this.$backupDatabaseButton.on('click', async () => {
             const {backupFile} = await server.post('database/backup-database');
@@ -49,9 +49,9 @@ export default class BackupOptions extends OptionsWidget {
             toastService.showMessage("Database has been backed up to " + backupFile, 10000);
         });
 
-        this.$dailyBackupEnabled = this.$widget.find("#daily-backup-enabled");
-        this.$weeklyBackupEnabled = this.$widget.find("#weekly-backup-enabled");
-        this.$monthlyBackupEnabled = this.$widget.find("#monthly-backup-enabled");
+        this.$dailyBackupEnabled = this.$widget.find(".daily-backup-enabled");
+        this.$weeklyBackupEnabled = this.$widget.find(".weekly-backup-enabled");
+        this.$monthlyBackupEnabled = this.$widget.find(".monthly-backup-enabled");
 
         this.$dailyBackupEnabled.on('change', () =>
             this.updateCheckboxOption('dailyBackupEnabled', this.$dailyBackupEnabled));

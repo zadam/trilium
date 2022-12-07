@@ -1,14 +1,14 @@
 import server from "../../../services/server.js";
 import toastService from "../../../services/toast.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
     <h4>Tray</h4>
 
     <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="tray-enabled">
-        <label class="custom-control-label" for="tray-enabled">Enable tray (Trilium needs to be restarted for this change to take effect)</label>
+        <input type="checkbox" class="tray-enabled custom-control-input">
+        <label class="custom-control-label">Enable tray (Trilium needs to be restarted for this change to take effect)</label>
     </div>
 </div>
 
@@ -21,13 +21,13 @@ const TPL = `
     of the period between deleting and erasing the note.</p>
 
     <div class="form-group">
-        <label for="erase-entities-after-time-in-seconds">Erase notes after X seconds</label>
-        <input class="form-control" id="erase-entities-after-time-in-seconds" type="number" min="0">
+        <label>Erase notes after X seconds</label>
+        <input class="erase-entities-after-time-in-seconds form-control" type="number" min="0">
     </div>
     
     <p>You can also trigger erasing manually:</p>
     
-    <button id="erase-deleted-notes-now-button" class="btn">Erase deleted notes now</button>
+    <button class="erase-deleted-notes-now-button btn">Erase deleted notes now</button>
 </div>
 
 <div class="options-section">
@@ -36,8 +36,8 @@ const TPL = `
     <p>Note revision snapshot time interval is time in seconds after which a new note revision will be created for the note. See <a href="https://github.com/zadam/trilium/wiki/Note-revisions" class="external">wiki</a> for more info.</p>
 
     <div class="form-group">
-        <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
-        <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number" min="10">
+        <label>Note revision snapshot time interval (in seconds)</label>
+        <input class="note-revision-snapshot-time-interval-in-seconds form-control" type="number" min="10">
     </div>
 </div>
 
@@ -45,8 +45,8 @@ const TPL = `
     <h4>Network connections</h4>
         
     <div class="form-group">
-        <input id="check-for-updates" type="checkbox" name="check-for-updates">
-        <label for="check-for-updates">Check for updates automatically</label>
+        <input class="check-for-updates" type="checkbox" name="check-for-updates">
+        <label>Check for updates automatically</label>
     </div>
 </div>`;
 
@@ -56,26 +56,26 @@ export default class OtherOptions extends OptionsWidget {
     lazyRender() {
         this.$widget = $(TPL);
 
-        this.$trayEnabled = this.$widget.find("#tray-enabled");
+        this.$trayEnabled = this.$widget.find(".tray-enabled");
         this.$trayEnabled.on('change', () =>
             this.updateOption('disableTray', !this.$trayEnabled.is(":checked") ? "true" : "false"));
 
-        this.$eraseEntitiesAfterTimeInSeconds = this.$widget.find("#erase-entities-after-time-in-seconds");
+        this.$eraseEntitiesAfterTimeInSeconds = this.$widget.find(".erase-entities-after-time-in-seconds");
         this.$eraseEntitiesAfterTimeInSeconds.on('change', () => this.updateOption('eraseEntitiesAfterTimeInSeconds', this.$eraseEntitiesAfterTimeInSeconds.val()));
 
-        this.$eraseDeletedNotesButton = this.$widget.find("#erase-deleted-notes-now-button");
+        this.$eraseDeletedNotesButton = this.$widget.find(".erase-deleted-notes-now-button");
         this.$eraseDeletedNotesButton.on('click', () => {
             server.post('notes/erase-deleted-notes-now').then(() => {
                 toastService.showMessage("Deleted notes have been erased.");
             });
         });
 
-        this.$noteRevisionsTimeInterval = this.$widget.find("#note-revision-snapshot-time-interval-in-seconds");
+        this.$noteRevisionsTimeInterval = this.$widget.find(".note-revision-snapshot-time-interval-in-seconds");
 
         this.$noteRevisionsTimeInterval.on('change', () =>
             this.updateOption('noteRevisionSnapshotTimeInterval', this.$noteRevisionsTimeInterval.val()));
 
-        this.$checkForUpdates = this.$widget.find("#check-for-updates");
+        this.$checkForUpdates = this.$widget.find(".check-for-updates");
         this.$checkForUpdates.on("change", () =>
             this.updateCheckboxOption('checkForUpdates', this.$checkForUpdates));
     }

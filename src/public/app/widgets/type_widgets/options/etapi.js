@@ -1,7 +1,7 @@
 import server from "../../../services/server.js";
 import dialogService from "../../../services/dialog.js";
 import toastService from "../../../services/toast.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
 <div class="options-section">
@@ -10,14 +10,14 @@ const TPL = `
     <p>ETAPI is a REST API used to access Trilium instance programmatically, without UI. <br/>
        See more details on <a href="https://github.com/zadam/trilium/wiki/ETAPI">wiki</a> and <a onclick="window.open('etapi/etapi.openapi.yaml')" href="etapi/etapi.openapi.yaml">ETAPI OpenAPI spec</a>.</p>
     
-    <button type="button" class="btn btn-sm" id="create-etapi-token">Create new ETAPI token</button>
+    <button type="button" class="create-etapi-token btn btn-sm">Create new ETAPI token</button>
 
     <h5>Existing tokens</h5>
     
-    <div id="no-tokens-yet">There are no tokens yet. Click on the button above to create one.</div>
+    <div class="no-tokens-yet">There are no tokens yet. Click on the button above to create one.</div>
     
     <div style="overflow: auto; height: 500px;">
-        <table id="tokens-table" class="table table-stripped">
+        <table class="tokens-table table table-stripped">
         <thead>
             <tr>
                 <th>Token name</th>
@@ -52,7 +52,7 @@ export default class EtapiOptions extends OptionsWidget {
     lazyRender() {
         this.$widget = $(TPL);
 
-        this.$widget.find("#create-etapi-token").on("click", async () => {
+        this.$widget.find(".create-etapi-token").on("click", async () => {
             const tokenName = await dialogService.prompt({
                 title: "New ETAPI token",
                 message: "Please enter new token's name",
@@ -79,8 +79,8 @@ export default class EtapiOptions extends OptionsWidget {
     }
 
     async refreshTokens() {
-        const $noTokensYet = this.$widget.find("#no-tokens-yet");
-        const $tokensTable = this.$widget.find("#tokens-table");
+        const $noTokensYet = this.$widget.find(".no-tokens-yet");
+        const $tokensTable = this.$widget.find(".tokens-table");
 
         const tokens = await server.get('etapi-tokens');
 

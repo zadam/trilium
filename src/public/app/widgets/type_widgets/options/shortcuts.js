@@ -1,10 +1,10 @@
 import server from "../../../services/server.js";
 import utils from "../../../services/utils.js";
 import dialogService from "../../../services/dialog.js";
-import OptionsWidget from "../../type_widgets/options/appearance/options_widget.js";
+import OptionsWidget from "./options_widget.js";
 
 const TPL = `
-<div class="options-section">
+<div class="options-section" style="display: flex; flex-direction: column; height: 100%;">
     <h4>Keyboard shortcuts</h4>
     
     <p>
@@ -13,11 +13,11 @@ const TPL = `
     </p>
     
     <div class="form-group">
-        <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
+        <input type="text" class="keyboard-shortcut-filter form-control" placeholder="Type text to filter shortcuts...">
     </div>
     
-    <div style="overflow: auto; height: 500px;">
-        <table id="keyboard-shortcut-table" cellpadding="10">
+    <div style="overflow: auto; flex-grow: 1; flex-shrink: 1;">
+        <table class="keyboard-shortcut-table" cellpadding="10">
         <thead>
             <tr>
                 <th>Action name</th>
@@ -31,23 +31,21 @@ const TPL = `
     </div>
     
     <div style="display: flex; justify-content: space-between">
-        <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
+        <button class="options-keyboard-shortcuts-reload-app btn btn-primary">Reload app to apply changes</button>
         
-        <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
+        <button class="options-keyboard-shortcuts-set-all-to-default btn">Set all shortcuts to the default</button>
     </div>
 </div>`;
 
 let globActions;
 
 export default class KeyboardShortcutsOptions extends OptionsWidget {
-    get tabTitle() { return "Shortcuts" }
-
-    lazyRender() {
+    doRender() {
         this.$widget = $(TPL);
 
-        this.$widget.find("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
+        this.$widget.find(".options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadFrontendApp());
 
-        const $table = this.$widget.find("#keyboard-shortcut-table tbody");
+        const $table = this.$widget.find(".keyboard-shortcut-table tbody");
 
         server.get('keyboard-actions').then(actions => {
             globActions = actions;
@@ -93,7 +91,7 @@ export default class KeyboardShortcutsOptions extends OptionsWidget {
             this.updateOption(optionName, JSON.stringify(shortcuts));
         });
 
-        this.$widget.find("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
+        this.$widget.find(".options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
             if (!await dialogService.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
                 return;
             }
@@ -109,7 +107,7 @@ export default class KeyboardShortcutsOptions extends OptionsWidget {
             });
         });
 
-        const $filter = this.$widget.find("#keyboard-shortcut-filter");
+        const $filter = this.$widget.find(".keyboard-shortcut-filter");
 
         $filter.on('keyup', () => {
             const filter = $filter.val().trim().toLowerCase();
