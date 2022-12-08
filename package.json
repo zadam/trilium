@@ -27,11 +27,11 @@
     "postinstall": "rimraf ./node_modules/canvas"
   },
   "dependencies": {
-    "@electron/remote": "2.0.8",
-    "@excalidraw/excalidraw": "0.12.0",
+    "@electron/remote": "2.0.9",
+    "@excalidraw/excalidraw": "0.13.0",
     "archiver": "5.3.1",
     "async-mutex": "0.4.0",
-    "axios": "1.2.0",
+    "axios": "1.2.1",
     "better-sqlite3": "7.4.5",
     "chokidar": "3.5.3",
     "cls-hooked": "4.2.2",
@@ -39,7 +39,7 @@
     "compression": "1.7.4",
     "cookie-parser": "1.4.6",
     "csurf": "1.11.0",
-    "dayjs": "1.11.6",
+    "dayjs": "1.11.7",
     "dayjs-plugin-utc": "^0.1.2",
     "debounce": "^1.2.1",
     "ejs": "3.1.8",
@@ -100,7 +100,7 @@
     "lorem-ipsum": "2.0.8",
     "rcedit": "3.0.1",
     "webpack": "5.75.0",
-    "webpack-cli": "5.0.0"
+    "webpack-cli": "5.0.1"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"

@@ -252,6 +252,12 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
         }
     }
 
+    if (note.type !== item.type) {
+        // enforce correct note type
+        note.type = item.type;
+        note.save();
+    }
+
     if (!branch) {
         // not sure if there's some better way to recover
         log.error(`Cannot find branch id='${item.id}', ignoring...`);

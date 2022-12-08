@@ -2,6 +2,14 @@ UPDATE notes SET noteId = 'globalNoteMap' WHERE noteId = 'globalnotemap';
 UPDATE notes SET noteId = 'bulkAction' WHERE noteId = 'bulkaction';
 UPDATE notes SET noteId = 'sqlConsole' WHERE noteId = 'sqlconsole';
 
+UPDATE note_contents SET noteId = 'globalNoteMap' WHERE noteId = 'globalnotemap';
+UPDATE note_contents SET noteId = 'bulkAction' WHERE noteId = 'bulkaction';
+UPDATE note_contents SET noteId = 'sqlConsole' WHERE noteId = 'sqlconsole';
+
+UPDATE note_revisions SET noteId = 'globalNoteMap' WHERE noteId = 'globalnotemap';
+UPDATE note_revisions SET noteId = 'bulkAction' WHERE noteId = 'bulkaction';
+UPDATE note_revisions SET noteId = 'sqlConsole' WHERE noteId = 'sqlconsole';
+
 UPDATE branches SET branchId = 'globalNoteMap' WHERE branchId = 'globalnotemap';
 UPDATE branches SET branchId = 'bulkAction' WHERE branchId = 'bulkaction';
 UPDATE branches SET branchId = 'sqlConsole' WHERE branchId = 'sqlconsole';
