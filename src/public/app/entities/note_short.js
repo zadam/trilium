@@ -830,6 +830,10 @@ class NoteShort {
     isLaunchBarConfig() {
         return this.type === 'launcher' || ['lbRoot', 'lbAvailableShortcuts', 'lbVisibleShortcuts'].includes(this.noteId);
     }
+
+    isOptions() {
+        return this.noteId.startsWith("options");
+    }
 }
 
 export default NoteShort;

@@ -398,7 +398,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
-                    if (['root', 'hidden', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(node.data.noteId)) {
+                    if (['root', 'hidden', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(node.data.noteId)
+                        || node.data.noteId.startsWith("options")) {
                         return false;
                     }
 
@@ -427,6 +428,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     if (node.data.noteType === 'search') {
                         return false;
                     } else if (node.data.noteId === 'lbRoot') {
+                        return false;
+                    } else if (node.data.noteId.startsWith('options')) {
                         return false;
                     } else if (node.data.noteType === 'launcher') {
                         return ['before', 'after'];
@@ -565,7 +568,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     $span.append($refreshSearchButton);
                 }
 
-                if (!['search', 'launcher'].includes(note.type)) {
+                if (!['search', 'launcher'].includes(note.type) && !note.isOptions()) {
                     const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);

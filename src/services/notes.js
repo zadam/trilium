@@ -114,12 +114,8 @@ function getAndValidateParent(params) {
         throw new Error(`Launchers should not have child notes.`);
     }
 
-    if (!params.ignoreForbiddenParents && ['lbRoot'].includes(parentNote.noteId)) {
+    if (!params.ignoreForbiddenParents && (parentNote.isLaunchBarConfig() || parentNote.isOptions())) {
         throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
-    }
-
-    if (['lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(parentNote.noteId) && params.type !== 'launcher') {
-        throw new Error(`Creating child notes into '${parentNote.noteId}' is only possible for type 'launcher'.`);
     }
 
     return parentNote;
