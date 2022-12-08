@@ -30,8 +30,17 @@ import DatabaseAnonymizationOptions from "./options/advanced/database_anonymizat
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
+        .type-contentWidget .note-detail {
+            height: 100%;
+        }
+        
+        .note-detail-content-widget {
+            height: 100%;
+        }
+    
         .note-detail-content-widget-content {
             padding: 15px;
+            height: 100%;
         }
     </style>
 

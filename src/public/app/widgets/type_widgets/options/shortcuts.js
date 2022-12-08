@@ -4,7 +4,27 @@ import dialogService from "../../../services/dialog.js";
 import OptionsWidget from "./options_widget.js";
 
 const TPL = `
-<div class="options-section" style="display: flex; flex-direction: column; height: 100%;">
+<div class="options-section shortcuts-options-section">
+    <style>
+        .shortcuts-options-section {
+            display: flex; 
+            flex-direction: column; 
+            height: 100%;
+        }
+    
+        .shortcuts-table-container {
+            overflow: auto; 
+            flex-grow: 1; 
+            flex-shrink: 1; 
+        }    
+        
+        .shortcuts-options-buttons {
+            display: flex; 
+            justify-content: space-between;
+            margin: 15px 15px 0 15px;
+        }
+    </style>
+
     <h4>Keyboard shortcuts</h4>
     
     <p>
@@ -16,7 +36,7 @@ const TPL = `
         <input type="text" class="keyboard-shortcut-filter form-control" placeholder="Type text to filter shortcuts...">
     </div>
     
-    <div style="overflow: auto; flex-grow: 1; flex-shrink: 1;">
+    <div class="shortcuts-table-container">
         <table class="keyboard-shortcut-table" cellpadding="10">
         <thead>
             <tr>
@@ -30,7 +50,7 @@ const TPL = `
         </table>
     </div>
     
-    <div style="display: flex; justify-content: space-between">
+    <div class="shortcuts-options-buttons">
         <button class="options-keyboard-shortcuts-reload-app btn btn-primary">Reload app to apply changes</button>
         
         <button class="options-keyboard-shortcuts-set-all-to-default btn">Set all shortcuts to the default</button>
