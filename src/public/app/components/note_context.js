@@ -59,6 +59,22 @@ class NoteContext extends Component {
             });
         }
 
+        console.log(resolvedNotePath, "resolvedNotePath");
+
+        if (this.hoistedNoteId === 'root' && this.notePath.startsWith("root/hidden")) {
+            // hidden subtree displays only when hoisted so it doesn't make sense to keep root as hoisted note
+
+            let hoistedNoteId = 'hidden';
+
+            if (this.note.isLaunchBarConfig()) {
+                hoistedNoteId = 'lbRoot';
+            } else if (this.note.isOptions()) {
+                hoistedNoteId = 'options';
+            }
+
+            await this.setHoistedNoteId(hoistedNoteId);
+        }
+
         if (utils.isDesktop()) {
             // close dangling autocompletes after closing the tab
             $(".aa-input").autocomplete("close");
