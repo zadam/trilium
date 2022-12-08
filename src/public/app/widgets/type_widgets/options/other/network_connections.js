@@ -4,10 +4,10 @@ const TPL = `
 <div class="options-section">
     <h4>Network connections</h4>
         
-    <div class="form-group">
+    <label>
         <input class="check-for-updates" type="checkbox" name="check-for-updates">
-        <label>Check for updates automatically</label>
-    </div>
+        Check for updates automatically
+    </label>
 </div>`;
 
 export default class NetworkConnectionsOptions extends OptionsWidget {

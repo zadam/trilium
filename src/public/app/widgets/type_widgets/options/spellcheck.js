@@ -7,10 +7,10 @@ const TPL = `
 
     <p>These options apply only for desktop builds, browsers will use their own native spell check. App restart is required after change.</p>
 
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="spell-check-enabled custom-control-input">
-        <label class="custom-control-label">Enable spellcheck</label>
-    </div>
+    <label>
+        <input type="checkbox" class="spell-check-enabled">
+        Enable spellcheck
+    </label>
 
     <br/>
 

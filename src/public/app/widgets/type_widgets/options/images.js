@@ -11,16 +11,17 @@ const TPL = `
 
     <h4>Images</h4>
     
-    <div class="form-group">
+    <label>
         <input class="download-images-automatically" type="checkbox" name="download-images-automatically">
-        <label>Download images automatically for offline use.</label>
-        <p>(pasted HTML can contain references to online images, Trilium will find those references and download the images so that they are available offline)</p>
-    </div>
+        Download images automatically for offline use.
+    </label>
     
-    <div class="form-group">
+    <p>(pasted HTML can contain references to online images, Trilium will find those references and download the images so that they are available offline)</p>
+    
+    <label>
         <input class="image-compresion-enabled" type="checkbox" name="image-compression-enabled">
-        <label>Enable image compression</label>
-    </div>
+        Enable image compression
+    </label>
 
     <div class="image-compression-enabled-wraper">
         <div class="form-group">

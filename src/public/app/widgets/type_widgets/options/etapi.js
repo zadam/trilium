@@ -116,7 +116,7 @@ export default class EtapiOptions extends OptionsWidget {
     }
 
     async deleteToken(etapiTokenId, name) {
-        if (!confirm(`Are you sure you want to delete ETAPI token "${name}"?`)) {
+        if (!await dialogService.confirm(`Are you sure you want to delete ETAPI token "${name}"?`)) {
             return;
         }
 

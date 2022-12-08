@@ -4,10 +4,10 @@ const TPL = `
 <div class="options-section">
     <h4>Tray</h4>
 
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="tray-enabled custom-control-input">
-        <label class="custom-control-label">Enable tray (Trilium needs to be restarted for this change to take effect)</label>
-    </div>
+    <label>
+        <input type="checkbox" class="tray-enabled">
+        Enable tray (Trilium needs to be restarted for this change to take effect)
+    </label>
 </div>`;
 
 export default class TrayOptions extends OptionsWidget {

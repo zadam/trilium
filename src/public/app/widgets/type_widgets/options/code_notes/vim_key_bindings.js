@@ -3,10 +3,10 @@ import OptionsWidget from "../options_widget.js";
 const TPL = `
 <div class="options-section">
     <h4>Use vim keybindings in code notes (no ex mode)</h4>
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="vim-keymap-enabled custom-control-input">
-        <label class="custom-control-label">Enable Vim Keybindings</label>
-    </div>
+    <label>
+        <input type="checkbox" class="vim-keymap-enabled">
+        Enable Vim Keybindings
+    </label>
 </div>`;
 
 export default class VimKeyBindingsOptions extends OptionsWidget {

@@ -47,10 +47,6 @@ export default class NoteMapRibbonWidget extends NoteContextAwareWidget {
         return "toggleRibbonTabNoteMap";
     }
 
-    isEnabled() {
-        return this.note;
-    }
-
     getTitle() {
         return {
             show: this.isEnabled(),

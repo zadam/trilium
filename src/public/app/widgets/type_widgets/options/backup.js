@@ -8,22 +8,26 @@ const TPL = `
     
     <p>Trilium can back up the database automatically:</p>
     
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="daily-backup-enabled custom-control-input">
-        <label class="custom-control-label">Enable daily backup</label>
-    </div>
-    
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="weekly-backup-enabled custom-control-input">
-        <label class="custom-control-label">Enable weekly backup</label>
-    </div>
-    
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="monthly-backup-enabled custom-control-input">
-        <label class="custom-control-label">Enable monthly backup</label>
-    </div>
-    
-    <br/>
+    <ul style="list-style: none">
+        <li>
+            <label>
+                <input type="checkbox" class="daily-backup-enabled">
+                Enable daily backup
+            </label>
+        </li>
+        <li>    
+            <label>
+                <input type="checkbox" class="weekly-backup-enabled">
+                Enable weekly backup
+            </label>
+        </li>
+        <li>
+        <label>
+            <input type="checkbox" class="monthly-backup-enabled">
+            Enable monthly backup
+            </label>
+        </li>
+    </ul>
     
     <p>It's recommended to keep the backup turned on, but this can make application startup slow with large databases and/or slow storage devices.</p>
 </div>

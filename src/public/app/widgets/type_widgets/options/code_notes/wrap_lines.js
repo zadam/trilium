@@ -3,10 +3,10 @@ import OptionsWidget from "../options_widget.js";
 const TPL = `
 <div class="options-section">
     <h4>Wrap lines in code notes</h4>
-    <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="line-wrap-enabled custom-control-input">
-        <label class="custom-control-label">Enable Line Wrap (change might need a frontend reload to take effect)</label>
-    </div>
+    <label>
+        <input type="checkbox" class="line-wrap-enabled">
+        Enable Line Wrap (change might need a frontend reload to take effect)
+    </label>
 </div>`;
 
 export default class WrapLinesOptions extends OptionsWidget {
