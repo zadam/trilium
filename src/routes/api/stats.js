@@ -1,6 +1,6 @@
 const sql = require('../../services/sql');
 const becca = require('../../becca/becca');
-const NotFoundError = require("../../errors/not_found_error.js");
+const NotFoundError = require("../../errors/not_found_error");
 
 function getNoteSize(req) {
     const {noteId} = req.params;

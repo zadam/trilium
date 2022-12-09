@@ -452,7 +452,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
                         const files = [...dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-                        const importService = await import('../services/import.js');
+                        const importService = await import('../services/import');
 
                         importService.uploadFiles(node.data.noteId, files, {
                             safeImport: true,

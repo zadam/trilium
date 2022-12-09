@@ -6,7 +6,7 @@ const opmlExportService = require('../../services/export/opml');
 const becca = require('../../becca/becca');
 const TaskContext = require("../../services/task_context");
 const log = require("../../services/log");
-const NotFoundError = require("../../errors/not_found_error.js");
+const NotFoundError = require("../../errors/not_found_error");
 
 function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;

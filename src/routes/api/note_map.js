@@ -2,7 +2,7 @@
 
 const becca = require("../../becca/becca");
 const { JSDOM } = require("jsdom");
-const NotFoundError = require("../../errors/not_found_error.js");
+const NotFoundError = require("../../errors/not_found_error");
 
 function buildDescendantCountMap() {
     const noteIdToCountMap = {};

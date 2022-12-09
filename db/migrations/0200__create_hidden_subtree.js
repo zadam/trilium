@@ -1,5 +1,5 @@
 module.exports = () => {
-    const hiddenSubtreeService = require('../../src/services/hidden_subtree.js');
+    const hiddenSubtreeService = require('../../src/services/hidden_subtree');
     const cls = require("../../src/services/cls");
     const beccaLoader = require("../../src/becca/becca_loader");
 

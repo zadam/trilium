@@ -18,8 +18,8 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
-const htmlSanitizer = require("./html_sanitizer.js");
-const ValidationError = require("../errors/validation_error.js");
+const htmlSanitizer = require("./html_sanitizer");
+const ValidationError = require("../errors/validation_error");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];

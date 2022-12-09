@@ -8,9 +8,9 @@ const noteService = require('../../services/notes');
 const becca = require('../../becca/becca');
 const TaskContext = require('../../services/task_context');
 const branchService = require("../../services/branches");
-const log = require("../../services/log.js");
-const ValidationError = require("../../public/app/services/validation_error.js");
-const NotFoundError = require("../../errors/not_found_error.js");
+const log = require("../../services/log");
+const ValidationError = require("../../errors/validation_error");
+const NotFoundError = require("../../errors/not_found_error");
 
 /**
  * Code in this file deals with moving and cloning branches. Relationship between note and parent note is unique

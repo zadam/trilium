@@ -2,7 +2,7 @@
 
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
-const dumpService = require("./inc/dump.js");
+const dumpService = require("./inc/dump");
 
 yargs(hideBin(process.argv))
     .command('$0 <path_to_document> <target_directory>', 'dump the contents of document.db into the target directory', (yargs) => {

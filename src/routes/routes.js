@@ -5,7 +5,7 @@ const loginRoute = require('./login');
 const indexRoute = require('./index');
 const utils = require('../services/utils');
 const multer = require('multer');
-const ValidationError = require("../errors/validation_error.js");
+const ValidationError = require("../errors/validation_error");
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -62,7 +62,7 @@ const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
 const AbstractEntity = require("../becca/entities/abstract_entity");
-const NotFoundError = require("../errors/not_found_error.js");
+const NotFoundError = require("../errors/not_found_error");
 
 const csrfMiddleware = csurf({
     cookie: true,

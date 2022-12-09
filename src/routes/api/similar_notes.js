@@ -2,7 +2,7 @@
 
 const similarityService = require('../../becca/similarity');
 const becca = require("../../becca/becca");
-const NotFoundError = require("../../errors/not_found_error.js");
+const NotFoundError = require("../../errors/not_found_error");
 
 async function getSimilarNotes(req) {
     const noteId = req.params.noteId;

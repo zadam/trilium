@@ -6,11 +6,10 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
-const protectedSessionService = require('../../services/protected_session');
 const fs = require('fs');
 const becca = require("../../becca/becca");
-const ValidationError = require("../../public/app/services/validation_error.js");
-const NotFoundError = require("../../errors/not_found_error.js");
+const ValidationError = require("../../errors/validation_error");
+const NotFoundError = require("../../errors/not_found_error");
 
 function getNote(req) {
     const noteId = req.params.noteId;

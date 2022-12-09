@@ -6,7 +6,7 @@ const myScryptService = require('../services/my_scrypt');
 const log = require('../services/log');
 const passwordService = require("../services/password");
 const assetPath = require("../services/asset_path");
-const ValidationError = require("../public/app/services/validation_error.js");
+const ValidationError = require("../errors/validation_error");
 
 function loginPage(req, res) {
     res.render('login', {

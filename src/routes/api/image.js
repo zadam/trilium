@@ -4,8 +4,8 @@ const imageService = require('../../services/image');
 const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
-const ValidationError = require("../../public/app/services/validation_error.js");
-const NotFoundError = require("../../errors/not_found_error.js");
+const ValidationError = require("../../errors/validation_error");
+const NotFoundError = require("../../errors/not_found_error");
 
 function returnImage(req, res) {
     const image = becca.getNote(req.params.noteId);

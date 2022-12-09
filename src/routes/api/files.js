@@ -10,7 +10,7 @@ const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws');
 const becca = require("../../becca/becca");
-const NotFoundError = require("../../errors/not_found_error.js");
+const NotFoundError = require("../../errors/not_found_error");
 
 function updateFile(req) {
     const {noteId} = req.params;

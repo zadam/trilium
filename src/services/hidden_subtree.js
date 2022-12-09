@@ -1,6 +1,6 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
-const log = require("./log.js");
+const log = require("./log");
 
 const LBTPL_ROOT = "lbTplRoot";
 const LBTPL_BASE = "lbTplBase";

@@ -10,8 +10,8 @@ const becca = require('../../becca/becca');
 const beccaLoader = require('../../becca/becca_loader');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
-const ValidationError = require("../../public/app/services/validation_error.js");
-const NotFoundError = require("../../errors/not_found_error.js");
+const ValidationError = require("../../errors/validation_error");
+const NotFoundError = require("../../errors/not_found_error");
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;

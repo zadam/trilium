@@ -357,7 +357,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         // disable spellcheck for attribute editor
         this.textEditor.editing.view.change(writer => writer.setAttribute('spellcheck', 'false', this.textEditor.editing.view.document.getRoot()));
 
-        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
+        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector');
         //CKEditorInspector.attach(this.textEditor);
     }
 

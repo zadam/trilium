@@ -3,7 +3,7 @@
 const optionService = require('../../services/options');
 const log = require('../../services/log');
 const searchService = require('../../services/search/services/search');
-const ValidationError = require("../../public/app/services/validation_error.js");
+const ValidationError = require("../../errors/validation_error");
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = new Set([
