@@ -57,6 +57,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
             type: 'doc',
         },
         {
+            // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
+            id: 'userHidden',
+            title: 'User Hidden',
+            type: 'text',
+        },
+        {
             id: LBTPL_ROOT,
             title: 'Launch Bar Templates',
             type: 'doc',

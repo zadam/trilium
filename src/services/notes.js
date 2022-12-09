@@ -111,7 +111,11 @@ function getAndValidateParent(params) {
         throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (!params.ignoreForbiddenParents && (parentNote.isLaunchBarConfig() || parentNote.isOptions())) {
+    if (parentNote.type === 'launcher' && parentNote.noteId !== 'lbBookmarks') {
+        throw new ValidationError(`Creating child notes into launcher notes is not allowed.`);
+    }
+
+    if (!params.ignoreForbiddenParents && (['lbRoot', 'hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
         throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 

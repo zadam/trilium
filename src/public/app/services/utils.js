@@ -60,6 +60,11 @@ function isMac() {
     return navigator.platform.indexOf('Mac') > -1;
 }
 
+function isCtrlKey(evt) {
+    return (!isMac() && evt.ctrlKey)
+        || (isMac() && evt.metaKey);
+}
+
 function assertArguments() {
     for (const i in arguments) {
         if (!arguments[i]) {
@@ -362,6 +367,7 @@ export default {
     now,
     isElectron,
     isMac,
+    isCtrlKey,
     assertArguments,
     escapeHtml,
     stopWatch,
