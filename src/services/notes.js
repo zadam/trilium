@@ -19,6 +19,7 @@ const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer.js");
+const ValidationError = require("../errors/validation_error.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -107,15 +108,11 @@ function getAndValidateParent(params) {
     const parentNote = becca.notes[params.parentNoteId];
 
     if (!parentNote) {
-        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
-    }
-
-    if (parentNote.type === 'launcher') {
-        throw new Error(`Launchers should not have child notes.`);
+        throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
     }
 
     if (!params.ignoreForbiddenParents && (parentNote.isLaunchBarConfig() || parentNote.isOptions())) {
-        throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+        throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 
     return parentNote;

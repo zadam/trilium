@@ -6,6 +6,7 @@ const opmlExportService = require('../../services/export/opml');
 const becca = require('../../becca/becca');
 const TaskContext = require("../../services/task_context");
 const log = require("../../services/log");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 function exportBranch(req, res) {
     const {branchId, type, format, version, taskId} = req.params;
@@ -34,11 +35,11 @@ function exportBranch(req, res) {
             opmlExportService.exportToOpml(taskContext, branch, version, res);
         }
         else {
-            return [404, "Unrecognized export format " + format];
+            throw new NotFoundError(`Unrecognized export format '${format}'`);
         }
     }
     catch (e) {
-        const message = "Export failed with following error: '" + e.message + "'. More details might be in the logs.";
+        const message = `Export failed with following error: '${e.message}'. More details might be in the logs.`;
         taskContext.reportError(message);
 
         log.error(message + e.stack);

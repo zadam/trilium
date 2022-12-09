@@ -5,6 +5,8 @@ const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const Attribute = require('../../becca/entities/attribute');
 const becca = require("../../becca/becca");
+const ValidationError = require("../../public/app/services/validation_error.js");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);
@@ -21,11 +23,11 @@ function updateNoteAttribute(req) {
         attribute = becca.getAttribute(body.attributeId);
 
         if (!attribute) {
-            return [404, `Attribute '${body.attributeId}' does not exist.`];
+            throw new NotFoundError(`Attribute '${body.attributeId}' does not exist.`);
         }
 
         if (attribute.noteId !== noteId) {
-            return [400, `Attribute '${body.attributeId}' is not owned by ${noteId}`];
+            throw new ValidationError(`Attribute '${body.attributeId}' is not owned by ${noteId}`);
         }
 
         if (body.type !== attribute.type
@@ -106,7 +108,7 @@ function deleteNoteAttribute(req) {
 
     if (attribute) {
         if (attribute.noteId !== noteId) {
-            return [400, `Attribute ${attributeId} is not owned by ${noteId}`];
+            throw new ValidationError(`Attribute ${attributeId} is not owned by ${noteId}`);
         }
 
         attribute.markAsDeleted();

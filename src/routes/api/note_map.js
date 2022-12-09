@@ -2,6 +2,7 @@
 
 const becca = require("../../becca/becca");
 const { JSDOM } = require("jsdom");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 function buildDescendantCountMap() {
     const noteIdToCountMap = {};
@@ -326,7 +327,7 @@ function getBacklinkCount(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, "Not found"];
+        throw new NotFoundError(`Note '${noteId}' not found`);
     }
     else {
         return {
@@ -340,7 +341,7 @@ function getBacklinks(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} was not found`];
+        throw new NotFoundError(`Note '${noteId}' was not found`);
     }
 
     let backlinksWithExcerptCount = 0;

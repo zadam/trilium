@@ -9,13 +9,15 @@ const TaskContext = require('../../services/task_context');
 const protectedSessionService = require('../../services/protected_session');
 const fs = require('fs');
 const becca = require("../../becca/becca");
+const ValidationError = require("../../public/app/services/validation_error.js");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 function getNote(req) {
     const noteId = req.params.noteId;
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, "Note " + noteId + " has not been found."];
+        throw new NotFoundError(`Note '${noteId}' has not been found.`);
     }
 
     const pojo = note.getPojo();
@@ -197,11 +199,11 @@ function changeTitle(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note '${noteId}' has not been found`];
+        throw new NotFoundError(`Note '${noteId}' has not been found`);
     }
 
     if (!note.isContentAvailable()) {
-        return [400, `Note '${noteId}' is not available for change`];
+        throw new ValidationError(`Note '${noteId}' is not available for change`);
     }
 
     const noteTitleChanged = note.title !== title;
@@ -290,7 +292,7 @@ function uploadModifiedFile(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note '${noteId}' has not been found`];
+        throw new NotFoundError(`Note '${noteId}' has not been found`);
     }
 
     log.info(`Updating note '${noteId}' with content from ${filePath}`);
@@ -300,7 +302,7 @@ function uploadModifiedFile(req) {
     const fileContent = fs.readFileSync(filePath);
 
     if (!fileContent) {
-        return [400, `File ${fileContent} is empty`];
+        throw new ValidationError(`File '${fileContent}' is empty`);
     }
 
     note.setContent(fileContent);
@@ -311,11 +313,11 @@ function forceSaveNoteRevision(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} not found.`];
+        throw new NotFoundError(`Note '${noteId}' not found.`);
     }
 
     if (!note.isContentAvailable()) {
-        return [400, `Note revision of a protected note cannot be created outside of a protected session.`];
+        throw new ValidationError(`Note revision of a protected note cannot be created outside of a protected session.`);
     }
 
     note.saveNoteRevision();

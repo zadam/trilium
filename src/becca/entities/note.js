@@ -1329,7 +1329,7 @@ class Note extends AbstractEntity {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'launcher' || ['lbRoot', 'lbAvailableShortcuts', 'lbVisibleShortcuts'];
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
     }
 
     isOptions() {

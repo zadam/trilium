@@ -6,12 +6,14 @@ const searchService = require('../../services/search/services/search');
 const bulkActionService = require("../../services/bulk_actions");
 const cls = require("../../services/cls");
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
+const ValidationError = require("../../public/app/services/validation_error.js");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 function searchFromNote(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
-        return [404, `Note ${req.params.noteId} has not been found.`];
+        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
     }
 
     if (note.isDeleted) {
@@ -20,7 +22,7 @@ function searchFromNote(req) {
     }
 
     if (note.type !== 'search') {
-        return [400, `Note ${req.params.noteId} is not a search note.`]
+        throw new ValidationError(`Note '${req.params.noteId}' is not a search note.`);
     }
 
     return searchService.searchFromNote(note);
@@ -30,16 +32,16 @@ function searchAndExecute(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
-        return [404, `Note ${req.params.noteId} has not been found.`];
+        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
     }
 
     if (note.isDeleted) {
-        // this can be triggered from recent changes and it's harmless to return empty list rather than fail
+        // this can be triggered from recent changes, and it's harmless to return empty list rather than fail
         return [];
     }
 
     if (note.type !== 'search') {
-        return [400, `Note ${req.params.noteId} is not a search note.`]
+        throw new ValidationError(`Note '${req.params.noteId}' is not a search note.`);
     }
 
     const {searchResultNoteIds} = searchService.searchFromNote(note);

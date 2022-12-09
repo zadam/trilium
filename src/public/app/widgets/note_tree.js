@@ -568,7 +568,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     $span.append($refreshSearchButton);
                 }
 
-                if (!['search', 'launcher'].includes(note.type) && !note.isOptions()) {
+                if (!['search', 'launcher'].includes(note.type) && !note.isOptions() && !note.isLaunchBarConfig()) {
                     const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);

@@ -10,6 +10,8 @@ const becca = require('../../becca/becca');
 const beccaLoader = require('../../becca/becca_loader');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
+const ValidationError = require("../../public/app/services/validation_error.js");
+const NotFoundError = require("../../errors/not_found_error.js");
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;
@@ -27,13 +29,13 @@ async function importToBranch(req) {
     const file = req.file;
 
     if (!file) {
-        return [400, "No file has been uploaded"];
+        throw new ValidationError("No file has been uploaded");
     }
 
     const parentNote = becca.getNote(parentNoteId);
 
     if (!parentNote) {
-        return [404, `Note ${parentNoteId} doesn't exist.`];
+        throw new NotFoundError(`Note '${parentNoteId}' doesn't exist.`);
     }
 
     const extension = path.extname(file.originalname).toLowerCase();
