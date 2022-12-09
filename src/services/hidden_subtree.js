@@ -36,7 +36,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
             title: 'Note Map',
             type: 'noteMap',
             attributes: [
-                { type: 'label', name: 'mapRootId', value: 'hoisted' }
+                { type: 'label', name: 'mapRootNoteId', value: 'hoisted' },
+                { type: 'label', name: 'keepCurrentHoisting' }
             ]
         },
         {
