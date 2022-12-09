@@ -28,6 +28,7 @@ rm -r $BUILD_DIR/swiftshader
 cp bin/tpl/anonymize-database.sql $BUILD_DIR/
 
 cp -r dump-db $BUILD_DIR/
+rm -rf $BUILD_DIR/dump-db/node_modules
 
 cp bin/tpl/trilium-{portable,no-cert-check,safe-mode}.{bat,ps1} $BUILD_DIR/
 
