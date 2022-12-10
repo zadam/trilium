@@ -18,7 +18,8 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
-const htmlSanitizer = require("./html_sanitizer.js");
+const htmlSanitizer = require("./html_sanitizer");
+const ValidationError = require("../errors/validation_error");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -107,15 +108,15 @@ function getAndValidateParent(params) {
     const parentNote = becca.notes[params.parentNoteId];
 
     if (!parentNote) {
-        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
+        throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (parentNote.type === 'launcher') {
-        throw new Error(`Launchers should not have child notes.`);
+    if (parentNote.type === 'launcher' && parentNote.noteId !== 'lbBookmarks') {
+        throw new ValidationError(`Creating child notes into launcher notes is not allowed.`);
     }
 
-    if (!params.ignoreForbiddenParents && (parentNote.isLaunchBarConfig() || parentNote.isOptions())) {
-        throw new Error(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+    if (!params.ignoreForbiddenParents && (['lbRoot', 'hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
+        throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 
     return parentNote;

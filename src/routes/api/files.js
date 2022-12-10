@@ -10,6 +10,7 @@ const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws');
 const becca = require("../../becca/becca");
+const NotFoundError = require("../../errors/not_found_error");
 
 function updateFile(req) {
     const {noteId} = req.params;
@@ -18,7 +19,7 @@ function updateFile(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} doesn't exist.`];
+        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
     note.saveNoteRevision();
@@ -116,7 +117,7 @@ function saveToTmpDir(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404,`Note ${noteId} doesn't exist.`];
+        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
     const tmpObj = tmp.fileSync({postfix: getFilename(note)});

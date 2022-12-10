@@ -1,9 +1,9 @@
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
-const sql = require("./sql.js");
-const decryptService = require("./decrypt.js");
-const dataKeyService = require("./data_key.js");
-const extensionService = require("./extension.js");
+const sql = require("./sql");
+const decryptService = require("./decrypt");
+const dataKeyService = require("./data_key");
+const extensionService = require("./extension");
 
 function dumpDocument(documentPath, targetPath, options) {
     const stats = {

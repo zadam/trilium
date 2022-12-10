@@ -1,6 +1,6 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
-const log = require("./log.js");
+const log = require("./log");
 
 const LBTPL_ROOT = "lbTplRoot";
 const LBTPL_BASE = "lbTplBase";
@@ -36,7 +36,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
             title: 'Note Map',
             type: 'noteMap',
             attributes: [
-                { type: 'label', name: 'mapRootId', value: 'hoisted' }
+                { type: 'label', name: 'mapRootNoteId', value: 'hoisted' },
+                { type: 'label', name: 'keepCurrentHoisting' }
             ]
         },
         {
@@ -55,6 +56,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
             id: 'bulkAction',
             title: 'Bulk action',
             type: 'doc',
+        },
+        {
+            // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
+            id: 'userHidden',
+            title: 'User Hidden',
+            type: 'text',
         },
         {
             id: LBTPL_ROOT,

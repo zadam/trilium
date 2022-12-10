@@ -2,6 +2,7 @@
 
 const sql = require('../../services/sql');
 const becca = require("../../becca/becca");
+const NotFoundError = require("../../errors/not_found_error");
 
 function getSchema() {
     const tableNames = sql.getColumn(`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`);
@@ -21,7 +22,7 @@ function execute(req) {
     const note = becca.getNote(req.params.noteId);
 
     if (!note) {
-        return [404, `Note ${req.params.noteId} was not found.`];
+        throw new NotFoundError(`Note '${req.params.noteId}' was not found.`);
     }
 
     const queries = note.getContent().split("\n---");

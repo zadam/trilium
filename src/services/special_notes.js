@@ -4,7 +4,7 @@ const becca = require("../becca/becca");
 const noteService = require("./notes");
 const cls = require("./cls");
 const dateUtils = require("./date_utils");
-const log = require("./log.js");
+const log = require("./log");
 const hiddenSubtreeService = require("./hidden_subtree");
 
 function getInboxNote(date) {

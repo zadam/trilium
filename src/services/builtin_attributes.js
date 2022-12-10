@@ -60,6 +60,7 @@ module.exports = [
     { type: 'label', name: 'template' },
     { type: 'label', name: 'toc' },
     { type: 'label', name: 'color' },
+    { type: 'label', name: 'keepCurrentHoisting'},
 
     // relation names
     { type: 'relation', name: 'internalLink' },

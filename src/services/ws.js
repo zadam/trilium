@@ -53,6 +53,11 @@ function init(httpServer, sessionParser) {
             }
         });
     });
+
+    webSocketServer.on('error', error => {
+        // https://github.com/zadam/trilium/issues/3374#issuecomment-1341053765
+        console.log(error);
+    });
 }
 
 function sendMessage(client, message) {

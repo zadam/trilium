@@ -14,9 +14,6 @@ mkdir $DIR
 
 echo "Copying Trilium to build directory $DIR"
 
-cp -r dump-db $DIR/
-rm -rf $DIR/dump-db/node_modules
-
 cp -r images $DIR/
 cp -r libraries $DIR/
 cp -r src $DIR/

@@ -452,7 +452,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
                         const files = [...dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-                        const importService = await import('../services/import.js');
+                        const importService = await import('../services/import');
 
                         importService.uploadFiles(node.data.noteId, files, {
                             safeImport: true,
@@ -568,7 +568,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     $span.append($refreshSearchButton);
                 }
 
-                if (!['search', 'launcher'].includes(note.type) && !note.isOptions()) {
+                if (!['search', 'launcher'].includes(note.type) && !note.isOptions() && !note.isLaunchBarConfig()) {
                     const $createChildNoteButton = $('<span class="tree-item-button add-note-button bx bx-plus" title="Create child note"></span>');
 
                     $span.append($createChildNoteButton);

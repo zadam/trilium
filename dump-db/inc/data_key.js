@@ -1,6 +1,6 @@
 const crypto = require("crypto");
-const sql = require("./sql.js");
-const decryptService = require("./decrypt.js");
+const sql = require("./sql");
+const decryptService = require("./decrypt");
 
 function getDataKey(password) {
     if (!password) {

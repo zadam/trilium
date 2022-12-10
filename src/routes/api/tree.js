@@ -2,6 +2,7 @@
 
 const becca = require('../../becca/becca');
 const log = require('../../services/log');
+const NotFoundError = require("../../errors/not_found_error");
 
 function getNotesAndBranchesAndAttributes(noteIds) {
     noteIds = new Set(noteIds);
@@ -141,7 +142,7 @@ function getTree(req) {
     }
 
     if (!(subTreeNoteId in becca.notes)) {
-        return [404, `Note ${subTreeNoteId} not found in the cache`];
+        throw new NotFoundError(`Note '${subTreeNoteId}' not found in the cache`);
     }
 
     collect(becca.notes[subTreeNoteId]);

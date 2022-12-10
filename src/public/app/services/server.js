@@ -1,4 +1,5 @@
 import utils from './utils.js';
+import ValidationError from "./validation_error.js";
 
 const REQUEST_LOGGING_ENABLED = false;
 
@@ -102,10 +103,15 @@ async function call(method, url, data, headers = {}) {
     return resp.body;
 }
 
-async function reportError(method, url, status, error) {
-    const message = "Error when calling " + method + " " + url + ": " + status + " - " + error;
-
+async function reportError(method, url, status, response) {
     const toastService = (await import("./toast.js")).default;
+
+    if ([400, 404].includes(status) && response && typeof response === 'object') {
+        toastService.showError(response.message);
+        throw new ValidationError(response);
+    }
+
+    const message = "Error when calling " + method + " " + url + ": " + status + " - " + responseText;
     toastService.showError(message);
     toastService.throwError(message);
 }
