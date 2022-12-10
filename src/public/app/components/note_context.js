@@ -32,6 +32,10 @@ class NoteContext extends Component {
         });
     }
 
+    isEmpty() {
+        return !this.noteId;
+    }
+
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 
@@ -58,8 +62,6 @@ class NoteContext extends Component {
                 notePath: this.notePath
             });
         }
-
-        console.log(resolvedNotePath, "resolvedNotePath");
 
         if (this.hoistedNoteId === 'root' && this.notePath.startsWith("root/hidden")) {
             // hidden subtree displays only when hoisted so it doesn't make sense to keep root as hoisted note

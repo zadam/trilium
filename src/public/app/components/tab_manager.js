@@ -324,14 +324,16 @@ export default class TabManager extends Component {
             }
 
             if (noteContextToRemove.isMainContext()) {
-                // forbid removing last main note context
-                // this was previously allowed (was replaced with empty tab) but this proved to be prone to race conditions
                 const mainNoteContexts = this.getNoteContexts().filter(nc => nc.isMainContext());
 
                 if (mainNoteContexts.length === 1) {
-                    await this.clearLastMainNoteContext(noteContextToRemove);
+                    if (noteContextToRemove.isEmpty()) {
+                        // this is already the empty note context, no point in closing it and replacing with another
+                        // empty tab
+                        return false;
+                    }
 
-                    return false;
+                    await this.openEmptyTab();
                 }
             }
 
@@ -366,33 +368,24 @@ export default class TabManager extends Component {
         });
     }
 
-    async clearLastMainNoteContext(noteContextToClear) {
-        noteContextToClear.setEmpty();
-
-        // activate main split
-        await this.activateNoteContext(noteContextToClear.ntxId);
-
-        // remove all other splits
-        const noteContextsToRemove = noteContextToClear.getSubContexts()
-            .filter(ntx => ntx.ntxId !== noteContextToClear.ntxId);
-
-        const ntxIdsToRemove = noteContextsToRemove.map(ntx => ntx.ntxId);
-
-        await this.triggerEvent('beforeNoteContextRemove', {ntxIds: ntxIdsToRemove});
-
-        this.removeNoteContexts(noteContextsToRemove);
-    }
-
     removeNoteContexts(noteContextsToRemove) {
         const ntxIdsToRemove = noteContextsToRemove.map(nc => nc.ntxId);
 
         this.children = this.children.filter(nc => !ntxIdsToRemove.includes(nc.ntxId));
 
-        this.recentlyClosedTabs.push(noteContextsToRemove);
+        this.addToRecentlyClosedTabs(noteContextsToRemove);
 
         this.triggerEvent('noteContextRemoved', {ntxIds: ntxIdsToRemove});
 
         this.tabsUpdate.scheduleUpdate();
+    }
+
+    addToRecentlyClosedTabs(noteContexts) {
+        if (noteContexts.length === 1 && noteContexts[0].isEmpty()) {
+            return;
+        }
+
+        this.recentlyClosedTabs.push(noteContexts);console.log(this.recentlyClosedTabs);
     }
 
     tabReorderEvent({ntxIdsInOrder}) {
@@ -481,7 +474,18 @@ export default class TabManager extends Component {
     }
 
     async reopenLastTabCommand() {
-        if (this.recentlyClosedTabs.length > 0) {
+        let closeLastEmptyTab = null;
+
+        await this.mutex.runExclusively(async () => {
+            if (this.recentlyClosedTabs.length === 0) {
+                return;
+            }
+
+            if (this.noteContexts.length === 1 && this.noteContexts[0].isEmpty()) {
+                // new empty tab is created after closing the last tab, this reverses the empty tab creation
+                closeLastEmptyTab = this.noteContexts[0];
+            }
+
             const noteContexts = this.recentlyClosedTabs.pop();
 
             for (const noteContext of noteContexts) {
@@ -494,12 +498,16 @@ export default class TabManager extends Component {
                 ? noteContexts[0]
                 : noteContexts.find(nc => nc.isMainContext());
 
-            this.activateNoteContext(noteContextToActivate.ntxId);
+            await this.activateNoteContext(noteContextToActivate.ntxId);
 
             await this.triggerEvent('noteSwitched', {
                 noteContext: noteContextToActivate,
                 notePath: noteContextToActivate.notePath
             });
+        });
+
+        if (closeLastEmptyTab) {
+            await this.removeNoteContext(closeLastEmptyTab.ntxId);
         }
     }
 
