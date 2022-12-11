@@ -149,10 +149,10 @@ const TPL = `
 const MAX_SEARCH_RESULTS_IN_TREE = 100;
 
 export default class NoteTreeWidget extends NoteContextAwareWidget {
-    constructor(treeName) {
+    constructor() {
         super();
 
-        this.treeName = treeName;
+        this.treeName = "main"; // legacy value
     }
 
     doRender() {

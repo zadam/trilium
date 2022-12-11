@@ -11,6 +11,13 @@ import ScrollingContainer from "../widgets/containers/scrolling_container.js";
 import ProtectedSessionPasswordDialog from "../widgets/dialogs/protected_session_password.js";
 import ConfirmDialog from "../widgets/dialogs/confirm.js";
 import FilePropertiesWidget from "../widgets/ribbon_widgets/file_properties.js";
+import FloatingButtons from "../widgets/floating_buttons/floating_buttons.js";
+import EditButton from "../widgets/buttons/edit_button.js";
+import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons.js";
+import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
+import BacklinksWidget from "../widgets/floating_buttons/zpetne_odkazy.js";
+import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
+import MermaidWidget from "../widgets/mermaid.js";
 
 const MOBILE_CSS = `
 <style>
@@ -106,7 +113,7 @@ export default class MobileLayout {
                 .css('contain', 'content')
                 .child(new MobileGlobalButtonsWidget())
                 .child(new QuickSearchWidget())
-                .child(new NoteTreeWidget("main")
+                .child(new NoteTreeWidget()
                     .cssBlock(FANCYTREE_CSS)))
             .child(new ScreenContainer("detail", "column")
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
@@ -121,6 +128,14 @@ export default class MobileLayout {
                         .css("top: 5px;")
                     )
                     .child(new CloseDetailButtonWidget().contentSized()))
+                .child(new FloatingButtons()
+                    .child(new EditButton())
+                    .child(new RelationMapButtons())
+                    .child(new MermaidExportButton())
+                    .child(new BacklinksWidget())
+                    .child(new HideFloatingButtonsButton())
+                )
+                .child(new MermaidWidget())
                 .child(
                     new ScrollingContainer()
                         .filling()
@@ -128,7 +143,8 @@ export default class MobileLayout {
                         .child(
                             new NoteDetailWidget()
                                 .css('padding', '5px 20px 10px 0')
-                        ).child(new FilePropertiesWidget().css('font-size','smaller'))
+                        )
+                        .child(new FilePropertiesWidget().css('font-size','smaller'))
                 )
             )
             .child(new ProtectedSessionPasswordDialog())

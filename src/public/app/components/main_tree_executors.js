@@ -11,7 +11,7 @@ import Component from "./component.js";
  */
 export default class MainTreeExecutors extends Component {
     get tree() {
-        return appContext.mainTreeWidget;
+        return appContext.noteTreeWidget;
     }
 
     async cloneNotesToCommand() {

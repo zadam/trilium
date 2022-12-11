@@ -83,7 +83,7 @@ export default class DesktopLayout {
     }
 
     getRootWidget(appContext) {
-        appContext.mainTreeWidget = new NoteTreeWidget("main");
+        appContext.noteTreeWidget = new NoteTreeWidget();
 
         return new RootContainer()
             .setParent(appContext)
@@ -96,7 +96,7 @@ export default class DesktopLayout {
             )
             .child(new LeftPaneContainer()
                 .child(new QuickSearchWidget())
-                .child(appContext.mainTreeWidget)
+                .child(appContext.noteTreeWidget)
                 .child(...this.customWidgets.get('left-pane'))
             )
             .child(new FlexContainer('column')
