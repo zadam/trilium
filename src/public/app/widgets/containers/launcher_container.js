@@ -15,6 +15,8 @@ export default class LauncherContainer extends FlexContainer {
     }
 
     async load() {
+        await froca.initializedPromise;
+
         this.children = [];
 
         const visibleLaunchersRoot = await froca.getNote('lbVisibleLaunchers', true);

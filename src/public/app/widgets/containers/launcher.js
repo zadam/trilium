@@ -33,7 +33,7 @@ export default class LauncherWidget extends BasicWidget {
         const launcherType = note.getLabelValue("launcherType");
 
         if (launcherType === 'command') {
-            this.innerWidget = this.initCommandWidget(note)
+            this.innerWidget = this.initCommandLauncherWidget(note)
                 .class("launcher-button");
         } else if (launcherType === 'note') {
             this.innerWidget = new NoteLauncher(note)
@@ -56,7 +56,7 @@ export default class LauncherWidget extends BasicWidget {
         this.child(this.innerWidget);
     }
 
-    initCommandWidget(note) {
+    initCommandLauncherWidget(note) {
         return new CommandButtonWidget()
             .title(note.title)
             .icon(note.getIcon())

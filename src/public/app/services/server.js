@@ -111,7 +111,7 @@ async function reportError(method, url, status, response) {
         throw new ValidationError(response);
     }
 
-    const message = "Error when calling " + method + " " + url + ": " + status + " - " + responseText;
+    const message = "Error when calling " + method + " " + url + ": " + status + " - " + response;
     toastService.showError(message);
     toastService.throwError(message);
 }
