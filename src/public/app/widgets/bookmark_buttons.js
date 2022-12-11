@@ -24,6 +24,8 @@ export default class BookmarkButtons extends FlexContainer {
                 ? new BookmarkFolderWidget(note)
                 : new OpenNoteButtonWidget().targetNote(note.noteId);
 
+            buttonWidget.class("launcher-button");
+
             this.child(buttonWidget);
 
             this.$widget.append(buttonWidget.render());

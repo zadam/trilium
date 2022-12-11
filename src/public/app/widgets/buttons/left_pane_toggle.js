@@ -6,6 +6,8 @@ export default class LeftPaneToggleWidget extends CommandButtonWidget {
     constructor() {
         super();
 
+        this.class("launcher-button");
+
         this.settings.icon = () => options.is('leftPaneVisible')
             ? "bx-chevrons-left"
             : "bx-chevrons-right";

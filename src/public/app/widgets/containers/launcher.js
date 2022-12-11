@@ -1,4 +1,3 @@
-import OnClickButtonWidget from "../buttons/onclick_button.js";
 import CalendarWidget from "../buttons/calendar.js";
 import SpacerWidget from "../spacer.js";
 import BookmarkButtons from "../bookmark_buttons.js";
@@ -34,11 +33,14 @@ export default class LauncherWidget extends BasicWidget {
         const launcherType = note.getLabelValue("launcherType");
 
         if (launcherType === 'command') {
-            this.innerWidget = this.initCommandWidget(note);
+            this.innerWidget = this.initCommandWidget(note)
+                .class("launcher-button");
         } else if (launcherType === 'note') {
-            this.innerWidget = new NoteLauncher(note);
+            this.innerWidget = new NoteLauncher(note)
+                .class("launcher-button");
         } else if (launcherType === 'script') {
-            this.innerWidget = new ScriptLauncher(note);
+            this.innerWidget = new ScriptLauncher(note)
+                .class("launcher-button");
         } else if (launcherType === 'customWidget') {
             this.innerWidget = await this.initCustomWidget(note);
         } else if (launcherType === 'builtinWidget') {

@@ -5,6 +5,8 @@ export default class ProtectedSessionStatusWidget extends CommandButtonWidget {
     constructor() {
         super();
 
+        this.class("launcher-button");
+
         this.settings.icon = () => protectedSessionHolder.isProtectedSessionAvailable()
             ? "bx-check-shield"
             : "bx-shield-quarter";

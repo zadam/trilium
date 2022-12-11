@@ -7,7 +7,8 @@ export default class NoteRevisionsButton extends CommandButtonWidget {
         this.icon('bx-history')
             .title("Note Revisions")
             .command("showNoteRevisions")
-            .titlePlacement("bottom");
+            .titlePlacement("bottom")
+            .class("icon-action");
     }
 
     isEnabled() {

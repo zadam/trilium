@@ -78,10 +78,6 @@ const TPL = `
         margin-right: 5px;
     }
     
-    .ribbon-button-container .icon-action {
-        padding: 5px;
-    }
-    
     .ribbon-button-container > * {
         position: relative;
         top: -3px;

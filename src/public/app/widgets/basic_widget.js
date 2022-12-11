@@ -72,6 +72,7 @@ class BasicWidget extends Component {
     render() {
         this.doRender();
 
+        this.$widget.attr('data-component-id', this.componentId);
         this.$widget.addClass('component')
             .prop('component', this);
 

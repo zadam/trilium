@@ -5,6 +5,8 @@ export default class AbstractLauncher extends OnClickButtonWidget {
     constructor(launcherNote) {
         super();
 
+        this.class("launcher-button");
+
         /** @type {NoteShort} */
         this.launcherNote = launcherNote;
 

@@ -13,7 +13,7 @@ import utils from '../services/utils.js';
  */
 export default class Component {
     constructor() {
-        this.componentId = `comp-` + this.sanitizedClassName + '-' + utils.randomString(8);
+        this.componentId = this.sanitizedClassName + '-' + utils.randomString(8);
         /** @type Component[] */
         this.children = [];
         this.initialized = null;
