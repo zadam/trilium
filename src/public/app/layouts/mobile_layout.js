@@ -18,6 +18,7 @@ import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_butt
 import BacklinksWidget from "../widgets/floating_buttons/zpetne_odkazy.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
 import MermaidWidget from "../widgets/mermaid.js";
+import NoteListWidget from "../widgets/note_list.js";
 
 const MOBILE_CSS = `
 <style>
@@ -144,6 +145,7 @@ export default class MobileLayout {
                             new NoteDetailWidget()
                                 .css('padding', '5px 20px 10px 0')
                         )
+                        .child(new NoteListWidget())
                         .child(new FilePropertiesWidget().css('font-size','smaller'))
                 )
             )
