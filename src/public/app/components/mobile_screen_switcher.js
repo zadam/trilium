@@ -5,11 +5,11 @@ export default class MobileScreenSwitcherExecutor extends Component {
         if (screen !== this.activeScreen) {
             this.activeScreen = screen;
 
+            if (screen === 'tree') {
+                document.location.hash = '';
+            }
+
             this.triggerEvent('activeScreenChanged', {activeScreen: screen});
         }
-    }
-
-    initialRenderCompleteEvent() {
-        this.setActiveScreenCommand({screen: 'tree'});
     }
 }

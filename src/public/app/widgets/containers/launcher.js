@@ -9,6 +9,7 @@ import BasicWidget from "../basic_widget.js";
 import NoteLauncher from "../buttons/launcher/note_launcher.js";
 import ScriptLauncher from "../buttons/launcher/script_launcher.js";
 import CommandButtonWidget from "../buttons/command_button.js";
+import utils from "../../services/utils.js";
 
 export default class LauncherWidget extends BasicWidget {
     constructor() {
@@ -28,6 +29,10 @@ export default class LauncherWidget extends BasicWidget {
     async initLauncher(note) {
         if (note.type !== 'launcher') {
             throw new Error(`Note '${note.noteId}' '${note.title}' is not a launcher even though it's in the launcher subtree`);
+        }
+
+        if (!utils.isDesktop() && note.hasLabel('desktopOnly')) {
+            return false;
         }
 
         const launcherType = note.getLabelValue("launcherType");
@@ -54,6 +59,8 @@ export default class LauncherWidget extends BasicWidget {
         }
 
         this.child(this.innerWidget);
+
+        return true;
     }
 
     initCommandLauncherWidget(note) {

@@ -95,8 +95,13 @@ const TPL = `
         </li>
 
         <li class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
-            <span class="bx bx-empty"></span>
+            <span class="bx bx-mobile"></span>
             Switch to mobile version
+        </li>
+        
+        <li class="dropdown-item switch-to-desktop-version-button" data-trigger-command="switchToDesktopVersion">
+            <span class="bx bx-desktop"></span>
+            Switch to desktop version
         </li>
         
         <span class="zoom-container dropdown-item">
@@ -218,7 +223,8 @@ export default class GlobalMenuWidget extends BasicWidget {
 
         this.$widget.find(".logout-button").toggle(!isElectron);
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
-        this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
+        this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron && utils.isDesktop());
+        this.$widget.find(".switch-to-desktop-version-button").toggle(!isElectron && utils.isMobile());
 
         this.$widget.on('click', '.dropdown-item', e => {
             if ($(e.target).parent(".zoom-buttons")) {

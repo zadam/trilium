@@ -83,6 +83,8 @@ class NoteContext extends Component {
         if (utils.isDesktop()) {
             // close dangling autocompletes after closing the tab
             $(".aa-input").autocomplete("close");
+        } else if (utils.isMobile()) {
+            this.triggerCommand('setActiveScreen', {screen: 'detail'});
         }
     }
 

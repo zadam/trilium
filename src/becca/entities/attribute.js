@@ -63,6 +63,8 @@ class Attribute extends AbstractEntity {
     }
 
     init() {
+        this.validate();
+
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
         }
@@ -82,6 +84,16 @@ class Attribute extends AbstractEntity {
 
         if (targetNote) {
             targetNote.targetRelations.push(this);
+        }
+    }
+
+    validate() {
+        if (!["label", "relation"].includes(this.type)) {
+            throw new Error(`Invalid attribute type '${this.type}' in attribute '${this.attributeId}'`);
+        }
+
+        if (!this.name?.trim()) {
+            throw new Error(`Invalid empty name in attribute '${this.attributeId}'`);
         }
     }
 
@@ -162,6 +174,8 @@ class Attribute extends AbstractEntity {
     }
 
     beforeSaving() {
+        this.validate();
+
         if (this.type === 'relation') {
             if (!(this.value in this.becca.notes)) {
                 throw new Error(`Cannot save relation '${this.name}' since it target not existing note '${this.value}'.`);

@@ -383,10 +383,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 const activeNoteContext = appContext.tabManager.getActiveContext();
                 await activeNoteContext.setNote(notePath);
-
-                if (utils.isMobile()) {
-                    this.triggerCommand('setActiveScreen', {screen: 'detail'});
-                }
             },
             expand: (event, data) => this.setExpanded(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpanded(data.node.data.branchId, false),

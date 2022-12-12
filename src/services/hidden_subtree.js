@@ -171,11 +171,17 @@ const HIDDEN_SUBTREE_DEFINITION = {
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
                         { id: 'lbNewNote', title: 'New Note', type: 'launcher', command: 'createNoteIntoInbox', icon: 'bx bx-file-blank' },
-                        { id: 'lbSearch', title: 'Search Notes', type: 'launcher', command: 'searchNotes', icon: 'bx bx-search' },
-                        { id: 'lbJumpTo', title: 'Jump to Note', type: 'launcher', command: 'jumpToNote', icon: 'bx bx-send' },
+                        { id: 'lbSearch', title: 'Search Notes', type: 'launcher', command: 'searchNotes', icon: 'bx bx-search', attributes: [
+                                { type: 'label', name: 'desktopOnly' }
+                            ] },
+                        { id: 'lbJumpTo', title: 'Jump to Note', type: 'launcher', command: 'jumpToNote', icon: 'bx bx-send', attributes: [
+                                { type: 'label', name: 'desktopOnly' }
+                            ] },
                         { id: 'lbNoteMap', title: 'Note Map', type: 'launcher', targetNoteId: 'globalNoteMap', icon: 'bx bx-map-alt' },
                         { id: 'lbCalendar', title: 'Calendar', type: 'launcher', builtinWidget: 'calendar', icon: 'bx bx-calendar' },
-                        { id: 'lbRecentChanges', title: 'Recent Changes', type: 'launcher', command: 'showRecentChanges', icon: 'bx bx-history' },
+                        { id: 'lbRecentChanges', title: 'Recent Changes', type: 'launcher', command: 'showRecentChanges', icon: 'bx bx-history', attributes: [
+                                { type: 'label', name: 'desktopOnly' }
+                            ] },
                         { id: 'lbSpacer1', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "50", growthFactor: "0" },
                         { id: 'lbBookmarks', title: 'Bookmarks', type: 'launcher', builtinWidget: 'bookmarks', icon: 'bx bx-bookmark' },
                         { id: 'lbSpacer2', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "0", growthFactor: "1" },
