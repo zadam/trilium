@@ -25,13 +25,9 @@ export default class TabManager extends Component {
                 return;
             }
 
-            console.log("Pre-saving", this.noteContexts);
-
             const openTabs = this.noteContexts
                 .map(nc => nc.getTabState())
                 .filter(t => !!t);
-
-            console.log("Saving", openTabs);
 
             await server.put('options', {
                 openTabs: JSON.stringify(openTabs)
@@ -58,15 +54,23 @@ export default class TabManager extends Component {
 
         let filteredTabs = [];
 
-        console.log(document.location.hash, tabsToOpen);
+        // preload all notes at once
+        await froca.getNotes([
+            tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
+            tabsToOpen.map(tab => tab.hoistedNoteId),
+        ], true);
 
         for (const openTab of tabsToOpen) {
-            const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
-
-            if (await froca.noteExists(noteId)) {
+            if (openTab.notePath && !(treeService.getNoteIdFromNotePath(openTab.notePath) in froca.notes)) {
                 // note doesn't exist so don't try to open tab for it
-                filteredTabs.push(openTab);
+                continue;
             }
+
+            if (!froca.getNoteFromCache(openTab.hoistedNoteId)) {
+                continue;
+            }
+
+            filteredTabs.push(openTab);
         }
 
         if (utils.isMobile()) {
@@ -76,9 +80,9 @@ export default class TabManager extends Component {
 
         if (filteredTabs.length === 0) {
             filteredTabs.push({
-                notePath: this.isMainWindow ? 'root' : '',
+                notePath: glob.extraHoistedNoteId || 'root',
                 active: true,
-                extraHoistedNoteId: glob.extraHoistedNoteId || 'root'
+                hoistedNoteId: glob.extraHoistedNoteId || 'root'
             });
         }
 
@@ -193,13 +197,8 @@ export default class TabManager extends Component {
     }
 
     async switchToNoteContext(ntxId, notePath) {
-        console.log("Looking for " + ntxId);
-        console.log("Existing", this.noteContexts);
-
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
             || await this.openEmptyTab();
-
-        console.log(noteContext);
 
         await this.activateNoteContext(noteContext.ntxId);
 
@@ -219,9 +218,19 @@ export default class TabManager extends Component {
     async openEmptyTab(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = new NoteContext(ntxId, hoistedNoteId, mainNtxId);
 
-        const existingNoteContext = this.children.find(nc => nc.ntxId === noteContext.ntxId);
+        let existingNoteContext
+
+        if (utils.isMobile()) {
+            // kind of hacky way to enforce a single tab on mobile interface - all requests to create a new one
+            // are forced to reuse the existing ab instead
+            existingNoteContext = this.getActiveContext();
+        } else {
+            existingNoteContext = this.children.find(nc => nc.ntxId === noteContext.ntxId);
+        }
 
         if (existingNoteContext) {
+            await existingNoteContext.setHoistedNoteId(hoistedNoteId);
+
             return existingNoteContext;
         }
 

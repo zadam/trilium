@@ -39,6 +39,10 @@ const TPL = `
         height: 100%;
     }
     
+    body.mobile .note-detail-editable-text {
+        padding-left: 4px;
+    }
+    
     .note-detail-editable-text a:hover {
         cursor: pointer;
     }

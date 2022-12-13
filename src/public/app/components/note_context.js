@@ -24,7 +24,7 @@ class NoteContext extends Component {
         this.notePath = null;
         this.noteId = null;
         this.parentNoteId = null;
-        this.hoistedNoteId = 'root';
+        // hoisted note is kept intentionally
 
         this.triggerEvent('noteSwitched', {
             noteContext: this,
@@ -187,9 +187,13 @@ class NoteContext extends Component {
     }
 
     async setHoistedNoteId(noteIdToHoist) {
+        if (this.hoistedNoteId === noteIdToHoist) {
+            return;
+        }
+
         this.hoistedNoteId = noteIdToHoist;
 
-        if (!this.notePathArray?.includes(noteIdToHoist)) {
+        if (!this.notePathArray?.includes(noteIdToHoist) && !utils.isMobile()) {
             await this.setNote(noteIdToHoist);
         }
 

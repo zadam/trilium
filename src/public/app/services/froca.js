@@ -226,6 +226,7 @@ class Froca {
 
     /** @returns {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
+        noteIds = Array.from(new Set(noteIds)); // make unique
         const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
 
         await this.reloadNotes(missingNoteIds);
