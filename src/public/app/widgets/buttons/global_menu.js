@@ -74,6 +74,18 @@ const TPL = `
         font-size: 120%;
         margin-right: 5px;
     }
+    
+    body.mobile .show-help-button, body.mobile .show-about-dialog-button {
+        /* hidden because these dialogs are not available for mobile */
+        display: none;
+    }
+    
+    body.mobile .dropdown-submenu .dropdown-menu {
+        display: block;
+        font-size: 90%;
+        position: relative;
+        left: 0;
+    }
     </style>
 
     <button type="button" data-toggle="dropdown" data-placement="right"
@@ -178,7 +190,7 @@ const TPL = `
             </ul>
         </li>
 
-        <li class="dropdown-item" data-trigger-command="showHelp">
+        <li class="dropdown-item show-help-button" data-trigger-command="showHelp">
             <span class="bx bx-info-circle"></span>
             Show Help
             <kbd data-command="showHelp"></kbd>
