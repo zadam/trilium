@@ -190,16 +190,20 @@ export default class Entrypoints extends Component {
         toastService.showMessage("Note executed");
     }
 
-    hideAllTooltips() {
+    hideAllPopups() {
         $(".tooltip").removeClass("show");
+
+        if (utils.isDesktop()) {
+            $(".aa-input").autocomplete("close");
+        }
     }
 
     noteSwitchedEvent() {
-        this.hideAllTooltips();
+        this.hideAllPopups();
     }
 
     activeContextChangedEvent() {
-        this.hideAllTooltips();
+        this.hideAllPopups();
     }
 
     async forceSaveNoteRevisionCommand() {

@@ -101,6 +101,11 @@ span.fancytree-expander {
     margin-right: 16px;
     display: none;
 }
+
+.tree-wrapper .unhoist-button {
+    display: block;
+    font-size: 200%;
+}
 </style>`;
 
 export default class MobileLayout {
@@ -119,13 +124,16 @@ export default class MobileLayout {
                 .child(new ScreenContainer("tree", 'column')
                     .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-3 col-xl-3")
                     .css("max-height", "100%")
-                    .css('padding-left', 0)
+                    .css('padding-left', "0")
+                    .css('padding-right', "0")
                     .css('contain', 'content')
                     .child(new QuickSearchWidget())
                     .child(new NoteTreeWidget()
                         .cssBlock(FANCYTREE_CSS)))
                 .child(new ScreenContainer("detail", "column")
                     .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-9")
+                    .css("padding-left", "0")
+                    .css("padding-right", "0")
                     .css('max-height', '100%')
                     .child(new FlexContainer('row').contentSized()
                         .css('font-size', 'larger')

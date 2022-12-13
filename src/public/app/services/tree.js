@@ -304,6 +304,14 @@ function getHashValueFromAddress() {
     return str.split("-");
 }
 
+function isNotePathInAddress() {
+    const [notePath, ntxId] = getHashValueFromAddress();
+
+    return notePath.startsWith("root")
+        // empty string is for empty/uninitialized tab
+        || (notePath === '' && !!ntxId);
+}
+
 function parseNotePath(notePath) {
     let noteIds = notePath.split('/');
 
@@ -332,6 +340,7 @@ export default {
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,
     getHashValueFromAddress,
+    isNotePathInAddress,
     parseNotePath,
     isNotePathInHiddenSubtree
 };

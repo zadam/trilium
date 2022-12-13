@@ -25,9 +25,13 @@ export default class TabManager extends Component {
                 return;
             }
 
+            console.log("Pre-saving", this.noteContexts);
+
             const openTabs = this.noteContexts
                 .map(nc => nc.getTabState())
                 .filter(t => !!t);
+
+            console.log("Saving", openTabs);
 
             await server.put('options', {
                 openTabs: JSON.stringify(openTabs)
@@ -52,33 +56,9 @@ export default class TabManager extends Component {
             ? (options.getJson('openTabs') || [])
             : [];
 
-        // if there's notePath in the URL, make sure it's open and active
-        // (useful, among others, for opening clipped notes from clipper)
-        if (window.location.hash) {
-            const notePath = window.location.hash.substr(1);
-            const noteId = treeService.getNoteIdFromNotePath(notePath);
-
-            if (noteId && await froca.noteExists(noteId)) {
-                for (const tab of tabsToOpen) {
-                    tab.active = false;
-                }
-
-                const foundTab = tabsToOpen.find(tab => noteId === treeService.getNoteIdFromNotePath(tab.notePath));
-
-                if (foundTab) {
-                    foundTab.active = true;
-                }
-                else {
-                    tabsToOpen.push({
-                        notePath: notePath,
-                        active: true,
-                        hoistedNoteId: glob.extraHoistedNoteId || 'root'
-                    });
-                }
-            }
-        }
-
         let filteredTabs = [];
+
+        console.log(document.location.hash, tabsToOpen);
 
         for (const openTab of tabsToOpen) {
             const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
@@ -111,6 +91,14 @@ export default class TabManager extends Component {
                 await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
             }
         });
+
+        // if there's notePath in the URL, make sure it's open and active
+        // (useful, among others, for opening clipped notes from clipper)
+        if (treeService.isNotePathInAddress()) {
+            const [notePath, ntxId] = treeService.getHashValueFromAddress();
+
+            await appContext.tabManager.switchToNoteContext(ntxId, notePath);
+        }
     }
 
     noteSwitchedEvent({noteContext}) {
@@ -205,11 +193,19 @@ export default class TabManager extends Component {
     }
 
     async switchToNoteContext(ntxId, notePath) {
+        console.log("Looking for " + ntxId);
+        console.log("Existing", this.noteContexts);
+
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
             || await this.openEmptyTab();
 
-        this.activateNoteContext(noteContext.ntxId);
-        await noteContext.setNote(notePath);
+        console.log(noteContext);
+
+        await this.activateNoteContext(noteContext.ntxId);
+
+        if (notePath) {
+            await noteContext.setNote(notePath);
+        }
     }
 
     async openAndActivateEmptyTab() {

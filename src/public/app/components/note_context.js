@@ -80,10 +80,7 @@ class NoteContext extends Component {
             await this.setHoistedNoteId(hoistedNoteId);
         }
 
-        if (utils.isDesktop()) {
-            // close dangling autocompletes after closing the tab
-            $(".aa-input").autocomplete("close");
-        } else if (utils.isMobile()) {
+        if (utils.isMobile()) {
             this.triggerCommand('setActiveScreen', {screen: 'detail'});
         }
     }
@@ -171,7 +168,8 @@ class NoteContext extends Component {
     }
 
     getTabState() {
-        if (!this.notePath) {
+        if (!this.notePath && this.hoistedNoteId === 'root') {
+            // keeping empty hoisted tab is esp. important for mobile (e.g. opened launcher config)
             return null;
         }
 

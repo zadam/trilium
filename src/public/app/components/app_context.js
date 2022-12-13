@@ -150,19 +150,11 @@ $(window).on('beforeunload', () => {
     }
 });
 
-function isNotePathInAddress() {
-    const [notePath, ntxId] = treeService.getHashValueFromAddress();
-
-    return notePath.startsWith("root")
-        // empty string is for empty/uninitialized tab
-        || (notePath === '' && !!ntxId);
-}
-
 $(window).on('hashchange', function() {
-    if (isNotePathInAddress()) {
+    if (treeService.isNotePathInAddress()) {
         const [notePath, ntxId] = treeService.getHashValueFromAddress();
 
-        if (!notePath) {
+        if (!notePath && !ntxId) {
             console.log(`Invalid hash value "${document.location.hash}", ignoring.`);
             return;
         }
