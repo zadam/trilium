@@ -29,7 +29,9 @@ RUN set -x \
     && sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' src/views/desktop.ejs \
     && sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' src/views/mobile.ejs \
     && sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' src/views/setup.ejs \
-    && sed -i -e 's/app\/share.js/app-dist\/share.js/g' src/views/share/*.ejs
+    && sed -i -e 's/app\/share.js/app-dist\/share.js/g' src/views/share/*.ejs \
+    && cp src/public/app/share.js src/public/app-dist/. \
+    && rm -rf src/public/app
 
 # Some setup tools need to be kept
 RUN apk add --no-cache su-exec shadow
