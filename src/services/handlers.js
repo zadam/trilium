@@ -150,14 +150,9 @@ function handleMaybeSortingLabel(entity) {
     // this will not work on deleted notes, but in that case we don't really need to re-sort
     if (note) {
         for (const parentNote of note.getParentNotes()) {
-            console.log("PAR", parentNote.noteId);
             const sorted = parentNote.getLabelValue("sorted");
 
-            console.log("sorted", sorted);
-
             if (sorted?.includes(entity.name)) { // hacky check if the sorting is affected by this label
-                console.log("RESIRT!");
-
                 treeService.sortNotesIfNeeded(parentNote.noteId);
             }
         }
