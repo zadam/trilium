@@ -550,7 +550,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 if (isHoistedNote) {
                     const $unhoistButton = $('<span class="tree-item-button unhoist-button bx bx-door-open" title="Unhoist"></span>');
 
-                    $span.append($unhoistButton);
+                    // unhoist button is prepended since compared to other buttons this is not just convenience
+                    // on the mobile interface - it's the only way to unhoist
+                    $span.prepend($unhoistButton);
                 }
 
                 if (note.hasLabel('workspace') && !isHoistedNote) {

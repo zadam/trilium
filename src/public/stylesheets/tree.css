@@ -211,6 +211,10 @@ span.fancytree-node.archived {
     border-radius: 5px;
 }
 
+.unhoist-button.bx.tree-item-button {
+    margin-left: 0; /* unhoist button is on the left and doesn't need more margin */
+}
+
 .tree-item-button:hover {
     border: 1px dotted var(--main-text-color);
 }
