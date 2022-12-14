@@ -7,7 +7,7 @@ body:
   attributes:
     label: Trilium Version
     description: What version of Trilium are you using?
-    placeholder: 0.48.0-beta
+    placeholder: 0.57.0-beta
   validations:
     required: true
 - type: dropdown
@@ -44,3 +44,9 @@ body:
     description: A clear and concise description of the bug and any additional information.
   validations:
     required: true
+- type: textarea
+  attributes:
+    label: Error logs
+    description: Please provide error logs, see [wiki page](https://github.com/zadam/trilium/wiki/Error-logs) for instructions on how to submit them.
+  validations:
+    required: false
