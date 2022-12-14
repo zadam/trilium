@@ -1047,12 +1047,23 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const noteIdsToReload = new Set();
 
         for (const ecAttr of loadResults.getAttributes()) {
-            if (ecAttr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'archived', 'color'].includes(ecAttr.name)) {
+            if (ecAttr.type === 'label' && ['iconClass', 'cssClass', 'workspace', 'workspaceIconClass', 'color'].includes(ecAttr.name)) {
                 if (ecAttr.isInheritable) {
                     noteIdsToReload.add(ecAttr.noteId);
                 }
                 else {
                     noteIdsToUpdate.add(ecAttr.noteId);
+                }
+            }
+            else if (ecAttr.type === 'label' && ecAttr.name === 'archived') {
+                const note = froca.getNoteFromCache(ecAttr.noteId);
+
+                if (note) {
+                    // change of archived status can mean the note should not be displayed in the tree at all
+                    // depending on the value of this.hideArchivedNotes
+                    for (const parentNote of note.getParentNotes()) {
+                        noteIdsToReload.add(parentNote.noteId);
+                    }
                 }
             }
             else if (ecAttr.type === 'relation' && ecAttr.name === 'template') {
