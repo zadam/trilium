@@ -43,14 +43,15 @@ const NOTE_TYPE_ICONS = {
     "code": "bx bx-code",
     "render": "bx bx-extension",
     "search": "bx bx-file-find",
-    "relation-map": "bx bx-map-alt",
+    "relationMap": "bx bx-map-alt",
     "book": "bx bx-book",
-    "note-map": "bx bx-map-alt",
+    "noteMap": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
-    "web-view": "bx bx-globe-alt",
-    "shortcut": "bx bx-link",
-    "doc": "bx bxs-file-doc"
+    "webView": "bx bx-globe-alt",
+    "launcher": "bx bx-link",
+    "doc": "bx bxs-file-doc",
+    "contentWidget": "bx bxs-widget"
 };
 
 /**
@@ -319,7 +320,7 @@ class NoteShort {
     }
 
     isRoot() {
-        return this.noted
+        return this.noteId === 'root';
     }
 
     getAllNotePaths(encounteredNoteIds = null) {
@@ -855,7 +856,11 @@ class NoteShort {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'shortcut' || this.noteId.startsWith("lb_");
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+    }
+
+    isOptions() {
+        return this.noteId.startsWith("options");
     }
 }
 

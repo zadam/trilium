@@ -37,10 +37,11 @@ import dateNotesService from './date_notes.js';
 import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
+import shortcutService from "./shortcuts.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -49,8 +50,6 @@ import SpacedUpdate from "./spaced_update.js";
  * @hideconstructor
  */
 function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
-    const $pluginButtons = $("#plugin-buttons");
-
     /** @property {jQuery} container of all the rendered script content */
     this.$container = $container;
 
@@ -538,8 +537,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
      * @param {function} handler
+     * @param {string} [namespace] - specify namespace of the handler for the cases where call for bind may be repeated.
+     *                               If a handler with this ID exists, it's replaced by the new handler.
      */
-    this.bindGlobalShortcut = utils.bindGlobalShortcut;
+    this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 
     /**
      * Trilium runs in backend and frontend process, when something is changed on the backend from script,
