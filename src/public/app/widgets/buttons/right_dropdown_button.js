@@ -11,14 +11,14 @@ const TPL = `
 
     <button type="button" data-toggle="dropdown" data-placement="right"
             aria-haspopup="true" aria-expanded="false" 
-            class="icon-action bx right-dropdown-button"></button>
+            class="bx right-dropdown-button launcher-button"></button>
     
     <div class="dropdown-menu dropdown-menu-right"></div>
 </div>
 `;
 
 export default class RightDropdownButtonWidget extends BasicWidget {
-    constructor(iconClass, title, dropdownTpl) {
+    constructor(title, iconClass, dropdownTpl) {
         super();
 
         this.iconClass = iconClass;

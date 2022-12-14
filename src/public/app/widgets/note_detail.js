@@ -3,7 +3,7 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import noteCreateService from "../services/note_create.js";
 import attributeService from "../services/attributes.js";
@@ -25,6 +25,8 @@ import ReadOnlyCodeTypeWidget from "./type_widgets/read_only_code.js";
 import NoneTypeWidget from "./type_widgets/none.js";
 import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
+import DocTypeWidget from "./type_widgets/doc.js";
+import ContentWidgetTypeWidget from "./type_widgets/content_widget.js";
 
 const TPL = `
 <div class="note-detail">
@@ -44,20 +46,22 @@ const TPL = `
 const typeWidgetClasses = {
     'empty': EmptyTypeWidget,
     'deleted': DeletedTypeWidget,
-    'editable-text': EditableTextTypeWidget,
-    'read-only-text': ReadOnlyTextTypeWidget,
-    'editable-code': EditableCodeTypeWidget,
-    'read-only-code': ReadOnlyCodeTypeWidget,
+    'editableText': EditableTextTypeWidget,
+    'readOnlyText': ReadOnlyTextTypeWidget,
+    'editableCode': EditableCodeTypeWidget,
+    'readOnlyCode': ReadOnlyCodeTypeWidget,
     'file': FileTypeWidget,
     'image': ImageTypeWidget,
     'search': NoneTypeWidget,
     'render': RenderTypeWidget,
-    'relation-map': RelationMapTypeWidget,
+    'relationMap': RelationMapTypeWidget,
     'canvas': CanvasTypeWidget,
-    'protected-session': ProtectedSessionTypeWidget,
+    'protectedSession': ProtectedSessionTypeWidget,
     'book': BookTypeWidget,
-    'note-map': NoteMapTypeWidget,
-    'web-view': WebViewTypeWidget
+    'noteMap': NoteMapTypeWidget,
+    'webView': WebViewTypeWidget,
+    'doc': DocTypeWidget,
+    'contentWidget': ContentWidgetTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -126,6 +130,10 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
 
+            if (!clazz) {
+                throw new Error(`Cannot find type widget for type '${this.type}'`);
+            }
+
             const typeWidget = this.typeWidgets[this.type] = new clazz();
             typeWidget.spacedUpdate = this.spacedUpdate;
             typeWidget.setParent(this);
@@ -156,7 +164,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         // https://github.com/zadam/trilium/issues/2522
         this.$widget.toggleClass("full-height",
             !this.noteContext.hasNoteList()
-            && ['editable-text', 'editable-code', 'canvas', 'web-view', 'note-map'].includes(this.type)
+            && ['editableText', 'editableCode', 'canvas', 'webView', 'noteMap'].includes(this.type)
             && this.mime !== 'text/x-sqlite;schema=trilium');
     }
 
@@ -180,23 +188,27 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         let type = note.type;
 
         if (type === 'text' && await this.noteContext.isReadOnly()) {
-            type = 'read-only-text';
+            type = 'readOnlyText';
         }
 
         if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
-            type = 'read-only-code';
+            type = 'readOnlyCode';
         }
 
         if (type === 'text') {
-            type = 'editable-text';
+            type = 'editableText';
         }
 
         if (type === 'code' || type === 'mermaid') {
-            type = 'editable-code';
+            type = 'editableCode';
+        }
+
+        if (type === 'launcher') {
+            type = 'doc';
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
-            type = 'protected-session';
+            type = 'protectedSession';
         }
 
         return type;

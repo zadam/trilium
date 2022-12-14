@@ -1,5 +1,5 @@
 import BasicWidget from "./basic_widget.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 
 export default class NoteContextAwareWidget extends BasicWidget {
     isNoteContext(ntxId) {

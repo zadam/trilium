@@ -1,7 +1,7 @@
 import FlexContainer from "./containers/flex_container.js";
-import searchService from "../services/search.js";
 import OpenNoteButtonWidget from "./buttons/open_note_button_widget.js";
 import BookmarkFolderWidget from "./buttons/bookmark_folder.js";
+import froca from "../services/froca.js";
 
 export default class BookmarkButtons extends FlexContainer {
     constructor() {
@@ -11,18 +11,20 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     async refresh() {
-        const bookmarkedNotes = await searchService.searchForNotes("#bookmarked or #bookmarkFolder");
-
         this.$widget.empty();
         this.children = [];
         this.noteIds = [];
 
-        for (const note of bookmarkedNotes) {
+        const bookmarkParentNote = await froca.getNote('lbBookmarks');
+
+        for (const note of await bookmarkParentNote.getChildNotes()) {
             this.noteIds.push(note.noteId);
 
             const buttonWidget = note.hasLabel("bookmarkFolder")
                 ? new BookmarkFolderWidget(note)
                 : new OpenNoteButtonWidget().targetNote(note.noteId);
+
+            buttonWidget.class("launcher-button");
 
             this.child(buttonWidget);
 
@@ -37,11 +39,7 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes().find(attr => attr.type === 'label' && ['bookmarked', 'bookmarkFolder'].includes(attr.name))) {
-            this.refresh();
-        }
-
-        if (loadResults.getNoteIds().find(noteId => this.noteIds.includes(noteId))) {
+        if (loadResults.getBranches().find(branch => branch.parentNoteId === 'lbBookmarks')) {
             this.refresh();
         }
 

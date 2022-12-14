@@ -2,7 +2,7 @@ import utils from "../../services/utils.js";
 import toastService from "../../services/toast.js";
 import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
-import contextMenu from "../../services/context_menu.js";
+import contextMenu from "../../menus/context_menu.js";
 
 const TPL = `
 <div class="note-detail-image note-detail-printable">

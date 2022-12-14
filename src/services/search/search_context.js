@@ -1,6 +1,6 @@
 "use strict";
 
-const cls = require('../cls');
+const hoistedNoteService = require("../hoisted_note");
 
 class SearchContext {
     constructor(params = {}) {
@@ -9,8 +9,10 @@ class SearchContext {
         this.ignoreHoistedNote = !!params.ignoreHoistedNote;
         this.ancestorNoteId = params.ancestorNoteId;
 
-        if (!this.ancestorNoteId && !this.ignoreHoistedNote) {
-            this.ancestorNoteId = cls.getHoistedNoteId();
+        if (!this.ancestorNoteId && !this.ignoreHoistedNote && !hoistedNoteService.isHoistedInHiddenSubtree()) {
+            // hoisting in hidden subtree should not limit autocomplete
+            // since we want to link (create relations) to the normal non-hidden notes
+            this.ancestorNoteId = hoistedNoteService.getHoistedNoteId();
         }
 
         this.ancestorDepth = params.ancestorDepth;

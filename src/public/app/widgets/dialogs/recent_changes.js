@@ -3,10 +3,10 @@ import utils from '../../services/utils.js';
 import server from '../../services/server.js';
 import treeService from "../../services/tree.js";
 import froca from "../../services/froca.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import hoistedNoteService from "../../services/hoisted_note.js";
 import BasicWidget from "../basic_widget.js";
-import dialogService from "../dialog.js";
+import dialogService from "../../services/dialog.js";
 import toastService from "../../services/toast.js";
 
 const TPL = `

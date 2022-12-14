@@ -54,10 +54,10 @@ async function pasteInto(parentBranchId) {
             await branchService.cloneNoteToBranch(clipboardNote.noteId, parentBranchId);
         }
 
-        // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places
+        // copy will keep clipboardBranchIds and clipboardMode, so it's possible to paste into multiple places
     }
     else {
-        toastService.throwError("Unrecognized clipboard mode=" + mode);
+        toastService.throwError("Unrecognized clipboard mode=" + clipboardMode);
     }
 }
 

@@ -48,7 +48,9 @@ const NOTE_TYPE_ICONS = {
     "note-map": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
-    "web-view": "bx bx-globe-alt"
+    "web-view": "bx bx-globe-alt",
+    "shortcut": "bx bx-link",
+    "doc": "bx bxs-file-doc"
 };
 
 /**
@@ -818,10 +820,10 @@ class NoteShort {
 
         if (env === "frontend") {
             const bundleService = (await import("../services/bundle.js")).default;
-            await bundleService.getAndExecuteBundle(this.noteId);
+            return await bundleService.getAndExecuteBundle(this.noteId);
         }
         else if (env === "backend") {
-            await server.post('script/run/' + this.noteId);
+            return await server.post('script/run/' + this.noteId);
         }
         else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
@@ -850,6 +852,10 @@ class NoteShort {
 
     isContentAvailable() {
         return !this.isProtected || protectedSessionHolder.isProtectedSessionAvailable()
+    }
+
+    isLaunchBarConfig() {
+        return this.type === 'shortcut' || this.noteId.startsWith("lb_");
     }
 }
 

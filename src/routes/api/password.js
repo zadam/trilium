@@ -1,6 +1,7 @@
 "use strict";
 
 const passwordService = require('../../services/password');
+const ValidationError = require("../../errors/validation_error");
 
 function changePassword(req) {
     if (passwordService.isPasswordSet()) {
@@ -14,7 +15,7 @@ function changePassword(req) {
 function resetPassword(req) {
     // protection against accidental call (not a security measure)
     if (req.query.really !== "yesIReallyWantToResetPasswordAndLoseAccessToMyProtectedNotes") {
-        return [400, "Incorrect password reset confirmation"];
+        throw new ValidationError("Incorrect password reset confirmation");
     }
 
     return passwordService.resetPassword();

@@ -1,10 +1,10 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import branchService from "../services/branches.js";
+import shortcutService from "../services/shortcuts.js";
 
 const TPL = `
 <div class="note-title-widget">
@@ -58,13 +58,13 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
             this.deleteNoteOnEscape = false;
         });
 
-        utils.bindElShortcut(this.$noteTitle, 'esc', () => {
+        shortcutService.bindElShortcut(this.$noteTitle, 'esc', () => {
             if (this.deleteNoteOnEscape && this.noteContext.isActive()) {
                 branchService.deleteNotes(Object.values(this.noteContext.note.parentToBranch));
             }
         });
 
-        utils.bindElShortcut(this.$noteTitle, 'return', () => {
+        shortcutService.bindElShortcut(this.$noteTitle, 'return', () => {
             this.triggerCommand('focusOnDetail', {ntxId: this.noteContext.ntxId});
         });
     }
@@ -72,7 +72,8 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.$noteTitle.val(note.title);
 
-        this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
+        this.$noteTitle.prop("readonly", (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
+                                        || ["lbRoot", "lbAvailableLaunchers", "lbVisibleLaunchers"].includes(note.noteId));
 
         this.setProtectedStatus(note);
     }

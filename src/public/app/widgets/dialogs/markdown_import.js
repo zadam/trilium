@@ -1,8 +1,9 @@
 import libraryLoader from "../../services/library_loader.js";
 import toastService from "../../services/toast.js";
 import utils from "../../services/utils.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
+import shortcutService from "../../services/shortcuts.js";
 
 const TPL = `
 <div class="markdown-import-dialog modal fade mx-auto" tabindex="-1" role="dialog">
@@ -42,7 +43,7 @@ export default class MarkdownImportDialog extends BasicWidget {
 
         this.$widget.on('shown.bs.modal', () => this.$importTextarea.trigger('focus'));
 
-        utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.sendForm());
+        shortcutService.bindElShortcut(this.$widget, 'ctrl+return', () => this.sendForm());
     }
 
     async convertMarkdownToHtml(text) {

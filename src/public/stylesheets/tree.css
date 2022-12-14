@@ -72,11 +72,11 @@ span.fancytree-node.fancytree-hide {
     color: inherit !important;
     display: block;
     border-radius: 50%;
-    border-color: #000 transparent #000 transparent;
+    border-color: var(--main-text-color) transparent var(--main-text-color) transparent;
     animation: lds-dual-ring 1.2s linear infinite;
     width: 12px;
     height: 12px;
-    margin-top: 4px;
+    margin-top: 2px;
     margin-left: 1px;
     border-width: 1px;
     border-style: solid;
@@ -209,6 +209,11 @@ span.fancytree-node.archived {
     padding: 1px;
     border: 1px solid transparent;
     border-radius: 5px;
+}
+
+.unhoist-button.bx.tree-item-button {
+    margin-left: 0; /* unhoist button is on the left and doesn't need more margin */
+    display: block; /* keep always visible */
 }
 
 .tree-item-button:hover {

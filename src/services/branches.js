@@ -1,5 +1,5 @@
-const treeService = require("./tree.js");
-const sql = require("./sql.js");
+const treeService = require("./tree");
+const sql = require("./sql");
 
 function moveBranchToNote(sourceBranch, targetParentNoteId) {
     if (sourceBranch.parentNoteId === targetParentNoteId) {

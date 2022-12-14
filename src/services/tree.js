@@ -30,13 +30,13 @@ function getNotes(noteIds) {
 }
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
-    if (childNoteId === 'root') {
-        return { success: false, message: 'Cannot move root note.'};
+    if (['root', 'hidden', 'share', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(childNoteId)) {
+        return { success: false, message: `Cannot change this note's location.`};
     }
 
     if (parentNoteId === 'none') {
         // this shouldn't happen
-        return { success: false, message: 'Cannot move anything into root parent.' };
+        return { success: false, message: `Cannot move anything into 'none' parent.` };
     }
 
     const existing = getExistingBranch(parentNoteId, childNoteId);
@@ -55,6 +55,13 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         return {
             success: false,
             message: 'Moving/cloning note here would create cycle.'
+        };
+    }
+
+    if (parentNoteId !== 'lbBookmarks' && becca.getNote(parentNoteId).type === 'launcher') {
+        return {
+            success: false,
+            message: 'Launcher note cannot have any children.'
         };
     }
 
@@ -179,6 +186,10 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
 
         for (const note of notes) {
             const branch = note.getParentBranches().find(b => b.parentNoteId === parentNoteId);
+
+            if (branch.branchId === 'hidden') {
+                position = 999_999_999;
+            }
 
             if (branch.notePosition !== position) {
                 sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",

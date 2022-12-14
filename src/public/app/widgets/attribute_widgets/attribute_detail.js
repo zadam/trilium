@@ -8,6 +8,7 @@ import promotedAttributeDefinitionParser from '../../services/promoted_attribute
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
+import shortcutService from "../../services/shortcuts.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -213,7 +214,6 @@ const ATTR_HELP = {
         "inbox": "default inbox location for new notes - when you create a note using \"new note\" button in the sidebar, notes will be created as child notes in the note marked as with <code>#inbox</code> label.",
         "hoistedInbox": "default inbox location for new notes when hoisted to some ancestor of this note",
         "sqlConsoleHome": "default location of SQL console notes",
-        "bookmarked": "note with this label will appear in bookmarks",
         "bookmarkFolder": "note with this label will appear in bookmarks as folder (allowing access to its children)",
         "shareHiddenFromTree": "this note is hidden from left navigation tree, but still accessible with its URL",
         "shareAlias": "define an alias using which the note will be available under https://your_trilium_host/share/[your_alias]",
@@ -238,7 +238,8 @@ const ATTR_HELP = {
         "template": "This note will appear in the selection of available template when creating new note",
         "toc": "<code>#toc</code> or <code>#toc=show</code> will force the Table of Contents to be shown, <code>#toc=hide</code> will force hiding it. If the label doesn't exist, the global setting is observed",
         "color": "defines color of the note in note tree, links etc. Use any valid CSS color value like 'red' or #a13d5f",
-        "keyboardShortcut": "Defines a keyboard shortcut which will immediately jump to this note. Example: 'ctrl+alt+e'. Requires frontend reload for the change to take effect."
+        "keyboardShortcut": "Defines a keyboard shortcut which will immediately jump to this note. Example: 'ctrl+alt+e'. Requires frontend reload for the change to take effect.",
+        "keepCurrentHoisting": "Opening this link won't change hoisting even if the note is not displayable in the current hoisted subtree."
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",
@@ -271,8 +272,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$widget = $(TPL);
 
-        utils.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
-        utils.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
+        shortcutService.bindElShortcut(this.$widget, 'ctrl+return', () => this.saveAndClose());
+        shortcutService.bindElShortcut(this.$widget, 'esc', () => this.cancelAndClose());
 
 
         this.$title = this.$widget.find('.attr-detail-title');

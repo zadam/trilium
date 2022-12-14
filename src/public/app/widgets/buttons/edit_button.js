@@ -1,11 +1,11 @@
-import ButtonWidget from "./button_widget.js";
-import appContext from "../../services/app_context.js";
+import OnClickButtonWidget from "./onclick_button.js";
+import appContext from "../../components/app_context.js";
 import attributeService from "../../services/attributes.js";
 import protectedSessionHolder from "../../services/protected_session_holder.js";
 
-export default class EditButton extends ButtonWidget {
+export default class EditButton extends OnClickButtonWidget {
     isEnabled() {
-        return super.isEnabled() && this.noteContext;
+        return super.isEnabled() && this.note;
     }
 
     constructor() {

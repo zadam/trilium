@@ -5,10 +5,13 @@ module.exports = [
     'file',
     'image',
     'search',
-    'relation-map',
+    'relationMap',
     'book',
-    'note-map',
+    'noteMap',
     'mermaid',
     'canvas',
-    'web-view'
+    'webView',
+    'launcher',
+    'doc',
+    'contentWidget'
 ];

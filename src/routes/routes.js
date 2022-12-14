@@ -5,6 +5,7 @@ const loginRoute = require('./login');
 const indexRoute = require('./index');
 const utils = require('../services/utils');
 const multer = require('multer');
+const ValidationError = require("../errors/validation_error");
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -61,6 +62,7 @@ const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
 const AbstractEntity = require("../becca/entities/abstract_entity");
+const NotFoundError = require("../errors/not_found_error");
 
 const csrfMiddleware = csurf({
     cookie: true,
@@ -169,13 +171,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
 
                             log.request(req, res, Date.now() - start, responseLength);
                         })
-                        .catch(e => {
-                            log.error(`${method} ${path} threw exception: ` + e.stack);
-
-                            res.setHeader("Content-Type", "text/plain")
-                                .status(500)
-                                .send(e.message);
-                        });
+                        .catch(e => handleException(method, path, e, res));
                 }
                 else {
                     const responseLength = resultHandler(req, res, result);
@@ -185,13 +181,31 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             }
         }
         catch (e) {
-            log.error(`${method} ${path} threw exception: ` + e.stack);
-
-            res.setHeader("Content-Type", "text/plain")
-                .status(500)
-                .send(e.message);
+            handleException(method, path, e, res);
         }
     });
+}
+
+function handleException(method, path, e, res) {
+    log.error(`${method} ${path} threw exception: ` + e.stack);
+
+    if (e instanceof ValidationError) {
+        res.setHeader("Content-Type", "application/json")
+            .status(400)
+            .send({
+                message: e.message
+            });
+    } if (e instanceof NotFoundError) {
+        res.setHeader("Content-Type", "application/json")
+            .status(404)
+            .send({
+                message: e.message
+            });
+    } else {
+        res.setHeader("Content-Type", "text/plain")
+            .status(500)
+            .send(e.message);
+    }
 }
 
 const MAX_ALLOWED_FILE_SIZE_MB = 250;
@@ -281,6 +295,7 @@ function register(app) {
     apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
 
     apiRoute(PUT, '/api/notes/:noteId/clone-to-branch/:parentBranchId', cloningApiRoute.cloneNoteToBranch);
+    apiRoute(PUT, '/api/notes/:noteId/toggle-in-parent/:parentNoteId/:present', cloningApiRoute.toggleNoteInParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-to-note/:parentNoteId', cloningApiRoute.cloneNoteToNote);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
@@ -326,6 +341,8 @@ function register(app) {
     apiRoute(POST, '/api/special-notes/save-sql-console', specialNotesRoute.saveSqlConsole);
     apiRoute(POST, '/api/special-notes/search-note', specialNotesRoute.createSearchNote);
     apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
+    apiRoute(POST, '/api/special-notes/launchers/:noteId/reset', specialNotesRoute.resetLauncher);
+    apiRoute(POST, '/api/special-notes/launchers/:parentNoteId/:launcherType', specialNotesRoute.createLauncher);
 
     // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);

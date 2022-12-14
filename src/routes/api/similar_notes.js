@@ -2,6 +2,7 @@
 
 const similarityService = require('../../becca/similarity');
 const becca = require("../../becca/becca");
+const NotFoundError = require("../../errors/not_found_error");
 
 async function getSimilarNotes(req) {
     const noteId = req.params.noteId;
@@ -9,7 +10,7 @@ async function getSimilarNotes(req) {
     const note = becca.getNote(noteId);
 
     if (!note) {
-        return [404, `Note ${noteId} not found.`];
+        throw new NotFoundError(`Note '${noteId}' not found.`);
     }
 
     return await similarityService.findSimilarNotes(noteId);

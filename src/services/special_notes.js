@@ -4,6 +4,8 @@ const becca = require("../becca/becca");
 const noteService = require("./notes");
 const cls = require("./cls");
 const dateUtils = require("./date_utils");
+const log = require("./log");
+const hiddenSubtreeService = require("./hidden_subtree");
 
 function getInboxNote(date) {
     const hoistedNote = getHoistedNote();
@@ -29,97 +31,9 @@ function getInboxNote(date) {
     return inbox;
 }
 
-function getHiddenRoot() {
-    let hidden = becca.getNote('hidden');
-
-    if (!hidden) {
-        hidden = noteService.createNewNote({
-            branchId: 'hidden',
-            noteId: 'hidden',
-            title: 'hidden',
-            type: 'text',
-            content: '',
-            parentNoteId: 'root'
-        }).note;
-
-        // isInheritable: false means that this notePath is automatically not preffered but at the same time
-        // the flag is not inherited to the children
-        hidden.addLabel('archived', "", false);
-        hidden.addLabel('excludeFromNoteMap', "", true);
-    }
-
-    return hidden;
-}
-
-function getSearchRoot() {
-    let searchRoot = becca.getNote('search');
-
-    if (!searchRoot) {
-        searchRoot = noteService.createNewNote({
-            noteId: 'search',
-            title: 'search',
-            type: 'text',
-            content: '',
-            parentNoteId: getHiddenRoot().noteId
-        }).note;
-    }
-
-    return searchRoot;
-}
-
-function getSinglesNoteRoot() {
-    let singlesNoteRoot = becca.getNote('singles');
-
-    if (!singlesNoteRoot) {
-        singlesNoteRoot = noteService.createNewNote({
-            noteId: 'singles',
-            title: 'singles',
-            type: 'text',
-            content: '',
-            parentNoteId: getHiddenRoot().noteId
-        }).note;
-    }
-
-    return singlesNoteRoot;
-}
-
-function getGlobalNoteMap() {
-    let globalNoteMap = becca.getNote('globalnotemap');
-
-    if (!globalNoteMap) {
-        globalNoteMap = noteService.createNewNote({
-            noteId: 'globalnotemap',
-            title: 'Global Note Map',
-            type: 'note-map',
-            content: '',
-            parentNoteId: getSinglesNoteRoot().noteId
-        }).note;
-
-        globalNoteMap.addLabel('mapRootNoteId', 'hoisted');
-    }
-
-    return globalNoteMap;
-}
-
-function getSqlConsoleRoot() {
-    let sqlConsoleRoot = becca.getNote('sqlconsole');
-
-    if (!sqlConsoleRoot) {
-        sqlConsoleRoot = noteService.createNewNote({
-            noteId: 'sqlconsole',
-            title: 'SQL Console',
-            type: 'text',
-            content: '',
-            parentNoteId: getHiddenRoot().noteId
-        }).note;
-    }
-
-    return sqlConsoleRoot;
-}
-
 function createSqlConsole() {
     const {note} = noteService.createNewNote({
-        parentNoteId: getSqlConsoleRoot().noteId,
+        parentNoteId: 'sqlConsole',
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
@@ -127,6 +41,8 @@ function createSqlConsole() {
     });
 
     note.setLabel("sqlConsole", dateUtils.localNowDate());
+    note.setLabel('iconClass', 'bx bx-data');
+    note.setLabel('keepCurrentHoisting');
 
     return note;
 }
@@ -152,7 +68,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
 
 function createSearchNote(searchString, ancestorNoteId) {
     const {note} = noteService.createNewNote({
-        parentNoteId: getSearchRoot().noteId,
+        parentNoteId: 'search',
         title: 'Search: ' + searchString,
         content: "",
         type: 'search',
@@ -160,6 +76,7 @@ function createSearchNote(searchString, ancestorNoteId) {
     });
 
     note.setLabel('searchString', searchString);
+    note.setLabel('keepCurrentHoisting');
 
     if (ancestorNoteId) {
         note.setRelation('ancestor', ancestorNoteId);
@@ -202,52 +119,76 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
-function getShareRoot() {
-    let shareRoot = becca.getNote('share');
+function createLauncher(parentNoteId, launcherType) {
+    let note;
 
-    if (!shareRoot) {
-        shareRoot = noteService.createNewNote({
-            branchId: 'share',
-            noteId: 'share',
-            title: 'Shared notes',
-            type: 'text',
+    if (launcherType === 'note') {
+        note = noteService.createNewNote({
+            title: "Note Launcher",
+            type: 'launcher',
             content: '',
-            parentNoteId: 'root'
+            parentNoteId: parentNoteId
         }).note;
+
+        note.addRelation('template', 'lbTplNoteLauncher');
+    } else if (launcherType === 'script') {
+        note = noteService.createNewNote({
+            title: "Script Launcher",
+            type: 'launcher',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addRelation('template', 'lbTplScriptLauncher');
+    } else if (launcherType === 'customWidget') {
+        note = noteService.createNewNote({
+            title: "Widget Launcher",
+            type: 'launcher',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addRelation('template', 'lbTplCustomWidget');
+    } else if (launcherType === 'spacer') {
+        note = noteService.createNewNote({
+            title: "Spacer",
+            type: 'launcher',
+            content: '',
+            parentNoteId: parentNoteId
+        }).note;
+
+        note.addRelation('template', 'lbTplSpacer');
+    } else {
+        throw new Error(`Unrecognized launcher type '${launcherType}'`);
     }
 
-    return shareRoot;
+    return {
+        success: true,
+        note
+    };
 }
 
-function getBulkActionNote() {
-    let bulkActionNote = becca.getNote('bulkaction');
+function resetLauncher(noteId) {
+    const note = becca.getNote(noteId);
 
-    if (!bulkActionNote) {
-        bulkActionNote = noteService.createNewNote({
-            branchId: 'bulkaction',
-            noteId: 'bulkaction',
-            title: 'Bulk action',
-            type: 'text',
-            content: '',
-            parentNoteId: getHiddenRoot().noteId
-        }).note;
+    if (note.isLauncherConfig()) {
+        if (note) {
+            if (noteId === 'lbRoot') {
+                // deleting hoisted notes are not allowed, so we just reset the children
+                for (const childNote of note.getChildNotes()) {
+                    childNote.deleteNote();
+                }
+            } else {
+                note.deleteNote();
+            }
+        } else {
+            log.info(`Note ${noteId} has not been found and cannot be reset.`);
+        }
+    } else {
+        log.info(`Note ${noteId} is not a resettable launcher note.`);
     }
 
-    return bulkActionNote;
-}
-
-function createMissingSpecialNotes() {
-    getSinglesNoteRoot();
-    getSqlConsoleRoot();
-    getGlobalNoteMap();
-    getBulkActionNote();
-    // share root is not automatically created since it's visible in the tree and many won't need it/use it
-
-    const hidden = getHiddenRoot();
-
-    if (!hidden.hasOwnedLabel('excludeFromNoteMap')) {
-        hidden.addLabel('excludeFromNoteMap', "", true);
-    }
+    hiddenSubtreeService.checkHiddenSubtree();
 }
 
 module.exports = {
@@ -256,7 +197,6 @@ module.exports = {
     saveSqlConsole,
     createSearchNote,
     saveSearchNote,
-    createMissingSpecialNotes,
-    getShareRoot,
-    getBulkActionNote,
+    createLauncher,
+    resetLauncher
 };

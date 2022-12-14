@@ -1,5 +1,5 @@
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 const fileModificationStatus = {};
 

@@ -42,6 +42,13 @@ const TPL = `
         display: none;
     }
     
+    .global-menu .zoom-container {
+        display: flex; 
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    
     .global-menu .zoom-buttons a {
         display: inline-block;
         border: 1px solid var(--button-border-color);
@@ -60,6 +67,25 @@ const TPL = `
         margin-left: 5px;
         margin-right: 5px;
     }
+    
+    .global-menu .dropdown-item .bx {
+        position: relative;
+        top: 3px;
+        font-size: 120%;
+        margin-right: 5px;
+    }
+    
+    body.mobile .show-help-button, body.mobile .show-about-dialog-button {
+        /* hidden because these dialogs are not available for mobile */
+        display: none;
+    }
+    
+    body.mobile .dropdown-submenu .dropdown-menu {
+        display: block;
+        font-size: 90%;
+        position: relative;
+        left: 0;
+    }
     </style>
 
     <button type="button" data-toggle="dropdown" data-placement="right"
@@ -68,49 +94,29 @@ const TPL = `
         <div class="global-menu-button-update-available"></div>
     </button>
 
-    <div class="dropdown-menu dropdown-menu-right">
-        <a class="dropdown-item options-button" data-trigger-command="showOptions">
+    <ul class="dropdown-menu dropdown-menu-right">
+        <li class="dropdown-item" data-trigger-command="showOptions">
             <span class="bx bx-slider"></span>
             Options
-        </a>
+        </li>
 
-        <a class="dropdown-item" data-trigger-command="openNewWindow">
+        <li class="dropdown-item" data-trigger-command="openNewWindow">
             <span class="bx bx-window-open"></span>
             Open new window
             <kbd data-command="openNewWindow"></kbd>
-        </a>
+        </li>
 
-        <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
-            <span class="bx bx-terminal"></span>
-            Open Dev Tools
-            <kbd data-command="openDevTools"></kbd>
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="showSQLConsole">
-            <span class="bx bx-data"></span>
-            Open SQL Console
-            <kbd data-command="showSQLConsole"></kbd>
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="showBackendLog">
-            <span class="bx bx-empty"></span>
-            Show backend log
-            <kbd data-command="showBackendLog"></kbd>
-        </a>
-
-        <a class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
-            <span class="bx bx-empty"></span>
+        <li class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
+            <span class="bx bx-mobile"></span>
             Switch to mobile version
-        </a>
-
-        <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
-            title="Reload can help with some visual glitches without restarting the whole app.">
-            <span class="bx bx-empty"></span>
-            Reload frontend
-            <kbd data-command="reloadFrontendApp"></kbd>
-        </a>
+        </li>
         
-        <span class="zoom-container dropdown-item" style="display: flex; flex-direction: row; justify-content: space-between;">
+        <li class="dropdown-item switch-to-desktop-version-button" data-trigger-command="switchToDesktopVersion">
+            <span class="bx bx-desktop"></span>
+            Switch to desktop version
+        </li>
+        
+        <span class="zoom-container dropdown-item">
             <div>
                 <span class="bx bx-empty"></span>
                 Zoom
@@ -129,34 +135,77 @@ const TPL = `
             </div>
         </span>
 
-        <a class="dropdown-item" data-trigger-command="toggleFullscreen">
-            <span class="bx bx-empty"></span>
-            Toggle fullscreen
-            <kbd ></kbd>
-        </a>
+        <li class="dropdown-item" data-trigger-command="showLaunchBarSubtree">
+            <span class="bx bx-sidebar"></span>
+            Configure launchbar
+        </li>
+        
+        <li class="dropdown-item" data-trigger-command="showShareSubtree">
+            <span class="bx bx-share-alt"></span>
+            Show share subtree
+        </li>
+        
+        <li class="dropdown-item dropdown-submenu">
+            <span class="dropdown-toggle">
+                <span class="bx bx-empty"></span>
+                Advanced
+            </span>
+            
+            <ul class="dropdown-menu">
+                <li class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
+                    <span class="bx bx-terminal"></span>
+                    Open Dev Tools
+                    <kbd data-command="openDevTools"></kbd>
+                </li>
+        
+                <li class="dropdown-item" data-trigger-command="showSQLConsole">
+                    <span class="bx bx-data"></span>
+                    Open SQL Console
+                    <kbd data-command="showSQLConsole"></kbd>
+                </li>
+        
+                <li class="dropdown-item" data-trigger-command="showBackendLog">
+                    <span class="bx bx-empty"></span>
+                    Show backend log
+                    <kbd data-command="showBackendLog"></kbd>
+                </li>
+                
+                <li class="dropdown-item" data-trigger-command="reloadFrontendApp" 
+                    title="Reload can help with some visual glitches without restarting the whole app.">
+                    <span class="bx bx-empty"></span>
+                    Reload frontend
+                    <kbd data-command="reloadFrontendApp"></kbd>
+                </li>
+                
+                <li class="dropdown-item" data-trigger-command="showHiddenSubtree">
+                    <span class="bx bx-empty"></span>
+                    Show hidden subtree
+                </li>
+            </ul>
+        </li>
 
-        <a class="dropdown-item" data-trigger-command="showHelp">
+        <li class="dropdown-item show-help-button" data-trigger-command="showHelp">
             <span class="bx bx-info-circle"></span>
             Show Help
             <kbd data-command="showHelp"></kbd>
-        </a>
+        </li>
 
-        <a class="dropdown-item show-about-dialog-button">
+        <li class="dropdown-item show-about-dialog-button">
             <span class="bx bx-empty"></span>
             About Trilium Notes
-        </a>
+        </li>
 
-        <a class="dropdown-item update-to-latest-version-button" data-trigger-command="downloadLatestVersion">
+        <li class="dropdown-item update-to-latest-version-button" data-trigger-command="downloadLatestVersion">
             <span class="bx bx-sync"></span>
 
             <span class="version-text"></span>
-        </a>
+        </li>
 
-        <a class="dropdown-item logout-button" data-trigger-command="logout">
+        <li class="dropdown-item logout-button" data-trigger-command="logout">
             <span class="bx bx-log-out"></span>
             Logout
-        </a>
-    </div>
+        </li>
+    </ul>
 </div>
 `;
 
@@ -180,7 +229,8 @@ export default class GlobalMenuWidget extends BasicWidget {
 
         this.$widget.find(".logout-button").toggle(!isElectron);
         this.$widget.find(".open-dev-tools-button").toggle(isElectron);
-        this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron);
+        this.$widget.find(".switch-to-mobile-version-button").toggle(!isElectron && utils.isDesktop());
+        this.$widget.find(".switch-to-desktop-version-button").toggle(!isElectron && utils.isMobile());
 
         this.$widget.on('click', '.dropdown-item', e => {
             if ($(e.target).parent(".zoom-buttons")) {
@@ -225,6 +275,8 @@ export default class GlobalMenuWidget extends BasicWidget {
     }
 
     async updateVersionStatus() {
+        await options.initializedPromise;
+
         if (options.get("checkForUpdates") !== 'true') {
             return;
         }

@@ -1,8 +1,10 @@
-import ButtonWidget from "./button_widget.js";
-import appContext from "../../services/app_context.js";
+import OnClickButtonWidget from "./onclick_button.js";
+import appContext from "../../components/app_context.js";
 import froca from "../../services/froca.js";
 
-export default class OpenNoteButtonWidget extends ButtonWidget {
+// FIXME: this widget might not be useful anymore
+
+export default class OpenNoteButtonWidget extends OnClickButtonWidget {
     targetNote(noteId) {
         froca.getNote(noteId).then(note => {
             if (!note) {
@@ -11,7 +13,7 @@ export default class OpenNoteButtonWidget extends ButtonWidget {
                 if (!this.retried) {
                     this.retried = true;
 
-                    setTimeout(() => this.targetNote(noteId), 15000); // should be higher than timeout for createMissingSpecialNotes
+                    setTimeout(() => this.targetNote(noteId), 15000); // should be higher than timeout for checkHiddenSubtree
                 }
 
                 return;

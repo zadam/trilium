@@ -115,6 +115,10 @@ export default class ImportDialog extends BasicWidget {
                 this.$importButton.attr("disabled", "disabled");
             }
         });
+
+        this.$widget.find('[data-toggle="tooltip"]').tooltip({
+            html: true
+        });
     }
 
     async showImportDialogEvent({noteId}) {

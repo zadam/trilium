@@ -3,7 +3,7 @@ import utils from './utils.js';
 import server from './server.js';
 import froca from './froca.js';
 import hoistedNoteService from '../services/hoisted_note.js';
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 /**
  * @return {string|null}
@@ -304,6 +304,14 @@ function getHashValueFromAddress() {
     return str.split("-");
 }
 
+function isNotePathInAddress() {
+    const [notePath, ntxId] = getHashValueFromAddress();
+
+    return notePath.startsWith("root")
+        // empty string is for empty/uninitialized tab
+        || (notePath === '' && !!ntxId);
+}
+
 function parseNotePath(notePath) {
     let noteIds = notePath.split('/');
 
@@ -312,6 +320,10 @@ function parseNotePath(notePath) {
     }
 
     return noteIds;
+}
+
+function isNotePathInHiddenSubtree(notePath) {
+    return notePath?.includes("root/hidden");
 }
 
 export default {
@@ -328,5 +340,7 @@ export default {
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,
     getHashValueFromAddress,
-    parseNotePath
+    isNotePathInAddress,
+    parseNotePath,
+    isNotePathInHiddenSubtree
 };

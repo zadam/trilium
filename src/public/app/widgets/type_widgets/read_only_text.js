@@ -35,6 +35,10 @@ const TPL = `
         min-height: 50px;
         position: relative;
     }
+    
+    body.mobile .note-detail-readonly-text {
+        padding-left: 10px;
+    }
         
     .note-detail-readonly-text p:first-child, .note-detail-readonly-text::before {
         margin-top: 0;
@@ -67,7 +71,7 @@ const TPL = `
 `;
 
 export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
-    static getType() { return "read-only-text"; }
+    static getType() { return "readOnlyText"; }
 
     doRender() {
         this.$widget = $(TPL);

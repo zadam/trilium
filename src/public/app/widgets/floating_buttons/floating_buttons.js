@@ -20,9 +20,22 @@ const TPL = `
             margin-left: 10px;
         }
         
-        .floating-buttons .floating-button {
+        .floating-buttons-children > button {
             font-size: 130%;
             padding: 5px 10px 4px 10px;
+            width: 40px;
+            cursor: pointer;
+            color: var(--button-text-color);
+            background: var(--button-background-color);
+            border-radius: var(--button-border-radius);
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .floating-buttons-children > button:hover {
+            text-decoration: none;
+            border-color: var(--button-border-color);
         }
         
         .floating-buttons.temporarily-hidden {

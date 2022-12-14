@@ -15,12 +15,15 @@ const NOTE_TYPE_ICONS = {
     "code": "bx bx-code",
     "render": "bx bx-extension",
     "search": "bx bx-file-find",
-    "relation-map": "bx bx-map-alt",
+    "relationMap": "bx bx-map-alt",
     "book": "bx bx-book",
-    "note-map": "bx bx-map-alt",
+    "noteMap": "bx bx-map-alt",
     "mermaid": "bx bx-selection",
     "canvas": "bx bx-pen",
-    "web-view": "bx bx-globe-alt"
+    "webView": "bx bx-globe-alt",
+    "launcher": "bx bx-link",
+    "doc": "bx bxs-file-doc",
+    "contentWidget": "bx bxs-widget"
 };
 
 /**
@@ -790,10 +793,10 @@ class NoteShort {
 
         if (env === "frontend") {
             const bundleService = (await import("../services/bundle.js")).default;
-            await bundleService.getAndExecuteBundle(this.noteId);
+            return await bundleService.getAndExecuteBundle(this.noteId);
         }
         else if (env === "backend") {
-            await server.post('script/run/' + this.noteId);
+            return await server.post('script/run/' + this.noteId);
         }
         else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
@@ -822,6 +825,14 @@ class NoteShort {
 
     isContentAvailable() {
         return !this.isProtected || protectedSessionHolder.isProtectedSessionAvailable()
+    }
+
+    isLaunchBarConfig() {
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+    }
+
+    isOptions() {
+        return this.noteId.startsWith("options");
     }
 }
 

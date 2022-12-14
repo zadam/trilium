@@ -44,7 +44,7 @@ const DROPDOWN_TPL = `
 
 export default class BookmarkFolderWidget extends RightDropdownButtonWidget {
     constructor(note) {
-        super(note.getIcon(), note.title, DROPDOWN_TPL);
+        super(note.title, note.getIcon(), DROPDOWN_TPL);
 
         this.note = note;
     }

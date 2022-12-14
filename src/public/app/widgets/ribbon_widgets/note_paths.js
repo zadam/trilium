@@ -44,10 +44,6 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
         return "toggleRibbonTabNotePaths";
     }
 
-    isEnabled() {
-        return this.note;
-    }
-
     getTitle() {
         return {
             show: true,

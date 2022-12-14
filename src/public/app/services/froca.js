@@ -2,7 +2,7 @@ import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import Attribute from "../entities/attribute.js";
 import server from "./server.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import NoteComplement from "../entities/note_complement.js";
 
 /**
@@ -226,6 +226,7 @@ class Froca {
 
     /** @returns {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
+        noteIds = Array.from(new Set(noteIds)); // make unique
         const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
 
         await this.reloadNotes(missingNoteIds);

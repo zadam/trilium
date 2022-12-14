@@ -1,11 +1,11 @@
 import treeService from './tree.js';
-import linkContextMenuService from "./link_context_menu.js";
-import appContext from "./app_context.js";
+import linkContextMenuService from "../menus/link_context_menu.js";
+import appContext from "../components/app_context.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 
 function getNotePathFromUrl(url) {
-    const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
+    const notePathMatch = /#(root[A-Za-z0-9_/]*)$/.exec(url);
 
     return notePathMatch === null ? null : notePathMatch[1];
 }
@@ -90,27 +90,27 @@ function getNotePathFromLink($link) {
     return url ? getNotePathFromUrl(url) : null;
 }
 
-function goToLink(e) {
-    const $link = $(e.target).closest("a,.block-link");
+function goToLink(evt) {
+    const $link = $(evt.target).closest("a,.block-link");
     const address = $link.attr('href');
 
     if (address?.startsWith("data:")) {
         return true;
     }
 
-    e.preventDefault();
-    e.stopPropagation();
+    evt.preventDefault();
+    evt.stopPropagation();
 
     const notePath = getNotePathFromLink($link);
 
-    const ctrlKey = (!utils.isMac() && e.ctrlKey) || (utils.isMac() && e.metaKey);
+    const ctrlKey = utils.isCtrlKey(evt);
 
     if (notePath) {
-        if ((e.which === 1 && ctrlKey) || e.which === 2) {
+        if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
             appContext.tabManager.openTabWithNoteWithHoisting(notePath);
         }
-        else if (e.which === 1) {
-            const ntxId = $(e.target).closest("[data-ntx-id]").attr("data-ntx-id");
+        else if (evt.which === 1) {
+            const ntxId = $(evt.target).closest("[data-ntx-id]").attr("data-ntx-id");
 
             const noteContext = ntxId
                 ? appContext.tabManager.getNoteContextById(ntxId)
@@ -124,7 +124,7 @@ function goToLink(e) {
         }
     }
     else {
-        if ((e.which === 1 && ctrlKey) || e.which === 2
+        if ((evt.which === 1 && ctrlKey) || evt.which === 2
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {

@@ -55,7 +55,7 @@ async function createNoteLink(noteId) {
     }
 
     return $("<a>", {
-        href: '#' + noteId,
+        href: '#root/' + noteId,
         class: 'reference-link',
         'data-note-path': noteId
     })

@@ -4,14 +4,14 @@ import toastService from "./toast.js";
 import froca from "./froca.js";
 import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    if (beforeBranchId === 'root') {
-        toastService.showError('Cannot move notes before root note.');
+    if (['root', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(beforeBranchId)) {
+        toastService.showError('Cannot move notes here.');
         return;
     }
 
@@ -31,8 +31,16 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 
     const afterNote = await froca.getBranch(afterBranchId).getNote();
 
-    if (afterNote.noteId === 'root' || afterNote.noteId === hoistedNoteService.getHoistedNoteId()) {
-        toastService.showError('Cannot move notes after root note.');
+    const forbiddenNoteIds = [
+        'root',
+        hoistedNoteService.getHoistedNoteId(),
+        'lbRoot',
+        'lbAvailableLaunchers',
+        'lbVisibleLaunchers'
+    ];
+
+    if (forbiddenNoteIds.includes(afterNote.noteId)) {
+        toastService.showError('Cannot move notes here.');
         return;
     }
 
@@ -49,6 +57,11 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 }
 
 async function moveToParentNote(branchIdsToMove, newParentBranchId) {
+    if (newParentBranchId === 'lbRoot') {
+        toastService.showError('Cannot move notes here.');
+        return;
+    }
+
     branchIdsToMove = filterRootNote(branchIdsToMove);
 
     for (const branchIdToMove of branchIdsToMove) {
@@ -124,7 +137,10 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    const resp = await server.put('branches/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
+    const targetBranchId = node.getParent().data.branchId;
+    const branchIdToMove = node.data.branchId;
+
+    const resp = await server.put(`branches/${branchIdToMove}/move-after/${targetBranchId}`);
 
     if (!resp.success) {
         toastService.showError(resp.message);

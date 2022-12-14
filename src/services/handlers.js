@@ -4,6 +4,8 @@ const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
+const debounce = require('debounce');
+const specialNotesService = require("./special_notes");
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {

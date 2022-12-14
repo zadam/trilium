@@ -8,7 +8,7 @@ import treeService from "../../services/tree.js";
 import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import link from "../../services/link.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -37,6 +37,10 @@ const TPL = `
         padding-left: 14px;
         padding-top: 10px;
         height: 100%;
+    }
+    
+    body.mobile .note-detail-editable-text {
+        padding-left: 4px;
     }
     
     .note-detail-editable-text a:hover {
@@ -83,7 +87,7 @@ const TPL = `
 `;
 
 export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
-    static getType() { return "editable-text"; }
+    static getType() { return "editableText"; }
 
     doRender() {
         this.$widget = $(TPL);
@@ -132,7 +136,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         if (glob.isDev && ENABLE_INSPECTOR) {
-            await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector.js');
+            await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector');
             CKEditorInspector.attach(this.textEditor);
         }
     }

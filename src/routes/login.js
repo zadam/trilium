@@ -6,6 +6,7 @@ const myScryptService = require('../services/my_scrypt');
 const log = require('../services/log');
 const passwordService = require("../services/password");
 const assetPath = require("../services/asset_path");
+const ValidationError = require("../errors/validation_error");
 
 function loginPage(req, res) {
     res.render('login', {
@@ -23,7 +24,7 @@ function setPasswordPage(req, res) {
 
 function setPassword(req, res) {
     if (passwordService.isPasswordSet()) {
-        return [400, "Password has been already set"];
+        throw new ValidationError("Password has been already set");
     }
 
     let {password1, password2} = req.body;

@@ -109,7 +109,6 @@ button.close:hover {
 
 .icon-action {
     border: 1px solid transparent;
-    padding: 5px;
     width: 35px;
     height: 35px;
     cursor: pointer;
@@ -863,13 +862,14 @@ body {
     margin: 10px;
 }
 
-#launcher-pane .icon-action {
+#launcher-pane .launcher-button {
     font-size: 150%;
     display: inline-block;
     padding: 15px 15px;
     cursor: pointer;
     border: none;
     color: var(--launcher-pane-text-color);
+    background-color: var(--launcher-pane-background-color);
     width: 53px;
     height: 53px;
 }
@@ -966,4 +966,18 @@ button.close:hover {
     position: relative;
     top: 1px;
     margin-right: 3px;
+}
+
+.options-section:first-of-type h4 {
+    margin-top: 0;
+}
+
+.options-section h4 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.options-section h5 {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }

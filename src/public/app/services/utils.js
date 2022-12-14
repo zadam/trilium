@@ -60,6 +60,11 @@ function isMac() {
     return navigator.platform.indexOf('Mac') > -1;
 }
 
+function isCtrlKey(evt) {
+    return (!isMac() && evt.ctrlKey)
+        || (isMac() && evt.metaKey);
+}
+
 function assertArguments() {
     for (const i in arguments) {
         if (!arguments[i]) {
@@ -130,35 +135,6 @@ function randomString(len) {
     }
 
     return text;
-}
-
-function bindGlobalShortcut(keyboardShortcut, handler) {
-    bindElShortcut($(document), keyboardShortcut, handler);
-}
-
-function bindElShortcut($el, keyboardShortcut, handler) {
-    if (isDesktop()) {
-        keyboardShortcut = normalizeShortcut(keyboardShortcut);
-
-        $el.bind('keydown', keyboardShortcut, e => {
-            handler(e);
-
-            e.preventDefault();
-            e.stopPropagation();
-        });
-    }
-}
-
-/**
- * Normalize to the form expected by the jquery.hotkeys.js
- */
-function normalizeShortcut(shortcut) {
-    return shortcut
-        .toLowerCase()
-        .replace("enter", "return")
-        .replace("delete", "del")
-        .replace("ctrl+alt", "alt+ctrl")
-        .replace("meta+alt", "alt+meta"); // alt needs to be first;
 }
 
 function isMobile() {
@@ -349,7 +325,13 @@ function openHelp(e) {
 }
 
 function initHelpButtons($el) {
-    $el.on("click", "*[data-help-page]", e => openHelp(e));
+    // for some reason the .on(event, listener, handler) does not work here (e.g. Options -> Sync -> Help button)
+    // so we do it manually
+    $el.on("click", e => {
+        if ($(e.target).attr("data-help-page")) {
+            openHelp(e)
+        }
+    });
 }
 
 function filterAttributeName(name) {
@@ -385,14 +367,13 @@ export default {
     now,
     isElectron,
     isMac,
+    isCtrlKey,
     assertArguments,
     escapeHtml,
     stopWatch,
     formatLabel,
     toObject,
     randomString,
-    bindGlobalShortcut,
-    bindElShortcut,
     isMobile,
     isDesktop,
     setCookie,
@@ -406,7 +387,6 @@ export default {
     focusSavedElement,
     isHtmlEmpty,
     clearBrowserCache,
-    normalizeShortcut,
     copySelectionToClipboard,
     dynamicRequire,
     timeLimit,

@@ -709,7 +709,7 @@ components:
             - image
             - search
             - book
-            - relation-map
+            - relationMap
             - render
         mime:
           type: string
@@ -747,7 +747,7 @@ components:
           type: string
         type:
           type: string
-          enum: [text, code, render, file, image, search, relation-map, book, note-map, mermaid]
+          enum: [text, code, render, file, image, search, relationMap, book, noteMap, mermaid, webView, shortcut]
         mime:
           type: string
         isProtected:

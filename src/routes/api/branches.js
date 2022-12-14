@@ -8,7 +8,9 @@ const noteService = require('../../services/notes');
 const becca = require('../../becca/becca');
 const TaskContext = require('../../services/task_context');
 const branchService = require("../../services/branches");
-const log = require("../../services/log.js");
+const log = require("../../services/log");
+const ValidationError = require("../../errors/validation_error");
+const NotFoundError = require("../../errors/not_found_error");
 
 /**
  * Code in this file deals with moving and cloning branches. Relationship between note and parent note is unique
@@ -22,7 +24,7 @@ function moveBranchToParent(req) {
     const branchToMove = becca.getBranch(branchId);
 
     if (!parentBranch || !branchToMove) {
-        return [400, `One or both branches ${branchId}, ${parentBranchId} have not been found`];
+        throw new ValidationError(`One or both branches ${branchId}, ${parentBranchId} have not been found`);
     }
 
     return branchService.moveBranchToBranch(branchToMove, parentBranch, branchId);
@@ -35,11 +37,11 @@ function moveBranchBeforeNote(req) {
     const beforeBranch = becca.getBranch(beforeBranchId);
 
     if (!branchToMove) {
-        return [404, `Can't find branch ${branchId}`];
+        throw new NotFoundError(`Can't find branch '${branchId}'`);
     }
 
     if (!beforeBranch) {
-        return [404, `Can't find branch ${beforeBranchId}`];
+        throw new NotFoundError(`Can't find branch '${beforeBranchId}'`);
     }
 
     const validationResult = treeService.validateParentChild(beforeBranch.parentNoteId, branchToMove.noteId, branchId);
@@ -193,7 +195,7 @@ function deleteBranch(req) {
     const branch = becca.getBranch(req.params.branchId);
 
     if (!branch) {
-        return [404, `Branch ${req.params.branchId} not found`];
+        throw new NotFoundError(`Branch '${req.params.branchId}' not found`);
     }
 
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');

@@ -4,7 +4,7 @@ import froca from "../../services/froca.js";
 import toastService from "../../services/toast.js";
 import utils from "../../services/utils.js";
 import BasicWidget from "../basic_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 
 let branchId;
 

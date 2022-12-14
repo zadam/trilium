@@ -11,7 +11,6 @@ const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
-const searchService = require("../../services/search/services/search.js");
 dayjs.extend(utc)
 
 const LABEL = 'label';
@@ -73,6 +72,8 @@ class Note extends AbstractEntity {
         this.utcDateCreated = utcDateCreated || dateUtils.utcNowDateTime();
         /** @type {string} */
         this.utcDateModified = utcDateModified;
+        /** @type {boolean} - set during the deletion operation, before it is completed (removed from becca completely) */
+        this.isBeingDeleted = false;
 
         // ------ Derived attributes ------
 
@@ -153,6 +154,15 @@ class Note extends AbstractEntity {
     /** @returns {Branch[]} */
     getParentBranches() {
         return this.parentBranches;
+    }
+
+    /**
+     * Returns <i>strong</i> (as opposed to <i>weak</i>) parent branches. See isWeak for details.
+     *
+     * @returns {Branch[]}
+     */
+    getStrongParentBranches() {
+        return this.getParentBranches().filter(branch => !branch.isWeak);
     }
 
     /**
@@ -1319,8 +1329,16 @@ class Note extends AbstractEntity {
         }
     }
 
+    isLaunchBarConfig() {
+        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+    }
+
+    isOptions() {
+        return this.noteId.startsWith("options");
+    }
+
     get isDeleted() {
-        return !(this.noteId in this.becca.notes);
+        return !(this.noteId in this.becca.notes) || this.isBeingDeleted;
     }
 
     /**

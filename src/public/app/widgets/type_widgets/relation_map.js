@@ -1,14 +1,14 @@
 import server from "../../services/server.js";
 import linkService from "../../services/link.js";
 import libraryLoader from "../../services/library_loader.js";
-import contextMenu from "../../services/context_menu.js";
+import contextMenu from "../../menus/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import TypeWidget from "./type_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import utils from "../../services/utils.js";
 import froca from "../../services/froca.js";
-import dialogService from "../../widgets/dialog.js";
+import dialogService from "../../services/dialog.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -74,7 +74,7 @@ const TPL = `
 let containerCounter = 1;
 
 export default class RelationMapTypeWidget extends TypeWidget {
-    static getType() { return "relation-map"; }
+    static getType() { return "relationMap"; }
 
     doRender() {
         this.$widget = $(TPL);

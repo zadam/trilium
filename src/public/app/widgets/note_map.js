@@ -2,9 +2,9 @@ import libraryLoader from "../services/library_loader.js";
 import server from "../services/server.js";
 import attributeService from "../services/attributes.js";
 import hoistedNoteService from "../services/hoisted_note.js";
-import appContext from "../services/app_context.js";
+import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import linkContextMenuService from "../services/link_context_menu.js";
+import linkContextMenuService from "../menus/link_context_menu.js";
 
 const TPL = `<div class="note-map-widget" style="position: relative;">
     <style>
@@ -16,13 +16,13 @@ const TPL = `<div class="note-map-widget" style="position: relative;">
         .map-type-switcher {
             position: absolute; 
             top: 10px; 
-            right: 10px; 
-            background-color: var(--accented-background-color);
+            left: 10px; 
             z-index: 10; /* should be below dropdown (note actions) */
         }
         
-        .map-type-switcher .bx {
-            font-size: 120%;
+        .map-type-switcher button.bx {
+            font-size: 130%;
+            padding: 1px 10px 1px 10px;
         }
     </style>
     

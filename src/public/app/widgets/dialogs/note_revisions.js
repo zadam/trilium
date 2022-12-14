@@ -1,12 +1,12 @@
 import utils from '../../services/utils.js';
 import server from '../../services/server.js';
 import toastService from "../../services/toast.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import libraryLoader from "../../services/library_loader.js";
 import openService from "../../services/open.js";
 import protectedSessionHolder from "../../services/protected_session_holder.js";
 import BasicWidget from "../basic_widget.js";
-import dialogService from "../dialog.js";
+import dialogService from "../../services/dialog.js";
 
 const TPL = `
 <div class="note-revisions-dialog modal fade mx-auto" tabindex="-1" role="dialog">

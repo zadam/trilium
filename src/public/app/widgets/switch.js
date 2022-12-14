@@ -101,16 +101,24 @@ export default class SwitchWidget extends NoteContextAwareWidget {
         this.$switchOnName = this.$widget.find(".switch-on-name");
         this.$switchOnButton = this.$widget.find(".switch-on-button");
 
-        this.$switchOnButton.on('click', () => this.switchOn());
+        this.$switchOnButton.on('click', () => this.toggle(true));
 
         this.$switchOff = this.$widget.find(".switch-off");
         this.$switchOffName = this.$widget.find(".switch-off-name");
         this.$switchOffButton = this.$widget.find(".switch-off-button");
 
-        this.$switchOffButton.on('click', () => this.switchOff());
+        this.$switchOffButton.on('click', () => this.toggle(false));
 
         this.$helpButton = this.$widget.find(".switch-help-button");
 
+    }
+
+    toggle(state) {
+        if (state) {
+            this.switchOn();
+        } else {
+            this.switchOff();
+        }
     }
 
     switchOff() {}

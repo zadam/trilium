@@ -140,7 +140,7 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT branchId, branches.noteId AS parentNoteId
+                    SELECT branchId, branches.parentNoteId AS parentNoteId
                     FROM branches
                       LEFT JOIN notes ON notes.noteId = branches.parentNoteId
                     WHERE branches.isDeleted = 0

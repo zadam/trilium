@@ -1,5 +1,5 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 
 export default class TypeWidget extends NoteContextAwareWidget {
     // for overriding
@@ -40,7 +40,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
 
     /**
      * @returns {Promise|*} promise resolving content or directly the content
-     */ 
+     */
     getContent() {}
 
     focus() {}

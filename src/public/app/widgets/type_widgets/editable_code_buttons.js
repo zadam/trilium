@@ -1,6 +1,6 @@
 import server from "../../services/server.js";
 import ws from "../../services/ws.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import toastService from "../../services/toast.js";
 import treeService from "../../services/tree.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";

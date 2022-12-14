@@ -19,7 +19,7 @@ const TPL = `
 </div>`;
 
 export default class WebViewTypeWidget extends TypeWidget {
-    static getType() { return "web-view"; }
+    static getType() { return "webView"; }
 
     doRender() {
         this.$widget = $(TPL);

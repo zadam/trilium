@@ -9,11 +9,11 @@ import dateNotesService from './date_notes.js';
 import searchService from './search.js';
 import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
-import appContext from "./app_context.js";
+import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
-import NoteContextCachingWidget from "../widgets/note_context_caching_widget.js";
 import BasicWidget from "../widgets/basic_widget.js";
 import SpacedUpdate from "./spaced_update.js";
+import shortcutService from "./shortcuts.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -22,8 +22,6 @@ import SpacedUpdate from "./spaced_update.js";
  * @hideconstructor
  */
 function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
-    const $pluginButtons = $("#plugin-buttons");
-
     /** @property {jQuery} container of all the rendered script content */
     this.$container = $container;
 
@@ -40,23 +38,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
 
-    /**
-     * @property {NoteContextAwareWidget}
-     * @deprecated use NoteContextAwareWidget instead
-     */
-    this.TabAwareWidget = NoteContextAwareWidget;
-
     /** @property {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
-
-    /**
-     * @property {NoteContextCachingWidget}
-     * @deprecated use NoteContextCachingWidget instead
-     */
-    this.TabCachingWidget = NoteContextCachingWidget;
-
-    /** @property {NoteContextAwareWidget} */
-    this.NoteContextCachingWidget = NoteContextCachingWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;
@@ -131,49 +114,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
 
     /**
-     * Adds new button to the plugin area.
-     *
-     * @param {ToolbarButtonOptions} opts
+     * @deprecated this API has no effect anymore. Use bookmarks or launchpad shortcuts instead.
      */
-    this.addButtonToToolbar = opts => {
-        const buttonId = "toolbar-button-" + opts.title.replace(/\s/g, "-");
-
-        let button;
-        if (utils.isMobile()) {
-            $('#plugin-buttons-placeholder').remove();
-            button = $('<a class="dropdown-item" href="#">')
-                .on('click', () => {
-                    setTimeout(() => $pluginButtons.dropdown('hide'), 0);
-                });
-
-            if (opts.icon) {
-                button.append($("<span>").addClass("bx bx-" + opts.icon))
-                    .append("&nbsp;");
-            }
-
-            button.append($("<span>").text(opts.title));
-        } else {
-            button = $('<span class="button-widget icon-action bx" data-toggle="tooltip" title="" data-placement="right"></span>')
-                .addClass("bx bx-" + (opts.icon || "question-mark"));
-
-            button.attr("title", opts.title);
-            button.tooltip({html: true});
-        }
-
-        button = button.on('click', opts.action);
-
-        button.attr('id', buttonId);
-
-        if ($("#" + buttonId).replaceWith(button).length === 0) {
-            $pluginButtons.append(button);
-        }
-
-        if (opts.shortcut) {
-            utils.bindGlobalShortcut(opts.shortcut, opts.action);
-
-            button.attr("title", "Shortcut " + opts.shortcut);
-        }
-    };
+    this.addButtonToToolbar = () => console.warn("api.addButtonToToolbar() calls are deprecated and have no effect");
 
     function prepareParams(params) {
         if (!params) {
@@ -566,8 +509,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
      * @param {function} handler
+     * @param {string} [namespace] - specify namespace of the handler for the cases where call for bind may be repeated.
+     *                               If a handler with this ID exists, it's replaced by the new handler.
      */
-    this.bindGlobalShortcut = utils.bindGlobalShortcut;
+    this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 
     /**
      * Trilium runs in backend and frontend process, when something is changed on the backend from script,

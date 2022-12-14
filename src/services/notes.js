@@ -18,7 +18,8 @@ const Branch = require('../becca/entities/branch');
 const Note = require('../becca/entities/note');
 const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
-const htmlSanitizer = require("./html_sanitizer.js");
+const htmlSanitizer = require("./html_sanitizer");
+const ValidationError = require("../errors/validation_error");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -50,9 +51,9 @@ function deriveMime(type, mime) {
         mime = 'text/html';
     } else if (type === 'code' || type === 'mermaid') {
         mime = 'text/plain';
-    } else if (['relation-map', 'search', 'canvas'].includes(type)) {
+    } else if (['relationMap', 'search', 'canvas'].includes(type)) {
         mime = 'application/json';
-    } else if (['render', 'book', 'web-view'].includes(type)) {
+    } else if (['render', 'book', 'webView'].includes(type)) {
         mime = '';
     } else {
         mime = 'application/octet-stream';
@@ -103,12 +104,30 @@ function getNewNoteTitle(parentNote) {
     return title;
 }
 
+function getAndValidateParent(params) {
+    const parentNote = becca.notes[params.parentNoteId];
+
+    if (!parentNote) {
+        throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
+    }
+
+    if (parentNote.type === 'launcher' && parentNote.noteId !== 'lbBookmarks') {
+        throw new ValidationError(`Creating child notes into launcher notes is not allowed.`);
+    }
+
+    if (!params.ignoreForbiddenParents && (['lbRoot', 'hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
+        throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+    }
+
+    return parentNote;
+}
+
 /**
  * Following object properties are mandatory:
  * - {string} parentNoteId
  * - {string} title
  * - {*} content
- * - {string} type - text, code, file, image, search, book, relation-map, canvas, render
+ * - {string} type - text, code, file, image, search, book, relationMap, canvas, render
  *
  * Following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type
@@ -121,11 +140,7 @@ function getNewNoteTitle(parentNote) {
  * @return {{note: Note, branch: Branch}}
  */
 function createNewNote(params) {
-    const parentNote = becca.notes[params.parentNoteId];
-
-    if (!parentNote) {
-        throw new Error(`Parent note "${params.parentNoteId}" not found.`);
-    }
+    const parentNote = getAndValidateParent(params);
 
     if (params.title === null || params.title === undefined) {
         params.title = getNewNoteTitle(parentNote);
@@ -282,7 +297,7 @@ function protectNote(note, protect) {
 }
 
 function findImageLinks(content, foundLinks) {
-    const re = /src="[^"]*api\/images\/([a-zA-Z0-9]+)\//g;
+    const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
 
     while (match = re.exec(content)) {
@@ -298,7 +313,7 @@ function findImageLinks(content, foundLinks) {
 }
 
 function findInternalLinks(content, foundLinks) {
-    const re = /href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
+    const re = /href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g;
     let match;
 
     while (match = re.exec(content)) {
@@ -313,7 +328,7 @@ function findInternalLinks(content, foundLinks) {
 }
 
 function findIncludeNoteLinks(content, foundLinks) {
-    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9]+)"[^>]*>/g;
+    const re = /<section class="include-note[^>]+data-note-id="([a-zA-Z0-9_]+)"[^>]*>/g;
     let match;
 
     while (match = re.exec(content)) {
@@ -477,7 +492,7 @@ function downloadImages(noteId, content) {
 }
 
 function saveLinks(note, content) {
-    if (note.type !== 'text' && note.type !== 'relation-map') {
+    if (note.type !== 'text' && note.type !== 'relationMap') {
         return content;
     }
 
@@ -494,7 +509,7 @@ function saveLinks(note, content) {
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
     }
-    else if (note.type === 'relation-map') {
+    else if (note.type === 'relationMap') {
         findRelationMapLinks(content, foundLinks);
     }
     else {
@@ -665,7 +680,7 @@ function getUndeletedParentBranchIds(noteId, deleteId) {
 }
 
 function scanForLinks(note) {
-    if (!note || !['text', 'relation-map'].includes(note.type)) {
+    if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }
 
@@ -855,7 +870,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
 
         let content = origNote.getContent();
 
-        if (['text', 'relation-map', 'search'].includes(origNote.type)) {
+        if (['text', 'relationMap', 'search'].includes(origNote.type)) {
             // fix links in the content
             content = replaceByMap(content, noteIdMapping);
         }

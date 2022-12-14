@@ -1,26 +1,30 @@
-import ButtonWidget from "./button_widget.js";
 import options from "../../services/options.js";
 import splitService from "../../services/resizer.js";
+import CommandButtonWidget from "./command_button.js";
 
-export default class LeftPaneToggleWidget extends ButtonWidget {
-    refreshIcon() {
-        const isLeftPaneVisible = options.is('leftPaneVisible');
+export default class LeftPaneToggleWidget extends CommandButtonWidget {
+    constructor() {
+        super();
 
-        this.settings.icon = isLeftPaneVisible
+        this.class("launcher-button");
+
+        this.settings.icon = () => options.is('leftPaneVisible')
             ? "bx-chevrons-left"
             : "bx-chevrons-right";
 
-        this.settings.title = isLeftPaneVisible
+        this.settings.title = () => options.is('leftPaneVisible')
             ? "Hide panel"
             : "Open panel";
 
-        this.settings.command = isLeftPaneVisible
+        this.settings.command = () => options.is('leftPaneVisible')
             ? "hideLeftPane"
             : "showLeftPane";
+    }
 
+    refreshIcon() {
         super.refreshIcon();
 
-        splitService.setupLeftPaneResizer(isLeftPaneVisible);
+        splitService.setupLeftPaneResizer(options.is('leftPaneVisible'));
     }
 
     entitiesReloadedEvent({loadResults}) {

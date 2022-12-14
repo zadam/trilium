@@ -92,7 +92,7 @@ const TPL = `
         border: 1px solid var(--main-border-color);
     }
     
-    .note-book-content.type-image, .note-book-content.type-file, .note-book-content.type-protected-session {
+    .note-book-content.type-image, .note-book-content.type-file, .note-book-content.type-protectedSession {
         display: flex;
         align-items: center;
         justify-content: center;

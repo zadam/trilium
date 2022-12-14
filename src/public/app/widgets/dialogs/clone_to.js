@@ -4,7 +4,7 @@ import treeService from "../../services/tree.js";
 import toastService from "../../services/toast.js";
 import froca from "../../services/froca.js";
 import branchService from "../../services/branches.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `

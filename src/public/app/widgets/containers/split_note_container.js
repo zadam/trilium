@@ -1,5 +1,5 @@
 import FlexContainer from "./flex_container.js";
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 
 export default class SplitNoteContainer extends FlexContainer {
     constructor(widgetFactory) {
@@ -35,13 +35,17 @@ export default class SplitNoteContainer extends FlexContainer {
     }
 
     async openNewNoteSplitEvent({ntxId, notePath}) {
+        const mainNtxId = appContext.tabManager.getActiveMainContext().ntxId;
+
         if (!ntxId) {
             logError("empty ntxId!");
 
-            ntxId = appContext.tabManager.getActiveMainContext().ntxId;
+            ntxId = mainNtxId;
         }
 
-        const noteContext = await appContext.tabManager.openEmptyTab(null, 'root', appContext.tabManager.getActiveMainContext().ntxId);
+        const hoistedNoteId = appContext.tabManager.getActiveContext().hoistedNoteId;
+
+        const noteContext = await appContext.tabManager.openEmptyTab(null, hoistedNoteId, mainNtxId);
 
         // remove the original position of newly created note context
         const ntxIds = appContext.tabManager.children.map(c => c.ntxId)

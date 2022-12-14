@@ -1,6 +1,6 @@
-import ButtonWidget from "./button_widget.js";
+import OnClickButtonWidget from "./onclick_button.js";
 
-export default class ClosePaneButton extends ButtonWidget {
+export default class ClosePaneButton extends OnClickButtonWidget {
     isEnabled() {
         return super.isEnabled()
             // main note context should not be closeable

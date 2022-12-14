@@ -1,4 +1,4 @@
-import appContext from "../../services/app_context.js";
+import appContext from "../../components/app_context.js";
 import BasicWidget from "../basic_widget.js";
 import utils from "../../services/utils.js";
 

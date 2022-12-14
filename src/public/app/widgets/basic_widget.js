@@ -1,4 +1,4 @@
-import Component from "./component.js";
+import Component from "../components/component.js";
 
 class BasicWidget extends Component {
     constructor() {
@@ -53,12 +53,6 @@ class BasicWidget extends Component {
         return this;
     }
 
-    overflowing() {
-        console.log("Using overflowing() is deprecated NOOP and it is recommended to remove its use.");
-
-        return this;
-    }
-
     collapsible() {
         this.css('min-height', '0');
         this.css('min-width', '0');
@@ -78,6 +72,7 @@ class BasicWidget extends Component {
     render() {
         this.doRender();
 
+        this.$widget.attr('data-component-id', this.componentId);
         this.$widget.addClass('component')
             .prop('component', this);
 

@@ -1,7 +1,7 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
 import server from "../../services/server.js";
-import contextMenuService from "../../services/context_menu.js";
+import contextMenuService from "../../menus/context_menu.js";
 import attributesParser from "../../services/attribute_parser.js";
 import libraryLoader from "../../services/library_loader.js";
 import froca from "../../services/froca.js";
@@ -333,7 +333,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     getPreprocessedData() {
         const str = this.textEditor.getData()
-            .replace(/<a[^>]+href="(#[A-Za-z0-9/]*)"[^>]*>[^<]*<\/a>/g, "$1")
+            .replace(/<a[^>]+href="(#[A-Za-z0-9_/]*)"[^>]*>[^<]*<\/a>/g, "$1")
             .replace(/&nbsp;/g, " "); // otherwise .text() below outputs non-breaking space in unicode
 
         return $("<div>").html(str).text();
@@ -357,7 +357,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
         // disable spellcheck for attribute editor
         this.textEditor.editing.view.change(writer => writer.setAttribute('spellcheck', 'false', this.textEditor.editing.view.document.getRoot()));
 
-        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector.js');
+        //await import(/* webpackIgnore: true */'../../libraries/ckeditor/inspector');
         //CKEditorInspector.attach(this.textEditor);
     }
 
