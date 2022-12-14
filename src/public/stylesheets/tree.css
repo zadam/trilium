@@ -213,6 +213,7 @@ span.fancytree-node.archived {
 
 .unhoist-button.bx.tree-item-button {
     margin-left: 0; /* unhoist button is on the left and doesn't need more margin */
+    display: block; /* keep always visible */
 }
 
 .tree-item-button:hover {

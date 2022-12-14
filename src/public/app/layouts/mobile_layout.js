@@ -103,7 +103,6 @@ span.fancytree-expander {
 }
 
 .tree-wrapper .unhoist-button {
-    display: block;
     font-size: 200%;
 }
 </style>`;
