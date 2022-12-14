@@ -374,7 +374,8 @@ class Note extends AbstractEntity {
             return this.__attributeCache.filter(attr => attr.name === name);
         }
         else {
-            return this.__attributeCache.slice();
+            // a bit unsafe to return the original array, but defensive copy would be costly
+            return this.__attributeCache;
         }
     }
 
@@ -456,7 +457,7 @@ class Note extends AbstractEntity {
      * @param [value]
      * @returns {boolean}
      */
-    hasAttribute(type, name, value) {
+    hasAttribute(type, name, value = null) {
         return !!this.getAttributes().find(attr =>
             attr.type === type
             && attr.name === name
@@ -648,12 +649,12 @@ class Note extends AbstractEntity {
     }
 
     /**
-     * @param {string} [type] - (optional) attribute type to filter
-     * @param {string} [name] - (optional) attribute name to filter
-     * @param {string} [value] - (optional) attribute value to filter
+     * @param {string|null} [type] - (optional) attribute type to filter
+     * @param {string|null} [name] - (optional) attribute name to filter
+     * @param {string|null} [value] - (optional) attribute value to filter
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
-    getOwnedAttributes(type, name, value) {
+    getOwnedAttributes(type = null, name = null, value = null) {
         // it's a common mistake to include # or ~ into attribute name
         if (name && ["#", "~"].includes(name[0])) {
             name = name.substr(1);
@@ -681,7 +682,7 @@ class Note extends AbstractEntity {
      *
      * This method can be significantly faster than the getAttribute()
      */
-    getOwnedAttribute(type, name, value) {
+    getOwnedAttribute(type, name, value = null) {
         const attrs = this.getOwnedAttributes(type, name, value);
 
         return attrs.length > 0 ? attrs[0] : null;

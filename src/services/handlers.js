@@ -46,6 +46,8 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
 
         if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst'].includes(entity.name)) {
             handleSortedAttribute(entity);
+        } else if (entity.type === 'label') {
+            handleMaybeSortingLabel(entity);
         }
     }
     else if (entityName === 'notes') {
@@ -94,6 +96,9 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         else if (entity.type === 'label' && entity.name === 'sorted') {
             handleSortedAttribute(entity);
         }
+        else if (entity.type === 'label') {
+            handleMaybeSortingLabel(entity);
+        }
     }
     else if (entityName === 'branches') {
         runAttachedRelations(entity.getNote(), 'runOnBranchCreation', entity);
@@ -133,6 +138,27 @@ function handleSortedAttribute(entity) {
         if (note) {
             for (const noteId of note.getSubtreeNoteIds()) {
                 treeService.sortNotesIfNeeded(noteId);
+            }
+        }
+    }
+}
+
+function handleMaybeSortingLabel(entity) {
+    // check if this label is used for sorting, if yes force re-sort
+    const note = becca.notes[entity.noteId];
+
+    // this will not work on deleted notes, but in that case we don't really need to re-sort
+    if (note) {
+        for (const parentNote of note.getParentNotes()) {
+            console.log("PAR", parentNote.noteId);
+            const sorted = parentNote.getLabelValue("sorted");
+
+            console.log("sorted", sorted);
+
+            if (sorted?.includes(entity.name)) { // hacky check if the sorting is affected by this label
+                console.log("RESIRT!");
+
+                treeService.sortNotesIfNeeded(parentNote.noteId);
             }
         }
     }

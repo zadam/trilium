@@ -175,19 +175,25 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
         }
 
         let position = 10;
+        let someBranchUpdated = false;
 
         for (const note of notes) {
             const branch = note.getParentBranches().find(b => b.parentNoteId === parentNoteId);
 
-            sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
-                [position, branch.branchId]);
+            if (branch.notePosition !== position) {
+                sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
+                    [position, branch.branchId]);
 
-            becca.branches[branch.branchId].notePosition = position;
+                branch.notePosition = position;
+                someBranchUpdated = true;
+            }
 
             position += 10;
         }
 
-        entityChangesService.addNoteReorderingEntityChange(parentNoteId);
+        if (someBranchUpdated) {
+            entityChangesService.addNoteReorderingEntityChange(parentNoteId);
+        }
     });
 }
 

@@ -289,7 +289,7 @@ class NoteShort {
     }
 
     isRoot() {
-        return this.noted
+        return this.noteId === 'root';
     }
 
     getAllNotePaths(encounteredNoteIds = null) {
