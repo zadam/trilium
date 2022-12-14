@@ -48,60 +48,68 @@ export default class TabManager extends Component {
     }
 
     async loadTabs() {
-        const tabsToOpen = appContext.isMainWindow
-            ? (options.getJson('openTabs') || [])
-            : [];
+        try {
+            const tabsToOpen = appContext.isMainWindow
+                ? (options.getJson('openTabs') || [])
+                : [];
 
-        let filteredTabs = [];
+            let filteredTabs = [];
 
-        // preload all notes at once
-        await froca.getNotes([
-            tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
-            tabsToOpen.map(tab => tab.hoistedNoteId),
-        ], true);
+            // preload all notes at once
+            await froca.getNotes([
+                tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
+                tabsToOpen.map(tab => tab.hoistedNoteId),
+            ], true);
 
-        for (const openTab of tabsToOpen) {
-            if (openTab.notePath && !(treeService.getNoteIdFromNotePath(openTab.notePath) in froca.notes)) {
-                // note doesn't exist so don't try to open tab for it
-                continue;
+            for (const openTab of tabsToOpen) {
+                if (openTab.notePath && !(treeService.getNoteIdFromNotePath(openTab.notePath) in froca.notes)) {
+                    // note doesn't exist so don't try to open tab for it
+                    continue;
+                }
+
+                if (!(openTab.hoistedNoteId in froca.notes)) {
+                    openTab.hoistedNoteId = 'root';
+                }
+
+                filteredTabs.push(openTab);
             }
 
-            if (!froca.getNoteFromCache(openTab.hoistedNoteId)) {
-                continue;
+            if (utils.isMobile()) {
+                // mobile frontend doesn't have tabs so show only the active tab
+                filteredTabs = filteredTabs.filter(tab => tab.active);
             }
 
-            filteredTabs.push(openTab);
-        }
+            if (filteredTabs.length === 0) {
+                filteredTabs.push({
+                    notePath: glob.extraHoistedNoteId || 'root',
+                    active: true,
+                    hoistedNoteId: glob.extraHoistedNoteId || 'root'
+                });
+            }
 
-        if (utils.isMobile()) {
-            // mobile frontend doesn't have tabs so show only the active tab
-            filteredTabs = filteredTabs.filter(tab => tab.active);
-        }
+            if (!filteredTabs.find(tab => tab.active)) {
+                filteredTabs[0].active = true;
+            }
 
-        if (filteredTabs.length === 0) {
-            filteredTabs.push({
-                notePath: glob.extraHoistedNoteId || 'root',
-                active: true,
-                hoistedNoteId: glob.extraHoistedNoteId || 'root'
+            await this.tabsUpdate.allowUpdateWithoutChange(async () => {
+                for (const tab of filteredTabs) {
+                    await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
+                }
             });
-        }
 
-        if (!filteredTabs.find(tab => tab.active)) {
-            filteredTabs[0].active = true;
-        }
+            // if there's notePath in the URL, make sure it's open and active
+            // (useful, among others, for opening clipped notes from clipper)
+            if (treeService.isNotePathInAddress()) {
+                const [notePath, ntxId] = treeService.getHashValueFromAddress();
 
-        await this.tabsUpdate.allowUpdateWithoutChange(async () => {
-            for (const tab of filteredTabs) {
-                await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
+                await appContext.tabManager.switchToNoteContext(ntxId, notePath);
             }
-        });
+        }
+        catch (e) {
+            logError(`Loading tabs '${options.get('openTabs')}' failed: ${e.message}`);
 
-        // if there's notePath in the URL, make sure it's open and active
-        // (useful, among others, for opening clipped notes from clipper)
-        if (treeService.isNotePathInAddress()) {
-            const [notePath, ntxId] = treeService.getHashValueFromAddress();
-
-            await appContext.tabManager.switchToNoteContext(ntxId, notePath);
+            // try to recover
+            await this.openEmptyTab();
         }
     }
 
