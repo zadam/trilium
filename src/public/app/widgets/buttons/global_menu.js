@@ -135,12 +135,6 @@ const TPL = `
             </div>
         </span>
 
-        <li class="dropdown-item" data-trigger-command="toggleFullscreen">
-            <span class="bx bx-empty"></span>
-            Toggle fullscreen
-            <kbd ></kbd>
-        </li>
-        
         <li class="dropdown-item" data-trigger-command="showLaunchBarSubtree">
             <span class="bx bx-sidebar"></span>
             Configure launchbar

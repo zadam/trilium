@@ -86,11 +86,7 @@ export default class Entrypoints extends Component {
             if (win.isFullScreenable()) {
                 win.setFullScreen(!win.isFullScreen());
             }
-        }
-        else {
-            // outside of electron this is handled by the browser
-            this.$widget.find(".toggle-fullscreen-button").hide();
-        }
+        } // outside of electron this is handled by the browser
     }
 
     reloadFrontendAppCommand() {

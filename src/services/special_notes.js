@@ -42,6 +42,7 @@ function createSqlConsole() {
 
     note.setLabel("sqlConsole", dateUtils.localNowDate());
     note.setLabel('iconClass', 'bx bx-data');
+    note.setLabel('keepCurrentHoisting');
 
     return note;
 }
@@ -75,6 +76,7 @@ function createSearchNote(searchString, ancestorNoteId) {
     });
 
     note.setLabel('searchString', searchString);
+    note.setLabel('keepCurrentHoisting');
 
     if (ancestorNoteId) {
         note.setRelation('ancestor', ancestorNoteId);
