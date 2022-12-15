@@ -6,6 +6,8 @@ const cls = require("./cls");
 const dateUtils = require("./date_utils");
 const log = require("./log");
 const hiddenSubtreeService = require("./hidden_subtree");
+const searchService = require("./search/services/search.js");
+const SearchContext = require("./search/search_context.js");
 
 function getInboxNote(date) {
     const hoistedNote = getHoistedNote();
@@ -33,7 +35,7 @@ function getInboxNote(date) {
 
 function createSqlConsole() {
     const {note} = noteService.createNewNote({
-        parentNoteId: 'sqlConsole',
+        parentNoteId: getMonthlyParentNoteId('sqlConsole'),
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
@@ -68,7 +70,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
 
 function createSearchNote(searchString, ancestorNoteId) {
     const {note} = noteService.createNewNote({
-        parentNoteId: 'search',
+        parentNoteId: getMonthlyParentNoteId('search'),
         title: 'Search: ' + searchString,
         content: "",
         type: 'search',
@@ -113,6 +115,28 @@ function saveSearchNote(searchNoteId) {
     }
 
     return result;
+}
+
+function getMonthlyParentNoteId(rootNoteId) {
+    const month = dateUtils.localNowDate().substring(0, 7);
+    const labelName = `${rootNoteId}MonthNote`;
+
+    let monthNote = searchService.findFirstNoteWithQuery(`#${labelName}="${month}"`,
+        new SearchContext({ancestorNoteId: rootNoteId}));
+
+    if (!monthNote) {
+        monthNote = noteService.createNewNote({
+            parentNoteId: rootNoteId,
+            title: month,
+            content: '',
+            isProtected: false,
+            type: 'book'
+        }).note
+
+        monthNote.addLabel(labelName, month);
+    }
+
+    return monthNote.noteId;
 }
 
 function getHoistedNote() {

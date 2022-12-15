@@ -28,7 +28,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
     children: [
         {
             id: 'search',
-            title: 'search',
+            title: 'Search History',
             type: 'doc'
         },
         {
@@ -42,7 +42,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
         },
         {
             id: 'sqlConsole',
-            title: 'SQL Console',
+            title: 'SQL Console History',
             type: 'doc',
             icon: 'bx-data'
         },
@@ -56,6 +56,15 @@ const HIDDEN_SUBTREE_DEFINITION = {
             id: 'bulkAction',
             title: 'Bulk action',
             type: 'doc',
+        },
+        {
+            id: 'backendLog',
+            title: 'Backend Log',
+            type: 'contentWidget',
+            icon: 'bx-terminal',
+            attributes: [
+                { type: 'label', name: 'keepCurrentHoisting' }
+            ]
         },
         {
             // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
@@ -158,8 +167,9 @@ const HIDDEN_SUBTREE_DEFINITION = {
                     isExpanded: true,
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
-                        { id: 'lbBackInHistory', title: 'Back in history', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
-                        { id: 'lbForwardInHistory', title: 'Forward in history', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
+                        { id: 'lbBackInHistory', title: 'Back in History', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
+                        { id: 'lbForwardInHistory', title: 'Forward in History', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
+                        { id: 'lbBackendLog', title: 'Backend Log', type: 'launcher', targetNoteId: 'backendLog', icon: 'bx bx-terminal' },
                     ]
                 },
                 {
