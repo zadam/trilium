@@ -148,7 +148,10 @@ function importEnex(taskContext, file, parentNote) {
             if (currentTag === 'data') {
                 text = text.replace(/\s/g, '');
 
-                resource.content = utils.fromBase64(text);
+                // resource can be chunked into multiple events: https://github.com/zadam/trilium/issues/3424
+                // it would probably make sense to do this in a more global way since it can in theory affect any field,
+                // not just data
+                resource.content = (resource.content || "") + text;
             }
             else if (currentTag === 'mime') {
                 resource.mime = text.toLowerCase();
@@ -245,6 +248,8 @@ function importEnex(taskContext, file, parentNote) {
             if (!resource.content) {
                 continue;
             }
+
+            resource.content = utils.fromBase64(resource.content);
 
             const hash = utils.md5(resource.content);
 
