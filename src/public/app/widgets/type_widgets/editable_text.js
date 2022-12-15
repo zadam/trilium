@@ -9,6 +9,7 @@ import noteCreateService from "../../services/note_create.js";
 import AbstractTextTypeWidget from "./abstract_text_type_widget.js";
 import link from "../../services/link.js";
 import appContext from "../../components/app_context.js";
+import dialogService from "../../services/dialog.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -118,7 +119,42 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         // display of $widget in both branches.
         this.$widget.show();
 
-        this.textEditor = await BalloonEditor.create(this.$editor[0], {
+        this.watchdog = new EditorWatchdog(BalloonEditor, {
+            // An average number of milliseconds between the last editor errors (defaults to 5000).
+            // When the period of time between errors is lower than that and the crashNumberLimit
+            // is also reached, the watchdog changes its state to crashedPermanently and it stops
+            // restarting the editor. This prevents an infinite restart loop.
+            minimumNonErrorTimePeriod: 5000,
+            // A threshold specifying the number of errors (defaults to 3).
+            // After this limit is reached and the time between last errors
+            // is shorter than minimumNonErrorTimePeriod, the watchdog changes
+            // its state to crashedPermanently and it stops restarting the editor.
+            // This prevents an infinite restart loop.
+            crashNumberLimit: 3,
+            // A minimum number of milliseconds between saving the editor data internally (defaults to 5000).
+            // Note that for large documents this might impact the editor performance.
+            saveInterval: 5000
+        });
+
+        this.watchdog.on('stateChange', () => {
+            const currentState = this.watchdog.state;
+
+            if (!['crashed', 'crashedPermanently'].includes(currentState)) {
+                return;
+            }
+
+            console.log(`CKEditor changed to ${currentState}`);
+
+            this.watchdog.crashes.forEach(crashInfo => console.log(crashInfo));
+
+            if (currentState === 'crashedPermanently') {
+                dialogService.info(`Editing component keeps crashing. Please try restarting Trilium. If problem persists, consider creating a bug report.`);
+
+                this.watchdog.editor.enableReadOnlyMode('crashed-editor');
+            }
+        });
+
+        await this.watchdog.create(this.$editor[0], {
             placeholder: "Type the content of your note here ...",
             mention: mentionSetup,
             codeBlock: {
@@ -133,11 +169,11 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             }
         });
 
-        this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+        this.watchdog.editor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         if (glob.isDev && ENABLE_INSPECTOR) {
             await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector');
-            CKEditorInspector.attach(this.textEditor);
+            CKEditorInspector.attach(this.watchdog.editor);
         }
     }
 
@@ -145,12 +181,12 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const noteComplement = await froca.getNoteComplement(note.noteId);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData(noteComplement.content || "");
+            this.watchdog.editor.setData(noteComplement.content || "");
         });
     }
 
     getContent() {
-        const content = this.textEditor.getData();
+        const content = this.watchdog.editor.getData();
 
         // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
         // this is important when setting new note to code
@@ -164,13 +200,13 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     show() {}
 
     getEditor() {
-        return this.textEditor;
+        return this.watchdog?.editor;
     }
 
     cleanup() {
-        if (this.textEditor) {
+        if (this.watchdog?.editor) {
             this.spacedUpdate.allowUpdateWithoutChange(() => {
-                this.textEditor.setData('');
+                this.watchdog.editor.setData('');
             });
         }
     }
@@ -185,8 +221,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     async addLinkToEditor(linkHref, linkTitle) {
         await this.initialized;
 
-        this.textEditor.model.change(writer => {
-            const insertPosition = this.textEditor.model.document.selection.getFirstPosition();
+        this.watchdog.editor.model.change(writer => {
+            const insertPosition = this.watchdog.editor.model.document.selection.getFirstPosition();
             writer.insertText(linkTitle, {linkHref: linkHref}, insertPosition);
         });
     }
@@ -194,8 +230,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     async addTextToEditor(text) {
         await this.initialized;
 
-        this.textEditor.model.change(writer => {
-            const insertPosition = this.textEditor.model.document.selection.getLastPosition();
+        this.watchdog.editor.model.change(writer => {
+            const insertPosition = this.watchdog.editor.model.document.selection.getLastPosition();
             writer.insertText(text, insertPosition);
         });
     }
@@ -213,21 +249,21 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
         if (linkTitle) {
             if (this.hasSelection()) {
-                this.textEditor.execute('link', '#' + notePath);
+                this.watchdog.editor.execute('link', '#' + notePath);
             } else {
                 await this.addLinkToEditor('#' + notePath, linkTitle);
             }
         }
         else {
-            this.textEditor.execute('referenceLink', { notePath: notePath });
+            this.watchdog.editor.execute('referenceLink', { notePath: notePath });
         }
 
-        this.textEditor.editing.view.focus();
+        this.watchdog.editor.editing.view.focus();
     }
 
     // returns true if user selected some text, false if there's no selection
     hasSelection() {
-        const model = this.textEditor.model;
+        const model = this.watchdog.editor.model;
         const selection = model.document.selection;
 
         return !selection.isCollapsed;
@@ -241,10 +277,10 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         await this.initialized;
 
         if (callback) {
-            callback(this.textEditor);
+            callback(this.watchdog.editor);
         }
 
-        resolve(this.textEditor);
+        resolve(this.watchdog.editor);
     }
 
     addLinkToTextCommand() {
@@ -254,7 +290,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     getSelectedText() {
-        const range = this.textEditor.model.document.selection.getFirstRange();
+        const range = this.watchdog.editor.model.document.selection.getFirstRange();
         let text = '';
 
         for (const item of range.getItems()) {
@@ -269,7 +305,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     async followLinkUnderCursorCommand() {
         await this.initialized;
 
-        const selection = this.textEditor.model.document.selection;
+        const selection = this.watchdog.editor.model.document.selection;
         const selectedElement = selection.getSelectedElement();
 
         if (selectedElement?.name === 'reference') {
@@ -301,10 +337,10 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     addIncludeNote(noteId, boxSize) {
-        this.textEditor.model.change( writer => {
+        this.watchdog.editor.model.change( writer => {
             // Insert <includeNote>*</includeNote> at the current selection position
             // in a way that will result in creating a valid model structure
-            this.textEditor.model.insertContent(writer.createElement('includeNote', {
+            this.watchdog.editor.model.insertContent(writer.createElement('includeNote', {
                 noteId: noteId,
                 boxSize: boxSize
             }));
@@ -314,13 +350,13 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     async addImage(noteId) {
         const note = await froca.getNote(noteId);
 
-        this.textEditor.model.change( writer => {
+        this.watchdog.editor.model.change( writer => {
             const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
             const src = `api/images/${note.noteId}/${sanitizedTitle}`;
 
             const imageElement = writer.createElement( 'image',  { 'src': src } );
 
-            this.textEditor.model.insertContent(imageElement, this.textEditor.model.document.selection);
+            this.watchdog.editor.model.insertContent(imageElement, this.watchdog.editor.model.document.selection);
         } );
     }
 
