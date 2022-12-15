@@ -72,19 +72,35 @@ export default class RootCommandExecutor extends Component {
         options.toggle('leftPaneVisible');
     }
 
+    async showBackendLogCommand() {
+        await appContext.tabManager.openContextWithNote('backendLog', true);
+    }
+
     async showLaunchBarSubtreeCommand() {
-        await appContext.tabManager.openContextWithNote('lbRoot', true, null, 'lbRoot');
+        await this.showAndHoistSubtree('lbRoot');
     }
 
     async showShareSubtreeCommand() {
-        await appContext.tabManager.openContextWithNote('share', true, null, 'share');
+        await this.showAndHoistSubtree('share');
     }
 
     async showHiddenSubtreeCommand() {
-        await appContext.tabManager.openContextWithNote('hidden', true, null, 'hidden');
+        await this.showAndHoistSubtree('hidden');
     }
 
     async showOptionsCommand() {
-        await appContext.tabManager.openContextWithNote('options', true, null, 'options')
+        await this.showAndHoistSubtree('options');
+    }
+
+    async showSQLConsoleHistoryCommand() {
+        await this.showAndHoistSubtree('sqlConsole');
+    }
+
+    async showSearchHistoryCommand() {
+        await this.showAndHoistSubtree('search');
+    }
+
+    async showAndHoistSubtree(subtreeNoteId) {
+        await appContext.tabManager.openContextWithNote(subtreeNoteId, true, null, subtreeNoteId);
     }
 }

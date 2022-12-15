@@ -12,7 +12,7 @@ const TPL = `
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            e<div class="modal-body">
                 <textarea class="backend-log-textarea" readonly="readonly" style="min-height: 600px; width: 100%;"></textarea>
             </div>
             <div class="modal-footer">
@@ -43,11 +43,5 @@ export default class BackendLogDialog extends BasicWidget {
         this.$backendLogTextArea.text(backendLog);
 
         this.scrollToBottom();
-    }
-
-    async showBackendLogEvent() {
-        utils.openDialog(this.$widget);
-
-        this.load();
     }
 }

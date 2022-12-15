@@ -102,18 +102,18 @@ const TPL = `
 
         <li class="dropdown-item" data-trigger-command="openNewWindow">
             <span class="bx bx-window-open"></span>
-            Open new window
+            Open New Window
             <kbd data-command="openNewWindow"></kbd>
         </li>
 
         <li class="dropdown-item switch-to-mobile-version-button" data-trigger-command="switchToMobileVersion">
             <span class="bx bx-mobile"></span>
-            Switch to mobile version
+            Switch to Mobile Version
         </li>
         
         <li class="dropdown-item switch-to-desktop-version-button" data-trigger-command="switchToDesktopVersion">
             <span class="bx bx-desktop"></span>
-            Switch to desktop version
+            Switch to Desktop Version
         </li>
         
         <span class="zoom-container dropdown-item">
@@ -123,26 +123,26 @@ const TPL = `
             </div>
             
             <div class="zoom-buttons">
-                <a data-trigger-command="toggleFullscreen" title="Toggle fullscreen" class="bx bx-expand-alt"></a>
+                <a data-trigger-command="toggleFullscreen" title="Toggle Fullscreen" class="bx bx-expand-alt"></a>
                 
                 &nbsp;
                 
-                <a data-trigger-command="zoomOut" title="Zoom out" class="bx bx-minus"></a>
+                <a data-trigger-command="zoomOut" title="Zoom Out" class="bx bx-minus"></a>
                 
                 <span class="zoom-state"></span>
                 
-                <a data-trigger-command="zoomIn" title="Zoom in" class="bx bx-plus"></a>
+                <a data-trigger-command="zoomIn" title="Zoom In" class="bx bx-plus"></a>
             </div>
         </span>
 
         <li class="dropdown-item" data-trigger-command="showLaunchBarSubtree">
             <span class="bx bx-sidebar"></span>
-            Configure launchbar
+            Configure Launchbar
         </li>
         
         <li class="dropdown-item" data-trigger-command="showShareSubtree">
             <span class="bx bx-share-alt"></span>
-            Show share subtree
+            Show Shared Notes Subtree
         </li>
         
         <li class="dropdown-item dropdown-submenu">
@@ -153,7 +153,7 @@ const TPL = `
             
             <ul class="dropdown-menu">
                 <li class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
-                    <span class="bx bx-terminal"></span>
+                    <span class="bx bx-bug-alt"></span>
                     Open Dev Tools
                     <kbd data-command="openDevTools"></kbd>
                 </li>
@@ -163,23 +163,33 @@ const TPL = `
                     Open SQL Console
                     <kbd data-command="showSQLConsole"></kbd>
                 </li>
+                
+                <li class="dropdown-item" data-trigger-command="showSQLConsoleHistory">
+                    <span class="bx bx-empty"></span>
+                    Open SQL Console History
+                </li>
+                
+                <li class="dropdown-item" data-trigger-command="showSearchHistory">
+                    <span class="bx bx-empty"></span>
+                    Open Search History
+                </li>
         
                 <li class="dropdown-item" data-trigger-command="showBackendLog">
                     <span class="bx bx-empty"></span>
-                    Show backend log
+                    Show Backend Log
                     <kbd data-command="showBackendLog"></kbd>
                 </li>
                 
                 <li class="dropdown-item" data-trigger-command="reloadFrontendApp" 
                     title="Reload can help with some visual glitches without restarting the whole app.">
                     <span class="bx bx-empty"></span>
-                    Reload frontend
+                    Reload Frontend
                     <kbd data-command="reloadFrontendApp"></kbd>
                 </li>
                 
                 <li class="dropdown-item" data-trigger-command="showHiddenSubtree">
                     <span class="bx bx-empty"></span>
-                    Show hidden subtree
+                    Show Hidden Subtree
                 </li>
             </ul>
         </li>

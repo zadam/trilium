@@ -27,6 +27,7 @@ import DatabaseIntegrityCheckOptions from "./options/advanced/database_integrity
 import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
+import ContentLogWidget from "./content/backend_log.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -85,7 +86,8 @@ const CONTENT_WIDGETS = {
         DatabaseAnonymizationOptions,
         AdvancedSyncOptions,
         VacuumDatabaseOptions
-    ]
+    ],
+    backendLog: [ ContentLogWidget ]
 };
 
 export default class ContentWidgetTypeWidget extends TypeWidget {
