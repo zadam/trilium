@@ -13,7 +13,7 @@ const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
-const noteTypes = require("../services/note_types");
+const noteTypes = require("../services/note_types").getNoteTypeNames();
 
 class ConsistencyChecks {
     constructor(autoFix) {

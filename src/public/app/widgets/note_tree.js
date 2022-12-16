@@ -605,11 +605,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         this.$tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
+            const note = froca.getNoteFromCache(node.data.noteId);
 
-            if (hoistedNoteService.getHoistedNoteId() === 'lbRoot') {
-                import("../menus/launcher_context_menu.js").then(({LauncherContextMenu: ShortcutContextMenu}) => {
-                    const shortcutContextMenu = new LauncherContextMenu(this, node);
-                    shortcutContextMenu.show(e);
+            if (note.isLaunchBarConfig()) {
+                import("../menus/launcher_context_menu.js").then(({default: LauncherContextMenu}) => {
+                    const launcherContextMenu = new LauncherContextMenu(this, node);
+                    launcherContextMenu.show(e);
                 });
             } else {
                 import("../menus/tree_context_menu.js").then(({default: TreeContextMenu}) => {

@@ -354,6 +354,8 @@ class NoteShort {
                 return a.isSearch ? 1 : -1;
             } else if (a.isArchived !== b.isArchived) {
                 return a.isArchived ? 1 : -1;
+            } else if (a.isHidden !== b.isHidden) {
+                return a.isHidden ? 1 : -1;
             } else {
                 return a.notePath.length - b.notePath.length;
             }

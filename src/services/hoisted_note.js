@@ -10,6 +10,8 @@ function isHoistedInHiddenSubtree() {
 
     if (hoistedNoteId === 'root') {
         return false;
+    } else if (hoistedNoteId === 'hidden') {
+        return true;
     }
 
     const hoistedNote = becca.getNote(hoistedNoteId);
