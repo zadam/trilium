@@ -60,7 +60,7 @@ function getTriliumDataDir() {
 }
 
 const TRILIUM_DATA_DIR =  getTriliumDataDir();
-const DOCUMENT_PATH = TRILIUM_DATA_DIR + path.sep + "document.db";
+const DOCUMENT_PATH = process.env.TRILIUM_DB_PATH || TRILIUM_DATA_DIR + path.sep + "document.db";
 const BACKUP_DIR = TRILIUM_DATA_DIR + path.sep + "backup";
 const LOG_DIR = TRILIUM_DATA_DIR + path.sep + "log";
 const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + path.sep + "anonymized-db";
