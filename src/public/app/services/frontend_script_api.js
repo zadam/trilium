@@ -106,7 +106,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
-     * @typedef {Object} ToolbarButtonOptions
+     * @typedef {Object} CreateOrUpdateLauncherOptions
+     * @property {string} [id] - id of the button, used to identify the old instances of this button to be replaced
+     *                          ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.
      * @property {string} title
      * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
      * @property {function} action - callback handling the click on the button
@@ -114,9 +116,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      */
 
     /**
-     * @deprecated this API has no effect anymore. Use bookmarks or launchpad shortcuts instead.
+     * Adds a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
+     *
+     * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
+     * @param {CreateOrUpdateLauncherOptions} opts
      */
-    this.addButtonToToolbar = () => console.warn("api.addButtonToToolbar() calls are deprecated and have no effect");
+    this.addButtonToToolbar = async opts => {
+        console.warn("api.addButtonToToolbar() has been deprecated since v0.58 and may be removed in the future. Use  Menu -> Configure Launchbar to create/update launchers instead.");
+
+        const {action, ...reqBody} = opts;
+        reqBody.action = action.toString();
+
+        await server.put('special-notes/api-script-launcher', reqBody);
+    };
 
     function prepareParams(params) {
         if (!params) {

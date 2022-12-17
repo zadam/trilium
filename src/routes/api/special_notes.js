@@ -74,6 +74,10 @@ function resetLauncher(req) {
     return specialNotesService.resetLauncher(req.params.noteId);
 }
 
+function createOrUpdateScriptLauncherFromApi(req) {
+    return specialNotesService.createOrUpdateScriptLauncherFromApi(req.body);
+}
+
 module.exports = {
     getInboxNote,
     getDayNote,
@@ -86,5 +90,6 @@ module.exports = {
     createSearchNote,
     saveSearchNote,
     createLauncher,
-    resetLauncher
+    resetLauncher,
+    createOrUpdateScriptLauncherFromApi
 };

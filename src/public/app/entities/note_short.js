@@ -365,6 +365,8 @@ class NoteShort {
     }
 
     __filterAttrs(attributes, type, name) {
+        this.__validateTypeName(type, name);
+
         if (!type && !name) {
             return attributes;
         } else if (type && name) {
@@ -380,6 +382,19 @@ class NoteShort {
         const attrs = this.__getCachedAttributes(path);
 
         return attrs.filter(attr => attr.isInheritable);
+    }
+
+    __validateTypeName(type, name) {
+        if (type && type !== 'label' && type !== 'relation') {
+            throw new Error(`Unrecognized attribute type '${type}'. Only 'label' and 'relation' are possible values.`);
+        }
+
+        if (name) {
+            const firstLetter = name.charAt(0);
+            if (firstLetter === '#' || firstLetter === '~') {
+                throw new Error(`Detect '#' or '~' in the attribute's name. In the API, attribute names should be set without these characters.`);
+            }
+        }
     }
 
     /**
@@ -758,7 +773,7 @@ class NoteShort {
 
     /** @returns {boolean} true if this note is JavaScript (code or attachment) */
     isJavaScript() {
-        return (this.type === "code" || this.type === "file")
+        return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")
                 || this.mime === "application/x-javascript"
                 || this.mime === "text/javascript");

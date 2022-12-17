@@ -343,6 +343,7 @@ function register(app) {
     apiRoute(POST, '/api/special-notes/save-search-note', specialNotesRoute.saveSearchNote);
     apiRoute(POST, '/api/special-notes/launchers/:noteId/reset', specialNotesRoute.resetLauncher);
     apiRoute(POST, '/api/special-notes/launchers/:parentNoteId/:launcherType', specialNotesRoute.createLauncher);
+    apiRoute(PUT, '/api/special-notes/api-script-launcher', specialNotesRoute.createOrUpdateScriptLauncherFromApi);
 
     // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);

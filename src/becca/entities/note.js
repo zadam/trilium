@@ -332,7 +332,7 @@ class Note extends AbstractEntity {
 
     /** @returns {boolean} true if this note is JavaScript (code or attachment) */
     isJavaScript() {
-        return (this.type === "code" || this.type === "file")
+        return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")
                 || this.mime === "application/x-javascript"
                 || this.mime === "text/javascript");
@@ -372,6 +372,8 @@ class Note extends AbstractEntity {
      * @returns {Attribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
+        this.__validateTypeName(type, name);
+
         this.__getAttributes([]);
 
         if (type && name) {
@@ -459,6 +461,19 @@ class Note extends AbstractEntity {
         }
 
         return this.inheritableAttributeCache;
+    }
+
+    __validateTypeName(type, name) {
+        if (type && type !== 'label' && type !== 'relation') {
+            throw new Error(`Unrecognized attribute type '${type}'. Only 'label' and 'relation' are possible values.`);
+        }
+
+        if (name) {
+            const firstLetter = name.charAt(0);
+            if (firstLetter === '#' || firstLetter === '~') {
+                throw new Error(`Detect '#' or '~' in the attribute's name. In the API, attribute names should be set without these characters.`);
+            }
+        }
     }
 
     /**
@@ -665,10 +680,7 @@ class Note extends AbstractEntity {
      * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type = null, name = null, value = null) {
-        // it's a common mistake to include # or ~ into attribute name
-        if (name && ["#", "~"].includes(name[0])) {
-            name = name.substr(1);
-        }
+        this.__validateTypeName(type, name);
 
         if (type && name && value !== undefined && value !== null) {
             return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name && attr.value === value);

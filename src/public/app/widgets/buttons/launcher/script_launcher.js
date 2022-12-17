@@ -6,12 +6,16 @@ export default class ScriptLauncher extends AbstractLauncher {
 
         this.title(this.launcherNote.title)
             .icon(this.launcherNote.getIcon())
-            .onClick(this.handler);
+            .onClick(() => this.launch());
     }
 
     async launch() {
-        const script = await this.launcherNote.getRelationTarget('script');
+        if (this.launcherNote.hasLabel('scriptInLauncherContent')) {
+            await this.launcherNote.executeScript();
+        } else {
+            const script = await this.launcherNote.getRelationTarget('script');
 
-        await script.executeScript();
+            await script.executeScript();
+        }
     }
 }

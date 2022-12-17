@@ -143,6 +143,19 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
+function createScriptLauncher(parentNoteId, forceNoteId = null) {
+    const note = noteService.createNewNote({
+        noteId: forceNoteId,
+        title: "Script Launcher",
+        type: 'launcher',
+        content: '',
+        parentNoteId: parentNoteId
+    }).note;
+
+    note.addRelation('template', 'lbTplScriptLauncher');
+    return note;
+}
+
 function createLauncher(parentNoteId, launcherType) {
     let note;
 
@@ -156,14 +169,7 @@ function createLauncher(parentNoteId, launcherType) {
 
         note.addRelation('template', 'lbTplNoteLauncher');
     } else if (launcherType === 'script') {
-        note = noteService.createNewNote({
-            title: "Script Launcher",
-            type: 'launcher',
-            content: '',
-            parentNoteId: parentNoteId
-        }).note;
-
-        note.addRelation('template', 'lbTplScriptLauncher');
+        note = createScriptLauncher(parentNoteId);
     } else if (launcherType === 'customWidget') {
         note = noteService.createNewNote({
             title: "Widget Launcher",
@@ -215,6 +221,47 @@ function resetLauncher(noteId) {
     hiddenSubtreeService.checkHiddenSubtree();
 }
 
+/**
+ * This exists to ease transition into the new launchbar, but it's not meant to be a permanent functionality.
+ * Previously, the launchbar was fixed and the only way to add buttons was through this API, so a lot of buttons have been
+ * created just to fill this user hole.
+ *
+ * Another use case would be for script-packages (of which only few exists) which could this way register automatically
+ * into the launchbar. For such use cases this might be a usable replacement, but I'm not yet clear on that.
+ */
+function createOrUpdateScriptLauncherFromApi(opts) {
+    const launcherId = opts.id || ("tb" + opts.title.replace(/[^[a-z0-9]/gi, ""));
+
+    if (!opts.title) {
+        throw new Error("Title is mandatory property to create or update a launcher.");
+    } else if (!/^[a-z0-9]+$/i.test(launcherId)) {
+        throw new Error(`Launcher ID can be alphanumeric only, '${launcherId}' given`);
+    }
+
+    const launcherNote = becca.getNote(launcherId)
+        || createScriptLauncher('lbVisibleLaunchers', launcherId);
+
+    launcherNote.title = opts.title;
+    launcherNote.setContent("(" + opts.action + ")()");
+    launcherNote.setLabel('scriptInLauncherContent'); // there's no target note, the script is in the launcher's content
+    launcherNote.mime = 'application/javascript;env=frontend';
+    launcherNote.save();
+
+    if (opts.shortcut) {
+        launcherNote.setLabel('keyboardShortcut', opts.shortcut);
+    } else {
+        launcherNote.removeLabel('keyboardShortcut');
+    }
+
+    if (opts.icon) {
+        launcherNote.setLabel('iconClass', "bx bx-" + opts.icon);
+    } else {
+        launcherNote.removeLabel('iconClass');
+    }
+
+    return launcherNote;
+}
+
 module.exports = {
     getInboxNote,
     createSqlConsole,
@@ -222,5 +269,6 @@ module.exports = {
     createSearchNote,
     saveSearchNote,
     createLauncher,
-    resetLauncher
+    resetLauncher,
+    createOrUpdateScriptLauncherFromApi
 };
