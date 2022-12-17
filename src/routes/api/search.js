@@ -58,8 +58,13 @@ function quickSearch(req) {
         fuzzyAttributeSearch: false
     });
 
-    return searchService.findResultsWithQuery(searchString, searchContext)
+    const resultNoteIds = searchService.findResultsWithQuery(searchString, searchContext)
         .map(sr => sr.noteId);
+
+    return {
+        searchResultNoteIds: resultNoteIds,
+        error: searchContext.getError()
+    };
 }
 
 function search(req) {

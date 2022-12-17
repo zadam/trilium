@@ -98,9 +98,21 @@ export default class QuickSearchWidget extends BasicWidget {
         this.$dropdownMenu.empty();
         this.$dropdownMenu.append('<span class="dropdown-item disabled"><span class="bx bx-loader bx-spin"></span> Searching ...</span>');
 
-        const resultNoteIds = await server.get('quick-search/' + encodeURIComponent(searchString));
+        const {searchResultNoteIds, error} = await server.get('quick-search/' + encodeURIComponent(searchString));
 
-        const displayedNoteIds = resultNoteIds.slice(0, Math.min(MAX_DISPLAYED_NOTES, resultNoteIds.length));
+        if (error) {
+            this.$searchString.tooltip({
+                trigger: 'manual',
+                title: "Search error: " + error,
+                placement: 'right'
+            });
+
+            this.$searchString.tooltip("show");
+
+            setTimeout(() => this.$searchString.tooltip("dispose"), 4000);
+        }
+
+        const displayedNoteIds = searchResultNoteIds.slice(0, Math.min(MAX_DISPLAYED_NOTES, searchResultNoteIds.length));
 
         this.$dropdownMenu.empty();
 
@@ -129,8 +141,8 @@ export default class QuickSearchWidget extends BasicWidget {
             this.$dropdownMenu.append($link);
         }
 
-        if (resultNoteIds.length > MAX_DISPLAYED_NOTES) {
-            this.$dropdownMenu.append(`<span class="dropdown-item disabled">... and ${resultNoteIds.length - MAX_DISPLAYED_NOTES} more results.</span>`);
+        if (searchResultNoteIds.length > MAX_DISPLAYED_NOTES) {
+            this.$dropdownMenu.append(`<span class="dropdown-item disabled">... and ${searchResultNoteIds.length - MAX_DISPLAYED_NOTES} more results.</span>`);
         }
 
         const $showInFullButton = $('<a class="dropdown-item" tabindex="0">')
