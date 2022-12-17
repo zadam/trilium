@@ -57,8 +57,8 @@ export default class TabManager extends Component {
 
             // preload all notes at once
             await froca.getNotes([
-                tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
-                tabsToOpen.map(tab => tab.hoistedNoteId),
+                    ...tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
+                    ...tabsToOpen.map(tab => tab.hoistedNoteId),
             ], true);
 
             for (const openTab of tabsToOpen) {
