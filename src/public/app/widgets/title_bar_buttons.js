@@ -9,12 +9,16 @@ const TPL = `
         flex-shrink: 0;
     }
 
-    .title-bar-buttons div button.icon-action {
+    .title-bar-buttons div button {
         border: none !important;
+        border-radius: 0;
         background: none !important;
         font-size: 150%;
         height: 40px;
         width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .title-bar-buttons div:hover button {
@@ -29,9 +33,9 @@ const TPL = `
     </style>
 
     <!-- divs act as a hitbox for the buttons, making them clickable on corners -->
-    <div class="minimize-btn"><button class="btn icon-action bx bx-minus"></button></div>
-    <div class="maximize-btn"><button class="btn icon-action bx bx-checkbox"></button></div>
-    <div class="close-btn"><button class="btn icon-action bx bx-x"></button></div>
+    <div class="minimize-btn"><button class="btn bx bx-minus"></button></div>
+    <div class="maximize-btn"><button class="btn bx bx-checkbox"></button></div>
+    <div class="close-btn"><button class="btn bx bx-x"></button></div>
 </div>`;
 
 export default class TitleBarButtonsWidget extends BasicWidget {
