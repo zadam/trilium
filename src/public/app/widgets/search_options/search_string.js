@@ -71,6 +71,18 @@ export default class SearchString extends AbstractSearchOption {
         return $option;
     }
 
+    showSearchErrorEvent({error}) {
+        this.$searchString.tooltip({
+            trigger: 'manual',
+            title: "Search error: " + error,
+            placement: 'bottom'
+        });
+
+        this.$searchString.tooltip("show");
+
+        setTimeout(() => this.$searchString.tooltip("dispose"), 4000);
+    }
+
     focusOnSearchDefinitionEvent() {
         this.$searchString.focus();
     }

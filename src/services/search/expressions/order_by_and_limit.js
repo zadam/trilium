@@ -20,8 +20,8 @@ class OrderByAndLimitExp extends Expression {
         this.subExpression = null; // it's expected to be set after construction
     }
 
-    execute(inputNoteSet, executionContext) {
-        let {notes} = this.subExpression.execute(inputNoteSet, executionContext);
+    execute(inputNoteSet, executionContext, searchContext) {
+        let {notes} = this.subExpression.execute(inputNoteSet, executionContext, searchContext);
 
         notes.sort((a, b) => {
             for (const {valueExtractor, smaller, larger} of this.orderDefinitions) {

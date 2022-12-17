@@ -250,7 +250,11 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
     async refreshResultsCommand() {
         try {
-            await froca.loadSearchNote(this.noteId);
+            const {error} = await froca.loadSearchNote(this.noteId);
+
+            if (error) {
+                this.handleEvent('showSearchError', { error });
+            }
         }
         catch (e) {
             toastService.showError(e.message);

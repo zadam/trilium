@@ -17,6 +17,7 @@ function searchFromNote(note) {
 
     const searchScript = note.getRelationValue('searchScript');
     const searchString = note.getLabelValue('searchString');
+    let error = null;
 
     if (searchScript) {
         searchResultNoteIds = searchFromRelation(note, 'searchScript');
@@ -38,13 +39,15 @@ function searchFromNote(note) {
             .map(sr => sr.noteId);
 
         highlightedTokens = searchContext.highlightedTokens;
+        error = searchContext.getError();
     }
 
     // we won't return search note's own noteId
     // also don't allow root since that would force infinite cycle
     return {
         searchResultNoteIds: searchResultNoteIds.filter(resultNoteId => !['root', note.noteId].includes(resultNoteId)),
-        highlightedTokens
+        highlightedTokens,
+        error: error
     };
 }
 
@@ -148,7 +151,7 @@ function findResultsWithExpression(expression, searchContext) {
         noteIdToNotePath: {}
     };
 
-    const noteSet = expression.execute(allNoteSet, executionContext);
+    const noteSet = expression.execute(allNoteSet, executionContext, searchContext);
 
     const searchResults = noteSet.notes
         .map(note => {
@@ -197,7 +200,15 @@ function findResultsWithExpression(expression, searchContext) {
 
 function parseQueryToExpression(query, searchContext) {
     const {fulltextTokens, expressionTokens} = lex(query);
-    const structuredExpressionTokens = handleParens(expressionTokens);
+    let structuredExpressionTokens;
+
+    try {
+        structuredExpressionTokens = handleParens(expressionTokens);
+    }
+    catch (e) {
+        structuredExpressionTokens = [];
+        searchContext.addError(e.message);
+    }
 
     const expression = parse({
         fulltextTokens,

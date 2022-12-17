@@ -9,8 +9,8 @@ class NotExp extends Expression {
         this.subExpression = subExpression;
     }
 
-    execute(inputNoteSet, executionContext) {
-        const subNoteSet = this.subExpression.execute(inputNoteSet, executionContext);
+    execute(inputNoteSet, executionContext, searchContext) {
+        const subNoteSet = this.subExpression.execute(inputNoteSet, executionContext, searchContext);
 
         return inputNoteSet.minus(subNoteSet);
     }

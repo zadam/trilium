@@ -21,9 +21,9 @@ class AndExp extends Expression {
         this.subExpressions = subExpressions;
     }
 
-    execute(inputNoteSet, executionContext) {
+    execute(inputNoteSet, executionContext, searchContext) {
         for (const subExpression of this.subExpressions) {
-            inputNoteSet = subExpression.execute(inputNoteSet, executionContext);
+            inputNoteSet = subExpression.execute(inputNoteSet, executionContext, searchContext);
         }
 
         return inputNoteSet;

@@ -176,7 +176,7 @@ class Froca {
             return;
         }
 
-        const {searchResultNoteIds, highlightedTokens} = await server.get('search-note/' + note.noteId);
+        const {searchResultNoteIds, highlightedTokens, error} = await server.get('search-note/' + note.noteId);
 
         if (!Array.isArray(searchResultNoteIds)) {
             throw new Error(`Search note '${note.noteId}' failed: ${searchResultNoteIds}`);
@@ -208,6 +208,8 @@ class Froca {
 
         froca.notes[note.noteId].searchResultsLoaded = true;
         froca.notes[note.noteId].highlightedTokens = highlightedTokens;
+
+        return {error};
     }
 
     /** @returns {NoteShort[]} */
