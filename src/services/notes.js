@@ -20,6 +20,7 @@ const Attribute = require('../becca/entities/attribute');
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
+const noteTypesService = require("./note_types");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -47,19 +48,7 @@ function deriveMime(type, mime) {
         return mime;
     }
 
-    if (type === 'text') {
-        mime = 'text/html';
-    } else if (type === 'code' || type === 'mermaid') {
-        mime = 'text/plain';
-    } else if (['relationMap', 'search', 'canvas'].includes(type)) {
-        mime = 'application/json';
-    } else if (['render', 'book', 'webView'].includes(type)) {
-        mime = '';
-    } else {
-        mime = 'application/octet-stream';
-    }
-
-    return mime;
+    return noteTypesService.getDefaultMimeForNoteType(type);
 }
 
 function copyChildAttributes(parentNote, childNote) {

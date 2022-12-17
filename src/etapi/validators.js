@@ -1,4 +1,4 @@
-const noteTypes = require("../services/note_types");
+const noteTypeService = require("../services/note_types");
 
 function mandatory(obj) {
     if (obj === undefined ) {
@@ -62,6 +62,8 @@ function isNoteType(obj) {
     if (obj === undefined || obj === null) {
         return;
     }
+
+    const noteTypes = noteTypeService.getNoteTypeNames();
 
     if (!noteTypes.includes(obj)) {
         return `'${obj}' is not a valid note type, allowed types are: ` + noteTypes.join(", ");

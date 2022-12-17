@@ -4,9 +4,9 @@ const log = require("./log");
 
 const LBTPL_ROOT = "lbTplRoot";
 const LBTPL_BASE = "lbTplBase";
-const LBTPL_COMMAND = "lbTplCommand";
+const LBTPL_COMMAND = "lbTplCommandLauncher";
 const LBTPL_NOTE_LAUNCHER = "lbTplNoteLauncher";
-const LBTPL_SCRIPT = "lbTplScript";
+const LBTPL_SCRIPT = "lbTplScriptLauncher";
 const LBTPL_BUILTIN_WIDGET = "lbTplBuiltinWidget";
 const LBTPL_SPACER = "lbTplSpacer";
 const LBTPL_CUSTOM_WIDGET = "lbTplCustomWidget";
@@ -20,9 +20,6 @@ const HIDDEN_SUBTREE_DEFINITION = {
     // over tree when it's in the middle
     notePosition: 999_999_999,
     attributes: [
-        // isInheritable: false means that this notePath is automatically not preffered but at the same time
-        // the flag is not inherited to the children
-        { type: 'label', name: 'archived' },
         { type: 'label', name: 'excludeFromNoteMap', isInheritable: true }
     ],
     children: [
@@ -283,7 +280,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
 
     if (!branch) {
         // not sure if there's some better way to recover
-        log.error(`Cannot find branch id='${item.id}', ignoring...`);
+        log.error(`Cannot find launcher branch id='${item.id}', ignoring...`);
     } else {
         if (item.notePosition !== undefined && branch.notePosition !== item.notePosition) {
             branch.notePosition = item.notePosition;
