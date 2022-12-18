@@ -756,7 +756,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 
 .dropdown-submenu > .dropdown-menu {
     top: 0;
-    left: 100%;
+    left: calc(100% - 2px); /* -2px, otherwise there's a small gap between menu and submenu where the hover can disappear */
     margin-top: -6px;
     min-width: 15rem;
     /* to make submenu scrollable https://github.com/zadam/trilium/issues/3136 */
