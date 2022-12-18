@@ -31,9 +31,12 @@ class AppContext extends Component {
     async start() {
         this.initComponents();
 
+        // options are often needed for isEnabled()
+        await options.initializedPromise;
+
         this.renderWidgets();
 
-        await Promise.all([froca.initializedPromise, options.initializedPromise]);
+        await froca.initializedPromise;
 
         this.tabManager.loadTabs();
 

@@ -103,17 +103,24 @@ async function call(method, url, data, headers = {}) {
     return resp.body;
 }
 
-async function reportError(method, url, status, response) {
+async function reportError(method, url, statusCode, response) {
     const toastService = (await import("./toast.js")).default;
 
-    if ([400, 404].includes(status) && response && typeof response === 'object') {
-        toastService.showError(response.message);
-        throw new ValidationError(response);
+    if (typeof response === 'string') {
+        try {
+            response = JSON.parse(response);
+        }
+        catch (e) { throw e;}
     }
 
-    const message = "Error when calling " + method + " " + url + ": " + status + " - " + response;
-    toastService.showError(message);
-    toastService.throwError(message);
+    if ([400, 404].includes(statusCode) && response && typeof response === 'object') {
+        toastService.showError(response.message);
+        throw new ValidationError(response);
+    } else {
+        const message = "Error when calling " + method + " " + url + ": " + statusCode + " - " + response;
+        toastService.showError(message);
+        toastService.throwError(message);
+    }
 }
 
 function ajax(url, method, data, headers) {
@@ -137,8 +144,8 @@ function ajax(url, method, data, headers) {
                     headers: respHeaders
                 });
             },
-            error: async (jqXhr, status) => {
-                await reportError(method, url, status, jqXhr.responseText);
+            error: async jqXhr => {
+                await reportError(method, url, jqXhr.status, jqXhr.responseText);
 
                 rej(jqXhr.responseText);
             }

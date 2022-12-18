@@ -1,11 +1,25 @@
 "use strict";
 
+const utils = require('../services/utils');
+const multer = require('multer');
+const log = require('../services/log');
+const express = require('express');
+const router = express.Router();
+const auth = require('../services/auth');
+const cls = require('../services/cls');
+const sql = require('../services/sql');
+const entityChangesService = require('../services/entity_changes');
+const csurf = require('csurf');
+const {createPartialContentHandler} = require("express-partial-content");
+const rateLimit = require("express-rate-limit");
+const AbstractEntity = require("../becca/entities/abstract_entity");
+const NotFoundError = require("../errors/not_found_error");
+const ValidationError = require("../errors/validation_error");
+
+// page routes
 const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
-const utils = require('../services/utils');
-const multer = require('multer');
-const ValidationError = require("../errors/validation_error");
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -51,183 +65,15 @@ const etapiNoteRoutes = require('../etapi/notes');
 const etapiSpecialNoteRoutes = require('../etapi/special_notes');
 const etapiSpecRoute = require('../etapi/spec');
 
-const log = require('../services/log');
-const express = require('express');
-const router = express.Router();
-const auth = require('../services/auth');
-const cls = require('../services/cls');
-const sql = require('../services/sql');
-const entityChangesService = require('../services/entity_changes');
-const csurf = require('csurf');
-const {createPartialContentHandler} = require("express-partial-content");
-const rateLimit = require("express-rate-limit");
-const AbstractEntity = require("../becca/entities/abstract_entity");
-const NotFoundError = require("../errors/not_found_error");
-
 const csrfMiddleware = csurf({
     cookie: true,
     path: '' // nothing so cookie is valid only for current path
 });
 
-/** Handling common patterns. If entity is not caught, serialization to JSON will fail */
-function convertEntitiesToPojo(result) {
-    if (result instanceof AbstractEntity) {
-        result = result.getPojo();
-    }
-    else if (Array.isArray(result)) {
-        for (const idx in result) {
-            if (result[idx] instanceof AbstractEntity) {
-                result[idx] = result[idx].getPojo();
-            }
-        }
-    }
-    else {
-        if (result && result.note instanceof AbstractEntity) {
-            result.note = result.note.getPojo();
-        }
-
-        if (result && result.branch instanceof AbstractEntity) {
-            result.branch = result.branch.getPojo();
-        }
-    }
-
-    if (result && result.executionResult) { // from runOnBackend()
-        result.executionResult = convertEntitiesToPojo(result.executionResult);
-    }
-
-    return result;
-}
-
-function apiResultHandler(req, res, result) {
-    res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
-
-    result = convertEntitiesToPojo(result);
-
-    // if it's an array and first element is integer then we consider this to be [statusCode, response] format
-    if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
-        const [statusCode, response] = result;
-
-        if (statusCode !== 200 && statusCode !== 201 && statusCode !== 204) {
-            log.info(`${req.method} ${req.originalUrl} returned ${statusCode} with response ${JSON.stringify(response)}`);
-        }
-
-        return send(res, statusCode, response);
-    }
-    else if (result === undefined) {
-        return send(res, 204, "");
-    }
-    else {
-        return send(res, 200, result);
-    }
-}
-
-function send(res, statusCode, response) {
-    if (typeof response === 'string') {
-        if (statusCode >= 400) {
-            res.setHeader("Content-Type", "text/plain");
-        }
-
-        res.status(statusCode).send(response);
-
-        return response.length;
-    }
-    else {
-        const json = JSON.stringify(response);
-
-        res.setHeader("Content-Type", "application/json");
-        res.status(statusCode).send(json);
-
-        return json.length;
-    }
-}
-
-function apiRoute(method, path, routeHandler) {
-    route(method, path, [auth.checkApiAuth, csrfMiddleware], routeHandler, apiResultHandler);
-}
-
-function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
-    router[method](path, ...middleware, (req, res, next) => {
-        const start = Date.now();
-
-        try {
-            cls.namespace.bindEmitter(req);
-            cls.namespace.bindEmitter(res);
-
-            const result = cls.init(() => {
-                cls.set('componentId', req.headers['trilium-component-id']);
-                cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
-                cls.set('hoistedNoteId', req.headers['trilium-hoisted-note-id'] || 'root');
-
-                const cb = () => routeHandler(req, res, next);
-
-                return transactional ? sql.transactional(cb) : cb();
-            });
-
-            if (resultHandler) {
-                if (result && result.then) {
-                    result
-                        .then(actualResult => {
-                            const responseLength = resultHandler(req, res, actualResult);
-
-                            log.request(req, res, Date.now() - start, responseLength);
-                        })
-                        .catch(e => handleException(method, path, e, res));
-                }
-                else {
-                    const responseLength = resultHandler(req, res, result);
-
-                    log.request(req, res, Date.now() - start, responseLength);
-                }
-            }
-        }
-        catch (e) {
-            handleException(method, path, e, res);
-        }
-    });
-}
-
-function handleException(method, path, e, res) {
-    log.error(`${method} ${path} threw exception: ` + e.stack);
-
-    if (e instanceof ValidationError) {
-        res.setHeader("Content-Type", "application/json")
-            .status(400)
-            .send({
-                message: e.message
-            });
-    } if (e instanceof NotFoundError) {
-        res.setHeader("Content-Type", "application/json")
-            .status(404)
-            .send({
-                message: e.message
-            });
-    } else {
-        res.setHeader("Content-Type", "text/plain")
-            .status(500)
-            .send(e.message);
-    }
-}
-
 const MAX_ALLOWED_FILE_SIZE_MB = 250;
-
 const GET = 'get', POST = 'post', PUT = 'put', PATCH = 'patch', DELETE = 'delete';
 
-const multerOptions = {
-    fileFilter: (req, file, cb) => {
-        // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
-        // See https://github.com/expressjs/multer/pull/1102.
-        file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
-        cb(null, true);
-    }
-};
-
-if (!process.env.TRILIUM_NO_UPLOAD_LIMIT) {
-    multerOptions.limits = {
-        fileSize: MAX_ALLOWED_FILE_SIZE_MB * 1024 * 1024
-    };
-}
-
-const uploadMiddleware = multer(multerOptions).single('upload');
+const uploadMiddleware = createUploadMiddleware();
 
 const uploadMiddlewareWithErrorHandling = function (req, res, next) {
     uploadMiddleware(req, res, function (err) {
@@ -250,7 +96,7 @@ function register(app) {
     const loginRateLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
         max: 10, // limit each IP to 10 requests per windowMs
-        skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However successful auth to /login is still counted!
+        skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However, successful auth to /login is still counted!
     });
 
     route(POST, '/login', [loginRateLimiter], loginRoute.login);
@@ -469,6 +315,162 @@ function register(app) {
     etapiSpecRoute.register(router);
 
     app.use('', router);
+}
+
+/** Handling common patterns. If entity is not caught, serialization to JSON will fail */
+function convertEntitiesToPojo(result) {
+    if (result instanceof AbstractEntity) {
+        result = result.getPojo();
+    }
+    else if (Array.isArray(result)) {
+        for (const idx in result) {
+            if (result[idx] instanceof AbstractEntity) {
+                result[idx] = result[idx].getPojo();
+            }
+        }
+    }
+    else {
+        if (result && result.note instanceof AbstractEntity) {
+            result.note = result.note.getPojo();
+        }
+
+        if (result && result.branch instanceof AbstractEntity) {
+            result.branch = result.branch.getPojo();
+        }
+    }
+
+    if (result && result.executionResult) { // from runOnBackend()
+        result.executionResult = convertEntitiesToPojo(result.executionResult);
+    }
+
+    return result;
+}
+
+function apiResultHandler(req, res, result) {
+    res.setHeader('trilium-max-entity-change-id', entityChangesService.getMaxEntityChangeId());
+
+    result = convertEntitiesToPojo(result);
+
+    // if it's an array and first element is integer then we consider this to be [statusCode, response] format
+    if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
+        const [statusCode, response] = result;
+
+        if (statusCode !== 200 && statusCode !== 201 && statusCode !== 204) {
+            log.info(`${req.method} ${req.originalUrl} returned ${statusCode} with response ${JSON.stringify(response)}`);
+        }
+
+        return send(res, statusCode, response);
+    }
+    else if (result === undefined) {
+        return send(res, 204, "");
+    }
+    else {
+        return send(res, 200, result);
+    }
+}
+
+function send(res, statusCode, response) {
+    if (typeof response === 'string') {
+        if (statusCode >= 400) {
+            res.setHeader("Content-Type", "text/plain");
+        }
+
+        res.status(statusCode).send(response);
+
+        return response.length;
+    }
+    else {
+        const json = JSON.stringify(response);
+
+        res.setHeader("Content-Type", "application/json");
+        res.status(statusCode).send(json);
+
+        return json.length;
+    }
+}
+
+function apiRoute(method, path, routeHandler) {
+    route(method, path, [auth.checkApiAuth, csrfMiddleware], routeHandler, apiResultHandler);
+}
+
+function route(method, path, middleware, routeHandler, resultHandler = null, transactional = true) {
+    router[method](path, ...middleware, (req, res, next) => {
+        const start = Date.now();
+
+        try {
+            cls.namespace.bindEmitter(req);
+            cls.namespace.bindEmitter(res);
+
+            const result = cls.init(() => {
+                cls.set('componentId', req.headers['trilium-component-id']);
+                cls.set('localNowDateTime', req.headers['trilium-local-now-datetime']);
+                cls.set('hoistedNoteId', req.headers['trilium-hoisted-note-id'] || 'root');
+
+                const cb = () => routeHandler(req, res, next);
+
+                return transactional ? sql.transactional(cb) : cb();
+            });
+
+            if (!resultHandler) {
+                return;
+            }
+
+            if (result && result.then) { // promise
+                result
+                    .then(promiseResult => handleResponse(resultHandler, req, res, promiseResult, start))
+                    .catch(e => handleException(e, method, path, res));
+            } else {
+                handleResponse(resultHandler, req, res, result, start)
+            }
+        }
+        catch (e) {
+            handleException(e, method, path, res);
+        }
+    });
+}
+
+function handleResponse(resultHandler, req, res, result, start) {
+    const responseLength = resultHandler(req, res, result);
+
+    log.request(req, res, Date.now() - start, responseLength);
+}
+
+function handleException(e, method, path, res) {
+    log.error(`${method} ${path} threw exception: '${e.message}', stack: ${e.stack}`);
+
+    if (e instanceof ValidationError) {
+        res.status(400)
+            .json({
+                message: e.message
+            });
+    } else if (e instanceof NotFoundError) {
+        res.status(404)
+            .json({
+                message: e.message
+            });
+    } else {
+        res.status(500)
+            .send(e.message);
+    }
+}
+
+function createUploadMiddleware() {
+    const multerOptions = {
+        fileFilter: (req, file, cb) => {
+            // UTF-8 file names are not well decoded by multer/busboy, so we handle the conversion on our side.
+            // See https://github.com/expressjs/multer/pull/1102.
+            file.originalname = Buffer.from(file.originalname, "latin1").toString("utf-8");
+            cb(null, true);
+        }
+    };
+
+    if (!process.env.TRILIUM_NO_UPLOAD_LIMIT) {
+        multerOptions.limits = {
+            fileSize: MAX_ALLOWED_FILE_SIZE_MB * 1024 * 1024
+        };
+    }
+
+    return multer(multerOptions).single('upload');
 }
 
 module.exports = {
