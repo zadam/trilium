@@ -58,6 +58,12 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
     }
 });
 
+eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
+    if (entityName === 'note_contents') {
+        runAttachedRelations(entity, 'runOnNoteContentChange', entity);
+    }
+});
+
 eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => {
     if (entityName === 'attributes') {
         runAttachedRelations(entity.getNote(), 'runOnAttributeCreation', entity);

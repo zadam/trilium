@@ -19,6 +19,7 @@ export default class ClosePaneButton extends OnClickButtonWidget {
                 e.stopPropagation();
 
                 widget.triggerCommand("closeThisNoteSplit", { ntxId: widget.getClosestNtxId() });
-            });
+            })
+            .class("icon-action");
     }
 }

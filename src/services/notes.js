@@ -205,6 +205,11 @@ function createNewNote(params) {
         });
 
         eventService.emit(eventService.ENTITY_CREATED, {
+            entityName: 'note_contents',
+            entity: note
+        });
+
+        eventService.emit(eventService.ENTITY_CREATED, {
             entityName: 'branches',
             entity: branch
         });
@@ -444,7 +449,7 @@ function downloadImages(noteId, content) {
             // which will get asynchronously downloaded, during that time they keep editing the note
             // once the download is finished, the image note representing downloaded image will be used
             // to replace the IMG link.
-            // However there's another flow where user pastes the image and leaves the note before the images
+            // However, there's another flow where user pastes the image and leaves the note before the images
             // are downloaded and the IMG references are not updated. For this occassion we have this code
             // which upon the download of all the images will update the note if the links have not been fixed before
 
@@ -474,6 +479,11 @@ function downloadImages(noteId, content) {
                     origNote.setContent(updatedContent);
 
                     scanForLinks(origNote);
+
+                    eventService.emit(eventService.ENTITY_CHANGED, {
+                        entityName: 'note_contents',
+                        entity: origNote
+                    });
 
                     console.log(`Fixed the image links for note '${noteId}' to the offline saved.`);
                 }
@@ -580,6 +590,11 @@ function updateNoteContent(noteId, content) {
     content = saveLinks(note, content);
 
     note.setContent(content);
+
+    eventService.emit(eventService.ENTITY_CHANGED, {
+        entityName: 'note_contents',
+        entity: note
+    });
 }
 
 /**
