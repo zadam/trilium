@@ -110,7 +110,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
             .onNodeClick(node => appContext.tabManager.getActiveContext().setNote(node.id))
-            .onNodeRightClick((node, e) => linkContextMenuService.openContextMenu(node.id, e));
+            .onNodeRightClick((node, e) => linkContextMenuService.openContextMenu(node.id, null, e));
 
         if (this.mapType === 'link') {
             this.graph

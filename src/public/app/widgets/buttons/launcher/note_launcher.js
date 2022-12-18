@@ -15,8 +15,8 @@ export default class NoteLauncher extends AbstractLauncher {
     constructor(launcherNote) {
         super(launcherNote);
 
-        this.title(this.launcherNote.title)
-            .icon(this.launcherNote.getIcon())
+        this.title(() => this.launcherNote.title)
+            .icon(() => this.launcherNote.getIcon())
             .onClick((widget, evt) => this.launch(evt))
             .onAuxClick((widget, evt) => this.launch(evt))
             .onContextMenu(evt => {
@@ -25,28 +25,44 @@ export default class NoteLauncher extends AbstractLauncher {
                     return;
                 }
 
-                linkContextMenuService.openContextMenu(targetNoteId, evt);
+                const hoistedNoteId = this.getHoistedNoteId();
+
+                linkContextMenuService.openContextMenu(targetNoteId, hoistedNoteId, evt);
             });
     }
 
-    launch(evt) {
+    async launch(evt) {
         const targetNoteId = this.getTargetNoteId();
         if (!targetNoteId) {
             return;
         }
 
+        const hoistedNoteId = this.getHoistedNoteId();
+
         if (!evt) {
             // keyboard shortcut
-            appContext.tabManager.getActiveContext().setNote(targetNoteId)
-            return;
-        }
-
-        const ctrlKey = utils.isCtrlKey(evt);
-        if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
-            appContext.tabManager.openTabWithNoteWithHoisting(targetNoteId);
+            await this.openInSameTab(targetNoteId, hoistedNoteId);
         } else {
-            appContext.tabManager.getActiveContext().setNote(targetNoteId);
+            const ctrlKey = utils.isCtrlKey(evt);
+
+            if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
+                await this.openInNewTab(targetNoteId, hoistedNoteId);
+            } else {
+                await this.openInSameTab(targetNoteId, hoistedNoteId);
+            }
         }
+    }
+
+    async openInNewTab(targetNoteId, hoistedNoteId) {
+        const noteContext = await appContext.tabManager.openEmptyTab(null, hoistedNoteId);
+
+        await noteContext.setNote(targetNoteId);
+    }
+
+    async openInSameTab(targetNoteId, hoistedNoteId) {
+        const activeContext = appContext.tabManager.getActiveContext();
+        await activeContext.setHoistedNoteId(hoistedNoteId);
+        await activeContext.setNote(targetNoteId);
     }
 
     getTargetNoteId() {
@@ -58,6 +74,11 @@ export default class NoteLauncher extends AbstractLauncher {
         }
 
         return targetNoteId;
+    }
+
+    getHoistedNoteId() {
+        return this.launcherNote.getRelationValue('hoistedNote')
+            || appContext.tabManager.getActiveContext().hoistedNoteId;
     }
 
     getTitle() {

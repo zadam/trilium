@@ -97,6 +97,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
                         { type: 'relation', name: 'template', value: LBTPL_BASE },
                         { type: 'label', name: 'launcherType', value: 'note' },
                         { type: 'label', name: 'relation:targetNote', value: 'promoted' },
+                        { type: 'label', name: 'relation:hoistedNote', value: 'promoted' },
                         { type: 'label', name: 'label:keyboardShortcut', value: 'promoted,text' },
                         { type: 'label', name: 'docName', value: 'launchbar_note_launcher' }
                     ]

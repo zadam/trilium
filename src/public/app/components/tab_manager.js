@@ -226,7 +226,7 @@ export default class TabManager extends Component {
     async openEmptyTab(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         const noteContext = new NoteContext(ntxId, hoistedNoteId, mainNtxId);
 
-        let existingNoteContext
+        let existingNoteContext;
 
         if (utils.isMobile()) {
             // kind of hacky way to enforce a single tab on mobile interface - all requests to create a new one

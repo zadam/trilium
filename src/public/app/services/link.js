@@ -155,7 +155,7 @@ function linkContextMenu(e) {
 
     e.preventDefault();
 
-    linkContextMenuService.openContextMenu(notePath, e);
+    linkContextMenuService.openContextMenu(notePath, null, e);
 }
 
 async function loadReferenceLinkTitle(noteId, $el) {

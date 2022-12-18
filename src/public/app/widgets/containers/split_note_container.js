@@ -34,7 +34,7 @@ export default class SplitNoteContainer extends FlexContainer {
         this.child(widget);
     }
 
-    async openNewNoteSplitEvent({ntxId, notePath}) {
+    async openNewNoteSplitEvent({ntxId, notePath, hoistedNoteId}) {
         const mainNtxId = appContext.tabManager.getActiveMainContext().ntxId;
 
         if (!ntxId) {
@@ -43,7 +43,7 @@ export default class SplitNoteContainer extends FlexContainer {
             ntxId = mainNtxId;
         }
 
-        const hoistedNoteId = appContext.tabManager.getActiveContext().hoistedNoteId;
+        hoistedNoteId = hoistedNoteId || appContext.tabManager.getActiveContext().hoistedNoteId;
 
         const noteContext = await appContext.tabManager.openEmptyTab(null, hoistedNoteId, mainNtxId);
 

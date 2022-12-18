@@ -4,8 +4,8 @@ export default class ScriptLauncher extends AbstractLauncher {
     constructor(launcherNote) {
         super(launcherNote);
 
-        this.title(this.launcherNote.title)
-            .icon(this.launcherNote.getIcon())
+        this.title(() => this.launcherNote.title)
+            .icon(() => this.launcherNote.getIcon())
             .onClick(() => this.launch());
     }
 

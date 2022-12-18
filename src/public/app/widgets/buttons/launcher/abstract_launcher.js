@@ -1,4 +1,5 @@
 import shortcutService from "../../../services/shortcuts.js";
+import attributesService from "../../../services/attributes.js";
 import OnClickButtonWidget from "../onclick_button.js";
 
 export default class AbstractLauncher extends OnClickButtonWidget {
@@ -33,6 +34,8 @@ export default class AbstractLauncher extends OnClickButtonWidget {
         for (const attr of loadResults.getAttributes()) {
             if (attr.noteId === this.launcherNote.noteId && attr.type === 'label' && attr.name === 'keyboardShortcut') {
                 this.bindNoteShortcutHandler(attr);
+            } else if (attr.type === 'label' && attr.name === 'iconClass' && attributesService.isAffecting(attr, this.launcherNote)) {
+                this.refreshIcon();
             }
         }
     }
