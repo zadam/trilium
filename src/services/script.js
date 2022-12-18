@@ -99,7 +99,7 @@ function getScriptBundleForFrontend(note) {
         return;
     }
 
-    // for frontend we return just noteIds because frontend needs to use its own entity instances
+    // for frontend, we return just noteIds because frontend needs to use its own entity instances
     bundle.noteId = bundle.note.noteId;
     delete bundle.note;
 
@@ -165,13 +165,12 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
 
     if (note.isJavaScript()) {
         bundle.script += `
-apiContext.modules['${note.noteId}'] = {};
+apiContext.modules['${note.noteId}'] = { exports: {} };
 ${root ? 'return ' : ''}${isFrontend ? 'await' : ''} ((${isFrontend ? 'async' : ''} function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
 ${backendOverrideContent || note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
-if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
 return module.exports;
 }).call({}, {}, apiContext.modules['${note.noteId}'], apiContext.require(${JSON.stringify(moduleNoteIds)}), apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
