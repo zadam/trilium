@@ -4,7 +4,7 @@ import options from "../services/options.js";
 import syncService from "../services/sync.js";
 
 const TPL = `
-<div class="sync-status-widget icon-action">
+<div class="sync-status-widget launcher-button">
     <style>
     .sync-status-widget {
     }

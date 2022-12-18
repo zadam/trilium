@@ -227,7 +227,9 @@ function resetLauncher(noteId) {
  * created just to fill this user hole.
  *
  * Another use case would be for script-packages (of which only few exists) which could this way register automatically
- * into the launchbar. For such use cases this might be a usable replacement, but I'm not yet clear on that.
+ * into the launchbar. For such use cases this might be a usable replacement, but it should look a bit differently:
+ * - launcher should be added into the available shortcuts, not visible. Part of the reasoning is that adding them to visible
+ *   could mess up the layout - e.g. the sync status being below.
  */
 function createOrUpdateScriptLauncherFromApi(opts) {
     const launcherId = opts.id || ("tb" + opts.title.replace(/[^[a-z0-9]/gi, ""));
