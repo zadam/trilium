@@ -32,12 +32,13 @@ export default class NoteLauncher extends AbstractLauncher {
     }
 
     async launch(evt) {
-        const targetNoteId = this.getTargetNoteId();
+        // await because subclass overrides can be async
+        const targetNoteId = await this.getTargetNoteId();
         if (!targetNoteId) {
             return;
         }
 
-        const hoistedNoteId = this.getHoistedNoteId();
+        const hoistedNoteId = await this.getHoistedNoteId();
 
         if (!evt) {
             // keyboard shortcut

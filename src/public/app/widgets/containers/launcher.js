@@ -10,6 +10,7 @@ import NoteLauncher from "../buttons/launcher/note_launcher.js";
 import ScriptLauncher from "../buttons/launcher/script_launcher.js";
 import CommandButtonWidget from "../buttons/command_button.js";
 import utils from "../../services/utils.js";
+import TodayLauncher from "../buttons/launcher/today_launcher.js";
 
 export default class LauncherWidget extends BasicWidget {
     constructor() {
@@ -101,6 +102,8 @@ export default class LauncherWidget extends BasicWidget {
             return new BackInHistoryButtonWidget();
         } else if (builtinWidget === 'forwardInHistoryButton') {
             return new ForwardInHistoryButtonWidget();
+        } else if (builtinWidget === 'todayInJournal') {
+            return new TodayLauncher(note);
         } else {
             throw new Error(`Unrecognized builtin widget ${builtinWidget} for launcher ${note.noteId} "${note.title}"`);
         }
