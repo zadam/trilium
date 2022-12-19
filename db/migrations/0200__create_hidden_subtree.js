@@ -5,7 +5,8 @@ module.exports = () => {
 
     cls.init(() => {
         beccaLoader.load();
-        // create it because it subsequent migrations we will move some existing notes into it (share...)
+        // make sure the hidden subtree exists since the subsequent migrations we will move some existing notes into it (share...)
+        // in previous releases hidden subtree was created lazily
         hiddenSubtreeService.checkHiddenSubtree();
     });
 };
