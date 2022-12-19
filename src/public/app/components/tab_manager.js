@@ -249,6 +249,18 @@ export default class TabManager extends Component {
         return noteContext;
     }
 
+    async openInNewTab(targetNoteId, hoistedNoteId = null) {
+        const noteContext = await this.openEmptyTab(null, hoistedNoteId || this.getActiveContext().hoistedNoteId);
+
+        await noteContext.setNote(targetNoteId);
+    }
+
+    async openInSameTab(targetNoteId, hoistedNoteId = null) {
+        const activeContext = this.getActiveContext();
+        await activeContext.setHoistedNoteId(hoistedNoteId || activeContext.hoistedNoteId);
+        await activeContext.setNote(targetNoteId);
+    }
+
     /**
      * If the requested notePath is within current note hoisting scope then keep the note hoisting also for the new tab.
      */

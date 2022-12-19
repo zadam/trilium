@@ -42,28 +42,16 @@ export default class NoteLauncher extends AbstractLauncher {
 
         if (!evt) {
             // keyboard shortcut
-            await this.openInSameTab(targetNoteId, hoistedNoteId);
+            await appContext.tabManager.openInSameTab(targetNoteId, hoistedNoteId);
         } else {
             const ctrlKey = utils.isCtrlKey(evt);
 
             if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
-                await this.openInNewTab(targetNoteId, hoistedNoteId);
+                await appContext.tabManager.openInNewTab(targetNoteId, hoistedNoteId);
             } else {
-                await this.openInSameTab(targetNoteId, hoistedNoteId);
+                await appContext.tabManager.openInSameTab(targetNoteId, hoistedNoteId);
             }
         }
-    }
-
-    async openInNewTab(targetNoteId, hoistedNoteId) {
-        const noteContext = await appContext.tabManager.openEmptyTab(null, hoistedNoteId);
-
-        await noteContext.setNote(targetNoteId);
-    }
-
-    async openInSameTab(targetNoteId, hoistedNoteId) {
-        const activeContext = appContext.tabManager.getActiveContext();
-        await activeContext.setHoistedNoteId(hoistedNoteId);
-        await activeContext.setNote(targetNoteId);
     }
 
     getTargetNoteId() {
