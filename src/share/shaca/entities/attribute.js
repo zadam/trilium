@@ -47,6 +47,10 @@ class Attribute extends AbstractEntity {
         if (this.type === 'label' && this.name === 'shareRoot') {
             this.shaca.shareRootNote = this.note;
         }
+
+        if (this.type === 'label' && this.name === 'shareIndex') {
+            this.shaca.shareIndexEnabled = true;
+        }
     }
 
     /** @returns {boolean} */

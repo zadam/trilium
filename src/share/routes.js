@@ -40,9 +40,15 @@ function checkNoteAccess(noteId, req, res) {
     const note = shaca.getNote(noteId);
 
     if (!note) {
-        res.setHeader("Content-Type", "text/plain")
-            .status(404)
-            .send(`Note '${noteId}' not found`);
+        res.status(404)
+            .json({ message: `Note '${noteId}' not found` });
+
+        return false;
+    }
+
+    if (noteId === 'share' && !shaca.shareIndexEnabled) {
+        res.status(403)
+            .json({ message: `Accessing share index is forbidden.` });
 
         return false;
     }
@@ -179,9 +185,8 @@ function register(router) {
         }
 
         if (!["image", "canvas"].includes(image.type)) {
-            return res.setHeader('Content-Type', 'text/plain')
-                .status(400)
-                .send("Requested note is not a shareable image");
+            return res.status(400)
+                .json({ message: "Requested note is not a shareable image" });
         } else if (image.type === "canvas") {
             /**
              * special "image" type. the canvas is actually type application/json
@@ -196,10 +201,9 @@ function register(router) {
                 res.set('Content-Type', "image/svg+xml");
                 res.set("Cache-Control", "no-cache, no-store, must-revalidate");
                 res.send(svg);
-            } catch(err) {
-                res.setHeader('Content-Type', 'text/plain')
-                    .status(500)
-                    .send("there was an error parsing excalidraw to svg");
+            } catch (err) {
+                res.status(500)
+                    .json({ message: "There was an error parsing excalidraw to svg." });
             }
         } else {
             // normal image

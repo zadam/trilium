@@ -9,12 +9,6 @@ const beccaService = require("../becca/becca_service");
 const log = require("./log");
 
 function cloneNoteToNote(noteId, parentNoteId, prefix) {
-    if (parentNoteId === 'share') {
-        const specialNotesService = require('./special_notes');
-        // share root note is created lazily
-        specialNotesService.getShareRoot();
-    }
-
     const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote.type === 'search') {

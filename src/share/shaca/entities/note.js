@@ -465,7 +465,11 @@ class Note extends AbstractEntity {
             type: this.type,
             mime: this.mime,
             utcDateModified: this.utcDateModified,
-            attributes: this.getAttributes().map(attr => attr.getPojo()),
+            attributes: this.getAttributes()
+                // relations could link across shared subtrees which might leak them
+                // individual relations might be whitelisted based on needs #3434
+                .filter(attr => attr.type === 'label')
+                .map(attr => attr.getPojo()),
             parentNoteIds: this.parents.map(parentNote => parentNote.noteId),
             childNoteIds: this.children.map(child => child.noteId)
         };

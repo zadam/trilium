@@ -20,6 +20,9 @@ class Shaca {
         /** @type {Note|null} */
         this.shareRootNote = null;
 
+        /** @type {boolean} true if the index of all shared subtrees is enabled */
+        this.shareIndexEnabled = false;
+
         this.loaded = false;
     }
 
