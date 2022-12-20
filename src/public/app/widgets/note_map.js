@@ -94,8 +94,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .onZoom(zoom => this.setZoomLevel(zoom.k))
             .d3AlphaDecay(0.01)
             .d3VelocityDecay(0.08)
-            .nodeCanvasObject((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
-            .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.stringToColor(node.type), ctx))
+            .nodeCanvasObject((node, ctx) => this.paintNode(node, this.getColorForNode(node), ctx))
+            .nodePointerAreaPaint((node, ctx) => this.paintNode(node, this.getColorForNode(node), ctx))
             .nodePointerAreaPaint((node, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
@@ -151,7 +151,17 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         return mapRootNoteId;
     }
 
-    stringToColor(str) {
+    getColorForNode(node) {
+        if (node.color) {
+            return node.color;
+        } else if (this.widgetMode === 'ribbon' && node.id === this.noteId) {
+            return 'red'; // subtree root mark as red
+        } else {
+            return this.generateColorFromString(node.type);
+        }
+    }
+
+    generateColorFromString(str) {
         if (this.themeStyle === "dark") {
             str = "0" + str; // magic lightening modifier
         }
@@ -185,7 +195,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         const {x, y} = node;
         const size = this.noteIdToSizeMap[node.id];
 
-        ctx.fillStyle = (this.widgetMode === 'ribbon' && node.id === this.noteId) ? 'red' : color;
+        ctx.fillStyle = color;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, 2 * Math.PI, false);
         ctx.fill();
@@ -253,10 +263,11 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         const links = this.getGroupedLinks(resp.links);
 
-        this.nodes = resp.notes.map(([noteId, title, type]) => ({
+        this.nodes = resp.notes.map(([noteId, title, type, color]) => ({
             id: noteId,
             name: title,
             type: type,
+            color: color
         }));
 
         return {

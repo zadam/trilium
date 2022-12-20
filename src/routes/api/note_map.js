@@ -116,7 +116,8 @@ function getLinkMap(req) {
         return [
             note.noteId,
             note.getTitleOrProtected(),
-            note.type
+            note.type,
+            note.getLabelValue('color')
         ];
     });
 
@@ -175,7 +176,8 @@ function getTreeMap(req) {
         .map(note => [
             note.noteId,
             note.getTitleOrProtected(),
-            note.type
+            note.type,
+            note.getLabelValue('color')
         ]);
 
     const noteIds = new Set();
