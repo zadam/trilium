@@ -73,7 +73,7 @@ import RelationMapButtons from "../widgets/floating_buttons/relation_map_buttons
 import MermaidExportButton from "../widgets/floating_buttons/mermaid_export_button.js";
 import LauncherContainer from "../widgets/containers/launcher_container.js";
 import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
-import EditableCodeButtonsWidget from "../widgets/type_widgets/editable_code_buttons.js";
+import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
 
@@ -150,6 +150,7 @@ export default class DesktopLayout {
                                     .child(new NoteUpdateStatusWidget())
                                     .child(new FloatingButtons()
                                         .child(new EditButton())
+                                        .child(new CodeButtonsWidget())
                                         .child(new RelationMapButtons())
                                         .child(new MermaidExportButton())
                                         .child(new BacklinksWidget())
@@ -165,7 +166,6 @@ export default class DesktopLayout {
                                             .child(new SearchResultWidget())
                                             .child(new SqlResultWidget())
                                     )
-                                    .child(new EditableCodeButtonsWidget())
                                     .child(new ApiLogWidget())
                                     .child(new FindWidget())
                                     .child(

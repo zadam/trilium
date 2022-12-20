@@ -1,7 +1,7 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
-<div class="floating-buttons">
+<div class="floating-buttons no-print">
     <style>
         .floating-buttons {
             position: relative;

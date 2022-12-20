@@ -2,7 +2,7 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <button type="button"
-        class="export-mermaid-button no-print"
+        class="export-mermaid-button"
         title="Export Mermaid diagram as SVG">
         <span class="bx bx-export"></span>
 </button>

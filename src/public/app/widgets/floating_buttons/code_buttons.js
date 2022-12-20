@@ -7,37 +7,28 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
 
 const TPL = `
-<div class="editable-code-buttons-widget">
+<div class="code-buttons-widget">
     <style>
-    .editable-code-buttons-widget {
-        display: flex; 
-        justify-content: space-evenly;
-        padding: 5px;
-        height: 45px;
-    }
+        .code-buttons-widget {
+            display: flex;
+            gap: 10px;
+        }
     </style>
-    
-    <button data-trigger-command="runActiveNote"
-            class="no-print execute-button btn btn-sm">
+
+    <button data-trigger-command="runActiveNote" class="execute-button floating-button btn" title="Execute script">
         <span class="bx bx-run"></span>
-            
-        Execute <kbd data-command="runActiveNote"></kbd>
     </button>
     
-    <button class="no-print trilium-api-docs-button btn btn-sm" 
-        title="Open Trilium API docs">
+    <button class="trilium-api-docs-button floating-button btn" title="Open Trilium API docs">
         <span class="bx bx-help-circle"></span>
-        
-        API docs
     </button>
     
-    <button class="no-print save-to-note-button btn btn-sm">
+    <button class="save-to-note-button floating-button btn">
         <span class="bx bx-save"></span>
-        Save to note</kbd>
     </button>
 </div>`;
 
-export default class EditableCodeButtonsWidget extends NoteContextAwareWidget {
+export default class CodeButtonsWidget extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note
@@ -48,6 +39,8 @@ export default class EditableCodeButtonsWidget extends NoteContextAwareWidget {
         this.$widget = $(TPL);
         this.$openTriliumApiDocsButton = this.$widget.find(".trilium-api-docs-button");
         this.$openTriliumApiDocsButton.on("click", () => {
+            toastService.showMessage("Opening API docs...");
+
             if (this.note.mime.endsWith("frontend")) {
                 window.open("https://zadam.github.io/trilium/frontend_api/FrontendScriptApi.html", "_blank");
             }
@@ -68,8 +61,9 @@ export default class EditableCodeButtonsWidget extends NoteContextAwareWidget {
             toastService.showMessage("SQL Console note has been saved into " + await treeService.getNotePathTitle(notePath));
         });
 
-        keyboardActionService.setupActionsForElement('code-detail', this.$widget, this);
         keyboardActionService.updateDisplayedShortcuts(this.$widget);
+
+        this.contentSized();
 
         super.doRender();
     }

@@ -26,7 +26,7 @@ const TPL = `
     </style>
 
     <button type="button"
-            class="close-floating-buttons-button btn bx bx-x no-print"
+            class="close-floating-buttons-button btn bx bx-x"
             title="Hide buttons"></button>
 </div>
 `;

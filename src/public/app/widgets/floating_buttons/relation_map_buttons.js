@@ -9,14 +9,14 @@ const TPL = `
     </style>
 
     <button type="button"
-            class="relation-map-create-child-note floating-button btn bx bx-folder-plus no-print"
+            class="relation-map-create-child-note floating-button btn bx bx-folder-plus"
             title="Create new child note and add it into this relation map"></button>
     
     <button type="button"
-            class="relation-map-reset-pan-zoom floating-button btn bx bx-crop no-print"
+            class="relation-map-reset-pan-zoom floating-button btn bx bx-crop"
             title="Reset pan & zoom to initial coordinates and magnification"></button>
     
-    <div class="btn-group no-print">
+    <div class="btn-group">
         <button type="button"
                 class="relation-map-zoom-in floating-button btn bx bx-zoom-in"
                 title="Zoom In"></button>
