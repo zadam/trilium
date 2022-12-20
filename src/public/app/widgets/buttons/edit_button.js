@@ -31,8 +31,18 @@ export default class EditButton extends OnClickButtonWidget {
             // prevent flickering by assuming hidden before async operation
             this.toggleInt(false);
 
+            const wasVisible = this.isVisible();
+
             // can't do this in isEnabled() since isReadOnly is async
             this.toggleInt(await this.noteContext.isReadOnly());
+
+            // make the edit button stand out on the first display, otherwise
+            // it's difficult to notice that the note is readonly
+            if (this.isVisible() && !wasVisible) {
+                this.$iconSpan.addClass("bx-tada bx-lg");
+
+                setTimeout(() => this.$iconSpan.removeClass("bx-tada bx-lg"), 1700);
+            }
         }
 
         await super.refreshWithNote(note);

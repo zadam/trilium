@@ -1,7 +1,13 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
-<div>
+<div class="relation-map-buttons">
+    <style>
+        .relation-map-buttons .floating-button {
+            font-size: 120%;
+        }
+    </style>
+
     <button type="button"
             class="relation-map-create-child-note floating-button btn bx bx-folder-plus no-print"
             title="Create new child note and add it into this relation map"></button>

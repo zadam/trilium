@@ -21,7 +21,7 @@ const TPL = `
         }
         
         .floating-buttons-children > button {
-            font-size: 130%;
+            font-size: 150%;
             padding: 5px 10px 4px 10px;
             width: 40px;
             cursor: pointer;
