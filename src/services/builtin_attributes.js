@@ -61,6 +61,8 @@ module.exports = [
     { type: 'label', name: 'toc' },
     { type: 'label', name: 'color' },
     { type: 'label', name: 'keepCurrentHoisting'},
+    { type: 'label', name: 'executeButton'},
+    { type: 'label', name: 'executeDescription'},
 
     // relation names
     { type: 'relation', name: 'internalLink' },

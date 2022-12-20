@@ -82,7 +82,12 @@ function updateDisplayedShortcuts($container) {
 		if (action) {
 			const title = $(el).attr('title');
 			const shortcuts = action.effectiveShortcuts.join(', ');
-			const newTitle = !title || !title.trim() ? shortcuts : `${title} (${shortcuts})`;
+
+			if (title?.includes(shortcuts)) {
+				return;
+			}
+
+			const newTitle = !title?.trim() ? shortcuts : `${title} (${shortcuts})`;
 
 			$(el).attr('title', newTitle);
 		}

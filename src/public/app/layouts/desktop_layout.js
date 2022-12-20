@@ -76,6 +76,7 @@ import NoteRevisionsButton from "../widgets/buttons/note_revisions_button.js";
 import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
+import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -129,6 +130,7 @@ export default class DesktopLayout {
                                     )
                                     .child(
                                         new RibbonContainer()
+                                            .ribbon(new ScriptExecutorWidget())
                                             .ribbon(new SearchDefinitionWidget())
                                             .ribbon(new EditedNotesWidget())
                                             .ribbon(new BookPropertiesWidget())
