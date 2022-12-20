@@ -39,9 +39,13 @@ export default class EditButton extends OnClickButtonWidget {
             // make the edit button stand out on the first display, otherwise
             // it's difficult to notice that the note is readonly
             if (this.isVisible() && !wasVisible) {
-                this.$iconSpan.addClass("bx-tada bx-lg");
+                this.$iconSpan.addClass("bx-tada");
+                this.$widget.css("transform", "scale(2)");
 
-                setTimeout(() => this.$iconSpan.removeClass("bx-tada bx-lg"), 1700);
+                setTimeout(() => {
+                    this.$iconSpan.removeClass("bx-tada bx-lg");
+                    this.$widget.css("transform", "scale(1)");
+                }, 1700);
             }
         }
 
