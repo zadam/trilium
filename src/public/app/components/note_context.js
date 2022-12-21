@@ -64,15 +64,15 @@ class NoteContext extends Component {
         }
 
         if (this.hoistedNoteId === 'root'
-            && this.notePath.startsWith("root/hidden")
+            && this.notePath.startsWith("root/_hidden")
             && !this.note.hasLabel("keepCurrentHoisting")
         ) {
             // hidden subtree displays only when hoisted so it doesn't make sense to keep root as hoisted note
 
-            let hoistedNoteId = 'hidden';
+            let hoistedNoteId = '_hidden';
 
             if (this.note.isLaunchBarConfig()) {
-                hoistedNoteId = 'lbRoot';
+                hoistedNoteId = '_lbRoot';
             } else if (this.note.isOptions()) {
                 hoistedNoteId = 'options';
             }

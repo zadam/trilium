@@ -6,7 +6,7 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
     isEnabled() {
         return super.isEnabled()
             // it's not possible to bookmark root because that would clone it under bookmarks and thus create a cycle
-            && !['root', 'hidden'].includes(this.noteId);
+            && !['root', '_hidden'].includes(this.noteId);
     }
 
     doRender() {

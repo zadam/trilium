@@ -323,7 +323,7 @@ function parseNotePath(notePath) {
 }
 
 function isNotePathInHiddenSubtree(notePath) {
-    return notePath?.includes("root/hidden");
+    return notePath?.includes("root/_hidden");
 }
 
 export default {

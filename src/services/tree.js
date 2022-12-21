@@ -30,7 +30,7 @@ function getNotes(noteIds) {
 }
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
-    if (['root', 'hidden', 'share', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(childNoteId)) {
+    if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {
         return { success: false, message: `Cannot change this note's location.`};
     }
 
@@ -187,7 +187,7 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
         for (const note of notes) {
             const branch = note.getParentBranches().find(b => b.parentNoteId === parentNoteId);
 
-            if (branch.branchId === 'hidden') {
+            if (branch.branchId === '_hidden') {
                 position = 999_999_999;
             }
 

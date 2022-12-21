@@ -1,2 +1,2 @@
-UPDATE notes SET title = 'SQL Console History' WHERE noteId = 'sqlConsole';
-UPDATE notes SET title = 'Search History' WHERE noteId = 'search';
+UPDATE notes SET title = 'SQL Console History' WHERE noteId = '_sqlConsole';
+UPDATE notes SET title = 'Search History' WHERE noteId = '_search';

@@ -6,8 +6,9 @@ const cls = require("./cls");
 const dateUtils = require("./date_utils");
 const log = require("./log");
 const hiddenSubtreeService = require("./hidden_subtree");
-const searchService = require("./search/services/search.js");
-const SearchContext = require("./search/search_context.js");
+const searchService = require("./search/services/search");
+const SearchContext = require("./search/search_context");
+const {LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT} = require("./hidden_subtree");
 
 function getInboxNote(date) {
     const hoistedNote = getHoistedNote();
@@ -35,14 +36,14 @@ function getInboxNote(date) {
 
 function createSqlConsole() {
     const {note} = noteService.createNewNote({
-        parentNoteId: getMonthlyParentNoteId('sqlConsole'),
+        parentNoteId: getMonthlyParentNoteId('_sqlConsole'),
         title: 'SQL Console',
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
         mime: 'text/x-sqlite;schema=trilium'
     });
 
-    note.setLabel("sqlConsole", dateUtils.localNowDate());
+    note.setLabel('_sqlConsole', dateUtils.localNowDate());
     note.setLabel('iconClass', 'bx bx-data');
     note.setLabel('keepCurrentHoisting');
 
@@ -60,7 +61,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
     const result = sqlConsoleNote.cloneTo(sqlConsoleHome.noteId);
 
     for (const parentBranch of sqlConsoleNote.getParentBranches()) {
-        if (parentBranch.parentNote.hasAncestor("hidden")) {
+        if (parentBranch.parentNote.hasAncestor('_hidden')) {
             parentBranch.markAsDeleted();
         }
     }
@@ -70,7 +71,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
 
 function createSearchNote(searchString, ancestorNoteId) {
     const {note} = noteService.createNewNote({
-        parentNoteId: getMonthlyParentNoteId('search'),
+        parentNoteId: getMonthlyParentNoteId('_search'),
         title: `Search: ${searchString}`,
         content: "",
         type: 'search',
@@ -109,7 +110,7 @@ function saveSearchNote(searchNoteId) {
     const result = searchNote.cloneTo(searchHome.noteId);
 
     for (const parentBranch of searchNote.getParentBranches()) {
-        if (parentBranch.parentNote.hasAncestor("hidden")) {
+        if (parentBranch.parentNote.hasAncestor('_hidden')) {
             parentBranch.markAsDeleted();
         }
     }
@@ -152,7 +153,7 @@ function createScriptLauncher(parentNoteId, forceNoteId = null) {
         parentNoteId: parentNoteId
     }).note;
 
-    note.addRelation('template', 'lbTplScriptLauncher');
+    note.addRelation('template', LBTPL_SCRIPT);
     return note;
 }
 
@@ -167,7 +168,7 @@ function createLauncher(parentNoteId, launcherType) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', 'lbTplNoteLauncher');
+        note.addRelation('template', LBTPL_NOTE_LAUNCHER);
     } else if (launcherType === 'script') {
         note = createScriptLauncher(parentNoteId);
     } else if (launcherType === 'customWidget') {
@@ -178,7 +179,7 @@ function createLauncher(parentNoteId, launcherType) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', 'lbTplCustomWidget');
+        note.addRelation('template', LBTPL_CUSTOM_WIDGET);
     } else if (launcherType === 'spacer') {
         note = noteService.createNewNote({
             title: "Spacer",
@@ -187,7 +188,7 @@ function createLauncher(parentNoteId, launcherType) {
             parentNoteId: parentNoteId
         }).note;
 
-        note.addRelation('template', 'lbTplSpacer');
+        note.addRelation('template', LBTPL_SPACER);
     } else {
         throw new Error(`Unrecognized launcher type '${launcherType}'`);
     }
@@ -203,7 +204,7 @@ function resetLauncher(noteId) {
 
     if (note.isLauncherConfig()) {
         if (note) {
-            if (noteId === 'lbRoot') {
+            if (noteId === '_lbRoot') {
                 // deleting hoisted notes are not allowed, so we just reset the children
                 for (const childNote of note.getChildNotes()) {
                     childNote.deleteNote();
@@ -241,7 +242,7 @@ function createOrUpdateScriptLauncherFromApi(opts) {
     }
 
     const launcherNote = becca.getNote(launcherId)
-        || createScriptLauncher('lbVisibleLaunchers', launcherId);
+        || createScriptLauncher('_lbVisibleLaunchers', launcherId);
 
     launcherNote.title = opts.title;
     launcherNote.setContent(`(${opts.action})()`);

@@ -5171,7 +5171,7 @@ const icons = [
         "type_of_icon": "REGULAR"
     },
     {
-        "name": "share",
+        "name": '_share',
         "slug": "share-regular",
         "category_id": 101,
         "type_of_icon": "REGULAR"
@@ -6826,7 +6826,7 @@ const icons = [
         "type_of_icon": "SOLID"
     },
     {
-        "name": "share",
+        "name": '_share',
         "slug": "share-solid",
         "category_id": 101,
         "type_of_icon": "SOLID"

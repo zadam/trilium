@@ -50,7 +50,7 @@ async function checkNoteAccess(notePath, noteContext) {
 
     const hoistedNoteId = noteContext.hoistedNoteId;
 
-    if (!resolvedNotePath.includes(hoistedNoteId) && !resolvedNotePath.includes("hidden")) {
+    if (!resolvedNotePath.includes(hoistedNoteId) && !resolvedNotePath.includes('_hidden')) {
         if (!await dialogService.confirm("Requested note is outside of hoisted note subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?")) {
             return false;
         }

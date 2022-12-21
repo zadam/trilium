@@ -73,7 +73,7 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
         this.$noteTitle.val(note.title);
 
         this.$noteTitle.prop("readonly", (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
-                                        || ["lbRoot", "lbAvailableLaunchers", "lbVisibleLaunchers"].includes(note.noteId));
+                                        || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(note.noteId));
 
         this.setProtectedStatus(note);
     }

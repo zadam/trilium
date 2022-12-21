@@ -2,18 +2,18 @@ const becca = require("../becca/becca");
 const noteService = require("./notes");
 const log = require("./log");
 
-const LBTPL_ROOT = "lbTplRoot";
-const LBTPL_BASE = "lbTplBase";
-const LBTPL_COMMAND = "lbTplCommandLauncher";
-const LBTPL_NOTE_LAUNCHER = "lbTplNoteLauncher";
-const LBTPL_SCRIPT = "lbTplScriptLauncher";
-const LBTPL_BUILTIN_WIDGET = "lbTplBuiltinWidget";
-const LBTPL_SPACER = "lbTplSpacer";
-const LBTPL_CUSTOM_WIDGET = "lbTplCustomWidget";
+const LBTPL_ROOT = "_lbTplRoot";
+const LBTPL_BASE = "_lbTplBase";
+const LBTPL_COMMAND = "_lbTplCommandLauncher";
+const LBTPL_NOTE_LAUNCHER = "_lbTplNoteLauncher";
+const LBTPL_SCRIPT = "_lbTplScriptLauncher";
+const LBTPL_BUILTIN_WIDGET = "_lbTplBuiltinWidget";
+const LBTPL_SPACER = "_lbTplSpacer";
+const LBTPL_CUSTOM_WIDGET = "_lbTplCustomWidget";
 
 const HIDDEN_SUBTREE_DEFINITION = {
-    id: 'hidden',
-    title: 'hidden',
+    id: '_hidden',
+    title: '_hidden',
     type: 'doc',
     icon: 'bx bx-chip',
     // we want to keep the hidden subtree always last, otherwise there will be problems with e.g. keyboard navigation
@@ -24,12 +24,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
     ],
     children: [
         {
-            id: 'search',
+            id: '_search',
             title: 'Search History',
             type: 'doc'
         },
         {
-            id: 'globalNoteMap',
+            id: '_globalNoteMap',
             title: 'Note Map',
             type: 'noteMap',
             attributes: [
@@ -38,24 +38,24 @@ const HIDDEN_SUBTREE_DEFINITION = {
             ]
         },
         {
-            id: 'sqlConsole',
+            id: '_sqlConsole',
             title: 'SQL Console History',
             type: 'doc',
             icon: 'bx-data'
         },
         {
-            id: 'share',
+            id: '_share',
             title: 'Shared Notes',
             type: 'doc',
-            attributes: [ { type: 'label', name: 'docName', value: 'share' } ]
+            attributes: [ { type: 'label', name: 'docName', value: '_share' } ]
         },
         {
-            id: 'bulkAction',
+            id: '_bulkAction',
             title: 'Bulk action',
             type: 'doc',
         },
         {
-            id: 'backendLog',
+            id: '_backendLog',
             title: 'Backend Log',
             type: 'contentWidget',
             icon: 'bx-terminal',
@@ -65,7 +65,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
         },
         {
             // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
-            id: 'userHidden',
+            id: '_userHidden',
             title: 'User Hidden',
             type: 'text',
         },
@@ -150,7 +150,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
             ]
         },
         {
-            id: 'lbRoot',
+            id: '_lbRoot',
             title: 'Launch bar',
             type: 'doc',
             icon: 'bx-sidebar',
@@ -158,65 +158,65 @@ const HIDDEN_SUBTREE_DEFINITION = {
             attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
             children: [
                 {
-                    id: 'lbAvailableLaunchers',
+                    id: '_lbAvailableLaunchers',
                     title: 'Available Launchers',
                     type: 'doc',
                     icon: 'bx-hide',
                     isExpanded: true,
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
-                        { id: 'lbBackInHistory', title: 'Back in History', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
-                        { id: 'lbForwardInHistory', title: 'Forward in History', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
-                        { id: 'lbBackendLog', title: 'Backend Log', type: 'launcher', targetNoteId: 'backendLog', icon: 'bx bx-terminal' },
+                        { id: '_lbBackInHistory', title: 'Back in History', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
+                        { id: '_lbForwardInHistory', title: 'Forward in History', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
+                        { id: '_lbBackendLog', title: 'Backend Log', type: 'launcher', targetNoteId: '_backendLog', icon: 'bx bx-terminal' },
                     ]
                 },
                 {
-                    id: 'lbVisibleLaunchers',
+                    id: '_lbVisibleLaunchers',
                     title: 'Visible Launchers',
                     type: 'doc',
                     icon: 'bx-show',
                     isExpanded: true,
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
-                        { id: 'lbNewNote', title: 'New Note', type: 'launcher', command: 'createNoteIntoInbox', icon: 'bx bx-file-blank' },
-                        { id: 'lbSearch', title: 'Search Notes', type: 'launcher', command: 'searchNotes', icon: 'bx bx-search', attributes: [
+                        { id: '_lbNewNote', title: 'New Note', type: 'launcher', command: 'createNoteIntoInbox', icon: 'bx bx-file-blank' },
+                        { id: '_lbSearch', title: 'Search Notes', type: 'launcher', command: 'searchNotes', icon: 'bx bx-search', attributes: [
                                 { type: 'label', name: 'desktopOnly' }
                             ] },
-                        { id: 'lbJumpTo', title: 'Jump to Note', type: 'launcher', command: 'jumpToNote', icon: 'bx bx-send', attributes: [
+                        { id: '_lbJumpTo', title: 'Jump to Note', type: 'launcher', command: 'jumpToNote', icon: 'bx bx-send', attributes: [
                                 { type: 'label', name: 'desktopOnly' }
                             ] },
-                        { id: 'lbNoteMap', title: 'Note Map', type: 'launcher', targetNoteId: 'globalNoteMap', icon: 'bx bx-map-alt' },
-                        { id: 'lbCalendar', title: 'Calendar', type: 'launcher', builtinWidget: 'calendar', icon: 'bx bx-calendar' },
-                        { id: 'lbRecentChanges', title: 'Recent Changes', type: 'launcher', command: 'showRecentChanges', icon: 'bx bx-history', attributes: [
+                        { id: '_lbNoteMap', title: 'Note Map', type: 'launcher', targetNoteId: '_globalNoteMap', icon: 'bx bx-map-alt' },
+                        { id: '_lbCalendar', title: 'Calendar', type: 'launcher', builtinWidget: 'calendar', icon: 'bx bx-calendar' },
+                        { id: '_lbRecentChanges', title: 'Recent Changes', type: 'launcher', command: 'showRecentChanges', icon: 'bx bx-history', attributes: [
                                 { type: 'label', name: 'desktopOnly' }
                             ] },
-                        { id: 'lbSpacer1', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "50", growthFactor: "0" },
-                        { id: 'lbBookmarks', title: 'Bookmarks', type: 'launcher', builtinWidget: 'bookmarks', icon: 'bx bx-bookmark' },
-                        { id: 'lbToday', title: "Open Today's Journal Note", type: 'launcher', builtinWidget: 'todayInJournal', icon: 'bx bx-calendar-star' },
-                        { id: 'lbSpacer2', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "0", growthFactor: "1" },
-                        { id: 'lbProtectedSession', title: 'Protected Session', type: 'launcher', builtinWidget: 'protectedSession', icon: 'bx bx bx-shield-quarter' },
-                        { id: 'lbSyncStatus', title: 'Sync Status', type: 'launcher', builtinWidget: 'syncStatus', icon: 'bx bx-wifi' }
+                        { id: '_lbSpacer1', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "50", growthFactor: "0" },
+                        { id: '_lbBookmarks', title: 'Bookmarks', type: 'launcher', builtinWidget: 'bookmarks', icon: 'bx bx-bookmark' },
+                        { id: '_lbToday', title: "Open Today's Journal Note", type: 'launcher', builtinWidget: 'todayInJournal', icon: 'bx bx-calendar-star' },
+                        { id: '_lbSpacer2', title: 'Spacer', type: 'launcher', builtinWidget: 'spacer', baseSize: "0", growthFactor: "1" },
+                        { id: '_lbProtectedSession', title: 'Protected Session', type: 'launcher', builtinWidget: 'protectedSession', icon: 'bx bx bx-shield-quarter' },
+                        { id: '_lbSyncStatus', title: 'Sync Status', type: 'launcher', builtinWidget: 'syncStatus', icon: 'bx bx-wifi' }
                     ]
                 }
             ]
         },
         {
-            id: 'options',
+            id: '_options',
             title: 'Options',
             type: 'book',
             children: [
-                { id: 'optionsAppearance', title: 'Appearance', type: 'contentWidget', icon: 'bx-layout' },
-                { id: 'optionsShortcuts', title: 'Shortcuts', type: 'contentWidget', icon: 'bxs-keyboard' },
-                { id: 'optionsTextNotes', title: 'Text Notes', type: 'contentWidget', icon: 'bx-text' },
-                { id: 'optionsCodeNotes', title: 'Code Notes', type: 'contentWidget', icon: 'bx-code' },
-                { id: 'optionsImages', title: 'Images', type: 'contentWidget', icon: 'bx-image' },
-                { id: 'optionsSpellcheck', title: 'Spellcheck', type: 'contentWidget', icon: 'bx-check-double' },
-                { id: 'optionsPassword', title: 'Password', type: 'contentWidget', icon: 'bx-lock' },
-                { id: 'optionsEtapi', title: 'ETAPI', type: 'contentWidget', icon: 'bx-extension' },
-                { id: 'optionsBackup', title: 'Backup', type: 'contentWidget', icon: 'bx-data' },
-                { id: 'optionsSync', title: 'Sync', type: 'contentWidget', icon: 'bx-wifi' },
-                { id: 'optionsOther', title: 'Other', type: 'contentWidget', icon: 'bx-dots-horizontal' },
-                { id: 'optionsAdvanced', title: 'Advanced', type: 'contentWidget' }
+                { id: '_optionsAppearance', title: 'Appearance', type: 'contentWidget', icon: 'bx-layout' },
+                { id: '_optionsShortcuts', title: 'Shortcuts', type: 'contentWidget', icon: 'bxs-keyboard' },
+                { id: '_optionsTextNotes', title: 'Text Notes', type: 'contentWidget', icon: 'bx-text' },
+                { id: '_optionsCodeNotes', title: 'Code Notes', type: 'contentWidget', icon: 'bx-code' },
+                { id: '_optionsImages', title: 'Images', type: 'contentWidget', icon: 'bx-image' },
+                { id: '_optionsSpellcheck', title: 'Spellcheck', type: 'contentWidget', icon: 'bx-check-double' },
+                { id: '_optionsPassword', title: 'Password', type: 'contentWidget', icon: 'bx-lock' },
+                { id: '_optionsEtapi', title: 'ETAPI', type: 'contentWidget', icon: 'bx-extension' },
+                { id: '_optionsBackup', title: 'Backup', type: 'contentWidget', icon: 'bx-data' },
+                { id: '_optionsSync', title: 'Sync', type: 'contentWidget', icon: 'bx-wifi' },
+                { id: '_optionsOther', title: 'Other', type: 'contentWidget', icon: 'bx-dots-horizontal' },
+                { id: '_optionsAdvanced', title: 'Advanced', type: 'contentWidget' }
             ]
         }
     ]
@@ -231,9 +231,9 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
         throw new Error(`Item does not contain mandatory properties: ${JSON.stringify(item)}`);
     }
 
-    // if (item.id.charAt(0) !== '_') {
-    //     throw new Error("ID has to start with underscore");
-    // }
+    if (item.id.charAt(0) !== '_') {
+        throw new Error(`ID has to start with underscore, given '${item.id}'`);
+    }
 
     let note = becca.notes[item.id];
     let branch = becca.branches[item.id];
@@ -311,5 +311,13 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
 }
 
 module.exports = {
-    checkHiddenSubtree
+    checkHiddenSubtree,
+    LBTPL_ROOT,
+    LBTPL_BASE,
+    LBTPL_COMMAND,
+    LBTPL_NOTE_LAUNCHER,
+    LBTPL_SCRIPT,
+    LBTPL_BUILTIN_WIDGET,
+    LBTPL_SPACER,
+    LBTPL_CUSTOM_WIDGET
 };

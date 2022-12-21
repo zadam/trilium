@@ -46,7 +46,7 @@ function checkNoteAccess(noteId, req, res) {
         return false;
     }
 
-    if (noteId === 'share' && !shaca.shareIndexEnabled) {
+    if (noteId === '_share' && !shaca.shareIndexEnabled) {
         res.status(403)
             .json({ message: `Accessing share index is forbidden.` });
 

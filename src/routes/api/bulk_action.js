@@ -6,7 +6,7 @@ function execute(req) {
 
     const affectedNoteIds = getAffectedNoteIds(noteIds, includeDescendants);
 
-    const bulkActionNote = becca.getNote('bulkAction');
+    const bulkActionNote = becca.getNote('_bulkAction');
 
     bulkActionService.executeActions(bulkActionNote, affectedNoteIds);
 }

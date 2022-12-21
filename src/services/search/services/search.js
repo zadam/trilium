@@ -165,7 +165,7 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
-            if (notePathArray.includes("hidden")) {
+            if (notePathArray.includes('_hidden')) {
                 return null;
             }
 

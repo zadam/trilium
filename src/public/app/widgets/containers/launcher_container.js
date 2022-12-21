@@ -19,7 +19,7 @@ export default class LauncherContainer extends FlexContainer {
 
         this.children = [];
 
-        const visibleLaunchersRoot = await froca.getNote('lbVisibleLaunchers', true);
+        const visibleLaunchersRoot = await froca.getNote('_lbVisibleLaunchers', true);
 
         if (!visibleLaunchersRoot) {
             console.log("Visible launchers root note doesn't exist.");

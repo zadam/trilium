@@ -51,10 +51,10 @@ async function getAction(actionName, silent = false) {
 
 	if (!action) {
 		if (silent) {
-			console.log(`Cannot find action ${actionName}`);
+			console.debug(`Cannot find action '${actionName}'`);
 		}
 		else {
-			throw new Error(`Cannot find action ${actionName}`);
+			throw new Error(`Cannot find action '${actionName}'`);
 		}
 	}
 

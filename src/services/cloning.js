@@ -120,9 +120,9 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 }
 
 function cloneNoteAfter(noteId, afterBranchId) {
-    if (['hidden', 'root'].includes(noteId)) {
+    if (['_hidden', 'root'].includes(noteId)) {
         return { success: false, message: 'Cloning the given note is forbidden.' };
-    } else if (afterBranchId === 'hidden') {
+    } else if (afterBranchId === '_hidden') {
         return { success: false, message: 'Cannot clone after the hidden branch.' };
     }
 

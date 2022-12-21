@@ -371,7 +371,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             },
             beforeActivate: (event, data) => {
                 // hidden subtree is hidden hackily, prevent activating it e.g. by keyboard
-                return hoistedNoteService.getHoistedNoteId() === 'hidden' || data.node.data.noteId !== 'hidden';
+                return hoistedNoteService.getHoistedNoteId() === '_hidden' || data.node.data.noteId !== '_hidden';
             },
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
@@ -395,8 +395,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 autoExpandMS: 600,
                 preventLazyParents: false,
                 dragStart: (node, data) => {
-                    if (['root', 'hidden', 'lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(node.data.noteId)
-                        || node.data.noteId.startsWith("options")) {
+                    if (['root', '_hidden', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(node.data.noteId)
+                        || node.data.noteId.startsWith("_options")) {
                         return false;
                     }
 
@@ -424,9 +424,9 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 dragEnter: (node, data) => {
                     if (node.data.noteType === 'search') {
                         return false;
-                    } else if (node.data.noteId === 'lbRoot') {
+                    } else if (node.data.noteId === '_lbRoot') {
                         return false;
-                    } else if (node.data.noteId.startsWith('options')) {
+                    } else if (node.data.noteId.startsWith('_options')) {
                         return false;
                     } else if (node.data.noteType === 'launcher') {
                         return ['before', 'after'];
@@ -747,7 +747,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
                 .filter(note =>
-                    !['share', 'lbBookmarks'].includes(note.noteId)
+                    !['_share', 'lbBookmarks'].includes(note.noteId)
                     && note.type !== 'search');
 
             if (realClones.length > 1) {
@@ -1122,7 +1122,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
 
         for (const ecBranch of loadResults.getBranches()) {
-            if (ecBranch.parentNoteId === 'share') {
+            if (ecBranch.parentNoteId === '_share') {
                 // all shared notes have a sign in the tree, even the descendants of shared notes
                 noteIdsToReload.add(ecBranch.noteId);
             }
@@ -1335,7 +1335,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     toggleHiddenNode(show) {
-        const hiddenNode = this.getNodesByNoteId('hidden')[0];
+        const hiddenNode = this.getNodesByNoteId('_hidden')[0];
         $(hiddenNode.li).toggleClass("hidden-node-is-hidden", !show);
     }
 
@@ -1568,11 +1568,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     moveShortcutToVisibleCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lbVisibleLaunchers');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, '_lbVisibleLaunchers');
     }
 
     moveShortcutToAvailableCommand({node, selectedOrActiveBranchIds}) {
-        branchService.moveToParentNote(selectedOrActiveBranchIds, 'lbAvailableLaunchers');
+        branchService.moveToParentNote(selectedOrActiveBranchIds, '_lbAvailableLaunchers');
     }
 
     addNoteLauncherCommand({node}) {

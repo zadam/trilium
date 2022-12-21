@@ -73,19 +73,19 @@ export default class RootCommandExecutor extends Component {
     }
 
     async showBackendLogCommand() {
-        await appContext.tabManager.openContextWithNote('backendLog', true);
+        await appContext.tabManager.openContextWithNote('_backendLog', true);
     }
 
     async showLaunchBarSubtreeCommand() {
-        await this.showAndHoistSubtree('lbRoot');
+        await this.showAndHoistSubtree('_lbRoot');
     }
 
     async showShareSubtreeCommand() {
-        await this.showAndHoistSubtree('share');
+        await this.showAndHoistSubtree('_share');
     }
 
     async showHiddenSubtreeCommand() {
-        await this.showAndHoistSubtree('hidden');
+        await this.showAndHoistSubtree('_hidden');
     }
 
     async showOptionsCommand() {
@@ -93,11 +93,11 @@ export default class RootCommandExecutor extends Component {
     }
 
     async showSQLConsoleHistoryCommand() {
-        await this.showAndHoistSubtree('sqlConsole');
+        await this.showAndHoistSubtree('_sqlConsole');
     }
 
     async showSearchHistoryCommand() {
-        await this.showAndHoistSubtree('search');
+        await this.showAndHoistSubtree('_search');
     }
 
     async showAndHoistSubtree(subtreeNoteId) {

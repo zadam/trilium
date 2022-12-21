@@ -6,7 +6,7 @@ module.exports = () => {
     cls.init(() => {
         beccaLoader.load();
 
-        for (const label of becca.getNote('hidden').getLabels('archived')) {
+        for (const label of becca.getNote('_hidden').getLabels('archived')) {
             label.markAsDeleted('0208__remove_archived_from_hidden');
         }
     });

@@ -35,7 +35,7 @@
 <body data-note-id="<%= note.noteId %>">
 <div id="layout">
     <div id="main">
-        <% if (note.parents[0].noteId !== 'share' && note.parents.length !== 0) { %>
+        <% if (note.parents[0].noteId !== '_share' && note.parents.length !== 0) { %>
             <nav id="parentLink">
                 parent: <a href="<%= note.parents[0].shareId %>"
                            class="type-<%= note.parents[0].type %>"><%= note.parents[0].title %></a>

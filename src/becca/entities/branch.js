@@ -129,7 +129,7 @@ class Branch extends AbstractEntity {
      * @returns {boolean}
      */
     get isWeak() {
-        return ['share', 'lbBookmarks'].includes(this.parentNoteId);
+        return ['_share', 'lbBookmarks'].includes(this.parentNoteId);
     }
 
     /**
@@ -211,7 +211,7 @@ class Branch extends AbstractEntity {
             let maxNotePos = 0;
 
             for (const childBranch of this.parentNote.getChildBranches()) {
-                if (maxNotePos < childBranch.notePosition && childBranch.branchId !== 'hidden') {
+                if (maxNotePos < childBranch.notePosition && childBranch.branchId !== '_hidden') {
                     maxNotePos = childBranch.notePosition;
                 }
             }

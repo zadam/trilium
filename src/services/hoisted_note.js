@@ -10,7 +10,7 @@ function isHoistedInHiddenSubtree() {
 
     if (hoistedNoteId === 'root') {
         return false;
-    } else if (hoistedNoteId === 'hidden') {
+    } else if (hoistedNoteId === '_hidden') {
         return true;
     }
 
@@ -20,7 +20,7 @@ function isHoistedInHiddenSubtree() {
         throw new Error(`Cannot find hoisted note ${hoistedNoteId}`);
     }
 
-    return hoistedNote.hasAncestor('hidden');
+    return hoistedNote.hasAncestor('_hidden');
 }
 
 module.exports = {

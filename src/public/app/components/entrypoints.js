@@ -95,7 +95,7 @@ export default class Entrypoints extends Component {
 
     logoutCommand() {
         const $logoutForm = $('<form action="logout" method="POST">')
-            .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
+            .append($(`<input type='_hidden' name="_csrf" value="${glob.csrfToken}"/>`));
 
         $("body").append($logoutForm);
         $logoutForm.trigger('submit');

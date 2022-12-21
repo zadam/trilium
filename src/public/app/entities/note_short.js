@@ -344,7 +344,7 @@ class NoteShort {
             isInHoistedSubTree: path.includes(hoistedNotePath),
             isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
             isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
-            isHidden: path.includes("hidden")
+            isHidden: path.includes('_hidden')
         }));
 
         notePaths.sort((a, b) => {
@@ -426,7 +426,7 @@ class NoteShort {
         else if (this.noteId === 'root') {
             return "bx bx-chevrons-right";
         }
-        if (this.noteId === 'share') {
+        if (this.noteId === '_share') {
             return "bx bx-share-alt";
         }
         else if (this.type === 'text') {
@@ -832,7 +832,7 @@ class NoteShort {
                 continue;
             }
 
-            if (parentNote.noteId === 'share' || parentNote.isShared()) {
+            if (parentNote.noteId === '_share' || parentNote.isShared()) {
                 return true;
             }
         }
@@ -845,7 +845,7 @@ class NoteShort {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+        return this.type === 'launcher' || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(this.noteId);
     }
 
     isOptions() {

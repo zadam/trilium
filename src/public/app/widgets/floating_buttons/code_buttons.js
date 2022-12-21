@@ -76,7 +76,7 @@ export default class CodeButtonsWidget extends NoteContextAwareWidget {
 
         this.$saveToNoteButton.toggle(
             note.mime === 'text/x-sqlite;schema=trilium'
-            && !note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden"))
+            && !note.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'))
         );
 
         this.$openTriliumApiDocsButton.toggle(note.mime.startsWith('application/javascript;env='));

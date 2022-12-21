@@ -15,7 +15,7 @@ export default class BookmarkButtons extends FlexContainer {
         this.children = [];
         this.noteIds = [];
 
-        const bookmarkParentNote = await froca.getNote('lbBookmarks');
+        const bookmarkParentNote = await froca.getNote('_lbBookmarks');
 
         for (const note of await bookmarkParentNote.getChildNotes()) {
             this.noteIds.push(note.noteId);

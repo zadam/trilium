@@ -270,7 +270,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.$component.show();
 
-        this.$saveToNoteButton.toggle(!note.getAllNotePaths().find(notePathArr => !notePathArr.includes("hidden")));
+        this.$saveToNoteButton.toggle(!note.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden')));
 
         this.$searchOptions.empty();
 
@@ -295,7 +295,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
             .empty()
             .append(...actions.map(action => action.render()));
 
-        this.$searchAndExecuteButton.css('visibility', actions.length > 0 ? 'visible' : 'hidden');
+        this.$searchAndExecuteButton.css('visibility', actions.length > 0 ? 'visible' : '_hidden');
     }
 
     getContent() {

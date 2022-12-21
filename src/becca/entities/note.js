@@ -904,7 +904,7 @@ class Note extends AbstractEntity {
 
         function addSubtreeNotesInner(note, parentNote = null) {
             // share can be removed after 0.57 since it will be put under hidden
-            if (note.noteId === 'hidden' || note.noteId === 'share') {
+            if (note.noteId === '_hidden' || note.noteId === '_share') {
                 return;
             }
 
@@ -1342,7 +1342,7 @@ class Note extends AbstractEntity {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+        return this.type === 'launcher' || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(this.noteId);
     }
 
     isOptions() {

@@ -104,11 +104,11 @@ function getAndValidateParent(params) {
         throw new ValidationError(`Creating child notes into launcher notes is not allowed.`);
     }
 
-    if (['lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(params.parentNoteId) && params.type !== 'launcher') {
+    if (['_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(params.parentNoteId) && params.type !== 'launcher') {
         throw new ValidationError(`Only 'launcher' notes can be created in parent '${params.parentNoteId}'`);
     }
 
-    if (!params.ignoreForbiddenParents && (['lbRoot', 'hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
+    if (!params.ignoreForbiddenParents && (['_lbRoot', '_hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
         throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
     }
 

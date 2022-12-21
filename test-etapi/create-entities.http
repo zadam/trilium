@@ -33,12 +33,12 @@ Content-Type: application/json
 {
   "branchId": "forcedClonedId",
   "noteId": "{{createdNoteId}}",
-  "parentNoteId": "hidden"
+  "parentNoteId": '_hidden'
 }
 
 > {%
     client.assert(response.status === 201);
-    client.assert(response.body.parentNoteId == "hidden");
+    client.assert(response.body.parentNoteId == '_hidden');
 
     client.global.set("clonedBranchId", response.body.branchId);
 
@@ -88,7 +88,7 @@ Authorization: {{authToken}}
 > {%
     client.assert(response.status === 200);
     client.assert(response.body.branchId == client.global.get("clonedBranchId"));
-    client.assert(response.body.parentNoteId == "hidden");
+    client.assert(response.body.parentNoteId == '_hidden');
 %}
 
 ###

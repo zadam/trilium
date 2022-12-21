@@ -10,7 +10,7 @@ module.exports = () => {
 
         // deleting just branches because they might be cloned (and therefore saved) also outside of the hidden subtree
 
-        const searchRoot = becca.getNote('search');
+        const searchRoot = becca.getNote('_search');
 
         for (const searchBranch of searchRoot.getChildBranches()) {
             const searchNote = searchBranch.getNote();
@@ -20,7 +20,7 @@ module.exports = () => {
             }
         }
 
-        const sqlConsoleRoot = becca.getNote('sqlConsole');
+        const sqlConsoleRoot = becca.getNote('_sqlConsole');
 
         for (const sqlConsoleBranch of sqlConsoleRoot.getChildBranches()) {
             const sqlConsoleNote = sqlConsoleBranch.getNote();

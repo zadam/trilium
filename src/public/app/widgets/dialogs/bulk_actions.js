@@ -83,7 +83,7 @@ export default class BulkActionsDialog extends BasicWidget {
         this.$widget.on('click', '[data-action-add]', async event => {
             const actionName = $(event.target).attr('data-action-add');
 
-            await bulkActionService.addAction('bulkAction', actionName);
+            await bulkActionService.addAction('_bulkAction', actionName);
 
             await this.refresh();
         });
@@ -111,7 +111,7 @@ export default class BulkActionsDialog extends BasicWidget {
 
         this.$affectedNoteCount.text(affectedNoteCount);
 
-        const bulkActionNote = await froca.getNote('bulkAction');
+        const bulkActionNote = await froca.getNote('_bulkAction');
 
         const actions = bulkActionService.parseActions(bulkActionNote);
 
@@ -150,7 +150,7 @@ export default class BulkActionsDialog extends BasicWidget {
         if (loadResults.getAttributes().find(attr =>
             attr.type === 'label'
             && attr.name === 'action'
-            && attr.noteId === 'bulkAction'
+            && attr.noteId === '_bulkAction'
             && attr.isDeleted)) {
 
             // this may be triggered from e.g. sync without open widget, then no need to refresh the widget
