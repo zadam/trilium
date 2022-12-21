@@ -10,7 +10,6 @@ const TPL = `
             width: 100%;
             min-height: 500px;
             overflow: scroll;
-            line-height: 0.7;
         }
     </style>
 

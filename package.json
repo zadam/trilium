@@ -75,7 +75,7 @@
     "rimraf": "3.0.2",
     "safe-compare": "1.1.4",
     "sanitize-filename": "1.6.3",
-    "sanitize-html": "2.8.0",
+    "sanitize-html": "2.8.1",
     "sax": "1.2.4",
     "semver": "7.3.8",
     "serve-favicon": "2.5.0",
