@@ -76,9 +76,7 @@ function getExpression(tokens, searchContext, level = 0) {
         startIndex = Math.max(0, startIndex - 20);
         endIndex = Math.min(searchContext.originalQuery.length, endIndex + 20);
 
-        return '"' + (startIndex !== 0 ? "..." : "")
-            + searchContext.originalQuery.substr(startIndex, endIndex - startIndex)
-            + (endIndex !== searchContext.originalQuery.length ? "..." : "") + '"';
+        return `"${startIndex !== 0 ? "..." : ""}${searchContext.originalQuery.substr(startIndex, endIndex - startIndex)}${endIndex !== searchContext.originalQuery.length ? "..." : ""}"`;
     }
 
     function resolveConstantOperand() {
@@ -128,7 +126,7 @@ function getExpression(tokens, searchContext, level = 0) {
             format = "YYYY";
         }
         else {
-            throw new Error("Unrecognized keyword: " + operand.token);
+            throw new Error(`Unrecognized keyword: ${operand.token}`);
         }
 
         return date.format(format);

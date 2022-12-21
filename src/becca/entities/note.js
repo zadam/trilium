@@ -211,7 +211,7 @@ class Note extends AbstractEntity {
                 return undefined;
             }
             else {
-                throw new Error("Cannot find note content for noteId=" + this.noteId);
+                throw new Error(`Cannot find note content for noteId=${this.noteId}`);
             }
         }
 
@@ -304,7 +304,7 @@ class Note extends AbstractEntity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        const hash = utils.hash(this.noteId + "|" + pojo.content.toString());
+        const hash = utils.hash(`${this.noteId}|${pojo.content.toString()}`);
 
         entityChangesService.addEntityChange({
             entityName: 'note_contents',
@@ -739,22 +739,22 @@ class Note extends AbstractEntity {
      */
     getFlatText() {
         if (!this.flatTextCache) {
-            this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime + ' ';
+            this.flatTextCache = `${this.noteId} ${this.type} ${this.mime} `;
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
-                    this.flatTextCache += branch.prefix + ' ';
+                    this.flatTextCache += `${branch.prefix} `;
                 }
             }
 
-            this.flatTextCache += this.title + ' ';
+            this.flatTextCache += `${this.title} `;
 
             for (const attr of this.getAttributes()) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.flatTextCache += (attr.type === 'label' ? '#' : '~') + attr.name;
+                this.flatTextCache += `${attr.type === 'label' ? '#' : '~'}${attr.name}`;
 
                 if (attr.value) {
-                    this.flatTextCache += '=' + attr.value;
+                    this.flatTextCache += `=${attr.value}`;
                 }
 
                 this.flatTextCache += ' ';

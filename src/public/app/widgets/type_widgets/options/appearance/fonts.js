@@ -167,8 +167,8 @@ export default class FontsOptions extends OptionsWidget {
         ];
 
         for (const optionName of optionsToSave) {
-            this['$' + optionName].on('change', () =>
-                this.updateOption(optionName, this['$' + optionName].val()));
+            this[`$${optionName}`].on('change', () =>
+                this.updateOption(optionName, this[`$${optionName}`].val()));
         }
     }
 

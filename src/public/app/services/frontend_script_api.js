@@ -137,7 +137,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
         return params.map(p => {
             if (typeof p === "function") {
-                return "!@#Function: " + p.toString();
+                return `!@#Function: ${p.toString()}`;
             }
             else {
                 return p;
@@ -173,7 +173,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
             return ret.executionResult;
         }
         else {
-            throw new Error("server error: " + ret.error);
+            throw new Error(`server error: ${ret.error}`);
         }
     };
 
@@ -564,7 +564,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.log = message => {
         const {noteId} = this.startNote;
 
-        message = utils.now() + ": " + message;
+        message = `${utils.now()}: ${message}`;
 
         console.log(`Script ${noteId}: ${message}`);
 

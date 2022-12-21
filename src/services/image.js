@@ -61,7 +61,7 @@ function getImageType(buffer) {
 function getImageMimeFromExtension(ext) {
     ext = ext.toLowerCase();
 
-    return 'image/' + (ext === 'svg' ? 'svg+xml' : ext);
+    return `image/${ext === 'svg' ? 'svg+xml' : ext}`;
 }
 
 function updateImage(noteId, uploadBuffer, originalName) {
@@ -114,7 +114,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
             note.mime = getImageMimeFromExtension(imageFormat.ext);
 
             if (!originalName.includes(".")) {
-                originalName += "." + imageFormat.ext;
+                originalName += `.${imageFormat.ext}`;
 
                 note.setLabel('originalFileName', originalName);
                 note.title = sanitizeFilename(originalName);
@@ -146,7 +146,8 @@ async function shrinkImage(buffer, originalName) {
         finalImageBuffer = await resize(buffer, jpegQuality);
     }
     catch (e) {
-        log.error("Failed to resize image '" + originalName + "'\nStack: " + e.stack);
+        log.error(`Failed to resize image '${originalName}'
+Stack: ${e.stack}`);
 
         finalImageBuffer = buffer;
     }

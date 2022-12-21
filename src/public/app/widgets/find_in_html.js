@@ -37,7 +37,7 @@ export default class FindInHtml {
                         separateWordSearch: false,
                         caseSensitive: matchCase,
                         done: async () => {
-                            this.$results = $content.find("." + FIND_RESULT_CSS_CLASSNAME);
+                            this.$results = $content.find(`.${FIND_RESULT_CSS_CLASSNAME}`);
                             this.currentIndex = 0;
                             await this.jumpTo();
 

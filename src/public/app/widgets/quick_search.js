@@ -98,12 +98,12 @@ export default class QuickSearchWidget extends BasicWidget {
         this.$dropdownMenu.empty();
         this.$dropdownMenu.append('<span class="dropdown-item disabled"><span class="bx bx-loader bx-spin"></span> Searching ...</span>');
 
-        const {searchResultNoteIds, error} = await server.get('quick-search/' + encodeURIComponent(searchString));
+        const {searchResultNoteIds, error} = await server.get(`quick-search/${encodeURIComponent(searchString)}`);
 
         if (error) {
             this.$searchString.tooltip({
                 trigger: 'manual',
-                title: "Search error: " + error,
+                title: `Search error: ${error}`,
                 placement: 'right'
             });
 

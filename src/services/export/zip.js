@@ -37,11 +37,11 @@ function exportToZip(taskContext, branch, format, res) {
             do {
                 index = existingFileNames[lcFileName]++;
 
-                newName = index + "_" + lcFileName;
+                newName = `${index}_${lcFileName}`;
             }
             while (newName in existingFileNames);
 
-            return index + "_" + fileName;
+            return `${index}_${fileName}`;
         }
         else {
             existingFileNames[lcFileName] = 1;
@@ -84,8 +84,8 @@ function exportToZip(taskContext, branch, format, res) {
         }
 
         // if the note is already named with extension (e.g. "jquery"), then it's silly to append exact same extension again
-        if (newExtension && existingExtension !== "." + newExtension.toLowerCase()) {
-            fileName += "." + newExtension;
+        if (newExtension && existingExtension !== `.${newExtension.toLowerCase()}`) {
+            fileName += `.${newExtension}`;
         }
 
         return getUniqueFilename(existingFileNames, fileName);
@@ -99,7 +99,7 @@ function exportToZip(taskContext, branch, format, res) {
         }
 
         const title = note.getTitleOrProtected();
-        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + title) : title;
+        const completeTitle = branch.prefix ? (`${branch.prefix} - ${title}`) : title;
         let baseFileName = sanitize(completeTitle);
 
         if (baseFileName.length > 200) { // actual limit is 256 bytes(!) but let's be conservative
@@ -109,7 +109,7 @@ function exportToZip(taskContext, branch, format, res) {
         const notePath = parentMeta.notePath.concat([note.noteId]);
 
         if (note.noteId in noteIdToMeta) {
-            const fileName = getUniqueFilename(existingFileNames, baseFileName + ".clone." + (format === 'html' ? 'html' : 'md'));
+            const fileName = getUniqueFilename(existingFileNames, `${baseFileName}.clone.${format === 'html' ? 'html' : 'md'}`);
 
             return {
                 isClone: true,
@@ -202,7 +202,7 @@ function exportToZip(taskContext, branch, format, res) {
         for (let i = 0; i < targetPath.length - 1; i++) {
             const meta = noteIdToMeta[targetPath[i]];
 
-            url += encodeURIComponent(meta.dirFileName) + '/';
+            url += `${encodeURIComponent(meta.dirFileName)}/`;
         }
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
@@ -238,7 +238,7 @@ function exportToZip(taskContext, branch, format, res) {
 
         if (noteMeta.format === 'html') {
             if (!content.substr(0, 100).toLowerCase().includes("<html")) {
-                const cssUrl = "../".repeat(noteMeta.notePath.length - 1) + 'style.css';
+                const cssUrl = `${"../".repeat(noteMeta.notePath.length - 1)}style.css`;
 
                 // <base> element will make sure external links are openable - https://github.com/zadam/trilium/issues/1289#issuecomment-704066809
                 content = `<html>
@@ -263,7 +263,8 @@ ${content}
             let markdownContent = mdService.toMarkdown(content);
 
             if (markdownContent.trim().length > 0 && !markdownContent.startsWith("# ")) {
-                markdownContent = '# ' + title + "\r\n" + markdownContent;
+                markdownContent = `# ${title}\r
+${markdownContent}`;
             }
 
             return markdownContent;
@@ -307,10 +308,10 @@ ${content}
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
             // create directory
-            archive.append('', { name: directoryPath + '/', date: dateUtils.parseDateTime(note.utcDateModified) });
+            archive.append('', { name: `${directoryPath}/`, date: dateUtils.parseDateTime(note.utcDateModified) });
 
             for (const childMeta of noteMeta.children) {
-                saveNote(childMeta, directoryPath + '/');
+                saveNote(childMeta, `${directoryPath}/`);
             }
         }
     }
@@ -319,7 +320,7 @@ ${content}
         function saveNavigationInner(meta) {
             let html = '<li>';
 
-            const escapedTitle = utils.escapeHtml((meta.prefix ? `${meta.prefix} - ` : '') + meta.title);
+            const escapedTitle = utils.escapeHtml(`${meta.prefix ? `${meta.prefix} - ` : ''}${meta.title}`);
 
             if (meta.dataFileName) {
                 const targetUrl = getTargetUrl(meta.noteId, rootMeta);
@@ -340,7 +341,7 @@ ${content}
                 html += '</ul>'
             }
 
-            return html + '</li>';
+            return `${html}</li>`;
         }
 
         const fullHtml = `<html>
@@ -390,7 +391,7 @@ ${content}
     }
 
     function saveCss(rootMeta, cssMeta) {
-        const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
+        const cssContent = fs.readFileSync(`${RESOURCE_DIR}/libraries/ckeditor/ckeditor-content.css`);
 
         archive.append(cssContent, { name: cssMeta.dataFileName });
     }
@@ -452,7 +453,7 @@ ${content}
     }
 
     const note = branch.getNote();
-    const zipFileName = (branch.prefix ? `${branch.prefix} - ` : "") + note.getTitleOrProtected() + ".zip";
+    const zipFileName = `${branch.prefix ? `${branch.prefix} - ` : ""}${note.getTitleOrProtected()}.zip`;
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');

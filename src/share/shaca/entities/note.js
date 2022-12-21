@@ -99,7 +99,7 @@ class Note extends AbstractEntity {
                 return undefined;
             }
             else {
-                throw new Error("Cannot find note content for noteId=" + this.noteId);
+                throw new Error(`Cannot find note content for noteId=${this.noteId}`);
             }
         }
 

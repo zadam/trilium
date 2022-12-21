@@ -18,7 +18,7 @@ function returnImage(req, res) {
     }
     else if (image.isDeleted || image.data === null) {
         res.set('Content-Type', 'image/png');
-        return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
+        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
     }
 
     /**
@@ -81,7 +81,7 @@ function updateImage(req) {
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return {
             uploaded: false,
-            message: "Unknown image type: " + file.mimetype
+            message: `Unknown image type: ${file.mimetype}`
         };
     }
 

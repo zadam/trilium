@@ -52,7 +52,7 @@ async function initLabelValueAutocomplete({ $el, open, nameCallback }) {
         return;
     }
 
-    const attributeValues = (await server.get('attributes/values/' + encodeURIComponent(attributeName)))
+    const attributeValues = (await server.get(`attributes/values/${encodeURIComponent(attributeName)}`))
         .map(attribute => ({ value: attribute }));
 
     if (attributeValues.length === 0) {

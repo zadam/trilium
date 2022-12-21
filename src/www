@@ -64,7 +64,7 @@ async function startTrilium() {
             app.set('trust proxy', config['Network']['trustedReverseProxy'])
         }
     }
-    log.info('Trusted reverse proxy: ' + app.get('trust proxy'))
+    log.info(`Trusted reverse proxy: ${app.get('trust proxy')}`)
 
     if (config['Network']['https']) {
         if (!config['Network']['keyPath'] || !config['Network']['keyPath'].trim().length) {
@@ -82,12 +82,12 @@ async function startTrilium() {
 
         httpServer = https.createServer(options, app);
 
-        log.info("App HTTPS server starting up at port " + port);
+        log.info(`App HTTPS server starting up at port ${port}`);
     }
     else {
         httpServer = http.createServer(app);
 
-        log.info("App HTTP server starting up at port " + port);
+        log.info(`App HTTP server starting up at port ${port}`);
     }
 
     log.info(JSON.stringify(appInfo, null, 2));
@@ -124,7 +124,7 @@ async function startTrilium() {
         }
     )
 
-    httpServer.on('listening', () => log.info('Listening on port ' + httpServer.address().port));
+    httpServer.on('listening', () => log.info(`Listening on port ${httpServer.address().port}`));
 
     ws.init(httpServer, sessionParser);
 

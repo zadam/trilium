@@ -72,7 +72,8 @@ async function sync() {
             };
         }
         else {
-            log.info("sync failed: " + e.message + "\nstack: " + e.stack);
+            log.info(`sync failed: ${e.message}
+stack: ${e.stack}`);
 
             ws.syncFailed();
 
@@ -221,7 +222,7 @@ async function pushChanges(syncContext) {
 
         ws.syncPushInProgress();
 
-        log.info(`Sync ${logMarkerId}: Pushing ${entityChangesRecords.length} sync changes in ` + (Date.now() - startDate.getTime()) + "ms");
+        log.info(`Sync ${logMarkerId}: Pushing ${entityChangesRecords.length} sync changes in ${Date.now() - startDate.getTime()}ms`);
 
         lastSyncedPush = entityChangesRecords[entityChangesRecords.length - 1].entityChange.id;
 
@@ -311,7 +312,7 @@ function getEntityChangeRow(entityName, entityId) {
         const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
         if (!primaryKey) {
-            throw new Error("Unknown entity " + entityName);
+            throw new Error(`Unknown entity ${entityName}`);
         }
 
         const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
@@ -367,7 +368,7 @@ function setLastSyncedPull(entityChangeId) {
     const lastSyncedPullOption = becca.getOption('lastSyncedPull');
 
     if (lastSyncedPullOption) { // might be null in initial sync when becca is not loaded
-        lastSyncedPullOption.value = entityChangeId + '';
+        lastSyncedPullOption.value = `${entityChangeId}`;
     }
 
     // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes
@@ -388,7 +389,7 @@ function setLastSyncedPush(entityChangeId) {
     const lastSyncedPushOption = becca.getOption('lastSyncedPush');
 
     if (lastSyncedPushOption) { // might be null in initial sync when becca is not loaded
-        lastSyncedPushOption.value = entityChangeId + '';
+        lastSyncedPushOption.value = `${entityChangeId}`;
     }
 
     // this way we avoid updating entity_changes which otherwise means that we've never pushed all entity_changes

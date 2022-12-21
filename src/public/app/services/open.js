@@ -2,10 +2,10 @@ import utils from "./utils.js";
 import server from "./server.js";
 
 function getFileUrl(noteId) {
-    return getUrlForDownload("api/notes/" + noteId + "/download");
+    return getUrlForDownload(`api/notes/${noteId}/download`);
 }
 function getOpenFileUrl(noteId) {
-    return getUrlForDownload("api/notes/" + noteId + "/open");
+    return getUrlForDownload(`api/notes/${noteId}/open`);
 }
 
 function download(url) {
@@ -19,14 +19,14 @@ function download(url) {
 }
 
 function downloadFileNote(noteId) {
-    const url = getFileUrl(noteId) + '?' + Date.now(); // don't use cache
+    const url = `${getFileUrl(noteId)}?${Date.now()}`; // don't use cache
 
     download(url);
 }
 
 async function openNoteExternally(noteId, mime) {
     if (utils.isElectron()) {
-        const resp = await server.post("notes/" + noteId + "/save-to-tmp-dir");
+        const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
 
         const electron = utils.dynamicRequire('electron');
         const res = await electron.shell.openPath(resp.tmpFilePath);
@@ -59,7 +59,7 @@ function downloadNoteRevision(noteId, noteRevisionId) {
 function getUrlForDownload(url) {
     if (utils.isElectron()) {
         // electron needs absolute URL so we extract current host, port, protocol
-        return getHost() + '/' + url;
+        return `${getHost()}/${url}`;
     }
     else {
         // web server can be deployed on subdomain so we need to use relative path
@@ -69,7 +69,7 @@ function getUrlForDownload(url) {
 
 function getHost() {
     const url = new URL(window.location.href);
-    return url.protocol + "//" + url.hostname + ":" + url.port;
+    return `${url.protocol}//${url.hostname}:${url.port}`;
 }
 
 export default {

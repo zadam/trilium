@@ -77,7 +77,7 @@ async function createMainWindow(app) {
     mainWindowState.manage(mainWindow);
 
     mainWindow.setMenuBarVisibility(false);
-    mainWindow.loadURL('http://127.0.0.1:' + port);
+    mainWindow.loadURL(`http://127.0.0.1:${port}`);
     mainWindow.on('closed', () => mainWindow = null);
 
     configureWebContents(mainWindow.webContents, spellcheckEnabled);
@@ -143,7 +143,7 @@ async function createSetupWindow() {
     });
 
     setupWindow.setMenuBarVisibility(false);
-    setupWindow.loadURL('http://127.0.0.1:' + port);
+    setupWindow.loadURL(`http://127.0.0.1:${port}`);
     setupWindow.on('closed', () => setupWindow = null);
 }
 

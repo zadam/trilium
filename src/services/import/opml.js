@@ -25,7 +25,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
     });
 
     if (!['1.0', '1.1', '2.0'].includes(xml.opml.$.version)) {
-        return [400, 'Unsupported OPML version ' + xml.opml.$.version + ', 1.0, 1.1 or 2.0 expected instead.'];
+        return [400, `Unsupported OPML version ${xml.opml.$.version}, 1.0, 1.1 or 2.0 expected instead.`];
     }
 
     const opmlVersion = parseInt(xml.opml.$.version);
@@ -48,7 +48,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
             content = outline.$._note; // _note is already HTML
         }
         else {
-            throw new Error("Unrecognized OPML version " + opmlVersion);
+            throw new Error(`Unrecognized OPML version ${opmlVersion}`);
         }
 
         content = htmlSanitizer.sanitize(content || "");
@@ -88,7 +88,7 @@ function toHtml(text) {
         return '';
     }
 
-    return '<p>' + text.replace(/(?:\r\n|\r|\n)/g, '</p><p>') + '</p>';
+    return `<p>${text.replace(/(?:\r\n|\r|\n)/g, '</p><p>')}</p>`;
 }
 
 module.exports = {

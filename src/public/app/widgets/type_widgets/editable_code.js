@@ -44,7 +44,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
         delete CodeMirror.keyMap.default["Alt-Left"];
         delete CodeMirror.keyMap.default["Alt-Right"];
 
-        CodeMirror.modeURL = window.glob.assetPath + '/libraries/codemirror/mode/%N/%N.js';
+        CodeMirror.modeURL = `${window.glob.assetPath}/libraries/codemirror/mode/%N/%N.js`;
 
         this.codeEditor = CodeMirror(this.$editor[0], {
             value: "",

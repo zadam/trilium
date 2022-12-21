@@ -13,7 +13,7 @@ const ACTION_HANDLERS = {
         note.addRelation(action.relationName, action.targetNoteId);
     },
     deleteNote: (action, note) => {
-        const deleteId = 'searchbulkaction-' + utils.randomString(10);
+        const deleteId = `searchbulkaction-${utils.randomString(10)}`;
 
         note.deleteNote(deleteId);
     },
@@ -34,7 +34,7 @@ const ACTION_HANDLERS = {
         // "officially" injected value:
         // - note
 
-        const newTitle = eval('`' + action.newTitle + '`');
+        const newTitle = eval(`\`${action.newTitle}\``);
 
         if (note.title !== newTitle) {
             note.title = newTitle;

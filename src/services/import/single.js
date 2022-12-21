@@ -111,7 +111,7 @@ function convertTextToHtml(text) {
     text = text.replace(/<br>\s*<br>/g, "</p><p>");
 
     // 4: Wrap in Paragraph Tags
-    text = "<p>" + text + "</p>";
+    text = `<p>${text}</p>`;
 
     return text;
 }

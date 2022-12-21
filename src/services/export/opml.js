@@ -5,7 +5,7 @@ const becca = require("../../becca/becca");
 
 function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {
-        throw new Error("Unrecognized OPML version " + version);
+        throw new Error(`Unrecognized OPML version ${version}`);
     }
 
     const opmlVersion = parseInt(version);
@@ -20,7 +20,7 @@ function exportToOpml(taskContext, branch, version, res) {
             return;
         }
 
-        const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
+        const title = `${branch.prefix ? (`${branch.prefix} - `) : ''}${note.title}`;
 
         if (opmlVersion === 1) {
             const preparedTitle = escapeXmlAttribute(title);
@@ -35,7 +35,7 @@ function exportToOpml(taskContext, branch, version, res) {
             res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
         }
         else {
-            throw new Error("Unrecognized OPML version " + opmlVersion);
+            throw new Error(`Unrecognized OPML version ${opmlVersion}`);
         }
 
         taskContext.increaseProgressCount();
@@ -48,7 +48,7 @@ function exportToOpml(taskContext, branch, version, res) {
     }
 
 
-    const filename = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title + ".opml";
+    const filename = `${branch.prefix ? (`${branch.prefix} - `) : ''}${note.title}.opml`;
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     res.setHeader('Content-Type', 'text/x-opml');

@@ -37,7 +37,7 @@ async function getRenderedContent(note, options = {}) {
         }
     }
     else if (type === 'code') {
-        const fullNote = await server.get('notes/' + note.noteId);
+        const fullNote = await server.get(`notes/${note.noteId}`);
 
         $renderedContent.append($("<pre>").text(trim(fullNote.content, options.trim)));
     }
@@ -64,13 +64,13 @@ async function getRenderedContent(note, options = {}) {
 
         if (type === 'pdf') {
             const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; flex-grow: 100;"></iframe>');
-            $pdfPreview.attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open"));
+            $pdfPreview.attr("src", openService.getUrlForDownload(`api/notes/${note.noteId}/open`));
 
             $content.append($pdfPreview);
         }
         else if (type === 'audio') {
             const $audioPreview = $('<audio controls></audio>')
-                .attr("src", openService.getUrlForStreaming("api/notes/" + note.noteId + "/open-partial"))
+                .attr("src", openService.getUrlForStreaming(`api/notes/${note.noteId}/open-partial`))
                 .attr("type", note.mime)
                 .css("width", "100%");
 
@@ -78,7 +78,7 @@ async function getRenderedContent(note, options = {}) {
         }
         else if (type === 'video') {
             const $videoPreview = $('<video controls></video>')
-                .attr("src", openService.getUrlForDownload("api/notes/" + note.noteId + "/open-partial"))
+                .attr("src", openService.getUrlForDownload(`api/notes/${note.noteId}/open-partial`))
                 .attr("type", note.mime)
                 .css("width", "100%");
 

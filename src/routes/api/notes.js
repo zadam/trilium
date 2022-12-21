@@ -25,8 +25,7 @@ function getNote(req) {
         pojo.content = note.getContent();
 
         if (note.type === 'file' && pojo.content.length > 10000) {
-            pojo.content = pojo.content.substr(0, 10000)
-                + `\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
+            pojo.content = `${pojo.content.substr(0, 10000)}\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
         }
     }
 

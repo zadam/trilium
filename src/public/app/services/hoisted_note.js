@@ -44,7 +44,7 @@ async function checkNoteAccess(notePath, noteContext) {
     const resolvedNotePath = await treeService.resolveNotePath(notePath, noteContext.hoistedNoteId);
 
     if (!resolvedNotePath) {
-        console.log("Cannot activate " + notePath);
+        console.log(`Cannot activate ${notePath}`);
         return false;
     }
 

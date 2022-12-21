@@ -8,7 +8,7 @@ function SetupModel() {
         setInterval(checkOutstandingSyncs, 1000);
     }
 
-    const serverAddress = location.protocol + '//' + location.host;
+    const serverAddress = `${location.protocol}//${location.host}`;
 
     $("#current-host").html(serverAddress);
 
@@ -74,7 +74,7 @@ function SetupModel() {
             hideAlert();
         }
         else {
-            showAlert('Sync setup failed: ' + resp.error);
+            showAlert(`Sync setup failed: ${resp.error}`);
         }
     };
 }

@@ -69,7 +69,7 @@ function renderText(result, note) {
 
                 if (linkedNote) {
                     linkEl.setAttribute("href", linkedNote.shareId);
-                    linkEl.classList.add("type-" + linkedNote.type);
+                    linkEl.classList.add(`type-${linkedNote.type}`);
                 } else {
                     linkEl.removeAttribute("href");
                 }

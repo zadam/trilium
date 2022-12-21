@@ -20,7 +20,7 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
     }
 
     async toggle(state) {
-        const resp = await server.put(`notes/${this.noteId}/toggle-in-parent/lbBookmarks/` + !!state);
+        const resp = await server.put(`notes/${this.noteId}/toggle-in-parent/lbBookmarks/${!!state}`);
 
         if (!resp.success) {
             toastService.showError(resp.message);

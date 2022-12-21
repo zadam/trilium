@@ -110,7 +110,7 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
             const subTreeResp = await server.get(`stats/subtree-size/${this.noteId}`);
 
             if (subTreeResp.subTreeNoteCount > 1) {
-                this.$subTreeSize.text("(subtree size: " + this.formatSize(subTreeResp.subTreeSize) + ` in ${subTreeResp.subTreeNoteCount} notes)`);
+                this.$subTreeSize.text(`(subtree size: ${this.formatSize(subTreeResp.subTreeSize)} in ${subTreeResp.subTreeNoteCount} notes)`);
             }
             else {
                 this.$subTreeSize.text("");
@@ -133,7 +133,7 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
         this.$type.text(note.type);
 
         if (note.mime) {
-            this.$mime.text('(' + note.mime + ')');
+            this.$mime.text(`(${note.mime})`);
         }
         else {
             this.$mime.empty();

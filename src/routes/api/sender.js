@@ -10,10 +10,10 @@ function uploadImage(req) {
     const file = req.file;
 
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
-        return [400, "Unknown image type: " + file.mimetype];
+        return [400, `Unknown image type: ${file.mimetype}`];
     }
 
-    const originalName = "Sender image." + imageType(file.buffer).ext;
+    const originalName = `Sender image.${imageType(file.buffer).ext}`;
 
     const parentNote = dateNoteService.getDayNote(req.headers['x-local-date']);
 

@@ -32,16 +32,16 @@ function formatValue(val) {
         return val;
     }
     else if (!val.includes('"')) {
-        return '"' + val + '"';
+        return `"${val}"`;
     }
     else if (!val.includes("'")) {
-        return "'" + val + "'";
+        return `'${val}'`;
     }
     else if (!val.includes("`")) {
-        return "`" + val + "`";
+        return `\`${val}\``;
     }
     else {
-        return '"' + val.replace(/"/g, '\\"') + '"';
+        return `"${val.replace(/"/g, '\\"')}"`;
     }
 }
 

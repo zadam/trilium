@@ -64,7 +64,7 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
         // remember which title was when we found the similar notes
         this.title = this.note.title;
 
-        const similarNotes = await server.get('similar-notes/' + this.noteId);
+        const similarNotes = await server.get(`similar-notes/${this.noteId}`);
 
         if (similarNotes.length === 0) {
             this.$similarNotesWrapper.empty().append("No similar notes found.");

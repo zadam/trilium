@@ -135,15 +135,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             if (attr.type === 'label-definition') {
                 attr.type = 'label';
-                attr.name = 'label:' + attr.name;
+                attr.name = `label:${attr.name}`;
             }
             else if (attr.type === 'relation-definition') {
                 attr.type = 'label';
-                attr.name = 'relation:' + attr.name;
+                attr.name = `relation:${attr.name}`;
             }
 
             if (!attributeService.isAttributeType(attr.type)) {
-                log.error("Unrecognized attribute type " + attr.type);
+                log.error(`Unrecognized attribute type ${attr.type}`);
                 continue;
             }
 
@@ -157,7 +157,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             if (taskContext.data.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
-                attr.name = 'disabled:' + attr.name;
+                attr.name = `disabled:${attr.name}`;
             }
 
             if (taskContext.data.safeImport) {
@@ -223,7 +223,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             absUrl = '';
         }
 
-        absUrl += (absUrl.length > 0 ? '/' : '') + url;
+        absUrl += `${absUrl.length > 0 ? '/' : ''}${url}`;
 
         const {noteMeta} = getMeta(absUrl);
         const targetNoteId = getNoteId(noteMeta, absUrl);
@@ -526,7 +526,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             new Attribute(attr).save();
         }
         else {
-            log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));
+            log.info(`Relation not imported since target note doesn't exist: ${JSON.stringify(attr)}`);
         }
     }
 

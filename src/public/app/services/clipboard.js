@@ -30,7 +30,7 @@ async function pasteAfter(afterBranchId) {
         // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places
     }
     else {
-        toastService.throwError("Unrecognized clipboard mode=" + clipboardMode);
+        toastService.throwError(`Unrecognized clipboard mode=${clipboardMode}`);
     }
 }
 
@@ -57,7 +57,7 @@ async function pasteInto(parentBranchId) {
         // copy will keep clipboardBranchIds and clipboardMode, so it's possible to paste into multiple places
     }
     else {
-        toastService.throwError("Unrecognized clipboard mode=" + clipboardMode);
+        toastService.throwError(`Unrecognized clipboard mode=${clipboardMode}`);
     }
 }
 
@@ -71,7 +71,7 @@ async function copy(branchIds) {
         const links = [];
 
         for (const branch of froca.getBranches(clipboardBranchIds)) {
-            const $link = await linkService.createNoteLink(branch.parentNoteId + '/' + branch.noteId, { referenceLink: true });
+            const $link = await linkService.createNoteLink(`${branch.parentNoteId}/${branch.noteId}`, { referenceLink: true });
             links.push($link[0].outerHTML);
         }
 

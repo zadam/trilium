@@ -116,10 +116,10 @@ async function deleteNotes(branchIdsToDelete, forceDeleteAllClones = false) {
         const branch = froca.getBranch(branchIdToDelete);
 
         if (deleteAllClones) {
-            await server.remove(`notes/${branch.noteId}` + query);
+            await server.remove(`notes/${branch.noteId}${query}`);
         }
         else {
-            await server.remove(`branches/${branchIdToDelete}` + query);
+            await server.remove(`branches/${branchIdToDelete}${query}`);
         }
     }
 
@@ -186,7 +186,7 @@ ws.subscribeToMessages(async message => {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
     } else if (message.type === 'taskProgressCount') {
-        toastService.showPersistent(makeToast(message.taskId, "Delete notes in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message.taskId, `Delete notes in progress: ${message.progressCount}`));
     } else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Delete finished successfully.");
         toast.closeAfter = 5000;
@@ -204,7 +204,7 @@ ws.subscribeToMessages(async message => {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
     } else if (message.type === 'taskProgressCount') {
-        toastService.showPersistent(makeToast(message.taskId, "Undeleting notes in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message.taskId, `Undeleting notes in progress: ${message.progressCount}`));
     } else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Undeleting notes finished successfully.");
         toast.closeAfter = 5000;
@@ -235,7 +235,7 @@ async function cloneNoteToNote(childNoteId, parentNoteId, prefix) {
 
 // beware that first arg is noteId and second is branchId!
 async function cloneNoteAfter(noteId, afterBranchId) {
-    const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
+    const resp = await server.put(`notes/${noteId}/clone-after/${afterBranchId}`);
 
     if (!resp.success) {
         toastService.showError(resp.message);

@@ -20,7 +20,7 @@ async function createNoteLink(notePath, options = {}) {
     if (!notePath.startsWith("root")) {
         // all note paths should start with "root/" (except for "root" itself)
         // used e.g. to find internal links
-        notePath = "root/" + notePath;
+        notePath = `root/${notePath}`;
     }
 
     let noteTitle = options.title;
@@ -41,12 +41,12 @@ async function createNoteLink(notePath, options = {}) {
         const note = await froca.getNote(noteId);
 
         $container
-            .append($("<span>").addClass("bx " + note.getIcon()))
+            .append($("<span>").addClass(`bx ${note.getIcon()}`))
             .append(" ");
     }
 
     const $noteLink = $("<a>", {
-        href: '#' + notePath,
+        href: `#${notePath}`,
         text: noteTitle
     }).attr('data-action', 'note')
         .attr('data-note-path', notePath);
@@ -70,7 +70,7 @@ async function createNoteLink(notePath, options = {}) {
             const parentNotePath = resolvedNotePathSegments.join("/").trim();
 
             if (parentNotePath) {
-                $container.append($("<small>").text(" (" + await treeService.getNotePathTitle(parentNotePath) + ")"));
+                $container.append($("<small>").text(` (${await treeService.getNotePathTitle(parentNotePath)})`));
             }
         }
     }

@@ -119,7 +119,7 @@ class NoteShort {
 
     async getContent() {
         // we're not caching content since these objects are in froca and as such pretty long lived
-        const note = await server.get("notes/" + this.noteId);
+        const note = await server.get(`notes/${this.noteId}`);
 
         return note.content;
     }
@@ -813,7 +813,7 @@ class NoteShort {
             return await bundleService.getAndExecuteBundle(this.noteId);
         }
         else if (env === "backend") {
-            return await server.post('script/run/' + this.noteId);
+            return await server.post(`script/run/${this.noteId}`);
         }
         else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);

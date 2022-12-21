@@ -20,7 +20,7 @@ async function ScriptContext(startNoteId, allNoteIds, originEntity = null, $cont
                 const note = candidates.find(c => c.title === moduleName);
 
                 if (!note) {
-                    throw new Error("Could not find module note " + moduleName);
+                    throw new Error(`Could not find module note ${moduleName}`);
                 }
 
                 return modules[note.noteId].exports;

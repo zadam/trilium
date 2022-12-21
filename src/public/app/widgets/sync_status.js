@@ -105,7 +105,7 @@ export default class SyncStatusWidget extends BasicWidget {
 
         this.$widget.show();
         this.$widget.find('.sync-status-icon').hide();
-        this.$widget.find('.sync-status-' + className).show();
+        this.$widget.find(`.sync-status-${className}`).show();
     }
 
     processMessage(message) {
@@ -134,7 +134,7 @@ export default class SyncStatusWidget extends BasicWidget {
         if (['unknown', 'in-progress'].includes(this.syncState)) {
             this.showIcon(this.syncState);
         } else {
-            this.showIcon(this.syncState + '-' + (this.allChangesPushed ? 'no-changes' : 'with-changes'));
+            this.showIcon(`${this.syncState}-${this.allChangesPushed ? 'no-changes' : 'with-changes'}`);
         }
     }
 }

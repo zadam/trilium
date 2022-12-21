@@ -694,7 +694,7 @@ class ConsistencyChecks {
 
         const tables = [ "notes", "note_revisions", "branches", "attributes", "etapi_tokens" ];
 
-        log.info("Table counts: " + tables.map(tableName => getTableRowCount(tableName)).join(", "));
+        log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }
 
     async runChecks() {
@@ -736,11 +736,11 @@ function getBlankContent(isProtected, type, mime) {
 }
 
 function logFix(message) {
-    log.info("Consistency issue fixed: " + message);
+    log.info(`Consistency issue fixed: ${message}`);
 }
 
 function logError(message) {
-    log.info("Consistency error: " + message);
+    log.info(`Consistency error: ${message}`);
 }
 
 function runPeriodicChecks() {

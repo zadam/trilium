@@ -52,11 +52,10 @@ function getRevisionFilename(noteRevision) {
         .replace(/[^0-9_]/g, '');
 
     if (extension) {
-        filename = filename.substr(0, filename.length - extension.length)
-            + '-' + date + extension;
+        filename = `${filename.substr(0, filename.length - extension.length)}-${date}${extension}`;
     }
     else {
-        filename += '-' + date;
+        filename += `-${date}`;
     }
 
     return filename;
@@ -123,7 +122,7 @@ function getEditedNotesOnDate(req) {
                 WHERE note_revisions.dateLastEdited LIKE :date
         )
         ORDER BY isDeleted
-        LIMIT 50`, {date: req.params.date + '%'});
+        LIMIT 50`, {date: `${req.params.date}%`});
 
     let notes = becca.getNotes(noteIds, true);
 

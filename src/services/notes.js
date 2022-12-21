@@ -79,7 +79,7 @@ function getNewNoteTitle(parentNote) {
             // - now
             // - parentNote
 
-            title = eval('`' + titleTemplate + '`');
+            title = eval(`\`${titleTemplate}\``);
         } catch (e) {
             log.error(`Title template of note '${parentNote.noteId}' failed with: ${e.message}`);
         }
@@ -288,7 +288,7 @@ function protectNote(note, protect) {
         noteRevisionService.protectNoteRevisions(note);
     }
     catch (e) {
-        log.error("Could not un/protect note ID = " + note.noteId);
+        log.error(`Could not un/protect note ID = ${note.noteId}`);
 
         throw e;
     }
@@ -402,9 +402,7 @@ function downloadImages(noteId, content) {
 
             const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");
 
-            content = content.substr(0, imageMatch.index)
-                + `<img src="api/images/${note.noteId}/${sanitizedTitle}"`
-                + content.substr(imageMatch.index + imageMatch[0].length);
+            content = `${content.substr(0, imageMatch.index)}<img src="api/images/${note.noteId}/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
         else if (!url.includes('api/images/')
             // this is an exception for the web clipper's "imageId"
@@ -516,7 +514,7 @@ function saveLinks(note, content) {
         findRelationMapLinks(content, foundLinks);
     }
     else {
-        throw new Error("Unrecognized type " + note.type);
+        throw new Error(`Unrecognized type ${note.type}`);
     }
 
     const existingLinks = note.getRelations().filter(rel =>

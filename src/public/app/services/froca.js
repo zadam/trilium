@@ -41,7 +41,7 @@ class Froca {
     }
 
     async loadSubTree(subTreeNoteId) {
-        const resp = await server.get('tree?subTreeNoteId=' + subTreeNoteId);
+        const resp = await server.get(`tree?subTreeNoteId=${subTreeNoteId}`);
 
         this.addResp(resp);
 
@@ -176,7 +176,7 @@ class Froca {
             return;
         }
 
-        const {searchResultNoteIds, highlightedTokens, error} = await server.get('search-note/' + note.noteId);
+        const {searchResultNoteIds, highlightedTokens, error} = await server.get(`search-note/${note.noteId}`);
 
         if (!Array.isArray(searchResultNoteIds)) {
             throw new Error(`Search note '${note.noteId}' failed: ${searchResultNoteIds}`);
@@ -192,7 +192,7 @@ class Froca {
 
         searchResultNoteIds.forEach((resultNoteId, index) => branches.push({
             // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
-            branchId: "virt-" + note.noteId + '-' + resultNoteId,
+            branchId: `virt-${note.noteId}-${resultNoteId}`,
             noteId: resultNoteId,
             parentNoteId: note.noteId,
             notePosition: (index + 1) * 10,
@@ -314,7 +314,7 @@ class Froca {
      */
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
-            this.noteComplementPromises[noteId] = server.get('notes/' + noteId)
+            this.noteComplementPromises[noteId] = server.get(`notes/${noteId}`)
                 .then(row => new NoteComplement(row))
                 .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
 

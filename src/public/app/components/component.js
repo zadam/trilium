@@ -13,7 +13,7 @@ import utils from '../services/utils.js';
  */
 export default class Component {
     constructor() {
-        this.componentId = this.sanitizedClassName + '-' + utils.randomString(8);
+        this.componentId = `${this.sanitizedClassName}-${utils.randomString(8)}`;
         /** @type Component[] */
         this.children = [];
         this.initialized = null;
@@ -44,8 +44,8 @@ export default class Component {
     handleEvent(name, data) {
         try {
             const callMethodPromise = this.initialized
-                ? this.initialized.then(() => this.callMethod(this[name + 'Event'], data))
-                : this.callMethod(this[name + 'Event'], data);
+                ? this.initialized.then(() => this.callMethod(this[`${name}Event`], data))
+                : this.callMethod(this[`${name}Event`], data);
 
             const childrenPromise = this.handleEventInChildren(name, data);
 
@@ -84,7 +84,7 @@ export default class Component {
 
     /** @returns {Promise} */
     triggerCommand(name, data = {}) {
-        const fun = this[name + 'Command'];
+        const fun = this[`${name}Command`];
 
         if (fun) {
             return this.callMethod(fun, data);

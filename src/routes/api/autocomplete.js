@@ -38,7 +38,7 @@ function getRecentNotes(activeNoteId) {
     const hoistedNoteId = cls.getHoistedNoteId();
     if (hoistedNoteId !== 'root') {
         extraCondition = `AND recent_notes.notePath LIKE ?`;
-        params.push('%' + hoistedNoteId + '%');
+        params.push(`%${hoistedNoteId}%`);
     }
 
     const recentNotes = becca.getRecentNotesFromQuery(`

@@ -125,9 +125,7 @@ function parse(tokens, str, allowEmptyRelations = false) {
         startIndex = Math.max(0, startIndex - 20);
         endIndex = Math.min(str.length, endIndex + 20);
 
-        return '"' + (startIndex !== 0 ? "..." : "")
-            + str.substr(startIndex, endIndex - startIndex)
-            + (endIndex !== str.length ? "..." : "") + '"';
+        return `"${startIndex !== 0 ? "..." : ""}${str.substr(startIndex, endIndex - startIndex)}${endIndex !== str.length ? "..." : ""}"`;
     }
 
     for (let i = 0; i < tokens.length; i++) {

@@ -292,7 +292,7 @@ async function getNoteTitleWithPathAsSuffix(notePath) {
 
     if (path.length > 0) {
         $titleWithPath
-            .append($('<span class="note-path">').text(' (' + path.join(' / ') + ')'));
+            .append($('<span class="note-path">').text(` (${path.join(' / ')})`));
     }
 
     return $titleWithPath;

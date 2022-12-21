@@ -38,7 +38,7 @@ function exec(opts) {
             };
 
             if (opts.auth) {
-                headers['trilium-cred'] = Buffer.from("dummy:" + opts.auth.password).toString('base64');
+                headers['trilium-cred'] = Buffer.from(`dummy:${opts.auth.password}`).toString('base64');
             }
 
             const request = client.request({
@@ -59,7 +59,7 @@ function exec(opts) {
 
             request.on('response', response => {
                 if (![200, 201, 204].includes(response.statusCode)) {
-                    reject(generateError(opts, response.statusCode + ' ' + response.statusMessage));
+                    reject(generateError(opts, `${response.statusCode} ${response.statusMessage}`));
                 }
 
                 if (opts.cookieJar && response.headers['set-cookie']) {
@@ -77,7 +77,7 @@ function exec(opts) {
                         resolve(jsonObj);
                     }
                     catch (e) {
-                        log.error("Failed to deserialize sync response: " + responseStr);
+                        log.error(`Failed to deserialize sync response: ${responseStr}`);
 
                         reject(generateError(opts, e.message));
                     }
@@ -134,7 +134,7 @@ function getImage(imageUrl) {
 
             request.on('response', response => {
                 if (![200, 201, 204].includes(response.statusCode)) {
-                    reject(generateError(opts, response.statusCode + ' ' + response.statusMessage));
+                    reject(generateError(opts, `${response.statusCode} ${response.statusMessage}`));
                 }
 
                 const chunks = []
@@ -160,7 +160,7 @@ function getProxyAgent(opts) {
 
     if (protocol === 'http:' || protocol === 'https:') {
         const protoNoColon = protocol.substr(0, protocol.length - 1);
-        const AgentClass = require(protoNoColon + '-proxy-agent');
+        const AgentClass = require(`${protoNoColon}-proxy-agent`);
 
         return new AgentClass(opts.proxy);
     }

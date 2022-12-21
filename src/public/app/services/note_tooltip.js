@@ -50,7 +50,7 @@ async function mouseEnterHandler() {
         return;
     }
 
-    const html = '<div class="note-tooltip-content">' + content + '</div>';
+    const html = `<div class="note-tooltip-content">${content}</div>`;
 
     // we need to check if we're still hovering over the element
     // since the operation to get tooltip content was async, it is possible that
@@ -89,7 +89,7 @@ async function renderTooltip(note) {
         return;
     }
 
-    let content = '<h5 class="note-tooltip-title">' + (await treeService.getNoteTitleWithPathAsSuffix(someNotePath)).prop('outerHTML') + '</h5>';
+    let content = `<h5 class="note-tooltip-title">${(await treeService.getNoteTitleWithPathAsSuffix(someNotePath)).prop('outerHTML')}</h5>`;
 
     const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 
@@ -98,9 +98,7 @@ async function renderTooltip(note) {
         trim: true
     });
 
-    content = content
-        + '<div class="note-tooltip-attributes">' + $renderedAttributes[0].outerHTML + '</div>'
-        + $renderedContent[0].outerHTML;
+    content = `${content}<div class="note-tooltip-attributes">${$renderedAttributes[0].outerHTML}</div>${$renderedContent[0].outerHTML}`;
 
     return content;
 }

@@ -112,7 +112,7 @@ if (utils.isElectron()) {
 
         if (hasText) {
             const shortenedSelection = params.selectionText.length > 15
-                ? (params.selectionText.substr(0, 13) + "…")
+                ? (`${params.selectionText.substr(0, 13)}…`)
                 : params.selectionText;
 
             items.push({

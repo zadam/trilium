@@ -49,7 +49,7 @@ function emit(eventType, data) {
                 listener(data);
             }
             catch (e) {
-                log.error("Listener threw error: " + e.stack);
+                log.error(`Listener threw error: ${e.stack}`);
                 // we won't stop execution because of listener
             }
         }

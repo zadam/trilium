@@ -273,19 +273,19 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     get hideArchivedNotes() {
-        return options.is("hideArchivedNotes_" + this.treeName);
+        return options.is(`hideArchivedNotes_${this.treeName}`);
     }
 
     async setHideArchivedNotes(val) {
-        await options.save("hideArchivedNotes_" + this.treeName, val.toString());
+        await options.save(`hideArchivedNotes_${this.treeName}`, val.toString());
     }
 
     get hideIncludedImages() {
-        return options.is("hideIncludedImages_" + this.treeName);
+        return options.is(`hideIncludedImages_${this.treeName}`);
     }
 
     async setHideIncludedImages(val) {
-        await options.save("hideIncludedImages_" + this.treeName, val.toString());
+        await options.save(`hideIncludedImages_${this.treeName}`, val.toString());
     }
 
     get autoCollapseNoteTree() {
@@ -484,7 +484,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         } else if (data.hitMode === "over") {
                             branchService.moveToParentNote(selectedBranchIds, node.data.branchId);
                         } else {
-                            throw new Error("Unknown hitMode=" + data.hitMode);
+                            throw new Error(`Unknown hitMode=${data.hitMode}`);
                         }
                     }
                 }
@@ -676,7 +676,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        const title = `${branch.prefix ? (`${branch.prefix} - `) : ""}${note.title}`;
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
@@ -703,7 +703,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             throw new Error(`Branch "${branch.branchId}" has no child note "${branch.noteId}"`);
         }
 
-        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+        const title = `${branch.prefix ? (`${branch.prefix} - `) : ""}${note.title}`;
 
         const isFolder = note.isFolder();
 

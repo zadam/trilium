@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const dataDir = require('./data_dir');
 const log = require('./log');
 
-const sessionSecretPath = dataDir.TRILIUM_DATA_DIR + "/session_secret.txt";
+const sessionSecretPath = `${dataDir.TRILIUM_DATA_DIR}/session_secret.txt`;
 
 let sessionSecret;
 

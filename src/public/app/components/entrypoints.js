@@ -150,7 +150,7 @@ export default class Entrypoints extends Component {
             ipcRenderer.send('create-extra-window', {notePath, hoistedNoteId});
         }
         else {
-            const url = window.location.protocol + '//' + window.location.host + window.location.pathname + '?extra=1#' + notePath;
+            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extra=1#${notePath}`;
 
             window.open(url, '', 'width=1000,height=800');
         }
@@ -172,12 +172,12 @@ export default class Entrypoints extends Component {
         if (note.mime.endsWith("env=frontend")) {
             await bundleService.getAndExecuteBundle(note.noteId);
         } else if (note.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + note.noteId);
+            await server.post(`script/run/${note.noteId}`);
         } else if (note.mime === 'text/x-sqlite;schema=trilium') {
-            const resp = await server.post("sql/execute/" + note.noteId);
+            const resp = await server.post(`sql/execute/${note.noteId}`);
 
             if (!resp.success) {
-                toastService.showError("Error occurred while executing SQL query: " + resp.message);
+                toastService.showError(`Error occurred while executing SQL query: ${resp.message}`);
             }
 
             await appContext.triggerEvent('sqlQueryResults', {ntxId: ntxId, results: resp.results});

@@ -57,7 +57,7 @@ export default class RecentChangesDialog extends BasicWidget {
             this.ancestorNoteId = hoistedNoteService.getHoistedNoteId();
         }
 
-        const recentChangesRows = await server.get('recent-changes/' + this.ancestorNoteId);
+        const recentChangesRows = await server.get(`recent-changes/${this.ancestorNoteId}`);
 
         // preload all notes into cache
         await froca.getNotes(recentChangesRows.map(r => r.noteId), true);

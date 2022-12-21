@@ -96,7 +96,7 @@ export default class ConfirmDialog extends BasicWidget {
                         .append(
                             $("<input>")
                                 .attr("type", "checkbox")
-                                .addClass("form-check-input " + DELETE_NOTE_BUTTON_CLASS)
+                                .addClass(`form-check-input ${DELETE_NOTE_BUTTON_CLASS}`)
                         )
                         .append("Also delete the note")
                 ));
@@ -111,7 +111,7 @@ export default class ConfirmDialog extends BasicWidget {
     doResolve(ret) {
         this.resolve({
             confirmed: ret,
-            isDeleteNoteChecked: this.$widget.find("." + DELETE_NOTE_BUTTON_CLASS + ":checked").length > 0
+            isDeleteNoteChecked: this.$widget.find(`.${DELETE_NOTE_BUTTON_CLASS}:checked`).length > 0
         });
 
         this.resolve = null;

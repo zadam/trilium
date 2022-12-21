@@ -108,7 +108,7 @@ function decryptString(dataKey, cipherText) {
     const str = buffer.toString('utf-8');
 
     if (str === 'false') {
-        log.error("Could not decrypt string. Buffer: " + buffer);
+        log.error(`Could not decrypt string. Buffer: ${buffer}`);
 
         throw new Error("Could not decrypt string.");
     }

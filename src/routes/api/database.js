@@ -25,7 +25,7 @@ function vacuumDatabase() {
 function checkIntegrity() {
     const results = sql.getRows("PRAGMA integrity_check");
 
-    log.info("Integrity check result: " + JSON.stringify(results));
+    log.info(`Integrity check result: ${JSON.stringify(results)}`);
 
     return {
         results

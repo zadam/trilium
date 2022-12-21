@@ -27,7 +27,7 @@ function protectNoteRevisions(note) {
                 revision.save();
             }
             catch (e) {
-                log.error("Could not un/protect note revision ID = " + revision.noteRevisionId);
+                log.error(`Could not un/protect note revision ID = ${revision.noteRevisionId}`);
 
                 throw e;
             }

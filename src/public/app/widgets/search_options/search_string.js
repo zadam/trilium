@@ -61,7 +61,7 @@ export default class SearchString extends AbstractSearchOption {
 
             if (this.note.title.startsWith('Search: ')) {
                 await server.put(`notes/${this.note.noteId}/title`, {
-                    title: 'Search: ' + (searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`)
+                    title: `Search: ${searchString.length < 30 ? searchString : `${searchString.substr(0, 30)}…`}`
                 });
             }
         }, 1000);
@@ -74,7 +74,7 @@ export default class SearchString extends AbstractSearchOption {
     showSearchErrorEvent({error}) {
         this.$searchString.tooltip({
             trigger: 'manual',
-            title: "Search error: " + error,
+            title: `Search error: ${error}`,
             placement: 'bottom'
         });
 

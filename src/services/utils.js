@@ -191,9 +191,9 @@ function formatDownloadTitle(filename, type, mime) {
     filename = sanitize(filename);
 
     if (type === 'text') {
-        return filename + '.html';
+        return `${filename}.html`;
     } else if (['relationMap', 'canvas', 'search'].includes(type)) {
-        return filename + '.json';
+        return `${filename}.json`;
     } else {
         if (!mime) {
             return filename;
@@ -208,7 +208,7 @@ function formatDownloadTitle(filename, type, mime) {
         }
 
         for (const ext of extensions) {
-            if (filenameLc.endsWith('.' + ext)) {
+            if (filenameLc.endsWith(`.${ext}`)) {
                 return filename;
             }
         }
@@ -221,7 +221,7 @@ function formatDownloadTitle(filename, type, mime) {
             return filename;
         }
 
-        return filename + '.' + extensions[0];
+        return `${filename}.${extensions[0]}`;
     }
 }
 

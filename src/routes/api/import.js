@@ -63,7 +63,7 @@ async function importToBranch(req) {
         }
     }
     catch (e) {
-        const message = "Import failed with following error: '" + e.message + "'. More details might be in the logs.";
+        const message = `Import failed with following error: '${e.message}'. More details might be in the logs.`;
         taskContext.reportError(message);
 
         log.error(message + e.stack);

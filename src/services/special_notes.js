@@ -71,7 +71,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
 function createSearchNote(searchString, ancestorNoteId) {
     const {note} = noteService.createNewNote({
         parentNoteId: getMonthlyParentNoteId('search'),
-        title: 'Search: ' + searchString,
+        title: `Search: ${searchString}`,
         content: "",
         type: 'search',
         mime: 'application/json'
@@ -232,7 +232,7 @@ function resetLauncher(noteId) {
  *   could mess up the layout - e.g. the sync status being below.
  */
 function createOrUpdateScriptLauncherFromApi(opts) {
-    const launcherId = opts.id || ("tb" + opts.title.replace(/[^[a-z0-9]/gi, ""));
+    const launcherId = opts.id || (`tb${opts.title.replace(/[^[a-z0-9]/gi, "")}`);
 
     if (!opts.title) {
         throw new Error("Title is mandatory property to create or update a launcher.");
@@ -244,7 +244,7 @@ function createOrUpdateScriptLauncherFromApi(opts) {
         || createScriptLauncher('lbVisibleLaunchers', launcherId);
 
     launcherNote.title = opts.title;
-    launcherNote.setContent("(" + opts.action + ")()");
+    launcherNote.setContent(`(${opts.action})()`);
     launcherNote.setLabel('scriptInLauncherContent'); // there's no target note, the script is in the launcher's content
     launcherNote.mime = 'application/javascript;env=frontend';
     launcherNote.save();
@@ -256,7 +256,7 @@ function createOrUpdateScriptLauncherFromApi(opts) {
     }
 
     if (opts.icon) {
-        launcherNote.setLabel('iconClass', "bx bx-" + opts.icon);
+        launcherNote.setLabel('iconClass', `bx bx-${opts.icon}`);
     } else {
         launcherNote.removeLabel('iconClass');
     }

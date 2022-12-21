@@ -96,7 +96,7 @@ class AppContext extends Component {
     /** @returns {Promise} */
     triggerCommand(name, data = {}) {
         for (const executor of this.components) {
-            const fun = executor[name + "Command"];
+            const fun = executor[`${name}Command`];
 
             if (fun) {
                 return executor.callMethod(fun, data);

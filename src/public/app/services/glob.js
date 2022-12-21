@@ -49,12 +49,12 @@ function setupGlobs() {
             message += 'No details available';
         } else {
             message += [
-                'Message: ' + msg,
-                'URL: ' + url,
-                'Line: ' + lineNo,
-                'Column: ' + columnNo,
-                'Error object: ' + JSON.stringify(error),
-                'Stack: ' + (error && error.stack)
+                `Message: ${msg}`,
+                `URL: ${url}`,
+                `Line: ${lineNo}`,
+                `Column: ${columnNo}`,
+                `Error object: ${JSON.stringify(error)}`,
+                `Stack: ${error && error.stack}`
             ].join(', ');
         }
 

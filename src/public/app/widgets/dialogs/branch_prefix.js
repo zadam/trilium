@@ -82,7 +82,7 @@ export default class BranchPrefixDialog extends BasicWidget {
 
         const noteTitle = await treeService.getNoteTitle(noteId);
 
-        this.$noteTitle.text(" - " + noteTitle);
+        this.$noteTitle.text(` - ${noteTitle}`);
     }
 
     async editBranchPrefixEvent() {

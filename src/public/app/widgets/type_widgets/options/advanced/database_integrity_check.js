@@ -24,7 +24,7 @@ export default class DatabaseIntegrityCheckOptions extends OptionsWidget {
                 toastService.showMessage("Integrity check succeeded - no problems found.");
             }
             else {
-                toastService.showMessage("Integrity check failed: " + JSON.stringify(results, null, 2), 15000);
+                toastService.showMessage(`Integrity check failed: ${JSON.stringify(results, null, 2)}`, 15000);
             }
         });
     }

@@ -119,7 +119,7 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        this.$icon.removeClass().addClass(note.getIcon() + " note-icon");
+        this.$icon.removeClass().addClass(`${note.getIcon()} note-icon`);
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -193,13 +193,13 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
 
     getIconClass(icon) {
         if (icon.type_of_icon === 'LOGO') {
-            return "bx bxl-" + icon.name;
+            return `bx bxl-${icon.name}`;
         }
         else if (icon.type_of_icon === 'SOLID') {
-            return "bx bxs-" + icon.name;
+            return `bx bxs-${icon.name}`;
         }
         else {
-            return "bx bx-" + icon.name;
+            return `bx bx-${icon.name}`;
         }
     }
 }

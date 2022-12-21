@@ -78,9 +78,9 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
             await wheelZoomLoaded;
 
-            this.$display.attr("id", 'mermaid-render-' + idCounter);
+            this.$display.attr("id", `mermaid-render-${idCounter}`);
 
-            WZoom.create('#mermaid-render-' + idCounter, {
+            WZoom.create(`#mermaid-render-${idCounter}`, {
                 type: 'html',
                 maxScale: 10,
                 speed: 20,
@@ -101,7 +101,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             const noteComplement = await froca.getNoteComplement(this.noteId);
             const content = noteComplement.content || "";
 
-            mermaid.mermaidAPI.render('mermaid-graph-' + idCounter, content, res);
+            mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content, res);
         });
     }
 
@@ -118,12 +118,12 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
         const renderedSvg = await this.renderSvg();
 
-        this.download(this.note.title + ".svg", renderedSvg);
+        this.download(`${this.note.title}.svg`, renderedSvg);
     }
 
     download(filename, text) {
         const element = document.createElement('a');
-        element.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('href', `data:image/svg+xml;charset=utf-8,${encodeURIComponent(text)}`);
         element.setAttribute('download', filename);
 
         element.style.display = 'none';

@@ -39,10 +39,11 @@ function init(httpServer, sessionParser) {
             const message = JSON.parse(messageJson);
 
             if (message.type === 'log-error') {
-                log.info('JS Error: ' + message.error + '\r\nStack: ' + message.stack);
+                log.info(`JS Error: ${message.error}\r
+Stack: ${message.stack}`);
             }
             else if (message.type === 'log-info') {
-                log.info('JS Info: ' + message.info);
+                log.info(`JS Info: ${message.info}`);
             }
             else if (message.type === 'ping') {
                 await syncMutexService.doExclusively(() => sendPing(ws));
@@ -73,7 +74,7 @@ function sendMessageToAllClients(message) {
 
     if (webSocketServer) {
         if (message.type !== 'sync-failed' && message.type !== 'api-log-messages') {
-            log.info("Sending message to all clients: " + jsonStr);
+            log.info(`Sending message to all clients: ${jsonStr}`);
         }
 
         webSocketServer.clients.forEach(function each(client) {
@@ -174,8 +175,7 @@ function sendPing(client, entityChangeIds = []) {
             fillInAdditionalProperties(entityChange);
         }
         catch (e) {
-            log.error("Could not fill additional properties for entity change " + JSON.stringify(entityChange)
-                + " because of error: " + e.message + ": " + e.stack);
+            log.error(`Could not fill additional properties for entity change ${JSON.stringify(entityChange)} because of error: ${e.message}: ${e.stack}`);
         }
     }
 

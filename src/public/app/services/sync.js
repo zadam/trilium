@@ -9,17 +9,17 @@ async function syncNow(ignoreNotConfigured = false) {
     }
     else {
         if (result.message.length > 200) {
-            result.message = result.message.substr(0, 200) + "...";
+            result.message = `${result.message.substr(0, 200)}...`;
         }
 
         if (!ignoreNotConfigured || result.errorCode !== 'NOT_CONFIGURED') {
-            toastService.showError("Sync failed: " + result.message);
+            toastService.showError(`Sync failed: ${result.message}`);
         }
     }
 }
 
 async function forceNoteSync(noteId) {
-    await server.post('sync/force-note-sync/' + noteId);
+    await server.post(`sync/force-note-sync/${noteId}`);
 
     toastService.showMessage("Note added to sync queue.");
 }

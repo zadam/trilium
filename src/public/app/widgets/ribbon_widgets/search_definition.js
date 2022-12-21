@@ -244,7 +244,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
 
             await appContext.tabManager.getActiveContext().setNote(notePath);
 
-            toastService.showMessage("Search note has been saved into " + await treeService.getNotePathTitle(notePath));
+            toastService.showMessage(`Search note has been saved into ${await treeService.getNotePathTitle(notePath)}`);
         });
     }
 

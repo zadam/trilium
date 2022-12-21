@@ -13,8 +13,7 @@ const attributeService = require("../attributes");
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
     // insert - and : to make it ISO format
-    text = text.substr(0, 4) + "-" + text.substr(4, 2) + "-" + text.substr(6, 2)
-        + " " + text.substr(9, 2) + ":" + text.substr(11, 2) + ":" + text.substr(13, 2) + ".000Z";
+    text = `${text.substr(0, 4)}-${text.substr(4, 2)}-${text.substr(6, 2)} ${text.substr(9, 2)}:${text.substr(11, 2)}:${text.substr(13, 2)}.000Z`;
 
     return text;
 }
@@ -101,7 +100,7 @@ function importEnex(taskContext, file, parentNote) {
     saxStream.on("error", e => {
         // unhandled errors will throw, since this is a proper node
         // event emitter.
-        log.error("error when parsing ENEX file: " + e);
+        log.error(`error when parsing ENEX file: ${e}`);
         // clear the error
         this._parser.error = null;
         this._parser.resume();
@@ -311,7 +310,7 @@ function importEnex(taskContext, file, parentNote) {
                         content += imageLink;
                     }
                 } catch (e) {
-                    log.error("error when saving image from ENEX file: " + e);
+                    log.error(`error when saving image from ENEX file: ${e}`);
                     createFileNote();
                 }
             } else {

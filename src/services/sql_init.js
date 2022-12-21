@@ -50,8 +50,8 @@ async function createInitialDatabase() {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
-    const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.zip');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
+    const demoFile = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/demo.zip`);
 
     let rootNote;
 
@@ -127,7 +127,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
         throw new Error("DB is already initialized");
     }
 
-    const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
+    const schema = fs.readFileSync(`${resourceDir.DB_INIT_DIR}/schema.sql`, 'UTF-8');
 
     sql.transactional(() => {
         sql.executeScript(schema);

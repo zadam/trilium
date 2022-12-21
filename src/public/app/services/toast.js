@@ -16,7 +16,7 @@ function toast(options) {
     $toast.find('.toast-body').text(options.message);
 
     if (options.id) {
-        $toast.attr("id", "toast-" + options.id);
+        $toast.attr("id", `toast-${options.id}`);
     }
 
     $("#toast-container").append($toast);
@@ -34,7 +34,7 @@ function toast(options) {
 }
 
 function showPersistent(options) {
-    let $toast = $("#toast-" + options.id);
+    let $toast = $(`#toast-${options.id}`);
 
     if ($toast.length > 0) {
         $toast.find('.toast-body').html(options.message);
@@ -51,7 +51,7 @@ function showPersistent(options) {
 }
 
 function closePersistent(id) {
-    $("#toast-" + id).remove();
+    $(`#toast-${id}`).remove();
 }
 
 function showMessage(message, delay = 2000) {

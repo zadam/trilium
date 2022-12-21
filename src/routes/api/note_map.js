@@ -138,7 +138,7 @@ function getLinkMap(req) {
         }
     })
     .map(rel => ({
-        id: rel.noteId + "-" + rel.name + "-" + rel.value,
+        id: `${rel.noteId}-${rel.name}-${rel.value}`,
         sourceNoteId: rel.noteId,
         targetNoteId: rel.value,
         name: rel.name
@@ -267,7 +267,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
                 if (prevText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
                     const prefix = prevText.substr(prevText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
 
-                    const textNode = document.createTextNode("…" + prefix);
+                    const textNode = document.createTextNode(`…${prefix}`);
                     excerptEls.unshift(textNode);
 
                     break;
@@ -287,7 +287,7 @@ function findExcerpts(sourceNote, referencedNoteId) {
                 if (nextText.length + excerptLength > EXCERPT_CHAR_LIMIT) {
                     const suffix = nextText.substr(nextText.length - (EXCERPT_CHAR_LIMIT - excerptLength));
 
-                    const textNode = document.createTextNode(suffix + "…");
+                    const textNode = document.createTextNode(`${suffix}…`);
                     excerptEls.push(textNode);
 
                     break;

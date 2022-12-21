@@ -69,7 +69,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
         // response is expected to contain documentId and documentSecret options
         const resp = await request.exec({
             method: 'get',
-            url: syncServerHost + '/api/setup/sync-seed',
+            url: `${syncServerHost}/api/setup/sync-seed`,
             auth: { password },
             proxy: syncProxy,
             timeout: 30000 // seed request should not take long
@@ -93,7 +93,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, password) {
         return { result: 'success' };
     }
     catch (e) {
-        log.error("Sync failed: " + e.message);
+        log.error(`Sync failed: ${e.message}`);
 
         return {
             result: 'failure',

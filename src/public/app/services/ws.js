@@ -195,8 +195,7 @@ async function consumeFrontendUpdateData() {
 
 function connectWebSocket() {
     const loc = window.location;
-    const webSocketUri = (loc.protocol === "https:" ? "wss:" : "ws:")
-                       + "//" + loc.host + loc.pathname;
+    const webSocketUri = `${loc.protocol === "https:" ? "wss:" : "ws:"}//${loc.host}${loc.pathname}`;
 
     // use wss for secure messaging
     const ws = new WebSocket(webSocketUri);

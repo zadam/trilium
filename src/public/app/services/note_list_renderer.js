@@ -178,7 +178,7 @@ class NoteListRenderer {
             this.viewType = parentNote.type === 'search' ? 'list' : 'grid';
         }
 
-        this.$noteList.addClass(this.viewType + '-view');
+        this.$noteList.addClass(`${this.viewType}-view`);
 
         this.showNotePath = showNotePath;
     }
@@ -267,7 +267,7 @@ class NoteListRenderer {
         const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
         const notePath = this.parentNote.type === 'search'
             ? note.noteId // for search note parent we want to display non-search path
-            : this.parentNote.noteId + '/' + note.noteId;
+            : `${this.parentNote.noteId}/${note.noteId}`;
 
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)
@@ -345,7 +345,7 @@ class NoteListRenderer {
             }
 
             $content.append($renderedContent);
-            $content.addClass("type-" + type);
+            $content.addClass(`type-${type}`);
         } catch (e) {
             console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
 

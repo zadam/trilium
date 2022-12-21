@@ -130,7 +130,7 @@ export default class BulkActionsDialog extends BasicWidget {
         for (const actionGroup of bulkActionService.ACTION_GROUPS) {
             const $actionGroupList = $("<td>");
             const $actionGroup = $("<tr>")
-                .append($("<td>").text(actionGroup.title + ": "))
+                .append($("<td>").text(`${actionGroup.title}: `))
                 .append($actionGroupList);
 
             for (const action of actionGroup.actions) {

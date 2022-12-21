@@ -9,18 +9,18 @@ const appInfo = require('./app_info');
 function executeMigration(mig) {
     sql.transactional(() => {
         if (mig.type === 'sql') {
-            const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
+            const migrationSql = fs.readFileSync(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`).toString('utf8');
 
-            console.log("Migration with SQL script: " + migrationSql);
+            console.log(`Migration with SQL script: ${migrationSql}`);
 
             sql.executeScript(migrationSql);
         } else if (mig.type === 'js') {
             console.log("Migration with JS module");
 
-            const migrationModule = require(resourceDir.MIGRATIONS_DIR + "/" + mig.file);
+            const migrationModule = require(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`);
             migrationModule();
         } else {
-            throw new Error("Unknown migration type " + mig.type);
+            throw new Error(`Unknown migration type ${mig.type}`);
         }
     });
 }
@@ -66,16 +66,16 @@ async function migrate() {
 
     for (const mig of migrations) {
         try {
-            log.info("Attempting migration to version " + mig.dbVersion);
+            log.info(`Attempting migration to version ${mig.dbVersion}`);
 
             executeMigration(mig);
 
             sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
 
-            log.info("Migration to version " + mig.dbVersion + " has been successful.");
+            log.info(`Migration to version ${mig.dbVersion} has been successful.`);
         }
         catch (e) {
-            log.error("error during migration to version " + mig.dbVersion + ": " + e.stack);
+            log.error(`error during migration to version ${mig.dbVersion}: ${e.stack}`);
             log.error("migration failed, crashing hard"); // this is not very user friendly :-/
 
             utils.crash();
@@ -93,7 +93,7 @@ function isDbUpToDate() {
     const upToDate = dbVersion >= appInfo.dbVersion;
 
     if (!upToDate) {
-        log.info("App db version is " + appInfo.dbVersion + ", while db version is " + dbVersion + ". Migration needed.");
+        log.info(`App db version is ${appInfo.dbVersion}, while db version is ${dbVersion}. Migration needed.`);
     }
 
     return upToDate;

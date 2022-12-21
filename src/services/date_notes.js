@@ -201,7 +201,7 @@ function getStartOfTheWeek(date, startOfTheWeek) {
         diff = date.getDate() - day;
     }
     else {
-        throw new Error("Unrecognized start of the week " + startOfTheWeek);
+        throw new Error(`Unrecognized start of the week ${startOfTheWeek}`);
     }
 
     return new Date(date.setDate(diff));

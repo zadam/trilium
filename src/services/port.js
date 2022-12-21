@@ -21,7 +21,7 @@ if (process.env.TRILIUM_PORT) {
 } else if (utils.isElectron()) {
     port = env.isDev() ? 37740 : 37840;
 } else {
-    port = parseAndValidate(config['Network']['port'] || '3000', "Network.port in " + dataDir.CONFIG_INI_PATH);
+    port = parseAndValidate(config['Network']['port'] || '3000', `Network.port in ${dataDir.CONFIG_INI_PATH}`);
 }
 
 module.exports = port;

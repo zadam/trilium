@@ -203,7 +203,7 @@ export default class ExportDialog extends BasicWidget {
             this.$singleType.prop("checked", true).trigger('change');
         }
         else {
-            throw new Error("Unrecognized type " + defaultType);
+            throw new Error(`Unrecognized type ${defaultType}`);
         }
 
         this.$widget.find(".opml-v2").prop("checked", true); // setting default
@@ -242,7 +242,7 @@ ws.subscribeToMessages(async message => {
         toastService.showError(message.message);
     }
     else if (message.type === 'taskProgressCount') {
-        toastService.showPersistent(makeToast(message.taskId, "Export in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message.taskId, `Export in progress: ${message.progressCount}`));
     }
     else if (message.type === 'taskSucceeded') {
         const toast = makeToast(message.taskId, "Export finished successfully.");

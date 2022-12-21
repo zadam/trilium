@@ -88,7 +88,7 @@ async function protectNote(noteId, protect, includingSubtree) {
 function makeToast(message, protectingLabel, text) {
     return {
         id: message.taskId,
-        title: protectingLabel + " status",
+        title: `${protectingLabel} status`,
         message: text,
         icon: message.data.protect ? "check-shield" : "shield"
     };
@@ -105,9 +105,9 @@ ws.subscribeToMessages(async message => {
         toastService.closePersistent(message.taskId);
         toastService.showError(message.message);
     } else if (message.type === 'taskProgressCount') {
-        toastService.showPersistent(makeToast(message, protectingLabel,protectingLabel + " in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message, protectingLabel,`${protectingLabel} in progress: ${message.progressCount}`));
     } else if (message.type === 'taskSucceeded') {
-        const toast = makeToast(message, protectingLabel, protectingLabel + " finished successfully.");
+        const toast = makeToast(message, protectingLabel, `${protectingLabel} finished successfully.`);
         toast.closeAfter = 3000;
 
         toastService.showPersistent(toast);

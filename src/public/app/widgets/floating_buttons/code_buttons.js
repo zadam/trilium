@@ -58,7 +58,7 @@ export default class CodeButtonsWidget extends NoteContextAwareWidget {
 
             await appContext.tabManager.getActiveContext().setNote(notePath);
 
-            toastService.showMessage("SQL Console note has been saved into " + await treeService.getNotePathTitle(notePath));
+            toastService.showMessage(`SQL Console note has been saved into ${await treeService.getNotePathTitle(notePath)}`);
         });
 
         keyboardActionService.updateDisplayedShortcuts(this.$widget);

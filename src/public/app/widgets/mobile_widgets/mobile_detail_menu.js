@@ -40,7 +40,7 @@ class MobileDetailMenuWidget extends BasicWidget {
                         }
                     }
                     else {
-                        throw new Error("Unrecognized command " + command);
+                        throw new Error(`Unrecognized command ${command}`);
                     }
                 }
             });

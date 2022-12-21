@@ -22,7 +22,7 @@ function localNowDate() {
     else {
         const date = new Date();
 
-        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }
 }
 
@@ -47,21 +47,21 @@ function parseDateTime(str) {
         return new Date(Date.parse(str));
     }
     catch (e) {
-        throw new Error("Can't parse date from " + str + ": " + e.stack);
+        throw new Error(`Can't parse date from ${str}: ${e.stack}`);
     }
 }
 
 function parseDate(str) {
     const datePart = str.substr(0, 10);
 
-    return parseDateTime(datePart + "T12:00:00.000Z");
+    return parseDateTime(`${datePart}T12:00:00.000Z`);
 }
 
 function parseLocalDate(str) {
     const datePart = str.substr(0, 10);
 
     // not specifying the timezone and specifying the time means Date.parse() will use the local timezone
-    return parseDateTime(datePart + " 12:00:00.000");
+    return parseDateTime(`${datePart} 12:00:00.000`);
 }
 
 function getDateTimeForFile() {

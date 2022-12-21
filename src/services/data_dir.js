@@ -19,10 +19,10 @@ function getAppDataDir() {
         appDataDir = process.env.APPDATA;
     }
     else if (os.platform() === 'linux') {
-        appDataDir = os.homedir() + '/.local/share';
+        appDataDir = `${os.homedir()}/.local/share`;
     }
     else if (os.platform() === 'darwin') {
-        appDataDir = os.homedir() + '/Library/Application Support';
+        appDataDir = `${os.homedir()}/Library/Application Support`;
     }
 
     if (!fs.existsSync(appDataDir)) {
@@ -60,11 +60,11 @@ function getTriliumDataDir() {
 }
 
 const TRILIUM_DATA_DIR =  getTriliumDataDir();
-const DOCUMENT_PATH = TRILIUM_DATA_DIR + path.sep + "document.db";
-const BACKUP_DIR = TRILIUM_DATA_DIR + path.sep + "backup";
-const LOG_DIR = TRILIUM_DATA_DIR + path.sep + "log";
-const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + path.sep + "anonymized-db";
-const CONFIG_INI_PATH = TRILIUM_DATA_DIR + '/config.ini';
+const DOCUMENT_PATH = `${TRILIUM_DATA_DIR + path.sep}document.db`;
+const BACKUP_DIR = `${TRILIUM_DATA_DIR + path.sep}backup`;
+const LOG_DIR = `${TRILIUM_DATA_DIR + path.sep}log`;
+const ANONYMIZED_DB_DIR = `${TRILIUM_DATA_DIR + path.sep}anonymized-db`;
+const CONFIG_INI_PATH = `${TRILIUM_DATA_DIR}/config.ini`;
 
 module.exports = {
     TRILIUM_DATA_DIR,

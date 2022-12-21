@@ -1,6 +1,6 @@
 function reloadFrontendApp(reason) {
     if (reason) {
-        logInfo("Frontend app reload: " + reason);
+        logInfo(`Frontend app reload: ${reason}`);
     }
 
     window.location.reload(true);
@@ -11,20 +11,20 @@ function parseDate(str) {
         return new Date(Date.parse(str));
     }
     catch (e) {
-        throw new Error("Can't parse date from " + str + ": " + e.stack);
+        throw new Error(`Can't parse date from ${str}: ${e.stack}`);
     }
 }
 
 function padNum(num) {
-    return (num <= 9 ? "0" : "") + num;
+    return `${num <= 9 ? "0" : ""}${num}`;
 }
 
 function formatTime(date) {
-    return padNum(date.getHours()) + ":" + padNum(date.getMinutes());
+    return `${padNum(date.getHours())}:${padNum(date.getMinutes())}`;
 }
 
 function formatTimeWithSeconds(date) {
-    return padNum(date.getHours()) + ":" + padNum(date.getMinutes()) + ":" + padNum(date.getSeconds());
+    return `${padNum(date.getHours())}:${padNum(date.getMinutes())}:${padNum(date.getSeconds())}`;
 }
 
 // this is producing local time!
@@ -37,11 +37,11 @@ function formatDate(date) {
 
 // this is producing local time!
 function formatDateISO(date) {
-    return date.getFullYear() + "-" + padNum(date.getMonth() + 1) + "-" + padNum(date.getDate());
+    return `${date.getFullYear()}-${padNum(date.getMonth() + 1)}-${padNum(date.getDate())}`;
 }
 
 function formatDateTime(date) {
-    return formatDate(date) + " " + formatTime(date);
+    return `${formatDate(date)} ${formatTime(date)}`;
 }
 
 function localNowDateTime() {
@@ -101,14 +101,14 @@ async function stopWatch(what, func) {
 }
 
 function formatValueWithWhitespace(val) {
-    return /[^\w_-]/.test(val) ? '"' + val + '"' : val;
+    return /[^\w_-]/.test(val) ? `"${val}"` : val;
 }
 
 function formatLabel(label) {
-    let str = "#" + formatValueWithWhitespace(label.name);
+    let str = `#${formatValueWithWhitespace(label.name)}`;
 
     if (label.value !== "") {
-        str += "=" + formatValueWithWhitespace(label.value);
+        str += `=${formatValueWithWhitespace(label.value)}`;
     }
 
     return str;
@@ -154,22 +154,22 @@ function isDesktop() {
 
 function setCookie(name, value) {
     const date = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
-    const expires = "; expires=" + date.toUTCString();
+    const expires = `; expires=${date.toUTCString()}`;
 
-    document.cookie = name + "=" + (value || "")  + expires + ";";
+    document.cookie = `${name}=${value || ""}${expires};`;
 }
 
 function setSessionCookie(name, value) {
-    document.cookie = name + "=" + (value || "") + "; SameSite=Strict";
+    document.cookie = `${name}=${value || ""}; SameSite=Strict`;
 }
 
 function getCookie(name) {
-    const valueMatch = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    const valueMatch = document.cookie.match(`(^|;) ?${name}=([^;]*)(;|$)`);
     return valueMatch ? valueMatch[2] : null;
 }
 
 function getNoteTypeClass(type) {
-    return "type-" + type;
+    return `type-${type}`;
 }
 
 function getMimeTypeClass(mime) {
@@ -184,7 +184,7 @@ function getMimeTypeClass(mime) {
         mime = mime.substr(0, semicolonIdx);
     }
 
-    return 'mime-' + mime.toLowerCase().replace(/[\W_]+/g,"-");
+    return `mime-${mime.toLowerCase().replace(/[\W_]+/g, "-")}`;
 }
 
 function closeActiveDialog() {

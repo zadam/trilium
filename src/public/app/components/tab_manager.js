@@ -126,7 +126,7 @@ export default class TabManager extends Component {
 
         if (window.history.length === 0 // first history entry
             || (activeNoteContext && activeNoteContext.notePath !== treeService.getHashValueFromAddress()[0])) {
-            const url = '#' + (activeNoteContext.notePath || "") + "-" + activeNoteContext.ntxId;
+            const url = `#${activeNoteContext.notePath || ""}-${activeNoteContext.ntxId}`;
 
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
             window.history.pushState(null, "", url);

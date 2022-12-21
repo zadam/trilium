@@ -106,7 +106,7 @@ export default class KeyboardShortcutsOptions extends OptionsWidget {
                               .map(shortcut => shortcut.replace("+Comma", "+,"))
                               .filter(shortcut => !!shortcut);
 
-            const optionName = 'keyboardShortcuts' + actionName.substr(0, 1).toUpperCase() + actionName.substr(1);
+            const optionName = `keyboardShortcuts${actionName.substr(0, 1).toUpperCase()}${actionName.substr(1)}`;
 
             this.updateOption(optionName, JSON.stringify(shortcuts));
         });

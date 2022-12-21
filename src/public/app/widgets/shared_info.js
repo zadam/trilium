@@ -35,11 +35,11 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
         const shareId = this.getShareId(note);
 
         if (syncServerHost) {
-            link = syncServerHost + "/share/" + shareId;
+            link = `${syncServerHost}/share/${shareId}`;
             this.$sharedText.text("This note is shared publicly on");
         }
         else {
-            link = location.protocol + '//' + location.host + location.pathname + "share/" + shareId;
+            link = `${location.protocol}//${location.host}${location.pathname}share/${shareId}`;
             this.$sharedText.text("This note is shared locally on");
         }
 

@@ -209,7 +209,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
     }
 
     noteIdToId(noteId) {
-        return "rel-map-note-" + noteId;
+        return `rel-map-note-${noteId}`;
     }
 
     idToNoteId(id) {
@@ -484,8 +484,8 @@ export default class RelationMapTypeWidget extends TypeWidget {
             .prop("id", this.noteIdToId(noteId))
             .append($("<span>").addClass("title").append($link))
             .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
-            .css("left", x + "px")
-            .css("top", y + "px");
+            .css("left", `${x}px`)
+            .css("top", `${y}px`);
 
         this.jsPlumbInstance.getContainer().appendChild($noteBox[0]);
 
@@ -537,7 +537,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         const matches = transform.match(matrixRegex);
 
         if (!matches) {
-            throw new Error("Cannot match transform: " + transform);
+            throw new Error(`Cannot match transform: ${transform}`);
         }
 
         return matches[1];

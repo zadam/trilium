@@ -66,12 +66,12 @@ const sessionParser = session({
     name: 'trilium.sid',
     store: new FileStore({
         ttl: 30 * 24 * 3600,
-        path: dataDir.TRILIUM_DATA_DIR + '/sessions'
+        path: `${dataDir.TRILIUM_DATA_DIR}/sessions`
     })
 });
 app.use(sessionParser);
 
-app.use(favicon(__dirname + '/../images/app-icons/win/icon.ico'));
+app.use(favicon(`${__dirname}/../images/app-icons/win/icon.ico`));
 
 require('./routes/routes').register(app);
 
@@ -91,7 +91,7 @@ app.use((err, req, res, next) => {
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-    const err = new Error('Router not found for request ' + req.url);
+    const err = new Error(`Router not found for request ${req.url}`);
     err.status = 404;
     next(err);
 });

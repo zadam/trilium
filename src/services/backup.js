@@ -47,7 +47,7 @@ async function backupNow(name) {
 
         await sql.copyDatabase(backupFile);
 
-        log.info("Created backup at " + backupFile);
+        log.info(`Created backup at ${backupFile}`);
 
         return backupFile;
     });

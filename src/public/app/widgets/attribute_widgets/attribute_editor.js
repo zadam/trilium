@@ -99,7 +99,7 @@ const mentionSetup = {
 
                 return names.map(name => {
                     return {
-                        id: '#' + name,
+                        id: `#${name}`,
                         name: name
                     }
                 });
@@ -114,7 +114,7 @@ const mentionSetup = {
 
                 return names.map(name => {
                     return {
-                        id: '~' + name,
+                        id: `~${name}`,
                         name: name
                     }
                 });

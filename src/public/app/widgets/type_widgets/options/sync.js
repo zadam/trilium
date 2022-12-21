@@ -59,7 +59,7 @@ export default class SyncOptions extends OptionsWidget {
                 toastService.showMessage(result.message);
             }
             else {
-                toastService.showError("Sync server handshake failed, error: " + result.message);
+                toastService.showError(`Sync server handshake failed, error: ${result.message}`);
             }
         });
     }

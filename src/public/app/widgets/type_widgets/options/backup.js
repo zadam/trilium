@@ -48,7 +48,7 @@ export default class BackupOptions extends OptionsWidget {
         this.$backupDatabaseButton.on('click', async () => {
             const {backupFile} = await server.post('database/backup-database');
 
-            toastService.showMessage("Database has been backed up to " + backupFile, 10000);
+            toastService.showMessage(`Database has been backed up to ${backupFile}`, 10000);
         });
 
         this.$dailyBackupEnabled = this.$widget.find(".daily-backup-enabled");

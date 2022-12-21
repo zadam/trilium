@@ -5,7 +5,7 @@ import froca from "./froca.js";
 import utils from "./utils.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
-    const bundle = await server.get('script/bundle/' + noteId);
+    const bundle = await server.get(`script/bundle/${noteId}`);
 
     return await executeBundle(bundle, originEntity);
 }

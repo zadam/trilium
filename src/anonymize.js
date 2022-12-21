@@ -9,7 +9,7 @@ sqlInit.dbReady.then(async () => {
         const resp = await backupService.anonymize();
 
         if (resp.success) {
-            console.log("Anonymized file has been saved to: " + resp.anonymizedFilePath);
+            console.log(`Anonymized file has been saved to: ${resp.anonymizedFilePath}`);
 
             process.exit(0);
         } else {

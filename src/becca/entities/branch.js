@@ -185,7 +185,7 @@ class Branch extends AbstractEntity {
 
             // first delete children and then parent - this will show up better in recent changes
 
-            log.info("Deleting note " + note.noteId);
+            log.info(`Deleting note ${note.noteId}`);
 
             this.becca.notes[note.noteId].isBeingDeleted = true;
 

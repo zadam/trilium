@@ -81,7 +81,7 @@ class NoteRevision extends AbstractEntity {
                 return undefined;
             }
             else {
-                throw new Error("Cannot find note revision content for noteRevisionId=" + this.noteRevisionId);
+                throw new Error(`Cannot find note revision content for noteRevisionId=${this.noteRevisionId}`);
             }
         }
 
@@ -124,7 +124,7 @@ class NoteRevision extends AbstractEntity {
 
         sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        const hash = utils.hash(this.noteRevisionId + "|" + pojo.content.toString());
+        const hash = utils.hash(`${this.noteRevisionId}|${pojo.content.toString()}`);
 
         entityChangesService.addEntityChange({
             entityName: 'note_revision_contents',

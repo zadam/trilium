@@ -5,7 +5,7 @@
  * const {elements, appState, files} = window.triliumExcalidraw;
  */
 
-document.getElementById("excalidraw-app").style.height = appState.height+"px";
+document.getElementById("excalidraw-app").style.height = `${appState.height}px`;
 
 const App = () => {
     const excalidrawRef = React.useRef(null);

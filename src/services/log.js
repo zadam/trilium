@@ -30,7 +30,7 @@ function getTodaysMidnight() {
 function initLogFile() {
     todaysMidnight = getTodaysMidnight();
 
-    const path = dataDir.LOG_DIR + '/trilium-' + formatDate() + '.log';
+    const path = `${dataDir.LOG_DIR}/trilium-${formatDate()}.log`;
 
     if (logFile) {
         logFile.end();
@@ -60,7 +60,7 @@ function log(str) {
 
     millisSinceMidnight = checkDate(millisSinceMidnight);
 
-    logFile.write(formatTime(millisSinceMidnight) + ' ' + str + NEW_LINE);
+    logFile.write(`${formatTime(millisSinceMidnight)} ${str}${NEW_LINE}`);
 
     console.log(str);
 }
@@ -70,7 +70,7 @@ function info(message) {
 }
 
 function error(message) {
-    log("ERROR: " + message);
+    log(`ERROR: ${message}`);
 }
 
 const requestBlacklist = [ "/libraries", "/app", "/images", "/stylesheets", "/api/recent-notes" ];
@@ -93,15 +93,15 @@ function request(req, res, timeMs, responseLength = "?") {
 function pad(num) {
     num = Math.floor(num);
 
-    return num < 10 ? ("0" + num) : num.toString();
+    return num < 10 ? (`0${num}`) : num.toString();
 }
 
 function padMilli(num) {
     if (num < 10) {
-        return "00" + num;
+        return `00${num}`;
     }
     else if (num < 100) {
-        return "0" + num;
+        return `0${num}`;
     }
     else {
         return num.toString();
@@ -109,16 +109,11 @@ function padMilli(num) {
 }
 
 function formatTime(millisSinceMidnight) {
-    return pad(millisSinceMidnight / HOUR)
-        + ":" + pad((millisSinceMidnight % HOUR) / MINUTE)
-        + ":" + pad((millisSinceMidnight % MINUTE) / SECOND)
-        + "." + padMilli(millisSinceMidnight % SECOND);
+    return `${pad(millisSinceMidnight / HOUR)}:${pad((millisSinceMidnight % HOUR) / MINUTE)}:${pad((millisSinceMidnight % MINUTE) / SECOND)}.${padMilli(millisSinceMidnight % SECOND)}`;
 }
 
 function formatDate() {
-    return pad(todaysMidnight.getFullYear())
-        + "-" + pad(todaysMidnight.getMonth() + 1)
-        + "-" + pad(todaysMidnight.getDate());
+    return `${pad(todaysMidnight.getFullYear())}-${pad(todaysMidnight.getMonth() + 1)}-${pad(todaysMidnight.getDate())}`;
 }
 
 module.exports = {

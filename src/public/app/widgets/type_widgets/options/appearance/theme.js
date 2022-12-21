@@ -28,7 +28,7 @@ export default class ThemeOptions extends OptionsWidget {
         this.$themeSelect.on('change', async () => {
             const newTheme = this.$themeSelect.val();
 
-            await server.put('options/theme/' + newTheme);
+            await server.put(`options/theme/${newTheme}`);
 
             utils.reloadFrontendApp("theme change");
         });

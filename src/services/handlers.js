@@ -123,7 +123,7 @@ eventService.subscribe(eventService.CHILD_NOTE_CREATED, ({ parentNote, childNote
 function processInverseRelations(entityName, entity, handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
         const note = entity.getNote();
-        const relDefinitions = note.getLabels('relation:' + entity.name);
+        const relDefinitions = note.getLabels(`relation:${entity.name}`);
 
         for (const relDefinition of relDefinitions) {
             const definition = relDefinition.getDefinition();

@@ -26,7 +26,7 @@ function handleRequest(req, res) {
             match = path.match(regex);
         }
         catch (e) {
-            log.error(`Testing path for label ${attr.attributeId}, regex=${attr.value} failed with error ` + e.stack);
+            log.error(`Testing path for label ${attr.attributeId}, regex=${attr.value} failed with error ${e.stack}`);
             continue;
         }
 
@@ -58,7 +58,7 @@ function handleRequest(req, res) {
             fileUploadService.downloadNoteFile(attr.noteId, res);
         }
         else {
-            throw new Error("Unrecognized attribute name " + attr.name);
+            throw new Error(`Unrecognized attribute name ${attr.name}`);
         }
 
         return; // only first handler is executed

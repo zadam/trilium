@@ -628,9 +628,9 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         }
 
         if (this.attrType === 'label-definition') {
-            attrName = 'label:' + attrName;
+            attrName = `label:${attrName}`;
         } else if (this.attrType === 'relation-definition') {
-            attrName = 'relation:' + attrName;
+            attrName = `relation:${attrName}`;
         }
 
         this.attribute.name = attrName;
@@ -662,12 +662,12 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
             props.push(this.$inputLabelType.val());
 
             if (this.$inputLabelType.val() === 'number' && this.$inputNumberPrecision.val() !== '') {
-                props.push('precision=' + this.$inputNumberPrecision.val());
+                props.push(`precision=${this.$inputNumberPrecision.val()}`);
             }
         } else if (this.attrType === 'relation-definition' && this.$inputInverseRelation.val().trim().length > 0) {
             const inverseRelationName = this.$inputInverseRelation.val();
 
-            props.push("inverse=" + utils.filterAttributeName(inverseRelationName));
+            props.push(`inverse=${utils.filterAttributeName(inverseRelationName)}`);
         }
 
         this.$rowNumberPrecision.toggle(
@@ -683,7 +683,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
     createNoteLink(noteId) {
         return $("<a>", {
-            href: '#' + noteId,
+            href: `#${noteId}`,
             class: 'reference-link',
             'data-note-path': noteId
         });

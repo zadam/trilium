@@ -68,7 +68,7 @@ function addClipping(req) {
 
     const existingContent = clippingNote.getContent();
 
-    clippingNote.setContent(existingContent + (existingContent.trim() ? "<br/>" : "") + rewrittenContent);
+    clippingNote.setContent(`${existingContent}${existingContent.trim() ? "<br/>" : ""}${rewrittenContent}`);
 
     return {
         noteId: clippingNote.noteId
@@ -79,7 +79,7 @@ function createNote(req) {
     let {title, content, pageUrl, images, clipType} = req.body;
 
     if (!title || !title.trim()) {
-        title = "Clipped note from " + pageUrl;
+        title = `Clipped note from ${pageUrl}`;
     }
 
     const clipperInbox = getClipperInboxNote();
@@ -123,7 +123,7 @@ function processContent(images, note, content) {
                     ? dataUrl.substr(0, Math.min(100, dataUrl.length))
                     : "null";
 
-                log.info("Image could not be recognized as data URL: " + excerpt);
+                log.info(`Image could not be recognized as data URL: ${excerpt}`);
                 continue;
             }
 

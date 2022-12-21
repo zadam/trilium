@@ -75,7 +75,7 @@ function getNoteTitle(childNoteId, parentNoteId) {
 
     const branch = parentNote ? becca.getBranchFromChildAndParent(childNote.noteId, parentNote.noteId) : null;
 
-    return ((branch && branch.prefix) ? `${branch.prefix} - ` : '') + title;
+    return `${(branch && branch.prefix) ? `${branch.prefix} - ` : ''}${title}`;
 }
 
 function getNoteTitleArrayForPath(notePathArray) {

@@ -66,7 +66,7 @@ function isNoteType(obj) {
     const noteTypes = noteTypeService.getNoteTypeNames();
 
     if (!noteTypes.includes(obj)) {
-        return `'${obj}' is not a valid note type, allowed types are: ` + noteTypes.join(", ");
+        return `'${obj}' is not a valid note type, allowed types are: ${noteTypes.join(", ")}`;
     }
 }
 

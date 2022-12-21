@@ -48,7 +48,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
     }
 
     async refreshWithNote(note) {
-        let editedNotes = await server.get('edited-notes/' + note.getLabelValue("dateNote"));
+        let editedNotes = await server.get(`edited-notes/${note.getLabelValue("dateNote")}`);
 
         editedNotes = editedNotes.filter(n => n.noteId !== note.noteId);
 
@@ -69,7 +69,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
             const $item = $('<span class="edited-note-line">');
 
             if (editedNote.isDeleted) {
-                const title = editedNote.title + " (deleted)";
+                const title = `${editedNote.title} (deleted)`;
                 $item.append(
                     $("<i>")
                         .text(title)

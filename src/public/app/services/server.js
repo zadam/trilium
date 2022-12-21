@@ -72,14 +72,14 @@ async function call(method, url, data, headers = {}) {
             reqRejects[requestId] = reject;
 
             if (REQUEST_LOGGING_ENABLED) {
-                console.log(utils.now(), "Request #" + requestId + " to " + method + " " + url);
+                console.log(utils.now(), `Request #${requestId} to ${method} ${url}`);
             }
 
             ipc.send('server-request', {
                 requestId: requestId,
                 headers: headers,
                 method: method,
-                url: "/" + baseApiUrl + url,
+                url: `/${baseApiUrl}${url}`,
                 data: data
             });
         });
@@ -117,7 +117,7 @@ async function reportError(method, url, statusCode, response) {
         toastService.showError(response.message);
         throw new ValidationError(response);
     } else {
-        const message = "Error when calling " + method + " " + url + ": " + statusCode + " - " + response;
+        const message = `Error when calling ${method} ${url}: ${statusCode} - ${response}`;
         toastService.showError(message);
         toastService.throwError(message);
     }
@@ -169,7 +169,7 @@ if (utils.isElectron()) {
 
     ipc.on('server-response', async (event, arg) => {
         if (REQUEST_LOGGING_ENABLED) {
-            console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
+            console.log(utils.now(), `Response #${arg.requestId}: ${arg.statusCode}`);
         }
 
         if (arg.statusCode >= 200 && arg.statusCode < 300) {

@@ -163,7 +163,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
     generateColorFromString(str) {
         if (this.themeStyle === "dark") {
-            str = "0" + str; // magic lightening modifier
+            str = `0${str}`; // magic lightening modifier
         }
 
         let hash = 0;
@@ -175,7 +175,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         for (let i = 0; i < 3; i++) {
             const value = (hash >> (i * 8)) & 0xFF;
 
-            color += ('00' + value.toString(16)).substr(-2);
+            color += (`00${value.toString(16)}`).substr(-2);
         }
         return color;
     }
@@ -209,14 +209,14 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         }
 
         ctx.fillStyle = this.css.textColor;
-        ctx.font = size + 'px ' + this.css.fontFamily;
+        ctx.font = `${size}px ${this.css.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         let title = node.name;
 
         if (title.length > 15) {
-            title = title.substr(0, 15) + "...";
+            title = `${title.substr(0, 15)}...`;
         }
 
         ctx.fillText(title, x, y + Math.round(size * 1.5));
@@ -227,7 +227,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             return;
         }
 
-        ctx.font = '3px ' + this.css.fontFamily;
+        ctx.font = `3px ${this.css.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = this.css.mutedTextColor;

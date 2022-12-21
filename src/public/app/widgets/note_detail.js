@@ -170,7 +170,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
     getTypeWidget() {
         if (!this.typeWidgets[this.type]) {
-            throw new Error("Could not find typeWidget for type: " + this.type);
+            throw new Error(`Could not find typeWidget for type: ${this.type}`);
         }
 
         return this.typeWidgets[this.type];
@@ -268,13 +268,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 `,
             importCSS: false,
             loadCSS: [
-                assetPath + "/libraries/codemirror/codemirror.css",
-                assetPath + "/libraries/ckeditor/ckeditor-content.css",
-                assetPath + "/libraries/bootstrap/css/bootstrap.min.css",
-                assetPath + "/libraries/katex/katex.min.css",
-                assetPath + "/stylesheets/print.css",
-                assetPath + "/stylesheets/relation_map.css",
-                assetPath + "/stylesheets/ckeditor-theme.css"
+                `${assetPath}/libraries/codemirror/codemirror.css`,
+                `${assetPath}/libraries/ckeditor/ckeditor-content.css`,
+                `${assetPath}/libraries/bootstrap/css/bootstrap.min.css`,
+                `${assetPath}/libraries/katex/katex.min.css`,
+                `${assetPath}/stylesheets/print.css`,
+                `${assetPath}/stylesheets/relation_map.css`,
+                `${assetPath}/stylesheets/ckeditor-theme.css`
             ],
             debug: true
         });

@@ -32,7 +32,7 @@ class NoteContentFulltextExp extends Expression {
 
     execute(inputNoteSet, executionContext, searchContext) {
         if (!ALLOWED_OPERATORS.includes(this.operator)) {
-            searchContext.addError(`Note content can be searched only with operators: ` + ALLOWED_OPERATORS.join(", ") + `, operator ${this.operator} given.`);
+            searchContext.addError(`Note content can be searched only with operators: ${ALLOWED_OPERATORS.join(", ")}, operator ${this.operator} given.`);
 
             return inputNoteSet;
         }

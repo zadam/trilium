@@ -249,9 +249,9 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
 
         if (linkTitle) {
             if (this.hasSelection()) {
-                this.watchdog.editor.execute('link', '#' + notePath);
+                this.watchdog.editor.execute('link', `#${notePath}`);
             } else {
-                await this.addLinkToEditor('#' + notePath, linkTitle);
+                await this.addLinkToEditor(`#${notePath}`, linkTitle);
             }
         }
         else {

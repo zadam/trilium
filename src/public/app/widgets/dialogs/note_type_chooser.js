@@ -110,7 +110,7 @@ export default class NoteTypeChooserDialog extends BasicWidget {
                         .attr("data-note-type", noteType.type)
                         .attr("data-template-note-id", noteType.templateNoteId)
                         .append($("<span>").addClass(noteType.uiIcon))
-                        .append(" " + noteType.title)
+                        .append(` ${noteType.title}`)
                 );
             }
         }

@@ -28,14 +28,20 @@ const LOG_ALL_QUERIES = false;
 function insert(tableName, rec, replace = false) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
-        log.error("Can't insert empty object into table " + tableName);
+        log.error(`Can't insert empty object into table ${tableName}`);
         return;
     }
 
     const columns = keys.join(", ");
     const questionMarks = keys.map(p => "?").join(", ");
 
-    const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + tableName + "(" + columns + ") VALUES (" + questionMarks + ")";
+    const query = `INSERT
+    ${replace ? "OR REPLACE" : ""} INTO
+    ${tableName}
+    (
+    ${columns}
+    )
+    VALUES (${questionMarks})`;
 
     const res = execute(query, Object.values(rec));
 
@@ -49,13 +55,13 @@ function replace(tableName, rec) {
 function upsert(tableName, primaryKey, rec) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
-        log.error("Can't upsert empty object into table " + tableName);
+        log.error(`Can't upsert empty object into table ${tableName}`);
         return;
     }
 
     const columns = keys.join(", ");
 
-    const questionMarks = keys.map(colName => "@" + colName).join(", ");
+    const questionMarks = keys.map(colName => `@${colName}`).join(", ");
 
     const updateMarks = keys.map(colName => `${colName} = @${colName}`).join(", ");
 
@@ -272,7 +278,7 @@ function fillParamList(paramIds, truncate = true) {
     }
 
     // doing it manually to avoid this showing up on the sloq query list
-    const s = stmt(`INSERT INTO param_list VALUES ` + paramIds.map(paramId => `(?)`).join(','), paramIds);
+    const s = stmt(`INSERT INTO param_list VALUES ${paramIds.map(paramId => `(?)`).join(',')}`, paramIds);
 
     s.run(paramIds);
 }

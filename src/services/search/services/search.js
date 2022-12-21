@@ -224,7 +224,7 @@ function parseQueryToExpression(query, searchContext) {
             expression
         };
 
-        log.info("Search debug: " + JSON.stringify(searchContext.debugInfo, null, 4));
+        log.info(`Search debug: ${JSON.stringify(searchContext.debugInfo, null, 4)}`);
     }
 
     return expression;
@@ -357,15 +357,15 @@ function highlightSearchResults(searchResults, highlightedTokens) {
 
 function formatAttribute(attr) {
     if (attr.type === 'relation') {
-        return '~' + utils.escapeHtml(attr.name) + "=…";
+        return `~${utils.escapeHtml(attr.name)}=…`;
     }
     else if (attr.type === 'label') {
-        let label = '#' + utils.escapeHtml(attr.name);
+        let label = `#${utils.escapeHtml(attr.name)}`;
 
         if (attr.value) {
-            const val = /[^\w_-]/.test(attr.value) ? '"' + attr.value + '"' : attr.value;
+            const val = /[^\w_-]/.test(attr.value) ? `"${attr.value}"` : attr.value;
 
-            label += '=' + utils.escapeHtml(val);
+            label += `=${utils.escapeHtml(val)}`;
         }
 
         return label;

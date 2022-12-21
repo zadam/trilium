@@ -228,8 +228,12 @@ function checkHiddenSubtree() {
 
 function checkHiddenSubtreeRecursively(parentNoteId, item) {
     if (!item.id || !item.type || !item.title) {
-        throw new Error(`Item does not contain mandatory properties: ` + JSON.stringify(item));
+        throw new Error(`Item does not contain mandatory properties: ${JSON.stringify(item)}`);
     }
+
+    // if (item.id.charAt(0) !== '_') {
+    //     throw new Error("ID has to start with underscore");
+    // }
 
     let note = becca.notes[item.id];
     let branch = becca.branches[item.id];
@@ -237,7 +241,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     const attrs = [...(item.attributes || [])];
 
     if (item.icon) {
-        attrs.push({ type: 'label', name: 'iconClass', value: 'bx ' + item.icon });
+        attrs.push({ type: 'label', name: 'iconClass', value: `bx ${item.icon}` });
     }
 
     if (!note) {

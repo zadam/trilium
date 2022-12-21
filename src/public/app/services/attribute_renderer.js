@@ -6,7 +6,7 @@ async function renderAttribute(attribute, renderIsInheritable) {
     const $attr = $("<span>");
 
     if (attribute.type === 'label') {
-        $attr.append(document.createTextNode('#' + attribute.name + isInheritable));
+        $attr.append(document.createTextNode(`#${attribute.name}${isInheritable}`));
 
         if (attribute.value) {
             $attr.append('=');
@@ -19,11 +19,11 @@ async function renderAttribute(attribute, renderIsInheritable) {
 
         // when the relation has just been created then it might not have a value
         if (attribute.value) {
-            $attr.append(document.createTextNode('~' + attribute.name + isInheritable + "="));
+            $attr.append(document.createTextNode(`~${attribute.name}${isInheritable}=`));
             $attr.append(await createNoteLink(attribute.value));
         }
     } else {
-        ws.logError("Unknown attr type: " + attribute.type);
+        ws.logError(`Unknown attr type: ${attribute.type}`);
     }
 
     return $attr;
@@ -34,16 +34,16 @@ function formatValue(val) {
         return val;
     }
     else if (!val.includes('"')) {
-        return '"' + val + '"';
+        return `"${val}"`;
     }
     else if (!val.includes("'")) {
-        return "'" + val + "'";
+        return `'${val}'`;
     }
     else if (!val.includes("`")) {
-        return "`" + val + "`";
+        return `\`${val}\``;
     }
     else {
-        return '"' + val.replace(/"/g, '\\"') + '"';
+        return `"${val.replace(/"/g, '\\"')}"`;
     }
 }
 
@@ -55,7 +55,7 @@ async function createNoteLink(noteId) {
     }
 
     return $("<a>", {
-        href: '#root/' + noteId,
+        href: `#root/${noteId}`,
         class: 'reference-link',
         'data-note-path': noteId
     })

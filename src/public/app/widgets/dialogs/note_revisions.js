@@ -147,9 +147,9 @@ export default class NoteRevisionsDialog extends BasicWidget {
         for (const item of this.revisionItems) {
             this.$list.append(
                 $('<a class="dropdown-item" tabindex="0">')
-                    .text(item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`)
+                    .text(`${item.dateLastEdited.substr(0, 16)} (${item.contentLength} bytes)`)
                     .attr('data-note-revision-id', item.noteRevisionId)
-                    .attr('title', 'This revision was last edited on ' + item.dateLastEdited)
+                    .attr('title', `This revision was last edited on ${item.dateLastEdited}`)
             );
         }
 
@@ -241,7 +241,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             this.$content.html($("<img>")
                 // reason why we put this inline as base64 is that we do not want to let user to copy this
                 // as a URL to be used in a note. Instead if they copy and paste it into a note, it will be a uploaded as a new note
-                .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
+                .attr("src", `data:${note.mime};base64,${fullNoteRevision.content}`)
                 .css("max-width", "100%")
                 .css("max-height", "100%"));
         }
@@ -253,7 +253,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
                 ))
                 .append($("<tr>").append(
                     $("<th>").text("File size:"),
-                    $("<td>").text(revisionItem.contentLength + " bytes")
+                    $("<td>").text(`${revisionItem.contentLength} bytes`)
                 ));
 
             if (fullNoteRevision.content) {

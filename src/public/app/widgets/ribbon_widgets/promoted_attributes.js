@@ -139,7 +139,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                 $input.prop("type", "text");
 
                 // no need to await for this, can be done asynchronously
-                server.get('attributes/values/' + encodeURIComponent(valueAttr.name)).then(attributeValues => {
+                server.get(`attributes/values/${encodeURIComponent(valueAttr.name)}`).then(attributeValues => {
                     if (attributeValues.length === 0) {
                         return;
                     }
@@ -207,7 +207,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                     .append($openButton));
             }
             else {
-                ws.logError("Unknown labelType=" + definitionAttr.labelType);
+                ws.logError(`Unknown labelType=${definitionAttr.labelType}`);
             }
         }
         else if (valueAttr.type === 'relation') {
@@ -225,7 +225,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
             $input.setSelectedNotePath(valueAttr.value);
         }
         else {
-            ws.logError("Unknown attribute type=" + valueAttr.type);
+            ws.logError(`Unknown attribute type=${valueAttr.type}`);
             return;
         }
 
@@ -253,7 +253,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                     const attributeId = $input.attr("data-attribute-id");
 
                     if (attributeId) {
-                        await server.remove("notes/" + this.noteId + "/attributes/" + attributeId, this.componentId);
+                        await server.remove(`notes/${this.noteId}/attributes/${attributeId}`, this.componentId);
                     }
 
                     // if it's the last one the create new empty form immediately

@@ -54,13 +54,15 @@ export default class NoteSourceDialog extends BasicWidget {
         let textNode;
 
         for (let i = 0; i < node.children.length; i++) {
-            textNode = document.createTextNode('\n' + indentBefore);
+            textNode = document.createTextNode(`
+${indentBefore}`);
             node.insertBefore(textNode, node.children[i]);
 
             this.formatNode(node.children[i], level);
 
             if (node.lastElementChild === node.children[i]) {
-                textNode = document.createTextNode('\n' + indentAfter);
+                textNode = document.createTextNode(`
+${indentAfter}`);
                 node.appendChild(textNode);
             }
         }

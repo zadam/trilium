@@ -11,7 +11,7 @@ function createClassForColor(color) {
         return "";
     }
 
-    const className = 'color-' + normalizedColorName;
+    const className = `color-${normalizedColorName}`;
 
     if (!registeredClasses.has(className)) {
         $("head").append(`<style>.${className} { color: ${color} !important; }</style>`);

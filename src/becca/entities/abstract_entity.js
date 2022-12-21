@@ -31,7 +31,7 @@ class AbstractEntity {
         let contentToHash = "";
 
         for (const propertyName of this.constructor.hashedProperties) {
-            contentToHash += "|" + this[propertyName];
+            contentToHash += `|${this[propertyName]}`;
         }
 
         if (isDeleted) {
