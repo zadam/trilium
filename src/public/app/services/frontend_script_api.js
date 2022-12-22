@@ -106,7 +106,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
-     * @typedef {Object} CreateOrUpdateLauncherOptions
+     * @typedef {Object} AddButtonToToolbarOptions
      * @property {string} [id] - id of the button, used to identify the old instances of this button to be replaced
      *                          ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.
      * @property {string} title
@@ -119,7 +119,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Adds a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
      *
      * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
-     * @param {CreateOrUpdateLauncherOptions} opts
+     * @param {AddButtonToToolbarOptions} opts
      */
     this.addButtonToToolbar = async opts => {
         console.warn("api.addButtonToToolbar() has been deprecated since v0.58 and may be removed in the future. Use  Menu -> Configure Launchbar to create/update launchers instead.");

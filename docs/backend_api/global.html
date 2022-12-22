@@ -391,7 +391,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line210">line 210</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line212">line 212</a>
     </li></ul></dd>
     
 
@@ -579,7 +579,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line171">line 171</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line173">line 173</a>
     </li></ul></dd>
     
 
@@ -767,7 +767,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line231">line 231</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line233">line 233</a>
     </li></ul></dd>
     
 
@@ -1053,7 +1053,422 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line238">line 238</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line240">line 240</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="CreateOrUpdateLauncher">CreateOrUpdateLauncher</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">id of the launcher, only alphanumeric at least 6 characters long</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">one of
+                         * "note" - activating the launcher will navigate to the target note (specified in targetNoteId param)
+                         * "script" -  activating the launcher will execute the script (specified in scriptNoteId param)
+                         * "customWidget" - the launcher will be rendered with a custom widget (specified in widgetNoteId param)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isVisible</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">if true, will be created in the "Visible launchers", otherwise in "Available launchers"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>icon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">name of the boxicon to be used (e.g. "bx-time")</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>keyboardShortcut</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">will activate the target note/script upon pressing, e.g. "ctrl+e"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>targetNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">for type "note"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>scriptNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">for type "script"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>widgetNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">for type "customWidget"</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line464">line 464</a>
     </li></ul></dd>
     
 

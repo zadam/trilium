@@ -16,6 +16,8 @@ const SearchContext = require("./search/search_context");
 const becca = require("../becca/becca");
 const ws = require("./ws");
 const SpacedUpdate = require("./spaced_update");
+const specialNotesService = require("./special_notes");
+const branchService = require("./branches.js");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -450,12 +452,92 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
      */
-    this.refreshTree = () => {};
+    this.refreshTree = () => {
+        console.warn("api.refreshTree() is a NO-OP and can be removed from your script.")
+    };
 
     /**
      * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
      */
     this.getAppInfo = () => appInfo
+
+    /**
+     * @typedef {Object} CreateOrUpdateLauncher
+     * @property {string} id - id of the launcher, only alphanumeric at least 6 characters long
+     * @property {string} type - one of
+     *                          * "note" - activating the launcher will navigate to the target note (specified in targetNoteId param)
+     *                          * "script" -  activating the launcher will execute the script (specified in scriptNoteId param)
+     *                          * "customWidget" - the launcher will be rendered with a custom widget (specified in widgetNoteId param)
+     * @property {string} title
+     * @property {boolean} [isVisible=false] - if true, will be created in the "Visible launchers", otherwise in "Available launchers"
+     * @property {string} [icon] - name of the boxicon to be used (e.g. "bx-time")
+     * @property {string} [keyboardShortcut] - will activate the target note/script upon pressing, e.g. "ctrl+e"
+     * @property {string} [targetNoteId] - for type "note"
+     * @property {string} [scriptNoteId] - for type "script"
+     * @property {string} [widgetNoteId] - for type "customWidget"
+     */
+
+    /**
+     * Creates a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
+     *
+     * @param {CreateOrUpdateLauncher} opts
+     */
+    this.createOrUpdateLauncher = opts => {
+        if (!opts.id) { throw new Error("ID is a mandatory parameter for api.createOrUpdateLauncher(opts)"); }
+        if (!opts.id.match(/[a-z0-9]{6,1000}/i)) { throw new Error(`ID must be an alphanumeric string at least 6 characters long.`); }
+        if (!opts.type) { throw new Error("Launcher Type is a mandatory parameter for api.createOrUpdateLauncher(opts)"); }
+        if (!["note", "script", "customWidget"].includes(opts.type)) { throw new Error(`Given launcher type '${opts.type}'`); }
+        if (!opts.title?.trim()) { throw new Error("Title is a mandatory parameter for api.createOrUpdateLauncher(opts)"); }
+        if (opts.type === 'note' && !opts.targetNoteId) { throw new Error("targetNoteId is mandatory for launchers of type 'note'"); }
+        if (opts.type === 'script' && !opts.scriptNoteId) { throw new Error("scriptNoteId is mandatory for launchers of type 'script'"); }
+        if (opts.type === 'customWidget' && !opts.widgetNoteId) { throw new Error("widgetNoteId is mandatory for launchers of type 'customWidget'"); }
+
+        const parentNoteId = !!opts.isVisible ? '_lbVisibleLaunchers' : '_lbAvailableLaunchers';
+        const actualId = 'al_' + opts.id;
+
+        const launcherNote =
+            becca.getNote(opts.id) ||
+            specialNotesService.createLauncher({
+                id: actualId,
+                parentNoteId: parentNoteId,
+                launcherType: opts.type,
+            }).note;
+
+        if (launcherNote.title !== opts.title) {
+            launcherNote.title = opts.title;
+            launcherNote.save();
+        }
+
+        if (launcherNote.getParentBranches().length === 1) {
+            const branch = launcherNote.getParentBranches()[0];
+
+            if (branch.parentNoteId !== parentNoteId) {
+                branchService.moveBranchToNote(branch, parentNoteId);
+            }
+        }
+
+        if (opts.type === 'note') {
+            launcherNote.setRelation('target', opts.targetNoteId);
+        } else if (opts.type === 'script') {
+            launcherNote.setRelation('script', opts.scriptNoteId);
+        } else if (opts.type === 'customWidget') {
+            launcherNote.setRelation('widget', opts.widgetNoteId);
+        } else {
+            throw new Error(`Unrecognized launcher type '${opts.type}'`);
+        }
+
+        if (opts.keyboardShortcut) {
+            launcherNote.setLabel('keyboardShortcut', opts.keyboardShortcut);
+        } else {
+            launcherNote.removeLabel('keyboardShortcut');
+        }
+
+        if (opts.icon) {
+            launcherNote.setLabel('iconClass', `bx ${opts.icon}`);
+        } else {
+            launcherNote.removeLabel('keyboardShortcut');
+        }
+    };
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.

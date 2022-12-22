@@ -96,7 +96,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
                     attributes: [
                         { type: 'relation', name: 'template', value: LBTPL_BASE },
                         { type: 'label', name: 'launcherType', value: 'note' },
-                        { type: 'label', name: 'relation:targetNote', value: 'promoted' },
+                        { type: 'label', name: 'relation:target', value: 'promoted' },
                         { type: 'label', name: 'relation:hoistedNote', value: 'promoted' },
                         { type: 'label', name: 'label:keyboardShortcut', value: 'promoted,text' },
                         { type: 'label', name: 'docName', value: 'launchbar_note_launcher' }
@@ -271,7 +271,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
                 attrs.push({ type: 'label', name: 'builtinWidget', value: item.builtinWidget });
              } else if (item.targetNoteId) {
                 attrs.push({ type: 'relation', name: 'template', value: LBTPL_NOTE_LAUNCHER });
-                attrs.push({ type: 'relation', name: 'targetNote', value: item.targetNoteId });
+                attrs.push({ type: 'relation', name: 'target', value: item.targetNoteId });
             } else {
                 throw new Error(`No action defined for launcher ${JSON.stringify(item)}`);
             }

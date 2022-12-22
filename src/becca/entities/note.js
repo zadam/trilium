@@ -1124,7 +1124,7 @@ class Note extends AbstractEntity {
         const attributes = this.getOwnedAttributes();
         const attr = attributes.find(attr => attr.type === type && attr.name === name);
 
-        value = value !== null && value !== undefined ? value.toString() : "";
+        value = value?.toString() || "";
 
         if (attr) {
             if (attr.value !== value) {

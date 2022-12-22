@@ -144,9 +144,10 @@ function getHoistedNote() {
     return becca.getNote(cls.getHoistedNoteId());
 }
 
-function createScriptLauncher(parentNoteId, forceNoteId = null) {
+function createScriptLauncher(parentNoteId, forceId = null) {
     const note = noteService.createNewNote({
-        noteId: forceNoteId,
+        noteId: forceId,
+        branchId: forceId,
         title: "Script Launcher",
         type: 'launcher',
         content: '',
@@ -157,11 +158,13 @@ function createScriptLauncher(parentNoteId, forceNoteId = null) {
     return note;
 }
 
-function createLauncher(parentNoteId, launcherType) {
+function createLauncher({parentNoteId, launcherType, id}) {
     let note;
 
     if (launcherType === 'note') {
         note = noteService.createNewNote({
+            noteId: id,
+            branchId: id,
             title: "Note Launcher",
             type: 'launcher',
             content: '',
@@ -170,9 +173,11 @@ function createLauncher(parentNoteId, launcherType) {
 
         note.addRelation('template', LBTPL_NOTE_LAUNCHER);
     } else if (launcherType === 'script') {
-        note = createScriptLauncher(parentNoteId);
+        note = createScriptLauncher(parentNoteId, id);
     } else if (launcherType === 'customWidget') {
         note = noteService.createNewNote({
+            noteId: id,
+            branchId: id,
             title: "Widget Launcher",
             type: 'launcher',
             content: '',
@@ -182,6 +187,8 @@ function createLauncher(parentNoteId, launcherType) {
         note.addRelation('template', LBTPL_CUSTOM_WIDGET);
     } else if (launcherType === 'spacer') {
         note = noteService.createNewNote({
+            noteId: id,
+            branchId: id,
             title: "Spacer",
             type: 'launcher',
             content: '',
@@ -233,12 +240,14 @@ function resetLauncher(noteId) {
  *   could mess up the layout - e.g. the sync status being below.
  */
 function createOrUpdateScriptLauncherFromApi(opts) {
-    const launcherId = opts.id || (`tb${opts.title.replace(/[^[a-z0-9]/gi, "")}`);
+    if (opts.id && !/^[a-z0-9]+$/i.test(opts.id)) {
+        throw new Error(`Launcher ID can be alphanumeric only, '${opts.id}' given`);
+    }
+
+    const launcherId = opts.id || (`tb_${opts.title.toLowerCase().replace(/[^[a-z0-9]/gi, "")}`);
 
     if (!opts.title) {
         throw new Error("Title is mandatory property to create or update a launcher.");
-    } else if (!/^[a-z0-9]+$/i.test(launcherId)) {
-        throw new Error(`Launcher ID can be alphanumeric only, '${launcherId}' given`);
     }
 
     const launcherNote = becca.getNote(launcherId)

@@ -20,7 +20,7 @@ const TPL = `
             margin-left: 10px;
         }
         
-        .floating-buttons-children > button {
+        .floating-buttons-children > button, .floating-buttons-children .floating-button {
             font-size: 150%;
             padding: 5px 10px 4px 10px;
             width: 40px;
@@ -33,7 +33,7 @@ const TPL = `
             justify-content: space-around;
         }
         
-        .floating-buttons-children > button:hover {
+        .floating-buttons-children > button:hover, .floating-buttons-children .floating-button:hover {
             text-decoration: none;
             border-color: var(--button-border-color);
         }

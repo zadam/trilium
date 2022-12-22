@@ -67,7 +67,10 @@ function getHoistedNote() {
 }
 
 function createLauncher(req) {
-    return specialNotesService.createLauncher(req.params.parentNoteId, req.params.launcherType);
+    return specialNotesService.createLauncher({
+        parentNoteId: req.params.parentNoteId,
+        launcherType: req.params.launcherType
+    });
 }
 
 function resetLauncher(req) {

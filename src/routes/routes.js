@@ -450,7 +450,9 @@ function handleException(e, method, path, res) {
             });
     } else {
         res.status(500)
-            .send(e.message);
+            .json({
+                message: e.message
+            });
     }
 }
 

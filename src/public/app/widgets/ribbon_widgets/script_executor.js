@@ -8,6 +8,10 @@ const TPL = `
             padding: 12px;
             color: var(--muted-text-color);
         }
+
+        .execute-description {
+            margin-bottom: 10px;
+        }
     </style>
 
     <div class="execute-description"></div>
@@ -52,7 +56,7 @@ export default class ScriptExecutorWidget extends NoteContextAwareWidget {
 
         this.$executeButton.text(executeTitle);
         this.$executeButton.attr('title', executeTitle);
-        keyboardActionService.updateDisplayedShortcuts(this.$widget);console.trace("ZZZ");
+        keyboardActionService.updateDisplayedShortcuts(this.$widget);
 
         const executeDescription = note.getLabelValue('executeDescription');
 

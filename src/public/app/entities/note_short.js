@@ -813,7 +813,7 @@ class NoteShort {
             return await bundleService.getAndExecuteBundle(this.noteId);
         }
         else if (env === "backend") {
-            return await server.post(`script/run/${this.noteId}`);
+            const resp = await server.post(`script/run/${this.noteId}`);
         }
         else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);

@@ -55,7 +55,7 @@ export default class NoteLauncher extends AbstractLauncher {
     }
 
     getTargetNoteId() {
-        const targetNoteId = this.launcherNote.getRelationValue('targetNote');
+        const targetNoteId = this.launcherNote.getRelationValue('target');
 
         if (!targetNoteId) {
             dialogService.info("This launcher doesn't define target note.");

@@ -105,21 +105,23 @@ async function call(method, url, data, headers = {}) {
 
 async function reportError(method, url, statusCode, response) {
     const toastService = (await import("./toast.js")).default;
+    let message = response;
 
     if (typeof response === 'string') {
         try {
             response = JSON.parse(response);
+            message = response.message;
         }
-        catch (e) { throw e;}
+        catch (e) {}
     }
 
     if ([400, 404].includes(statusCode) && response && typeof response === 'object') {
-        toastService.showError(response.message);
+        toastService.showError(message);
         throw new ValidationError(response);
     } else {
-        const message = `Error when calling ${method} ${url}: ${statusCode} - ${response}`;
-        toastService.showError(message);
-        toastService.throwError(message);
+        const title = `${statusCode} ${method} ${url}`;
+        toastService.showErrorTitleAndMessage(title, message);
+        toastService.throwError(`${title} - ${message}`);
     }
 }
 

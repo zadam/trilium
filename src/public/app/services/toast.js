@@ -84,6 +84,18 @@ function showError(message, delay = 10000) {
     });
 }
 
+function showErrorTitleAndMessage(title, message, delay = 10000) {
+    console.log(utils.now(), "error: ", message);
+
+    toast({
+        title: title,
+        icon: 'alert',
+        message: message,
+        autohide: true,
+        delay
+    });
+}
+
 function throwError(message) {
     ws.logError(message);
 
@@ -93,6 +105,7 @@ function throwError(message) {
 export default {
     showMessage,
     showError,
+    showErrorTitleAndMessage,
     showAndLogError,
     throwError,
     showPersistent,

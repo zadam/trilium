@@ -239,7 +239,7 @@ class Note extends AbstractEntity {
                 return undefined;
             }
             else {
-                throw new Error("Cannot find note content for noteId=" + this.noteId);
+                throw new Error(`Cannot find note content for noteId=${this.noteId}`);
             }
         }
 
@@ -332,7 +332,7 @@ class Note extends AbstractEntity {
 
         sql.upsert("note_contents", "noteId", pojo);
 
-        const hash = utils.hash(this.noteId + "|" + pojo.content.toString());
+        const hash = utils.hash(`${this.noteId}|${pojo.content.toString()}`);
 
         entityChangesService.addEntityChange({
             entityName: 'note_contents',
@@ -767,22 +767,22 @@ class Note extends AbstractEntity {
      */
     getFlatText() {
         if (!this.flatTextCache) {
-            this.flatTextCache = this.noteId + ' ' + this.type + ' ' + this.mime + ' ';
+            this.flatTextCache = `${this.noteId} ${this.type} ${this.mime} `;
 
             for (const branch of this.parentBranches) {
                 if (branch.prefix) {
-                    this.flatTextCache += branch.prefix + ' ';
+                    this.flatTextCache += `${branch.prefix} `;
                 }
             }
 
-            this.flatTextCache += this.title + ' ';
+            this.flatTextCache += `${this.title} `;
 
             for (const attr of this.getAttributes()) {
                 // it's best to use space as separator since spaces are filtered from the search string by the tokenization into words
-                this.flatTextCache += (attr.type === 'label' ? '#' : '~') + attr.name;
+                this.flatTextCache += `${attr.type === 'label' ? '#' : '~'}${attr.name}`;
 
                 if (attr.value) {
-                    this.flatTextCache += '=' + attr.value;
+                    this.flatTextCache += `=${attr.value}`;
                 }
 
                 this.flatTextCache += ' ';
@@ -932,7 +932,7 @@ class Note extends AbstractEntity {
 
         function addSubtreeNotesInner(note, parentNote = null) {
             // share can be removed after 0.57 since it will be put under hidden
-            if (note.noteId === 'hidden' || note.noteId === 'share') {
+            if (note.noteId === '_hidden' || note.noteId === '_share') {
                 return;
             }
 
@@ -1152,7 +1152,7 @@ class Note extends AbstractEntity {
         const attributes = this.getOwnedAttributes();
         const attr = attributes.find(attr => attr.type === type &amp;&amp; attr.name === name);
 
-        value = value !== null &amp;&amp; value !== undefined ? value.toString() : "";
+        value = value?.toString() || "";
 
         if (attr) {
             if (attr.value !== value) {
@@ -1370,7 +1370,7 @@ class Note extends AbstractEntity {
     }
 
     isLaunchBarConfig() {
-        return this.type === 'launcher' || ['lbRoot', 'lbAvailableLaunchers', 'lbVisibleLaunchers'].includes(this.noteId);
+        return this.type === 'launcher' || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(this.noteId);
     }
 
     isOptions() {
