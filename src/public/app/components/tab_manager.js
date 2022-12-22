@@ -80,8 +80,10 @@ export default class TabManager extends Component {
             }
 
             if (filteredTabs.length === 0) {
+                const [notePath] = treeService.getHashValueFromAddress();
+
                 filteredTabs.push({
-                    notePath: glob.extraHoistedNoteId || 'root',
+                    notePath: notePath || 'root',
                     active: true,
                     hoistedNoteId: glob.extraHoistedNoteId || 'root'
                 });
@@ -98,7 +100,7 @@ export default class TabManager extends Component {
             });
 
             // if there's notePath in the URL, make sure it's open and active
-            // (useful, among others, for opening clipped notes from clipper)
+            // (useful, for e.g. opening clipped notes from clipper or opening link in an extra window)
             if (treeService.isNotePathInAddress()) {
                 const [notePath, ntxId] = treeService.getHashValueFromAddress();
 
@@ -106,7 +108,7 @@ export default class TabManager extends Component {
             }
         }
         catch (e) {
-            logError(`Loading tabs '${options.get('openTabs')}' failed: ${e.message}`);
+            logError(`Loading tabs '${options.get('openTabs')}' failed: ${e.message} ${e.stack}`);
 
             // try to recover
             await this.openEmptyTab();
