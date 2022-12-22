@@ -147,6 +147,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Adds a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
      *
      * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
+     *             for special needs there's also backend API's createOrUpdateLauncher()
      * @param {AddButtonToToolbarOptions} opts
      */
     this.addButtonToToolbar = async opts => {

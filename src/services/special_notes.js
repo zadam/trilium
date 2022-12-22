@@ -234,10 +234,8 @@ function resetLauncher(noteId) {
  * Previously, the launchbar was fixed and the only way to add buttons was through this API, so a lot of buttons have been
  * created just to fill this user hole.
  *
- * Another use case would be for script-packages (of which only few exists) which could this way register automatically
- * into the launchbar. For such use cases this might be a usable replacement, but it should look a bit differently:
- * - launcher should be added into the available shortcuts, not visible. Part of the reasoning is that adding them to visible
- *   could mess up the layout - e.g. the sync status being below.
+ * Another use case was for script-packages (e.g. demo Task manager) which could this way register automatically/easily
+ * into the launchbar - for this it's recommended to use backend API's createOrUpdateLauncher()
  */
 function createOrUpdateScriptLauncherFromApi(opts) {
     if (opts.id && !/^[a-z0-9]+$/i.test(opts.id)) {
