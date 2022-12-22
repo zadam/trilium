@@ -6,25 +6,6 @@ const utils = require('./utils');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 
-function executeMigration(mig) {
-    sql.transactional(() => {
-        if (mig.type === 'sql') {
-            const migrationSql = fs.readFileSync(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`).toString('utf8');
-
-            console.log(`Migration with SQL script: ${migrationSql}`);
-
-            sql.executeScript(migrationSql);
-        } else if (mig.type === 'js') {
-            console.log("Migration with JS module");
-
-            const migrationModule = require(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`);
-            migrationModule();
-        } else {
-            throw new Error(`Unknown migration type ${mig.type}`);
-        }
-    });
-}
-
 async function migrate() {
     const migrations = [];
 
@@ -64,22 +45,43 @@ async function migrate() {
 
     migrations.sort((a, b) => a.dbVersion - b.dbVersion);
 
-    for (const mig of migrations) {
-        try {
-            log.info(`Attempting migration to version ${mig.dbVersion}`);
+    // all migrations are executed in one transaction - upgrade either succeeds or the user can stay at the old version
+    sql.transactional(() => {
+        for (const mig of migrations) {
+            try {
+                log.info(`Attempting migration to version ${mig.dbVersion}`);
 
-            executeMigration(mig);
+                executeMigration(mig);
 
-            sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
+                sql.execute(`UPDATE options
+                             SET value = ?
+                             WHERE name = ?`, [mig.dbVersion.toString(), "dbVersion"]);
 
-            log.info(`Migration to version ${mig.dbVersion} has been successful.`);
+                log.info(`Migration to version ${mig.dbVersion} has been successful.`);
+            } catch (e) {
+                log.error(`error during migration to version ${mig.dbVersion}: ${e.stack}`);
+                log.error("migration failed, crashing hard"); // this is not very user friendly :-/
+
+                utils.crash();
+            }
         }
-        catch (e) {
-            log.error(`error during migration to version ${mig.dbVersion}: ${e.stack}`);
-            log.error("migration failed, crashing hard"); // this is not very user friendly :-/
+    });
+}
 
-            utils.crash();
-        }
+function executeMigration(mig) {
+    if (mig.type === 'sql') {
+        const migrationSql = fs.readFileSync(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`).toString('utf8');
+
+        console.log(`Migration with SQL script: ${migrationSql}`);
+
+        sql.executeScript(migrationSql);
+    } else if (mig.type === 'js') {
+        console.log("Migration with JS module");
+
+        const migrationModule = require(`${resourceDir.MIGRATIONS_DIR}/${mig.file}`);
+        migrationModule();
+    } else {
+        throw new Error(`Unknown migration type ${mig.type}`);
     }
 }
 
