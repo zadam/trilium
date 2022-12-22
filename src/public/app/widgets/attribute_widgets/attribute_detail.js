@@ -239,7 +239,9 @@ const ATTR_HELP = {
         "toc": "<code>#toc</code> or <code>#toc=show</code> will force the Table of Contents to be shown, <code>#toc=hide</code> will force hiding it. If the label doesn't exist, the global setting is observed",
         "color": "defines color of the note in note tree, links etc. Use any valid CSS color value like 'red' or #a13d5f",
         "keyboardShortcut": "Defines a keyboard shortcut which will immediately jump to this note. Example: 'ctrl+alt+e'. Requires frontend reload for the change to take effect.",
-        "keepCurrentHoisting": "Opening this link won't change hoisting even if the note is not displayable in the current hoisted subtree."
+        "keepCurrentHoisting": "Opening this link won't change hoisting even if the note is not displayable in the current hoisted subtree.",
+        "executeButton": "Title of the button which will execute the current code note",
+        "executeDescription": "Longer description of the current code note displayed together with the execute button",
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",
