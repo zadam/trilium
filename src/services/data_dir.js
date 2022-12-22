@@ -59,12 +59,14 @@ function getTriliumDataDir() {
     return appDataPath;
 }
 
-const TRILIUM_DATA_DIR =  getTriliumDataDir();
-const DOCUMENT_PATH = `${TRILIUM_DATA_DIR + path.sep}document.db`;
-const BACKUP_DIR = `${TRILIUM_DATA_DIR + path.sep}backup`;
-const LOG_DIR = `${TRILIUM_DATA_DIR + path.sep}log`;
-const ANONYMIZED_DB_DIR = `${TRILIUM_DATA_DIR + path.sep}anonymized-db`;
-const CONFIG_INI_PATH = `${TRILIUM_DATA_DIR}/config.ini`;
+const TRILIUM_DATA_DIR = getTriliumDataDir();
+const DIR_SEP = TRILIUM_DATA_DIR + path.sep;
+
+const DOCUMENT_PATH = process.env.TRILIUM_DOCUMENT_PATH || `${DIR_SEP}document.db`;
+const BACKUP_DIR = process.env.TRILIUM_BACKUP_DIR || `${DIR_SEP}backup`;
+const LOG_DIR = process.env.TRILIUM_LOG_DIR || `${DIR_SEP}log`;
+const ANONYMIZED_DB_DIR = process.env.TRILIUM_ANONYMIZED_DB_DIR || `${DIR_SEP}anonymized-db`;
+const CONFIG_INI_PATH = process.env.TRILIUM_CONFIG_INI_PATH || `${DIR_SEP}config.ini`;
 
 module.exports = {
     TRILIUM_DATA_DIR,
