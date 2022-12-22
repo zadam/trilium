@@ -49,7 +49,7 @@ function updateNoteAttribute(req) {
         }
     }
     else {
-        if (body.type === 'relation' && !body.value.trim()) {
+        if (body.type === 'relation' && !body.value?.trim()) {
             return {};
         }
 
@@ -67,6 +67,8 @@ function updateNoteAttribute(req) {
         // relations should never have empty target
         attribute.markAsDeleted();
     }
+
+    console.log(attribute);
 
     attribute.save();
 

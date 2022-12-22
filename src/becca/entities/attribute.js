@@ -63,8 +63,6 @@ class Attribute extends AbstractEntity {
     }
 
     init() {
-        this.validate();
-
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
         }

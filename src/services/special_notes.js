@@ -209,7 +209,7 @@ function createLauncher({parentNoteId, launcherType, id}) {
 function resetLauncher(noteId) {
     const note = becca.getNote(noteId);
 
-    if (note.isLauncherConfig()) {
+    if (note.isLaunchBarConfig()) {
         if (note) {
             if (noteId === '_lbRoot') {
                 // deleting hoisted notes are not allowed, so we just reset the children
