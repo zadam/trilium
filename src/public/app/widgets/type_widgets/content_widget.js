@@ -27,7 +27,7 @@ import DatabaseIntegrityCheckOptions from "./options/advanced/database_integrity
 import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
-import ContentLogWidget from "./content/backend_log.js";
+import BackendLogWidget from "./content/backend_log.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -49,45 +49,45 @@ const TPL = `<div class="note-detail-content-widget note-detail-printable">
 </div>`;
 
 const CONTENT_WIDGETS = {
-    optionsAppearance: [
+    _optionsAppearance: [
         ZoomFactorOptions,
         NativeTitleBarOptions,
         ThemeOptions,
         FontsOptions,
         MaxContentWidthOptions
     ],
-    optionsShortcuts: [ KeyboardShortcutsOptions ],
-    optionsTextNotes: [
+    _optionsShortcuts: [ KeyboardShortcutsOptions ],
+    _optionsTextNotes: [
         HeadingStyleOptions,
         TableOfContentsOptions,
         TextAutoReadOnlySizeOptions
     ],
-    optionsCodeNotes: [
+    _optionsCodeNotes: [
         VimKeyBindingsOptions,
         WrapLinesOptions,
         CodeAutoReadOnlySizeOptions,
         CodeMimeTypesOptions
     ],
-    optionsImages: [ ImageOptions ],
-    optionsSpellcheck: [ SpellcheckOptions ],
-    optionsPassword: [ PasswordOptions ],
-    optionsEtapi: [ EtapiOptions ],
-    optionsBackup: [ BackupOptions ],
-    optionsSync: [ SyncOptions ],
-    optionsOther: [
+    _optionsImages: [ ImageOptions ],
+    _optionsSpellcheck: [ SpellcheckOptions ],
+    _optionsPassword: [ PasswordOptions ],
+    _optionsEtapi: [ EtapiOptions ],
+    _optionsBackup: [ BackupOptions ],
+    _optionsSync: [ SyncOptions ],
+    _optionsOther: [
         TrayOptions,
         NoteErasureTimeoutOptions,
         NoteRevisionsSnapshotIntervalOptions,
         NetworkConnectionsOptions
     ],
-    optionsAdvanced: [
+    _optionsAdvanced: [
         DatabaseIntegrityCheckOptions,
         ConsistencyChecksOptions,
         DatabaseAnonymizationOptions,
         AdvancedSyncOptions,
         VacuumDatabaseOptions
     ],
-    backendLog: [ ContentLogWidget ]
+    _backendLog: [ BackendLogWidget ]
 };
 
 export default class ContentWidgetTypeWidget extends TypeWidget {

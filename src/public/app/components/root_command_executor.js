@@ -89,7 +89,7 @@ export default class RootCommandExecutor extends Component {
     }
 
     async showOptionsCommand() {
-        await this.showAndHoistSubtree('options');
+        await this.showAndHoistSubtree('_options');
     }
 
     async showSQLConsoleHistoryCommand() {

@@ -17,7 +17,7 @@ const TPL = `<div style="height: 100%; display: flex; flex-direction: column;">
     </div>
 </div>`;
 
-export default class ContentLogWidget extends NoteContextAwareWidget {
+export default class BackendLogWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$backendLogTextArea = this.$widget.find(".backend-log-textarea");

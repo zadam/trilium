@@ -369,17 +369,18 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     return false;
                 }
             },
-            beforeActivate: (event, data) => {
+            beforeActivate: (event, {node}) => {
                 // hidden subtree is hidden hackily, prevent activating it e.g. by keyboard
 
                 if (hoistedNoteService.getHoistedNoteId() === '_hidden') {
                     // if we're hoisted in hidden subtree, we want to avoid crossing to "visible" tree,
-                    // which could happen via UP key from hidden root (to another top level note)
-                    return data.node.data.noteId === '_hidden' || data.node.getParent().data.noteId !== 'root';
+                    // which could happen via UP key from hidden root
+
+                    return node.data.noteId !== 'root';
                 }
 
                 // we're not hoisted to hidden subtree, the only way to cross is via DOWN key to the hidden root
-                return data.node.data.noteId !== '_hidden';
+                return node.data.noteId !== '_hidden';
             },
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
