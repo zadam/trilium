@@ -32,7 +32,7 @@ UPDATE notes SET noteId = '_hidden' WHERE noteId = 'hidden';
 UPDATE note_contents SET noteId = '_hidden' WHERE noteId = 'hidden';
 UPDATE note_revisions SET noteId = '_hidden' WHERE noteId = 'hidden';
 UPDATE branches SET noteId = '_hidden' WHERE noteId = 'hidden';
-UPDATE branches SET branchId = '_hidden' WHERE branchId = 'hidden';
+UPDATE branches SET branchId = '_hidden', prefix = NULL WHERE branchId = 'hidden';
 UPDATE branches SET parentNoteId = '_hidden' WHERE parentNoteId = 'hidden';
 UPDATE attributes SET noteId = '_hidden' WHERE noteId = 'hidden';
 UPDATE attributes SET value = '_hidden' WHERE type = 'relation' AND value = 'hidden';

@@ -20,7 +20,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
     // over tree when it's in the middle
     notePosition: 999_999_999,
     attributes: [
-        { type: 'label', name: 'excludeFromNoteMap', isInheritable: true }
+        { type: 'label', name: 'excludeFromNoteMap', isInheritable: true },
+        { type: 'label', name: 'docName', value: 'hidden' }
     ],
     children: [
         {
@@ -47,7 +48,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
             id: '_share',
             title: 'Shared Notes',
             type: 'doc',
-            attributes: [ { type: 'label', name: 'docName', value: '_share' } ]
+            attributes: [ { type: 'label', name: 'docName', value: 'share' } ]
         },
         {
             id: '_bulkAction',
@@ -67,7 +68,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
             // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
             id: '_userHidden',
             title: 'User Hidden',
-            type: 'text',
+            type: 'doc',
+            attributes: [ { type: 'label', name: 'docName', value: 'user_hidden' } ]
         },
         {
             id: LBTPL_ROOT,
