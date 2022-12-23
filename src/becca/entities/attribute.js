@@ -5,6 +5,7 @@ const AbstractEntity = require("./abstract_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
+const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
 
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
@@ -177,6 +178,8 @@ class Attribute extends AbstractEntity {
 
     beforeSaving() {
         this.validate();
+
+        this.name = sanitizeAttributeName(this.name);
 
         if (!this.value) {
             // null value isn't allowed

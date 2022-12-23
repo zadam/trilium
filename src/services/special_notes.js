@@ -36,14 +36,13 @@ function getInboxNote(date) {
 
 function createSqlConsole() {
     const {note} = noteService.createNewNote({
-        parentNoteId: getMonthlyParentNoteId('_sqlConsole'),
-        title: 'SQL Console',
+        parentNoteId: getMonthlyParentNoteId('_sqlConsole', 'sqlConsole'),
+        title: 'SQL Console - ' + dateUtils.localNowDate(),
         content: "SELECT title, isDeleted, isProtected FROM notes WHERE noteId = ''\n\n\n\n",
         type: 'code',
         mime: 'text/x-sqlite;schema=trilium'
     });
 
-    note.setLabel('_sqlConsole', dateUtils.localNowDate());
     note.setLabel('iconClass', 'bx bx-data');
     note.setLabel('keepCurrentHoisting');
 
@@ -71,7 +70,7 @@ function saveSqlConsole(sqlConsoleNoteId) {
 
 function createSearchNote(searchString, ancestorNoteId) {
     const {note} = noteService.createNewNote({
-        parentNoteId: getMonthlyParentNoteId('_search'),
+        parentNoteId: getMonthlyParentNoteId('_search', 'search'),
         title: `Search: ${searchString}`,
         content: "",
         type: 'search',
@@ -118,9 +117,9 @@ function saveSearchNote(searchNoteId) {
     return result;
 }
 
-function getMonthlyParentNoteId(rootNoteId) {
+function getMonthlyParentNoteId(rootNoteId, prefix) {
     const month = dateUtils.localNowDate().substring(0, 7);
-    const labelName = `${rootNoteId}MonthNote`;
+    const labelName = `${prefix}MonthNote`;
 
     let monthNote = searchService.findFirstNoteWithQuery(`#${labelName}="${month}"`,
         new SearchContext({ancestorNoteId: rootNoteId}));

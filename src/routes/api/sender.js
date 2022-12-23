@@ -5,6 +5,7 @@ const imageService = require('../../services/image');
 const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
+const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name.js");
 
 function uploadImage(req) {
     const file = req.file;
@@ -25,7 +26,7 @@ function uploadImage(req) {
         const labels = JSON.parse(labelsStr);
 
         for (const {name, value} of labels) {
-            note.setLabel(attributeService.sanitizeAttributeName(name), value);
+            note.setLabel(sanitizeAttributeName(name), value);
         }
     }
 
@@ -50,7 +51,7 @@ function saveNote(req) {
 
     if (req.body.labels) {
         for (const {name, value} of req.body.labels) {
-            note.setLabel(attributeService.sanitizeAttributeName(name), value);
+            note.setLabel(sanitizeAttributeName(name), value);
         }
     }
 

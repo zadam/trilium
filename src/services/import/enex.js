@@ -9,6 +9,7 @@ const imageService = require("../image");
 const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require("../html_sanitizer");
 const attributeService = require("../attributes");
+const {sanitizeAttributeName} = require("../sanitize_attribute_name.js");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
@@ -117,7 +118,7 @@ function importEnex(taskContext, file, parentNote) {
                 labelName = 'sourceUrl';
             }
 
-            labelName = attributeService.sanitizeAttributeName(labelName);
+            labelName = sanitizeAttributeName(labelName);
 
             note.attributes.push({
                 type: 'label',
@@ -166,7 +167,7 @@ function importEnex(taskContext, file, parentNote) {
             } else if (currentTag === 'tag') {
                 note.attributes.push({
                     type: 'label',
-                    name: attributeService.sanitizeAttributeName(text),
+                    name: sanitizeAttributeName(text),
                     value: ''
                 })
             }

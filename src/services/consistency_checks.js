@@ -9,10 +9,10 @@ const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
 const Branch = require('../becca/entities/branch');
-const attributeService = require('./attributes');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
+const {sanitizeAttributeName} = require("./sanitize_attribute_name.js");
 const noteTypes = require("../services/note_types").getNoteTypeNames();
 
 class ConsistencyChecks {
@@ -607,7 +607,7 @@ class ConsistencyChecks {
         const attrNames = sql.getColumn(`SELECT DISTINCT name FROM attributes`);
 
         for (const origName of attrNames) {
-            const fixedName = attributeService.sanitizeAttributeName(origName);
+            const fixedName = sanitizeAttributeName(origName);
 
             if (fixedName !== origName) {
                 if (this.autoFix) {
