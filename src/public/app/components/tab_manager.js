@@ -95,6 +95,7 @@ export default class TabManager extends Component {
 
             await this.tabsUpdate.allowUpdateWithoutChange(async () => {
                 for (const tab of filteredTabs) {
+
                     await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
                 }
             });

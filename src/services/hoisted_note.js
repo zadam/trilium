@@ -23,7 +23,23 @@ function isHoistedInHiddenSubtree() {
     return hoistedNote.hasAncestor('_hidden');
 }
 
+function getHoistedNote() {
+    return becca.getNote(cls.getHoistedNoteId());
+}
+
+function getWorkspaceNote() {
+    const hoistedNote = getHoistedNote();
+
+    if (hoistedNote.isRoot() || hoistedNote.hasLabel('workspace')) {
+        return hoistedNote;
+    } else {
+        return becca.getRoot();
+    }
+}
+
 module.exports = {
     getHoistedNoteId,
+    getHoistedNote,
+    getWorkspaceNote,
     isHoistedInHiddenSubtree
 };

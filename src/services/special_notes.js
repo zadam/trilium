@@ -2,28 +2,28 @@ const attributeService = require("./attributes");
 const dateNoteService = require("./date_notes");
 const becca = require("../becca/becca");
 const noteService = require("./notes");
-const cls = require("./cls");
 const dateUtils = require("./date_utils");
 const log = require("./log");
 const hiddenSubtreeService = require("./hidden_subtree");
+const hoistedNoteService = require("./hoisted_note");
 const searchService = require("./search/services/search");
 const SearchContext = require("./search/search_context");
 const {LBTPL_NOTE_LAUNCHER, LBTPL_CUSTOM_WIDGET, LBTPL_SPACER, LBTPL_SCRIPT} = require("./hidden_subtree");
 
 function getInboxNote(date) {
-    const hoistedNote = getHoistedNote();
+    const workspaceNote = hoistedNoteService.getWorkspaceNote();
 
     let inbox;
 
-    if (!hoistedNote.isRoot()) {
-        inbox = hoistedNote.searchNoteInSubtree('#hoistedInbox');
+    if (!workspaceNote.isRoot()) {
+        inbox = workspaceNote.searchNoteInSubtree('#workspaceInbox');
 
         if (!inbox) {
-            inbox = hoistedNote.searchNoteInSubtree('#inbox');
+            inbox = workspaceNote.searchNoteInSubtree('#inbox');
         }
 
         if (!inbox) {
-            inbox = hoistedNote;
+            inbox = workspaceNote;
         }
     }
     else {
@@ -88,16 +88,16 @@ function createSearchNote(searchString, ancestorNoteId) {
 }
 
 function getSearchHome() {
-    const hoistedNote = getHoistedNote();
+    const workspaceNote = hoistedNoteService.getWorkspaceNote();
 
-    if (!hoistedNote.isRoot()) {
-        return hoistedNote.searchNoteInSubtree('#hoistedSearchHome')
-            || hoistedNote.searchNoteInSubtree('#searchHome')
-            || hoistedNote;
+    if (!workspaceNote.isRoot()) {
+        return workspaceNote.searchNoteInSubtree('#workspaceSearchHome')
+            || workspaceNote.searchNoteInSubtree('#searchHome')
+            || workspaceNote;
     } else {
         const today = dateUtils.localNowDate();
 
-        return hoistedNote.searchNoteInSubtree('#searchHome')
+        return workspaceNote.searchNoteInSubtree('#searchHome')
             || dateNoteService.getDayNote(today);
     }
 }
@@ -137,10 +137,6 @@ function getMonthlyParentNoteId(rootNoteId, prefix) {
     }
 
     return monthNote.noteId;
-}
-
-function getHoistedNote() {
-    return becca.getNote(cls.getHoistedNoteId());
 }
 
 function createScriptLauncher(parentNoteId, forceId = null) {

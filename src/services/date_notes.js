@@ -9,6 +9,7 @@ const protectedSessionService = require('./protected_session');
 const cls = require("./cls");
 const searchService = require('../services/search/services/search');
 const SearchContext = require('../services/search/search_context');
+const hoistedNoteService = require("./hoisted_note");
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -32,7 +33,9 @@ function createNote(parentNote, noteTitle) {
 function getRootCalendarNote() {
     let rootNote;
 
-    if (cls.getHoistedNoteId() !== 'root') {
+    const workspaceNote = hoistedNoteService.getWorkspaceNote();
+
+    if (!workspaceNote.isRoot()) {
         rootNote = searchService.findFirstNoteWithQuery('#workspaceCalendarRoot', new SearchContext({ignoreHoistedNote: false}));
     }
 

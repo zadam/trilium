@@ -32,6 +32,10 @@ class Becca {
         this.loaded = false;
     }
 
+    getRoot() {
+        return this.getNote('root');
+    }
+
     /** @returns {Attribute[]} */
     findAttributes(type, name) {
         name = name.trim().toLowerCase();

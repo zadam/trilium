@@ -13,7 +13,7 @@ const LBTPL_CUSTOM_WIDGET = "_lbTplCustomWidget";
 
 const HIDDEN_SUBTREE_DEFINITION = {
     id: '_hidden',
-    title: '_hidden',
+    title: 'Hidden Notes',
     type: 'doc',
     icon: 'bx bx-chip',
     // we want to keep the hidden subtree always last, otherwise there will be problems with e.g. keyboard navigation
@@ -52,7 +52,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
         },
         {
             id: '_bulkAction',
-            title: 'Bulk action',
+            title: 'Bulk Action',
             type: 'doc',
         },
         {
@@ -153,7 +153,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
         },
         {
             id: '_lbRoot',
-            title: 'Launch bar',
+            title: 'Launch Bar',
             type: 'doc',
             icon: 'bx-sidebar',
             isExpanded: true,
