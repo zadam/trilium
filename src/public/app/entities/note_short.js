@@ -710,6 +710,10 @@ class NoteShort {
         return false;
     }
 
+    isInHiddenSubtree() {
+        return this.noteId === '_hidden' || this.hasAncestor('_hidden');
+    }
+
     /**
      * @deprecated NOOP
      */

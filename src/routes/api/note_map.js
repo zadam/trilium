@@ -93,7 +93,11 @@ function getLinkMap(req) {
         // for search notes we want to consider the direct search results only without the descendants
         unfilteredNotes = mapRootNote.getSearchResultNotes();
     } else {
-        unfilteredNotes = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true}).notes;
+        unfilteredNotes = mapRootNote.getSubtree({
+            includeArchived: false,
+            resolveSearch: true,
+            includeHidden: mapRootNote.isInHiddenSubtree()
+        }).notes;
     }
 
     const noteIds = new Set(
@@ -156,7 +160,11 @@ function getTreeMap(req) {
     // if the map root itself has ignore (journal typically) then there wouldn't be anything to display so
     // we'll just ignore it
     const ignoreExcludeFromNoteMap = mapRootNote.hasLabel('excludeFromNoteMap');
-    const subtree = mapRootNote.getSubtree({includeArchived: false, resolveSearch: true});
+    const subtree = mapRootNote.getSubtree({
+        includeArchived: false,
+        resolveSearch: true,
+        includeHidden: mapRootNote.isInHiddenSubtree()
+    });
 
     const notes = subtree.notes
         .filter(note => ignoreExcludeFromNoteMap || !note.hasLabel('excludeFromNoteMap'))

@@ -887,7 +887,7 @@ class Note extends AbstractEntity {
     /**
      * @returns {{notes: Note[], relationships: Array.<{parentNoteId: string, childNoteId: string}>}}
      */
-    getSubtree({includeArchived = true, resolveSearch = false} = {}) {
+    getSubtree({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
         const noteSet = new Set();
         const relationships = []; // list of tuples parentNoteId -> childNoteId
 
@@ -903,8 +903,7 @@ class Note extends AbstractEntity {
         }
 
         function addSubtreeNotesInner(note, parentNote = null) {
-            // share can be removed after 0.57 since it will be put under hidden
-            if (note.noteId === '_hidden' || note.noteId === '_share') {
+            if (note.noteId === '_hidden' && !includeHidden) {
                 return;
             }
 
@@ -1040,6 +1039,10 @@ class Note extends AbstractEntity {
         }
 
         return false;
+    }
+
+    isInHiddenSubtree() {
+        return this.noteId === '_hidden' || this.hasAncestor('_hidden');
     }
 
     getTargetRelations() {
