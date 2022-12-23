@@ -12,6 +12,9 @@ const log = require("../../services/log");
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
  * parents.
  *
+ * Note that you should not rely on the branch's identity, since it can change easily with a note's move.
+ * Always check noteId instead.
+ *
  * @extends AbstractEntity
  */
 class Branch extends AbstractEntity {
@@ -210,7 +213,7 @@ class Branch extends AbstractEntity {
             let maxNotePos = 0;
 
             for (const childBranch of this.parentNote.getChildBranches()) {
-                if (maxNotePos < childBranch.notePosition && childBranch.branchId !== '_hidden') {
+                if (maxNotePos < childBranch.notePosition && childBranch.noteId !== '_hidden') {
                     maxNotePos = childBranch.notePosition;
                 }
             }
