@@ -26,7 +26,12 @@ class SearchResult {
 
         // add one more time for note title alone (already contained in the notePathTitle),
         // thus preferring notes with matches on its own note title as opposed to ancestors or descendants
-        this.addScoreForStrings(tokens, becca.notes[this.noteId].title, 1.5);
+        const note = becca.notes[this.noteId];
+        this.addScoreForStrings(tokens, note.title, 1.5);
+
+        if (note.isInHiddenSubtree()) {
+            this.score = this.score / 2;
+        }
     }
 
     addScoreForStrings(tokens, str, factor) {

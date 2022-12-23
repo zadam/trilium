@@ -39,6 +39,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return "";
         }
 
+        if (origNoteId === 'root' || origNoteId.startsWith("_")) {
+            // these "named" noteIds don't differ between Trilium instances
+            return origNoteId;
+        }
+
         if (!noteIdMap[origNoteId]) {
             noteIdMap[origNoteId] = utils.newEntityId();
         }
@@ -318,7 +323,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                     return `href="${url}"`;
                 }
 
-                if (isUrlAbsolute(url)) {
+                if (url.startsWith('#') || isUrlAbsolute(url)) {
                     return match;
                 }
 
@@ -330,7 +335,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             content = content.replace(/data-note-path="([^"]*)"/g, (match, notePath) => {
                 const noteId = notePath.split("/").pop();
 
-                const targetNoteId = noteIdMap[noteId];
+                let targetNoteId;
+
+                if (noteId === 'root' || noteId.startsWith("_")) { // named noteIds stay identical across instances
+                    targetNoteId = noteId;
+                } else {
+                    targetNoteId = noteIdMap[noteId];
+                }
 
                 return `data-note-path="root/${targetNoteId}"`;
             });

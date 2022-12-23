@@ -432,7 +432,18 @@ ${markdownContent}`;
 
     for (const noteMeta of Object.values(noteIdToMeta)) {
         // filter out relations which are not inside this export
-        noteMeta.attributes = noteMeta.attributes.filter(attr => attr.type !== 'relation' || attr.value in noteIdToMeta);
+        noteMeta.attributes = noteMeta.attributes.filter(attr => {
+            if (attr.type !== 'relation') {
+                return true;
+            } else if (attr.value in noteIdToMeta) {
+                return true;
+            } else if (attr.value === 'root' || attr.value?.startsWith("_")) {
+                // relations to "named" noteIds can be preserved
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     if (!rootMeta) { // corner case of disabled export for exported note
