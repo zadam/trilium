@@ -187,7 +187,7 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
         for (const note of notes) {
             const branch = note.getParentBranches().find(b => b.parentNoteId === parentNoteId);
 
-            if (branch.branchId === '_hidden') {
+            if (branch.noteId === '_hidden') {
                 position = 999_999_999;
             }
 

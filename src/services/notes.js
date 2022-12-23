@@ -166,7 +166,6 @@ function createNewNote(params) {
             note.setContent(params.content);
 
             branch = new Branch({
-                branchId: params.branchId,
                 noteId: note.noteId,
                 parentNoteId: params.parentNoteId,
                 notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),

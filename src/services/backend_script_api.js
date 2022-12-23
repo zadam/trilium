@@ -493,12 +493,12 @@ function BackendScriptApi(currentNote, apiParams) {
         if (opts.type === 'customWidget' && !opts.widgetNoteId) { throw new Error("widgetNoteId is mandatory for launchers of type 'customWidget'"); }
 
         const parentNoteId = !!opts.isVisible ? '_lbVisibleLaunchers' : '_lbAvailableLaunchers';
-        const actualId = 'al_' + opts.id;
+        const noteId = 'al_' + opts.id;
 
         const launcherNote =
             becca.getNote(opts.id) ||
             specialNotesService.createLauncher({
-                id: actualId,
+                noteId: noteId,
                 parentNoteId: parentNoteId,
                 launcherType: opts.type,
             }).note;

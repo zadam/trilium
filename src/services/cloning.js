@@ -121,8 +121,16 @@ function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 
 function cloneNoteAfter(noteId, afterBranchId) {
     if (['_hidden', 'root'].includes(noteId)) {
-        return { success: false, message: 'Cloning the given note is forbidden.' };
-    } else if (afterBranchId === '_hidden') {
+        return { success: false, message: `Cloning the note '${noteId}' is forbidden.` };
+    }
+
+    const afterBranch = becca.getBranch(afterBranchId);
+
+    if (!afterBranch) {
+        return { success: false, message: `Branch '${afterBranchId}' does not exist.` };
+    }
+
+    if (afterBranch.noteId === '_hidden') {
         return { success: false, message: 'Cannot clone after the hidden branch.' };
     }
 

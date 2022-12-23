@@ -57,7 +57,9 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 }
 
 async function moveToParentNote(branchIdsToMove, newParentBranchId) {
-    if (newParentBranchId === '_lbRoot') {
+    const newParentBranch = await froca.getBranch(newParentBranchId);
+
+    if (newParentBranch.noteId === '_lbRoot') {
         toastService.showError('Cannot move notes here.');
         return;
     }

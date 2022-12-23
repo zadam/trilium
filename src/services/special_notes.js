@@ -139,10 +139,9 @@ function getMonthlyParentNoteId(rootNoteId, prefix) {
     return monthNote.noteId;
 }
 
-function createScriptLauncher(parentNoteId, forceId = null) {
+function createScriptLauncher(parentNoteId, forceNoteId = null) {
     const note = noteService.createNewNote({
-        noteId: forceId,
-        branchId: forceId,
+        noteId: forceNoteId,
         title: "Script Launcher",
         type: 'launcher',
         content: '',
@@ -153,13 +152,12 @@ function createScriptLauncher(parentNoteId, forceId = null) {
     return note;
 }
 
-function createLauncher({parentNoteId, launcherType, id}) {
+function createLauncher({parentNoteId, launcherType, noteId}) {
     let note;
 
     if (launcherType === 'note') {
         note = noteService.createNewNote({
-            noteId: id,
-            branchId: id,
+            noteId: noteId,
             title: "Note Launcher",
             type: 'launcher',
             content: '',
@@ -168,11 +166,10 @@ function createLauncher({parentNoteId, launcherType, id}) {
 
         note.addRelation('template', LBTPL_NOTE_LAUNCHER);
     } else if (launcherType === 'script') {
-        note = createScriptLauncher(parentNoteId, id);
+        note = createScriptLauncher(parentNoteId, noteId);
     } else if (launcherType === 'customWidget') {
         note = noteService.createNewNote({
-            noteId: id,
-            branchId: id,
+            noteId: noteId,
             title: "Widget Launcher",
             type: 'launcher',
             content: '',
@@ -182,8 +179,8 @@ function createLauncher({parentNoteId, launcherType, id}) {
         note.addRelation('template', LBTPL_CUSTOM_WIDGET);
     } else if (launcherType === 'spacer') {
         note = noteService.createNewNote({
-            noteId: id,
-            branchId: id,
+            noteId: noteId,
+            branchId: noteId,
             title: "Spacer",
             type: 'launcher',
             content: '',

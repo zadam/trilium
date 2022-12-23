@@ -1,6 +1,5 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
-const log = require("./log");
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -248,7 +247,6 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
 
     if (!note) {
         ({note, branch} = noteService.createNewNote({
-            branchId: item.id,
             noteId: item.id,
             title: item.title,
             type: item.type,
@@ -286,10 +284,9 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
         note.save();
     }
 
-    if (!branch) {
-        // not sure if there's some better way to recover
-        log.error(`Cannot find launcher branch id='${item.id}', ignoring...`);
-    } else {
+    if (branch) {
+        // in case of launchers the branch ID is not preserved and should not be relied upon - launchers which move between
+        // visible and available will change branch since branch's parent-child relationship is immutable
         if (item.notePosition !== undefined && branch.notePosition !== item.notePosition) {
             branch.notePosition = item.notePosition;
             branch.save();

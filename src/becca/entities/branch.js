@@ -2,7 +2,6 @@
 
 const Note = require('./note');
 const AbstractEntity = require("./abstract_entity");
-const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const utils = require("../../services/utils");
 const TaskContext = require("../../services/task_context");
