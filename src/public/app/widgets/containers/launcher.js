@@ -3,14 +3,13 @@ import SpacerWidget from "../spacer.js";
 import BookmarkButtons from "../bookmark_buttons.js";
 import ProtectedSessionStatusWidget from "../buttons/protected_session_status.js";
 import SyncStatusWidget from "../sync_status.js";
-import BackInHistoryButtonWidget from "../buttons/history/history_back.js";
-import ForwardInHistoryButtonWidget from "../buttons/history/history_forward.js";
 import BasicWidget from "../basic_widget.js";
 import NoteLauncher from "../buttons/launcher/note_launcher.js";
 import ScriptLauncher from "../buttons/launcher/script_launcher.js";
 import CommandButtonWidget from "../buttons/command_button.js";
 import utils from "../../services/utils.js";
 import TodayLauncher from "../buttons/launcher/today_launcher.js";
+import HistoryNavigationButton from "../buttons/history_navigation.js";
 
 export default class LauncherWidget extends BasicWidget {
     constructor() {
@@ -66,8 +65,8 @@ export default class LauncherWidget extends BasicWidget {
 
     initCommandLauncherWidget(note) {
         return new CommandButtonWidget()
-            .title(note.title)
-            .icon(note.getIcon())
+            .title(() => note.title)
+            .icon(() => note.getIcon())
             .command(() => note.getLabelValue("command"));
     }
 
@@ -99,9 +98,9 @@ export default class LauncherWidget extends BasicWidget {
         } else if (builtinWidget === 'syncStatus') {
             return new SyncStatusWidget();
         } else if (builtinWidget === 'backInHistoryButton') {
-            return new BackInHistoryButtonWidget();
+            return new HistoryNavigationButton(note, "backInNoteHistory");
         } else if (builtinWidget === 'forwardInHistoryButton') {
-            return new ForwardInHistoryButtonWidget();
+            return new HistoryNavigationButton(note, "forwardInNoteHistory");
         } else if (builtinWidget === 'todayInJournal') {
             return new TodayLauncher(note);
         } else {

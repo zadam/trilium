@@ -39,8 +39,6 @@ class NoteContext extends Component {
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 
-        console.log("EEEEEE", inputNotePath, resolvedNotePath);
-
         if (!resolvedNotePath) {
             return;
         }

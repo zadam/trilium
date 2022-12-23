@@ -167,8 +167,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
                     isExpanded: true,
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
-                        { id: '_lbBackInHistory', title: 'Back in History', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
-                        { id: '_lbForwardInHistory', title: 'Forward in History', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
+                        { id: '_lbBackInHistory', title: 'Go to Previous Note', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
+                        { id: '_lbForwardInHistory', title: 'Go to Next Note', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
                         { id: '_lbBackendLog', title: 'Backend Log', type: 'launcher', targetNoteId: '_backendLog', icon: 'bx bx-terminal' },
                     ]
                 },

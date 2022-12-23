@@ -87,5 +87,6 @@ export default class AbstractButtonWidget extends NoteContextAwareWidget {
 
     onContextMenu(handler) {
         this.settings.onContextMenu = handler;
+        return this;
     }
 }

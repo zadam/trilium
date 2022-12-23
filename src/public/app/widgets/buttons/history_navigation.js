@@ -1,9 +1,21 @@
-import utils from "../../../services/utils.js";
-import contextMenu from "../../../menus/context_menu.js";
-import treeService from "../../../services/tree.js";
-import ButtonFromNoteWidget from "../button_from_note.js";
+import utils from "../../services/utils.js";
+import contextMenu from "../../menus/context_menu.js";
+import treeService from "../../services/tree.js";
+import ButtonFromNoteWidget from "./button_from_note.js";
 
-export default class AbstractHistoryNavigationWidget extends ButtonFromNoteWidget {
+export default class HistoryNavigationButton extends ButtonFromNoteWidget {
+    constructor(launcherNote, command) {
+        super();
+
+        this.title(() => launcherNote.title)
+            .icon(() => launcherNote.getIcon())
+            .command(() => command)
+            .titlePlacement("right")
+            .buttonNoteIdProvider(() => launcherNote.noteId)
+            .onContextMenu(e => this.showContextMenu(e))
+            .class("launcher-button");
+    }
+
     isEnabled() {
         return super.isEnabled() && utils.isElectron();
     }
