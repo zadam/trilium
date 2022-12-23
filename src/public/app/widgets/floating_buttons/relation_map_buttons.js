@@ -3,8 +3,9 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 const TPL = `
 <div class="relation-map-buttons">
     <style>
-        .relation-map-buttons .floating-button {
-            font-size: 120%;
+        .relation-map-buttons {
+            display: flex;
+            gap: 10px;
         }
     </style>
 
