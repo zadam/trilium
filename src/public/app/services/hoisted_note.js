@@ -54,8 +54,8 @@ async function checkNoteAccess(notePath, noteContext) {
         const requestedNote = await froca.getNote(treeService.getNoteIdFromNotePath(resolvedNotePath));
         const hoistedNote = await froca.getNote(hoistedNoteId);
 
-        if (hoistedNote.hasAncestor('_hidden')
-            || !await dialogService.confirm(`Requested note '${requestedNote.title}' is outside of hoisted note '${hoistedNote.title}' subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?`)) {
+        if (!hoistedNote.hasAncestor('_hidden')
+            && !await dialogService.confirm(`Requested note '${requestedNote.title}' is outside of hoisted note '${hoistedNote.title}' subtree and you must unhoist to access the note. Do you want to proceed with unhoisting?`)) {
             return false;
         }
 

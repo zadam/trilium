@@ -39,6 +39,8 @@ class NoteContext extends Component {
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 
+        console.log("EEEEEE", inputNotePath, resolvedNotePath);
+
         if (!resolvedNotePath) {
             return;
         }
@@ -67,14 +69,14 @@ class NoteContext extends Component {
             && this.notePath.startsWith("root/_hidden")
             && !this.note.hasLabel("keepCurrentHoisting")
         ) {
-            // hidden subtree displays only when hoisted so it doesn't make sense to keep root as hoisted note
+            // hidden subtree displays only when hoisted, so it doesn't make sense to keep root as hoisted note
 
             let hoistedNoteId = '_hidden';
 
             if (this.note.isLaunchBarConfig()) {
                 hoistedNoteId = '_lbRoot';
             } else if (this.note.isOptions()) {
-                hoistedNoteId = 'options';
+                hoistedNoteId = '_options';
             }
 
             await this.setHoistedNoteId(hoistedNoteId);
