@@ -14,7 +14,7 @@ class AncestorExp extends Expression {
         this.ancestorDepthComparator = this.getComparator(ancestorDepth);
     }
 
-    execute(inputNoteSet, executionContext) {
+    execute(inputNoteSet, executionContext, searchContext) {
         const ancestorNote = becca.notes[this.ancestorNoteId];
 
         if (!ancestorNote) {

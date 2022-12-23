@@ -12,7 +12,7 @@ class NoteFlatTextExp extends Expression {
         this.tokens = tokens;
     }
 
-    execute(inputNoteSet, executionContext) {
+    execute(inputNoteSet, executionContext, searchContext) {
         // has deps on SQL which breaks unit test so needs to be dynamically required
         const beccaService = require('../../../becca/becca_service');
         const resultNoteSet = new NoteSet();

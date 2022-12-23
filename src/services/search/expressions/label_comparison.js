@@ -13,7 +13,7 @@ class LabelComparisonExp extends Expression {
         this.comparator = comparator;
     }
 
-    execute(inputNoteSet) {
+    execute(inputNoteSet, executionContext, searchContext) {
         const attrs = becca.findAttributes(this.attributeType, this.attributeName);
         const resultNoteSet = new NoteSet();
 

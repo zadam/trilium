@@ -5,8 +5,8 @@ const NoteSet = require('../note_set');
 const buildComparator = require("../services/build_comparator");
 
 /**
- * Search string is lower cased for case insensitive comparison. But when retrieving properties
- * we need case sensitive form so we have this translation object.
+ * Search string is lower cased for case-insensitive comparison. But when retrieving properties
+ * we need case-sensitive form, so we have this translation object.
  */
 const PROP_MAPPING = {
     "noteid": "noteId",
@@ -53,7 +53,7 @@ class PropertyComparisonExp extends Expression {
         }
     }
 
-    execute(inputNoteSet, executionContext) {
+    execute(inputNoteSet, executionContext, searchContext) {
         const resNoteSet = new NoteSet();
 
         for (const note of inputNoteSet.notes) {

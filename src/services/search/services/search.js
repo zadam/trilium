@@ -151,6 +151,9 @@ function findResultsWithExpression(expression, searchContext) {
         noteIdToNotePath: {}
     };
 
+    const ancestorNote = becca.getNote(searchContext.ancestorNoteId || 'root');
+    const showNotesInHiddenSubtree = ancestorNote.hasAncestor('_hidden');
+
     const noteSet = expression.execute(allNoteSet, executionContext, searchContext);
 
     const searchResults = noteSet.notes
@@ -165,7 +168,7 @@ function findResultsWithExpression(expression, searchContext) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
             }
 
-            if (notePathArray.includes('_hidden')) {
+            if (!showNotesInHiddenSubtree && notePathArray.includes('_hidden')) {
                 return null;
             }
 

@@ -109,6 +109,7 @@ button.close:hover {
 
 .icon-action {
     border: 1px solid transparent;
+    padding: 5px;
     width: 35px;
     height: 35px;
     cursor: pointer;

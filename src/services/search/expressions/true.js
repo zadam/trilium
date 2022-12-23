@@ -3,7 +3,7 @@
 const Expression = require('./expression');
 
 class TrueExp extends Expression {
-    execute(inputNoteSet, executionContext) {
+    execute(inputNoteSet, executionContext, searchContext) {
         return inputNoteSet;
     }
 }

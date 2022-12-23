@@ -13,7 +13,7 @@ class AttributeExistsExp extends Expression {
         this.prefixMatch = prefixMatch;
     }
 
-    execute(inputNoteSet) {
+    execute(inputNoteSet, executionContext, searchContext) {
         const attrs = this.prefixMatch
             ? becca.findAttributesWithPrefix(this.attributeType, this.attributeName)
             : becca.findAttributes(this.attributeType, this.attributeName);
