@@ -78,8 +78,6 @@ export default class SyncStatusWidget extends BasicWidget {
     constructor() {
         super();
 
-        ws.subscribeToMessages(message => this.processMessage(message));
-
         this.syncState = 'unknown';
         this.allChangesPushed = false;
     }
@@ -93,8 +91,9 @@ export default class SyncStatusWidget extends BasicWidget {
         });
 
         this.$widget.find('.sync-status-icon:not(.sync-status-in-progress)')
-            .on('click', () => syncService.syncNow())
+            .on('click', () => syncService.syncNow());
 
+        ws.subscribeToMessages(message => this.processMessage(message));
     }
 
     showIcon(className) {

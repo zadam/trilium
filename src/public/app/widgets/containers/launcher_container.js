@@ -17,8 +17,6 @@ export default class LauncherContainer extends FlexContainer {
     async load() {
         await froca.initializedPromise;
 
-        this.children = [];
-
         const visibleLaunchersRoot = await froca.getNote('_lbVisibleLaunchers', true);
 
         if (!visibleLaunchersRoot) {
@@ -27,19 +25,24 @@ export default class LauncherContainer extends FlexContainer {
             return;
         }
 
+        const newChildren = [];
+
         for (const launcherNote of await visibleLaunchersRoot.getChildNotes()) {
             try {
                 const launcherWidget = new LauncherWidget();
                 const success = await launcherWidget.initLauncher(launcherNote);
 
                 if (success) {
-                    this.child(launcherWidget);
+                    newChildren.push(launcherWidget);
                 }
             }
             catch (e) {
                 console.error(e);
             }
         }
+
+        this.children = [];
+        this.child(...newChildren);
 
         this.$widget.empty();
         this.renderChildren();
