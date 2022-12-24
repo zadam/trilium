@@ -42,3 +42,12 @@ UPDATE branches SET parentNoteId = '_search' WHERE parentNoteId = 'search';
 UPDATE attributes SET noteId = '_search' WHERE noteId = 'search';
 UPDATE attributes SET value = '_search' WHERE type = 'relation' AND value = 'search';
 UPDATE entity_changes SET entityId = '_search' WHERE entityId = 'search';
+
+UPDATE notes SET noteId = '_share', title = 'Shared Notes' WHERE noteId = 'share';
+UPDATE note_contents SET noteId = '_share' WHERE noteId = 'share';
+UPDATE note_revisions SET noteId = '_share' WHERE noteId = 'share';
+UPDATE branches SET noteId = '_share' WHERE noteId = 'share';
+UPDATE branches SET parentNoteId = '_share' WHERE parentNoteId = 'share';
+UPDATE attributes SET noteId = '_share' WHERE noteId = 'share';
+UPDATE attributes SET value = '_share' WHERE type = 'relation' AND value = 'share';
+UPDATE entity_changes SET entityId = '_share' WHERE entityId = 'share';
