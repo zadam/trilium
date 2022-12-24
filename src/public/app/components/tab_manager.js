@@ -413,7 +413,7 @@ export default class TabManager extends Component {
             return;
         }
 
-        this.recentlyClosedTabs.push(noteContexts);console.log(this.recentlyClosedTabs);
+        this.recentlyClosedTabs.push(noteContexts);
     }
 
     tabReorderEvent({ntxIdsInOrder}) {

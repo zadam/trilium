@@ -235,15 +235,19 @@ function getDeleteNotesPreview(req) {
     const {branchIdsToDelete, deleteAllClones} = req.body;
 
     const noteIdsToBeDeleted = new Set();
-    const branchCountToDelete = {}; // noteId => count (integer)
+    const strongBranchCountToDelete = {}; // noteId => count (integer)
 
     function branchPreviewDeletion(branch) {
-        branchCountToDelete[branch.branchId] = branchCountToDelete[branch.branchId] || 0;
-        branchCountToDelete[branch.branchId]++;
+        if (branch.isWeak) {
+            return;
+        }
+
+        strongBranchCountToDelete[branch.branchId] = strongBranchCountToDelete[branch.branchId] || 0;
+        strongBranchCountToDelete[branch.branchId]++;
 
         const note = branch.getNote();
 
-        if (deleteAllClones || note.getParentBranches().length <= branchCountToDelete[branch.branchId]) {
+        if (deleteAllClones || note.getStrongParentBranches().length <= strongBranchCountToDelete[branch.branchId]) {
             noteIdsToBeDeleted.add(note.noteId);
 
             for (const childBranch of note.getChildBranches()) {
