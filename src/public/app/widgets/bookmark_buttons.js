@@ -43,7 +43,7 @@ export default class BookmarkButtons extends FlexContainer {
         }
 
         if (loadResults.getAttributes().find(attr => attr.type === 'label'
-            && ['iconClass', 'workspaceIconClass'].includes(attr.name)
+            && ['iconClass', 'workspaceIconClass', 'bookmarkFolder'].includes(attr.name)
             && this.noteIds.includes(attr.noteId))
         ) {
             this.refresh();
