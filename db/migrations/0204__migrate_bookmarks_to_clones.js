@@ -8,7 +8,7 @@ module.exports = () => {
         beccaLoader.load();
 
         for (const attr of becca.findAttributes('label','bookmarked')) {
-            cloningService.toggleNoteInParent(true, attr.noteId, 'lbBookmarks');
+            cloningService.toggleNoteInParent(true, attr.noteId, '_lbBookmarks');
 
             attr.markAsDeleted("0204__migrate_bookmarks_to_clones");
         }

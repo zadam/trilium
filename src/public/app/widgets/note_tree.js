@@ -758,7 +758,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 .map(noteId => froca.notes[noteId])
                 .filter(note => !!note)
                 .filter(note =>
-                    !['_share', 'lbBookmarks'].includes(note.noteId)
+                    !['_share', '_lbBookmarks'].includes(note.noteId)
                     && note.type !== 'search');
 
             if (realClones.length > 1) {

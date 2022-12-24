@@ -131,7 +131,7 @@ class Branch extends AbstractEntity {
      * @returns {boolean}
      */
     get isWeak() {
-        return ['_share', 'lbBookmarks'].includes(this.parentNoteId);
+        return ['_share', '_lbBookmarks'].includes(this.parentNoteId);
     }
 
     /**

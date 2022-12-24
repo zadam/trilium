@@ -38,7 +38,7 @@ export default class BookmarkButtons extends FlexContainer {
     }
 
     entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getBranches().find(branch => branch.parentNoteId === 'lbBookmarks')) {
+        if (loadResults.getBranches().find(branch => branch.parentNoteId === '_lbBookmarks')) {
             this.refresh();
         }
 

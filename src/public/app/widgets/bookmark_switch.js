@@ -20,7 +20,7 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
     }
 
     async toggle(state) {
-        const resp = await server.put(`notes/${this.noteId}/toggle-in-parent/lbBookmarks/${!!state}`);
+        const resp = await server.put(`notes/${this.noteId}/toggle-in-parent/_lbBookmarks/${!!state}`);
 
         if (!resp.success) {
             toastService.showError(resp.message);
@@ -28,7 +28,7 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
     }
 
     refreshWithNote(note) {
-        const isBookmarked = !!note.getParentBranches().find(b => b.parentNoteId === 'lbBookmarks');
+        const isBookmarked = !!note.getParentBranches().find(b => b.parentNoteId === '_lbBookmarks');
 
         this.$switchOn.toggle(!isBookmarked);
         this.$switchOff.toggle(isBookmarked);

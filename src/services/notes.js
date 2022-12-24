@@ -100,7 +100,7 @@ function getAndValidateParent(params) {
         throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
     }
 
-    if (parentNote.type === 'launcher' && parentNote.noteId !== 'lbBookmarks') {
+    if (parentNote.type === 'launcher' && parentNote.noteId !== '_lbBookmarks') {
         throw new ValidationError(`Creating child notes into launcher notes is not allowed.`);
     }
 
