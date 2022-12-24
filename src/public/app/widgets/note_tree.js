@@ -439,6 +439,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         return false;
                     } else if (node.data.noteType === 'launcher') {
                         return ['before', 'after'];
+                    } else if (['_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(node.data.noteId)) {
+                        return ['over'];
                     } else {
                         return true;
                     }
