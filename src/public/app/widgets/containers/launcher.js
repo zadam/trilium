@@ -37,6 +37,10 @@ export default class LauncherWidget extends BasicWidget {
 
         const launcherType = note.getLabelValue("launcherType");
 
+        if (glob.TRILIUM_SAFE_MODE && launcherType === 'customWidget') {
+            return false;
+        }
+
         if (launcherType === 'command') {
             this.innerWidget = this.initCommandLauncherWidget(note)
                 .class("launcher-button");

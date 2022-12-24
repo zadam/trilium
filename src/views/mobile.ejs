@@ -117,7 +117,8 @@
         appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>,
         isProtectedSessionAvailable: <%= isProtectedSessionAvailable %>,
         assetPath: "<%= assetPath %>",
-        isMainWindow: true
+        isMainWindow: true,
+        TRILIUM_SAFE_MODE: <%= !!process.env.TRILIUM_SAFE_MODE %>
     };
 </script>
 

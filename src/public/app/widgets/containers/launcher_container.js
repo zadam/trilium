@@ -27,22 +27,19 @@ export default class LauncherContainer extends FlexContainer {
             return;
         }
 
-        await Promise.allSettled(
-            (await visibleLaunchersRoot.getChildNotes())
-                .map(async launcherNote => {
-                    try {
-                        const launcherWidget = new LauncherWidget();
-                        const success = await launcherWidget.initLauncher(launcherNote);
+        for (const launcherNote of await visibleLaunchersRoot.getChildNotes()) {
+            try {
+                const launcherWidget = new LauncherWidget();
+                const success = await launcherWidget.initLauncher(launcherNote);
 
-                        if (success) {
-                            this.child(launcherWidget);
-                        }
-                    }
-                    catch (e) {
-                        console.error(e);
-                    }
-                })
-        );
+                if (success) {
+                    this.child(launcherWidget);
+                }
+            }
+            catch (e) {
+                console.error(e);
+            }
+        }
 
         this.$widget.empty();
         this.renderChildren();

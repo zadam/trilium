@@ -35,7 +35,8 @@
         extraHoistedNoteId: '<%= extraHoistedNoteId %>',
         isProtectedSessionAvailable: <%= isProtectedSessionAvailable %>,
         triliumVersion: "<%= triliumVersion %>",
-        assetPath: "<%= assetPath %>"
+        assetPath: "<%= assetPath %>",
+        TRILIUM_SAFE_MODE: <%= !!process.env.TRILIUM_SAFE_MODE %>
     };
 </script>
 
