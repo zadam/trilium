@@ -5,7 +5,7 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-n exec 16.18.0 npm run webpack
+n exec 16.19.0 npm run webpack
 
 DIR=$1
 
@@ -27,7 +27,7 @@ cp -r electron.js $DIR/
 cp webpack-* $DIR/
 
 # run in subshell (so we return to original dir)
-(cd $DIR && n exec 16.18.0 npm install --only=prod)
+(cd $DIR && n exec 16.19.0 npm install --only=prod)
 
 # cleanup of useless files in dependencies
 rm -r $DIR/node_modules/image-q/demo
@@ -45,10 +45,6 @@ find $DIR/node_modules -name demo -exec rm -rf {} \;
 find $DIR/libraries -name "*.map" -type f -delete
 
 cp $DIR/src/public/app/share.js $DIR/src/public/app-dist/
+cp -r $DIR/src/public/app/doc_notes $DIR/src/public/app-dist/
 
 rm -rf $DIR/src/public/app
-
-sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' $DIR/src/views/desktop.ejs
-sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' $DIR/src/views/mobile.ejs
-sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' $DIR/src/views/setup.ejs
-sed -i -e 's/app\/share.js/app-dist\/share.js/g' $DIR/src/views/share/*.ejs

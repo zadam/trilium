@@ -10,6 +10,7 @@ const utils = require('../services/utils');
 const protectedSessionService = require("../services/protected_session");
 const packageJson = require('../../package.json');
 const assetPath = require("../services/asset_path");
+const appPath = require("../services/app_path");
 
 function index(req, res) {
     const options = optionService.getOptionsMap();
@@ -38,7 +39,8 @@ function index(req, res) {
         isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
         maxContentWidth: parseInt(options.maxContentWidth),
         triliumVersion: packageJson.version,
-        assetPath: assetPath
+        assetPath: assetPath,
+        appPath: appPath
     });
 }
 

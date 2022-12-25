@@ -31,7 +31,7 @@ export default class DocTypeWidget extends TypeWidget {
         const docName = note.getLabelValue('docName');
 
         if (docName) {
-            this.$content.load(`${window.glob.assetPath}/app/doc_notes/${docName}.html`);
+            this.$content.load(`${window.glob.appPath}/doc_notes/${docName}.html`);
         } else {
             this.$content.empty();
         }

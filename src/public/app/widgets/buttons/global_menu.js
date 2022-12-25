@@ -80,7 +80,7 @@ const TPL = `
         display: none;
     }
     
-    body.mobile .dropdown-submenu .dropdown-menu {
+    body.mobile .global-menu .dropdown-submenu .dropdown-menu {
         display: block;
         font-size: 90%;
         position: relative;

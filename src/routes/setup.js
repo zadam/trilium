@@ -4,6 +4,7 @@ const sqlInit = require('../services/sql_init');
 const setupService = require('../services/setup');
 const utils = require('../services/utils');
 const assetPath = require("../services/asset_path");
+const appPath = require("../services/app_path.js");
 
 function setupPage(req, res) {
     if (sqlInit.isDbInitialized()) {
@@ -31,7 +32,8 @@ function setupPage(req, res) {
 
     res.render('setup', {
         syncInProgress: syncInProgress,
-        assetPath: assetPath
+        assetPath: assetPath,
+        appPath: appPath
     });
 }
 

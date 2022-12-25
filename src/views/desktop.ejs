@@ -36,6 +36,7 @@
         isProtectedSessionAvailable: <%= isProtectedSessionAvailable %>,
         triliumVersion: "<%= triliumVersion %>",
         assetPath: "<%= assetPath %>",
+        appPath: "<%= appPath %>",
         TRILIUM_SAFE_MODE: <%= !!process.env.TRILIUM_SAFE_MODE %>
     };
 </script>
@@ -80,7 +81,7 @@
     $("body").show();
 </script>
 
-<script src="<%= assetPath %>/app/desktop.js" crossorigin type="module"></script>
+<script src="<%= appPath %>/desktop.js" crossorigin type="module"></script>
 
 <link rel="stylesheet" type="text/css" href="<%= assetPath %>/libraries/boxicons/css/boxicons.min.css">
 

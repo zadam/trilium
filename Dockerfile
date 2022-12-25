@@ -1,5 +1,5 @@
 # !!! Don't try to build this Dockerfile directly, run it through bin/build-docker.sh script !!!
-FROM node:16.18.0-alpine
+FROM node:16.19.0-alpine
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -25,12 +25,8 @@ RUN set -x \
     && apk del .build-dependencies \
     && npm run webpack \
     && npm prune --omit=dev \
-# Set the path to the newly created webpack bundle
-    && sed -i -e 's/app\/desktop.js/app-dist\/desktop.js/g' src/views/desktop.ejs \
-    && sed -i -e 's/app\/mobile.js/app-dist\/mobile.js/g' src/views/mobile.ejs \
-    && sed -i -e 's/app\/setup.js/app-dist\/setup.js/g' src/views/setup.ejs \
-    && sed -i -e 's/app\/share.js/app-dist\/share.js/g' src/views/share/*.ejs \
     && cp src/public/app/share.js src/public/app-dist/. \
+    && cp -r src/public/app/doc_notes src/public/app-dist/. \
     && rm -rf src/public/app
 
 # Some setup tools need to be kept
