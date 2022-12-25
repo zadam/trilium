@@ -13,6 +13,7 @@ const utils = require('./services/utils');
 const assetPath = require('./services/asset_path');
 require('./services/handlers');
 require('./becca/becca_loader');
+require('./services/help_import');
 
 const app = express();
 

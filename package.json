@@ -14,7 +14,9 @@
   },
   "scripts": {
     "start-server": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_ENV=dev node ./src/www",
+    "start-server-no-dir": "cross-env TRILIUM_ENV=dev node ./src/www",
     "start-electron": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_ENV=dev electron --inspect=5858 .",
+    "start-electron-no-dir": "cross-env TRILIUM_ENV=dev electron --inspect=5858 .",
     "switch-server": "rm -r ./node_modules/better-sqlite3 && npm install",
     "switch-electron": "rm -r ./node_modules/better-sqlite3 && npm install && ./node_modules/.bin/electron-rebuild",
     "build-backend-docs": "rm -r ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",

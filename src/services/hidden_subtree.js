@@ -64,6 +64,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
             ]
         },
         {
+            id: '_help',
+            title: 'Help',
+            type: 'text',
+            icon: 'bx-help-circle'
+        },
+        {
             // place for user scripts hidden stuff (scripts should not create notes directly under hidden root)
             id: '_userHidden',
             title: 'User Hidden',
