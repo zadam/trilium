@@ -192,7 +192,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             title: noteTitle,
             content: '',
             noteId: noteId,
-            type: resolveNoteType(noteMeta.type),
+            type: resolveNoteType(noteMeta?.type),
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
             isExpanded: noteMeta ? noteMeta.isExpanded : false,
