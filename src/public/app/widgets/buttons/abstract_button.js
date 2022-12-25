@@ -29,6 +29,8 @@ export default class AbstractButtonWidget extends NoteContextAwareWidget {
                 this.$widget.tooltip("hide");
 
                 this.settings.onContextMenu(e);
+
+                return false; // blocks default browser right click menu
             });
         }
 

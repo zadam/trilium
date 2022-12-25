@@ -120,7 +120,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 selectMenuItemHandler: ({command}) => this.contextMenuHandler(command, e.target)
             });
 
-            return false;
+            return false; // blocks default browser right click menu
         });
 
         this.clipboard = null;

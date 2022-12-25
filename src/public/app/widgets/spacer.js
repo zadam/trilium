@@ -31,6 +31,8 @@ export default class SpacerWidget extends BasicWidget {
                     appContext.triggerCommand(command);
                 }
             });
+
+            return false; // blocks default browser right click menu
         });
     }
 }
