@@ -403,6 +403,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *                               see https://github.com/zadam/trilium/wiki/Sorting for details.
      * @property {boolean} [reverse=false]
      * @property {boolean} [foldersFirst=false]
+     */
 
     /**
      * Sort child notes of a given note.
