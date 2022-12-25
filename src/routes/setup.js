@@ -14,7 +14,7 @@ function setupPage(req, res) {
             windowService.closeSetupWindow();
         }
         else {
-            res.redirect('/');
+            res.redirect('.');
         }
 
         return;
