@@ -4,8 +4,6 @@ const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
-const debounce = require('debounce');
-const specialNotesService = require("./special_notes");
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
@@ -101,7 +99,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
             }
         }
-        else if (entity.type === 'label' && entity.name === 'sorted') {
+        else if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst'].includes(entity.name)) {
             handleSortedAttribute(entity);
         }
         else if (entity.type === 'label') {
@@ -110,6 +108,10 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
     }
     else if (entityName === 'branches') {
         runAttachedRelations(entity.getNote(), 'runOnBranchCreation', entity);
+
+        if (entity.parentNote?.hasLabel("sorted")) {
+            treeService.sortNotesIfNeeded(entity.parentNoteId);
+        }
     }
     else if (entityName === 'notes') {
         runAttachedRelations(entity, 'runOnNoteCreation', entity);

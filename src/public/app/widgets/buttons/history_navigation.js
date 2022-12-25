@@ -36,7 +36,9 @@ export default class HistoryNavigationButton extends ButtonFromNoteWidget {
 
         // API is broken and will be replaced: https://github.com/electron/electron/issues/33899
         // until then no context menu
-        return;
+        if (true) { // avoid warning in dev console
+            return;
+        }
 
         if (this.webContents.history.length < 2) {
             return;
