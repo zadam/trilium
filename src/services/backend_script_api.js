@@ -392,9 +392,31 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * @method
+     * @deprecated - use sortNotes instead
      * @param {string} parentNoteId - this note's child notes will be sorted
      */
     this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
+
+    /**
+     * @typedef {Object} SortConfig
+     * @property {string} [sortBy] - 'title', 'dateCreated', 'dateModified' or a label name
+     *                               see https://github.com/zadam/trilium/wiki/Sorting for details.
+     * @property {boolean} [reverse=false]
+     * @property {boolean} [foldersFirst=false]
+
+    /**
+     * Sort child notes of a given note.
+     *
+     * @method
+     * @param {string} parentNoteId - this note's child notes will be sorted
+     * @param {SortConfig} [sortConfig]
+     */
+    this.sortNotes = (parentNoteId, sortConfig = {}) => treeService.sortNotes(
+        parentNoteId,
+        sortConfig.sortBy || "title",
+        !!sortConfig.reverse,
+        !!sortConfig.foldersFirst
+    );
 
     /**
      * This method finds note by its noteId and prefix and either sets it to the given parentNoteId

@@ -420,9 +420,31 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * @method
+     * @deprecated - use sortNotes instead
      * @param {string} parentNoteId - this note's child notes will be sorted
      */
     this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
+
+    /**
+     * @typedef {Object} SortConfig
+     * @property {string} [sortBy] - 'title', 'dateCreated', 'dateModified' or a label name
+     *                               see https://github.com/zadam/trilium/wiki/Sorting for details.
+     * @property {boolean} [reverse=false]
+     * @property {boolean} [foldersFirst=false]
+
+    /**
+     * Sort child notes of a given note.
+     *
+     * @method
+     * @param {string} parentNoteId - this note's child notes will be sorted
+     * @param {SortConfig} [sortConfig]
+     */
+    this.sortNotes = (parentNoteId, sortConfig = {}) => treeService.sortNotes(
+        parentNoteId,
+        sortConfig.sortBy || "title",
+        !!sortConfig.reverse,
+        !!sortConfig.foldersFirst
+    );
 
     /**
      * This method finds note by its noteId and prefix and either sets it to the given parentNoteId
@@ -521,12 +543,12 @@ function BackendScriptApi(currentNote, apiParams) {
         if (opts.type === 'customWidget' &amp;&amp; !opts.widgetNoteId) { throw new Error("widgetNoteId is mandatory for launchers of type 'customWidget'"); }
 
         const parentNoteId = !!opts.isVisible ? '_lbVisibleLaunchers' : '_lbAvailableLaunchers';
-        const actualId = 'al_' + opts.id;
+        const noteId = 'al_' + opts.id;
 
         const launcherNote =
             becca.getNote(opts.id) ||
             specialNotesService.createLauncher({
-                id: actualId,
+                noteId: noteId,
                 parentNoteId: parentNoteId,
                 launcherType: opts.type,
             }).note;
@@ -588,7 +610,7 @@ module.exports = BackendScriptApi;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractEntity.html">AbstractEntity</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractEntity.html">AbstractEntity</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3>Global</h3><ul><li><a href="global.html#SortConfig">SortConfig</a></li></ul>
 </nav>
 
 <br class="clear">

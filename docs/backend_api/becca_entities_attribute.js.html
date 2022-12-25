@@ -33,6 +33,7 @@ const AbstractEntity = require("./abstract_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
+const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
 
 /**
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
@@ -91,8 +92,6 @@ class Attribute extends AbstractEntity {
     }
 
     init() {
-        this.validate();
-
         if (this.attributeId) {
             this.becca.attributes[this.attributeId] = this;
         }
@@ -208,6 +207,8 @@ class Attribute extends AbstractEntity {
     beforeSaving() {
         this.validate();
 
+        this.name = sanitizeAttributeName(this.name);
+
         if (!this.value) {
             // null value isn't allowed
             this.value = "";
@@ -267,7 +268,7 @@ module.exports = Attribute;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractEntity.html">AbstractEntity</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractEntity.html">AbstractEntity</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3>Global</h3><ul><li><a href="global.html#SortConfig">SortConfig</a></li></ul>
 </nav>
 
 <br class="clear">
