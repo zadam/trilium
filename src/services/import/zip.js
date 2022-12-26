@@ -235,7 +235,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return targetNoteId;
     }
 
-    function processNoteContent(content, noteTitle, filePath, noteMeta) {
+    function processTextNoteContent(content, noteTitle, filePath, noteMeta) {
         function isUrlAbsolute(url) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
         }
@@ -278,7 +278,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 return `href="${url}"`;
             }
 
-            if (url.startsWith('#') || isUrlAbsolute(url)) {
+            if (url.startsWith('#') // already a note path (probably)
+                || isUrlAbsolute(url)) {
                 return match;
             }
 
@@ -313,10 +314,35 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
+    function processNoteContent(noteMeta, type, mime, content, noteTitle, filePath) {
+        if (noteMeta?.format === 'markdown'
+            || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
+            const parsed = mdReader.parse(content);
+            content = mdWriter.render(parsed);
+        }
+
+        if (type === 'text') {
+            content = processTextNoteContent(content, noteTitle, filePath, noteMeta);
+        }
+
+        if (type === 'relationMap' && noteMeta) {
+            const relationMapLinks = (noteMeta.attributes || [])
+                .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
+
+            // this will replace relation map links
+            for (const link of relationMapLinks) {
+                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+            }
+        }
+
+        return content;
+    }
+
     function saveNote(filePath, content) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
-        if (noteMeta && noteMeta.noImport) {
+        if (noteMeta?.noImport) {
             return;
         }
 
@@ -327,7 +353,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             throw new Error(`Cannot find parentNoteId for ${filePath}`);
         }
 
-        if (noteMeta && noteMeta.isClone) {
+        if (noteMeta?.isClone) {
             if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
                 new Branch({
                     noteId,
@@ -342,35 +368,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
 
         let {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
+        type = resolveNoteType(type);
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
         }
 
-        type = resolveNoteType(type);
-
-        if ((noteMeta && noteMeta.format === 'markdown')
-            || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
-            const parsed = mdReader.parse(content);
-            content = mdWriter.render(parsed);
-        }
-
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
 
-        if (type === 'text') {
-            content = processNoteContent(content, noteTitle, filePath, noteMeta);
-        }
-
-        if (type === 'relationMap' && noteMeta) {
-            const relationMapLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
-
-            // this will replace relation map links
-            for (const link of relationMapLinks) {
-                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
-            }
-        }
+        content = processNoteContent(noteMeta, type, mime, content, noteTitle, filePath);
 
         let note = becca.getNote(noteId);
 
@@ -438,49 +444,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         }
     }
 
-    /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones*/
-    function normalizeFilePath(filePath) {
-        filePath = filePath.replace(/\\/g, "/");
-
-        if (filePath.startsWith("/")) {
-            filePath = filePath.substr(1);
-        }
-
-        if (filePath.endsWith("/")) {
-            filePath = filePath.substr(0, filePath.length - 1);
-        }
-
-        return filePath;
-    }
-
-    function streamToBuffer(stream) {
-        const chunks = [];
-        stream.on('data', chunk => chunks.push(chunk));
-
-        return new Promise((res, rej) => stream.on('end', () => res(Buffer.concat(chunks))));
-    }
-
-    function readContent(zipfile, entry) {
-        return new Promise((res, rej) => {
-            zipfile.openReadStream(entry, function(err, readStream) {
-                if (err) rej(err);
-
-                streamToBuffer(readStream).then(res);
-            });
-        });
-    }
-
-    function readZipFile(buffer, processEntryCallback) {
-        return new Promise((res, rej) => {
-            yauzl.fromBuffer(buffer, {lazyEntries: true, validateEntrySizes: false}, function(err, zipfile) {
-                if (err) throw err;
-                zipfile.readEntry();
-                zipfile.on("entry", entry => processEntryCallback(zipfile, entry));
-                zipfile.on("end", res);
-            });
-        });
-    }
-
     // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
 
     await readZipFile(fileBuffer, async (zipfile, entry) => {
@@ -535,6 +498,49 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     return firstNote;
+}
+
+/** @returns {string} path without leading or trailing slash and backslashes converted to forward ones */
+function normalizeFilePath(filePath) {
+    filePath = filePath.replace(/\\/g, "/");
+
+    if (filePath.startsWith("/")) {
+        filePath = filePath.substr(1);
+    }
+
+    if (filePath.endsWith("/")) {
+        filePath = filePath.substr(0, filePath.length - 1);
+    }
+
+    return filePath;
+}
+
+function streamToBuffer(stream) {
+    const chunks = [];
+    stream.on('data', chunk => chunks.push(chunk));
+
+    return new Promise((res, rej) => stream.on('end', () => res(Buffer.concat(chunks))));
+}
+
+function readContent(zipfile, entry) {
+    return new Promise((res, rej) => {
+        zipfile.openReadStream(entry, function(err, readStream) {
+            if (err) rej(err);
+
+            streamToBuffer(readStream).then(res);
+        });
+    });
+}
+
+function readZipFile(buffer, processEntryCallback) {
+    return new Promise((res, rej) => {
+        yauzl.fromBuffer(buffer, {lazyEntries: true, validateEntrySizes: false}, function(err, zipfile) {
+            if (err) throw err;
+            zipfile.readEntry();
+            zipfile.on("entry", entry => processEntryCallback(zipfile, entry));
+            zipfile.on("end", res);
+        });
+    });
 }
 
 function resolveNoteType(type) {
