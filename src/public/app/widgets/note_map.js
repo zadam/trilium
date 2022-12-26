@@ -5,6 +5,9 @@ import hoistedNoteService from "../services/hoisted_note.js";
 import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import linkContextMenuService from "../menus/link_context_menu.js";
+import utils from "../services/utils.js";
+
+const esc = utils.escapeHtml;
 
 const TPL = `<div class="note-map-widget" style="position: relative;">
     <style>
@@ -102,7 +105,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 ctx.arc(node.x, node.y, this.noteIdToSizeMap[node.id], 0, 2 * Math.PI, false);
                 ctx.fill();
             })
-            .nodeLabel(node => node.name)
+            .nodeLabel(node => esc(node.name))
             .maxZoom(7)
             .warmupTicks(30)
             .linkDirectionalArrowLength(5)
@@ -114,7 +117,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         if (this.mapType === 'link') {
             this.graph
-                .linkLabel(l => `${l.source.name} - <strong>${l.name}</strong> - ${l.target.name}`)
+                .linkLabel(l => `${esc(l.source.name)} - <strong>${esc(l.name)}</strong> - ${esc(l.target.name)}`)
                 .linkCanvasObject((link, ctx) => this.paintLink(link, ctx))
                 .linkCanvasObjectMode(() => "after");
         }
