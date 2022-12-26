@@ -235,6 +235,84 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return targetNoteId;
     }
 
+    function processNoteContent(content, noteTitle, filePath, noteMeta) {
+        function isUrlAbsolute(url) {
+            return /^(?:[a-z]+:)?\/\//i.test(url);
+        }
+
+        content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
+            if (noteTitle.trim() === text.trim()) {
+                return ""; // remove whole H1 tag
+            } else {
+                return `<h2>${text}</h2>`;
+            }
+        });
+
+        content = htmlSanitizer.sanitize(content);
+
+        content = content.replace(/<html.*<body[^>]*>/gis, "");
+        content = content.replace(/<\/body>.*<\/html>/gis, "");
+
+        content = content.replace(/src="([^"]*)"/g, (match, url) => {
+            try {
+                url = decodeURIComponent(url);
+            } catch (e) {
+                log.error(`Cannot parse image URL '${url}', keeping original (${e}).`);
+                return `src="${url}"`;
+            }
+
+            if (isUrlAbsolute(url) || url.startsWith("/")) {
+                return match;
+            }
+
+            const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
+
+            return `src="api/images/${targetNoteId}/${path.basename(url)}"`;
+        });
+
+        content = content.replace(/href="([^"]*)"/g, (match, url) => {
+            try {
+                url = decodeURIComponent(url);
+            } catch (e) {
+                log.error(`Cannot parse link URL '${url}', keeping original (${e}).`);
+                return `href="${url}"`;
+            }
+
+            if (url.startsWith('#') || isUrlAbsolute(url)) {
+                return match;
+            }
+
+            const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
+
+            return `href="#root/${targetNoteId}"`;
+        });
+
+        content = content.replace(/data-note-path="([^"]*)"/g, (match, notePath) => {
+            const noteId = notePath.split("/").pop();
+
+            let targetNoteId;
+
+            if (noteId === 'root' || noteId.startsWith("_")) { // named noteIds stay identical across instances
+                targetNoteId = noteId;
+            } else {
+                targetNoteId = noteIdMap[noteId];
+            }
+
+            return `data-note-path="root/${targetNoteId}"`;
+        });
+
+        if (noteMeta) {
+            const includeNoteLinks = (noteMeta.attributes || [])
+                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
+
+            for (const link of includeNoteLinks) {
+                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+            }
+        }
+        return content;
+    }
+
     function saveNote(filePath, content) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
@@ -280,81 +358,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
 
         if (type === 'text') {
-            function isUrlAbsolute(url) {
-                return /^(?:[a-z]+:)?\/\//i.test(url);
-            }
-
-            content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
-                if (noteTitle.trim() === text.trim()) {
-                    return ""; // remove whole H1 tag
-                }
-                else {
-                    return `<h2>${text}</h2>`;
-                }
-            });
-
-            content = htmlSanitizer.sanitize(content);
-
-            content = content.replace(/<html.*<body[^>]*>/gis, "");
-            content = content.replace(/<\/body>.*<\/html>/gis, "");
-
-            content = content.replace(/src="([^"]*)"/g, (match, url) => {
-                try {
-                    url = decodeURIComponent(url);
-                } catch (e) {
-                    log.error(`Cannot parse image URL '${url}', keeping original (${e}).`);
-                    return `src="${url}"`;
-                }
-
-                if (isUrlAbsolute(url) || url.startsWith("/")) {
-                    return match;
-                }
-
-                const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
-
-                return `src="api/images/${targetNoteId}/${path.basename(url)}"`;
-            });
-
-            content = content.replace(/href="([^"]*)"/g, (match, url) => {
-                try {
-                    url = decodeURIComponent(url);
-                } catch (e) {
-                    log.error(`Cannot parse link URL '${url}', keeping original (${e}).`);
-                    return `href="${url}"`;
-                }
-
-                if (url.startsWith('#') || isUrlAbsolute(url)) {
-                    return match;
-                }
-
-                const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
-
-                return `href="#root/${targetNoteId}"`;
-            });
-
-            content = content.replace(/data-note-path="([^"]*)"/g, (match, notePath) => {
-                const noteId = notePath.split("/").pop();
-
-                let targetNoteId;
-
-                if (noteId === 'root' || noteId.startsWith("_")) { // named noteIds stay identical across instances
-                    targetNoteId = noteId;
-                } else {
-                    targetNoteId = noteIdMap[noteId];
-                }
-
-                return `data-note-path="root/${targetNoteId}"`;
-            });
-
-            if (noteMeta) {
-                const includeNoteLinks = (noteMeta.attributes || [])
-                    .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
-
-                for (const link of includeNoteLinks) {
-                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                    content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
-                }
-            }
+            content = processNoteContent(content, noteTitle, filePath, noteMeta);
         }
 
         if (type === 'relationMap' && noteMeta) {
@@ -363,17 +367,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             // this will replace relation map links
             for (const link of relationMapLinks) {
-                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
-            }
-        }
-
-        if (type === 'text' && noteMeta) {
-            const includeNoteLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'includeNoteLink');
-
-            // this will replace relation map links
-            for (const link of includeNoteLinks) {
                 // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
                 content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
             }
@@ -523,7 +516,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         if (!metaFile) {
             // if there's no meta file then the notes are created based on the order in that zip file but that
-            // is usually quite random so we sort the notes in the way they would appear in the file manager
+            // is usually quite random, so we sort the notes in the way they would appear in the file manager
             treeService.sortNotes(noteId, 'title', false, true);
         }
 
@@ -533,11 +526,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // we're saving attributes and links only now so that all relation and link target notes
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
     for (const attr of attributes) {
-        if (attr.type !== 'relation' || attr.value in createdNoteIds) {
+        if (attr.type !== 'relation' || attr.value in becca.notes) {
             new Attribute(attr).save();
         }
         else {
-            log.info(`Relation not imported since target note doesn't exist: ${JSON.stringify(attr)}`);
+            log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);
         }
     }
 
