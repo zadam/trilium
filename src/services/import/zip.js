@@ -22,7 +22,7 @@ const becca = require("../../becca/becca");
  * @return {Promise<*>}
  */
 async function importZip(taskContext, fileBuffer, importRootNote) {
-    // maps from original noteId (in tar file) to newly generated noteId
+    // maps from original noteId (in ZIP file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
     // path => noteId, used only when meta file is not available
@@ -96,8 +96,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 parentNoteId = createdPaths[parentPath];
             }
             else {
-                // tar allows creating out of order records - i.e. file in a directory can appear in the tar stream before actual directory
-                // (out-of-order-directory-records.tar in test set)
+                // ZIP allows creating out of order records - i.e. file in a directory can appear in the ZIP stream before actual directory
                 parentNoteId = saveDirectory(parentPath);
             }
         }
