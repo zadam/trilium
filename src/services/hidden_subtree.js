@@ -308,7 +308,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     for (const attr of attrs) {
         const attrId = note.noteId + "_" + attr.type.charAt(0) + attr.name;
 
-        if (!note.getAttributes().find(attr => attr.attributeId === attrId)) {console.log("EEEEE");
+        if (!note.getAttributes().find(attr => attr.attributeId === attrId)) {
             new Attribute({
                 attributeId: attrId,
                 noteId: note.noteId,
