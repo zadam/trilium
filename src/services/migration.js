@@ -22,7 +22,7 @@ async function migrate() {
     }
 
     fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
-        const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
+        const match = file.match(/^([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)$/);
 
         if (match) {
             const dbVersion = parseInt(match[1]);

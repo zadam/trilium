@@ -78,14 +78,14 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
         return validationResult;
     }
 
-    new Branch({
+    const branch = new Branch({
         noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
         isExpanded: 0
     }).save();
 
-    log.info(`Ensured note '${noteId}' is in parent note '${parentNoteId}' with prefix '${prefix}'`);
+    log.info(`Ensured note '${noteId}' is in parent note '${parentNoteId}' with prefix '${branch.prefix}'`);
 
     return { success: true };
 }

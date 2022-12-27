@@ -296,7 +296,7 @@ class ConsistencyChecks {
                     for (const branch of branches.slice(1)) {
                         branch.markAsDeleted();
 
-                        logFix(`Removing branch '${branch.branchId}' since it's parent-child duplicate of branch '${origBranch.branchId}'`);
+                        logFix(`Removing branch '${branch.branchId}' since it's a parent-child duplicate of branch '${origBranch.branchId}'`);
                     }
 
                     this.reloadNeeded = true;

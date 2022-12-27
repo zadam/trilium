@@ -244,7 +244,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 
     let note = becca.notes[item.id];
-    let branch = becca.branches[item.id];
+    let branch;
 
     if (!note) {
         ({note, branch} = noteService.createNewNote({
@@ -255,6 +255,8 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
             content: '',
             ignoreForbiddenParents: true
         }));
+    } else {
+        branch = note.getParentBranches().find(branch => branch.parentNoteId === parentNoteId);
     }
 
     const attrs = [...(item.attributes || [])];

@@ -232,6 +232,10 @@ class Branch extends AbstractEntity {
             this.isExpanded = false;
         }
 
+        if (!this.prefix?.trim()) {
+            this.prefix = null;
+        }
+
         this.utcDateModified = dateUtils.utcNowDateTime();
 
         super.beforeSaving();
