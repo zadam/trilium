@@ -71,7 +71,7 @@ function addEntityChangesForSector(entityName, sector) {
         }
     });
 
-    log.info(`Added sector ${sector} of ${entityName} to sync queue in ${Date.now() - startTime}ms.`);
+    log.info(`Added sector ${sector} of '${entityName}' to sync queue in ${Date.now() - startTime}ms.`);
 }
 
 function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {

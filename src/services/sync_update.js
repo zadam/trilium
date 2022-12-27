@@ -42,7 +42,7 @@ function updateEntity(entityChange, entityRow, instanceId) {
     }
 }
 
-function updateNormalEntity(remoteEntityChange, entity, instanceId) {
+function updateNormalEntity(remoteEntityChange, remoteEntityRow, instanceId) {
     const localEntityChange = sql.getRow(`
         SELECT utcDateChanged, hash, isErased
         FROM entity_changes 
@@ -65,11 +65,11 @@ function updateNormalEntity(remoteEntityChange, entity, instanceId) {
         || localEntityChange.hash !== remoteEntityChange.hash // sync error, we should still update
     ) {
         if (['note_contents', 'note_revision_contents'].includes(remoteEntityChange.entityName)) {
-            entity.content = handleContent(entity.content);
+            remoteEntityRow.content = handleContent(remoteEntityRow.content);
         }
 
         sql.transactional(() => {
-            sql.replace(remoteEntityChange.entityName, entity);
+            sql.replace(remoteEntityChange.entityName, remoteEntityRow);
 
             entityChangesService.addEntityChangeWithInstanceId(remoteEntityChange, instanceId);
         });
@@ -93,8 +93,9 @@ function updateNoteReordering(entityChange, entity, instanceId) {
 }
 
 function handleContent(content) {
-    // we always use Buffer object which is different from normal saving - there we use simple string type for "string notes"
-    // the problem is that in general it's not possible to whether a note_content is string note or note (syncs can arrive out of order)
+    // we always use Buffer object which is different from normal saving - there we use simple string type for
+    // "string notes". The problem is that in general it's not possible to detect whether a note_content
+    // is string note or note (syncs can arrive out of order)
     content = content === null ? null : Buffer.from(content, 'base64');
 
     if (content && content.byteLength === 0) {
@@ -109,7 +110,7 @@ function eraseEntity(entityChange, instanceId) {
     const {entityName, entityId} = entityChange;
 
     if (!["notes", "note_contents", "branches", "attributes", "note_revisions", "note_revision_contents"].includes(entityName)) {
-        log.error(`Cannot erase entity ${entityName}, id ${entityId}`);
+        log.error(`Cannot erase entity '${entityName}', id '${entityId}'`);
         return;
     }
 
