@@ -35,15 +35,14 @@ function register(router) {
             existing.save();
 
             return res.status(200).json(mappers.mapBranchToPojo(existing));
-        }
+        } else {
+            try {
+                const branch = new Branch(params).save();
 
-        try {
-            const branch = new Branch(params).save();
-
-            res.status(201).json(mappers.mapBranchToPojo(branch));
-        }
-        catch (e) {
-            throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
+                res.status(201).json(mappers.mapBranchToPojo(branch));
+            } catch (e) {
+                throw new eu.EtapiError(400, eu.GENERIC_CODE, e.message);
+            }
         }
     });
 

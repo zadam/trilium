@@ -155,6 +155,9 @@ function createNewNote(params) {
                 cls.disableEntityEvents();
             }
 
+            // TODO: think about what can happen if the note already exists with the forced ID
+            //       I guess on DB it's going to be fine, but becca references between entities
+            //       might get messed up (two Note instance for the same ID existing in the references)
             note = new Note({
                 noteId: params.noteId, // optionally can force specific noteId
                 title: params.title,

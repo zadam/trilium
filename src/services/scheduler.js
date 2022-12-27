@@ -51,9 +51,9 @@ function runNotesWithLabel(runAttrValue) {
 }
 
 sqlInit.dbReady.then(() => {
-    if (!process.env.TRILIUM_SAFE_MODE) {
-        cls.init(() => hiddenSubtreeService.checkHiddenSubtree());
+    cls.init(() => hiddenSubtreeService.checkHiddenSubtree());
 
+    if (!process.env.TRILIUM_SAFE_MODE) {
         setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);

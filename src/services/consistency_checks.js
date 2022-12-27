@@ -144,7 +144,7 @@ class ConsistencyChecks {
                     FROM branches
                       LEFT JOIN notes ON notes.noteId = branches.parentNoteId
                     WHERE branches.isDeleted = 0
-                      AND branches.branchId != 'root'
+                      AND branches.noteId != 'root'
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
@@ -670,7 +670,7 @@ class ConsistencyChecks {
         this.findSyncIssues();
 
         // root branch should always be expanded
-        sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
+        sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = 'root'");
 
         if (!this.unrecoveredConsistencyErrors) {
             // we run this only if basic checks passed since this assumes basic data consistency
@@ -701,13 +701,7 @@ class ConsistencyChecks {
         let elapsedTimeMs;
 
         await syncMutexService.doExclusively(() => {
-            const startTimeMs = Date.now();
-
-            this.runDbDiagnostics();
-
-            this.runAllChecksAndFixers();
-
-            elapsedTimeMs = Date.now() - startTimeMs;
+            elapsedTimeMs = this.runChecksInner();
         });
 
         if (this.unrecoveredConsistencyErrors) {
@@ -720,6 +714,16 @@ class ConsistencyChecks {
                 ` (took ${elapsedTimeMs}ms)`
             );
         }
+    }
+
+    runChecksInner() {
+        const startTimeMs = Date.now();
+
+        this.runDbDiagnostics();
+
+        this.runAllChecksAndFixers();
+
+        return Date.now() - startTimeMs;
     }
 }
 
@@ -750,9 +754,14 @@ function runPeriodicChecks() {
     consistencyChecks.runChecks();
 }
 
-function runOnDemandChecks(autoFix) {
+async function runOnDemandChecks(autoFix) {
     const consistencyChecks = new ConsistencyChecks(autoFix);
-    consistencyChecks.runChecks();
+    await consistencyChecks.runChecks();
+}
+
+function runOnDemandChecksWithoutExclusiveLock(autoFix) {
+    const consistencyChecks = new ConsistencyChecks(autoFix);
+    consistencyChecks.runChecksInner();
 }
 
 function runEntityChangesChecks() {
@@ -769,5 +778,6 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     runOnDemandChecks,
+    runOnDemandChecksWithoutExclusiveLock,
     runEntityChangesChecks
 };
