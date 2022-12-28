@@ -10,7 +10,9 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    if (['root', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(beforeBranchId)) {
+    const beforeBranch = await froca.getBranch(beforeBranchId);
+
+    if (['root', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(beforeBranch.noteId)) {
         toastService.showError('Cannot move notes here.');
         return;
     }

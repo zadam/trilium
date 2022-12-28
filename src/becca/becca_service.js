@@ -180,7 +180,7 @@ function getNotePath(noteId) {
         let branchId;
 
         if (note.isRoot()) {
-            branchId = 'root';
+            branchId = 'none_root';
         }
         else {
             const parentNote = note.parents[0];

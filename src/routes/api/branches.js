@@ -143,7 +143,7 @@ function setExpanded(req) {
     const {branchId} = req.params;
     const expanded = parseInt(req.params.expanded);
 
-    if (branchId !== 'root') {
+    if (branchId !== 'none_root') {
         sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
         // we don't sync expanded label
         // also this does not trigger updates to the frontend, this would trigger too many reloads
@@ -172,7 +172,7 @@ function setExpandedForSubtree(req) {
         SELECT branchId FROM tree`, [branchId]);
 
     // root is always expanded
-    branchIds = branchIds.filter(branchId => branchId !== 'root');
+    branchIds = branchIds.filter(branchId => branchId !== 'none_root');
 
     sql.executeMany(`UPDATE branches SET isExpanded = ${expanded} WHERE branchId IN (???)`, branchIds);
 

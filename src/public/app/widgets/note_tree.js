@@ -637,7 +637,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     prepareRootNode() {
-        return this.prepareNode(froca.getBranch('root'));
+        return this.prepareNode(froca.getBranch('none_root'));
     }
 
     /**

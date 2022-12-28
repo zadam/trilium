@@ -66,7 +66,7 @@ function getNotesAndBranchesAndAttributes(noteIds) {
 
     if (noteIds.has('root')) {
         branches.push({
-            branchId: 'root',
+            branchId: 'none_root',
             noteId: 'root',
             parentNoteId: 'none',
             notePosition: 0,
