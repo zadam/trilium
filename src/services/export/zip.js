@@ -14,13 +14,19 @@ const becca = require("../../becca/becca");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const archiver = require('archiver');
 const log = require("../log");
+const TaskContext = require("../task_context");
+const ValidationError = require("../../errors/validation_error");
 
 /**
  * @param {TaskContext} taskContext
  * @param {Branch} branch
  * @param {string} format - 'html' or 'markdown'
  */
-function exportToZip(taskContext, branch, format, res) {
+function exportToZip(taskContext, branch, format, res, setHeaders = true) {
+    if (!['html', 'markdown'].includes(format)) {
+        throw new ValidationError(`Only 'html' and 'markdown' allowed as export format, '${format}' given`);
+    }
+
     const archive = archiver('zip', {
         zlib: { level: 9 } // Sets the compression level.
     });
@@ -466,8 +472,10 @@ ${markdownContent}`;
     const note = branch.getNote();
     const zipFileName = `${branch.prefix ? `${branch.prefix} - ` : ""}${note.getTitleOrProtected()}.zip`;
 
-    res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
-    res.setHeader('Content-Type', 'application/zip');
+    if (setHeaders) {
+        res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
+        res.setHeader('Content-Type', 'application/zip');
+    }
 
     archive.pipe(res);
     archive.finalize();
@@ -475,6 +483,20 @@ ${markdownContent}`;
     taskContext.taskSucceeded();
 }
 
+function exportToZipFile(noteId, format, zipFilePath) {
+    const fileOutputStream = fs.createWriteStream(zipFilePath);
+    const taskContext = new TaskContext('no-progress-reporting');
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new ValidationError(`Note ${noteId} not found.`);
+    }
+
+    exportToZip(taskContext, note.getParentBranches()[0], format, fileOutputStream, false);
+}
+
 module.exports = {
-    exportToZip
+    exportToZip,
+    exportToZipFile
 };

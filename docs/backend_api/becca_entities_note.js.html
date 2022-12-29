@@ -973,13 +973,14 @@ class Note extends AbstractEntity {
         };
     }
 
-    /** @returns {String[]} */
-    getSubtreeNoteIds({includeArchived = true, resolveSearch = false} = {}) {
-        return this.getSubtree({includeArchived, resolveSearch})
+    /** @returns {String[]} - includes the subtree node as well */
+    getSubtreeNoteIds({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
+        return this.getSubtree({includeArchived, includeHidden, resolveSearch})
             .notes
             .map(note => note.noteId);
     }
 
+    /** @deprecated use getSubtreeNoteIds() instead */
     getDescendantNoteIds() {
         return this.getSubtreeNoteIds();
     }
@@ -1199,7 +1200,8 @@ class Note extends AbstractEntity {
      * @param {string} type - attribute type (label / relation)
      * @param {string} name - name of the attribute, not including the leading ~/#
      * @param {string} [value] - value of the attribute - text for labels, target note ID for relations; optional.
-     *
+     * @param {boolean} [isInheritable=false]
+     * @param {int} [position]
      * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
@@ -1220,7 +1222,7 @@ class Note extends AbstractEntity {
      *
      * @param {string} name - name of the label, not including the leading #
      * @param {string} [value] - text value of the label; optional
-     *
+     * @param {boolean} [isInheritable=false]
      * @return {Attribute}
      */
     addLabel(name, value = "", isInheritable = false) {
@@ -1232,8 +1234,8 @@ class Note extends AbstractEntity {
      * returned.
      *
      * @param {string} name - name of the relation, not including the leading ~
-     * @param {string} value - ID of the target note of the relation
-     *
+     * @param {string} targetNoteId
+     * @param {boolean} [isInheritable=false]
      * @return {Attribute}
      */
     addRelation(name, targetNoteId, isInheritable = false) {

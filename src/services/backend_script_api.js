@@ -17,7 +17,8 @@ const becca = require("../becca/becca");
 const ws = require("./ws");
 const SpacedUpdate = require("./spaced_update");
 const specialNotesService = require("./special_notes");
-const branchService = require("./branches.js");
+const branchService = require("./branches");
+const exportService = require("./export/zip");
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -561,6 +562,14 @@ function BackendScriptApi(currentNote, apiParams) {
             launcherNote.removeLabel('keyboardShortcut');
         }
     };
+
+    /**
+     * @method
+     * @param {string} noteId
+     * @param {string} format - either 'html' or 'markdown'
+     * @param {string} zipFilePath
+     */
+    this.exportSubtreeToZipFile = (noteId, format, zipFilePath) => exportService.exportToZipFile(noteId, format, zipFilePath);
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.
