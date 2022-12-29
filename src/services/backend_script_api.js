@@ -568,8 +568,9 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} noteId
      * @param {string} format - either 'html' or 'markdown'
      * @param {string} zipFilePath
+     * @returns {Promise}
      */
-    this.exportSubtreeToZipFile = (noteId, format, zipFilePath) => exportService.exportToZipFile(noteId, format, zipFilePath);
+    this.exportSubtreeToZipFile = async (noteId, format, zipFilePath) => await exportService.exportToZipFile(noteId, format, zipFilePath);
 
     /**
      * This object contains "at your risk" and "no BC guarantees" objects for advanced use cases.

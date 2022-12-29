@@ -22,7 +22,7 @@ const ValidationError = require("../../errors/validation_error");
  * @param {Branch} branch
  * @param {string} format - 'html' or 'markdown'
  */
-function exportToZip(taskContext, branch, format, res, setHeaders = true) {
+async function exportToZip(taskContext, branch, format, res, setHeaders = true) {
     if (!['html', 'markdown'].includes(format)) {
         throw new ValidationError(`Only 'html' and 'markdown' allowed as export format, '${format}' given`);
     }
@@ -478,12 +478,12 @@ ${markdownContent}`;
     }
 
     archive.pipe(res);
-    archive.finalize();
+    await archive.finalize();
 
     taskContext.taskSucceeded();
 }
 
-function exportToZipFile(noteId, format, zipFilePath) {
+async function exportToZipFile(noteId, format, zipFilePath) {
     const fileOutputStream = fs.createWriteStream(zipFilePath);
     const taskContext = new TaskContext('no-progress-reporting');
 
@@ -493,7 +493,9 @@ function exportToZipFile(noteId, format, zipFilePath) {
         throw new ValidationError(`Note ${noteId} not found.`);
     }
 
-    exportToZip(taskContext, note.getParentBranches()[0], format, fileOutputStream, false);
+    await exportToZip(taskContext, note.getParentBranches()[0], format, fileOutputStream, false);
+
+    log.info(`Exported '${noteId}' with format '${format}' to '${zipFilePath}'`);
 }
 
 module.exports = {
