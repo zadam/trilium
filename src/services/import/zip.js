@@ -231,6 +231,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         absUrl += `${absUrl.length > 0 ? '/' : ''}${url}`;
 
         const {noteMeta} = getMeta(absUrl);
+
+        if (!noteMeta) {
+            log.info(`Could not find note meta for URL '${absUrl}'.`);
+
+            return null;
+        }
+
         const targetNoteId = getNoteId(noteMeta, absUrl);
         return targetNoteId;
     }
@@ -312,6 +319,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
                 const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
 
+                if (!targetNoteId) {
+                    return match;
+                }
+
                 return `src="api/images/${targetNoteId}/${path.basename(url)}"`;
             });
 
@@ -328,6 +339,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 }
 
                 const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
+
+                if (!targetNoteId) {
+                    return match;
+                }
 
                 return `href="#root/${targetNoteId}"`;
             });
