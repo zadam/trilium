@@ -172,7 +172,7 @@ function updateNoteAttributes(req) {
             continue;
         }
 
-        // no existing attribute has been matched so we need to create a new one
+        // no existing attribute has been matched, so we need to create a new one
         // type, name and isInheritable are immutable so even if there is an attribute with matching type & name, we need to create a new one and delete the former one
 
         note.addAttribute(incAttr.type, incAttr.name, incAttr.value, incAttr.isInheritable, position);

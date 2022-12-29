@@ -41,6 +41,24 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
 
+    /**
+     * @property {NoteContextAwareWidget}
+     * @deprecated use NoteContextAwareWidget instead
+     */
+    this.TabAwareWidget = NoteContextAwareWidget;
+
+    /**
+     * @property {NoteContextAwareWidget}
+     * @deprecated use NoteContextAwareWidget instead
+     */
+    this.TabCachingWidget = NoteContextAwareWidget;
+
+    /**
+     * @property {NoteContextAwareWidget}
+     * @deprecated use NoteContextAwareWidget instead
+     */
+    this.NoteContextCachingWidget = NoteContextAwareWidget;
+
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;
 

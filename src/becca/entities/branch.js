@@ -78,7 +78,7 @@ class Branch extends AbstractEntity {
             childNote.parentBranches.push(this);
         }
 
-        if (this.branchId === 'root') {
+        if (this.noteId === 'root') {
             return;
         }
 
@@ -165,8 +165,7 @@ class Branch extends AbstractEntity {
             }
         }
 
-        if (this.branchId === 'root'
-            || this.noteId === 'root'
+        if (this.noteId === 'root'
             || this.noteId === cls.getHoistedNoteId()) {
 
             throw new Error("Can't delete root or hoisted branch/note");
@@ -209,11 +208,19 @@ class Branch extends AbstractEntity {
     }
 
     beforeSaving() {
+        if (!this.noteId || !this.parentNoteId) {
+            throw new Error(`noteId and parentNoteId are mandatory properties for Branch`);
+        }
+
+        this.branchId = `${this.parentNoteId}_${this.noteId}`;
+
         if (this.notePosition === undefined || this.notePosition === null) {
             let maxNotePos = 0;
 
             for (const childBranch of this.parentNote.getChildBranches()) {
-                if (maxNotePos < childBranch.notePosition && childBranch.noteId !== '_hidden') {
+                if (maxNotePos < childBranch.notePosition
+                    && childBranch.noteId !== '_hidden' // hidden has very large notePosition to always stay last
+                ) {
                     maxNotePos = childBranch.notePosition;
                 }
             }
@@ -223,6 +230,10 @@ class Branch extends AbstractEntity {
 
         if (!this.isExpanded) {
             this.isExpanded = false;
+        }
+
+        if (!this.prefix?.trim()) {
+            this.prefix = null;
         }
 
         this.utcDateModified = dateUtils.utcNowDateTime();
@@ -246,13 +257,20 @@ class Branch extends AbstractEntity {
     }
 
     createClone(parentNoteId, notePosition) {
-        return new Branch({
-            noteId: this.noteId,
-            parentNoteId: parentNoteId,
-            notePosition: notePosition,
-            prefix: this.prefix,
-            isExpanded: this.isExpanded
-        });
+        const existingBranch = this.becca.getBranchFromChildAndParent(this.noteId, parentNoteId);
+
+        if (existingBranch) {
+            existingBranch.notePosition = notePosition;
+            return existingBranch;
+        } else {
+            return new Branch({
+                noteId: this.noteId,
+                parentNoteId: parentNoteId,
+                notePosition: notePosition,
+                prefix: this.prefix,
+                isExpanded: this.isExpanded
+            });
+        }
     }
 }
 

@@ -13,7 +13,7 @@ describe("Search", () => {
         becca.reset();
 
         rootNote = new NoteBuilder(new Note({noteId: 'root', title: 'root', type: 'text'}));
-        new Branch({branchId: 'root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
+        new Branch({branchId: 'none_root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
     it("simple path match", () => {

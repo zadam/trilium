@@ -8,7 +8,7 @@ const becca = require("../becca/becca");
 
 let maxEntityChangeId = 0;
 
-function addEntityChangeWithinstanceId(origEntityChange, instanceId) {
+function addEntityChangeWithInstanceId(origEntityChange, instanceId) {
     const ec = {...origEntityChange, instanceId};
 
     return addEntityChange(ec);
@@ -71,7 +71,7 @@ function addEntityChangesForSector(entityName, sector) {
         }
     });
 
-    log.info(`Added sector ${sector} of ${entityName} to sync queue in ${Date.now() - startTime}ms.`);
+    log.info(`Added sector ${sector} of '${entityName}' to sync queue in ${Date.now() - startTime}ms.`);
 }
 
 function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
@@ -85,45 +85,38 @@ function cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey) {
 }
 
 function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
-    try {
-        cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
+    cleanupEntityChangesForMissingEntities(entityName, entityPrimaryKey);
 
-        sql.transactional(() => {
-            const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
-                + (condition ? ` WHERE ${condition}` : ''));
+    sql.transactional(() => {
+        const entityIds = sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
+            + (condition ? ` WHERE ${condition}` : ''));
 
-            let createdCount = 0;
+        let createdCount = 0;
 
-            for (const entityId of entityIds) {
-                const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+        for (const entityId of entityIds) {
+            const existingRows = sql.getValue("SELECT COUNT(1) FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-                // we don't want to replace existing entities (which would effectively cause full resync)
-                if (existingRows === 0) {
-                    createdCount++;
+            // we don't want to replace existing entities (which would effectively cause full resync)
+            if (existingRows === 0) {
+                createdCount++;
 
-                    const entity = becca.getEntity(entityName, entityId);
+                const entity = becca.getEntity(entityName, entityId);
 
-                    addEntityChange({
-                        entityName,
-                        entityId,
-                        hash: entity.generateHash(),
-                        isErased: false,
-                        utcDateChanged: entity.getUtcDateChanged(),
-                        isSynced: entityName !== 'options' || !!entity.isSynced
-                    });
-                }
+                addEntityChange({
+                    entityName,
+                    entityId,
+                    hash: entity.generateHash(),
+                    isErased: false,
+                    utcDateChanged: entity.getUtcDateChanged(),
+                    isSynced: entityName !== 'options' || !!entity.isSynced
+                });
             }
+        }
 
-            if (createdCount > 0) {
-                log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
-            }
-        });
-    }
-    catch (e) {
-        // this is to fix migration from 0.30 to 0.32, can be removed later
-        // see https://github.com/zadam/trilium/issues/557
-        log.error(`Filling entity changes failed for ${entityName} ${entityPrimaryKey} with error "${e.message}", continuing`);
-    }
+        if (createdCount > 0) {
+            log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
+        }
+    });
 }
 
 function fillAllEntityChanges() {
@@ -145,7 +138,7 @@ module.exports = {
     addNoteReorderingEntityChange,
     moveEntityChangeToTop,
     addEntityChange,
-    addEntityChangeWithinstanceId,
+    addEntityChangeWithInstanceId,
     fillAllEntityChanges,
     addEntityChangesForSector,
     getMaxEntityChangeId: () => maxEntityChangeId

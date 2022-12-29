@@ -22,7 +22,7 @@ async function migrate() {
     }
 
     fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
-        const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
+        const match = file.match(/^([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)$/);
 
         if (match) {
             const dbVersion = parseInt(match[1]);
@@ -62,9 +62,10 @@ async function migrate() {
                 log.info(`Migration to version ${mig.dbVersion} has been successful.`);
             } catch (e) {
                 log.error(`error during migration to version ${mig.dbVersion}: ${e.stack}`);
-                log.error("migration failed, crashing hard"); // this is not very user friendly :-/
+                log.error("migration failed, crashing hard"); // this is not very user-friendly :-/
 
                 utils.crash();
+                break; // crash() above does not seem to work right away
             }
         }
     });

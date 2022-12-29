@@ -12,7 +12,7 @@ const Branch = require('../becca/entities/branch');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
-const {sanitizeAttributeName} = require("./sanitize_attribute_name.js");
+const {sanitizeAttributeName} = require("./sanitize_attribute_name");
 const noteTypes = require("../services/note_types").getNoteTypeNames();
 
 class ConsistencyChecks {
@@ -72,7 +72,7 @@ class ConsistencyChecks {
                         return true;
                     }
                     else {
-                        logError(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);
+                        logError(`Tree cycle detected at parent-child relationship: '${parentNoteId}' - '${noteId}', whole path: '${path}'`);
 
                         this.unrecoveredConsistencyErrors = true;
                     }
@@ -133,9 +133,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch ${branchId} has been deleted since it references missing note ${noteId}`);
+                    logFix(`Branch '${branchId}' has been deleted since it references missing note '${noteId}'`);
                 } else {
-                    logError(`Branch ${branchId} references missing note ${noteId}`);
+                    logError(`Branch '${branchId}' references missing note '${noteId}'`);
                 }
             });
 
@@ -144,7 +144,7 @@ class ConsistencyChecks {
                     FROM branches
                       LEFT JOIN notes ON notes.noteId = branches.parentNoteId
                     WHERE branches.isDeleted = 0
-                      AND branches.branchId != 'root'
+                      AND branches.noteId != 'root'
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
@@ -154,9 +154,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch ${branchId} was set to root parent since it was referencing missing parent note ${parentNoteId}`);
+                    logFix(`Branch '${branchId}' was set to root parent since it was referencing missing parent note '${parentNoteId}'`);
                 } else {
-                    logError(`Branch ${branchId} references missing parent note ${parentNoteId}`);
+                    logError(`Branch '${branchId}' references missing parent note '${parentNoteId}'`);
                 }
             });
 
@@ -173,9 +173,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Attribute ${attributeId} has been deleted since it references missing source note ${noteId}`);
+                    logFix(`Attribute '${attributeId}' has been deleted since it references missing source note '${noteId}'`);
                 } else {
-                    logError(`Attribute ${attributeId} references missing source note ${noteId}`);
+                    logError(`Attribute '${attributeId}' references missing source note '${noteId}'`);
                 }
             });
 
@@ -193,9 +193,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Relation ${attributeId} has been deleted since it references missing note ${noteId}`)
+                    logFix(`Relation '${attributeId}' has been deleted since it references missing note '${noteId}'`)
                 } else {
-                    logError(`Relation ${attributeId} references missing note ${noteId}`)
+                    logError(`Relation '${attributeId}' references missing note '${noteId}'`)
                 }
             });
     }
@@ -220,9 +220,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
+                    logFix(`Branch '${branchId}' has been deleted since associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Branch ${branchId} is not deleted even though associated note ${noteId} is deleted.`)
+                    logError(`Branch '${branchId}' is not deleted even though associated note '${noteId}' is deleted.`)
                 }
             });
 
@@ -240,9 +240,9 @@ class ConsistencyChecks {
 
                 this.reloadNeeded = true;
 
-                logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
+                logFix(`Branch '${branchId}' has been deleted since associated parent note '${parentNoteId}' is deleted.`);
             } else {
-                logError(`Branch ${branchId} is not deleted even though associated parent note ${parentNoteId} is deleted.`)
+                logError(`Branch '${branchId}' is not deleted even though associated parent note '${parentNoteId}' is deleted.`)
             }
         });
 
@@ -262,9 +262,9 @@ class ConsistencyChecks {
 
                 this.reloadNeeded = true;
 
-                logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
+                logFix(`Created missing branch '${branch.branchId}' for note '${noteId}'`);
             } else {
-                logError(`No undeleted branch found for note ${noteId}`);
+                logError(`No undeleted branch found for note '${noteId}'`);
             }
         });
 
@@ -296,12 +296,12 @@ class ConsistencyChecks {
                     for (const branch of branches.slice(1)) {
                         branch.markAsDeleted();
 
-                        logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
+                        logFix(`Removing branch '${branch.branchId}' since it's a parent-child duplicate of branch '${origBranch.branchId}'`);
                     }
 
                     this.reloadNeeded = true;
                 } else {
-                    logError(`Duplicate branches for note ${noteId} and parent ${parentNoteId}`);
+                    logError(`Duplicate branches for note '${noteId}' and parent '${parentNoteId}'`);
                 }
             });
     }
@@ -322,9 +322,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note ${noteId} type has been change to file since it had invalid type=${type}`)
+                    logFix(`Note '${noteId}' type has been change to file since it had invalid type '${type}'`)
                 } else {
-                    logError(`Note ${noteId} has invalid type=${type}`);
+                    logError(`Note '${noteId}' has invalid type '${type}'`);
                 }
             });
 
@@ -361,9 +361,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
+                    logFix(`Note '${noteId}' content was set to empty string since there was no corresponding row`);
                 } else {
-                    logError(`Note ${noteId} content row does not exist`);
+                    logError(`Note '${noteId}' content row does not exist`);
                 }
             });
 
@@ -385,9 +385,9 @@ class ConsistencyChecks {
 
                         this.reloadNeeded = true;
 
-                        logFix(`Note ${noteId} content was set to "${blankContent}" since it was null even though it is not deleted`);
+                        logFix(`Note '${noteId}' content was set to '${blankContent}' since it was null even though it is not deleted`);
                     } else {
-                        logError(`Note ${noteId} content is null even though it is not deleted`);
+                        logError(`Note '${noteId}' content is null even though it is not deleted`);
                     }
                 });
         }
@@ -404,9 +404,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note revision content ${noteRevisionId} was created and set to erased since it did not exist.`);
+                    logFix(`Note revision content '${noteRevisionId}' was created and set to erased since it did not exist.`);
                 } else {
-                    logError(`Note revision content ${noteRevisionId} does not exist`);
+                    logError(`Note revision content '${noteRevisionId}' does not exist`);
                 }
             });
 
@@ -431,12 +431,12 @@ class ConsistencyChecks {
                         branch.parentNoteId = 'root';
                         branch.save();
 
-                        logFix(`Child branch ${branch.branchId} has been moved to root since it was a child of a search note ${parentNoteId}`)
+                        logFix(`Child branch '${branch.branchId}' has been moved to root since it was a child of a search note '${parentNoteId}'`)
                     }
 
                     this.reloadNeeded = true;
                 } else {
-                    logError(`Search note ${parentNoteId} has children`);
+                    logError(`Search note '${parentNoteId}' has children`);
                 }
             });
 
@@ -453,9 +453,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
+                    logFix(`Removed relation '${relation.attributeId}' of name '${relation.name}' with empty target.`);
                 } else {
-                    logError(`Relation ${attributeId} has empty target.`);
+                    logError(`Relation '${attributeId}' has empty target.`);
                 }
             });
 
@@ -474,9 +474,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Attribute ${attributeId} type was changed to label since it had invalid type '${type}'`);
+                    logFix(`Attribute '${attributeId}' type was changed to label since it had invalid type '${type}'`);
                 } else {
-                    logError(`Attribute ${attributeId} has invalid type '${type}'`);
+                    logError(`Attribute '${attributeId}' has invalid type '${type}'`);
                 }
             });
 
@@ -494,9 +494,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
+                    logFix(`Removed attribute '${attributeId}' because owning note '${noteId}' is also deleted.`);
                 } else {
-                    logError(`Attribute ${attributeId} is not deleted even though owning note ${noteId} is deleted.`);
+                    logError(`Attribute '${attributeId}' is not deleted even though owning note '${noteId}' is deleted.`);
                 }
             });
 
@@ -515,9 +515,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
+                    logFix(`Removed attribute '${attributeId}' because target note '${targetNoteId}' is also deleted.`);
                 } else {
-                    logError(`Attribute ${attributeId} is not deleted even though target note ${targetNoteId} is deleted.`);
+                    logError(`Attribute '${attributeId}' is not deleted even though target note '${targetNoteId}' is deleted.`);
                 }
             });
     }
@@ -545,9 +545,9 @@ class ConsistencyChecks {
                         isSynced: entityName !== 'options' || entity.isSynced
                     });
 
-                    logFix(`Created missing entity change for entityName=${entityName}, entityId=${entityId}`);
+                    logFix(`Created missing entity change for entityName '${entityName}', entityId '${entityId}'`);
                 } else {
-                    logError(`Missing entity change for entityName=${entityName}, entityId=${entityId}`);
+                    logError(`Missing entity change for entityName '${entityName}', entityId '${entityId}'`);
                 }
             });
 
@@ -565,9 +565,9 @@ class ConsistencyChecks {
                     if (this.autoFix) {
                         sql.execute("DELETE FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-                        logFix(`Deleted extra entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                        logFix(`Deleted extra entity change id '${id}', entityName '${entityName}', entityId '${entityId}'`);
                     } else {
-                        logError(`Unrecognized entity change id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                        logError(`Unrecognized entity change id '${id}', entityName '${entityName}', entityId '${entityId}'`);
                     }
                 });
 
@@ -586,9 +586,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = true;
 
-                    logFix(`Erasing entityName=${entityName}, entityId=${entityId} since entity change id=${id} has it as erased.`);
+                    logFix(`Erasing entityName '${entityName}', entityId '${entityId}' since entity change id '${id}' has it as erased.`);
                 } else {
-                    logError(`Entity change id=${id} has entityName=${entityName}, entityId=${entityId} as erased, but it's not.`);
+                    logError(`Entity change id '${id}' has entityName '${entityName}', entityId '${entityId}' as erased, but it's not.`);
                 }
             });
     }
@@ -621,12 +621,12 @@ class ConsistencyChecks {
                     this.fixedIssues = true;
                     this.reloadNeeded = true;
 
-                    logFix(`Renamed incorrectly named attributes "${origName}" to ${fixedName}`);
+                    logFix(`Renamed incorrectly named attributes '${origName}' to '${fixedName}'`);
                 }
                 else {
                     this.unrecoveredConsistencyErrors = true;
 
-                    logFix(`There are incorrectly named attributes "${origName}"`);
+                    logFix(`There are incorrectly named attributes '${origName}'`);
                 }
             }
         }
@@ -670,7 +670,7 @@ class ConsistencyChecks {
         this.findSyncIssues();
 
         // root branch should always be expanded
-        sql.execute("UPDATE branches SET isExpanded = 1 WHERE branchId = 'root'");
+        sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = 'root'");
 
         if (!this.unrecoveredConsistencyErrors) {
             // we run this only if basic checks passed since this assumes basic data consistency
@@ -701,13 +701,7 @@ class ConsistencyChecks {
         let elapsedTimeMs;
 
         await syncMutexService.doExclusively(() => {
-            const startTimeMs = Date.now();
-
-            this.runDbDiagnostics();
-
-            this.runAllChecksAndFixers();
-
-            elapsedTimeMs = Date.now() - startTimeMs;
+            elapsedTimeMs = this.runChecksInner();
         });
 
         if (this.unrecoveredConsistencyErrors) {
@@ -720,6 +714,16 @@ class ConsistencyChecks {
                 ` (took ${elapsedTimeMs}ms)`
             );
         }
+    }
+
+    runChecksInner() {
+        const startTimeMs = Date.now();
+
+        this.runDbDiagnostics();
+
+        this.runAllChecksAndFixers();
+
+        return Date.now() - startTimeMs;
     }
 }
 
@@ -750,9 +754,14 @@ function runPeriodicChecks() {
     consistencyChecks.runChecks();
 }
 
-function runOnDemandChecks(autoFix) {
+async function runOnDemandChecks(autoFix) {
     const consistencyChecks = new ConsistencyChecks(autoFix);
-    consistencyChecks.runChecks();
+    await consistencyChecks.runChecks();
+}
+
+function runOnDemandChecksWithoutExclusiveLock(autoFix) {
+    const consistencyChecks = new ConsistencyChecks(autoFix);
+    consistencyChecks.runChecksInner();
 }
 
 function runEntityChangesChecks() {
@@ -769,5 +778,6 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     runOnDemandChecks,
+    runOnDemandChecksWithoutExclusiveLock,
     runEntityChangesChecks
 };

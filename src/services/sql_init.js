@@ -77,7 +77,6 @@ async function createInitialDatabase() {
         rootNote.setContent('');
 
         new Branch({
-            branchId: 'root',
             noteId: 'root',
             parentNoteId: 'none',
             isExpanded: true,

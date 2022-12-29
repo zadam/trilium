@@ -987,3 +987,7 @@ button.close:hover {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+textarea {
+    cursor: auto;
+}

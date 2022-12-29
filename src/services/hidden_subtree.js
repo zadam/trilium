@@ -1,5 +1,6 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
+const Attribute = require("../becca/entities/attribute.js");
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -9,6 +10,12 @@ const LBTPL_SCRIPT = "_lbTplScriptLauncher";
 const LBTPL_BUILTIN_WIDGET = "_lbTplBuiltinWidget";
 const LBTPL_SPACER = "_lbTplSpacer";
 const LBTPL_CUSTOM_WIDGET = "_lbTplCustomWidget";
+
+/*
+ * Hidden subtree is generated as a "predictable structure" which means that it avoids generating random IDs to always
+ * produce same structure. This is needed because it is run on multiple instances in the sync cluster which might produce
+ * duplicate subtrees. This way, all instances will generate the same structure with same IDs.
+ */
 
 const HIDDEN_SUBTREE_DEFINITION = {
     id: '_hidden',
@@ -243,13 +250,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 
     let note = becca.notes[item.id];
-    let branch = becca.branches[item.id];
-
-    const attrs = [...(item.attributes || [])];
-
-    if (item.icon) {
-        attrs.push({ type: 'label', name: 'iconClass', value: `bx ${item.icon}` });
-    }
+    let branch;
 
     if (!note) {
         ({note, branch} = noteService.createNewNote({
@@ -260,27 +261,35 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
             content: '',
             ignoreForbiddenParents: true
         }));
+    } else {
+        branch = note.getParentBranches().find(branch => branch.parentNoteId === parentNoteId);
+    }
 
-        if (item.type === 'launcher') {
-            if (item.command) {
-                attrs.push({ type: 'relation', name: 'template', value: LBTPL_COMMAND });
-                attrs.push({ type: 'label', name: 'command', value: item.command });
-            } else if (item.builtinWidget) {
-                if (item.builtinWidget === 'spacer') {
-                    attrs.push({ type: 'relation', name: 'template', value: LBTPL_SPACER });
-                    attrs.push({ type: 'label', name: 'baseSize', value: item.baseSize });
-                    attrs.push({ type: 'label', name: 'growthFactor', value: item.growthFactor });
-                } else {
-                    attrs.push({ type: 'relation', name: 'template', value: LBTPL_BUILTIN_WIDGET });
-                }
+    const attrs = [...(item.attributes || [])];
 
-                attrs.push({ type: 'label', name: 'builtinWidget', value: item.builtinWidget });
-             } else if (item.targetNoteId) {
-                attrs.push({ type: 'relation', name: 'template', value: LBTPL_NOTE_LAUNCHER });
-                attrs.push({ type: 'relation', name: 'target', value: item.targetNoteId });
+    if (item.icon) {
+        attrs.push({ type: 'label', name: 'iconClass', value: `bx ${item.icon}` });
+    }
+
+    if (item.type === 'launcher') {
+        if (item.command) {
+            attrs.push({ type: 'relation', name: 'template', value: LBTPL_COMMAND });
+            attrs.push({ type: 'label', name: 'command', value: item.command });
+        } else if (item.builtinWidget) {
+            if (item.builtinWidget === 'spacer') {
+                attrs.push({ type: 'relation', name: 'template', value: LBTPL_SPACER });
+                attrs.push({ type: 'label', name: 'baseSize', value: item.baseSize });
+                attrs.push({ type: 'label', name: 'growthFactor', value: item.growthFactor });
             } else {
-                throw new Error(`No action defined for launcher ${JSON.stringify(item)}`);
+                attrs.push({ type: 'relation', name: 'template', value: LBTPL_BUILTIN_WIDGET });
             }
+
+            attrs.push({ type: 'label', name: 'builtinWidget', value: item.builtinWidget });
+        } else if (item.targetNoteId) {
+            attrs.push({ type: 'relation', name: 'template', value: LBTPL_NOTE_LAUNCHER });
+            attrs.push({ type: 'relation', name: 'target', value: item.targetNoteId });
+        } else {
+            throw new Error(`No action defined for launcher ${JSON.stringify(item)}`);
         }
     }
 
@@ -305,8 +314,17 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 
     for (const attr of attrs) {
-        if (!note.hasAttribute(attr.type, attr.name)) {
-            note.addAttribute(attr.type, attr.name, attr.value);
+        const attrId = note.noteId + "_" + attr.type.charAt(0) + attr.name;
+
+        if (!note.getAttributes().find(attr => attr.attributeId === attrId)) {
+            new Attribute({
+                attributeId: attrId,
+                noteId: note.noteId,
+                type: attr.type,
+                name: attr.name,
+                value: attr.value,
+                isInheritable: false
+            }).save();
         }
     }
 
