@@ -115,7 +115,7 @@ function importEnex(taskContext, file, parentNote) {
             let labelName = currentTag;
 
             if (labelName === 'source-url') {
-                labelName = 'sourceUrl';
+                labelName = 'pageUrl';
             }
 
             labelName = sanitizeAttributeName(labelName);
@@ -139,7 +139,7 @@ function importEnex(taskContext, file, parentNote) {
             else if (currentTag === 'source-url') {
                 resource.attributes.push({
                     type: 'label',
-                    name: 'sourceUrl',
+                    name: 'pageUrl',
                     value: text
                 });
             }
