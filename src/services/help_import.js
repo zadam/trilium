@@ -15,14 +15,14 @@ const yauzl = require("yauzl");
 const htmlSanitizer = require('./html_sanitizer');
 const sql = require('./sql');
 
-const HELP_FILE_PATH = '/home/adam/Downloads/Help1.zip';
+const HELP_FILE_PATH = '/home/adam/Downloads/Help4.zip';
 
 beccaLoader.beccaLoaded.then(() => {
     cls.init(async () => {
-        const helpRoot = becca.getNote("_help");
+        const hiddenRoot = becca.getNote("_hidden");
         const data = await fs.readFile(HELP_FILE_PATH, "binary");
 
-        await importZip(Buffer.from(data, 'binary'), helpRoot);
+        await importZip(Buffer.from(data, 'binary'), hiddenRoot);
     });
 });
 
@@ -57,7 +57,7 @@ async function importZip(fileBuffer, importRootNote) {
 
         for (const segment of pathSegments) {
             if (!cursor || !cursor.children || cursor.children.length === 0) {
-                return {};
+                throw new Error(`Note meta for '${filePath}' not found.`);
             }
 
             parent = cursor;
@@ -75,7 +75,13 @@ async function importZip(fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta) {
-        const helpNoteId = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
+        let helpNoteId = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
+
+        helpNoteId = '_help' + noteMeta.title.replace(/[^a-z0-9]/ig, '');
+
+        if (helpNoteId === '_helpHelp') {
+            helpNoteId = '_help';
+        }
 
         const noteId = helpNoteId || noteMeta.noteId;
         noteIdMap[noteMeta.noteId] = noteId;
@@ -141,6 +147,7 @@ async function importZip(fileBuffer, importRootNote) {
             isExpanded: noteMeta.isExpanded,
             notePosition: noteMeta.notePosition,
             isProtected: false,
+            ignoreForbiddenParents: true
         }));
 
         saveAttributes(note, noteMeta);
@@ -343,6 +350,7 @@ async function importZip(fileBuffer, importRootNote) {
                 isExpanded: noteMeta.isExpanded,
                 notePosition: noteMeta.notePosition,
                 isProtected: false,
+                ignoreForbiddenParents: true
             }));
 
             saveAttributes(note, noteMeta);
@@ -374,11 +382,9 @@ async function importZip(fileBuffer, importRootNote) {
     metaFile = JSON.parse(entries.find(entry => entry.type === 'file' && entry.filePath === '!!!meta.json').content);
 
     sql.transactional(() => {
+        deleteHelpSubtree();
+
         for (const {type, filePath, content} of entries) {
-
-            console.log(filePath);
-
-
             if (type === 'directory') {
                 saveDirectory(filePath);
             } else if (type === 'file') {
@@ -403,6 +409,30 @@ async function importZip(fileBuffer, importRootNote) {
             log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);
         }
     }
+}
+
+/**
+ * This is a special implementation of deleting the subtree, because we want to preserve the links to the help pages
+ * and clones.
+ */
+function deleteHelpSubtree() {
+    const DELETE_ID = 'help';
+
+    function remove(branch) {
+        branch.markAsDeleted(DELETE_ID);
+
+        const note = becca.getNote(branch.noteId);
+
+        for (const branch of note.getChildBranches()) {
+            remove(branch);
+        }
+
+        note.getOwnedAttributes().forEach(attr => attr.markAsDeleted(DELETE_ID));
+
+        note.markAsDeleted(DELETE_ID)
+    }
+
+    remove(becca.getBranchFromChildAndParent('_help', '_hidden'));
 }
 
 /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones */
