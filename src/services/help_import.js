@@ -17,14 +17,12 @@ const sql = require('./sql');
 
 const HELP_FILE_PATH = '/home/adam/Downloads/Help4.zip';
 
-beccaLoader.beccaLoaded.then(() => {
-    cls.init(async () => {
-        const hiddenRoot = becca.getNote("_hidden");
-        const data = await fs.readFile(HELP_FILE_PATH, "binary");
+async function importHelp() {
+    const hiddenRoot = becca.getNote("_hidden");
+    const data = await fs.readFile(HELP_FILE_PATH, "binary");
 
-        await importZip(Buffer.from(data, 'binary'), hiddenRoot);
-    });
-});
+    await importZip(Buffer.from(data, 'binary'), hiddenRoot);
+}
 
 async function importZip(fileBuffer, importRootNote) {
     // maps from original noteId (in ZIP file) to newly generated noteId
@@ -476,4 +474,8 @@ function readZipFile(buffer, processEntryCallback) {
             zipfile.on("end", res);
         });
     });
+}
+
+module.exports = {
+    importHelp
 }
