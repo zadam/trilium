@@ -214,13 +214,13 @@ function exportToZip(taskContext, branch, format, res) {
     }
 
     function findLinks(content, noteMeta) {
-        content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (match, targetNoteId) => {
+        content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9_]+)\/[^"]*"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
             return url ? `src="${url}"` : match;
         });
 
-        content = content.replace(/href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g, (match, targetNoteId) => {
+        content = content.replace(/href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
             return url ? `href="${url}"` : match;
