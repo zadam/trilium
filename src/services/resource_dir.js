@@ -20,9 +20,12 @@ if (!fs.existsSync(MIGRATIONS_DIR)) {
     process.exit(1);
 }
 
+const HELP_ZIP_DIR = path.resolve(RESOURCE_DIR, "tmp");
+
 module.exports = {
     RESOURCE_DIR,
     MIGRATIONS_DIR,
     DB_INIT_DIR,
-    ELECTRON_APP_ROOT_DIR
+    ELECTRON_APP_ROOT_DIR,
+    HELP_ZIP_DIR
 };

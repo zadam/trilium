@@ -1,8 +1,6 @@
 "use strict"
 
-const cls = require("./cls");
 const becca = require("../becca/becca");
-const beccaLoader = require("../becca/becca_loader");
 const fs = require("fs").promises;
 const Attribute = require('../becca/entities/attribute');
 const utils = require('./utils');
@@ -14,14 +12,30 @@ const path = require('path');
 const yauzl = require("yauzl");
 const htmlSanitizer = require('./html_sanitizer');
 const sql = require('./sql');
+const options = require('./options');
+const {HELP_ZIP_DIR} = require('./resource_dir');
 
-const HELP_FILE_PATH = '/home/adam/Downloads/Help4.zip';
+async function importHelpIfNeeded() {
+    const helpSha256HashInDb = options.getOption('helpSha256Hash');
+    let helpSha256HashInFile = await fs.readFile(HELP_ZIP_DIR + "/help.zip.sha256");
 
-async function importHelp() {
+    if (!helpSha256HashInFile || helpSha256HashInFile.byteLength < 64) {
+        return;
+    }
+
+    helpSha256HashInFile = helpSha256HashInFile.toString().substr(0, 64);
+
+    if (helpSha256HashInDb === helpSha256HashInFile) {
+        // help file has been already imported and is up to date
+        return;
+    }
+
     const hiddenRoot = becca.getNote("_hidden");
-    const data = await fs.readFile(HELP_FILE_PATH, "binary");
+    const data = await fs.readFile(HELP_ZIP_DIR + "/" + "help.zip", "binary");
 
     await importZip(Buffer.from(data, 'binary'), hiddenRoot);
+
+    options.setOption('helpSha256Hash', helpSha256HashInFile);
 }
 
 async function importZip(fileBuffer, importRootNote) {
@@ -477,5 +491,5 @@ function readZipFile(buffer, processEntryCallback) {
 }
 
 module.exports = {
-    importHelp
-}
+    importHelpIfNeeded
+};

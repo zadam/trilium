@@ -55,7 +55,7 @@ sqlInit.dbReady.then(() => {
     cls.init(() => {
         hiddenSubtreeService.checkHiddenSubtree();
 
-        helpImportService.importHelp();
+        helpImportService.importHelpIfNeeded();
     });
 
     if (!process.env.TRILIUM_SAFE_MODE) {

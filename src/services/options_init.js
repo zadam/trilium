@@ -89,6 +89,7 @@ const defaultOptions = [
     { name: 'minTocHeadings', value: '5', isSynced: true },
     { name: 'checkForUpdates', value: 'true', isSynced: true },
     { name: 'disableTray', value: 'false', isSynced: false },
+    { name: 'helpSha256Hash', value: '', isSynced: true },
 ];
 
 function initStartupOptions() {
