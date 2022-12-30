@@ -156,8 +156,4 @@ export default class HelpDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
     }
-
-    showHelpEvent() {
-        utils.openDialog(this.$widget);
-    }
 }

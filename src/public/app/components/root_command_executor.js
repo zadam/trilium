@@ -100,6 +100,10 @@ export default class RootCommandExecutor extends Component {
         await this.showAndHoistSubtree('_search');
     }
 
+    async showUserGuideCommand() {
+        await this.showAndHoistSubtree('_userGuide');
+    }
+
     async showAndHoistSubtree(subtreeNoteId) {
         await appContext.tabManager.openContextWithNote(subtreeNoteId, true, null, subtreeNoteId);
     }
