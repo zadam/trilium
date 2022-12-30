@@ -7,7 +7,7 @@ const sql = require("./sql");
 const becca = require("../becca/becca");
 const protectedSessionService = require("../services/protected_session");
 const hiddenSubtreeService = require("./hidden_subtree");
-const helpImportService = require("./help_import");
+const helpImportService = require("./user_guide_import.js");
 
 function getRunAtHours(note) {
     try {
@@ -55,7 +55,7 @@ sqlInit.dbReady.then(() => {
     cls.init(() => {
         hiddenSubtreeService.checkHiddenSubtree();
 
-        helpImportService.importHelpIfNeeded();
+        helpImportService.importUserGuideIfNeeded();
     });
 
     if (!process.env.TRILIUM_SAFE_MODE) {

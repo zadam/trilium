@@ -71,8 +71,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
             ]
         },
         {
-            id: '_help',
-            title: 'Help',
+            id: '_userGuide',
+            title: 'User Guide',
             type: 'text',
             icon: 'bx-help-circle'
         },

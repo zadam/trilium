@@ -13,29 +13,29 @@ const yauzl = require("yauzl");
 const htmlSanitizer = require('./html_sanitizer');
 const sql = require('./sql');
 const options = require('./options');
-const {HELP_ZIP_DIR} = require('./resource_dir');
+const {USER_GUIDE_ZIP_DIR} = require('./resource_dir');
 
-async function importHelpIfNeeded() {
-    const helpSha256HashInDb = options.getOption('helpSha256Hash');
-    let helpSha256HashInFile = await fs.readFile(HELP_ZIP_DIR + "/help.zip.sha256");
+async function importUserGuideIfNeeded() {
+    const userGuideSha256HashInDb = options.getOption('userGuideSha256Hash');
+    let userGuideSha256HashInFile = await fs.readFile(USER_GUIDE_ZIP_DIR + "/user-guide.zip.sha256");
 
-    if (!helpSha256HashInFile || helpSha256HashInFile.byteLength < 64) {
+    if (!userGuideSha256HashInFile || userGuideSha256HashInFile.byteLength < 64) {
         return;
     }
 
-    helpSha256HashInFile = helpSha256HashInFile.toString().substr(0, 64);
+    userGuideSha256HashInFile = userGuideSha256HashInFile.toString().substr(0, 64);
 
-    if (helpSha256HashInDb === helpSha256HashInFile) {
-        // help file has been already imported and is up to date
+    if (userGuideSha256HashInDb === userGuideSha256HashInFile) {
+        // user guide ZIP file has been already imported and is up-to-date
         return;
     }
 
     const hiddenRoot = becca.getNote("_hidden");
-    const data = await fs.readFile(HELP_ZIP_DIR + "/" + "help.zip", "binary");
+    const data = await fs.readFile(USER_GUIDE_ZIP_DIR + "/user-guide.zip", "binary");
 
     await importZip(Buffer.from(data, 'binary'), hiddenRoot);
 
-    options.setOption('helpSha256Hash', helpSha256HashInFile);
+    options.setOption('userGuideSha256Hash', userGuideSha256HashInFile);
 }
 
 async function importZip(fileBuffer, importRootNote) {
@@ -87,15 +87,15 @@ async function importZip(fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta) {
-        let helpNoteId = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
+        let userGuideNoteId = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
 
-        helpNoteId = '_help' + noteMeta.title.replace(/[^a-z0-9]/ig, '');
+        userGuideNoteId = '_userGuide' + noteMeta.title.replace(/[^a-z0-9]/ig, '');
 
-        if (helpNoteId === '_helpHelp') {
-            helpNoteId = '_help';
+        if (noteMeta.title.trim() === 'User Guide') {
+            userGuideNoteId = '_userGuide';
         }
 
-        const noteId = helpNoteId || noteMeta.noteId;
+        const noteId = userGuideNoteId || noteMeta.noteId;
         noteIdMap[noteMeta.noteId] = noteId;
 
         return noteId;
@@ -394,7 +394,7 @@ async function importZip(fileBuffer, importRootNote) {
     metaFile = JSON.parse(entries.find(entry => entry.type === 'file' && entry.filePath === '!!!meta.json').content);
 
     sql.transactional(() => {
-        deleteHelpSubtree();
+        deleteUserGuideSubtree();
 
         for (const {type, filePath, content} of entries) {
             if (type === 'directory') {
@@ -424,11 +424,11 @@ async function importZip(fileBuffer, importRootNote) {
 }
 
 /**
- * This is a special implementation of deleting the subtree, because we want to preserve the links to the help pages
+ * This is a special implementation of deleting the subtree, because we want to preserve the links to the user guide pages
  * and clones.
  */
-function deleteHelpSubtree() {
-    const DELETE_ID = 'help';
+function deleteUserGuideSubtree() {
+    const DELETE_ID = 'user-guide';
 
     function remove(branch) {
         branch.markAsDeleted(DELETE_ID);
@@ -444,7 +444,7 @@ function deleteHelpSubtree() {
         note.markAsDeleted(DELETE_ID)
     }
 
-    remove(becca.getBranchFromChildAndParent('_help', '_hidden'));
+    remove(becca.getBranchFromChildAndParent('_userGuide', '_hidden'));
 }
 
 /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones */
@@ -491,5 +491,5 @@ function readZipFile(buffer, processEntryCallback) {
 }
 
 module.exports = {
-    importHelpIfNeeded
+    importUserGuideIfNeeded
 };
