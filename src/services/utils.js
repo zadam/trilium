@@ -291,6 +291,10 @@ function deferred() {
 }
 
 function removeDiacritic(str) {
+    if (!str) {
+        return "";
+    }
+
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 

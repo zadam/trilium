@@ -33,7 +33,7 @@
     "@excalidraw/excalidraw": "0.13.0",
     "archiver": "5.3.1",
     "async-mutex": "0.4.0",
-    "axios": "1.2.1",
+    "axios": "1.2.2",
     "better-sqlite3": "7.4.5",
     "chokidar": "3.5.3",
     "cls-hooked": "4.2.2",
