@@ -24,6 +24,7 @@ class SearchContext {
         this.fuzzyAttributeSearch = !!params.fuzzyAttributeSearch;
         this.highlightedTokens = [];
         this.originalQuery = "";
+        this.fulltextQuery = ""; // complete fulltext part
         // if true, becca does not have (up-to-date) information needed to process the query
         // and some extra data needs to be loaded before executing
         this.dbLoadNeeded = false;

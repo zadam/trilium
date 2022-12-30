@@ -170,7 +170,7 @@ function findResultsWithExpression(expression, searchContext) {
         .filter(note => !!note);
 
     for (const res of searchResults) {
-        res.computeScore(searchContext.highlightedTokens);
+        res.computeScore(searchContext.fulltextQuery, searchContext.highlightedTokens);
     }
 
     if (!noteSet.sorted) {
@@ -195,7 +195,9 @@ function findResultsWithExpression(expression, searchContext) {
 }
 
 function parseQueryToExpression(query, searchContext) {
-    const {fulltextTokens, expressionTokens} = lex(query);
+    const {fulltextQuery, fulltextTokens, expressionTokens} = lex(query);
+    searchContext.fulltextQuery = fulltextQuery;
+
     let structuredExpressionTokens;
 
     try {

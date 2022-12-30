@@ -68,8 +68,6 @@ function updateNoteAttribute(req) {
         attribute.markAsDeleted();
     }
 
-    console.log(attribute);
-
     attribute.save();
 
     return {
