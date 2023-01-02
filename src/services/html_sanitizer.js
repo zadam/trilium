@@ -28,7 +28,8 @@ function sanitize(dirtyHtml) {
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
             'li', 'b', 'i', 'strong', 'em', 'strike', 's', 'del', 'abbr', 'code', 'hr', 'br', 'div',
             'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'section', 'img',
-            'figure', 'figcaption', 'span', 'label', 'input'
+            'figure', 'figcaption', 'span', 'label', 'input',
+            'en-media' // for ENEX import
         ],
         allowedAttributes: {
             'a': [ 'href', 'class', 'data-note-path' ],
@@ -41,6 +42,7 @@ function sanitize(dirtyHtml) {
             'code': [ 'class' ],
             'ul': [ 'class' ],
             'table': [ 'class' ],
+            'en-media': [ 'hash' ]
         },
         allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'data', 'evernote'],
         transformTags,

@@ -17,17 +17,21 @@ class SearchResult {
         return this.notePathArray[this.notePathArray.length - 1];
     }
 
-    computeScore(tokens) {
+    computeScore(fulltextQuery, tokens) {
         this.score = 0;
+
+        const note = becca.notes[this.noteId];
+
+        if (note.title.toLowerCase() === fulltextQuery) {
+            this.score += 100; // high reward for exact match #3470
+        }
+
+        // notes with matches on its own note title as opposed to ancestors or descendants
+        this.addScoreForStrings(tokens, note.title, 1.5);
 
         // matches in attributes don't get extra points and thus are implicitly valued less than note path matches
 
         this.addScoreForStrings(tokens, this.notePathTitle, 1);
-
-        // add one more time for note title alone (already contained in the notePathTitle),
-        // thus preferring notes with matches on its own note title as opposed to ancestors or descendants
-        const note = becca.notes[this.noteId];
-        this.addScoreForStrings(tokens, note.title, 1.5);
 
         if (note.isInHiddenSubtree()) {
             this.score = this.score / 2;

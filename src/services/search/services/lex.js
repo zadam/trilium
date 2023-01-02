@@ -1,6 +1,7 @@
 function lex(str) {
     str = str.toLowerCase();
 
+    let fulltextQuery = "";
     const fulltextTokens = [];
     const expressionTokens = [];
 
@@ -37,6 +38,8 @@ function lex(str) {
             expressionTokens.push(rec);
         } else {
             fulltextTokens.push(rec);
+
+            fulltextQuery = str.substr(0, endIndex + 1);
         }
 
         currentWord = '';
@@ -129,7 +132,10 @@ function lex(str) {
 
     finishWord(str.length - 1);
 
+    fulltextQuery = fulltextQuery.trim();
+
     return {
+        fulltextQuery,
         fulltextTokens,
         expressionTokens
     }
