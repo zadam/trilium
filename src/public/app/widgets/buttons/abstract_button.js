@@ -1,8 +1,8 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
-const TPL = `<button class="button-widget no-print" data-toggle="tooltip">
-    <span class="bx"></span>
-</button>`;
+const TPL = `<span class="button-widget bx"
+      data-toggle="tooltip"
+      title=""></span>`;
 
 export default class AbstractButtonWidget extends NoteContextAwareWidget {
     isEnabled() {
@@ -22,7 +22,6 @@ export default class AbstractButtonWidget extends NoteContextAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$iconSpan = this.$widget.find("span");
 
         if (this.settings.onContextMenu) {
             this.$widget.on("contextmenu", e => {
@@ -52,9 +51,9 @@ export default class AbstractButtonWidget extends NoteContextAwareWidget {
     }
 
     refreshIcon() {
-        for (const className of this.$iconSpan[0].classList) {
+        for (const className of this.$widget[0].classList) {
             if (className.startsWith("bx-")) {
-                this.$iconSpan.removeClass(className);
+                this.$widget.removeClass(className);
             }
         }
 
@@ -62,7 +61,7 @@ export default class AbstractButtonWidget extends NoteContextAwareWidget {
             ? this.settings.icon()
             : this.settings.icon;
 
-        this.$iconSpan.addClass(icon);
+        this.$widget.addClass(icon);
     }
 
     initialRenderCompleteEvent() {

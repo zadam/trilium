@@ -21,12 +21,12 @@ const TPL = `
         background-position: 50% 45%;
         width: 100%;
         height: 100%;
-        
         position: relative;
     }
     
     .global-menu-button:hover {
         background-image: url("${window.glob.assetPath}/images/icon-color.png");
+        border: 0;
     }
     
     .global-menu-button-update-available {
