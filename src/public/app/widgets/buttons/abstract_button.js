@@ -1,8 +1,8 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
-const TPL = `<span class="button-widget bx"
+const TPL = `<button class="button-widget bx"
       data-toggle="tooltip"
-      title=""></span>`;
+      title=""></button>`;
 
 export default class AbstractButtonWidget extends NoteContextAwareWidget {
     isEnabled() {
