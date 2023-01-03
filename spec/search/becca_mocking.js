@@ -1,10 +1,10 @@
-const Note = require('../../src/becca/entities/note');
-const Branch = require('../../src/becca/entities/branch');
-const Attribute = require('../../src/becca/entities/attribute');
+const Note = require('../../src/becca/entities/bnote.js');
+const Branch = require('../../src/becca/entities/bbranch.js');
+const Attribute = require('../../src/becca/entities/battribute.js');
 const becca = require('../../src/becca/becca');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 
-/** @returns {Note} */
+/** @returns {BNote} */
 function findNoteByTitle(searchResults, title) {
     return searchResults
         .map(sr => becca.notes[sr.noteId])
@@ -17,7 +17,7 @@ class NoteBuilder {
     }
 
     label(name, value = '', isInheritable = false) {
-        new Attribute({
+        new BAttribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'label',
@@ -30,7 +30,7 @@ class NoteBuilder {
     }
 
     relation(name, targetNote) {
-        new Attribute({
+        new BAttribute({
             attributeId: id(),
             noteId: this.note.noteId,
             type: 'relation',
@@ -42,7 +42,7 @@ class NoteBuilder {
     }
 
     child(childNoteBuilder, prefix = "") {
-        new Branch({
+        new BBranch({
             branchId: id(),
             noteId: childNoteBuilder.note.noteId,
             parentNoteId: this.note.noteId,
@@ -66,7 +66,7 @@ function note(title, extraParams = {}) {
         mime: 'text/html'
     }, extraParams);
 
-    const note = new Note(row);
+    const note = new BNote(row);
 
     return new NoteBuilder(note);
 }

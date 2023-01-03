@@ -110,7 +110,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-            const importService = await import("../services/import.js");
+            const importService = await import("../services/import");
 
             importService.uploadFiles(activeNote.noteId, files, {
                 safeImport: true,

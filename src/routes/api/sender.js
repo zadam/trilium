@@ -5,7 +5,7 @@ const imageService = require('../../services/image');
 const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name.js");
+const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name");
 
 function uploadImage(req) {
     const file = req.file;

@@ -3,13 +3,13 @@
 const searchService = require('./search/services/search');
 const sql = require('./sql');
 const becca = require('../becca/becca');
-const Attribute = require('../becca/entities/attribute');
+const BAttribute = require('../becca/entities/battribute');
 const {formatAttrForSearch} = require("./attribute_formatter");
 const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
 
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
-/** @returns {Note[]} */
+/** @returns {BNote[]} */
 function getNotesWithLabel(name, value) {
     const query = formatAttrForSearch({type: 'label', name, value}, true);
     return searchService.searchNotes(query, {
@@ -19,7 +19,7 @@ function getNotesWithLabel(name, value) {
 }
 
 // TODO: should be in search service
-/** @returns {Note|null} */
+/** @returns {BNote|null} */
 function getNoteWithLabel(name, value = undefined) {
     // optimized version (~20 times faster) without using normal search, useful for e.g. finding date notes
     const attrs = becca.findAttributes('label', name);
@@ -76,7 +76,7 @@ function createRelation(noteId, name, targetNoteId) {
 }
 
 function createAttribute(attribute) {
-    return new Attribute(attribute).save();
+    return new BAttribute(attribute).save();
 }
 
 function getAttributeNames(type, nameLike) {

@@ -18,7 +18,7 @@ const AncestorExp = require("../expressions/ancestor");
 const buildComparator = require('./build_comparator');
 const ValueExtractor = require('../value_extractor');
 const utils = require("../../utils");
-const TrueExp = require("../expressions/true.js");
+const TrueExp = require("../expressions/true");
 
 function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => utils.removeDiacritic(t.token));

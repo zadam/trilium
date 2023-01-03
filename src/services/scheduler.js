@@ -7,7 +7,7 @@ const sql = require("./sql");
 const becca = require("../becca/becca");
 const protectedSessionService = require("../services/protected_session");
 const hiddenSubtreeService = require("./hidden_subtree");
-const helpImportService = require("./user_guide_import.js");
+const helpImportService = require("./user_guide_import");
 
 function getRunAtHours(note) {
     try {

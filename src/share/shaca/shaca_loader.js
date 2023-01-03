@@ -3,9 +3,9 @@
 const sql = require('../sql');
 const shaca = require('./shaca');
 const log = require('../../services/log');
-const SNote = require('./entities/snote.js');
-const SBranch = require('./entities/sbranch.js');
-const SAttribute = require('./entities/sattribute.js');
+const SNote = require('./entities/snote');
+const SBranch = require('./entities/sbranch');
+const SAttribute = require('./entities/sattribute');
 const shareRoot = require('../share_root');
 const eventService = require("../../services/events");
 

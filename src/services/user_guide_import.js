@@ -2,12 +2,12 @@
 
 const becca = require("../becca/becca");
 const fs = require("fs").promises;
-const Attribute = require('../becca/entities/attribute');
+const BAttribute = require('../becca/entities/battribute');
 const utils = require('./utils');
 const log = require('./log');
 const noteService = require('./notes');
 const attributeService = require('./attributes');
-const Branch = require('../becca/entities/branch');
+const BBranch = require('../becca/entities/bbranch');
 const path = require('path');
 const yauzl = require("yauzl");
 const htmlSanitizer = require('./html_sanitizer');
@@ -305,7 +305,7 @@ async function importZip(fileBuffer, importRootNote) {
 
         if (noteMeta?.isClone) {
             if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
-                new Branch({
+                new BBranch({
                     noteId,
                     parentNoteId,
                     isExpanded: noteMeta.isExpanded,
@@ -341,7 +341,7 @@ async function importZip(fileBuffer, importRootNote) {
             note.setContent(content);
 
             if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
-                new Branch({
+                new BBranch({
                     noteId,
                     parentNoteId,
                     isExpanded: noteMeta.isExpanded,
@@ -415,7 +415,7 @@ async function importZip(fileBuffer, importRootNote) {
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
     for (const attr of attributes) {
         if (attr.type !== 'relation' || attr.value in becca.notes) {
-            new Attribute(attr).save();
+            new BAttribute(attr).save();
         }
         else {
             log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);

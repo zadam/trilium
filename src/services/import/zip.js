@@ -1,11 +1,11 @@
 "use strict";
 
-const Attribute = require('../../becca/entities/attribute');
+const BAttribute = require('../../becca/entities/battribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const noteService = require('../../services/notes');
 const attributeService = require('../../services/attributes');
-const Branch = require('../../becca/entities/branch');
+const BBranch = require('../../becca/entities/bbranch');
 const path = require('path');
 const commonmark = require('commonmark');
 const protectedSessionService = require('../protected_session');
@@ -18,7 +18,7 @@ const becca = require("../../becca/becca");
 /**
  * @param {TaskContext} taskContext
  * @param {Buffer} fileBuffer
- * @param {Note} importRootNote
+ * @param {BNote} importRootNote
  * @return {Promise<*>}
  */
 async function importZip(taskContext, fileBuffer, importRootNote) {
@@ -369,7 +369,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         if (noteMeta?.isClone) {
             if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
-                new Branch({
+                new BBranch({
                     noteId,
                     parentNoteId,
                     isExpanded: noteMeta.isExpanded,
@@ -410,7 +410,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             note.setContent(content);
 
             if (!becca.getBranchFromChildAndParent(noteId, parentNoteId)) {
-                new Branch({
+                new BBranch({
                     noteId,
                     parentNoteId,
                     isExpanded: noteMeta.isExpanded,
@@ -504,7 +504,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
     for (const attr of attributes) {
         if (attr.type !== 'relation' || attr.value in becca.notes) {
-            new Attribute(attr).save();
+            new BAttribute(attr).save();
         }
         else {
             log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);

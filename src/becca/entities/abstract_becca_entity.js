@@ -13,7 +13,7 @@ let becca = null;
 /**
  * Base class for all backend entities.
  */
-class AbstractEntity {
+class AbstractBeccaEntity {
     /** @protected */
     beforeSaving() {
         this.generateIdIfNecessary();
@@ -167,4 +167,4 @@ class AbstractEntity {
     }
 }
 
-module.exports = AbstractEntity;
+module.exports = AbstractBeccaEntity;

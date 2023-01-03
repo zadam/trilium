@@ -14,9 +14,9 @@ const request = require('./request');
 const path = require('path');
 const url = require('url');
 const becca = require('../becca/becca');
-const Branch = require('../becca/entities/branch');
-const Note = require('../becca/entities/note');
-const Attribute = require('../becca/entities/attribute');
+const BBranch = require('../becca/entities/bbranch');
+const BNote = require('../becca/entities/bnote');
+const BAttribute = require('../becca/entities/battribute');
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
@@ -54,7 +54,7 @@ function deriveMime(type, mime) {
 function copyChildAttributes(parentNote, childNote) {
     for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
-            new Attribute({
+            new BAttribute({
                 noteId: childNote.noteId,
                 type: attr.type,
                 name: attr.name.substr(6),
@@ -130,7 +130,7 @@ function getAndValidateParent(params) {
  * - {integer} notePosition - default is last existing notePosition in a parent + 10
  *
  * @param params
- * @return {{note: Note, branch: Branch}}
+ * @return {{note: BNote, branch: BBranch}}
  */
 function createNewNote(params) {
     const parentNote = getAndValidateParent(params);
@@ -158,7 +158,7 @@ function createNewNote(params) {
             // TODO: think about what can happen if the note already exists with the forced ID
             //       I guess on DB it's going to be fine, but becca references between entities
             //       might get messed up (two Note instance for the same ID existing in the references)
-            note = new Note({
+            note = new BNote({
                 noteId: params.noteId, // optionally can force specific noteId
                 title: params.title,
                 isProtected: !!params.isProtected,
@@ -168,7 +168,7 @@ function createNewNote(params) {
 
             note.setContent(params.content);
 
-            branch = new Branch({
+            branch = new BBranch({
                 noteId: note.noteId,
                 parentNoteId: params.parentNoteId,
                 notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
@@ -533,7 +533,7 @@ function saveLinks(note, content) {
             && existingLink.name === foundLink.name);
 
         if (!existingLink) {
-            const newLink = new Attribute({
+            const newLink = new BAttribute({
                 noteId: note.noteId,
                 type: 'relation',
                 name: foundLink.name,
@@ -639,7 +639,7 @@ function undeleteBranch(branchId, deleteId, taskContext) {
         return;
     }
 
-    new Branch(branch).save();
+    new BBranch(branch).save();
 
     taskContext.increaseProgressCount();
 
@@ -657,7 +657,7 @@ function undeleteBranch(branchId, deleteId, taskContext) {
                            OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
 
         for (const attribute of attributes) {
-            new Attribute(attribute).save();
+            new BAttribute(attribute).save();
         }
 
         const childBranchIds = sql.getColumn(`
@@ -860,7 +860,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     const newNoteId = noteIdMapping[origNote.noteId];
 
     function createDuplicatedBranch() {
-        return new Branch({
+        return new BBranch({
             noteId: newNoteId,
             parentNoteId: newParentNoteId,
             // here increasing just by 1 to make sure it's directly after original
@@ -869,7 +869,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
     }
 
     function createDuplicatedNote() {
-        const newNote = new Note({
+        const newNote = new BNote({
             ...origNote,
             noteId: newNoteId,
             dateCreated: dateUtils.localNowDateTime(),
@@ -886,7 +886,7 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
         newNote.setContent(content);
 
         for (const attribute of origNote.getOwnedAttributes()) {
-            const attr = new Attribute({
+            const attr = new BAttribute({
                 ...attribute,
                 attributeId: undefined,
                 noteId: newNote.noteId

@@ -3,7 +3,7 @@ const scriptService = require('./script');
 const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
-const Attribute = require('../becca/entities/attribute');
+const BAttribute = require('../becca/entities/battribute');
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
@@ -177,7 +177,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
             .some(attr => attr.value === note.noteId);
 
         if (!hasInverseAttribute) {
-            new Attribute({
+            new BAttribute({
                 noteId: targetNote.noteId,
                 type: 'relation',
                 name: definition.inverseRelation,

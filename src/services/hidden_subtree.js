@@ -1,6 +1,6 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
-const Attribute = require("../becca/entities/attribute.js");
+const BAttribute = require("../becca/entities/battribute");
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -317,7 +317,7 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
         const attrId = note.noteId + "_" + attr.type.charAt(0) + attr.name;
 
         if (!note.getAttributes().find(attr => attr.attributeId === attrId)) {
-            new Attribute({
+            new BAttribute({
                 attributeId: attrId,
                 noteId: note.noteId,
                 type: attr.type,

@@ -1,7 +1,7 @@
 "use strict";
 
-const Note = require('./note');
-const AbstractEntity = require("./abstract_entity");
+const BNote = require('./bnote');
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 const sql = require("../../services/sql");
 const dateUtils = require("../../services/date_utils");
 const promotedAttributeDefinitionParser = require("../../services/promoted_attribute_definition_parser");
@@ -11,9 +11,9 @@ const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name"
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class Attribute extends AbstractEntity {
+class BAttribute extends AbstractBeccaEntity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable"]; }
@@ -70,7 +70,7 @@ class Attribute extends AbstractEntity {
 
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync, create skeleton which will be filled later
-            this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
+            this.becca.addNote(this.noteId, new BNote({noteId: this.noteId}));
         }
 
         this.becca.notes[this.noteId].ownedAttributes.push(this);
@@ -124,7 +124,7 @@ class Attribute extends AbstractEntity {
     }
 
     /**
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     getNote() {
         const note = this.becca.getNote(this.noteId);
@@ -137,7 +137,7 @@ class Attribute extends AbstractEntity {
     }
 
     /**
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     getTargetNote() {
         if (this.type !== 'relation') {
@@ -217,7 +217,7 @@ class Attribute extends AbstractEntity {
     }
 
     createClone(type, name, value, isInheritable) {
-        return new Attribute({
+        return new BAttribute({
             noteId: this.noteId,
             type: type,
             name: name,
@@ -229,4 +229,4 @@ class Attribute extends AbstractEntity {
     }
 }
 
-module.exports = Attribute;
+module.exports = BAttribute;

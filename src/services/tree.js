@@ -2,7 +2,7 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const Branch = require('../becca/entities/branch');
+const BBranch = require('../becca/entities/bbranch');
 const entityChangesService = require('./entity_changes');
 const protectedSessionService = require('./protected_session');
 const becca = require('../becca/becca');
@@ -270,7 +270,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
             branch.save();
         }
         else {
-            new Branch({
+            new BBranch({
                 noteId: noteId,
                 parentNoteId: parentNoteId,
                 prefix: prefix

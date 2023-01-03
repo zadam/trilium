@@ -6,8 +6,8 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
-const AbstractEntity = require("./abstract_entity");
-const NoteRevision = require("./note_revision");
+const AbstractBeccaEntity = require("./abstract_becca_entity");
+const BNoteRevision = require("./bnote_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -19,9 +19,9 @@ const RELATION = 'relation';
 /**
  * Trilium's main entity which can represent text note, image, code note, file attachment etc.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class Note extends AbstractEntity {
+class BNote extends AbstractBeccaEntity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
     static get hashedProperties() { return ["noteId", "title", "isProtected", "type", "mime"]; }
@@ -92,10 +92,10 @@ class Note extends AbstractEntity {
         /** @type {Branch[]}
          * @private */
         this.parentBranches = [];
-        /** @type {Note[]}
+        /** @type {BNote[]}
          * @private */
         this.parents = [];
-        /** @type {Note[]}
+        /** @type {BNote[]}
          * @private*/
         this.children = [];
         /** @type {Attribute[]}
@@ -115,7 +115,7 @@ class Note extends AbstractEntity {
 
         this.becca.addNote(this.noteId, this);
 
-        /** @type {Note[]|null}
+        /** @type {BNote[]|null}
          * @private */
         this.ancestorCache = null;
 
@@ -173,12 +173,12 @@ class Note extends AbstractEntity {
         return this.parentBranches;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {BNote[]} */
     getParentNotes() {
         return this.parents;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {BNote[]} */
     getChildNotes() {
         return this.children;
     }
@@ -832,7 +832,7 @@ class Note extends AbstractEntity {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
-    /** @returns {Note[]} */
+    /** @returns {BNote[]} */
     getSubtreeNotesIncludingTemplated() {
         const set = new Set();
 
@@ -863,7 +863,7 @@ class Note extends AbstractEntity {
         return Array.from(set);
     }
 
-    /** @return {Note[]} */
+    /** @return {BNote[]} */
     getSearchResultNotes() {
         if (this.type !== 'search') {
             return [];
@@ -885,7 +885,7 @@ class Note extends AbstractEntity {
     }
 
     /**
-     * @returns {{notes: Note[], relationships: Array.<{parentNoteId: string, childNoteId: string}>}}
+     * @returns {{notes: BNote[], relationships: Array.<{parentNoteId: string, childNoteId: string}>}}
      */
     getSubtree({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
         const noteSet = new Set();
@@ -1005,7 +1005,7 @@ class Note extends AbstractEntity {
         return this.getAttributes().length;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {BNote[]} */
     getAncestors() {
         if (!this.ancestorCache) {
             const noteIds = new Set();
@@ -1050,7 +1050,7 @@ class Note extends AbstractEntity {
         return this.targetRelations;
     }
 
-    /** @returns {Note[]} - returns only notes which are templated, does not include their subtrees
+    /** @returns {BNote[]} - returns only notes which are templated, does not include their subtrees
      *                     in effect returns notes which are influenced by note's non-inheritable attributes */
     getTemplatedNotes() {
         const arr = [this];
@@ -1084,7 +1084,7 @@ class Note extends AbstractEntity {
 
     getNoteRevisions() {
         return sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId])
-            .map(row => new NoteRevision(row));
+            .map(row => new BNoteRevision(row));
     }
 
     /**
@@ -1137,9 +1137,9 @@ class Note extends AbstractEntity {
             }
         }
         else {
-            const Attribute = require("./attribute");
+            const BAttribute = require("./battribute");
 
-            new Attribute({
+            new BAttribute({
                 noteId: this.noteId,
                 type: type,
                 name: name,
@@ -1177,7 +1177,7 @@ class Note extends AbstractEntity {
      * @return {Attribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
-        const Attribute = require("./attribute");
+        const BAttribute = require("./battribute");
 
         return new Attribute({
             noteId: this.noteId,
@@ -1359,7 +1359,7 @@ class Note extends AbstractEntity {
     }
 
     /**
-     * @return {NoteRevision|null}
+     * @return {BNoteRevision|null}
      */
     saveNoteRevision() {
         const content = this.getContent();
@@ -1370,7 +1370,7 @@ class Note extends AbstractEntity {
 
         const contentMetadata = this.getContentMetadata();
 
-        const noteRevision = new NoteRevision({
+        const noteRevision = new BNoteRevision({
             noteId: this.noteId,
             // title and text should be decrypted now
             title: this.title,
@@ -1434,4 +1434,4 @@ class Note extends AbstractEntity {
     }
 }
 
-module.exports = Note;
+module.exports = BNote;

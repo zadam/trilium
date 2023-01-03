@@ -7,7 +7,7 @@ const config = require('./config');
 const syncMutexService = require('./sync_mutex');
 const protectedSessionService = require('./protected_session');
 const becca = require("../becca/becca");
-const AbstractEntity = require("../becca/entities/abstract_entity");
+const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
 
 let webSocketServer;
 let lastSyncedPush = null;
@@ -138,7 +138,7 @@ function fillInAdditionalProperties(entityChange) {
         }
     }
 
-    if (entityChange.entity instanceof AbstractEntity) {
+    if (entityChange.entity instanceof AbstractBeccaEntity) {
         entityChange.entity = entityChange.entity.getPojo();
     }
 }

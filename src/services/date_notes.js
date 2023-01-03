@@ -29,7 +29,7 @@ function createNote(parentNote, noteTitle) {
     }).note;
 }
 
-/** @returns {Note} */
+/** @returns {BNote} */
 function getRootCalendarNote() {
     let rootNote;
 
@@ -62,7 +62,7 @@ function getRootCalendarNote() {
     return rootNote;
 }
 
-/** @returns {Note} */
+/** @returns {BNote} */
 function getYearNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -102,7 +102,7 @@ function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
         .replace(/{month}/g, monthName);
 }
 
-/** @returns {Note} */
+/** @returns {BNote} */
 function getMonthNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();
@@ -152,7 +152,7 @@ function getDayNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
-/** @returns {Note} */
+/** @returns {BNote} */
 function getDayNote(dateStr, rootNote = null) {
     if (!rootNote) {
         rootNote = getRootCalendarNote();

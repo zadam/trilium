@@ -12,7 +12,7 @@ const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
 const {createPartialContentHandler} = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
-const AbstractEntity = require("../becca/entities/abstract_entity");
+const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
 const NotFoundError = require("../errors/not_found_error");
 const ValidationError = require("../errors/validation_error");
 
@@ -319,22 +319,22 @@ function register(app) {
 
 /** Handling common patterns. If entity is not caught, serialization to JSON will fail */
 function convertEntitiesToPojo(result) {
-    if (result instanceof AbstractEntity) {
+    if (result instanceof AbstractBeccaEntity) {
         result = result.getPojo();
     }
     else if (Array.isArray(result)) {
         for (const idx in result) {
-            if (result[idx] instanceof AbstractEntity) {
+            if (result[idx] instanceof AbstractBeccaEntity) {
                 result[idx] = result[idx].getPojo();
             }
         }
     }
     else {
-        if (result && result.note instanceof AbstractEntity) {
+        if (result && result.note instanceof AbstractBeccaEntity) {
             result.note = result.note.getPojo();
         }
 
-        if (result && result.branch instanceof AbstractEntity) {
+        if (result && result.branch instanceof AbstractBeccaEntity) {
             result.branch = result.branch.getPojo();
         }
     }

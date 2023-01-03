@@ -1,6 +1,6 @@
 const searchService = require('../../src/services/search/services/search');
-const Note = require('../../src/becca/entities/note');
-const Branch = require('../../src/becca/entities/branch');
+const Note = require('../../src/becca/entities/bnote.js');
+const Branch = require('../../src/becca/entities/bbranch.js');
 const SearchContext = require('../../src/services/search/search_context');
 const dateUtils = require('../../src/services/date_utils');
 const becca = require('../../src/becca/becca');
@@ -12,8 +12,8 @@ describe("Search", () => {
     beforeEach(() => {
         becca.reset();
 
-        rootNote = new NoteBuilder(new Note({noteId: 'root', title: 'root', type: 'text'}));
-        new Branch({branchId: 'none_root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
+        rootNote = new NoteBuilder(new BNote({noteId: 'root', title: 'root', type: 'text'}));
+        new BBranch({branchId: 'none_root', noteId: 'root', parentNoteId: 'none', notePosition: 10});
     });
 
     it("simple path match", () => {

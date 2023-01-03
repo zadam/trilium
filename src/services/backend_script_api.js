@@ -27,9 +27,9 @@ const exportService = require("./export/zip");
  * @hideconstructor
  */
 function BackendScriptApi(currentNote, apiParams) {
-    /** @property {Note} note where script started executing */
+    /** @property {BNote} note where script started executing */
     this.startNote = apiParams.startNote;
-    /** @property {Note} note where script is currently executing. Don't mix this up with concept of active note */
+    /** @property {BNote} note where script is currently executing. Don't mix this up with concept of active note */
     this.currentNote = currentNote;
     /** @property {Entity} entity whose event triggered this executions */
     this.originEntity = apiParams.originEntity;
@@ -61,7 +61,7 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      * @param {string} noteId
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     this.getNote = noteId => becca.getNote(noteId);
 
@@ -86,7 +86,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} query
      * @param {Object} [searchParams]
-     * @returns {Note[]}
+     * @returns {BNote[]}
      */
     this.searchForNotes = (query, searchParams = {}) => {
         if (searchParams.includeArchivedNotes === undefined) {
@@ -110,7 +110,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} query
      * @param {Object} [searchParams]
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     this.searchForNote = (query, searchParams = {}) => {
         const notes = this.searchForNotes(query, searchParams);
@@ -124,7 +124,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
-     * @returns {Note[]}
+     * @returns {BNote[]}
      */
     this.getNotesWithLabel = attributeService.getNotesWithLabel;
 
@@ -134,7 +134,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     this.getNoteWithLabel = attributeService.getNoteWithLabel;
 
@@ -184,7 +184,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId
      * @param {string} title
      * @param {string} content
-     * @return {{note: Note, branch: Branch}} - object having "note" and "branch" keys representing respective objects
+     * @return {{note: BNote, branch: Branch}} - object having "note" and "branch" keys representing respective objects
      */
     this.createTextNote = (parentNoteId, title, content = '') => noteService.createNewNote({
         parentNoteId,
@@ -200,7 +200,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId
      * @param {string} title
      * @param {object} content
-     * @return {{note: Note, branch: Branch}} object having "note" and "branch" keys representing respective objects
+     * @return {{note: BNote, branch: Branch}} object having "note" and "branch" keys representing respective objects
      */
     this.createDataNote = (parentNoteId, title, content = {}) => noteService.createNewNote({
         parentNoteId,
@@ -227,7 +227,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      *
      * @param {CreateNewNoteParams} [params]
-     * @returns {{note: Note, branch: Branch}} object contains newly created entities note and branch
+     * @returns {{note: BNote, branch: Branch}} object contains newly created entities note and branch
      */
     this.createNewNote = noteService.createNewNote;
 
@@ -255,7 +255,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} title
      * @param {string} [content=""]
      * @param {CreateNoteExtraOptions} [extraOptions={}]
-     * @returns {{note: Note, branch: Branch}} object contains newly created entities note and branch
+     * @returns {{note: BNote, branch: Branch}} object contains newly created entities note and branch
      */
     this.createNote = (parentNoteId, title, content = "", extraOptions= {}) => {
         extraOptions.parentNoteId = parentNoteId;
@@ -326,7 +326,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Returns root note of the calendar.
      *
      * @method
-     * @returns {Note|null}
+     * @returns {BNote|null}
      */
     this.getRootCalendarNote = dateNoteService.getRootCalendarNote;
 
@@ -335,8 +335,8 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      * @deprecated use getDayNote instead
      */
     this.getDateNote = dateNoteService.getDayNote;
@@ -346,8 +346,8 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      */
     this.getDayNote = dateNoteService.getDayNote;
 
@@ -355,8 +355,8 @@ function BackendScriptApi(currentNote, apiParams) {
      * Returns today's day note. If such note doesn't exist, it is created.
      *
      * @method
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      */
     this.getTodayNote = dateNoteService.getTodayNote;
 
@@ -366,8 +366,8 @@ function BackendScriptApi(currentNote, apiParams) {
      * @method
      * @param {string} date in YYYY-MM-DD format
      * @param {object} [options] - "startOfTheWeek" - either "monday" (default) or "sunday"
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      */
     this.getWeekNote = dateNoteService.getWeekNote;
 
@@ -376,8 +376,8 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM format
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      */
     this.getMonthNote = dateNoteService.getMonthNote;
 
@@ -386,8 +386,8 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} year in YYYY format
-     * @param {Note} [rootNote] - specify calendar root note, normally leave empty to use default calendar
-     * @returns {Note|null}
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @returns {BNote|null}
      */
     this.getYearNote = dateNoteService.getYearNote;
 

@@ -12,7 +12,7 @@ class Becca {
     }
 
     reset() {
-        /** @type {Object.<String, Note>} */
+        /** @type {Object.<String, BNote>} */
         this.notes = {};
         /** @type {Object.<String, Branch>} */
         this.branches = {};
@@ -72,12 +72,12 @@ class Becca {
         this.dirtyNoteSetCache();
     }
 
-    /** @returns {Note|null} */
+    /** @returns {BNote|null} */
     getNote(noteId) {
         return this.notes[noteId];
     }
 
-    /** @returns {Note[]} */
+    /** @returns {BNote[]} */
     getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
 
@@ -113,12 +113,12 @@ class Becca {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 
-    /** @returns {NoteRevision|null} */
+    /** @returns {BNoteRevision|null} */
     getNoteRevision(noteRevisionId) {
         const row = sql.getRow("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
 
-        const NoteRevision = require("./entities/note_revision"); // avoiding circular dependency problems
-        return row ? new NoteRevision(row) : null;
+        const BNoteRevision = require("./entities/bnote_revision"); // avoiding circular dependency problems
+        return row ? new BNoteRevision(row) : null;
     }
 
     /** @returns {Option|null} */
@@ -155,19 +155,19 @@ class Becca {
         return this[camelCaseEntityName][entityId];
     }
 
-    /** @returns {RecentNote[]} */
+    /** @returns {BRecentNote[]} */
     getRecentNotesFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const RecentNote = require("./entities/recent_note"); // avoiding circular dependency problems
-        return rows.map(row => new RecentNote(row));
+        const BRecentNote = require("./entities/brecent_note"); // avoiding circular dependency problems
+        return rows.map(row => new BRecentNote(row));
     }
 
-    /** @returns {NoteRevision[]} */
+    /** @returns {BNoteRevision[]} */
     getNoteRevisionsFromQuery(query, params = []) {
         const rows = sql.getRows(query, params);
 
-        const NoteRevision = require("./entities/note_revision"); // avoiding circular dependency problems
+        const BNoteRevision = require("./entities/bnote_revision"); // avoiding circular dependency problems
         return rows.map(row => new NoteRevision(row));
     }
 

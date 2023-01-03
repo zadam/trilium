@@ -8,7 +8,7 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const entityChangesService = require('./entity_changes');
 const optionsService = require('./options');
-const Branch = require('../becca/entities/branch');
+const BBranch = require('../becca/entities/bbranch');
 const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
@@ -254,7 +254,7 @@ class ConsistencyChecks {
               AND branches.branchId IS NULL
         `, ({noteId}) => {
             if (this.autoFix) {
-                const branch = new Branch({
+                const branch = new BBranch({
                     parentNoteId: 'root',
                     noteId: noteId,
                     prefix: 'recovered'

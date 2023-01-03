@@ -1,7 +1,7 @@
 "use strict";
 
-const Note = require('./note');
-const AbstractEntity = require("./abstract_entity");
+const BNote = require('./bnote');
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 const dateUtils = require("../../services/date_utils");
 const utils = require("../../services/utils");
 const TaskContext = require("../../services/task_context");
@@ -15,9 +15,9 @@ const log = require("../../services/log");
  * Note that you should not rely on the branch's identity, since it can change easily with a note's move.
  * Always check noteId instead.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class Branch extends AbstractEntity {
+class BBranch extends AbstractBeccaEntity {
     static get entityName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
@@ -93,11 +93,11 @@ class Branch extends AbstractEntity {
         }
     }
 
-    /** @returns {Note} */
+    /** @returns {BNote} */
     get childNote() {
         if (!(this.noteId in this.becca.notes)) {
             // entities can come out of order in sync/import, create skeleton which will be filled later
-            this.becca.addNote(this.noteId, new Note({noteId: this.noteId}));
+            this.becca.addNote(this.noteId, new BNote({noteId: this.noteId}));
         }
 
         return this.becca.notes[this.noteId];
@@ -107,11 +107,11 @@ class Branch extends AbstractEntity {
         return this.childNote;
     }
 
-    /** @returns {Note|undefined} - root branch will have undefined parent, all other branches have to have a parent note */
+    /** @returns {BNote|undefined} - root branch will have undefined parent, all other branches have to have a parent note */
     get parentNote() {
         if (!(this.parentNoteId in this.becca.notes) && this.parentNoteId !== 'none') {
             // entities can come out of order in sync/import, create skeleton which will be filled later
-            this.becca.addNote(this.parentNoteId, new Note({noteId: this.parentNoteId}));
+            this.becca.addNote(this.parentNoteId, new BNote({noteId: this.parentNoteId}));
         }
 
         return this.becca.notes[this.parentNoteId];
@@ -263,7 +263,7 @@ class Branch extends AbstractEntity {
             existingBranch.notePosition = notePosition;
             return existingBranch;
         } else {
-            return new Branch({
+            return new BBranch({
                 noteId: this.noteId,
                 parentNoteId: parentNoteId,
                 notePosition: notePosition,
@@ -274,4 +274,4 @@ class Branch extends AbstractEntity {
     }
 }
 
-module.exports = Branch;
+module.exports = BBranch;

@@ -3,7 +3,7 @@
 const sql = require('../../services/sql');
 const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
-const Attribute = require('../../becca/entities/attribute');
+const BAttribute = require('../../becca/entities/battribute');
 const becca = require("../../becca/becca");
 const ValidationError = require("../../errors/validation_error");
 const NotFoundError = require("../../errors/not_found_error");
@@ -53,7 +53,7 @@ function updateNoteAttribute(req) {
             return {};
         }
 
-        attribute = new Attribute({
+        attribute = new BAttribute({
             noteId: noteId,
             name: body.name,
             type: body.type
@@ -89,7 +89,7 @@ function setNoteAttribute(req) {
         const params = {...body};
         params.noteId = noteId; // noteId must be set before calling constructor for proper initialization
 
-        new Attribute(params).save();
+        new BAttribute(params).save();
     }
 }
 
@@ -97,7 +97,7 @@ function addNoteAttribute(req) {
     const noteId = req.params.noteId;
     const body = req.body;
 
-    new Attribute({...body, noteId}).save();
+    new BAttribute({...body, noteId}).save();
 }
 
 function deleteNoteAttribute(req) {
@@ -206,7 +206,7 @@ function createRelation(req) {
     let attribute = becca.getAttribute(attributeId);
 
     if (!attribute) {
-        attribute = new Attribute({
+        attribute = new BAttribute({
             noteId: sourceNoteId,
             name: name,
             type: 'relation',

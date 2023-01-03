@@ -6,15 +6,15 @@ const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const becca = require('../becca');
 const entityChangesService = require('../../services/entity_changes');
-const AbstractEntity = require("./abstract_entity");
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class NoteRevision extends AbstractEntity {
+class BNoteRevision extends AbstractBeccaEntity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
     static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
@@ -190,4 +190,4 @@ class NoteRevision extends AbstractEntity {
     }
 }
 
-module.exports = NoteRevision;
+module.exports = BNoteRevision;

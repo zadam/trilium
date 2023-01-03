@@ -5,11 +5,11 @@ const eventService = require('../services/events');
 const becca = require('./becca');
 const sqlInit = require('../services/sql_init');
 const log = require('../services/log');
-const Note = require('./entities/note');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
-const Option = require('./entities/option');
-const EtapiToken = require("./entities/etapi_token");
+const BNote = require('./entities/bnote');
+const BBranch = require('./entities/bbranch');
+const BAttribute = require('./entities/battribute');
+const BOption = require('./entities/boption');
+const BEtapiToken = require("./entities/betapi_token");
 const cls = require("../services/cls");
 const entityConstructor = require("../becca/entity_constructor");
 
@@ -31,23 +31,23 @@ function load() {
     // this is worth it for becca load since it happens every run and blocks the app until finished
 
     for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`)) {
-        new Note().update(row).init();
+        new BNote().update(row).init();
     }
 
     for (const row of sql.getRawRows(`SELECT branchId, noteId, parentNoteId, prefix, notePosition, isExpanded, utcDateModified FROM branches WHERE isDeleted = 0`)) {
-        new Branch().update(row).init();
+        new BBranch().update(row).init();
     }
 
     for (const row of sql.getRawRows(`SELECT attributeId, noteId, type, name, value, isInheritable, position, utcDateModified FROM attributes WHERE isDeleted = 0`)) {
-        new Attribute().update(row).init();
+        new BAttribute().update(row).init();
     }
 
     for (const row of sql.getRows(`SELECT name, value, isSynced, utcDateModified FROM options`)) {
-        new Option(row);
+        new BOption(row);
     }
 
     for (const row of sql.getRows(`SELECT etapiTokenId, name, tokenHash, utcDateCreated, utcDateModified FROM etapi_tokens WHERE isDeleted = 0`)) {
-        new EtapiToken(row);
+        new BEtapiToken(row);
     }
 
     for (const noteId in becca.notes) {

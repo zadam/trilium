@@ -40,7 +40,7 @@ function filterUrlValue(value) {
 }
 
 /**
- * @param {Note} note
+ * @param {BNote} note
  */
 function buildRewardMap(note) {
     // Need to use Map instead of object: https://github.com/zadam/trilium/issues/1895

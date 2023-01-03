@@ -1,7 +1,7 @@
 "use strict";
 
 const dateUtils = require('../../services/date_utils');
-const AbstractEntity = require("./abstract_entity");
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
  * EtapiToken is an entity representing token used to authenticate against Trilium REST API from client applications.
@@ -12,9 +12,9 @@ const AbstractEntity = require("./abstract_entity");
  * The format user is presented with is "<etapiTokenId>_<tokenHash>". This is also called "authToken" to distinguish it
  * from tokenHash and token.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class EtapiToken extends AbstractEntity {
+class BEtapiToken extends AbstractBeccaEntity {
     static get entityName() { return "etapi_tokens"; }
     static get primaryKeyName() { return "etapiTokenId"; }
     static get hashedProperties() { return ["etapiTokenId", "name", "tokenHash", "utcDateCreated", "utcDateModified", "isDeleted"]; }
@@ -75,4 +75,4 @@ class EtapiToken extends AbstractEntity {
     }
 }
 
-module.exports = EtapiToken;
+module.exports = BEtapiToken;

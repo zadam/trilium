@@ -1,11 +1,11 @@
 "use strict";
 
-const RecentNote = require('../../becca/entities/recent_note');
+const BRecentNote = require('../../becca/entities/brecent_note');
 const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 
 function addRecentNote(req) {
-    new RecentNote({
+    new BRecentNote({
         noteId: req.body.noteId,
         notePath: req.body.notePath
     }).save();

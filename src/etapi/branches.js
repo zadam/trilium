@@ -1,7 +1,7 @@
 const becca = require("../becca/becca");
 const eu = require("./etapi_utils");
 const mappers = require("./mappers");
-const Branch = require("../becca/entities/branch");
+const BBranch = require("../becca/entities/bbranch");
 const entityChangesService = require("../services/entity_changes");
 const v = require("./validators");
 
@@ -37,7 +37,7 @@ function register(router) {
             return res.status(200).json(mappers.mapBranchToPojo(existing));
         } else {
             try {
-                const branch = new Branch(params).save();
+                const branch = new BBranch(params).save();
 
                 res.status(201).json(mappers.mapBranchToPojo(branch));
             } catch (e) {

@@ -9,7 +9,7 @@ const imageService = require("../image");
 const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require("../html_sanitizer");
 const attributeService = require("../attributes");
-const {sanitizeAttributeName} = require("../sanitize_attribute_name.js");
+const {sanitizeAttributeName} = require("../sanitize_attribute_name");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {

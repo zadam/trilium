@@ -1,14 +1,14 @@
 "use strict";
 
 const dateUtils = require('../../services/date_utils');
-const AbstractEntity = require("./abstract_entity");
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
  * RecentNote represents recently visited note.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class RecentNote extends AbstractEntity {
+class BRecentNote extends AbstractBeccaEntity {
     static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "noteId"; }
 
@@ -32,4 +32,4 @@ class RecentNote extends AbstractEntity {
     }
 }
 
-module.exports = RecentNote;
+module.exports = BRecentNote;

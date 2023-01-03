@@ -1,6 +1,6 @@
 const becca = require("../becca/becca");
 const utils = require("./utils");
-const EtapiToken = require("../becca/entities/etapi_token");
+const BEtapiToken = require("../becca/entities/betapi_token");
 const crypto = require("crypto");
 
 function getTokens() {
@@ -15,7 +15,7 @@ function createToken(tokenName) {
     const token = utils.randomSecureToken(32);
     const tokenHash = getTokenHash(token);
 
-    const etapiToken = new EtapiToken({
+    const etapiToken = new BEtapiToken({
         name: tokenName,
         tokenHash
     }).save();

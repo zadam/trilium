@@ -1,14 +1,14 @@
 "use strict";
 
 const dateUtils = require('../../services/date_utils');
-const AbstractEntity = require("./abstract_entity");
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
  * Option represents name-value pair, either directly configurable by the user or some system property.
  *
- * @extends AbstractEntity
+ * @extends AbstractBeccaEntity
  */
-class Option extends AbstractEntity {
+class BOption extends AbstractBeccaEntity {
     static get entityName() { return "options"; }
     static get primaryKeyName() { return "name"; }
     static get hashedProperties() { return ["name", "value"]; }
@@ -44,4 +44,4 @@ class Option extends AbstractEntity {
     }
 }
 
-module.exports = Option;
+module.exports = BOption;

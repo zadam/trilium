@@ -39,7 +39,7 @@ function getNoteRevision(req) {
 }
 
 /**
- * @param {NoteRevision} noteRevision
+ * @param {BNoteRevision} noteRevision
  * @return {string}
  */
 function getRevisionFilename(noteRevision) {

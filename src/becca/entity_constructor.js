@@ -1,21 +1,21 @@
-const Note = require('./entities/note');
-const NoteRevision = require('./entities/note_revision');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
-const RecentNote = require('./entities/recent_note');
-const EtapiToken = require('./entities/etapi_token');
-const Option = require('./entities/option');
+const BNote = require('./entities/bnote');
+const BNoteRevision = require('./entities/bnote_revision');
+const BBranch = require('./entities/bbranch');
+const BAttribute = require('./entities/battribute');
+const BRecentNote = require('./entities/brecent_note');
+const BEtapiToken = require('./entities/betapi_token');
+const BOption = require('./entities/boption');
 
 const ENTITY_NAME_TO_ENTITY = {
-    "attributes": Attribute,
-    "branches": Branch,
-    "notes": Note,
-    "note_contents": Note,
-    "note_revisions": NoteRevision,
-    "note_revision_contents": NoteRevision,
-    "recent_notes": RecentNote,
-    "etapi_tokens": EtapiToken,
-    "options": Option
+    "attributes": BAttribute,
+    "branches": BBranch,
+    "notes": BNote,
+    "note_contents": BNote,
+    "note_revisions": BNoteRevision,
+    "note_revision_contents": BNoteRevision,
+    "recent_notes": BRecentNote,
+    "etapi_tokens": BEtapiToken,
+    "options": BOption
 };
 
 function getEntityFromEntityName(entityName) {

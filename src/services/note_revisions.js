@@ -5,7 +5,7 @@ const sql = require('./sql');
 const protectedSession = require("./protected_session");
 
 /**
- * @param {Note} note
+ * @param {BNote} note
  */
 function protectNoteRevisions(note) {
     for (const revision of note.getNoteRevisions()) {

@@ -5,7 +5,7 @@ const sql = require('./sql');
 const utils = require('./utils');
 const optionService = require('./options');
 const port = require('./port');
-const Option = require('../becca/entities/option');
+const BOption = require('../becca/entities/boption');
 const TaskContext = require('./task_context');
 const migrationService = require('./migration');
 const cls = require('./cls');
@@ -62,12 +62,12 @@ async function createInitialDatabase() {
 
         require("../becca/becca_loader").load();
 
-        const Note = require("../becca/entities/note");
-        const Branch = require("../becca/entities/branch");
+        const BNote = require("../becca/entities/bnote");
+        const BBranch = require("../becca/entities/bbranch");
 
         log.info("Creating root note ...");
 
-        rootNote = new Note({
+        rootNote = new BNote({
             noteId: 'root',
             title: 'root',
             type: 'text',
@@ -76,7 +76,7 @@ async function createInitialDatabase() {
 
         rootNote.setContent('');
 
-        new Branch({
+        new BBranch({
             noteId: 'root',
             parentNoteId: 'none',
             isExpanded: true,
@@ -135,7 +135,7 @@ function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
 
         // document options required for sync to kick off
         for (const opt of options) {
-            new Option(opt).save();
+            new BOption(opt).save();
         }
     });
 

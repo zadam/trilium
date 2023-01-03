@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const eventChangesService = require('./entity_changes');
 const treeService = require('./tree');
-const Branch = require('../becca/entities/branch');
+const BBranch = require('../becca/entities/bbranch');
 const becca = require("../becca/becca");
 const beccaService = require("../becca/becca_service");
 const log = require("./log");
@@ -28,7 +28,7 @@ function cloneNoteToNote(noteId, parentNoteId, prefix) {
         return validationResult;
     }
 
-    const branch = new Branch({
+    const branch = new BBranch({
         noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
@@ -78,7 +78,7 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
         return validationResult;
     }
 
-    const branch = new Branch({
+    const branch = new BBranch({
         noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
@@ -162,7 +162,7 @@ function cloneNoteAfter(noteId, afterBranchId) {
 
     eventChangesService.addNoteReorderingEntityChange(afterNote.parentNoteId);
 
-    const branch = new Branch({
+    const branch = new BBranch({
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
         notePosition: afterNote.notePosition + 10,

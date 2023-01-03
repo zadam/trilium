@@ -230,7 +230,7 @@ function parseQueryToExpression(query, searchContext) {
 
 /**
  * @param {string} query
- * @return {Note[]}
+ * @return {BNote[]}
  */
 function searchNotes(query, params = {}) {
     const searchResults = findResultsWithQuery(query, new SearchContext(params));
@@ -259,7 +259,7 @@ function findResultsWithQuery(query, searchContext) {
 /**
  * @param {string} query
  * @param {SearchContext} searchContext
- * @return {Note|null}
+ * @return {BNote|null}
  */
 function findFirstNoteWithQuery(query, searchContext) {
     const searchResults = findResultsWithQuery(query, searchContext);

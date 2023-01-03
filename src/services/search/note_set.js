@@ -2,7 +2,7 @@
 
 class NoteSet {
     constructor(notes = []) {
-        /** @type {Note[]} */
+        /** @type {BNote[]} */
         this.notes = notes;
         this.noteIdSet = new Set(notes.map(note => note.noteId));
         /** @type {boolean} */
