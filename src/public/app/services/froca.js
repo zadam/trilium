@@ -216,7 +216,7 @@ class Froca {
     getNotesFromCache(noteIds, silentNotFoundError = false) {
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                console.trace(`Can't find note "${noteId}"`);
+                console.trace(`Can't find note '${noteId}'`);
 
                 return null;
             }
@@ -235,7 +235,7 @@ class Froca {
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                console.trace(`Can't find note "${noteId}"`);
+                console.trace(`Can't find note '${noteId}'`);
 
                 return null;
             } else {
@@ -285,7 +285,7 @@ class Froca {
     getBranch(branchId, silentNotFoundError = false) {
         if (!(branchId in this.branches)) {
             if (!silentNotFoundError) {
-                logError(`Not existing branch ${branchId}`);
+                logError(`Not existing branch '${branchId}'`);
             }
         }
         else {
@@ -295,13 +295,13 @@ class Froca {
 
     async getBranchId(parentNoteId, childNoteId) {
         if (childNoteId === 'root') {
-            return 'root';
+            return 'none_root';
         }
 
         const child = await this.getNote(childNoteId);
 
         if (!child) {
-            logError(`Could not find branchId for parent=${parentNoteId}, child=${childNoteId} since child does not exist`);
+            logError(`Could not find branchId for parent '${parentNoteId}', child '${childNoteId}' since child does not exist`);
 
             return null;
         }
@@ -318,9 +318,9 @@ class Froca {
                 .then(row => new NoteComplement(row))
                 .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
 
-            // we don't want to keep large payloads forever in memory so we clean that up quite quickly
+            // we don't want to keep large payloads forever in memory, so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)
-            // this is also a work around for missing invalidation after change
+            // this is also a workaround for missing invalidation after change
             this.noteComplementPromises[noteId].then(
                 () => setTimeout(() => this.noteComplementPromises[noteId] = null, 1000)
             );

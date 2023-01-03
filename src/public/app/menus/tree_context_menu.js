@@ -32,7 +32,7 @@ export default class TreeContextMenu {
         const isHoisted = note.noteId === appContext.tabManager.getActiveContext().hoistedNoteId;
         const parentNote = isNotRoot ? await froca.getNote(branch.parentNoteId) : null;
 
-        // some actions don't support multi-note so they are disabled when notes are selected
+        // some actions don't support multi-note, so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
         // it's clear what the user meant to do.
         const selNodes = this.treeWidget.getSelectedNodes();
