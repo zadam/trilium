@@ -14,8 +14,8 @@ const Attribute = require('../../becca/entities/attribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
-function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.searchNotesInSubtree(
+function findClippingNote(clipperInboxNote, pageUrl) {
+    const notes = clipperInboxNote.searchNotesInSubtree(
         formatAttrForSearch({
             type: 'label',
             name: "pageUrl",
