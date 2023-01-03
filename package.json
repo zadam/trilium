@@ -29,6 +29,7 @@
     "postinstall": "rimraf ./node_modules/canvas"
   },
   "dependencies": {
+    "@braintree/sanitize-url": "^6.0.2",
     "@electron/remote": "2.0.9",
     "@excalidraw/excalidraw": "0.13.0",
     "archiver": "5.3.1",
