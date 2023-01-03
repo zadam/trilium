@@ -1,9 +1,9 @@
-import Branch from "../entities/branch.js";
-import NoteShort from "../entities/note_short.js";
-import Attribute from "../entities/attribute.js";
+import FBranch from "../entities/fbranch.js";
+import FNote from "../entities/fnote.js";
+import FAttribute from "../entities/fattribute.js";
 import server from "./server.js";
 import appContext from "../components/app_context.js";
-import NoteComplement from "../entities/note_complement.js";
+import FNoteComplement from "../entities/fnote_complement.js";
 
 /**
  * Froca (FROntend CAche) keeps a read only cache of note tree structure in frontend's memory.
@@ -25,16 +25,16 @@ class Froca {
 
         // clear the cache only directly before adding new content which is important for e.g. switching to protected session
 
-        /** @type {Object.<string, NoteShort>} */
+        /** @type {Object.<string, FNote>} */
         this.notes = {};
 
-        /** @type {Object.<string, Branch>} */
+        /** @type {Object.<string, FBranch>} */
         this.branches = {};
 
-        /** @type {Object.<string, Attribute>} */
+        /** @type {Object.<string, FAttribute>} */
         this.attributes = {};
 
-        /** @type {Object.<string, Promise<NoteComplement>>} */
+        /** @type {Object.<string, Promise<FNoteComplement>>} */
         this.noteComplementPromises = {};
 
         this.addResp(resp);
@@ -103,12 +103,12 @@ class Froca {
                 });
             }
             else {
-                this.notes[noteId] = new NoteShort(this, noteRow);
+                this.notes[noteId] = new FNote(this, noteRow);
             }
         }
 
         for (const branchRow of branchRows) {
-            const branch = new Branch(this, branchRow);
+            const branch = new FBranch(this, branchRow);
 
             this.branches[branch.branchId] = branch;
 
@@ -130,7 +130,7 @@ class Froca {
         for (const attributeRow of attributeRows) {
             const {attributeId} = attributeRow;
 
-            this.attributes[attributeId] = new Attribute(this, attributeRow);
+            this.attributes[attributeId] = new FAttribute(this, attributeRow);
 
             const note = this.notes[attributeRow.noteId];
 
@@ -212,7 +212,7 @@ class Froca {
         return {error};
     }
 
-    /** @returns {NoteShort[]} */
+    /** @returns {FNote[]} */
     getNotesFromCache(noteIds, silentNotFoundError = false) {
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
@@ -226,7 +226,7 @@ class Froca {
         }).filter(note => !!note);
     }
 
-    /** @returns {Promise<NoteShort[]>} */
+    /** @returns {Promise<FNote[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
         noteIds = Array.from(new Set(noteIds)); // make unique
         const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
@@ -251,7 +251,7 @@ class Froca {
         return notes.length === 1;
     }
 
-    /** @returns {Promise<NoteShort>} */
+    /** @returns {Promise<FNote>} */
     async getNote(noteId, silentNotFoundError = false) {
         if (noteId === 'none') {
             console.trace(`No 'none' note.`);
@@ -265,7 +265,7 @@ class Froca {
         return (await this.getNotes([noteId], silentNotFoundError))[0];
     }
 
-    /** @returns {Note|null} */
+    /** @returns {FNote|null} */
     getNoteFromCache(noteId) {
         if (!noteId) {
             throw new Error("Empty noteId");
@@ -274,14 +274,14 @@ class Froca {
         return this.notes[noteId];
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {FBranch[]} */
     getBranches(branchIds, silentNotFoundError = false) {
         return branchIds
             .map(branchId => this.getBranch(branchId, silentNotFoundError))
             .filter(b => !!b);
     }
 
-    /** @returns {Branch} */
+    /** @returns {FBranch} */
     getBranch(branchId, silentNotFoundError = false) {
         if (!(branchId in this.branches)) {
             if (!silentNotFoundError) {
@@ -310,12 +310,12 @@ class Froca {
     }
 
     /**
-     * @return {Promise<NoteComplement>}
+     * @return {Promise<FNoteComplement>}
      */
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
             this.noteComplementPromises[noteId] = server.get(`notes/${noteId}`)
-                .then(row => new NoteComplement(row))
+                .then(row => new FNoteComplement(row))
                 .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
 
             // we don't want to keep large payloads forever in memory so we clean that up quite quickly

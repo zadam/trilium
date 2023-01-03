@@ -12,7 +12,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
     }
 
     /**
-     * @param {NoteShort} note
+     * @param {FNote} note
      */
     async doRefresh(note) {}
 

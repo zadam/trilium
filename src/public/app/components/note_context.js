@@ -140,7 +140,7 @@ class NoteContext extends Component {
         return resolvedNotePath;
     }
 
-    /** @property {NoteShort} */
+    /** @property {FNote} */
     get note() {
         if (!this.noteId || !(this.noteId in froca.notes)) {
             return null;
@@ -154,7 +154,7 @@ class NoteContext extends Component {
         return this.notePath ? this.notePath.split('/') : [];
     }
 
-    /** @returns {NoteComplement} */
+    /** @returns {FNoteComplement} */
     async getNoteComplement() {
         if (!this.noteId) {
             return null;

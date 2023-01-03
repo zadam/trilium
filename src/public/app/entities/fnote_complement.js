@@ -1,7 +1,7 @@
 /**
- * Complements the NoteShort with the main note content and other extra attributes
+ * Complements the FNote with the main note content and other extra attributes
  */
-class NoteComplement {
+class FNoteComplement {
     constructor(row) {
         /** @type {string} */
         this.noteId = row.noteId;
@@ -37,4 +37,4 @@ class NoteComplement {
     }
 }
 
-export default NoteComplement;
+export default FNoteComplement;

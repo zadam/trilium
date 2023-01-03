@@ -65,7 +65,7 @@ export default class LoadResults {
         this.attributes.push({attributeId, componentId});
     }
 
-    /** @returns {Attribute[]} */
+    /** @returns {FAttribute[]} */
     getAttributes(componentId = 'none') {
         return this.attributes
             .filter(row => row.componentId !== componentId)

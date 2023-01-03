@@ -641,7 +641,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     /**
-     * @param {NoteShort} parentNote
+     * @param {FNote} parentNote
      */
     prepareChildren(parentNote) {
         utils.assertArguments(parentNote);
@@ -704,7 +704,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     }
 
     /**
-     * @param {Branch} branch
+     * @param {FBranch} branch
      * @param {boolean} forceLazy
      */
     prepareNode(branch, forceLazy = false) {

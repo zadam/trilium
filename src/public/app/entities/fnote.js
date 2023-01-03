@@ -26,12 +26,7 @@ const NOTE_TYPE_ICONS = {
     "contentWidget": "bx bxs-widget"
 };
 
-/**
- * FIXME: since there's no "full note" anymore we can rename this to Note
- *
- * This note's representation is used in note tree and is kept in Froca.
- */
-class NoteShort {
+class FNote {
     /**
      * @param {Froca} froca
      * @param {Object.<string, Object>} row
@@ -153,7 +148,7 @@ class NoteShort {
     }
 
     /**
-     * @returns {Branch[]}
+     * @returns {FBranch[]}
      */
     getParentBranches() {
         const branchIds = Object.values(this.parentToBranch);
@@ -162,7 +157,7 @@ class NoteShort {
     }
 
     /**
-     * @returns {Branch[]}
+     * @returns {FBranch[]}
      * @deprecated use getParentBranches() instead
      */
     getBranches() {
@@ -174,7 +169,7 @@ class NoteShort {
         return this.children.length > 0;
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {FBranch[]} */
     getChildBranches() {
         // don't use Object.values() to guarantee order
         const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
@@ -187,7 +182,7 @@ class NoteShort {
         return this.parents;
     }
 
-    /** @returns {NoteShort[]} */
+    /** @returns {FNote[]} */
     getParentNotes() {
         return this.froca.getNotesFromCache(this.parents);
     }
@@ -217,7 +212,7 @@ class NoteShort {
         return this.children;
     }
 
-    /** @returns {Promise<NoteShort[]>} */
+    /** @returns {Promise<FNote[]>} */
     async getChildNotes() {
         return await this.froca.getNotes(this.children);
     }
@@ -225,7 +220,7 @@ class NoteShort {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Attribute[]} all note's attributes, including inherited ones
+     * @returns {FAttribute[]} all note's attributes, including inherited ones
      */
     getOwnedAttributes(type, name) {
         const attrs = this.attributes
@@ -238,7 +233,7 @@ class NoteShort {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Attribute[]} all note's attributes, including inherited ones
+     * @returns {FAttribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
         return this.__filterAttrs(this.__getCachedAttributes([]), type, name);
@@ -399,7 +394,7 @@ class NoteShort {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     * @returns {FAttribute[]} all note's labels (attributes with type label), including inherited ones
      */
     getOwnedLabels(name) {
         return this.getOwnedAttributes(LABEL, name);
@@ -407,7 +402,7 @@ class NoteShort {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     * @returns {FAttribute[]} all note's labels (attributes with type label), including inherited ones
      */
     getLabels(name) {
         return this.getAttributes(LABEL, name);
@@ -480,7 +475,7 @@ class NoteShort {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @returns {FAttribute[]} all note's relations (attributes with type relation), including inherited ones
      */
     getOwnedRelations(name) {
         return this.getOwnedAttributes(RELATION, name);
@@ -488,7 +483,7 @@ class NoteShort {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @returns {FAttribute[]} all note's relations (attributes with type relation), including inherited ones
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
@@ -515,7 +510,7 @@ class NoteShort {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getOwnedAttribute(type, name) {
         const attributes = this.getOwnedAttributes(type, name);
@@ -526,7 +521,7 @@ class NoteShort {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes(type, name);
@@ -582,25 +577,25 @@ class NoteShort {
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute} label if it exists, null otherwise
+     * @returns {FAttribute} label if it exists, null otherwise
      */
     getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute} label if it exists, null otherwise
+     * @returns {FAttribute} label if it exists, null otherwise
      */
     getLabel(name) { return this.getAttribute(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute} relation if it exists, null otherwise
+     * @returns {FAttribute} relation if it exists, null otherwise
      */
     getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute} relation if it exists, null otherwise
+     * @returns {FAttribute} relation if it exists, null otherwise
      */
     getRelation(name) { return this.getAttribute(RELATION, name); }
 
@@ -630,7 +625,7 @@ class NoteShort {
 
     /**
      * @param {string} name
-     * @returns {Promise<NoteShort>|null} target note of the relation or null (if target is empty or note was not found)
+     * @returns {Promise<FNote>|null} target note of the relation or null (if target is empty or note was not found)
      */
     async getRelationTarget(name) {
         const targets = await this.getRelationTargets(name);
@@ -640,7 +635,7 @@ class NoteShort {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Promise<NoteShort[]>}
+     * @returns {Promise<FNote[]>}
      */
     async getRelationTargets(name) {
         const relations = this.getRelations(name);
@@ -654,7 +649,7 @@ class NoteShort {
     }
 
     /**
-     * @returns {NoteShort[]}
+     * @returns {FNote[]}
      */
     getTemplateNotes() {
         const relations = this.getRelations('template');
@@ -722,7 +717,7 @@ class NoteShort {
     /**
      * Get relations which target this note
      *
-     * @returns {Attribute[]}
+     * @returns {FAttribute[]}
      */
     getTargetRelations() {
         return this.targetRelations
@@ -732,7 +727,7 @@ class NoteShort {
     /**
      * Get relations which target this note
      *
-     * @returns {NoteShort[]}
+     * @returns {FNote[]}
      */
     async getTargetRelationSourceNotes() {
         const targetRelations = this.getTargetRelations();
@@ -743,7 +738,7 @@ class NoteShort {
     /**
      * Return note complement which is most importantly note's content
      *
-     * @return {Promise<NoteComplement>}
+     * @return {Promise<FNoteComplement>}
      */
     async getNoteComplement() {
         return await this.froca.getNoteComplement(this.noteId);
@@ -857,4 +852,4 @@ class NoteShort {
     }
 }
 
-export default NoteShort;
+export default FNote;

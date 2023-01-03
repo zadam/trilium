@@ -181,7 +181,7 @@ export default class TabManager extends Component {
         return activeContext ? activeContext.notePath : null;
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     getActiveContextNote() {
         const activeContext = this.getActiveContext();
         return activeContext ? activeContext.note : null;

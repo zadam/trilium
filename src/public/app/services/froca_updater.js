@@ -3,8 +3,8 @@ import froca from "./froca.js";
 import utils from "./utils.js";
 import options from "./options.js";
 import noteAttributeCache from "./note_attribute_cache.js";
-import Branch from "../entities/branch.js";
-import Attribute from "../entities/attribute.js";
+import FBranch from "../entities/fbranch.js";
+import FAttribute from "../entities/fattribute.js";
 
 async function processEntityChanges(entityChanges) {
     const loadResults = new LoadResults(entityChanges);
@@ -145,7 +145,7 @@ function processBranchChange(loadResults, ec) {
         branch.update(ec.entity);
     }
     else if (childNote || parentNote) {
-        froca.branches[ec.entityId] = branch = new Branch(froca, ec.entity);
+        froca.branches[ec.entityId] = branch = new FBranch(froca, ec.entity);
     }
 
     if (childNote) {
@@ -218,7 +218,7 @@ function processAttributeChange(loadResults, ec) {
     if (attribute) {
         attribute.update(ec.entity);
     } else if (sourceNote || targetNote) {
-        attribute = new Attribute(froca, ec.entity);
+        attribute = new FAttribute(froca, ec.entity);
 
         froca.attributes[attribute.attributeId] = attribute;
 

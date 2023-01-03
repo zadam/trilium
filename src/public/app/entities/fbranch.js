@@ -2,7 +2,7 @@
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
  * parents.
  */
-class Branch {
+class FBranch {
     constructor(froca, row) {
         this.froca = froca;
 
@@ -29,17 +29,17 @@ class Branch {
         this.fromSearchNote = !!row.fromSearchNote;
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     async getNote() {
         return this.froca.getNote(this.noteId);
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     getNoteFromCache() {
         return this.froca.getNoteFromCache(this.noteId);
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     async getParentNote() {
         return this.froca.getNote(this.parentNoteId);
     }
@@ -50,7 +50,7 @@ class Branch {
     }
 
     get toString() {
-        return `Branch(branchId=${this.branchId})`;
+        return `FBranch(branchId=${this.branchId})`;
     }
 
     get pojo() {
@@ -60,4 +60,4 @@ class Branch {
     }
 }
 
-export default Branch;
+export default FBranch;

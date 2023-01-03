@@ -4,7 +4,7 @@ import promotedAttributeDefinitionParser from '../services/promoted_attribute_de
  * Attribute is an abstract concept which has two real uses - label (key - value pair)
  * and relation (representing named relationship between source and target note)
  */
-class Attribute {
+class FAttribute {
     constructor(froca, row) {
         this.froca = froca;
 
@@ -28,12 +28,12 @@ class Attribute {
         this.isInheritable = !!row.isInheritable;
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     getNote() {
         return this.froca.notes[this.noteId];
     }
 
-    /** @returns {Promise<NoteShort>} */
+    /** @returns {Promise<FNote>} */
     async getTargetNote() {
         const targetNoteId = this.targetNoteId;
 
@@ -42,7 +42,7 @@ class Attribute {
 
     get targetNoteId() { // alias
         if (this.type !== 'relation') {
-            throw new Error(`Attribute ${this.attributeId} is not a relation`);
+            throw new Error(`FAttribute ${this.attributeId} is not a relation`);
         }
 
         return this.value;
@@ -53,7 +53,7 @@ class Attribute {
     }
 
     get toString() {
-        return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name}, value=${this.value})`;
+        return `FAttribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name}, value=${this.value})`;
     }
 
     isDefinition() {
@@ -76,4 +76,4 @@ class Attribute {
     }
 }
 
-export default Attribute;
+export default FAttribute;
