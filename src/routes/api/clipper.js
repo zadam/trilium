@@ -47,6 +47,7 @@ function addClipping(req) {
 
     const clipperInbox = getClipperInboxNote();
 
+    pageUrl = htmlSanitizer.sanitize(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
@@ -56,8 +57,6 @@ function addClipping(req) {
             content: '',
             type: 'text'
         }).note;
-
-        pageUrl = htmlSanitizer.sanitize(pageUrl);
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
