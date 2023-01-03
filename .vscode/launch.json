@@ -9,7 +9,8 @@
                 "<node_internals>/**"
             ],
             "env": {
-                "TRILIUM_ENV": "dev"
+                "TRILIUM_ENV": "dev",
+                "TRILIUM_DATA_DIR": "./data"
             },
             "outputCapture": "std",
             "program": "${workspaceFolder}/src/www"
