@@ -47,6 +47,7 @@ function addClipping(req) {
 
     const clipperInbox = getClipperInboxNote();
 
+    pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
@@ -56,8 +57,6 @@ function addClipping(req) {
             content: '',
             type: 'text'
         }).note;
-
-        pageUrl = htmlSanitizer.sanitize(pageUrl);
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
@@ -96,7 +95,7 @@ function createNote(req) {
     note.setLabel('clipType', clipType);
 
     if (pageUrl) {
-        pageUrl = htmlSanitizer.sanitize(pageUrl);
+        pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
 
         note.setLabel('pageUrl', pageUrl);
         note.setLabel('iconClass', 'bx bx-globe');
