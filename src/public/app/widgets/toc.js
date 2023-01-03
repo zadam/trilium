@@ -15,7 +15,7 @@
  */
 
 import attributeService from "../services/attributes.js";
-import CollapsibleWidget from "./collapsible_widget.js";
+import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
 
 const TPL = `<div class="toc-widget">
@@ -76,7 +76,7 @@ function findHeadingNodeByIndex(parent, headingIndex) {
     return headingNode;
 }
 
-export default class TocWidget extends CollapsibleWidget {
+export default class TocWidget extends RightPanelWidget {
     get widgetTitle() {
         return "Table of Contents";
     }

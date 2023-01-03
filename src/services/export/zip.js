@@ -19,7 +19,7 @@ const ValidationError = require("../../errors/validation_error");
 
 /**
  * @param {TaskContext} taskContext
- * @param {Branch} branch
+ * @param {BBranch} branch
  * @param {string} format - 'html' or 'markdown'
  */
 async function exportToZip(taskContext, branch, format, res, setHeaders = true) {

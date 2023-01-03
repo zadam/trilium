@@ -89,7 +89,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     init() {
-        /** @type {Branch[]}
+        /** @type {BBranch[]}
          * @private */
         this.parentBranches = [];
         /** @type {BNote[]}
@@ -151,7 +151,7 @@ class BNote extends AbstractBeccaEntity {
         return this.isContentAvailable() ? this.title : '[protected]';
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {BBranch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
@@ -159,14 +159,14 @@ class BNote extends AbstractBeccaEntity {
     /**
      * Returns <i>strong</i> (as opposed to <i>weak</i>) parent branches. See isWeak for details.
      *
-     * @returns {Branch[]}
+     * @returns {BBranch[]}
      */
     getStrongParentBranches() {
         return this.getParentBranches().filter(branch => !branch.isWeak);
     }
 
     /**
-     * @returns {Branch[]}
+     * @returns {BBranch[]}
      * @deprecated use getParentBranches() instead
      */
     getBranches() {
@@ -188,7 +188,7 @@ class BNote extends AbstractBeccaEntity {
         return this.children && this.children.length > 0;
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {BBranch[]} */
     getChildBranches() {
         return this.children.map(childNote => this.becca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }

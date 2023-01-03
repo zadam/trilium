@@ -9,10 +9,7 @@ const WIDGET_TPL = `
     </div>
 </div>`;
 
-/**
- * TODO: rename, it's not collapsible anymore
- */
-export default class CollapsibleWidget extends NoteContextAwareWidget {
+export default class RightPanelWidget extends NoteContextAwareWidget {
     get widgetTitle() { return "Untitled widget"; }
 
     get help() { return {}; }
@@ -33,6 +30,6 @@ export default class CollapsibleWidget extends NoteContextAwareWidget {
         this.initialized = this.doRenderBody();
     }
 
-    /** for overriding */
+    /* for overriding */
     async doRenderBody() {}
 }

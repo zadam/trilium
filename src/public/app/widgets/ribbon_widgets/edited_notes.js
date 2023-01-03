@@ -1,7 +1,7 @@
-import CollapsibleWidget from "../collapsible_widget.js";
 import linkService from "../../services/link.js";
 import server from "../../services/server.js";
 import froca from "../../services/froca.js";
+import NoteContextAwareWidget from "../note_context_aware_widget.js";
 
 const TPL = `
 <div class="edited-notes-widget">
@@ -20,7 +20,7 @@ const TPL = `
 </div>
 `;
 
-export default class EditedNotesWidget extends CollapsibleWidget {
+export default class EditedNotesWidget extends NoteContextAwareWidget {
     get name() {
         return "editedNotes";
     }

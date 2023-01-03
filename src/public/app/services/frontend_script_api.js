@@ -7,7 +7,7 @@ import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import searchService from './search.js';
-import CollapsibleWidget from '../widgets/collapsible_widget.js';
+import RightPanelWidget from '../widgets/right_panel_widget.js';
 import ws from "./ws.js";
 import appContext from "../components/app_context.js";
 import NoteContextAwareWidget from "../widgets/note_context_aware_widget.js";
@@ -35,8 +35,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     // to keep consistency with backend API
     this.dayjs = dayjs;
 
-    /** @property {CollapsibleWidget} */
-    this.CollapsibleWidget = CollapsibleWidget;
+    /**
+     * @property {RightPanelWidget}
+     * @deprecated use api.RightPanelWidget instead
+     */
+    this.CollapsibleWidget = RightPanelWidget;
+
+    /** @property {RightPanelWidget} */
+    this.RightPanelWidget = RightPanelWidget;
 
     /** @property {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
@@ -124,21 +130,17 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
-     * @typedef {Object} AddButtonToToolbarOptions
-     * @property {string} [id] - id of the button, used to identify the old instances of this button to be replaced
-     *                          ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.
-     * @property {string} title
-     * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
-     * @property {function} action - callback handling the click on the button
-     * @property {string} [shortcut] - keyboard shortcut for the button, e.g. "alt+t"
-     */
-
-    /**
      * Adds a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
      *
      * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
      *             for special needs there's also backend API's createOrUpdateLauncher()
-     * @param {AddButtonToToolbarOptions} opts
+     * @param {object} opts
+     * @property {string} [opts.id] - id of the button, used to identify the old instances of this button to be replaced
+     *                          ID is optional because of BC, but not specifying it is deprecated. ID can be alphanumeric only.
+     * @property {string} opts.title
+     * @property {string} [opts.icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
+     * @property {function} opts.action - callback handling the click on the button
+     * @property {string} [opts.shortcut] - keyboard shortcut for the button, e.g. "alt+t"
      */
     this.addButtonToToolbar = async opts => {
         console.warn("api.addButtonToToolbar() has been deprecated since v0.58 and may be removed in the future. Use  Menu -> Configure Launchbar to create/update launchers instead.");

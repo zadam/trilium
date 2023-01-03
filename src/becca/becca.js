@@ -98,7 +98,7 @@ class Becca {
         return filteredNotes;
     }
 
-    /** @returns {Branch|null} */
+    /** @returns {BBranch|null} */
     getBranch(branchId) {
         return this.branches[branchId];
     }
@@ -108,7 +108,7 @@ class Becca {
         return this.attributes[attributeId];
     }
 
-    /** @returns {Branch|null} */
+    /** @returns {BBranch|null} */
     getBranchFromChildAndParent(childNoteId, parentNoteId) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
