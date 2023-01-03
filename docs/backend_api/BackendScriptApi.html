@@ -185,7 +185,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line579">line 579</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line580">line 580</a>
     </li></ul></dd>
     
 
@@ -356,7 +356,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -796,7 +796,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -2518,7 +2518,7 @@ JSON MIME type. See also createNewNote() for more options.
     
 
     
-    <h4 class="name" id="exportSubtreeToZipFile"><span class="type-signature"></span>exportSubtreeToZipFile<span class="signature">(noteId, format, zipFilePath)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="exportSubtreeToZipFile"><span class="type-signature"></span>exportSubtreeToZipFile<span class="signature">(noteId, format, zipFilePath)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
     
@@ -2661,7 +2661,7 @@ JSON MIME type. See also createNewNote() for more options.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line572">line 572</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line573">line 573</a>
     </li></ul></dd>
     
 
@@ -2686,6 +2686,24 @@ JSON MIME type. See also createNewNote() for more options.
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -2806,7 +2824,7 @@ JSON MIME type. See also createNewNote() for more options.
     
 
     
-    <h4 class="name" id="getAttribute"><span class="type-signature"></span>getAttribute<span class="signature">(attributeId)</span><span class="type-signature"> &rarr; {<a href="Attribute.html">Attribute</a>|null}</span></h4>
+    <h4 class="name" id="getAttribute"><span class="type-signature"></span>getAttribute<span class="signature">(attributeId)</span><span class="type-signature"> &rarr; {Attribute|null}</span></h4>
     
 
     
@@ -2939,7 +2957,7 @@ JSON MIME type. See also createNewNote() for more options.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Attribute.html">Attribute</a></span>
+<span class="param-type">Attribute</span>
 |
 
 <span class="param-type">null</span>
@@ -2960,7 +2978,7 @@ JSON MIME type. See also createNewNote() for more options.
     
 
     
-    <h4 class="name" id="getBranch"><span class="type-signature"></span>getBranch<span class="signature">(branchId)</span><span class="type-signature"> &rarr; {<a href="Branch.html">Branch</a>|null}</span></h4>
+    <h4 class="name" id="getBranch"><span class="type-signature"></span>getBranch<span class="signature">(branchId)</span><span class="type-signature"> &rarr; {Branch|null}</span></h4>
     
 
     
@@ -3093,7 +3111,7 @@ JSON MIME type. See also createNewNote() for more options.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Branch.html">Branch</a></span>
+<span class="param-type">Branch</span>
 |
 
 <span class="param-type">null</span>
@@ -3114,7 +3132,7 @@ JSON MIME type. See also createNewNote() for more options.
     
 
     
-    <h4 class="name" id="getDateNote"><span class="type-signature"></span>getDateNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getDateNote"><span class="type-signature"></span>getDateNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -3197,7 +3215,7 @@ JSON MIME type. See also createNewNote() for more options.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -3296,7 +3314,7 @@ JSON MIME type. See also createNewNote() for more options.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -3317,7 +3335,7 @@ JSON MIME type. See also createNewNote() for more options.
     
 
     
-    <h4 class="name" id="getDayNote"><span class="type-signature"></span>getDayNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getDayNote"><span class="type-signature"></span>getDayNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -3400,7 +3418,7 @@ JSON MIME type. See also createNewNote() for more options.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -3497,7 +3515,7 @@ JSON MIME type. See also createNewNote() for more options.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -3628,7 +3646,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getMonthNote"><span class="type-signature"></span>getMonthNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getMonthNote"><span class="type-signature"></span>getMonthNote<span class="signature">(date, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -3711,7 +3729,7 @@ if some action needs to happen on only one specific instance.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -3808,7 +3826,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -3829,7 +3847,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getNote"><span class="type-signature"></span>getNote<span class="signature">(noteId)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getNote"><span class="type-signature"></span>getNote<span class="signature">(noteId)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -3962,7 +3980,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -3983,7 +4001,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getNoteWithLabel"><span class="type-signature"></span>getNoteWithLabel<span class="signature">(name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getNoteWithLabel"><span class="type-signature"></span>getNoteWithLabel<span class="signature">(name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -4163,7 +4181,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -4184,7 +4202,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getNotesWithLabel"><span class="type-signature"></span>getNotesWithLabel<span class="signature">(name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Note.html">Note</a>>}</span></h4>
+    <h4 class="name" id="getNotesWithLabel"><span class="type-signature"></span>getNotesWithLabel<span class="signature">(name, value<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="BNote.html">BNote</a>>}</span></h4>
     
 
     
@@ -4364,7 +4382,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type">Array.&lt;<a href="Note.html">Note</a>></span>
+<span class="param-type">Array.&lt;<a href="BNote.html">BNote</a>></span>
 
 
     </dd>
@@ -4382,7 +4400,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getRootCalendarNote"><span class="type-signature"></span>getRootCalendarNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getRootCalendarNote"><span class="type-signature"></span>getRootCalendarNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -4470,7 +4488,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -4491,7 +4509,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getTodayNote"><span class="type-signature"></span>getTodayNote<span class="signature">(rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getTodayNote"><span class="type-signature"></span>getTodayNote<span class="signature">(rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -4543,7 +4561,7 @@ if some action needs to happen on only one specific instance.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -4640,7 +4658,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -4661,7 +4679,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getWeekNote"><span class="type-signature"></span>getWeekNote<span class="signature">(date, options<span class="signature-attributes">opt</span>, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getWeekNote"><span class="type-signature"></span>getWeekNote<span class="signature">(date, options<span class="signature-attributes">opt</span>, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -4777,7 +4795,7 @@ if some action needs to happen on only one specific instance.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -4874,7 +4892,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -4895,7 +4913,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="getYearNote"><span class="type-signature"></span>getYearNote<span class="signature">(year, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="getYearNote"><span class="type-signature"></span>getYearNote<span class="signature">(year, rootNote<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -4978,7 +4996,7 @@ if some action needs to happen on only one specific instance.
             <td class="type">
             
                 
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 
 
             
@@ -5075,7 +5093,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -5473,7 +5491,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="searchForNote"><span class="type-signature"></span>searchForNote<span class="signature">(query, searchParams<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Note.html">Note</a>|null}</span></h4>
+    <h4 class="name" id="searchForNote"><span class="type-signature"></span>searchForNote<span class="signature">(query, searchParams<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="BNote.html">BNote</a>|null}</span></h4>
     
 
     
@@ -5654,7 +5672,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type"><a href="Note.html">Note</a></span>
+<span class="param-type"><a href="BNote.html">BNote</a></span>
 |
 
 <span class="param-type">null</span>
@@ -5675,7 +5693,7 @@ if some action needs to happen on only one specific instance.
     
 
     
-    <h4 class="name" id="searchForNotes"><span class="type-signature"></span>searchForNotes<span class="signature">(query, searchParams<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Note.html">Note</a>>}</span></h4>
+    <h4 class="name" id="searchForNotes"><span class="type-signature"></span>searchForNotes<span class="signature">(query, searchParams<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="BNote.html">BNote</a>>}</span></h4>
     
 
     
@@ -5856,7 +5874,7 @@ if some action needs to happen on only one specific instance.
     </dt>
     <dd>
         
-<span class="param-type">Array.&lt;<a href="Note.html">Note</a>></span>
+<span class="param-type">Array.&lt;<a href="BNote.html">BNote</a>></span>
 
 
     </dd>
@@ -6929,7 +6947,7 @@ exists, then we'll use that transaction.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractEntity.html">AbstractEntity</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="EtapiToken.html">EtapiToken</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-sql.html">sql</a></li></ul><h3>Classes</h3><ul><li><a href="AbstractBeccaEntity.html">AbstractBeccaEntity</a></li><li><a href="BAttribute.html">BAttribute</a></li><li><a href="BBranch.html">BBranch</a></li><li><a href="BEtapiToken.html">BEtapiToken</a></li><li><a href="BNote.html">BNote</a></li><li><a href="BNoteRevision.html">BNoteRevision</a></li><li><a href="BOption.html">BOption</a></li><li><a href="BRecentNote.html">BRecentNote</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

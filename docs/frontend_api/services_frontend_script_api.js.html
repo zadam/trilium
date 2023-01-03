@@ -236,7 +236,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} searchString
-     * @returns {Promise&lt;NoteShort[]>}
+     * @returns {Promise&lt;FNote[]>}
      */
     this.searchForNotes = async searchString => {
         return await searchService.searchForNotes(searchString);
@@ -248,7 +248,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} searchString
-     * @returns {Promise&lt;NoteShort|null>}
+     * @returns {Promise&lt;FNote|null>}
      */
     this.searchForNote = async searchString => {
         const notes = await this.searchForNotes(searchString);
@@ -260,7 +260,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Returns note by given noteId. If note is missing from cache, it's loaded.
      **
      * @param {string} noteId
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
     this.getNote = async noteId => await froca.getNote(noteId);
 
@@ -272,7 +272,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @param {string[]} noteIds
      * @param {boolean} [silentNotFoundError] - don't report error if the note is not found
-     * @return {Promise&lt;NoteShort[]>}
+     * @return {Promise&lt;FNote[]>}
      */
     this.getNotes = async (noteIds, silentNotFoundError = false) => await froca.getNotes(noteIds, silentNotFoundError);
 
@@ -383,7 +383,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * @method
      * @deprecated use getActiveContextNote() instead
-     * @returns {NoteShort} active note (loaded into right pane)
+     * @returns {FNote} active note (loaded into right pane)
      */
     this.getActiveTabNote = () => {
         console.warn("api.getActiveTabNote() is deprecated, use getActiveContextNote() instead.");
@@ -393,7 +393,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @returns {NoteShort} active note (loaded into right pane)
+     * @returns {FNote} active note (loaded into right pane)
      */
     this.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
 
@@ -499,7 +499,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Returns date-note for today. If it doesn't exist, it is automatically created.
      *
      * @method
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
     this.getTodayNote = dateNotesService.getTodayNote;
 
@@ -508,7 +508,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      * @deprecated use getDayNote instead
      */
     this.getDateNote = dateNotesService.getDayNote;
@@ -518,7 +518,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
     this.getDayNote = dateNotesService.getDayNote;
 
@@ -527,7 +527,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
      this.getWeekNote = dateNotesService.getWeekNote;
 
@@ -536,7 +536,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} month - e.g. "2019-04"
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
     this.getMonthNote = dateNotesService.getMonthNote;
 
@@ -545,7 +545,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} year - e.g. "2019"
-     * @return {Promise&lt;NoteShort>}
+     * @return {Promise&lt;FNote>}
      */
     this.getYearNote = dateNotesService.getYearNote;
 
@@ -639,7 +639,7 @@ export default FrontendScriptApi;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FNoteComplement.html">FNoteComplement</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">

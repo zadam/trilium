@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: entities/branch.js</title>
+    <title>JSDoc: Source: entities/fbranch.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: entities/branch.js</h1>
+    <h1 class="page-title">Source: entities/fbranch.js</h1>
 
     
 
@@ -30,7 +30,7 @@
  * Branch represents a relationship between a child note and its parent note. Trilium allows a note to have multiple
  * parents.
  */
-class Branch {
+class FBranch {
     constructor(froca, row) {
         this.froca = froca;
 
@@ -57,17 +57,17 @@ class Branch {
         this.fromSearchNote = !!row.fromSearchNote;
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     async getNote() {
         return this.froca.getNote(this.noteId);
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     getNoteFromCache() {
         return this.froca.getNoteFromCache(this.noteId);
     }
 
-    /** @returns {NoteShort} */
+    /** @returns {FNote} */
     async getParentNote() {
         return this.froca.getNote(this.parentNoteId);
     }
@@ -78,7 +78,7 @@ class Branch {
     }
 
     get toString() {
-        return `Branch(branchId=${this.branchId})`;
+        return `FBranch(branchId=${this.branchId})`;
     }
 
     get pojo() {
@@ -88,7 +88,7 @@ class Branch {
     }
 }
 
-export default Branch;
+export default FBranch;
 </code></pre>
         </article>
     </section>
@@ -99,7 +99,7 @@ export default Branch;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Attribute.html">Attribute</a></li><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="FAttribute.html">FAttribute</a></li><li><a href="FBranch.html">FBranch</a></li><li><a href="FNote.html">FNote</a></li><li><a href="FNoteComplement.html">FNoteComplement</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#doRenderBody">doRenderBody</a></li></ul>
 </nav>
 
 <br class="clear">
