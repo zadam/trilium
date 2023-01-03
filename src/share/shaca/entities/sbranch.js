@@ -1,8 +1,8 @@
 "use strict";
 
-const AbstractEntity = require('./abstract_entity');
+const AbstractShacaEntity = require('./abstract_shaca_entity.js');
 
-class Branch extends AbstractEntity {
+class SBranch extends AbstractShacaEntity {
     constructor([branchId, noteId, parentNoteId, prefix, isExpanded]) {
         super();
 
@@ -38,20 +38,20 @@ class Branch extends AbstractEntity {
         this.shaca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
-    /** @return {Note} */
+    /** @return {SNote} */
     get childNote() {
         return this.shaca.notes[this.noteId];
     }
 
-    /** @return {Note} */
+    /** @return {SNote} */
     getNote() {
         return this.childNote;
     }
 
-    /** @return {Note} */
+    /** @return {SNote} */
     get parentNote() {
         return this.shaca.notes[this.parentNoteId];
     }
 }
 
-module.exports = Branch;
+module.exports = SBranch;

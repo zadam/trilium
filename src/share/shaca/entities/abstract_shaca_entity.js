@@ -1,6 +1,6 @@
 let shaca;
 
-class AbstractEntity {
+class AbstractShacaEntity {
     get shaca() {
         if (!shaca) {
             shaca = require("../shaca");
@@ -10,4 +10,4 @@ class AbstractEntity {
     }
 }
 
-module.exports = AbstractEntity;
+module.exports = AbstractShacaEntity;

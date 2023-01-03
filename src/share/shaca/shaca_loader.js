@@ -3,9 +3,9 @@
 const sql = require('../sql');
 const shaca = require('./shaca');
 const log = require('../../services/log');
-const Note = require('./entities/note');
-const Branch = require('./entities/branch');
-const Attribute = require('./entities/attribute');
+const SNote = require('./entities/snote.js');
+const SBranch = require('./entities/sbranch.js');
+const SAttribute = require('./entities/sattribute.js');
 const shareRoot = require('../share_root');
 const eventService = require("../../services/events");
 
@@ -41,7 +41,7 @@ function load() {
           AND noteId IN (${noteIdStr})`);
 
     for (const row of rawNoteRows) {
-        new Note(row);
+        new SNote(row);
     }
 
     const rawBranchRows = sql.getRawRows(`
@@ -52,7 +52,7 @@ function load() {
         ORDER BY notePosition`);
 
     for (const row of rawBranchRows) {
-        new Branch(row);
+        new SBranch(row);
     }
 
     const rawAttributeRows = sql.getRawRows(`
@@ -62,7 +62,7 @@ function load() {
           AND noteId IN (${noteIdStr})`);
 
     for (const row of rawAttributeRows) {
-        new Attribute(row);
+        new SAttribute(row);
     }
 
     shaca.loaded = true;

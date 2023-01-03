@@ -2,7 +2,7 @@
 
 const sql = require('../../sql');
 const utils = require('../../../services/utils');
-const AbstractEntity = require('./abstract_entity');
+const AbstractShacaEntity = require('./abstract_shaca_entity.js');
 const escape = require('escape-html');
 
 const LABEL = 'label';
@@ -11,7 +11,7 @@ const CREDENTIALS = 'shareCredentials';
 
 const isCredentials = attr => attr.type === 'label' && attr.name === CREDENTIALS;
 
-class Note extends AbstractEntity {
+class SNote extends AbstractShacaEntity {
     constructor([noteId, title, type, mime, utcDateModified, isProtected]) {
         super();
 
@@ -28,52 +28,52 @@ class Note extends AbstractEntity {
         /** @param {boolean} */
         this.isProtected = isProtected;
 
-        /** @param {Branch[]} */
+        /** @param {SBranch[]} */
         this.parentBranches = [];
-        /** @param {Note[]} */
+        /** @param {SNote[]} */
         this.parents = [];
-        /** @param {Note[]} */
+        /** @param {SNote[]} */
         this.children = [];
-        /** @param {Attribute[]} */
+        /** @param {SAttribute[]} */
         this.ownedAttributes = [];
 
-        /** @param {Attribute[]|null} */
+        /** @param {SAttribute[]|null} */
         this.__attributeCache = null;
-        /** @param {Attribute[]|null} */
+        /** @param {SAttribute[]|null} */
         this.inheritableAttributeCache = null;
 
-        /** @param {Attribute[]} */
+        /** @param {SAttribute[]} */
         this.targetRelations = [];
 
         this.shaca.notes[this.noteId] = this;
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {SBranch[]} */
     getParentBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {SBranch[]} */
     getBranches() {
         return this.parentBranches;
     }
 
-    /** @returns {Branch[]} */
+    /** @returns {SBranch[]} */
     getChildBranches() {
         return this.children.map(childNote => this.shaca.getBranchFromChildAndParent(childNote.noteId, this.noteId));
     }
 
-    /** @returns {Note[]} */
+    /** @returns {SNote[]} */
     getParentNotes() {
         return this.parents;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {SNote[]} */
     getChildNotes() {
         return this.children;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {SNote[]} */
     getVisibleChildNotes() {
         return this.getChildBranches()
             .filter(branch => !branch.isHidden)
@@ -123,7 +123,7 @@ class Note extends AbstractEntity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Attribute[]} all note's attributes, including inherited ones
+     * @returns {SAttribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
         this.__getAttributes([]);
@@ -142,7 +142,7 @@ class Note extends AbstractEntity {
         }
     }
 
-    /** @returns {Attribute[]} */
+    /** @returns {SAttribute[]} */
     getCredentials() {
         this.__getAttributes([]);
 
@@ -200,7 +200,7 @@ class Note extends AbstractEntity {
         return this.__attributeCache;
     }
 
-    /** @return {Attribute[]} */
+    /** @return {SAttribute[]} */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];
@@ -218,7 +218,7 @@ class Note extends AbstractEntity {
         return !!this.getAttributes().find(attr => attr.type === type && attr.name === name);
     }
 
-    /** @returns {Note|null} */
+    /** @returns {SNote|null} */
     getRelationTarget(name) {
         const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
 
@@ -251,25 +251,25 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute|null} label if it exists, null otherwise
+     * @returns {SAttribute|null} label if it exists, null otherwise
      */
     getLabel(name) { return this.getAttribute(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute|null} label if it exists, null otherwise
+     * @returns {SAttribute|null} label if it exists, null otherwise
      */
     getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute|null} relation if it exists, null otherwise
+     * @returns {SAttribute|null} relation if it exists, null otherwise
      */
     getRelation(name) { return this.getAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute|null} relation if it exists, null otherwise
+     * @returns {SAttribute|null} relation if it exists, null otherwise
      */
     getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
 
@@ -309,7 +309,7 @@ class Note extends AbstractEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {SAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -341,7 +341,7 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     * @returns {SAttribute[]} all note's labels (attributes with type label), including inherited ones
      */
     getLabels(name) {
         return this.getAttributes(LABEL, name);
@@ -357,7 +357,7 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), excluding inherited ones
+     * @returns {SAttribute[]} all note's labels (attributes with type label), excluding inherited ones
      */
     getOwnedLabels(name) {
         return this.getOwnedAttributes(LABEL, name);
@@ -373,7 +373,7 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @returns {SAttribute[]} all note's relations (attributes with type relation), including inherited ones
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
@@ -381,7 +381,7 @@ class Note extends AbstractEntity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), excluding inherited ones
+     * @returns {SAttribute[]} all note's relations (attributes with type relation), excluding inherited ones
      */
     getOwnedRelations(name) {
         return this.getOwnedAttributes(RELATION, name);
@@ -390,7 +390,7 @@ class Note extends AbstractEntity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
+     * @returns {SAttribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type, name) {
         // it's a common mistake to include # or ~ into attribute name
@@ -413,7 +413,7 @@ class Note extends AbstractEntity {
     }
 
     /**
-     * @returns {Attribute} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns {SAttribute} attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
@@ -438,7 +438,7 @@ class Note extends AbstractEntity {
         return !!this.targetRelations.find(rel => rel.name === 'template');
     }
 
-    /** @returns {Attribute[]} */
+    /** @returns {SAttribute[]} */
     getTargetRelations() {
         return this.targetRelations;
     }
@@ -476,4 +476,4 @@ class Note extends AbstractEntity {
     }
 }
 
-module.exports = Note;
+module.exports = SNote;

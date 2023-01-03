@@ -6,18 +6,18 @@ class Shaca {
     }
 
     reset() {
-        /** @type {Object.<String, Note>} */
+        /** @type {Object.<String, SNote>} */
         this.notes = {};
-        /** @type {Object.<String, Branch>} */
+        /** @type {Object.<String, SBranch>} */
         this.branches = {};
-        /** @type {Object.<String, Branch>} */
+        /** @type {Object.<String, SBranch>} */
         this.childParentToBranch = {};
-        /** @type {Object.<String, Attribute>} */
+        /** @type {Object.<String, SAttribute>} */
         this.attributes = {};
         /** @type {Object.<String, String>} */
         this.aliasToNote = {};
 
-        /** @type {Note|null} */
+        /** @type {SNote|null} */
         this.shareRootNote = null;
 
         /** @type {boolean} true if the index of all shared subtrees is enabled */
@@ -26,7 +26,7 @@ class Shaca {
         this.loaded = false;
     }
 
-    /** @returns {Note|null} */
+    /** @returns {SNote|null} */
     getNote(noteId) {
         return this.notes[noteId];
     }
@@ -36,7 +36,7 @@ class Shaca {
         return noteId in this.notes;
     }
 
-    /** @returns {Note[]} */
+    /** @returns {SNote[]} */
     getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
 
@@ -48,7 +48,7 @@ class Shaca {
                     continue;
                 }
 
-                throw new Error(`Note '${noteId}' was not found in becca.`);
+                throw new Error(`Note '${noteId}' was not found in shaca.`);
             }
 
             filteredNotes.push(note);
@@ -57,17 +57,17 @@ class Shaca {
         return filteredNotes;
     }
 
-    /** @returns {Branch|null} */
+    /** @returns {SBranch|null} */
     getBranch(branchId) {
         return this.branches[branchId];
     }
 
-    /** @returns {Branch|null} */
+    /** @returns {SBranch|null} */
     getBranchFromChildAndParent(childNoteId, parentNoteId) {
         return this.childParentToBranch[`${childNoteId}-${parentNoteId}`];
     }
 
-    /** @returns {Attribute|null} */
+    /** @returns {SAttribute|null} */
     getAttribute(attributeId) {
         return this.attributes[attributeId];
     }
