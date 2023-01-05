@@ -48,14 +48,13 @@ class OrderByAndLimitExp extends Expression {
                 }
 
                 // if both are numbers then parse them for numerical comparison
-                // beware that isNaN will return false for empty string and null
-                if (valA.trim() !== "" && valB.trim() !== "" && !isNaN(valA) && !isNaN(valB)) {
+                if (this.isNumber(valA) && this.isNumber(valB)) {
                     valA = parseFloat(valA);
                     valB = parseFloat(valB);
                 }
 
                 if (!valA && !valB) {
-                    // the attribute is not defined in either note so continue to next order definition
+                    // the attribute value is empty/zero in both notes so continue to the next order definition
                     continue;
                 } else if (!valB || valA < valB) {
                     return smaller;
@@ -76,6 +75,17 @@ class OrderByAndLimitExp extends Expression {
         noteSet.sorted = true;
 
         return noteSet;
+    }
+
+    isNumber(x) {
+        if (typeof x === 'number') {
+            return true;
+        } else if (typeof x === 'string') {
+            // isNaN will return false for blank string
+            return x.trim() !== "" && !isNaN(x);
+        } else {
+            return false;
+        }
     }
 }
 

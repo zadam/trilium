@@ -1,8 +1,8 @@
 "use strict";
 
 /**
- * Search string is lower cased for case insensitive comparison. But when retrieving properties
- * we need case sensitive form so we have this translation object.
+ * Search string is lower cased for case-insensitive comparison. But when retrieving properties
+ * we need case-sensitive form, so we have this translation object.
  */
 const PROP_MAPPING = {
     "noteid": "noteId",
