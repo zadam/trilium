@@ -21,28 +21,28 @@ const branchService = require("./branches");
 const exportService = require("./export/zip");
 
 /**
- * This is the main backend API interface for scripts. It's published in the local "api" object.
+ * <p>This is the main backend API interface for scripts. All the properties and methods are published in the "api" object
+ * available in the JS backend notes. You can use e.g. <code>api.log(api.startNote.title);</code></p>
  *
  * @constructor
- * @hideconstructor
  */
 function BackendScriptApi(currentNote, apiParams) {
     /** @property {BNote} note where script started executing */
     this.startNote = apiParams.startNote;
     /** @property {BNote} note where script is currently executing. Don't mix this up with concept of active note */
     this.currentNote = currentNote;
-    /** @property {Entity} entity whose event triggered this executions */
+    /** @property {AbstractBeccaEntity} entity whose event triggered this executions */
     this.originEntity = apiParams.originEntity;
 
     for (const key in apiParams) {
         this[key] = apiParams[key];
     }
 
-    /** @property {axios} Axios library for HTTP requests. See https://axios-http.com/ for documentation */
+    /** @property {axios} Axios library for HTTP requests. See {@link https://axios-http.com} for documentation */
     this.axios = axios;
-    /** @property {dayjs} day.js library for date manipulation. See https://day.js.org/ for documentation */
+    /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
     this.dayjs = dayjs;
-    /** @property {axios} xml2js library for XML parsing. See https://github.com/Leonidas-from-XIV/node-xml2js for documentation */
+    /** @property {axios} xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation */
     this.xml2js = xml2js;
 
     // DEPRECATED - use direct api.unescapeHtml
@@ -75,13 +75,13 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      * @param {string} attributeId
-     * @returns {Attribute|null}
+     * @returns {BAttribute|null}
      */
     this.getAttribute = attributeId => becca.getAttribute(attributeId);
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
-     * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     * "#dateModified =* MONTH AND #log". See {@link https://github.com/zadam/trilium/wiki/Search} for full documentation for all options
      *
      * @method
      * @param {string} query
@@ -105,7 +105,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
-     * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     * "#dateModified =* MONTH AND #log". See {@link https://github.com/zadam/trilium/wiki/Search} for full documentation for all options
      *
      * @method
      * @param {string} query
@@ -174,10 +174,11 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * Create text note. See also createNewNote() for more options.
      *
+     * @method
      * @param {string} parentNoteId
      * @param {string} title
      * @param {string} content
-     * @return {{note: BNote, branch: BBranch}} - object having "note" and "branch" keys representing respective objects
+     * @returns {{note: BNote, branch: BBranch}} - object having "note" and "branch" keys representing respective objects
      */
     this.createTextNote = (parentNoteId, title, content = '') => noteService.createNewNote({
         parentNoteId,
@@ -190,10 +191,11 @@ function BackendScriptApi(currentNote, apiParams) {
      * Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
      * JSON MIME type. See also createNewNote() for more options.
      *
+     * @method
      * @param {string} parentNoteId
      * @param {string} title
      * @param {object} content
-     * @return {{note: BNote, branch: BBranch}} object having "note" and "branch" keys representing respective objects
+     * @returns {{note: BNote, branch: BBranch}} object having "note" and "branch" keys representing respective objects
      */
     this.createDataNote = (parentNoteId, title, content = {}) => noteService.createNewNote({
         parentNoteId,
@@ -280,7 +282,9 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * Log given message to trilium logs and log pane in UI
      *
+     * @method
      * @param message
+     * @returns {void}
      */
     this.log = message => {
         log.info(message);
@@ -316,7 +320,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      * @deprecated use getDayNote instead
      */
@@ -327,7 +331,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      */
     this.getDayNote = dateNoteService.getDayNote;
@@ -336,7 +340,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * Returns today's day note. If such note doesn't exist, it is created.
      *
      * @method
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      */
     this.getTodayNote = dateNoteService.getTodayNote;
@@ -346,8 +350,9 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM-DD format
-     * @param {object} [options] - "startOfTheWeek" - either "monday" (default) or "sunday"
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {object} [options]
+     * @param {string} [options.startOfTheWeek=monday] - either "monday" (default) or "sunday"
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      */
     this.getWeekNote = dateNoteService.getWeekNote;
@@ -357,7 +362,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} date in YYYY-MM format
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      */
     this.getMonthNote = dateNoteService.getMonthNote;
@@ -367,15 +372,16 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} year in YYYY format
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use default calendar
+     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
      */
     this.getYearNote = dateNoteService.getYearNote;
 
     /**
      * @method
-     * @deprecated - use sortNotes instead
+     * @deprecated use sortNotes instead
      * @param {string} parentNoteId - this note's child notes will be sorted
+     * @returns {void}
      */
     this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
 
@@ -386,9 +392,10 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId - this note's child notes will be sorted
      * @param {object} [sortConfig]
      * @property {string} [sortConfig.sortBy=title] - 'title', 'dateCreated', 'dateModified' or a label name
-     *                               see https://github.com/zadam/trilium/wiki/Sorting for details.
+     *                                See {@link https://github.com/zadam/trilium/wiki/Sorting} for details.
      * @property {boolean} [sortConfig.reverse=false]
      * @property {boolean} [sortConfig.foldersFirst=false]
+     * @returns {void}
      */
     this.sortNotes = (parentNoteId, sortConfig = {}) => treeService.sortNotes(
         parentNoteId,
@@ -404,10 +411,11 @@ function BackendScriptApi(currentNote, apiParams) {
      * This method looks similar to toggleNoteInParent() but differs because we're looking up branch by prefix.
      *
      * @method
-     * @deprecated - this method is pretty confusing and serves specialized purpose only
+     * @deprecated this method is pretty confusing and serves specialized purpose only
      * @param {string} noteId
      * @param {string} prefix
      * @param {string|null} parentNoteId
+     * @returns {void}
      */
     this.setNoteToParent = treeService.setNoteToParent;
 
@@ -451,20 +459,23 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * @method
-     * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
+     * @deprecated this is now no-op since all the changes should be gracefully handled per widget
+     * @returns {void}
      */
     this.refreshTree = () => {
         console.warn("api.refreshTree() is a NO-OP and can be removed from your script.")
     };
 
     /**
-     * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
+     * @method
+     * @returns {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
      */
     this.getAppInfo = () => appInfo
-    
+
     /**
      * Creates a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
      *
+     * @method
      * @param {object} opts
      * @property {string} opts.id - id of the launcher, only alphanumeric at least 6 characters long
      * @property {string} opts.type - one of
@@ -544,7 +555,7 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} noteId
      * @param {string} format - either 'html' or 'markdown'
      * @param {string} zipFilePath
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
     this.exportSubtreeToZipFile = async (noteId, format, zipFilePath) => await exportService.exportToZipFile(noteId, format, zipFilePath);
 

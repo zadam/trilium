@@ -6,7 +6,7 @@ import hoistedNoteService from '../services/hoisted_note.js';
 import appContext from "../components/app_context.js";
 
 /**
- * @return {string|null}
+ * @returns {string|null}
  */
 async function resolveNotePath(notePath, hoistedNoteId = 'root') {
     const runPath = await resolveNotePathToSegments(notePath, hoistedNoteId);
@@ -19,7 +19,7 @@ async function resolveNotePath(notePath, hoistedNoteId = 'root') {
  * notePath as possible. Part of the path might not be valid because of note moving (which causes
  * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
  *
- * @return {string[]}
+ * @returns {string[]}
  */
 async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logErrors = true) {
     utils.assertArguments(notePath);

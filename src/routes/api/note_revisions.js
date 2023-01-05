@@ -40,7 +40,7 @@ function getNoteRevision(req) {
 
 /**
  * @param {BNoteRevision} noteRevision
- * @return {string}
+ * @returns {string}
  */
 function getRevisionFilename(noteRevision) {
     let filename = utils.formatDownloadTitle(noteRevision.title, noteRevision.type, noteRevision.mime);

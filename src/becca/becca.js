@@ -36,7 +36,7 @@ class Becca {
         return this.getNote('root');
     }
 
-    /** @returns {Attribute[]} */
+    /** @returns {BAttribute[]} */
     findAttributes(type, name) {
         name = name.trim().toLowerCase();
 
@@ -47,7 +47,7 @@ class Becca {
         return this.attributeIndex[`${type}-${name}`] || [];
     }
 
-    /** @returns {Attribute[]} */
+    /** @returns {BAttribute[]} */
     findAttributesWithPrefix(type, name) {
         const resArr = [];
         const key = `${type}-${name}`;
@@ -103,7 +103,7 @@ class Becca {
         return this.branches[branchId];
     }
 
-    /** @returns {Attribute|null} */
+    /** @returns {BAttribute|null} */
     getAttribute(attributeId) {
         return this.attributes[attributeId];
     }

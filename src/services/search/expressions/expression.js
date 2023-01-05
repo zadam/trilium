@@ -9,7 +9,7 @@ class Expression {
      * @param {NoteSet} inputNoteSet
      * @param {object} executionContext
      * @param {SearchContext} searchContext
-     * @return {NoteSet}
+     * @returns {NoteSet}
      */
     execute(inputNoteSet, executionContext, searchContext) {}
 }

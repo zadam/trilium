@@ -130,7 +130,7 @@ function getAndValidateParent(params) {
  * - {integer} notePosition - default is last existing notePosition in a parent + 10
  *
  * @param params
- * @return {{note: BNote, branch: BBranch}}
+ * @returns {{note: BNote, branch: BBranch}}
  */
 function createNewNote(params) {
     const parentNote = getAndValidateParent(params);
@@ -674,7 +674,7 @@ function undeleteBranch(branchId, deleteId, taskContext) {
 }
 
 /**
- * @return return deleted branchIds of an undeleted parent note
+ * @returns return deleted branchIds of an undeleted parent note
  */
 function getUndeletedParentBranchIds(noteId, deleteId) {
     return sql.getColumn(`

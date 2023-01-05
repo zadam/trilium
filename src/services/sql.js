@@ -303,7 +303,7 @@ module.exports = {
      * @method
      * @param {string} query - SQL query with ? used as parameter placeholder
      * @param {object[]} [params] - array of params if needed
-     * @return [object] - single value
+     * @returns [object] - single value
      */
     getValue,
 
@@ -313,7 +313,7 @@ module.exports = {
      * @method
      * @param {string} query - SQL query with ? used as parameter placeholder
      * @param {object[]} [params] - array of params if needed
-     * @return {object} - map of column name to column value
+     * @returns {object} - map of column name to column value
      */
     getRow,
     getRowOrNull,
@@ -324,7 +324,7 @@ module.exports = {
      * @method
      * @param {string} query - SQL query with ? used as parameter placeholder
      * @param {object[]} [params] - array of params if needed
-     * @return {object[]} - array of all rows, each row is a map of column name to column value
+     * @returns {object[]} - array of all rows, each row is a map of column name to column value
      */
     getRows,
     getRawRows,
@@ -337,7 +337,7 @@ module.exports = {
      * @method
      * @param {string} query - SQL query with ? used as parameter placeholder
      * @param {object[]} [params] - array of params if needed
-     * @return {object} - map of first column to second column
+     * @returns {object} - map of first column to second column
      */
     getMap,
 
@@ -347,7 +347,7 @@ module.exports = {
      * @method
      * @param {string} query - SQL query with ? used as parameter placeholder
      * @param {object[]} [params] - array of params if needed
-     * @return {object[]} - array of first column of all returned rows
+     * @returns {object[]} - array of first column of all returned rows
      */
     getColumn,
 

@@ -229,7 +229,7 @@ function sortNotesIfNeeded(parentNoteId) {
 }
 
 /**
- * @deprecated - this will be removed in the future
+ * @deprecated this will be removed in the future
  */
 function setNoteToParent(noteId, prefix, parentNoteId) {
     const parentNote = becca.getNote(parentNoteId);

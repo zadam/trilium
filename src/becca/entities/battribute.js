@@ -152,7 +152,7 @@ class BAttribute extends AbstractBeccaEntity {
     }
 
     /**
-     * @return {boolean}
+     * @returns {boolean}
      */
     isDefinition() {
         return this.type === 'label' && (this.name.startsWith('label:') || this.name.startsWith('relation:'));

@@ -200,7 +200,7 @@ class SNote extends AbstractShacaEntity {
         return this.__attributeCache;
     }
 
-    /** @return {SAttribute[]} */
+    /** @returns {SAttribute[]} */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
             return [];

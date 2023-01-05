@@ -115,7 +115,7 @@ export default class LoadResults {
     }
 
     /**
-     * @return {boolean} true if there are changes which could affect the attributes (including inherited ones)
+     * @returns {boolean} true if there are changes which could affect the attributes (including inherited ones)
      *          notably changes in note itself should not have any effect on attributes
      */
     hasAttributeRelatedChanges() {

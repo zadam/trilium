@@ -38,17 +38,17 @@ class SBranch extends AbstractShacaEntity {
         this.shaca.childParentToBranch[`${this.noteId}-${this.parentNoteId}`] = this;
     }
 
-    /** @return {SNote} */
+    /** @returns {SNote} */
     get childNote() {
         return this.shaca.notes[this.noteId];
     }
 
-    /** @return {SNote} */
+    /** @returns {SNote} */
     getNote() {
         return this.childNote;
     }
 
-    /** @return {SNote} */
+    /** @returns {SNote} */
     get parentNote() {
         return this.shaca.notes[this.parentNoteId];
     }

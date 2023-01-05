@@ -39,7 +39,7 @@ function isArchived(noteId) {
 /**
  * @param {string} noteId
  * @param {string} ancestorNoteId
- * @return {boolean} - true if given noteId has ancestorNoteId in any of its paths (even archived)
+ * @returns {boolean} - true if given noteId has ancestorNoteId in any of its paths (even archived)
  */
 function isInAncestor(noteId, ancestorNoteId) {
     if (ancestorNoteId === 'root' || ancestorNoteId === noteId) {

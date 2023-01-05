@@ -25,7 +25,7 @@ function getOption(name) {
 }
 
 /**
- * @return {number}
+ * @returns {number}
  */
 function getOptionInt(name) {
     const val = getOption(name);
@@ -40,7 +40,7 @@ function getOptionInt(name) {
 }
 
 /**
- * @return {boolean}
+ * @returns {boolean}
  */
 function getOptionBool(name) {
     const val = getOption(name);

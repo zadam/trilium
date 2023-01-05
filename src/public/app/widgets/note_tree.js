@@ -850,7 +850,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     collapseTreeEvent() { this.collapseTree(); }
 
     /**
-     * @return {FancytreeNode|null}
+     * @returns {FancytreeNode|null}
      */
     getActiveNode() {
         return this.tree.getActiveNode();
@@ -859,7 +859,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     /**
      * focused & not active node can happen during multiselection where the node is selected
      * but not activated (its content is not displayed in the detail)
-     * @return {FancytreeNode|null}
+     * @returns {FancytreeNode|null}
      */
     getFocusedNode() {
         return this.tree.getFocusNode();

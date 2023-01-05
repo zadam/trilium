@@ -738,7 +738,7 @@ class FNote {
     /**
      * Return note complement which is most importantly note's content
      *
-     * @return {Promise<FNoteComplement>}
+     * @returns {Promise<FNoteComplement>}
      */
     async getNoteComplement() {
         return await this.froca.getNoteComplement(this.noteId);

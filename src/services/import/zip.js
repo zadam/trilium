@@ -19,7 +19,7 @@ const becca = require("../../becca/becca");
  * @param {TaskContext} taskContext
  * @param {Buffer} fileBuffer
  * @param {BNote} importRootNote
- * @return {Promise<*>}
+ * @returns {Promise<*>}
  */
 async function importZip(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in ZIP file) to newly generated noteId

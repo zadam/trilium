@@ -138,7 +138,7 @@ function loadNeededInfoFromDatabase() {
 /**
  * @param {Expression} expression
  * @param {SearchContext} searchContext
- * @return {SearchResult[]}
+ * @returns {SearchResult[]}
  */
 function findResultsWithExpression(expression, searchContext) {
     if (searchContext.dbLoadNeeded) {
@@ -230,7 +230,7 @@ function parseQueryToExpression(query, searchContext) {
 
 /**
  * @param {string} query
- * @return {BNote[]}
+ * @returns {BNote[]}
  */
 function searchNotes(query, params = {}) {
     const searchResults = findResultsWithQuery(query, new SearchContext(params));
@@ -241,7 +241,7 @@ function searchNotes(query, params = {}) {
 /**
  * @param {string} query
  * @param {SearchContext} searchContext
- * @return {SearchResult[]}
+ * @returns {SearchResult[]}
  */
 function findResultsWithQuery(query, searchContext) {
     query = query || "";
@@ -259,7 +259,7 @@ function findResultsWithQuery(query, searchContext) {
 /**
  * @param {string} query
  * @param {SearchContext} searchContext
- * @return {BNote|null}
+ * @returns {BNote|null}
  */
 function findFirstNoteWithQuery(query, searchContext) {
     const searchResults = findResultsWithQuery(query, searchContext);

@@ -98,18 +98,18 @@ class BNote extends AbstractBeccaEntity {
         /** @type {BNote[]}
          * @private*/
         this.children = [];
-        /** @type {Attribute[]}
+        /** @type {BAttribute[]}
          * @private */
         this.ownedAttributes = [];
 
-        /** @type {Attribute[]|null}
+        /** @type {BAttribute[]|null}
          * @private */
         this.__attributeCache = null;
-        /** @type {Attribute[]|null}
+        /** @type {BAttribute[]|null}
          * @private*/
         this.inheritableAttributeCache = null;
 
-        /** @type {Attribute[]}
+        /** @type {BAttribute[]}
          * @private*/
         this.targetRelations = [];
 
@@ -369,7 +369,7 @@ class BNote extends AbstractBeccaEntity {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
-     * @returns {Attribute[]} all note's attributes, including inherited ones
+     * @returns {BAttribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
         this.__validateTypeName(type, name);
@@ -449,7 +449,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @private
-     * @returns {Attribute[]}
+     * @returns {BAttribute[]}
      */
     __getInheritableAttributes(path) {
         if (path.includes(this.noteId)) {
@@ -536,25 +536,25 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute|null} label if it exists, null otherwise
+     * @returns {BAttribute|null} label if it exists, null otherwise
      */
     getLabel(name) { return this.getAttribute(LABEL, name); }
 
     /**
      * @param {string} name - label name
-     * @returns {Attribute|null} label if it exists, null otherwise
+     * @returns {BAttribute|null} label if it exists, null otherwise
      */
     getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute|null} relation if it exists, null otherwise
+     * @returns {BAttribute|null} relation if it exists, null otherwise
      */
     getRelation(name) { return this.getAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
-     * @returns {Attribute|null} relation if it exists, null otherwise
+     * @returns {BAttribute|null} relation if it exists, null otherwise
      */
     getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
 
@@ -595,7 +595,7 @@ class BNote extends AbstractBeccaEntity {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {BAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -627,7 +627,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     * @returns {BAttribute[]} all note's labels (attributes with type label), including inherited ones
      */
     getLabels(name) {
         return this.getAttributes(LABEL, name);
@@ -643,7 +643,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [name] - label name to filter
-     * @returns {Attribute[]} all note's labels (attributes with type label), excluding inherited ones
+     * @returns {BAttribute[]} all note's labels (attributes with type label), excluding inherited ones
      */
     getOwnedLabels(name) {
         return this.getOwnedAttributes(LABEL, name);
@@ -659,7 +659,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     * @returns {BAttribute[]} all note's relations (attributes with type relation), including inherited ones
      */
     getRelations(name) {
         return this.getAttributes(RELATION, name);
@@ -667,7 +667,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} [name] - relation name to filter
-     * @returns {Attribute[]} all note's relations (attributes with type relation), excluding inherited ones
+     * @returns {BAttribute[]} all note's relations (attributes with type relation), excluding inherited ones
      */
     getOwnedRelations(name) {
         return this.getOwnedAttributes(RELATION, name);
@@ -677,7 +677,7 @@ class BNote extends AbstractBeccaEntity {
      * @param {string|null} [type] - (optional) attribute type to filter
      * @param {string|null} [name] - (optional) attribute name to filter
      * @param {string|null} [value] - (optional) attribute value to filter
-     * @returns {Attribute[]} note's "owned" attributes - excluding inherited ones
+     * @returns {BAttribute[]} note's "owned" attributes - excluding inherited ones
      */
     getOwnedAttributes(type = null, name = null, value = null) {
         this.__validateTypeName(type, name);
@@ -700,7 +700,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @returns {Attribute} attribute belonging to this specific note (excludes inherited attributes)
+     * @returns {BAttribute} attribute belonging to this specific note (excludes inherited attributes)
      *
      * This method can be significantly faster than the getAttribute()
      */
@@ -735,7 +735,7 @@ class BNote extends AbstractBeccaEntity {
      * - fast searching
      * - note similarity evaluation
      *
-     * @return {string} - returns flattened textual representation of note, prefixes and attributes
+     * @returns {string} - returns flattened textual representation of note, prefixes and attributes
      */
     getFlatText() {
         if (!this.flatTextCache) {
@@ -863,7 +863,7 @@ class BNote extends AbstractBeccaEntity {
         return Array.from(set);
     }
 
-    /** @return {BNote[]} */
+    /** @returns {BNote[]} */
     getSearchResultNotes() {
         if (this.type !== 'search') {
             return [];
@@ -1088,7 +1088,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @return {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
+     * @returns {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
      */
     getAllNotePaths() {
         if (this.noteId === 'root') {
@@ -1109,7 +1109,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param ancestorNoteId
-     * @return {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
+     * @returns {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
      */
     isDescendantOfNote(ancestorNoteId) {
         const notePaths = this.getAllNotePaths();
@@ -1174,7 +1174,7 @@ class BNote extends AbstractBeccaEntity {
      * @param {string} [value] - value of the attribute - text for labels, target note ID for relations; optional.
      * @param {boolean} [isInheritable=false]
      * @param {int} [position]
-     * @return {Attribute}
+     * @returns {BAttribute}
      */
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
         const BAttribute = require("./battribute");
@@ -1195,7 +1195,7 @@ class BNote extends AbstractBeccaEntity {
      * @param {string} name - name of the label, not including the leading #
      * @param {string} [value] - text value of the label; optional
      * @param {boolean} [isInheritable=false]
-     * @return {Attribute}
+     * @returns {BAttribute}
      */
     addLabel(name, value = "", isInheritable = false) {
         return this.addAttribute(LABEL, name, value, isInheritable);
@@ -1208,7 +1208,7 @@ class BNote extends AbstractBeccaEntity {
      * @param {string} name - name of the relation, not including the leading ~
      * @param {string} targetNoteId
      * @param {boolean} [isInheritable=false]
-     * @return {Attribute}
+     * @returns {BAttribute}
      */
     addRelation(name, targetNoteId, isInheritable = false) {
         return this.addAttribute(RELATION, name, targetNoteId, isInheritable);
@@ -1359,7 +1359,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @return {BNoteRevision|null}
+     * @returns {BNoteRevision|null}
      */
     saveNoteRevision() {
         const content = this.getContent();

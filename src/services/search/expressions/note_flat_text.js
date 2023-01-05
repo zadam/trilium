@@ -123,7 +123,7 @@ class NoteFlatTextExp extends Expression {
      * Returns noteIds which have at least one matching tokens
      *
      * @param {NoteSet} noteSet
-     * @return {BNote[]}
+     * @returns {BNote[]}
      */
     getCandidateNotes(noteSet) {
         const candidateNotes = [];

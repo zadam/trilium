@@ -22,7 +22,7 @@ async function removeAttributeById(noteId, attributeId) {
 }
 
 /**
- * @return {boolean} - returns true if this attribute has the potential to influence the note in the argument.
+ * @returns {boolean} - returns true if this attribute has the potential to influence the note in the argument.
  *         That can happen in multiple ways:
  *         1. attribute is owned by the note
  *         2. attribute is owned by the template of the note

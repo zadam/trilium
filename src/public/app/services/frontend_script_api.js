@@ -16,10 +16,10 @@ import SpacedUpdate from "./spaced_update.js";
 import shortcutService from "./shortcuts.js";
 
 /**
- * This is the main frontend API interface for scripts. It's published in the local "api" object.
+ * <p>This is the main frontend API interface for scripts. All the properties and methods are published in the "api" object
+ * available in the JS frontend notes. You can use e.g. <code>api.showMessage(api.startNote.title);</code></p>
  *
  * @constructor
- * @hideconstructor
  */
 function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
     /** @property {jQuery} container of all the rendered script content */
@@ -32,7 +32,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {object|null} entity whose event triggered this execution */
     this.originEntity = originEntity;
 
-    // to keep consistency with backend API
+    /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
     this.dayjs = dayjs;
 
     /**
@@ -83,7 +83,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Activates newly created note. Compared to this.activateNote() also makes sure that frontend has been fully synced.
      *
      * @param {string} notePath (or noteId)
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownEntityChangeId();
@@ -95,9 +95,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Open a note in a new tab.
      *
+     * @method
      * @param {string} notePath (or noteId)
      * @param {boolean} activate - set to true to activate the new tab, false to stay on the current tab
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     this.openTabWithNote = async (notePath, activate) => {
         await ws.waitForMaxKnownEntityChangeId();
@@ -112,9 +113,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Open a note in a new split.
      *
+     * @method
      * @param {string} notePath (or noteId)
      * @param {boolean} activate - set to true to activate the new split, false to stay on the current split
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     this.openSplitWithNote = async (notePath, activate) => {
         await ws.waitForMaxKnownEntityChangeId();
@@ -132,6 +134,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Adds a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
      *
+     * @method
      * @deprecated you can now create/modify launchers in the top-left Menu -> Configure Launchbar
      *             for special needs there's also backend API's createOrUpdateLauncher()
      * @param {object} opts
@@ -170,9 +173,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Executes given anonymous function on the backend.
      * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
      *
+     * @method
      * @param {string} script - script to be executed on the backend
      * @param {Array.<?>} params - list of parameters to the anonymous function to be send to backend
-     * @return {Promise<*>} return value of the executed function on the backend
+     * @returns {Promise<*>} return value of the executed function on the backend
      */
     this.runOnBackend = async (script, params = []) => {
         if (typeof script === "function") {
@@ -233,8 +237,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Returns note by given noteId. If note is missing from cache, it's loaded.
      **
+     * @method
      * @param {string} noteId
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
     this.getNote = async noteId => await froca.getNote(noteId);
 
@@ -244,17 +249,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
      * otherwise (by e.g. createNoteLink())
      *
+     * @method
      * @param {string[]} noteIds
      * @param {boolean} [silentNotFoundError] - don't report error if the note is not found
-     * @return {Promise<FNote[]>}
+     * @returns {Promise<FNote[]>}
      */
     this.getNotes = async (noteIds, silentNotFoundError = false) => await froca.getNotes(noteIds, silentNotFoundError);
 
     /**
      * Update frontend tree (note) cache from the backend.
      *
-     * @param {string[]} noteIds
      * @method
+     * @param {string[]} noteIds
      */
     this.reloadNotes = async noteIds => await froca.reloadNotes(noteIds);
 
@@ -262,7 +268,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Instance name identifies particular Trilium instance. It can be useful for scripts
      * if some action needs to happen on only one specific instance.
      *
-     * @return {string}
+     * @method
+     * @returns {string}
      */
     this.getInstanceName = () => window.glob.instanceName;
 
@@ -316,7 +323,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @deprecated - this is now no-op since all the changes should be gracefully handled per widget
+     * @deprecated this is now no-op since all the changes should be gracefully handled per widget
      */
     this.refreshTree = () => {};
 
@@ -336,9 +343,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Adds given text to the editor cursor
      *
+     * @method
      * @deprecated use addTextToActiveContextEditor() instead
      * @param {string} text - this must be clear text, HTML is not supported.
-     * @method
      */
     this.addTextToActiveTabEditor = text => {
         console.warn("api.addTextToActiveTabEditor() is deprecated, use addTextToActiveContextEditor() instead.");
@@ -349,8 +356,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * Adds given text to the editor cursor
      *
-     * @param {string} text - this must be clear text, HTML is not supported.
      * @method
+     * @param {string} text - this must be clear text, HTML is not supported.
      */
     this.addTextToActiveContextEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
 
@@ -374,8 +381,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
-     * @deprecated use getActiveContextTextEditor()
      * @method
+     * @deprecated use getActiveContextTextEditor()
      * @param [callback] - callback receiving "textEditor" instance
      */
     this.getActiveTabTextEditor = callback => {
@@ -437,13 +444,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @param {object} $el - jquery object on which to setup the tooltip
+     * @param {object} $el - jquery object on which to set up the tooltip
+     * @returns {Promise<void>}
      */
     this.setupElementTooltip = noteTooltipService.setupElementTooltip;
 
     /**
-     * @deprecated use protectNote and protectSubtree instead
      * @method
+     * @deprecated use protectNote and protectSubtree instead
+     * @returns {Promise<void>}
      */
     this.protectActiveNote = async () => {
         const activeNote = appContext.tabManager.getActiveContextNote();
@@ -455,6 +464,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param {string} noteId
      * @param {boolean} protect - true to protect note, false to unprotect
+     * @returns {Promise<void>}
      */
     this.protectNote = async (noteId, protect) => {
         await protectedSessionService.protectNote(noteId, protect, false);
@@ -464,6 +474,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param {string} noteId
      * @param {boolean} protect - true to protect subtree, false to unprotect
+     * @returns {Promise<void>}
      */
     this.protectSubTree = async (noteId, protect) => {
         await protectedSessionService.protectNote(noteId, protect, true);
@@ -473,7 +484,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Returns date-note for today. If it doesn't exist, it is automatically created.
      *
      * @method
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
     this.getTodayNote = dateNotesService.getTodayNote;
 
@@ -482,7 +493,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      * @deprecated use getDayNote instead
      */
     this.getDateNote = dateNotesService.getDayNote;
@@ -492,7 +503,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
     this.getDayNote = dateNotesService.getDayNote;
 
@@ -501,7 +512,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} date - e.g. "2019-04-29"
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
      this.getWeekNote = dateNotesService.getWeekNote;
 
@@ -510,7 +521,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} month - e.g. "2019-04"
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
     this.getMonthNote = dateNotesService.getMonthNote;
 
@@ -519,7 +530,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} year - e.g. "2019"
-     * @return {Promise<FNote>}
+     * @returns {Promise<FNote>}
      */
     this.getYearNote = dateNotesService.getYearNote;
 
@@ -528,7 +539,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} noteId - set hoisted note. 'root' will effectively unhoist
-     * @return {Promise}
+     * @returns {Promise<void>}
      */
     this.setHoistedNoteId = (noteId) => {
         const activeNoteContext = appContext.tabManager.getActiveContext();
@@ -544,6 +555,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {function} handler
      * @param {string} [namespace] - specify namespace of the handler for the cases where call for bind may be repeated.
      *                               If a handler with this ID exists, it's replaced by the new handler.
+     * @returns {Promise<void>}
      */
     this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 
@@ -555,6 +567,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Typical use case is when new note has been created, we should wait until it is synced into frontend and only then activate it.
      *
      * @method
+     * @returns {Promise<void>}
      */
     this.waitUntilSynced = ws.waitForMaxKnownEntityChangeId;
 
@@ -562,6 +575,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * This will refresh all currently opened notes which have included note specified in the parameter
      *
      * @param includedNoteId - noteId of the included note
+     * @returns {Promise<void>}
      */
     this.refreshIncludedNote = includedNoteId => appContext.triggerEvent('refreshIncludedNote', {noteId: includedNoteId});
 
@@ -581,6 +595,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Log given message to the log pane in UI
      *
      * @param message
+     * @returns {void}
      */
     this.log = message => {
         const {noteId} = this.startNote;

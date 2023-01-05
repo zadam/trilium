@@ -310,7 +310,7 @@ class Froca {
     }
 
     /**
-     * @return {Promise<FNoteComplement>}
+     * @returns {Promise<FNoteComplement>}
      */
     async getNoteComplement(noteId) {
         if (!this.noteComplementPromises[noteId]) {
