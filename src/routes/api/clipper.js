@@ -14,8 +14,8 @@ const BAttribute = require('../../becca/entities/battribute');
 const htmlSanitizer = require('../../services/html_sanitizer');
 const {formatAttrForSearch} = require("../../services/attribute_formatter");
 
-function findClippingNote(todayNote, pageUrl) {
-    const notes = todayNote.searchNotesInSubtree(
+function findClippingNote(clipperInboxNote, pageUrl) {
+    const notes = clipperInboxNote.searchNotesInSubtree(
         formatAttrForSearch({
             type: 'label',
             name: "pageUrl",
@@ -47,6 +47,7 @@ function addClipping(req) {
 
     const clipperInbox = getClipperInboxNote();
 
+    pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
     let clippingNote = findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
@@ -56,8 +57,6 @@ function addClipping(req) {
             content: '',
             type: 'text'
         }).note;
-
-        pageUrl = htmlSanitizer.sanitize(pageUrl);
 
         clippingNote.setLabel('clipType', 'clippings');
         clippingNote.setLabel('pageUrl', pageUrl);
@@ -96,7 +95,7 @@ function createNote(req) {
     note.setLabel('clipType', clipType);
 
     if (pageUrl) {
-        pageUrl = htmlSanitizer.sanitize(pageUrl);
+        pageUrl = htmlSanitizer.sanitizeUrl(pageUrl);
 
         note.setLabel('pageUrl', pageUrl);
         note.setLabel('iconClass', 'bx bx-globe');

@@ -1606,7 +1606,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const resp = await server.post(`special-notes/launchers/${node.data.noteId}/${launcherType}`);
 
         if (!resp.success) {
-            alert(resp.message);
+            toastService.showError(resp.message);
         }
 
         await ws.waitForMaxKnownEntityChangeId();
