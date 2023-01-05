@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.58.2-beta",
+  "version": "0.58.3-beta",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
@@ -17,10 +17,10 @@
     "start-server-no-dir": "cross-env TRILIUM_ENV=dev node ./src/www",
     "start-electron": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_ENV=dev electron --inspect=5858 .",
     "start-electron-no-dir": "cross-env TRILIUM_ENV=dev electron --inspect=5858 .",
-    "switch-server": "rm -r ./node_modules/better-sqlite3 && npm install",
-    "switch-electron": "rm -r ./node_modules/better-sqlite3 && npm install && ./node_modules/.bin/electron-rebuild",
-    "build-backend-docs": "rm -r ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",
-    "build-frontend-docs": "rm -r ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
+    "switch-server": "rm -rf ./node_modules/better-sqlite3 && npm install",
+    "switch-electron": "rm -rf ./node_modules/better-sqlite3 && npm install && ./node_modules/.bin/electron-rebuild",
+    "build-backend-docs": "rm -rf ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",
+    "build-frontend-docs": "rm -rf ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/collapsible_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
     "test-jasmine": "jasmine",
@@ -29,6 +29,7 @@
     "postinstall": "rimraf ./node_modules/canvas"
   },
   "dependencies": {
+    "@braintree/sanitize-url": "^6.0.2",
     "@electron/remote": "2.0.9",
     "@excalidraw/excalidraw": "0.13.0",
     "archiver": "5.3.1",

@@ -13,7 +13,7 @@ function exportBranch(req, res) {
     const branch = becca.getBranch(branchId);
 
     if (!branch) {
-        const message = `Cannot export branch ${branchId} since it does not exist.`;
+        const message = `Cannot export branch '${branchId}' since it does not exist.`;
         log.error(message);
 
         res.setHeader("Content-Type", "text/plain")

@@ -320,8 +320,6 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
                 && attributeService.isAffecting(attr, this.note));
 
             if (label || relation) {
-                console.log("OOOO");
-
                 // probably incorrect event
                 // calling this.refresh() is not enough since the event needs to be propagated to children as well
                 this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
