@@ -25,8 +25,8 @@ class RelationWhereExp extends Expression {
                 if (subResNoteSet.hasNote(attr.targetNote)) {
                     if (attr.isInheritable) {
                         candidateNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
-                    } else if (note.isTemplate()) {
-                        candidateNoteSet.addAll(note.getTemplatedNotes());
+                    } else if (note.isInherited()) {
+                        candidateNoteSet.addAll(note.getInheritingNotes());
                     } else {
                         candidateNoteSet.add(note);
                     }

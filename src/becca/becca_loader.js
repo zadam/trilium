@@ -187,7 +187,7 @@ function attributeDeleted(attributeId) {
 
     if (note) {
         // first invalidate and only then remove the attribute (otherwise invalidation wouldn't be complete)
-        if (attribute.isAffectingSubtree || note.isTemplate()) {
+        if (attribute.isAffectingSubtree || note.isInherited()) {
             note.invalidateSubTree();
         } else {
             note.invalidateThisCache();
@@ -215,7 +215,7 @@ function attributeUpdated(attribute) {
     const note = becca.notes[attribute.noteId];
 
     if (note) {
-        if (attribute.isAffectingSubtree || note.isTemplate()) {
+        if (attribute.isAffectingSubtree || note.isInherited()) {
             note.invalidateSubTree();
         } else {
             note.invalidateThisCache();

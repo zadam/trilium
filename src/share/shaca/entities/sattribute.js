@@ -56,7 +56,7 @@ class SAttribute extends AbstractShacaEntity {
     /** @returns {boolean} */
     get isAffectingSubtree() {
         return this.isInheritable
-            || (this.type === 'relation' && this.name === 'template');
+            || (this.type === 'relation' && ['template', 'inherit'].includes(this.name));
     }
 
     /** @returns {string} */

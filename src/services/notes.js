@@ -197,6 +197,8 @@ function createNewNote(params) {
             if (!note.hasOwnedRelation('template', params.templateNoteId)) {
                 note.addRelation('template', params.templateNoteId);
             }
+
+            // no special handling for ~inherit since it doesn't matter if it's assigned with the note creation or later
         }
 
         triggerNoteTitleChanged(note);

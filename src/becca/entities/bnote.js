@@ -410,7 +410,7 @@ class BNote extends AbstractBeccaEntity {
             const templateAttributes = [];
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
-                if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
+                if (ownedAttr.type === 'relation' && ['template', 'inherit'].includes(ownedAttr.name)) {
                     const templateNote = this.becca.notes[ownedAttr.value];
 
                     if (templateNote) {
@@ -805,7 +805,7 @@ class BNote extends AbstractBeccaEntity {
         }
 
         for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
+            if (targetRelation.name === 'template' || targetRelation.name === 'inherit') {
                 const note = targetRelation.note;
 
                 if (note) {
@@ -823,7 +823,7 @@ class BNote extends AbstractBeccaEntity {
         }
 
         for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
+            if (targetRelation.name === 'template' || targetRelation.name === 'inherit') {
                 const note = targetRelation.note;
 
                 if (note) {
@@ -843,8 +843,8 @@ class BNote extends AbstractBeccaEntity {
             .filter(l => l.name.startsWith("relation:"));
     }
 
-    isTemplate() {
-        return !!this.targetRelations.find(rel => rel.name === 'template');
+    isInherited() {
+        return !!this.targetRelations.find(rel => rel.name === 'template' || rel.name === 'inherit');
     }
 
     /** @returns {BNote[]} */
@@ -863,7 +863,7 @@ class BNote extends AbstractBeccaEntity {
             }
 
             for (const targetRelation of note.targetRelations) {
-                if (targetRelation.name === 'template') {
+                if (targetRelation.name === 'template' || targetRelation.name === 'inherit') {
                     const targetNote = targetRelation.note;
 
                     if (targetNote) {
@@ -1067,11 +1067,11 @@ class BNote extends AbstractBeccaEntity {
 
     /** @returns {BNote[]} - returns only notes which are templated, does not include their subtrees
      *                     in effect returns notes which are influenced by note's non-inheritable attributes */
-    getTemplatedNotes() {
+    getInheritingNotes() {
         const arr = [this];
 
         for (const targetRelation of this.targetRelations) {
-            if (targetRelation.name === 'template') {
+            if (targetRelation.name === 'template' || targetRelation.name === 'inherit') {
                 const note = targetRelation.note;
 
                 if (note) {

@@ -259,7 +259,7 @@ class FNote {
                 }
             }
 
-            for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' && attr.name === 'template')) {
+            for (const templateAttr of attrArrs.flat().filter(attr => attr.type === 'relation' && ['template', 'inherit'].includes(attr.name))) {
                 const templateNote = this.froca.notes[templateAttr.value];
 
                 if (templateNote && templateNote.noteId !== this.noteId) {
@@ -651,8 +651,11 @@ class FNote {
     /**
      * @returns {FNote[]}
      */
-    getTemplateNotes() {
-        const relations = this.getRelations('template');
+    getNotesToInheritAttributesFrom() {
+        const relations = [
+            ...this.getRelations('template'),
+            ...this.getRelations('inherit')
+        ];
 
         return relations.map(rel => this.froca.notes[rel.value]);
     }
@@ -690,7 +693,7 @@ class FNote {
 
         visitedNoteIds.add(this.noteId);
 
-        for (const templateNote of this.getTemplateNotes()) {
+        for (const templateNote of this.getNotesToInheritAttributesFrom()) {
             if (templateNote.hasAncestor(ancestorNoteId, visitedNoteIds)) {
                 return true;
             }

@@ -167,7 +167,7 @@ class SNote extends AbstractShacaEntity {
             const templateAttributes = [];
 
             for (const ownedAttr of parentAttributes) { // parentAttributes so we process also inherited templates
-                if (ownedAttr.type === 'relation' && ownedAttr.name === 'template') {
+                if (ownedAttr.type === 'relation' && ['template', 'inherit'].includes(ownedAttr.name)) {
                     const templateNote = this.shaca.notes[ownedAttr.value];
 
                     if (templateNote) {
@@ -434,8 +434,8 @@ class SNote extends AbstractShacaEntity {
     }
 
     /** @returns {boolean} */
-    isTemplate() {
-        return !!this.targetRelations.find(rel => rel.name === 'template');
+    isInherited() {
+        return !!this.targetRelations.find(rel => rel.name === 'template' || rel.name === 'inherit');
     }
 
     /** @returns {SAttribute[]} */

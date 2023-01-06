@@ -83,6 +83,7 @@ const HIDDEN_ATTRIBUTES = [
     'originalFileName',
     'fileSize',
     'template',
+    'inherit',
     'cssClass',
     'iconClass',
     'pageSize',

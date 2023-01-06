@@ -25,8 +25,8 @@ class LabelComparisonExp extends Expression {
                 if (attr.isInheritable) {
                     resultNoteSet.addAll(note.getSubtreeNotesIncludingTemplated());
                 }
-                else if (note.isTemplate()) {
-                    resultNoteSet.addAll(note.getTemplatedNotes());
+                else if (note.isInherited()) {
+                    resultNoteSet.addAll(note.getInheritingNotes());
                 }
                 else {
                     resultNoteSet.add(note);

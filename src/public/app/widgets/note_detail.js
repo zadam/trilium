@@ -316,7 +316,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             const relation = attrs.find(attr =>
                 attr.type === 'relation'
-                && ['template', 'renderNote'].includes(attr.name)
+                && ['template', 'inherit', 'renderNote'].includes(attr.name)
                 && attributeService.isAffecting(attr, this.note));
 
             if (label || relation) {

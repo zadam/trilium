@@ -102,7 +102,7 @@ class BAttribute extends AbstractBeccaEntity {
 
     get isAffectingSubtree() {
         return this.isInheritable
-            || (this.type === 'relation' && this.name === 'template');
+            || (this.type === 'relation' && ['template', 'inherit'].includes(this.name));
     }
 
     get targetNoteId() { // alias

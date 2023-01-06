@@ -78,6 +78,7 @@ module.exports = [
     { type: 'relation', name: 'runOnAttributeCreation', isDangerous: true },
     { type: 'relation', name: 'runOnAttributeChange', isDangerous: true },
     { type: 'relation', name: 'template' },
+    { type: 'relation', name: 'inherit' },
     { type: 'relation', name: 'widget', isDangerous: true },
     { type: 'relation', name: 'renderNote', isDangerous: true },
     { type: 'relation', name: 'shareCss' },

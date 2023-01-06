@@ -40,7 +40,7 @@ function isAffecting(attrRow, affectedNote) {
         return false;
     }
 
-    const owningNotes = [affectedNote, ...affectedNote.getTemplateNotes()];
+    const owningNotes = [affectedNote, ...affectedNote.getNotesToInheritAttributesFrom()];
 
     for (const owningNote of owningNotes) {
         if (owningNote.noteId === attrNote.noteId) {

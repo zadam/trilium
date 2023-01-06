@@ -14,17 +14,17 @@ class Becca {
     reset() {
         /** @type {Object.<String, BNote>} */
         this.notes = {};
-        /** @type {Object.<String, Branch>} */
+        /** @type {Object.<String, BBranch>} */
         this.branches = {};
-        /** @type {Object.<String, Branch>} */
+        /** @type {Object.<String, BBranch>} */
         this.childParentToBranch = {};
-        /** @type {Object.<String, Attribute>} */
+        /** @type {Object.<String, BAttribute>} */
         this.attributes = {};
-        /** @type {Object.<String, Attribute[]>} Points from attribute type-name to list of attributes */
+        /** @type {Object.<String, BAttribute[]>} Points from attribute type-name to list of attributes */
         this.attributeIndex = {};
-        /** @type {Object.<String, Option>} */
+        /** @type {Object.<String, BOption>} */
         this.options = {};
-        /** @type {Object.<String, EtapiToken>} */
+        /** @type {Object.<String, BEtapiToken>} */
         this.etapiTokens = {};
 
         this.dirtyNoteSetCache();

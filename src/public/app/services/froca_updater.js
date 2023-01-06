@@ -60,7 +60,7 @@ async function processEntityChanges(entityChanges) {
         }
         else if (entityName === 'attributes'
             && entity.type === 'relation'
-            && entity.name === 'template'
+            && (entity.name === 'template' || entity.name === 'inherit')
             && !(entity.value in froca.notes)) {
 
             missingNoteIds.push(entity.value);

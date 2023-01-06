@@ -38,7 +38,7 @@ function getNeighbors(note, depth) {
     const retNoteIds = [];
 
     function isIgnoredRelation(relation) {
-        return ['relationMapLink', 'template', 'image', 'ancestor'].includes(relation.name);
+        return ['relationMapLink', 'template', 'inherit', 'image', 'ancestor'].includes(relation.name);
     }
 
     // forward links
@@ -126,7 +126,7 @@ function getLinkMap(req) {
     });
 
     const links = Object.values(becca.attributes).filter(rel => {
-        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template') {
+        if (rel.type !== 'relation' || rel.name === 'relationMapLink' || rel.name === 'template' || rel.name === 'inherit') {
             return false;
         }
         else if (!noteIds.has(rel.noteId) || !noteIds.has(rel.value)) {

@@ -1117,7 +1117,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     }
                 }
             }
-            else if (ecAttr.type === 'relation' && ecAttr.name === 'template') {
+            else if (ecAttr.type === 'relation' && (ecAttr.name === 'template' || ecAttr.name === 'inherit')) {
                 // missing handling of things inherited from template
                 noteIdsToReload.add(ecAttr.noteId);
             }
