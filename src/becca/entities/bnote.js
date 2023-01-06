@@ -730,6 +730,21 @@ class BNote extends AbstractBeccaEntity {
             .filter(note => !!note);
     }
 
+    sortChildren() {
+        if (this.children.length === 0) {
+            return;
+        }
+
+        const becca = this.becca;
+
+        this.children.sort((a, b) => {
+            const aBranch = becca.getBranchFromChildAndParent(a.noteId, this.noteId);
+            const bBranch = becca.getBranchFromChildAndParent(b.noteId, this.noteId);
+
+            return aBranch?.notePosition < bBranch?.notePosition ? -1 : 1;
+        });
+    }
+
     /**
      * This is used for:
      * - fast searching
