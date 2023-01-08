@@ -2,10 +2,9 @@
 
 const imageType = require('image-type');
 const imageService = require('../../services/image');
-const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
 const {sanitizeAttributeName} = require("../../services/sanitize_attribute_name.js");
+const specialNotesService = require("../../services/special_notes.js");
 
 function uploadImage(req) {
     const file = req.file;
@@ -16,7 +15,7 @@ function uploadImage(req) {
 
     const originalName = `Sender image.${imageType(file.buffer).ext}`;
 
-    const parentNote = dateNoteService.getDayNote(req.headers['x-local-date']);
+    const parentNote = specialNotesService.getInboxNote(req.headers['x-local-date']);
 
     const {note, noteId} = imageService.saveImage(parentNote.noteId, file.buffer, originalName, true);
 
@@ -38,7 +37,7 @@ function uploadImage(req) {
 }
 
 function saveNote(req) {
-    const parentNote = dateNoteService.getDayNote(req.headers['x-local-date']);
+    const parentNote = specialNotesService.getInboxNote(req.headers['x-local-date']);
 
     const {note, branch} = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
