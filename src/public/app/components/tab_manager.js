@@ -477,18 +477,22 @@ export default class TabManager extends Component {
         this.openAndActivateEmptyTab();
     }
 
-    async removeAllTabsCommand() {
+    async closeAllTabsCommand() {
         for (const ntxIdToRemove of this.mainNoteContexts.map(nc => nc.ntxId)) {
             await this.removeNoteContext(ntxIdToRemove);
         }
     }
 
-    async removeAllTabsExceptForThisCommand({ntxId}) {
+    async closeOtherTabsCommand({ntxId}) {
         for (const ntxIdToRemove of this.mainNoteContexts.map(nc => nc.ntxId)) {
             if (ntxIdToRemove !== ntxId) {
                 await this.removeNoteContext(ntxIdToRemove);
             }
         }
+    }
+
+    async closeTabCommand({ntxId}) {
+        await this.removeNoteContext(ntxId);
     }
 
     async moveTabToNewWindowCommand({ntxId}) {
