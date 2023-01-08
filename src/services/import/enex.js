@@ -10,9 +10,15 @@ const protectedSessionService = require('../protected_session');
 const htmlSanitizer = require("../html_sanitizer");
 const attributeService = require("../attributes");
 
-// date format is e.g. 20181121T193703Z
+/**
+ * date format is e.g. 20181121T193703Z or 2013-04-14T16:19:00.000Z (Mac evernote, see #3496)
+ * @returns trilium date format, e.g. 2013-04-14 16:19:00.000Z
+ */
 function parseDate(text) {
-    // insert - and : to make it ISO format
+    // convert ISO format to the "20181121T193703Z" format
+    text = text.replace(/[-:]/g, "");
+
+    // insert - and : to convert it to trilium format
     text = text.substr(0, 4) + "-" + text.substr(4, 2) + "-" + text.substr(6, 2)
         + " " + text.substr(9, 2) + ":" + text.substr(11, 2) + ":" + text.substr(13, 2) + ".000Z";
 
