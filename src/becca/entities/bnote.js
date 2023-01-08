@@ -1194,7 +1194,7 @@ class BNote extends AbstractBeccaEntity {
     addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
         const BAttribute = require("./battribute");
 
-        return new Attribute({
+        return new BAttribute({
             noteId: this.noteId,
             type: type,
             name: name,
