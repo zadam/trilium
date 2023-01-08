@@ -269,7 +269,7 @@ function importEnex(taskContext, file, parentNote) {
                 continue;
             }
 
-            const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
+            const mediaRegex = new RegExp(`<en-media [^>]*hash="${hash}"[^>]*>`, 'g');
 
             resource.mime = resource.mime || "application/octet-stream";
 
