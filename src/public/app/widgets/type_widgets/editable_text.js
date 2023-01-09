@@ -172,7 +172,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         this.watchdog.editor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         if (glob.isDev && ENABLE_INSPECTOR) {
-            await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector');
+            await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector.js');
             CKEditorInspector.attach(this.watchdog.editor);
         }
     }
