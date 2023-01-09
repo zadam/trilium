@@ -454,7 +454,7 @@ class FNote {
         let childBranches = this.getChildBranches();
 
         if (!childBranches) {
-            ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
+            ws.logError(`No children for '${this.noteId}'. This shouldn't happen.`);
             return;
         }
 
