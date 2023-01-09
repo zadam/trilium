@@ -126,7 +126,7 @@ export default class TocWidget extends CollapsibleWidget {
     getToc(html) {
         // Regular expression for headings <h1>...</h1> using non-greedy
         // matching and backreferences
-        const headingTagsRegex = /<h(\d+)>(.*?)<\/h\1>/g;
+        const headingTagsRegex = /<h(\d+)[^>]*>(.*?)<\/h\1>/g;
 
         // Use jquery to build the table rather than html text, since it makes
         // it easier to set the onclick event that will be executed with the
