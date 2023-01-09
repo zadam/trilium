@@ -7,6 +7,7 @@ import openService from "./open.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import linkService from "./link.js";
+import treeService from "./tree.js";
 
 let idCounter = 1;
 
@@ -30,6 +31,17 @@ async function getRenderedContent(note, options = {}) {
                 await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
                 renderMathInElement($renderedContent[0], {trust: true});
+            }
+
+            const getNoteIdFromLink = el => treeService.getNoteIdFromNotePath($(el).attr('href'));
+            const referenceLinks = $renderedContent.find("a.reference-link");
+            const noteIdsToPrefetch = referenceLinks.map(el => getNoteIdFromLink(el));
+            await froca.getNotes(noteIdsToPrefetch);
+
+            for (const el of referenceLinks) {
+                const noteId = getNoteIdFromLink(el);
+
+                await linkService.loadReferenceLinkTitle(noteId, $(el));
             }
         }
         else {
