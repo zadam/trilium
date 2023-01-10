@@ -126,7 +126,7 @@ export default class TocWidget extends RightPanelWidget {
     getToc(html) {
         // Regular expression for headings <h1>...</h1> using non-greedy
         // matching and backreferences
-        const headingTagsRegex = /<h(\d+)>(.*?)<\/h\1>/g;
+        const headingTagsRegex = /<h(\d+)[^>]*>(.*?)<\/h\1>/gi;
 
         // Use jquery to build the table rather than html text, since it makes
         // it easier to set the onclick event that will be executed with the
@@ -151,7 +151,8 @@ export default class TocWidget extends RightPanelWidget {
                 }
             } else if (levelDelta < 0) {
                 // Close as many lists as curLevel - newLevel
-                for (let i = 0; i < -levelDelta; ++i) {
+                // be careful not to empty $ols completely, the root element should stay (could happen with a rogue h1 element)
+                for (let i = 0; i < -levelDelta && $ols.length > 1; ++i) {
                     $ols.pop();
                 }
             }
