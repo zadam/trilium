@@ -151,7 +151,8 @@ export default class TocWidget extends CollapsibleWidget {
                 }
             } else if (levelDelta < 0) {
                 // Close as many lists as curLevel - newLevel
-                for (let i = 0; i < -levelDelta; ++i) {
+                // be careful not to empty $ols completely, the root element should stay (could happen with a rogue h1 element)
+                for (let i = 0; i < -levelDelta && $ols.length > 1; ++i) {
                     $ols.pop();
                 }
             }
