@@ -75,3 +75,67 @@ for (const sourcePath of sourceFiles) {
 
     console.log(destPath);
 }
+
+const META_PATH = './docs/user_guide/!!!meta.json';
+const meta = JSON.parse(fs.readFileSync(META_PATH).toString());
+
+meta.files[0].children = meta.files[0].children.filter(note => note.title !== 'API docs');
+meta.files[0].children.push(getApiMeta());
+
+fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
+
+function getApiMeta() {
+    return {
+        "isClone": false,
+        "noteId": "_apiDocs",
+        "notePath": [
+            "_userGuide",
+            "_apiDocs"
+        ],
+        "title": "API docs",
+        "notePosition": 10,
+        "prefix": null,
+        "isExpanded": false,
+        "type": "text",
+        "mime": "text/html",
+        "attributes": [],
+        "format": "html",
+        "dataFileName": "API docs.html",
+        "children": [
+            {
+                "isClone": false,
+                "noteId": "_frontendApi",
+                "notePath": [
+                    "_userGuide",
+                    "_frontendApi"
+                ],
+                "title": "API docs",
+                "notePosition": 10,
+                "prefix": null,
+                "isExpanded": false,
+                "type": "text",
+                "mime": "text/html",
+                "attributes": [],
+                "format": "html",
+                "dataFileName": "FrontendScriptApi.html"
+            },
+            {
+                "isClone": false,
+                "noteId": "_backendApi",
+                "notePath": [
+                    "_userGuide",
+                    "_backendApi"
+                ],
+                "title": "API docs",
+                "notePosition": 20,
+                "prefix": null,
+                "isExpanded": false,
+                "type": "text",
+                "mime": "text/html",
+                "attributes": [],
+                "format": "html",
+                "dataFileName": "BackendScriptApi.html"
+            }
+        ]
+    };
+}
