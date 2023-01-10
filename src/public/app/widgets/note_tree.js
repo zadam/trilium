@@ -1126,7 +1126,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 if (note && note.getChildNoteIds().includes(ecAttr.value)) {
                     // there's new/deleted imageLink betwen note and its image child - which can show/hide
-                    // the image (if there is a imageLink relation between parent and child then it is assumed to be "contained" in the note and thus does not have to be displayed in the tree)
+                    // the image (if there is a imageLink relation between parent and child
+                    // then it is assumed to be "contained" in the note and thus does not have to be displayed in the tree)
                     noteIdsToReload.add(ecAttr.noteId);
                 }
             }
