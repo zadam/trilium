@@ -58,7 +58,11 @@ const getFilesRecursively = (directory) => {
     }
 };
 
-getFilesRecursively('./tmp/api_docs');
+const TMP_API_DOCS = './tmp/api_docs';
+const TMP_FE_DOCS = TMP_API_DOCS + '/frontend_api';
+const TMP_BE_DOCS = TMP_API_DOCS + '/backend_api';
+
+getFilesRecursively(TMP_API_DOCS);
 
 for (const sourcePath of sourceFiles) {
     const content = fs.readFileSync(sourcePath).toString();
@@ -79,63 +83,144 @@ for (const sourcePath of sourceFiles) {
 const META_PATH = './docs/user_guide/!!!meta.json';
 const meta = JSON.parse(fs.readFileSync(META_PATH).toString());
 
-meta.files[0].children = meta.files[0].children.filter(note => note.title !== 'API docs');
-meta.files[0].children.push(getApiMeta());
+function findNoteMeta(noteMeta, name, notePath) {
+    if (noteMeta.title === name) {
+        return {
+            noteMeta,
+            filePath: '/' + noteMeta.dataFileName,
+            notePath
+        };
+    }
+
+    for (const childMeta of noteMeta.children || []) {
+        const ret = findNoteMeta(childMeta, name, [...notePath, childMeta.noteId]);
+
+        if (ret) {
+            return {
+                noteMeta: ret.noteMeta,
+                filePath: '/' + noteMeta.dirFileName + ret.path,
+                notePath: ret.notePath
+            };
+        }
+    }
+
+    return null;
+}
+
+const {noteMeta: scriptApiDocsRoot, filePath: scriptApiDocsRootFilePath, notePath: scriptApiDocsRootNotePath} =
+    findNoteMeta(meta.files[0], 'Script API', ['_scriptApi']);
+
+const BE_FILES = ['AbstractBeccaEntity', 'BAttribute', 'BBranch', 'BEtapiToken', 'BNote', 'BNoteRevision', 'BOption', 'BRecentNote', 'module-sql'];
+const FE_FILES = ['FNote', 'FAttribute', 'FBranch', 'FNoteComplement'];
+
+scriptApiDocsRoot.children = getScriptApiMeta();
 
 fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
 
-function getApiMeta() {
-    return {
-        "isClone": false,
-        "noteId": "_apiDocs",
-        "notePath": [
-            "_userGuide",
-            "_apiDocs"
-        ],
-        "title": "API docs",
-        "notePosition": 10,
-        "prefix": null,
-        "isExpanded": false,
-        "type": "text",
-        "mime": "text/html",
-        "attributes": [],
-        "format": "html",
-        "dataFileName": "API docs.html",
-        "children": [
-            {
-                "isClone": false,
-                "noteId": "_frontendApi",
-                "notePath": [
-                    "_userGuide",
-                    "_frontendApi"
-                ],
-                "title": "API docs",
-                "notePosition": 10,
-                "prefix": null,
-                "isExpanded": false,
-                "type": "text",
-                "mime": "text/html",
-                "attributes": [],
-                "format": "html",
-                "dataFileName": "FrontendScriptApi.html"
-            },
-            {
-                "isClone": false,
-                "noteId": "_backendApi",
-                "notePath": [
-                    "_userGuide",
-                    "_backendApi"
-                ],
-                "title": "API docs",
-                "notePosition": 20,
-                "prefix": null,
-                "isExpanded": false,
-                "type": "text",
-                "mime": "text/html",
-                "attributes": [],
-                "format": "html",
-                "dataFileName": "BackendScriptApi.html"
-            }
-        ]
-    };
+const scriptApiDocsRootDir =  './docs/user_guide' + scriptApiDocsRootFilePath.substr(0, scriptApiDocsRootFilePath.length - 5);
+
+fs.mkdirSync(scriptApiDocsRootDir, {recursive: true});
+fs.mkdirSync(scriptApiDocsRootDir + '/BackendScriptApi', {recursive: true});
+fs.mkdirSync(scriptApiDocsRootDir + '/FrontendScriptApi', {recursive: true});
+
+const BE_ROOT = scriptApiDocsRootDir + '/BackendScriptApi.html';
+const FE_ROOT = scriptApiDocsRootDir + '/FrontendScriptApi.html';
+
+fs.copyFileSync(TMP_BE_DOCS + '/BackendScriptApi.html', BE_ROOT);
+fs.copyFileSync(TMP_FE_DOCS + '/FrontendScriptApi.html', FE_ROOT);
+
+function rewriteLinks(rootFilePath, files, dir) {
+    let content = fs.readFileSync(rootFilePath).toString();
+
+    for (const file of files) {
+        content = content.replaceAll(`href="${file}.html"`, `href="${dir}/${file}.html"`);
+    }
+
+    fs.writeFileSync(rootFilePath, content);
 }
+
+for (const file of BE_FILES) {
+    fs.copyFileSync(TMP_BE_DOCS + '/' + file + '.html', scriptApiDocsRootDir + '/BackendScriptApi/' + file + '.html');
+}
+rewriteLinks(BE_ROOT, BE_FILES, 'BackendScriptApi');
+
+for (const file of FE_FILES) {
+    fs.copyFileSync(TMP_FE_DOCS + '/' + file + '.html', scriptApiDocsRootDir + '/FrontendScriptApi/' + file + '.html');
+}
+rewriteLinks(FE_ROOT, FE_FILES, 'FrontendScriptApi');
+
+function createChildren(files, notePath) {
+    let positionCounter = 0;
+
+    const camelCase = name => name.charAt(0).toLowerCase() + name.substr(1);
+
+    return files.map(file => {
+        positionCounter += 10;
+
+        return {
+            "isClone": false,
+            "noteId": "_file",
+            "notePath": [
+                ...notePath,
+                '_' + camelCase(file)
+            ],
+            "title": file,
+            "notePosition": positionCounter,
+            "prefix": null,
+            "isExpanded": false,
+            "type": "text",
+            "mime": "text/html",
+            "attributes": [],
+            "format": "html",
+            "dataFileName": file + ".html"
+        }
+    });
+}
+
+function getScriptApiMeta() {
+    return [
+        {
+            "isClone": false,
+            "noteId": "_frontendApi",
+            "notePath": [
+                ...scriptApiDocsRootNotePath,
+                "_frontendApi"
+            ],
+            "title": "API docs",
+            "notePosition": 10,
+            "prefix": null,
+            "isExpanded": false,
+            "type": "text",
+            "mime": "text/html",
+            "attributes": [],
+            "format": "html",
+            "dataFileName": "FrontendScriptApi.html",
+            "children": createChildren(FE_FILES, [
+                ...scriptApiDocsRootNotePath,
+                "_frontendApi"
+            ])
+        },
+        {
+            "isClone": false,
+            "noteId": "_backendApi",
+            "notePath": [
+                ...scriptApiDocsRootNotePath,
+                "_backendApi"
+            ],
+            "title": "API docs",
+            "notePosition": 20,
+            "prefix": null,
+            "isExpanded": false,
+            "type": "text",
+            "mime": "text/html",
+            "attributes": [],
+            "format": "html",
+            "dataFileName": "BackendScriptApi.html",
+            "children": createChildren(BE_FILES, [
+                ...scriptApiDocsRootNotePath,
+                "_backendApi"
+            ])
+        }
+    ];
+}
+
