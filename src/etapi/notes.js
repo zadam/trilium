@@ -147,14 +147,14 @@ function register(router) {
 
 function parseSearchParams(req) {
     const rawSearchParams = {
-        'fastSearch': parseBoolean(req.query, 'fastSearch'),
-        'includeArchivedNotes': parseBoolean(req.query, 'includeArchivedNotes'),
-        'ancestorNoteId': req.query['ancestorNoteId'],
-        'ancestorDepth': parseInteger(req.query, 'ancestorDepth'),
-        'orderBy': req.query['orderBy'],
-        'orderDirection': parseOrderDirection(req.query, 'orderDirection'),
-        'limit': parseInteger(req.query, 'limit'),
-        'debug': parseBoolean(req.query, 'debug')
+        fastSearch: parseBoolean(req.query, 'fastSearch'),
+        includeArchivedNotes: parseBoolean(req.query, 'includeArchivedNotes'),
+        ancestorNoteId: req.query['ancestorNoteId'],
+        ancestorDepth: req.query['ancestorDepth'], // e.g. "eq5"
+        orderBy: req.query['orderBy'],
+        orderDirection: parseOrderDirection(req.query, 'orderDirection'),
+        limit: parseInteger(req.query, 'limit'),
+        debug: parseBoolean(req.query, 'debug')
     };
 
     const searchParams = {};
