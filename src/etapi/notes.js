@@ -8,6 +8,7 @@ const v = require("./validators");
 const searchService = require("../services/search/services/search");
 const SearchContext = require("../services/search/search_context");
 const zipExportService = require("../services/export/zip");
+const noteRevisionService = require("../services/note_revisions.js");
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
@@ -142,6 +143,14 @@ function register(router) {
         console.log(note.getParentBranches());
 
         zipExportService.exportToZip(taskContext, branch, format, res);
+    });
+
+    eu.route(router, 'post' ,'/etapi/notes/:noteId/note-revision', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+
+        note.saveNoteRevision();
+
+        return res.sendStatus(204);
     });
 }
 
