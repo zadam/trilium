@@ -20,7 +20,7 @@ Content-Type: text/plain
 
 Changed content
 
-> {% client.assert(response.status === 200); %}
+> {% client.assert(response.status === 204); %}
 
 ###
 
