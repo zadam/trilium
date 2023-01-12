@@ -8,6 +8,7 @@ const v = require("./validators");
 const searchService = require("../services/search/services/search");
 const SearchContext = require("../services/search/search_context");
 const zipExportService = require("../services/export/zip");
+const noteRevisionService = require("../services/note_revisions.js");
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {
@@ -122,6 +123,8 @@ function register(router) {
 
         note.setContent(req.body);
 
+        noteService.scanForLinks(note);
+
         return res.sendStatus(204);
     });
 
@@ -143,18 +146,26 @@ function register(router) {
 
         zipExportService.exportToZip(taskContext, branch, format, res);
     });
+
+    eu.route(router, 'post' ,'/etapi/notes/:noteId/note-revision', (req, res, next) => {
+        const note = eu.getAndCheckNote(req.params.noteId);
+
+        note.saveNoteRevision();
+
+        return res.sendStatus(204);
+    });
 }
 
 function parseSearchParams(req) {
     const rawSearchParams = {
-        'fastSearch': parseBoolean(req.query, 'fastSearch'),
-        'includeArchivedNotes': parseBoolean(req.query, 'includeArchivedNotes'),
-        'ancestorNoteId': req.query['ancestorNoteId'],
-        'ancestorDepth': parseInteger(req.query, 'ancestorDepth'),
-        'orderBy': req.query['orderBy'],
-        'orderDirection': parseOrderDirection(req.query, 'orderDirection'),
-        'limit': parseInteger(req.query, 'limit'),
-        'debug': parseBoolean(req.query, 'debug')
+        fastSearch: parseBoolean(req.query, 'fastSearch'),
+        includeArchivedNotes: parseBoolean(req.query, 'includeArchivedNotes'),
+        ancestorNoteId: req.query['ancestorNoteId'],
+        ancestorDepth: req.query['ancestorDepth'], // e.g. "eq5"
+        orderBy: req.query['orderBy'],
+        orderDirection: parseOrderDirection(req.query, 'orderDirection'),
+        limit: parseInteger(req.query, 'limit'),
+        debug: parseBoolean(req.query, 'debug')
     };
 
     const searchParams = {};

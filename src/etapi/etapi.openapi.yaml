@@ -291,6 +291,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /notes/{noteId}/note-revision:
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+      - name: format
+        in: query
+        required: false
+        schema:
+          enum:
+            - html
+            - markdown
+          default: html
+    post:
+      description: Create a note revision for the given note
+      operationId: createNoteRevision
+      responses:
+        '204':
+          description: revision has been created
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /branches/{branchId}:
     parameters:
       - name: branchId
