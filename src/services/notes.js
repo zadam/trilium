@@ -108,8 +108,13 @@ function getAndValidateParent(params) {
         throw new ValidationError(`Only 'launcher' notes can be created in parent '${params.parentNoteId}'`);
     }
 
-    if (!params.ignoreForbiddenParents && (['_lbRoot', '_hidden'].includes(parentNote.noteId) || parentNote.isOptions())) {
-        throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+    if (!params.ignoreForbiddenParents) {
+        if (['_lbRoot', '_hidden'].includes(parentNote.noteId)
+            || parentNote.noteId.startsWith("_lbTpl")
+            || parentNote.isOptions()) {
+
+            throw new ValidationError(`Creating child notes into '${parentNote.noteId}' is not allowed.`);
+        }
     }
 
     return parentNote;

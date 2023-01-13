@@ -1358,7 +1358,7 @@ class Note extends AbstractEntity {
     }
 
     isOptions() {
-        return this.noteId.startsWith("options");
+        return this.noteId.startsWith("_options");
     }
 
     get isDeleted() {
