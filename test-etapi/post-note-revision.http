@@ -14,17 +14,10 @@ Content-Type: application/json
 
 ###
 
-PUT {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
+POST {{triliumHost}}/etapi/notes/{{createdNoteId}}/note-revision
 Authorization: {{authToken}}
 Content-Type: text/plain
 
 Changed content
 
 > {% client.assert(response.status === 204); %}
-
-###
-
-GET {{triliumHost}}/etapi/notes/{{createdNoteId}}/content
-Authorization: {{authToken}}
-
-> {% client.assert(response.body === "Changed content"); %}

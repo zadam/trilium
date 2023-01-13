@@ -31,7 +31,7 @@ class ZoomComponent extends Component {
 
     async setZoomFactorAndSave(zoomFactor) {
         if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
-            zoomFactor = Math.round(zoomFactor * 1000) / 1000;
+            zoomFactor = Math.round(zoomFactor * 10) / 10;
 
             this.setZoomFactor(zoomFactor);
 
