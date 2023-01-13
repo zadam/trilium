@@ -286,8 +286,10 @@ function protectNote(note, protect) {
 
             note.isProtected = protect;
 
-            // this will force de/encryption
-            note.setContent(content);
+            if (content !== null) { // see https://github.com/zadam/trilium/issues/3523
+                // this will force de/encryption
+                note.setContent(content);
+            }
 
             note.save();
         }
