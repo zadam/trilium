@@ -18,7 +18,8 @@ const AncestorExp = require("../expressions/ancestor");
 const buildComparator = require('./build_comparator');
 const ValueExtractor = require('../value_extractor');
 const utils = require("../../utils");
-const TrueExp = require("../expressions/true.js");
+const TrueExp = require("../expressions/true");
+const IsHiddenExp = require("../expressions/is_hidden");
 
 function getFulltext(tokens, searchContext) {
     tokens = tokens.map(t => utils.removeDiacritic(t.token));
@@ -429,7 +430,7 @@ function parse({fulltextTokens, expressionTokens, searchContext}) {
 
     let exp = AndExp.of([
         searchContext.includeArchivedNotes ? null : new PropertyComparisonExp(searchContext, "isarchived", "=", "false"),
-        (searchContext.ancestorNoteId && searchContext.ancestorNoteId !== 'root') ? new AncestorExp(searchContext.ancestorNoteId, searchContext.ancestorDepth) : null,
+        getAncestorExp(searchContext),
         getFulltext(fulltextTokens, searchContext),
         expression
     ]);
@@ -446,6 +447,16 @@ function parse({fulltextTokens, expressionTokens, searchContext}) {
     }
 
     return exp;
+}
+
+function getAncestorExp({ancestorNoteId, ancestorDepth, includeHiddenNotes}) {
+    if (ancestorNoteId && ancestorNoteId !== 'root') {
+        return new AncestorExp(ancestorNoteId, ancestorDepth);
+    } else if (!includeHiddenNotes) {
+        return new NotExp(new IsHiddenExp());
+    } else {
+        return null;
+    }
 }
 
 module.exports = parse;

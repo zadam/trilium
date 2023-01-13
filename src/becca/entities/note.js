@@ -1108,6 +1108,13 @@ class Note extends AbstractEntity {
     }
 
     /**
+     * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
+     */
+    isHiddenCompletely() {
+        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+    }
+
+    /**
      * @param ancestorNoteId
      * @return {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
      */

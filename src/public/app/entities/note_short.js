@@ -364,6 +364,13 @@ class NoteShort {
         return notePaths;
     }
 
+    /**
+     * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
+     */
+    isHiddenCompletely() {
+        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+    }
+
     __filterAttrs(attributes, type, name) {
         this.__validateTypeName(type, name);
 
