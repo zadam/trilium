@@ -4,6 +4,8 @@ const treeService = require('./tree');
 const noteService = require('./notes');
 const becca = require('../becca/becca');
 const Attribute = require('../becca/entities/attribute');
+const hiddenSubtreeService = require("./hidden_subtree");
+const oneTimeTimer = require("./one_time_timer");
 
 function runAttachedRelations(note, relationName, originEntity) {
     if (!note) {
@@ -205,6 +207,16 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
     if (entityName === 'branches') {
         runAttachedRelations(entity.getNote(), 'runOnBranchDeletion', entity);
+    }
+
+    if (entityName === 'notes' && entity.noteId.startsWith("_")) {
+        // "named" note has been deleted, we will probably need to rebuild the hidden subtree
+        // scheduling so that bulk deletes won't trigger so many checks
+        oneTimeTimer.scheduleExecution('hidden-subtree-check', 1000, () => {
+            console.log("Checking hidden subtree");
+
+            hiddenSubtreeService.checkHiddenSubtree();
+        });
     }
 });
 
