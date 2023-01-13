@@ -42,7 +42,7 @@ scriptApiDocsRoot.dirFileName = scriptApiDocsRoot.dataFileName.substr(0, scriptA
 scriptApiDocsRoot.children = getScriptApiMeta();
 
 fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
-const scriptApiDocsRootDir =  USER_GUIDE_DIR + scriptApiDocsRootFilePath.substr(0, scriptApiDocsRootFilePath.length - 5);
+const scriptApiDocsRootDir =  USER_GUIDE_DIR + scriptApiDocsRootFilePath;
 
 fs.mkdirSync(scriptApiDocsRootDir, {recursive: true});
 fs.mkdirSync(scriptApiDocsRootDir + '/BackendScriptApi', {recursive: true});
@@ -55,12 +55,12 @@ fs.copyFileSync(TMP_BE_DOCS + '/BackendScriptApi.html', BE_ROOT);
 fs.copyFileSync(TMP_FE_DOCS + '/FrontendScriptApi.html', FE_ROOT);
 
 for (const file of BE_FILES) {
-    fs.copyFileSync(TMP_BE_DOCS + '/' + file + '.html', scriptApiDocsRootDir + '/BackendScriptApi/' + file + '.html');
+    fs.copyFileSync(TMP_BE_DOCS + '/' + file + '.html', `${scriptApiDocsRootDir}/BackendScriptApi/${file}.html`);
 }
 rewriteLinks(BE_ROOT, BE_FILES, 'BackendScriptApi');
 
 for (const file of FE_FILES) {
-    fs.copyFileSync(TMP_FE_DOCS + '/' + file + '.html', scriptApiDocsRootDir + '/FrontendScriptApi/' + file + '.html');
+    fs.copyFileSync(TMP_FE_DOCS + '/' + file + '.html', `${scriptApiDocsRootDir}/FrontendScriptApi/${file}.html`);
 }
 rewriteLinks(FE_ROOT, FE_FILES, 'FrontendScriptApi');
 
@@ -141,7 +141,7 @@ function findNoteMeta(noteMeta, name, notePath) {
     if (noteMeta.title === name) {
         return {
             noteMeta,
-            filePath: '/' + noteMeta.dataFileName,
+            filePath: '/' + noteMeta.dirFileName,
             notePath
         };
     }
@@ -152,7 +152,7 @@ function findNoteMeta(noteMeta, name, notePath) {
         if (ret) {
             return {
                 noteMeta: ret.noteMeta,
-                filePath: '/' + noteMeta.dirFileName + ret.path,
+                filePath: '/' + noteMeta.dirFileName + ret.filePath,
                 notePath: ret.notePath
             };
         }

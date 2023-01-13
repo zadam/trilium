@@ -17,7 +17,27 @@ addNavigationAndStyle(rootNoteMeta, WEB_TMP_DIR);
 fs.writeFileSync(WEB_TMP_DIR + '/style.css', getCss());
 
 function getCss() {
-    return '* { color: red }';
+    return `
+body {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 1000px;
+    margin: auto;
+}
+
+.note-tree-nav {
+    width: 200px;
+    margin-right: 20px;
+    overflow-x: auto;
+}
+
+.note-tree-nav ul {
+    padding-left: 20px;
+}
+
+.content {
+    width: 780px;
+}`;
 }
 
 function addNavigationAndStyle(noteMeta, parentDirPath) {
