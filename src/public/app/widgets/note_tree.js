@@ -1309,6 +1309,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             await this.tree.reload([rootNode]);
         });
 
+        await this.filterHoistedBranch();
+
         if (activeNotePath) {
             const node = await this.getNodeFromPath(activeNotePath, true);
 
