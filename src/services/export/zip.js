@@ -254,9 +254,10 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     <link rel="stylesheet" href="${cssUrl}">
     <base target="_parent">
 </head>
-<body class="ck-content">
+<body>
   <h1>${utils.escapeHtml(title)}</h1>
-${content}
+  
+  <div class="ck-content">${content}</div>
 </body>
 </html>`;
             }
