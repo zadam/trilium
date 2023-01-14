@@ -11,6 +11,7 @@ const NoteRevision = require("./note_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
+const eventService = require("../../services/events");
 dayjs.extend(utc)
 
 const LABEL = 'label';
@@ -313,6 +314,11 @@ class Note extends AbstractEntity {
             isErased: false,
             utcDateChanged: pojo.utcDateModified,
             isSynced: true
+        });
+
+        eventService.emit(eventService.ENTITY_CHANGED, {
+            entityName: 'note_contents',
+            entity: this
         });
     }
 

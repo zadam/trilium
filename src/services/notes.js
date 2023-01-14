@@ -597,11 +597,6 @@ function updateNoteContent(noteId, content) {
     content = saveLinks(note, content);
 
     note.setContent(content);
-
-    eventService.emit(eventService.ENTITY_CHANGED, {
-        entityName: 'note_contents',
-        entity: note
-    });
 }
 
 /**
