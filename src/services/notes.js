@@ -286,7 +286,9 @@ function protectNote(note, protect) {
 
             note.isProtected = protect;
 
-            if (content !== null) { // see https://github.com/zadam/trilium/issues/3523
+            // see https://github.com/zadam/trilium/issues/3523
+            // IIRC a zero-sized buffer can be returned as null from the database
+            if (content !== null) {
                 // this will force de/encryption
                 note.setContent(content);
             }
