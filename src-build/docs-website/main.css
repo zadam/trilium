@@ -1,0 +1,45 @@
+body {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 1100px;
+    margin: auto;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;
+}
+
+.note-tree-nav {
+    padding-top: 10px;
+    width: 300px;
+    margin-right: 20px;
+    overflow-x: auto;
+}
+
+.note-tree-nav ul {
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+.note-tree-nav ul li {
+    line-height: 150%;
+    font-size: 105%;
+}
+
+.note-tree-nav > ul > li > a {
+    font-size: x-large;
+}
+
+.note-tree-nav a {
+    text-decoration: none;
+}
+
+.note-tree-nav li span.expander, .note-tree-nav li span.spacer {
+    width: 1em;
+    display: inline-block;
+}
+
+.note-tree-nav li span.expander {
+    cursor: pointer;
+}
+
+.content {
+    width: 780px;
+}

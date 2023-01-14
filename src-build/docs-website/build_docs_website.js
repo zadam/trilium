@@ -1,44 +1,23 @@
 const fs = require("fs-extra");
-const utils = require("./services/utils.js");
+const utils = require("../../src/services/utils.js");
 const html = require("html");
 
+const SRC_DIR = './src-build/docs-website';
 const USER_GUIDE_DIR = './docs/user_guide';
 const META_PATH = USER_GUIDE_DIR + '/!!!meta.json';
 const WEB_TMP_DIR = './tmp/user_guide_web';
 fs.copySync(USER_GUIDE_DIR, WEB_TMP_DIR);
 
-const meta = JSON.parse(fs.readFileSync(META_PATH).toString());
+const meta = JSON.parse(readFile(META_PATH));
 const rootNoteMeta = meta.files[0];
 const noteIdToMeta = {};
 createNoteIdToMetaMapping(rootNoteMeta);
 
 addNavigationAndStyle(rootNoteMeta, WEB_TMP_DIR);
 
-fs.writeFileSync(WEB_TMP_DIR + '/style.css', getCss());
-
-function getCss() {
-    return `
-body {
-    display: flex;
-    flex-direction: row-reverse;
-    width: 1000px;
-    margin: auto;
-}
-
-.note-tree-nav {
-    width: 200px;
-    margin-right: 20px;
-    overflow-x: auto;
-}
-
-.note-tree-nav ul {
-    padding-left: 20px;
-}
-
-.content {
-    width: 780px;
-}`;
-}
+fs.writeFileSync(WEB_TMP_DIR + '/main.js', readFile(SRC_DIR + "/main.js"));
+fs.writeFileSync(WEB_TMP_DIR + '/main.css', readFile(SRC_DIR + "/main.css"));
+fs.cpSync('libraries/ckeditor/ckeditor-content.css' ,WEB_TMP_DIR + '/ckeditor-content.css');
 
 function addNavigationAndStyle(noteMeta, parentDirPath) {
     const nav = createNavigation(rootNoteMeta, noteMeta);
@@ -48,10 +27,13 @@ function addNavigationAndStyle(noteMeta, parentDirPath) {
 
         console.log(`Adding nav to ${filePath}`);
 
-        const content = fs.readFileSync(filePath).toString();
+        const content = readFile(filePath);
         const depth = noteMeta.notePath.length - 1;
         const updatedContent = content
-            .replaceAll("</head>", `<link rel="stylesheet" href="${"../".repeat(depth)}styles.css">`)
+            .replaceAll("</head>", `
+<link rel="stylesheet" href="${"../".repeat(depth)}main.css">
+<link rel="stylesheet" href="${"../".repeat(depth)}ckeditor-content.css">
+<script src="${"../".repeat(depth)}main.js"></script>`)
             .replaceAll("</body>", nav + "</body>");
         const prettified = html.prettyPrint(updatedContent, {indent_size: 2});
         fs.writeFileSync(filePath, prettified);
@@ -63,8 +45,8 @@ function addNavigationAndStyle(noteMeta, parentDirPath) {
 }
 
 function createNavigation(rootMeta, sourceMeta) {
-    function saveNavigationInner(meta) {
-        let html = '<li>';
+    function saveNavigationInner(meta, parentNoteId = 'root') {
+        let html = `<li data-branch-id="${parentNoteId}_${meta.noteId}">`;
 
         const escapedTitle = utils.escapeHtml(`${meta.prefix ? `${meta.prefix} - ` : ''}${meta.title}`);
 
@@ -81,7 +63,7 @@ function createNavigation(rootMeta, sourceMeta) {
             html += '<ul>';
 
             for (const child of meta.children) {
-                html += saveNavigationInner(child);
+                html += saveNavigationInner(child, meta.noteId);
             }
 
             html += '</ul>'
@@ -140,4 +122,8 @@ function getTargetUrl(targetNoteId, sourceMeta) {
     url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
 
     return url;
+}
+
+function readFile(filePath) {
+    return fs.readFileSync(filePath).toString();
 }
