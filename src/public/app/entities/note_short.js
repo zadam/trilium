@@ -860,7 +860,7 @@ class NoteShort {
     }
 
     isOptions() {
-        return this.noteId.startsWith("options");
+        return this.noteId.startsWith("_options");
     }
 }
 
