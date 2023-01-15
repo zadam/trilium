@@ -2,6 +2,7 @@ const {JSDOM} = require("jsdom");
 const shaca = require("./shaca/shaca");
 const assetPath = require("../services/asset_path");
 const shareRoot = require('./share_root');
+const escapeHtml = require('escape-html');
 
 function getContent(note) {
     if (note.isProtected) {
@@ -112,17 +113,17 @@ function renderCode(result) {
 
 function renderMermaid(result) {
     result.content = `
-<div class="mermaid">${result.content}</div>
+<div class="mermaid">${escapeHtml(result.content)}</div>
 <hr>
 <details>
     <summary>Chart source</summary>
-    <pre>${result.content}</pre>
+    <pre>${escapeHtml(result.content)}</pre>
 </details>`
     result.header += `<script src="../../${assetPath}/libraries/mermaid.min.js"></script>`;
 }
 
 function renderImage(result, note) {
-    result.content = `<img src="api/images/${note.noteId}/${note.title}?${note.utcDateModified}">`;
+    result.content = `<img src="api/images/${note.noteId}/${note.escapedTitle}?${note.utcDateModified}">`;
 }
 
 function renderFile(note, result) {

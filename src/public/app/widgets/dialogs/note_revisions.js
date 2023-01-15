@@ -234,7 +234,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
                 renderMathInElement($content[0], {trust: true});
             }
         }
-        else if (revisionItem.type === 'code') {
+        else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
             this.$content.html($("<pre>").text(fullNoteRevision.content));
         }
         else if (revisionItem.type === 'image') {
