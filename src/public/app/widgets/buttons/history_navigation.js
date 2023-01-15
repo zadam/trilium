@@ -23,6 +23,10 @@ export default class HistoryNavigationButton extends ButtonFromNoteWidget {
     doRender() {
         super.doRender();
 
+        if (!utils.isElectron()) {
+            return;
+        }
+
         this.webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
 
         // without this the history is preserved across frontend reloads
