@@ -346,6 +346,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
         this.$editor.on("click", e => this.handleEditorClick(e));
 
+        /** @property {BalloonEditor} */
         this.textEditor = await BalloonEditor.create(this.$editor[0], editorConfig);
         this.textEditor.model.document.on('change:data', () => this.dataChanged());
         this.textEditor.editing.view.document.on('enter', (event, data) => {

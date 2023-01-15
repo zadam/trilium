@@ -19,7 +19,6 @@ import options from "../services/options.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import dialogService from "../services/dialog.js";
 import shortcutService from "../services/shortcuts.js";
-import LauncherContextMenu from "../menus/launcher_context_menu.js";
 
 const TPL = `
 <div class="tree-wrapper">
@@ -915,7 +914,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 if (expand) {
                     await parentNode.setExpanded(true, {noAnimation: true});
 
-                    // although previous line should set the expanded status, it seems to happen asynchronously
+                    // although previous line should set the expanded status, it seems to happen asynchronously,
                     // so we need to make sure it is set properly before calling updateNode which uses this flag
                     const branch = froca.getBranch(parentNode.data.branchId);
                     branch.isExpanded = true;
@@ -925,7 +924,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                 let foundChildNode = this.findChildNode(parentNode, childNoteId);
 
-                if (!foundChildNode) { // note might be recently created so we'll force reload and try again
+                if (!foundChildNode) { // note might be recently created, so we'll force reload and try again
                     await parentNode.load(true);
 
                     foundChildNode = this.findChildNode(parentNode, childNoteId);
@@ -933,7 +932,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     if (!foundChildNode) {
                         if (logErrors) {
                             // besides real errors this can be also caused by hiding of e.g. included images
-                            // these are real notes with real notePath, user can display them in a detail
+                            // these are real notes with real notePath, user can display them in a detail,
                             // but they don't have a node in the tree
 
                             const childNote = await froca.getNote(childNoteId);

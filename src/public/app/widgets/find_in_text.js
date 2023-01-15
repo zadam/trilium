@@ -14,9 +14,9 @@ export default class FindInText {
         const selection = textEditor.model.document.selection;
         const range = selection.getFirstRange();
 
+        // FIXME
         for (const item of range.getItems()) {
-            // Fill in the findbox with the current selection if
-            // any
+            // Fill in the findbox with the current selection if any
             return item.data;
         }
     }

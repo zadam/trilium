@@ -21,6 +21,8 @@ const ValidationError = require("../../errors/validation_error");
  * @param {TaskContext} taskContext
  * @param {BBranch} branch
  * @param {string} format - 'html' or 'markdown'
+ * @param {object} res - express response
+ * @param {boolean} setHeaders
  */
 async function exportToZip(taskContext, branch, format, res, setHeaders = true) {
     if (!['html', 'markdown'].includes(format)) {

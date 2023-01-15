@@ -29,6 +29,9 @@ function toBase64(plainText) {
     return Buffer.from(plainText).toString('base64');
 }
 
+/**
+ * @returns {Buffer}
+ */
 function fromBase64(encodedText) {
     return Buffer.from(encodedText, 'base64');
 }

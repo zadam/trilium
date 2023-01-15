@@ -58,11 +58,11 @@ function downloadNoteRevision(noteId, noteRevisionId) {
  */
 function getUrlForDownload(url) {
     if (utils.isElectron()) {
-        // electron needs absolute URL so we extract current host, port, protocol
+        // electron needs absolute URL, so we extract current host, port, protocol
         return `${getHost()}/${url}`;
     }
     else {
-        // web server can be deployed on subdomain so we need to use relative path
+        // web server can be deployed on subdomain, so we need to use relative path
         return url;
     }
 }

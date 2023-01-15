@@ -544,7 +544,7 @@ function saveLinks(note, content) {
 
             existingLinks.push(newLink);
         }
-        // else the link exists so we don't need to do anything
+        // else the link exists, so we don't need to do anything
     }
 
     // marking links as deleted if they are not present on the page anymore

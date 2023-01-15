@@ -116,7 +116,7 @@ async function doLogin() {
 
     const lastSyncedPull = getLastSyncedPull();
 
-    // this is important in a scenario where we setup the sync by manually copying the document
+    // this is important in a scenario where we set up the sync by manually copying the document
     // lastSyncedPull then could be pretty off for the newly cloned client
     if (lastSyncedPull > resp.maxEntityChangeId) {
         log.info(`Lowering last synced pull from ${lastSyncedPull} to ${resp.maxEntityChangeId}`);

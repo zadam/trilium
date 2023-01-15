@@ -4,11 +4,11 @@ import utils from '../services/utils.js';
  * Abstract class for all components in the Trilium's frontend.
  *
  * Contains also event implementation with following properties:
- * - event / command distribution is synchronous which among others mean that events are well ordered - event
+ * - event / command distribution is synchronous which among others mean that events are well-ordered - event
  *   which was sent out first will also be processed first by the component
  * - execution of the event / command is asynchronous - each component executes the event on its own without regard for
  *   other components.
- * - although the execution is async, we are collecting all the promises and therefore it is possible to wait until the
+ * - although the execution is async, we are collecting all the promises, and therefore it is possible to wait until the
  *   event / command is executed in all components - by simply awaiting the `triggerEvent()`.
  */
 export default class Component {
@@ -62,12 +62,12 @@ export default class Component {
     }
 
     /** @returns {Promise<void>} */
-    triggerEvent(name, data) {
+    triggerEvent(name, data = {}) {
         return this.parent.triggerEvent(name, data);
     }
 
     /** @returns {Promise<void>} */
-    handleEventInChildren(name, data) {
+    handleEventInChildren(name, data = {}) {
         const promises = [];
 
         for (const child of this.children) {

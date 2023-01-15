@@ -85,7 +85,7 @@ function getExistingBranch(parentNoteId, childNoteId) {
 function checkTreeCycle(parentNoteId, childNoteId) {
     const subtreeNoteIds = [];
 
-    // we'll load the whole sub tree - because the cycle can start in one of the notes in the sub tree
+    // we'll load the whole subtree - because the cycle can start in one of the notes in the subtree
     loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
 
     function checkTreeCycleInner(parentNoteId) {

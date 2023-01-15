@@ -3,13 +3,12 @@
  * will create 1000 new notes and some clones into a current document.db
  */
 
-require('../entities/entity_constructor');
+require('../becca/entity_constructor');
 const sqlInit = require('../services/sql_init');
 const noteService = require('../services/notes');
 const attributeService = require('../services/attributes');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning');
-const noteRevisionService = require('../services/note_revisions');
 const loremIpsum = require('lorem-ipsum').loremIpsum;
 
 const noteCount = parseInt(process.argv[2]);
@@ -47,7 +46,7 @@ async function start() {
             format: 'html'
         });
 
-        const {note} = await noteService.createNewNote({
+        const {note} = noteService.createNewNote({
             parentNoteId: getRandomNoteId(),
             title,
             content,
@@ -83,7 +82,7 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        noteRevisionService.createNoteRevision(await becca.getNote(getRandomNoteId()));
+        note.saveNoteRevision();
 
         notes.push(note.noteId);
     }

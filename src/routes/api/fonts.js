@@ -11,10 +11,10 @@ function getFontCss(req, res) {
 
     const optionsMap = optionService.getOptionsMap();
 
-    const mainFontFamilyOverridden = optionsMap.mainFontFamily != 'theme';
-    const treeFontFamilyOverridden = optionsMap.treeFontFamily != 'theme';
-    const detailFontFamilyOverridden = optionsMap.detailFontFamily != 'theme';
-    const monospaceFontFamilyOverridden = optionsMap.monospaceFontFamily != 'theme';
+    const mainFontFamilyOverridden = optionsMap.mainFontFamily !== 'theme';
+    const treeFontFamilyOverridden = optionsMap.treeFontFamily !== 'theme';
+    const detailFontFamilyOverridden = optionsMap.detailFontFamily !== 'theme';
+    const monospaceFontFamilyOverridden = optionsMap.monospaceFontFamily !== 'theme';
 
     // using body to be more specific than themes' :root
     let style = 'body {';

@@ -3,7 +3,7 @@ function reloadFrontendApp(reason) {
         logInfo(`Frontend app reload: ${reason}`);
     }
 
-    window.location.reload(true);
+    window.location.reload();
 }
 
 function parseDate(str) {
@@ -314,7 +314,7 @@ function initHelpDropdown($el) {
     const $dropdownMenu = $el.find('.help-dropdown .dropdown-menu');
     $dropdownMenu.on('click', e => e.stopPropagation());
 
-    // previous propagation stop will also block help buttons from being opened so we need to re-init for this element
+    // previous propagation stop will also block help buttons from being opened, so we need to re-init for this element
     initHelpButtons($dropdownMenu);
 }
 

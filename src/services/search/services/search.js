@@ -230,6 +230,7 @@ function parseQueryToExpression(query, searchContext) {
 
 /**
  * @param {string} query
+ * @param {object} params - see SearchContext
  * @returns {BNote[]}
  */
 function searchNotes(query, params = {}) {
@@ -299,7 +300,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     // < and > are used for marking <small> and </small>
     highlightedTokens = highlightedTokens.map(token => token.replace('/[<\{\}]/g', ''));
 
-    // sort by the longest so we first highlight longest matches
+    // sort by the longest, so we first highlight the longest matches
     highlightedTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of searchResults) {

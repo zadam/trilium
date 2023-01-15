@@ -144,7 +144,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
     /**
      * called to populate the widget container with the note content
      *
-     * @param {note} note
+     * @param {FNote} note
      */
     async doRefresh(note) {
         // see if note changed, since we do not get a new class for a new note
@@ -219,7 +219,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
                 collaborators: []
             };
 
-            // files are expected in an array when loading. they are stored as an key-index object
+            // files are expected in an array when loading. they are stored as a key-index object
             // see example for loading here:
             // https://github.com/excalidraw/excalidraw/blob/c5a7723185f6ca05e0ceb0b0d45c4e3fbcb81b2a/src/packages/excalidraw/example/App.js#L68
             const fileArray = [];

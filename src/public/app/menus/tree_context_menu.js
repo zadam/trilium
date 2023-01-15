@@ -21,7 +21,7 @@ export default class TreeContextMenu {
             x: e.pageX,
             y: e.pageY,
             items: await this.getMenuItems(),
-            selectMenuItemHandler: (item, e) => this.selectMenuItemHandler(item, e)
+            selectMenuItemHandler: (item, e) => this.selectMenuItemHandler(item)
         })
     }
 

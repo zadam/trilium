@@ -99,7 +99,7 @@ export default class AddLinkDialog extends BasicWidget {
 
         this.$addLinkTitleSettings.find('input[type=radio]').on('change', e => this.updateTitleSettingsVisibility(e));
 
-        // with selection hyper link is implied
+        // with selection hyperlink is implied
         if (this.textTypeWidget.hasSelection()) {
             this.$addLinkTitleSettings.find("input[value='hyper-link']").prop("checked", true);
         }

@@ -207,7 +207,7 @@ function importEnex(taskContext, file, parentNote) {
     });
 
     function updateDates(noteId, utcDateCreated, utcDateModified) {
-        // it's difficult to force custom dateCreated and dateModified to Note entity so we do it post-creation with SQL
+        // it's difficult to force custom dateCreated and dateModified to Note entity, so we do it post-creation with SQL
         sql.execute(`
                 UPDATE notes 
                 SET dateCreated = ?, 

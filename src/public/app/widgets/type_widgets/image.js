@@ -56,7 +56,7 @@ class ImageTypeWidget extends TypeWidget {
         });
 
         if (utils.isElectron()) {
-            // for browser we want to let the native menu
+            // for browser, we want to let the native menu
             this.$imageView.on('contextmenu', e => {
                 e.preventDefault();
 

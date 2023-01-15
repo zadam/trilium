@@ -53,7 +53,7 @@ class BBranch extends AbstractBeccaEntity {
         this.noteId = noteId;
         /** @type {string} */
         this.parentNoteId = parentNoteId;
-        /** @type {string} */
+        /** @type {string|null} */
         this.prefix = prefix;
         /** @type {int} */
         this.notePosition = notePosition;

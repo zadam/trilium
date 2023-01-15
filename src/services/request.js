@@ -11,7 +11,7 @@ const syncOptions = require('./sync_options');
 function exec(opts) {
     const client = getClient(opts);
 
-    // hack for cases where electron.net does not work but we don't want to set proxy
+    // hack for cases where electron.net does not work, but we don't want to set proxy
     if (opts.proxy === 'noproxy') {
         opts.proxy = null;
     }

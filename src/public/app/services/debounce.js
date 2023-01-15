@@ -7,20 +7,20 @@
  *
  * @source underscore.js
  * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
- * @param {Function} function to wrap
- * @param {Number} timeout in ms (`100`)
- * @param {Boolean} whether to execute at the beginning (`false`)
+ * @param {Function} func to wrap
+ * @param {Number} waitMs in ms (`100`)
+ * @param {Boolean} immediate whether to execute at the beginning (`false`)
  * @api public
  */
-function debounce(func, wait_ms, immediate){
+function debounce(func, waitMs, immediate) {
     var timeout, args, context, timestamp, result;
-    if (null == wait_ms) wait_ms = 100;
+    if (null == waitMs) waitMs = 100;
 
     function later() {
         var last = Date.now() - timestamp;
 
-        if (last < wait_ms && last >= 0) {
-            timeout = setTimeout(later, wait_ms - last);
+        if (last < waitMs && last >= 0) {
+            timeout = setTimeout(later, waitMs - last);
         } else {
             timeout = null;
             if (!immediate) {
@@ -28,14 +28,14 @@ function debounce(func, wait_ms, immediate){
                 context = args = null;
             }
         }
-    };
+    }
 
     var debounced = function(){
         context = this;
         args = arguments;
         timestamp = Date.now();
         var callNow = immediate && !timeout;
-        if (!timeout) timeout = setTimeout(later, wait_ms);
+        if (!timeout) timeout = setTimeout(later, waitMs);
         if (callNow) {
             result = func.apply(context, args);
             context = args = null;
@@ -62,7 +62,7 @@ function debounce(func, wait_ms, immediate){
     };
 
     return debounced;
-};
+}
 
 // Adds compatibility for ES modules
 debounce.debounce = debounce;

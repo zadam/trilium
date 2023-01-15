@@ -122,13 +122,13 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         this.watchdog = new EditorWatchdog(BalloonEditor, {
             // An average number of milliseconds between the last editor errors (defaults to 5000).
             // When the period of time between errors is lower than that and the crashNumberLimit
-            // is also reached, the watchdog changes its state to crashedPermanently and it stops
+            // is also reached, the watchdog changes its state to crashedPermanently, and it stops
             // restarting the editor. This prevents an infinite restart loop.
             minimumNonErrorTimePeriod: 5000,
             // A threshold specifying the number of errors (defaults to 3).
             // After this limit is reached and the time between last errors
             // is shorter than minimumNonErrorTimePeriod, the watchdog changes
-            // its state to crashedPermanently and it stops restarting the editor.
+            // its state to crashedPermanently, and it stops restarting the editor.
             // This prevents an infinite restart loop.
             crashNumberLimit: 3,
             // A minimum number of milliseconds between saving the editor data internally (defaults to 5000).

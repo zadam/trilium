@@ -54,7 +54,7 @@ export default class QuickSearchWidget extends BasicWidget {
 
         if(utils.isMobile()) {
             this.$searchString.keydown(e =>{
-                if(e.which==13) {
+                if(e.which === 13) {
                     if (this.$dropdownMenu.is(":visible")) {
                         this.search(); // just update already visible dropdown
                     } else {
@@ -128,7 +128,7 @@ export default class QuickSearchWidget extends BasicWidget {
                 this.$dropdownToggle.dropdown("hide");
 
                 if (!e.target || e.target.nodeName !== 'A') {
-                    // click on the link is handled by link handling but we want the whole item clickable
+                    // click on the link is handled by link handling, but we want the whole item clickable
                     appContext.tabManager.getActiveContext().setNote(note.noteId);
                 }
             });

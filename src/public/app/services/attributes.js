@@ -36,7 +36,7 @@ function isAffecting(attrRow, affectedNote) {
     const attrNote = froca.notes[attrRow.noteId];
 
     if (!attrNote) {
-        // the note (owner of the attribute) is not even loaded into the cache so it should not affect anything else
+        // the note (owner of the attribute) is not even loaded into the cache, so it should not affect anything else
         return false;
     }
 

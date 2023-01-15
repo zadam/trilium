@@ -17,6 +17,11 @@ class NoteFlatTextExp extends Expression {
         const beccaService = require('../../../becca/becca_service');
         const resultNoteSet = new NoteSet();
 
+        /**
+         * @param {BNote} note
+         * @param {string[]} tokens
+         * @param {string[]} path
+         */
         function searchDownThePath(note, tokens, path) {
             if (tokens.length === 0) {
                 const retPath = beccaService.getSomePath(note, path);

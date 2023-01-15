@@ -121,17 +121,17 @@ class Becca {
         return row ? new BNoteRevision(row) : null;
     }
 
-    /** @returns {Option|null} */
+    /** @returns {BOption|null} */
     getOption(name) {
         return this.options[name];
     }
 
-    /** @returns {EtapiToken[]} */
+    /** @returns {BEtapiToken[]} */
     getEtapiTokens() {
         return Object.values(this.etapiTokens);
     }
 
-    /** @returns {EtapiToken|null} */
+    /** @returns {BEtapiToken|null} */
     getEtapiToken(etapiTokenId) {
         return this.etapiTokens[etapiTokenId];
     }
@@ -168,7 +168,7 @@ class Becca {
         const rows = sql.getRows(query, params);
 
         const BNoteRevision = require("./entities/bnote_revision"); // avoiding circular dependency problems
-        return rows.map(row => new NoteRevision(row));
+        return rows.map(row => new BNoteRevision(row));
     }
 
     /** Should be called when the set of all non-skeleton notes changes (added/removed) */

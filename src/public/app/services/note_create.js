@@ -1,5 +1,4 @@
 import appContext from "../components/app_context.js";
-import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import ws from "./ws.js";
@@ -15,7 +14,7 @@ async function createNote(parentNotePath, options = {}) {
     }, options);
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
-    // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
+    // but this is quite weird since user doesn't see WHERE the note is being created, so it shouldn't occur often
     if (!options.isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
         options.isProtected = false;
     }

@@ -239,8 +239,8 @@ export default class NoteRevisionsDialog extends BasicWidget {
         }
         else if (revisionItem.type === 'image') {
             this.$content.html($("<img>")
-                // reason why we put this inline as base64 is that we do not want to let user to copy this
-                // as a URL to be used in a note. Instead if they copy and paste it into a note, it will be a uploaded as a new note
+                // reason why we put this inline as base64 is that we do not want to let user copy this
+                // as a URL to be used in a note. Instead, if they copy and paste it into a note, it will be an uploaded as a new note
                 .attr("src", `data:${note.mime};base64,${fullNoteRevision.content}`)
                 .css("max-width", "100%")
                 .css("max-height", "100%"));

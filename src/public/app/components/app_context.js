@@ -89,7 +89,7 @@ class AppContext extends Component {
     }
 
     /** @returns {Promise<void>} */
-    triggerEvent(name, data) {
+    triggerEvent(name, data = {}) {
         return this.handleEvent(name, data);
     }
 

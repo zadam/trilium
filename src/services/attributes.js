@@ -10,8 +10,8 @@ const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
 const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
 
 /** @returns {BNote[]} */
-function getNotesWithLabel(name, value) {
-    const query = formatAttrForSearch({type: 'label', name, value}, true);
+function getNotesWithLabel(name, value = undefined) {
+    const query = formatAttrForSearch({type: 'label', name, value}, value !== undefined);
     return searchService.searchNotes(query, {
         includeArchivedNotes: true,
         ignoreHoistedNote: true

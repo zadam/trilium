@@ -175,7 +175,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      *
      * @method
      * @param {string} script - script to be executed on the backend
-     * @param {Array.<?>} params - list of parameters to the anonymous function to be send to backend
+     * @param {Array.<?>} params - list of parameters to the anonymous function to be sent to backend
      * @returns {Promise<*>} return value of the executed function on the backend
      */
     this.runOnBackend = async (script, params = []) => {

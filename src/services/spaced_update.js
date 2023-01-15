@@ -47,7 +47,7 @@ class SpacedUpdate {
             this.changed = false;
         }
         else {
-            // update not triggered but changes are still pending so we need to schedule another check
+            // update not triggered but changes are still pending, so we need to schedule another check
             this.scheduleUpdate();
         }
     }

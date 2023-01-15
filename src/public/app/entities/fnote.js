@@ -113,7 +113,7 @@ class FNote {
     }
 
     async getContent() {
-        // we're not caching content since these objects are in froca and as such pretty long lived
+        // we're not caching content since these objects are in froca and as such pretty long-lived
         const note = await server.get(`notes/${this.noteId}`);
 
         return note.content;

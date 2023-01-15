@@ -21,7 +21,7 @@ async function testSync() {
 
         await syncService.login();
 
-        // login was successful so we'll kick off sync now
+        // login was successful, so we'll kick off sync now
         // this is important in case when sync server has been just initialized
         syncService.sync();
 

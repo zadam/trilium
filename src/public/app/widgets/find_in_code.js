@@ -69,8 +69,8 @@ export default class FindInCode {
             let curChar = 0;
             let curMatch = null;
             findResult = [];
-            // All those markText take several seconds on eg this ~500-line
-            // script, batch them inside an operation so they become
+            // All those markText take several seconds on e.g. this ~500-line
+            // script, batch them inside an operation, so they become
             // unnoticeable. Alternatively, an overlay could be used, see
             // https://codemirror.net/addon/search/match-highlighter.js ?
             codeEditor.operation(() => {

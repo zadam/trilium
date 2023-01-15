@@ -9,9 +9,6 @@ import hoistedNoteService from "../services/hoisted_note.js";
 import options from "../services/options.js";
 
 class NoteContext extends Component {
-    /**
-     * @param {string|null} ntxId
-     */
     constructor(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         super();
 

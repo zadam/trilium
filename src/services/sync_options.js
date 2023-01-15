@@ -21,7 +21,7 @@ module.exports = {
     isSyncSetup: () => {
         const syncServerHost = get('syncServerHost');
 
-        // special value "disabled" is here to support use case where document is configured with sync server
+        // special value "disabled" is here to support use case where document is configured with sync server,
         // and we need to override it with config from config.ini
         return !!syncServerHost && syncServerHost !== 'disabled';
     },

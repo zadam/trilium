@@ -2,8 +2,8 @@
  * Table of contents widget
  * (c) Antonio Tejada 2022
  *
- * By design there's no support for non-sensical or malformed constructs:
- * - headings inside elements (eg Trilium allows headings inside tables, but
+ * By design there's no support for nonsensical or malformed constructs:
+ * - headings inside elements (e.g. Trilium allows headings inside tables, but
  *   not inside lists)
  * - nested headings when using raw HTML <H2><H3></H3></H2>
  * - malformed headings when using raw HTML <H2></H3></H2><H3>
@@ -52,7 +52,7 @@ const TPL = `<div class="toc-widget">
  * @param {Element} parent Parent node to find a headingIndex'th in.
  * @param {uint} headingIndex Index for the heading
  * @returns {Element|null} Heading node with the given index, null couldn't be
- *          found (ie malformed like nested headings, etc)
+ *          found (ie malformed like nested headings, etc.)
  */
 function findHeadingNodeByIndex(parent, headingIndex) {
     let headingNode = null;
@@ -61,7 +61,7 @@ function findHeadingNodeByIndex(parent, headingIndex) {
 
         // Headings appear as flattened top level children in the CKEditor
         // document named as "heading" plus the level, eg "heading2",
-        // "heading3", "heading2", etc and not nested wrt the heading level. If
+        // "heading3", "heading2", etc. and not nested wrt the heading level. If
         // a heading node is found, decrement the headingIndex until zero is
         // reached
         if (child.name.startsWith("heading")) {

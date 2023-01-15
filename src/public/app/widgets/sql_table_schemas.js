@@ -1,9 +1,5 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import treeService from "../services/tree.js";
-import linkService from "../services/link.js";
-import hoistedNoteService from "../services/hoisted_note.js";
 import server from "../services/server.js";
-import toastService from "../services/toast.js";
 
 const TPL = `
 <div class="sql-table-schemas-widget">

@@ -1,7 +1,7 @@
 /**
  * this is used as a "standalone js" file and required by a shared note directly via script-tags
- * 
- * data input comes via window variable as follow
+ *
+ * data input comes via window variable as follows
  * const {elements, appState, files} = window.triliumExcalidraw;
  */
 
@@ -15,9 +15,9 @@ const App = () => {
         height: appState.height,
     });
     const [viewModeEnabled, setViewModeEnabled] = React.useState(false);
-    
+
     // ensure that assets are loaded from trilium
-    
+
     /**
      * resizing
      */
@@ -35,9 +35,9 @@ const App = () => {
             };
             setDimensions(dimensions);
         };
-        
+
         window.addEventListener("resize", onResize);
-                
+
         return () => window.removeEventListener("resize", onResize);
     }, [excalidrawWrapperRef]);
 
@@ -49,7 +49,7 @@ const App = () => {
             {
                 className: "excalidraw-wrapper",
                 ref: excalidrawWrapperRef
-            },        
+            },
             React.createElement(ExcalidrawLib.Excalidraw, {
                 ref: excalidrawRef,
                 width: dimensions.width,
@@ -82,10 +82,10 @@ const App = () => {
                                     className: "excalidraw Stack",
                                 },
                                 React.createElement(
-                                    "button", 
+                                    "button",
                                     {
                                         onClick: () => setViewModeEnabled(!viewModeEnabled)
-                                    }, 
+                                    },
                                     viewModeEnabled ? " Enter simple view mode " : " Enter extended view mode "
                                 ),
                                 ""
