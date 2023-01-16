@@ -36,7 +36,7 @@ const TAB_TPL = `
     <div class="note-tab-drag-handle"></div>
     <div class="note-tab-icon"></div>
     <div class="note-tab-title"></div>
-    <div class="note-tab-close" title="Close tab" data-trigger-command="closeActiveTab"><span>×</span></div>
+    <div class="note-tab-close bx bx-x" title="Close tab" data-trigger-command="closeActiveTab"></div>
   </div>
 </div>`;
 
@@ -122,6 +122,7 @@ const TAB_ROW_TPL = `
     .tab-row-widget .note-tab .note-tab-wrapper {
         position: absolute;
         display: flex;
+        align-items: center;
         top: 0;
         bottom: 0;
         left: 0;
@@ -172,19 +173,13 @@ const TAB_ROW_TPL = `
     }
     
     .tab-row-widget .note-tab .note-tab-close {
-        flex-grow: 0;
-        flex-shrink: 0;
+        flex: 0 0 22px;
         border-radius: 50%;
         z-index: 100;
-        text-align: center;
         width: 22px;
-    }
-    
-    .tab-row-widget .note-tab .note-tab-close span {
-        font-size: 24px;
-        position: relative;
-        top: -6px;
+        height: 22px;
         cursor: pointer;
+        text-align: center;
     }
     
     .tab-row-widget .note-tab:hover .note-tab-wrapper {
