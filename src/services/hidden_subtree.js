@@ -1,6 +1,8 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
 const Attribute = require("../becca/entities/attribute.js");
+const log = require("./log");
+const migrationService = require("./migration");
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -231,6 +233,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
 };
 
 function checkHiddenSubtree() {
+    if (!migrationService.isDbUpToDate()) {
+        // on-delete hook might get triggered during some future migration and cause havoc
+        log.info("Will not check hidden subtree until migration is finished.");
+        return;
+    }
+
     checkHiddenSubtreeRecursively('root', HIDDEN_SUBTREE_DEFINITION);
 }
 

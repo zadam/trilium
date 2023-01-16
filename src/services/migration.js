@@ -119,5 +119,6 @@ async function migrateIfNecessary() {
 }
 
 module.exports = {
-    migrateIfNecessary
+    migrateIfNecessary,
+    isDbUpToDate
 };
