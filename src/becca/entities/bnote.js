@@ -401,7 +401,8 @@ class BNote extends AbstractBeccaEntity {
             const parentAttributes = this.ownedAttributes.slice();
             const newPath = [...path, this.noteId];
 
-            if (this.noteId !== 'root') {
+            // inheritable attrs on root are typically not intended to be applied to hidden subtree #3537
+            if (this.noteId !== 'root' && this.noteId !== '_hidden') {
                 for (const parentNote of this.parents) {
                     parentAttributes.push(...parentNote.__getInheritableAttributes(newPath));
                 }
@@ -852,7 +853,8 @@ class BNote extends AbstractBeccaEntity {
         const set = new Set();
 
         function inner(note) {
-            if (set.has(note)) {
+            // _hidden is not counted as subtree for the purpose of inheritance
+            if (set.has(note) || note.noteId === '_hidden') {
                 return;
             }
 

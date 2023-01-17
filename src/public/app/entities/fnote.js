@@ -250,7 +250,8 @@ class FNote {
             const newPath = [...path, this.noteId];
             const attrArrs = [ this.getOwnedAttributes() ];
 
-            if (this.noteId !== 'root') {
+            // inheritable attrs on root are typically not intended to be applied to hidden subtree #3537
+            if (this.noteId !== 'root' && this.noteId !== '_hidden') {
                 for (const parentNote of this.getParentNotes()) {
                     // these virtual parent-child relationships are also loaded into froca
                     if (parentNote.type !== 'search') {
