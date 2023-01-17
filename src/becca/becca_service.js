@@ -83,10 +83,8 @@ function getNoteTitleArrayForPath(notePathArray) {
         throw new Error(`${notePathArray} is not an array.`);
     }
 
-    const hoistedNoteId = cls.getHoistedNoteId();
-
-    if (notePathArray.length === 1 && notePathArray[0] === hoistedNoteId) {
-        return [getNoteTitle(hoistedNoteId)];
+    if (notePathArray.length === 1) {
+        return [getNoteTitle(notePathArray[0])];
     }
 
     const titles = [];
@@ -95,6 +93,7 @@ function getNoteTitleArrayForPath(notePathArray) {
     let hoistedNotePassed = false;
 
     // this is a notePath from outside of hoisted subtree so full title path needs to be returned
+    const hoistedNoteId = cls.getHoistedNoteId();
     const outsideOfHoistedSubtree = !notePathArray.includes(hoistedNoteId);
 
     for (const noteId of notePathArray) {
