@@ -6,10 +6,11 @@ class SearchContext {
     constructor(params = {}) {
         this.fastSearch = !!params.fastSearch;
         this.includeArchivedNotes = !!params.includeArchivedNotes;
+        this.includeHiddenNotes = !!params.includeHiddenNotes;
         this.ignoreHoistedNote = !!params.ignoreHoistedNote;
         this.ancestorNoteId = params.ancestorNoteId;
 
-        if (!this.ancestorNoteId && !this.ignoreHoistedNote && !hoistedNoteService.isHoistedInHiddenSubtree()) {
+        if (!this.ancestorNoteId && !this.ignoreHoistedNote) {
             // hoisting in hidden subtree should not limit autocomplete
             // since we want to link (create relations) to the normal non-hidden notes
             this.ancestorNoteId = hoistedNoteService.getHoistedNoteId();

@@ -11,6 +11,7 @@ const BNoteRevision = require("./bnote_revision");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
+const eventService = require("../../services/events");
 dayjs.extend(utc)
 
 const LABEL = 'label';
@@ -313,6 +314,11 @@ class BNote extends AbstractBeccaEntity {
             isErased: false,
             utcDateChanged: pojo.utcDateModified,
             isSynced: true
+        });
+
+        eventService.emit(eventService.ENTITY_CHANGED, {
+            entityName: 'note_contents',
+            entity: this
         });
     }
 
@@ -1125,6 +1131,13 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
+     * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
+     */
+    isHiddenCompletely() {
+        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+    }
+
+    /**
      * @param ancestorNoteId
      * @returns {boolean} - true if ancestorNoteId occurs in at least one of the note's paths
      */
@@ -1368,7 +1381,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     isOptions() {
-        return this.noteId.startsWith("options");
+        return this.noteId.startsWith("_options");
     }
 
     get isDeleted() {

@@ -39,7 +39,7 @@ export default class CommandButtonWidget extends AbstractButtonWidget {
 
     /**
      * @param {function|string} command
-     * @returns {CommandButtonWidget}
+     * @returns {this}
      */
     command(command) {
         this.settings.command = command;

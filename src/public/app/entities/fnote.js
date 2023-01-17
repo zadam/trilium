@@ -360,6 +360,13 @@ class FNote {
         return notePaths;
     }
 
+    /**
+     * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
+     */
+    isHiddenCompletely() {
+        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+    }
+
     __filterAttrs(attributes, type, name) {
         this.__validateTypeName(type, name);
 
@@ -852,7 +859,7 @@ class FNote {
     }
 
     isOptions() {
-        return this.noteId.startsWith("options");
+        return this.noteId.startsWith("_options");
     }
 }
 

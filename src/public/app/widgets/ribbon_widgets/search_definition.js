@@ -270,7 +270,7 @@ export default class SearchDefinitionWidget extends NoteContextAwareWidget {
     async refreshWithNote(note) {
         this.$component.show();
 
-        this.$saveToNoteButton.toggle(!note.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden')));
+        this.$saveToNoteButton.toggle(note.isHiddenCompletely());
 
         this.$searchOptions.empty();
 

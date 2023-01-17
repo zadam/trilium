@@ -1,6 +1,8 @@
 const becca = require("../becca/becca");
 const noteService = require("./notes");
 const BAttribute = require("../becca/entities/battribute");
+const log = require("./log");
+const migrationService = require("./migration");
 
 const LBTPL_ROOT = "_lbTplRoot";
 const LBTPL_BASE = "_lbTplBase";
@@ -179,8 +181,10 @@ const HIDDEN_SUBTREE_DEFINITION = {
                     isExpanded: true,
                     attributes: [ { type: 'label', name: 'docName', value: 'launchbar_intro' } ],
                     children: [
-                        { id: '_lbBackInHistory', title: 'Go to Previous Note', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square' },
-                        { id: '_lbForwardInHistory', title: 'Go to Next Note', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square' },
+                        { id: '_lbBackInHistory', title: 'Go to Previous Note', type: 'launcher', builtinWidget: 'backInHistoryButton', icon: 'bx bxs-left-arrow-square',
+                            attributes: [ { type: 'label', name: 'docName', value: 'launchbar_history_navigation' } ]},
+                        { id: '_lbForwardInHistory', title: 'Go to Next Note', type: 'launcher', builtinWidget: 'forwardInHistoryButton', icon: 'bx bxs-right-arrow-square',
+                            attributes: [ { type: 'label', name: 'docName', value: 'launchbar_history_navigation' } ]},
                         { id: '_lbBackendLog', title: 'Backend Log', type: 'launcher', targetNoteId: '_backendLog', icon: 'bx bx-terminal' },
                     ]
                 },
@@ -237,6 +241,12 @@ const HIDDEN_SUBTREE_DEFINITION = {
 };
 
 function checkHiddenSubtree() {
+    if (!migrationService.isDbUpToDate()) {
+        // on-delete hook might get triggered during some future migration and cause havoc
+        log.info("Will not check hidden subtree until migration is finished.");
+        return;
+    }
+
     checkHiddenSubtreeRecursively('root', HIDDEN_SUBTREE_DEFINITION);
 }
 

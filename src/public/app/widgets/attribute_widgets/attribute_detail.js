@@ -247,7 +247,7 @@ const ATTR_HELP = {
         "runOnNoteCreation": "executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",
         "runOnChildNoteCreation": "executes when new note is created under the note where this relation is defined",
         "runOnNoteTitleChange": "executes when note title is changed (includes note creation as well)",
-        "runOnNoteContentChange": "executes when note content is changed  (includes note creation as well).",
+        "runOnNoteContentChange": "executes when note content is changed (includes note creation as well).",
         "runOnNoteChange": "executes when note is changed (includes note creation as well). Does not include content changes",
         "runOnNoteDeletion": "executes when note is being deleted",
         "runOnBranchCreation": "executes when a branch is created. Branch is a link between parent note and child note and is created e.g. when cloning or moving note.",

@@ -12,5 +12,10 @@ module.exports = () => {
 
             attr.markAsDeleted("0204__migrate_bookmarks_to_clones");
         }
+
+        // bookmarkFolder used to work in 0.57 without the bookmarked label
+        for (const attr of becca.findAttributes('label','bookmarkFolder')) {
+            cloningService.toggleNoteInParent(true, attr.noteId, '_lbBookmarks');
+        }
     });
 };

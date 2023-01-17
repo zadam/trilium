@@ -11,6 +11,7 @@ const beccaService = require('../../../becca/becca_service');
 const utils = require('../../utils');
 const log = require('../../log');
 const scriptService = require("../../script");
+const hoistedNoteService = require("../../hoisted_note");
 
 function searchFromNote(note) {
     let searchResultNoteIds, highlightedTokens;
@@ -272,7 +273,11 @@ function searchNotesForAutocomplete(query) {
     const searchContext = new SearchContext({
         fastSearch: true,
         includeArchivedNotes: false,
-        fuzzyAttributeSearch: true
+        includeHiddenNotes: true,
+        fuzzyAttributeSearch: true,
+        ancestorNoteId: hoistedNoteService.isHoistedInHiddenSubtree()
+            ? 'root'
+            : hoistedNoteService.getHoistedNoteId()
     });
 
     const allSearchResults = findResultsWithQuery(query, searchContext);

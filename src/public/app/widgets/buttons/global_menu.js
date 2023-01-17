@@ -303,7 +303,7 @@ export default class GlobalMenuWidget extends BasicWidget {
         const resp = await fetch(RELEASES_API_URL);
         const data = await resp.json();
 
-        return data.tag_name.substring(1);
+        return data?.tag_name?.substring(1);
     }
 
     downloadLatestVersionCommand() {

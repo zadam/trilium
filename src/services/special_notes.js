@@ -218,7 +218,7 @@ function resetLauncher(noteId) {
         log.info(`Note ${noteId} is not a resettable launcher note.`);
     }
 
-    hiddenSubtreeService.checkHiddenSubtree();
+    // the re-building deleted launchers will be done in handlers
 }
 
 /**

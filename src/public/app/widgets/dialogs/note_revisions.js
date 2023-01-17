@@ -234,14 +234,14 @@ export default class NoteRevisionsDialog extends BasicWidget {
                 renderMathInElement($content[0], {trust: true});
             }
         }
-        else if (revisionItem.type === 'code') {
+        else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
             this.$content.html($("<pre>").text(fullNoteRevision.content));
         }
         else if (revisionItem.type === 'image') {
             this.$content.html($("<img>")
                 // reason why we put this inline as base64 is that we do not want to let user copy this
                 // as a URL to be used in a note. Instead, if they copy and paste it into a note, it will be an uploaded as a new note
-                .attr("src", `data:${note.mime};base64,${fullNoteRevision.content}`)
+                .attr("src", `data:${fullNoteRevision.mime};base64,${fullNoteRevision.content}`)
                 .css("max-width", "100%")
                 .css("max-height", "100%"));
         }

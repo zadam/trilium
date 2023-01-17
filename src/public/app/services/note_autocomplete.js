@@ -230,6 +230,10 @@ function init() {
 
     $.fn.getSelectedNoteId = function () {
         const notePath = $(this).getSelectedNotePath();
+        if (!notePath) {
+            return null;
+        }
+
         const chunks = notePath.split('/');
 
         return chunks.length >= 1 ? chunks[chunks.length - 1] : null;
