@@ -106,7 +106,7 @@ class BNoteRevision extends AbstractBeccaEntity {
         }
     }
 
-    setContent(content, ignoreMissingProtectedSession = false) {
+    setContent(content) {
         const pojo = {
             noteRevisionId: this.noteRevisionId,
             content: content,
@@ -117,7 +117,7 @@ class BNoteRevision extends AbstractBeccaEntity {
             if (protectedSessionService.isProtectedSessionAvailable()) {
                 pojo.content = protectedSessionService.encrypt(pojo.content);
             }
-            else if (!ignoreMissingProtectedSession) {
+            else {
                 throw new Error(`Cannot update content of noteRevisionId=${this.noteRevisionId} since we're out of protected session.`);
             }
         }

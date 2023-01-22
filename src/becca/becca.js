@@ -2,6 +2,7 @@
 
 const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
+const BNoteRevision = require("./entities/bnote_revision.js");
 
 /**
  * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
@@ -121,6 +122,14 @@ class Becca {
         return row ? new BNoteRevision(row) : null;
     }
 
+    /** @returns {BNoteAttachment|null} */
+    getNoteAttachment(noteAttachmentId) {
+        const row = sql.getRow("SELECT * FROM note_attachments WHERE noteAttachmentId = ?", [noteAttachmentId]);
+
+        const BNoteAttachment = require("./entities/bnote_attachment"); // avoiding circular dependency problems
+        return row ? new BNoteAttachment(row) : null;
+    }
+
     /** @returns {BOption|null} */
     getOption(name) {
         return this.options[name];
@@ -143,6 +152,8 @@ class Becca {
 
         if (entityName === 'note_revisions') {
             return this.getNoteRevision(entityId);
+        } else if (entityName === 'note_attachments') {
+            return this.getNoteAttachment(entityId);
         }
 
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,

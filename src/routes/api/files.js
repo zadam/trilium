@@ -31,6 +31,22 @@ function updateFile(req) {
 
     note.setLabel('originalFileName', file.originalname);
 
+    if (note.mime === 'application/pdf') {
+        const pdfjsLib = require("pdfjs-dist");
+
+        (async () =>
+        {
+            let doc = await pdfjsLib.getDocument({data: file.buffer}).promise;
+            let page1 = await doc.getPage(1);
+            let content = await page1.getTextContent();
+            let strings = content.items.map(function (item) {
+                return item.str;
+            });
+
+            console.log(strings);
+        })();
+    }
+
     return {
         uploaded: true
     };

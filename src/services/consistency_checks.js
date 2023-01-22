@@ -396,15 +396,14 @@ class ConsistencyChecks {
                     SELECT note_revisions.noteRevisionId
                     FROM note_revisions
                       LEFT JOIN note_revision_contents USING (noteRevisionId)
-                    WHERE note_revision_contents.noteRevisionId IS NULL
-                      AND note_revisions.isProtected = 0`,
+                    WHERE note_revision_contents.noteRevisionId IS NULL`,
             ({noteRevisionId}) => {
                 if (this.autoFix) {
                     noteRevisionService.eraseNoteRevisions([noteRevisionId]);
 
                     this.reloadNeeded = true;
 
-                    logFix(`Note revision content '${noteRevisionId}' was created and set to erased since it did not exist.`);
+                    logFix(`Note revision content '${noteRevisionId}' was set to erased since it did not exist.`);
                 } else {
                     logError(`Note revision content '${noteRevisionId}' does not exist`);
                 }
@@ -597,6 +596,9 @@ class ConsistencyChecks {
         this.runEntityChangeChecks("notes", "noteId");
         this.runEntityChangeChecks("note_contents", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
+        this.runEntityChangeChecks("note_revision_contents", "noteRevisionId");
+        this.runEntityChangeChecks("note_attachments", "noteAttachmentId");
+        this.runEntityChangeChecks("note_attachment_contents", "noteAttachmentId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");
@@ -692,7 +694,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "note_revisions", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "note_revisions", "note_attachments", "branches", "attributes", "etapi_tokens" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }

@@ -8,11 +8,12 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
+const BNoteAttachment = require("./bnote_attachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
 const eventService = require("../../services/events");
-dayjs.extend(utc)
+dayjs.extend(utc);
 
 const LABEL = 'label';
 const RELATION = 'relation';
@@ -1108,6 +1109,11 @@ class BNote extends AbstractBeccaEntity {
     getNoteRevisions() {
         return sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId])
             .map(row => new BNoteRevision(row));
+    }
+
+    getNoteAttachments() {
+        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
+            .map(row => new BNoteAttachment(row));
     }
 
     /**

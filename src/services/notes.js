@@ -21,6 +21,7 @@ const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
+const BNoteAttachment = require("../becca/entities/bnote_attachment.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -666,6 +667,16 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             new BAttribute(attribute).save();
         }
 
+        const noteAttachments = sql.getRows(`
+                SELECT * FROM note_attachments 
+                WHERE isDeleted = 1 
+                  AND deleteId = ? 
+                  AND noteId = ?`, [deleteId, note.noteId]);
+
+        for (const noteAttachment of noteAttachments) {
+            new BNoteAttachment(noteAttachment).save();
+        }
+
         const childBranchIds = sql.getColumn(`
             SELECT branches.branchId
             FROM branches
@@ -738,6 +749,11 @@ function eraseNotes(noteIdsToErase) {
 
     noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
 
+    const noteAttachmentIdsToErase = sql.getManyRows(`SELECT noteAttachmentId FROM note_attachments WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.noteAttachmentId);
+
+    eraseNoteAttachments(noteAttachmentIdsToErase);
+
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
@@ -771,6 +787,20 @@ function eraseAttributes(attributeIdsToErase) {
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase));
 
     log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
+}
+
+function eraseNoteAttachments(noteAttachmentIdsToErase) {
+    if (noteAttachmentIdsToErase.length === 0) {
+        return;
+    }
+
+    log.info(`Removing note attachments: ${JSON.stringify(noteAttachmentIdsToErase)}`);
+
+    sql.executeMany(`DELETE FROM note_attachments WHERE noteAttachmentId IN (???)`, noteAttachmentIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_attachments' AND entityId IN (???)`, noteAttachmentIdsToErase);
+
+    sql.executeMany(`DELETE FROM note_attachment_contents WHERE noteAttachmentId IN (???)`, noteAttachmentIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_attachment_contents' AND entityId IN (???)`, noteAttachmentIdsToErase);
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
@@ -907,9 +937,22 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
             attr.save();
         }
 
+        for (const noteAttachment of origNote.getNoteAttachments()) {
+            const duplNoteAttachment = new BNoteAttachment({
+                ...noteAttachment,
+                noteAttachmentId: undefined,
+                noteId: newNote.noteId
+            });
+
+            duplNoteAttachment.save();
+
+            duplNoteAttachment.setContent(noteAttachment.getContent());
+        }
+
         for (const childBranch of origNote.getChildBranches()) {
             duplicateSubtreeInner(childBranch.getNote(), childBranch, newNote.noteId, noteIdMapping);
         }
+
         return newNote;
     }
 

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIM
                                              `dateLastEdited` TEXT NOT NULL,
                                              `dateCreated` TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
-                                                     `content`	TEXT,
+                                                     `content`	TEXT DEFAULT NULL,
                                                      `utcDateModified` TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS "options"
 (

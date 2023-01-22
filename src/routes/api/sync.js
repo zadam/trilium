@@ -114,6 +114,14 @@ function forceNoteSync(req) {
         entityChangesService.moveEntityChangeToTop('note_revision_contents', noteRevisionId);
     }
 
+    for (const noteAttachmentId of sql.getColumn("SELECT noteAttachmentId FROM note_attachments WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE note_attachments SET utcDateModified = ? WHERE noteAttachmentId = ?`, [now, noteAttachmentId]);
+        entityChangesService.moveEntityChangeToTop('note_attachments', noteAttachmentId);
+
+        sql.execute(`UPDATE note_attachment_contents SET utcDateModified = ? WHERE noteAttachmentId = ?`, [now, noteAttachmentId]);
+        entityChangesService.moveEntityChangeToTop('note_attachment_contents', noteAttachmentId);
+    }
+
     log.info(`Forcing note sync for ${noteId}`);
 
     // not awaiting for the job to finish (will probably take a long time)

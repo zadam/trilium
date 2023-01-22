@@ -36,7 +36,7 @@ async function processEntityChanges(entityChanges) {
 
                 loadResults.addOption(ec.entity.name);
             }
-            else if (ec.entityName === 'etapi_tokens') {
+            else if (['etapi_tokens', 'note_attachments', 'note_attachment_contents'].includes(ec.entityName)) {
                 // NOOP
             }
             else {
