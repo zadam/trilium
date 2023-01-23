@@ -110,6 +110,12 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     beforeSaving() {
+        if (!this.name.match(/^[a-z0-9]+$/i)) {
+            throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
+        }
+
+        this.noteAttachmentId = `${this.noteId}_${this.name}`;
+
         super.beforeSaving();
 
         this.utcDateModified = dateUtils.utcNowDateTime();

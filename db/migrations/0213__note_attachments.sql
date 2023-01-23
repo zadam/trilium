@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS "note_attachment_contents" (`noteAttachmentId`	TEXT N
 
 CREATE INDEX IDX_note_attachments_name
     on note_attachments (name);
-CREATE INDEX IDX_note_attachments_noteId
-    on note_attachments (noteId);
+CREATE UNIQUE INDEX IDX_note_attachments_noteId_name
+    on note_attachments (noteId, name);

@@ -198,11 +198,31 @@ class ConsistencyChecks {
                     logError(`Relation '${attributeId}' references missing note '${noteId}'`)
                 }
             });
+
+        this.findAndFixIssues(`
+                    SELECT noteAttachmentId, note_attachments.noteId AS noteId
+                    FROM note_attachments
+                      LEFT JOIN notes USING (noteId)
+                    WHERE notes.noteId IS NULL
+                      AND note_attachments.isDeleted = 0`,
+            ({noteAttachmentId, noteId}) => {
+                if (this.autoFix) {
+                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
+                    noteAttachment.markAsDeleted();
+
+                    this.reloadNeeded = false;
+
+                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since it references missing note '${noteId}'`);
+                } else {
+                    logError(`Note attachment '${noteAttachmentId}' references missing note '${noteId}'`);
+                }
+            });
     }
 
     findExistencyIssues() {
-        // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related entities should be also deleted (branches, attributes)
-        // but if note is not deleted, then at least one branch should exist.
+        // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related
+        // entities should be also deleted (branches, attributes), but if note is not deleted,
+        // then at least one branch should exist.
 
         // the order here is important - first we might need to delete inconsistent branches and after that
         // another check might create missing branch
@@ -302,6 +322,26 @@ class ConsistencyChecks {
                     this.reloadNeeded = true;
                 } else {
                     logError(`Duplicate branches for note '${noteId}' and parent '${parentNoteId}'`);
+                }
+            });
+
+        this.findAndFixIssues(`
+                    SELECT noteAttachmentId,
+                           note_attachments.noteId AS noteId
+                    FROM note_attachments
+                      JOIN notes USING (noteId)
+                    WHERE notes.isDeleted = 1
+                      AND note_attachments.isDeleted = 0`,
+            ({noteAttachmentId, noteId}) => {
+                if (this.autoFix) {
+                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
+                    noteAttachment.markAsDeleted();
+
+                    this.reloadNeeded = false;
+
+                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
+                } else {
+                    logError(`Note attachment '${noteAttachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
                 }
             });
     }

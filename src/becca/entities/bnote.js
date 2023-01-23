@@ -1116,6 +1116,12 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BNoteAttachment(row));
     }
 
+    getNoteAttachmentByName(name) {
+        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
+            .map(row => new BNoteAttachment(row))
+            [0];
+    }
+
     /**
      * @returns {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
      */
@@ -1427,6 +1433,25 @@ class BNote extends AbstractBeccaEntity {
         noteRevision.setContent(content);
 
         return noteRevision;
+    }
+
+    /**
+     * @returns {BNoteAttachment}
+     */
+    saveNoteAttachment(name, mime, content) {
+        this.getNoteAttachments()
+
+        const noteAttachment = new BNoteAttachment({
+            name,
+            mime,
+            isProtected: this.isProtected
+        });
+
+        noteAttachment.save();
+
+        noteAttachment.setContent(content);
+
+        return noteAttachment;
     }
 
     beforeSaving() {
