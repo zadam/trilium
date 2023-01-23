@@ -1106,16 +1106,19 @@ class BNote extends AbstractBeccaEntity {
         return minDistance;
     }
 
+    /** @returns {BNoteRevision[]} */
     getNoteRevisions() {
         return sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId])
             .map(row => new BNoteRevision(row));
     }
 
+    /** @returns {BNoteAttachment[]} */
     getNoteAttachments() {
         return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
             .map(row => new BNoteAttachment(row));
     }
 
+    /** @returns {BNoteAttachment|undefined} */
     getNoteAttachmentByName(name) {
         return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
             .map(row => new BNoteAttachment(row))
@@ -1442,6 +1445,7 @@ class BNote extends AbstractBeccaEntity {
         this.getNoteAttachments()
 
         const noteAttachment = new BNoteAttachment({
+            noteId: this.noteId,
             name,
             mime,
             isProtected: this.isProtected

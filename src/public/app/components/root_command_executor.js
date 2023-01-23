@@ -88,8 +88,12 @@ export default class RootCommandExecutor extends Component {
         await this.showAndHoistSubtree('_hidden');
     }
 
-    async showOptionsCommand() {
-        await this.showAndHoistSubtree('_options');
+    async showOptionsCommand({section}) {
+        await appContext.tabManager.openContextWithNote(
+            section || '_options',
+            true,
+            null,
+            '_options');
     }
 
     async showSQLConsoleHistoryCommand() {

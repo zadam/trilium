@@ -9,6 +9,7 @@ const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
 const noteRevisionService = require('../services/note_revisions');
+const noteAttachmentService = require('../services/note_attachments');
 const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
@@ -17,11 +18,11 @@ const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
 const BNote = require('../becca/entities/bnote');
 const BAttribute = require('../becca/entities/battribute');
+const BNoteAttachment = require("../becca/entities/bnote_attachment");
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
-const BNoteAttachment = require("../becca/entities/bnote_attachment.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -300,6 +301,7 @@ function protectNote(note, protect) {
         }
 
         noteRevisionService.protectNoteRevisions(note);
+        noteAttachmentService.protectNoteAttachments(note);
     }
     catch (e) {
         log.error(`Could not un/protect note ID = ${note.noteId}`);

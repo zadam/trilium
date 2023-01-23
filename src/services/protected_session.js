@@ -2,7 +2,6 @@
 
 const log = require('./log');
 const dataEncryptionService = require('./data_encryption');
-const options = require("./options");
 
 let dataKey = null;
 
@@ -64,6 +63,7 @@ function touchProtectedSession() {
 }
 
 function checkProtectedSessionExpiration() {
+    const options = require("./options");
     const protectedSessionTimeout = options.getOptionInt('protectedSessionTimeout');
     if (isProtectedSessionAvailable()
         && lastProtectedSessionOperationDate

@@ -125,12 +125,12 @@ class BNoteAttachment extends AbstractBeccaEntity {
         return {
             noteAttachmentId: this.noteAttachmentId,
             noteId: this.noteId,
-            mime: this.mime,
-            isProtected: this.isProtected,
             name: this.name,
+            mime: this.mime,
+            isProtected: !!this.isProtected,
+            isDeleted: false,
             utcDateModified: this.utcDateModified,
             content: this.content,
-            contentLength: this.contentLength
         };
     }
 
