@@ -592,7 +592,7 @@ function saveNoteRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteContent(noteId, content) {
+function updateNoteData(noteId, content, attachments = []) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
@@ -604,6 +604,10 @@ function updateNoteContent(noteId, content) {
     content = saveLinks(note, content);
 
     note.setContent(content);
+
+    for (const {name, mime, content} of attachments) {
+        note.saveNoteAttachment(name, mime, content);
+    }
 }
 
 /**
@@ -998,7 +1002,7 @@ sqlInit.dbReady.then(() => {
 module.exports = {
     createNewNote,
     createNewNoteWithTarget,
-    updateNoteContent,
+    updateNoteData,
     undeleteNote,
     protectNoteRecursively,
     scanForLinks,

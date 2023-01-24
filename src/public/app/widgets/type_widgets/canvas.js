@@ -246,7 +246,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
      * gets data from widget container that will be sent via spacedUpdate.scheduleUpdate();
      * this is automatically called after this.saveData();
      */
-    async getContent() {
+    async getData() {
         const elements = this.excalidrawRef.current.getSceneElements();
         const appState = this.excalidrawRef.current.getAppState();
 
@@ -277,14 +277,21 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         })
 
         const content = {
-            _meta: "This note has type `canvas`. It uses excalidraw and stores an exported svg alongside.",
-            elements, // excalidraw
-            appState, // excalidraw
-            files: activeFiles, // excalidraw
-            svg: svgString, // not needed for excalidraw, used for note_short, content, and image api
+            elements,
+            appState,
+            files: activeFiles
         };
 
-        return JSON.stringify(content);
+        return {
+            content: JSON.stringify(content),
+            attachments: [
+                {
+                    name: 'canvasSvg',
+                    mime: 'image/svg+xml',
+                    content: svgString
+                }
+            ]
+        };
     }
 
     /**

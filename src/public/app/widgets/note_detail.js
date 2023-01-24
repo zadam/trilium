@@ -74,16 +74,16 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             const {note} = this.noteContext;
             const {noteId} = note;
 
-            const content = await this.getTypeWidget().getContent();
+            const data = await this.getTypeWidget().getData();
 
             // for read only notes
-            if (content === undefined) {
+            if (data === undefined) {
                 return;
             }
 
             protectedSessionHolder.touchProtectedSessionIfNecessary(note);
 
-            await server.put(`notes/${noteId}/content`, {content}, this.componentId);
+            await server.put(`notes/${noteId}/data`, data, this.componentId);
         });
 
         appContext.addBeforeUnloadListener(this);

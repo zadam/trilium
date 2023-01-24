@@ -118,7 +118,7 @@ function register(app) {
     apiRoute(GET, '/api/autocomplete', autocompleteApiRoute.getAutocomplete);
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
-    apiRoute(PUT, '/api/notes/:noteId/content', notesApiRoute.updateNoteContent);
+    apiRoute(PUT, '/api/notes/:noteId/data', notesApiRoute.updateNoteData);
     apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
     apiRoute(POST, '/api/notes/:noteId/revision', notesApiRoute.forceSaveNoteRevision);
