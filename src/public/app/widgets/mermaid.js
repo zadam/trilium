@@ -1,6 +1,7 @@
 import libraryLoader from "../services/library_loader.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import froca from "../services/froca.js";
+import server from "../services/server.js";
 
 const TPL = `<div class="mermaid-widget">
     <style>
@@ -75,6 +76,14 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         try {
             const renderedSvg = await this.renderSvg();
             this.$display.html(renderedSvg);
+
+            // not awaiting intentionally
+            // this is pretty hacky since we update attachment on render
+            // but if nothing changed this should not trigger DB write and sync
+            server.put(`notes/${note.noteId}/attachments/mermaidSvg`, {
+                mime: 'image/svg+xml',
+                content: renderedSvg
+            });
 
             await wheelZoomLoaded;
 

@@ -127,6 +127,19 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
+function saveNoteAttachment(req) {
+    const {noteId, name} = req.params;
+    const {mime, content} = req.body;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+    }
+
+    note.saveNoteAttachment(name, mime, content);
+}
+
 function getRelationMap(req) {
     const {relationMapNoteId, noteIds} = req.body;
 
@@ -340,5 +353,6 @@ module.exports = {
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
     uploadModifiedFile,
-    forceSaveNoteRevision
+    forceSaveNoteRevision,
+    saveNoteAttachment
 };

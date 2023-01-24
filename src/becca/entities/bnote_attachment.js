@@ -22,8 +22,16 @@ class BNoteAttachment extends AbstractBeccaEntity {
     constructor(row) {
         super();
 
-        /** @type {string} */
-        this.noteAttachmentId = row.noteAttachmentId;
+        if (!row.noteId) {
+            throw new Error("'noteId' must be given to initialize a NoteAttachment entity");
+        }
+
+        if (!row.name) {
+            throw new Error("'name' must be given to initialize a NoteAttachment entity");
+        }
+
+        /** @type {string} needs to be set at the initialization time since it's used in the .setContent() */
+        this.noteAttachmentId = row.noteAttachmentId || `${this.noteId}_${this.name}`;
         /** @type {string} */
         this.noteId = row.noteId;
         /** @type {string} */
@@ -82,6 +90,9 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     setContent(content) {
+        this.contentCheckSum = this.calculateCheckSum(content);
+        this.save();
+
         const pojo = {
             noteAttachmentId: this.noteAttachmentId,
             content: content,
@@ -99,14 +110,12 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
         sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
 
-        this.contentCheckSum = this.calculateCheckSum(pojo.content);
-
         entityChangesService.addEntityChange({
             entityName: 'note_attachment_contents',
             entityId: this.noteAttachmentId,
             hash: this.contentCheckSum,
             isErased: false,
-            utcDateChanged: this.getUtcDateChanged(),
+            utcDateChanged: pojo.utcDateModified,
             isSynced: true
         });
     }
@@ -134,6 +143,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
             name: this.name,
             mime: this.mime,
             isProtected: !!this.isProtected,
+            contentCheckSum: this.contentCheckSum,
             isDeleted: false,
             utcDateModified: this.utcDateModified,
             content: this.content,
