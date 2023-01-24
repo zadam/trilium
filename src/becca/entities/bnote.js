@@ -1442,16 +1442,21 @@ class BNote extends AbstractBeccaEntity {
      * @returns {BNoteAttachment}
      */
     saveNoteAttachment(name, mime, content) {
-        this.getNoteAttachments()
+        let noteAttachment = this.getNoteAttachmentByName(name);
 
-        const noteAttachment = new BNoteAttachment({
+        if (noteAttachment
+            && noteAttachment.mime === mime
+            && noteAttachment.contentCheckSum === noteAttachment.calculateCheckSum(content)) {
+
+            return noteAttachment; // no change
+        }
+
+        noteAttachment = new BNoteAttachment({
             noteId: this.noteId,
             name,
             mime,
             isProtected: this.isProtected
         });
-
-        noteAttachment.save();
 
         noteAttachment.setContent(content);
 

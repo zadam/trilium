@@ -33,6 +33,8 @@ class BNoteAttachment extends AbstractBeccaEntity {
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
         /** @type {string} */
+        this.contentCheckSum = row.contentCheckSum;
+        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
 
@@ -97,16 +99,20 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
         sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
 
-        const hash = utils.hash(`${this.noteAttachmentId}|${pojo.content.toString()}`);
+        this.contentCheckSum = this.calculateCheckSum(pojo.content);
 
         entityChangesService.addEntityChange({
             entityName: 'note_attachment_contents',
             entityId: this.noteAttachmentId,
-            hash: hash,
+            hash: this.contentCheckSum,
             isErased: false,
             utcDateChanged: this.getUtcDateChanged(),
             isSynced: true
         });
+    }
+
+    calculateCheckSum(content) {
+        return utils.hash(`${this.noteAttachmentId}|${content.toString()}`);
     }
 
     beforeSaving() {
