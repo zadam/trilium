@@ -256,6 +256,9 @@ function transactional(func) {
             require('../becca/becca_loader').load();
         }
 
+        // the maxEntityChangeId has been incremented during failed transaction, need to recalculate
+        require('./entity_changes').recalculateMaxEntityChangeId();
+
         throw e;
     }
 }

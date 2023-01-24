@@ -95,9 +95,9 @@ export default class RecentChangesDialog extends BasicWidget {
 
                                     this.$widget.modal('hide');
 
-                                    setTimeout(() => {
-                                        appContext.tabManager.getActiveContext().setNote(change.noteId);
-                                    }, 1000);
+                                    await ws.waitForMaxKnownEntityChangeId();
+
+                                    appContext.tabManager.getActiveContext().setNote(change.noteId);
                                 }
                             });
 
