@@ -240,8 +240,8 @@ const HIDDEN_SUBTREE_DEFINITION = {
     ]
 };
 
-function checkHiddenSubtree() {
-    if (!migrationService.isDbUpToDate()) {
+function checkHiddenSubtree(force = false) {
+    if (!force && !migrationService.isDbUpToDate()) {
         // on-delete hook might get triggered during some future migration and cause havoc
         log.info("Will not check hidden subtree until migration is finished.");
         return;

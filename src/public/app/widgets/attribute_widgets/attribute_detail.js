@@ -242,6 +242,7 @@ const ATTR_HELP = {
         "keepCurrentHoisting": "Opening this link won't change hoisting even if the note is not displayable in the current hoisted subtree.",
         "executeButton": "Title of the button which will execute the current code note",
         "executeDescription": "Longer description of the current code note displayed together with the execute button",
+        "excludeFromNoteMap": "Notes with this label will be hidden from the Note Map"
     },
     "relation": {
         "runOnNoteCreation": "executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",
