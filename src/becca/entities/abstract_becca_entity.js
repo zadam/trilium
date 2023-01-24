@@ -80,14 +80,14 @@ class AbstractBeccaEntity {
      *
      * @returns {this}
      */
-    save() {
+    save(opts = {}) {
         const entityName = this.constructor.entityName;
         const primaryKeyName = this.constructor.primaryKeyName;
 
         const isNewEntity = !this[primaryKeyName];
 
         if (this.beforeSaving) {
-            this.beforeSaving();
+            this.beforeSaving(opts);
         }
 
         const pojo = this.getPojoToSave();

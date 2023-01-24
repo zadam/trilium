@@ -176,8 +176,10 @@ class BAttribute extends AbstractBeccaEntity {
         return !(this.attributeId in this.becca.attributes);
     }
 
-    beforeSaving() {
-        this.validate();
+    beforeSaving(opts = {}) {
+        if (!opts.skipValidation) {
+            this.validate();
+        }
 
         this.name = sanitizeAttributeName(this.name);
 
