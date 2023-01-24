@@ -15,6 +15,8 @@ class NoteContext extends Component {
         this.ntxId = ntxId || utils.randomString(4);
         this.hoistedNoteId = hoistedNoteId;
         this.mainNtxId = mainNtxId;
+
+        this.resetViewScope();
     }
 
     setEmpty() {
@@ -27,6 +29,8 @@ class NoteContext extends Component {
             noteContext: this,
             notePath: this.notePath
         });
+
+        this.resetViewScope();
     }
 
     isEmpty() {
@@ -47,7 +51,7 @@ class NoteContext extends Component {
         this.notePath = resolvedNotePath;
         ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
-        this.readOnlyTemporarilyDisabled = false;
+        this.resetViewScope();
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -60,6 +64,14 @@ class NoteContext extends Component {
             });
         }
 
+        await this.setHoistedNoteIfNeeded();
+
+        if (utils.isMobile()) {
+            this.triggerCommand('setActiveScreen', {screen: 'detail'});
+        }
+    }
+
+    async setHoistedNoteIfNeeded() {
         if (this.hoistedNoteId === 'root'
             && this.notePath.startsWith("root/_hidden")
             && !this.note.hasLabel("keepCurrentHoisting")
@@ -75,10 +87,6 @@ class NoteContext extends Component {
             }
 
             await this.setHoistedNoteId(hoistedNoteId);
-        }
-
-        if (utils.isMobile()) {
-            this.triggerCommand('setActiveScreen', {screen: 'detail'});
         }
     }
 
@@ -201,7 +209,7 @@ class NoteContext extends Component {
     }
 
     async isReadOnly() {
-        if (this.readOnlyTemporarilyDisabled) {
+        if (this.viewScope.readOnlyTemporarilyDisabled) {
             return false;
         }
 
@@ -276,6 +284,13 @@ class NoteContext extends Component {
             resolve,
             ntxId: this.ntxId
         }));
+    }
+
+    resetViewScope() {
+        // view scope contains data specific to one note context and one "view".
+        // it is used to e.g. make read-only note temporarily editable or to hide TOC
+        // this is reset after navigating to a different note
+        this.viewScope = {};
     }
 }
 

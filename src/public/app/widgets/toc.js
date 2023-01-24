@@ -17,6 +17,7 @@
 import attributeService from "../services/attributes.js";
 import RightPanelWidget from "./right_panel_widget.js";
 import options from "../services/options.js";
+import OnClickButtonWidget from "./buttons/onclick_button.js";
 
 const TPL = `<div class="toc-widget">
     <style>
@@ -24,6 +25,7 @@ const TPL = `<div class="toc-widget">
             padding: 10px;
             contain: none; 
             overflow: auto;
+            position: relative;
         }
         
         .toc ol {
@@ -41,53 +43,39 @@ const TPL = `<div class="toc-widget">
         .toc li:hover {
             font-weight: bold;
         }
+        
+        .close-toc {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+        }
     </style>
 
     <span class="toc"></span>
 </div>`;
 
-/**
- * Find a heading node in the parent's children given its index.
- *
- * @param {Element} parent Parent node to find a headingIndex'th in.
- * @param {uint} headingIndex Index for the heading
- * @returns {Element|null} Heading node with the given index, null couldn't be
- *          found (ie malformed like nested headings, etc.)
- */
-function findHeadingNodeByIndex(parent, headingIndex) {
-    let headingNode = null;
-    for (let i = 0; i < parent.childCount; ++i) {
-        let child = parent.getChild(i);
+export default class TocWidget extends RightPanelWidget {
+    constructor() {
+        super();
 
-        // Headings appear as flattened top level children in the CKEditor
-        // document named as "heading" plus the level, eg "heading2",
-        // "heading3", "heading2", etc. and not nested wrt the heading level. If
-        // a heading node is found, decrement the headingIndex until zero is
-        // reached
-        if (child.name.startsWith("heading")) {
-            if (headingIndex === 0) {
-                headingNode = child;
-                break;
-            }
-            headingIndex--;
-        }
+        this.closeTocButton = new CloseTocButton();
+        this.child(this.closeTocButton);
     }
 
-    return headingNode;
-}
-
-export default class TocWidget extends RightPanelWidget {
     get widgetTitle() {
         return "Table of Contents";
     }
 
     isEnabled() {
-        return super.isEnabled() && this.note.type === 'text';
+        return super.isEnabled()
+            && this.note.type === 'text'
+            && !this.noteContext.viewScope.tocTemporarilyHidden;
     }
 
     async doRenderBody() {
         this.$body.empty().append($(TPL));
         this.$toc = this.$body.find('.toc');
+        this.$body.find('.toc-widget').append(this.closeTocButton.render());
     }
 
     async refreshWithNote(note) {
@@ -95,7 +83,7 @@ export default class TocWidget extends RightPanelWidget {
 
         if (tocLabel?.value === 'hide') {
             this.toggleInt(false);
-            this.triggerCommand("reevaluateIsEnabled");
+            this.triggerCommand("reEvaluateRightPaneVisibility");
             return;
         }
 
@@ -112,7 +100,7 @@ export default class TocWidget extends RightPanelWidget {
             || headingCount >= options.getInt('minTocHeadings')
         );
 
-        this.triggerCommand("reevaluateIsEnabled");
+        this.triggerCommand("reEvaluateRightPaneVisibility");
     }
 
     /**
@@ -252,6 +240,12 @@ export default class TocWidget extends RightPanelWidget {
         }
     }
 
+    async closeTocCommand() {
+        this.noteContext.viewScope.tocTemporarilyHidden = true;
+        await this.refresh();
+        this.triggerCommand('reEvaluateRightPaneVisibility');
+    }
+
     async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
@@ -261,5 +255,51 @@ export default class TocWidget extends RightPanelWidget {
 
             await this.refresh();
         }
+    }
+}
+
+/**
+ * Find a heading node in the parent's children given its index.
+ *
+ * @param {Element} parent Parent node to find a headingIndex'th in.
+ * @param {uint} headingIndex Index for the heading
+ * @returns {Element|null} Heading node with the given index, null couldn't be
+ *          found (ie malformed like nested headings, etc.)
+ */
+function findHeadingNodeByIndex(parent, headingIndex) {
+    let headingNode = null;
+    for (let i = 0; i < parent.childCount; ++i) {
+        let child = parent.getChild(i);
+
+        // Headings appear as flattened top level children in the CKEditor
+        // document named as "heading" plus the level, eg "heading2",
+        // "heading3", "heading2", etc. and not nested wrt the heading level. If
+        // a heading node is found, decrement the headingIndex until zero is
+        // reached
+        if (child.name.startsWith("heading")) {
+            if (headingIndex === 0) {
+                headingNode = child;
+                break;
+            }
+            headingIndex--;
+        }
+    }
+
+    return headingNode;
+}
+
+class CloseTocButton extends OnClickButtonWidget {
+    constructor() {
+        super();
+
+        this.icon("bx-x")
+            .title("Close TOC")
+            .titlePlacement("bottom")
+            .onClick((widget, e) => {
+                e.stopPropagation();
+
+                widget.triggerCommand("closeToc");
+            })
+            .class("icon-action close-toc");
     }
 }

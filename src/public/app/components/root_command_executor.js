@@ -10,7 +10,7 @@ import froca from "../services/froca.js";
 export default class RootCommandExecutor extends Component {
     editReadOnlyNoteCommand() {
         const noteContext = appContext.tabManager.getActiveContext();
-        noteContext.readOnlyTemporarilyDisabled = true;
+        noteContext.viewScope.readOnlyTemporarilyDisabled = true;
 
         appContext.triggerEvent("readOnlyTemporarilyDisabled", { noteContext });
     }

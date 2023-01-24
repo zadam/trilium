@@ -24,17 +24,17 @@ export default class RightPaneContainer extends FlexContainer {
             // we'll reevaluate the visibility based on events which are probable to cause visibility change
             // but these events needs to be finished and only then we check
             if (promise) {
-                promise.then(() => this.reevaluateIsEnabledCommand());
+                promise.then(() => this.reEvaluateRightPaneVisibilityCommand());
             }
             else {
-                this.reevaluateIsEnabledCommand();
+                this.reEvaluateRightPaneVisibilityCommand();
             }
         }
 
         return promise;
     }
 
-    reevaluateIsEnabledCommand() {
+    reEvaluateRightPaneVisibilityCommand() {
         const oldToggle = !this.isHiddenInt();
         const newToggle = this.isEnabled();
 
