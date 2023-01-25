@@ -14,6 +14,7 @@ const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
+const BNoteAttachment = require("../../becca/entities/bnote_attachment");
 
 /**
  * @param {TaskContext} taskContext
@@ -64,6 +65,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
 
         let parent;
+        let attachmentMeta = false;
 
         for (const segment of pathSegments) {
             if (!cursor || !cursor.children || cursor.children.length === 0) {
@@ -71,12 +73,29 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             parent = cursor;
-            cursor = cursor.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
+            cursor = parent.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
+
+            if (!cursor) {
+                for (const file of parent.children) {
+                    for (const attachment of file.attachments || []) {
+                        if (attachment.dataFileName === segment) {
+                            cursor = file;
+                            attachmentMeta = attachment;
+                            break;
+                        }
+                    }
+
+                    if (cursor) {
+                        break;
+                    }
+                }
+            }
         }
 
         return {
             parentNoteMeta: parent,
-            noteMeta: cursor
+            noteMeta: cursor,
+            attachmentMeta
         };
     }
 
@@ -354,13 +373,25 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function saveNote(filePath, content) {
-        const {parentNoteMeta, noteMeta} = getMeta(filePath);
+        const {parentNoteMeta, noteMeta, attachmentMeta} = getMeta(filePath);
 
         if (noteMeta?.noImport) {
             return;
         }
 
         const noteId = getNoteId(noteMeta, filePath);
+
+        if (attachmentMeta) {
+            const noteAttachment = new BNoteAttachment({
+                noteId,
+                name: attachmentMeta.name,
+                mime: attachmentMeta.mime
+            });
+
+            noteAttachment.setContent(content);
+            return;
+        }
+
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (!parentNoteId) {

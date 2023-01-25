@@ -58,7 +58,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         }
     }
 
-    function getDataFileName(note, baseFileName, existingFileNames) {
+    function getDataFileName(type, mime, baseFileName, existingFileNames) {
         let fileName = baseFileName;
 
         let existingExtension = path.extname(fileName).toLowerCase();
@@ -70,24 +70,25 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         // following two are handled specifically since we always want to have these extensions no matter the automatic detection
         // and/or existing detected extensions in the note name
-        if (note.type === 'text' && format === 'markdown') {
+        if (type === 'text' && format === 'markdown') {
             newExtension = 'md';
         }
-        else if (note.type === 'text' && format === 'html') {
+        else if (type === 'text' && format === 'html') {
             newExtension = 'html';
         }
-        else if (note.mime === 'application/x-javascript' || note.mime === 'text/javascript') {
+        else if (mime === 'application/x-javascript' || mime === 'text/javascript') {
             newExtension = 'js';
         }
         else if (existingExtension.length > 0) { // if the page already has an extension, then we'll just keep it
             newExtension = null;
         }
         else {
-            if (note.mime?.toLowerCase()?.trim() === "image/jpg") {
+            if (mime?.toLowerCase()?.trim() === "image/jpg") {
                 newExtension = 'jpg';
-            }
-            else {
-                newExtension = mimeTypes.extension(note.mime) || "dat";
+            } else if (mime?.toLowerCase()?.trim() === "text/mermaid") {
+                newExtension = 'txt';
+            } else {
+                newExtension = mimeTypes.extension(mime) || "dat";
             }
         }
 
@@ -166,7 +167,25 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         // if it's a leaf then we'll export it even if it's empty
         if (available && (note.getContent().length > 0 || childBranches.length === 0)) {
-            meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
+            meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
+        }
+
+        const attachments = note.getNoteAttachments();
+
+        if (attachments.length > 0) {
+            meta.attachments = attachments
+                .filter(attachment => ["canvasSvg", "mermaidSvg"].includes(attachment.name))
+                .map(attachment => ({
+
+                name: attachment.name,
+                mime: attachment.mime,
+                dataFileName: getDataFileName(
+                    null,
+                    attachment.mime,
+                    baseFileName + "_" + attachment.name,
+                    existingFileNames
+                )
+            }));
         }
 
         if (childBranches.length > 0) {
@@ -215,8 +234,15 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
 
-        // link can target note which is only "folder-note" and as such will not have a file in an export
-        url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
+        // for some note types it's more user-friendly to see the attachment (if exists) instead of source note
+        const preferredAttachment = (meta.attachments || []).find(attachment => ['mermaidSvg', 'canvasSvg'].includes(attachment.name));
+
+        if (preferredAttachment) {
+            url += encodeURIComponent(preferredAttachment.dataFileName);
+        } else {
+            // link can target note which is only "folder-note" and as such will not have a file in an export
+            url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
+        }
 
         return url;
     }
@@ -310,10 +336,23 @@ ${markdownContent}`;
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, note.getContent(), noteMeta);
 
-            archive.append(content, { name: filePathPrefix + noteMeta.dataFileName, date: dateUtils.parseDateTime(note.utcDateModified) });
+            archive.append(content, {
+                name: filePathPrefix + noteMeta.dataFileName,
+                date: dateUtils.parseDateTime(note.utcDateModified)
+            });
         }
 
         taskContext.increaseProgressCount();
+
+        for (const attachmentMeta of noteMeta.attachments || []) {
+            const noteAttachment = note.getNoteAttachmentByName(attachmentMeta.name);
+            const content = noteAttachment.getContent();
+
+            archive.append(content, {
+                name: filePathPrefix + attachmentMeta.dataFileName,
+                date: dateUtils.parseDateTime(note.utcDateModified)
+            });
+        }
 
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;

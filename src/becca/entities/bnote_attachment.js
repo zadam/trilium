@@ -91,7 +91,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     setContent(content) {
         this.contentCheckSum = this.calculateCheckSum(content);
-        this.save();
+        this.save(); // also explicitly save note_attachment to update contentCheckSum
 
         const pojo = {
             noteAttachmentId: this.noteAttachmentId,
