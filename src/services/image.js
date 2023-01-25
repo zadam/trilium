@@ -9,10 +9,11 @@ const sql = require('./sql');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
-const noteRevisionService = require('./note_revisions');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 const htmlSanitizer = require("./html_sanitizer");
+const OCRAD = require('ocrad.js');
+const Canvas = require('canvas');
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -82,7 +83,19 @@ function updateImage(noteId, uploadBuffer, originalName) {
             note.save();
 
             note.setContent(buffer);
-        })
+        });
+
+        const start = Date.now();
+        const img = new Canvas.Image();
+        img.src = buffer;
+        const canvas = new Canvas.createCanvas(img.width, img.height);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        const text = OCRAD(canvas);
+
+        console.log(text);
+
+        log.info(`OCR of ${buffer.byteLength} bytes took ${Date.now() - start}ms`);
     });
 }
 
@@ -146,8 +159,7 @@ async function shrinkImage(buffer, originalName) {
         finalImageBuffer = await resize(buffer, jpegQuality);
     }
     catch (e) {
-        log.error(`Failed to resize image '${originalName}'
-Stack: ${e.stack}`);
+        log.error(`Failed to resize image '${originalName}', stack: ${e.stack}`);
 
         finalImageBuffer = buffer;
     }
@@ -164,6 +176,8 @@ Stack: ${e.stack}`);
 async function resize(buffer, quality) {
     const imageMaxWidthHeight = optionService.getOptionInt('imageMaxWidthHeight');
 
+    const start = Date.now();
+
     const image = await jimp.read(buffer);
 
     if (image.bitmap.width > image.bitmap.height && image.bitmap.width > imageMaxWidthHeight) {
@@ -178,7 +192,11 @@ async function resize(buffer, quality) {
     // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
     image.background(0xFFFFFFFF);
 
-    return await image.getBufferAsync(jimp.MIME_JPEG);
+    const resultBuffer = await image.getBufferAsync(jimp.MIME_JPEG);
+
+    log.info(`Resizing image of ${resultBuffer.byteLength} took ${Date.now() - start}ms`);
+
+    return resultBuffer;
 }
 
 module.exports = {
