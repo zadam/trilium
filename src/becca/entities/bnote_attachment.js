@@ -90,33 +90,34 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     setContent(content) {
-        this.contentCheckSum = this.calculateCheckSum(content);
-        this.save(); // also explicitly save note_attachment to update contentCheckSum
+        sql.transactional(() => {
+            this.contentCheckSum = this.calculateCheckSum(content);
+            this.save(); // also explicitly save note_attachment to update contentCheckSum
 
-        const pojo = {
-            noteAttachmentId: this.noteAttachmentId,
-            content: content,
-            utcDateModified: dateUtils.utcNowDateTime()
-        };
+            const pojo = {
+                noteAttachmentId: this.noteAttachmentId,
+                content: content,
+                utcDateModified: dateUtils.utcNowDateTime()
+            };
 
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                pojo.content = protectedSessionService.encrypt(pojo.content);
+            if (this.isProtected) {
+                if (protectedSessionService.isProtectedSessionAvailable()) {
+                    pojo.content = protectedSessionService.encrypt(pojo.content);
+                } else {
+                    throw new Error(`Cannot update content of noteAttachmentId=${this.noteAttachmentId} since we're out of protected session.`);
+                }
             }
-            else {
-                throw new Error(`Cannot update content of noteAttachmentId=${this.noteAttachmentId} since we're out of protected session.`);
-            }
-        }
 
-        sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
+            sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
 
-        entityChangesService.addEntityChange({
-            entityName: 'note_attachment_contents',
-            entityId: this.noteAttachmentId,
-            hash: this.contentCheckSum,
-            isErased: false,
-            utcDateChanged: pojo.utcDateModified,
-            isSynced: true
+            entityChangesService.addEntityChange({
+                entityName: 'note_attachment_contents',
+                entityId: this.noteAttachmentId,
+                hash: this.contentCheckSum,
+                isErased: false,
+                utcDateChanged: pojo.utcDateModified,
+                isSynced: true
+            });
         });
     }
 

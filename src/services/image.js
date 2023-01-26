@@ -65,6 +65,24 @@ function getImageMimeFromExtension(ext) {
     return `image/${ext === 'svg' ? 'svg+xml' : ext}`;
 }
 
+function runOcr(note, buffer) {
+    if (!optionService.getOptionBool('ocrImages')) {
+        return;
+    }
+
+    const start = Date.now();
+    const img = new Canvas.Image();
+    img.src = buffer;
+    const canvas = new Canvas.createCanvas(img.width, img.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, img.width, img.height);
+    const plainText = OCRAD(canvas);
+
+    log.info(`OCR of ${buffer.byteLength} image bytes into ${plainText.length} chars of text took ${Date.now() - start}ms`);
+
+    note.saveNoteAttachment('plainText', 'text/plain', plainText);
+}
+
 function updateImage(noteId, uploadBuffer, originalName) {
     log.info(`Updating image ${noteId}: ${originalName}`);
 
@@ -85,17 +103,7 @@ function updateImage(noteId, uploadBuffer, originalName) {
             note.setContent(buffer);
         });
 
-        const start = Date.now();
-        const img = new Canvas.Image();
-        img.src = buffer;
-        const canvas = new Canvas.createCanvas(img.width, img.height);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-        const text = OCRAD(canvas);
-
-        console.log(text);
-
-        log.info(`OCR of ${buffer.byteLength} bytes took ${Date.now() - start}ms`);
+        runOcr(note, buffer);
     });
 }
 
@@ -136,7 +144,9 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
             note.save();
 
             note.setContent(buffer);
-        })
+        });
+
+        runOcr(note, buffer);
     });
 
     return {
