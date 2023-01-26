@@ -23,6 +23,7 @@ const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
+const textExtractingService = require("./text_extracting");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -191,7 +192,7 @@ function createNewNote(params) {
             }
         }
 
-        scanForLinks(note);
+        asyncPostProcessContent(note, params.content);
 
         copyChildAttributes(parentNote, note);
 
@@ -492,7 +493,7 @@ function downloadImages(noteId, content) {
                 if (updatedContent !== origContent) {
                     origNote.setContent(updatedContent);
 
-                    scanForLinks(origNote);
+                    asyncPostProcessContent(origNote, updatedContent);
 
                     eventService.emit(eventService.ENTITY_CHANGED, {
                         entityName: 'note_contents',
@@ -711,13 +712,12 @@ function getUndeletedParentBranchIds(noteId, deleteId) {
                       AND parentNote.isDeleted = 0`, [noteId, deleteId]);
 }
 
-function scanForLinks(note) {
+function scanForLinks(note, content) {
     if (!note || !['text', 'relationMap'].includes(note.type)) {
         return;
     }
 
     try {
-        const content = note.getContent();
         const newContent = saveLinks(note, content);
 
         if (content !== newContent) {
@@ -727,6 +727,30 @@ function scanForLinks(note) {
     catch (e) {
         log.error(`Could not scan for links note ${note.noteId}: ${e.message} ${e.stack}`);
     }
+}
+
+function runOcr(note, buffer) {
+    if (!note.isImage() || !optionService.getOptionBool('ocrImages')) {
+        return;
+    }
+
+    try {
+        const plainText = textExtractingService.ocrTextFromBuffer(buffer);
+
+        note.saveNoteAttachment('plainText', 'text/plain', plainText);
+    }
+    catch (e) {
+        log.error(`OCR on note '${note.noteId}' failed with error '${e.message}', stack ${e.stack}`);
+    }
+}
+
+/**
+ * Things which have to be executed after updating content, but asynchronously (separate transaction)
+ */
+async function asyncPostProcessContent(note, content) {
+    scanForLinks(note, content);
+    runOcr(note, content);
+    await textExtractingService.extractTextFromPdf(note, content);
 }
 
 function eraseNotes(noteIdsToErase) {
@@ -1006,7 +1030,6 @@ module.exports = {
     updateNoteData,
     undeleteNote,
     protectNoteRecursively,
-    scanForLinks,
     duplicateSubtree,
     duplicateSubtreeWithoutRoot,
     getUndeletedParentBranchIds,
@@ -1014,5 +1037,6 @@ module.exports = {
     eraseDeletedNotesNow,
     eraseNotesWithDeleteId,
     saveNoteRevisionIfNeeded,
-    downloadImages
+    downloadImages,
+    asyncPostProcessContent
 };

@@ -91,6 +91,7 @@ const defaultOptions = [
     { name: 'disableTray', value: 'false', isSynced: false },
     { name: 'userGuideSha256Hash', value: '', isSynced: true },
     { name: 'ocrImages', value: 'true', isSynced: true },
+    { name: 'extractTextFromPdf', value: 'true', isSynced: true },
 ];
 
 function initStartupOptions() {

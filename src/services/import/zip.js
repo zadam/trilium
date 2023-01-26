@@ -520,7 +520,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     });
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
-        noteService.scanForLinks(becca.getNote(noteId));
+        const note = becca.getNote(noteId);
+        await noteService.asyncPostProcessContent(note, note.getContent());
 
         if (!metaFile) {
             // if there's no meta file then the notes are created based on the order in that zip file but that

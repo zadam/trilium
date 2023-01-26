@@ -335,7 +335,7 @@ function importEnex(taskContext, file, parentNote) {
         // save updated content with links to files/images
         noteEntity.setContent(content);
 
-        noteService.scanForLinks(noteEntity);
+        noteService.asyncPostProcessContent(noteEntity, content);
 
         updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
     }

@@ -351,6 +351,12 @@ class BNote extends AbstractBeccaEntity {
             && this.mime === "text/html";
     }
 
+    /** @returns {boolean} true if this note is an image */
+    isImage() {
+        return this.type === 'image'
+            || (this.type === 'file' && this.mime?.startsWith('image/'));
+    }
+
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
         return utils.isStringNote(this.type, this.mime);

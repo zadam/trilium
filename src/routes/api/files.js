@@ -3,7 +3,7 @@
 const protectedSessionService = require('../../services/protected_session');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
-const noteRevisionService = require('../../services/note_revisions');
+const noteService = require('../../services/notes');
 const tmp = require('tmp');
 const fs = require('fs');
 const { Readable } = require('stream');
@@ -31,21 +31,7 @@ function updateFile(req) {
 
     note.setLabel('originalFileName', file.originalname);
 
-    if (note.mime === 'application/pdf') {
-        const pdfjsLib = require("pdfjs-dist");
-
-        (async () =>
-        {
-            let doc = await pdfjsLib.getDocument({data: file.buffer}).promise;
-            let page1 = await doc.getPage(1);
-            let content = await page1.getTextContent();
-            let strings = content.items.map(function (item) {
-                return item.str;
-            });
-
-            console.log(strings);
-        })();
-    }
+    noteService.asyncPostProcessContent(note, file.buffer);
 
     return {
         uploaded: true

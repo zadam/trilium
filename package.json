@@ -24,7 +24,7 @@
     "test-jasmine": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
     "test": "npm run test-jasmine && npm run test-es6",
-    "postinstall": "rimraf ./node_modules/canvas"
+    "postinstall": "node src-build/fix_pdfjs.js"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
@@ -72,7 +72,7 @@
     "normalize-strings": "1.1.1",
     "ocrad.js": "antimatter15/ocrad.js#master",
     "open": "8.4.0",
-    "pdfjs-dist": "2.8.335",
+    "pdfjs-dist": "3.2.146",
     "rand-token": "1.0.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",

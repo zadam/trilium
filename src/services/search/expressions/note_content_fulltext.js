@@ -53,7 +53,9 @@ class NoteContentFulltextExp extends Expression {
                 FROM note_attachments JOIN note_attachment_contents USING (noteAttachmentId) 
                 WHERE name IN ('plainText') AND isDeleted = 0`)) {
 
-            this.findInText(row, inputNoteSet, resultNoteSet);
+            if (!resultNoteSet.hasNoteId(row.noteId)) {
+                this.findInText(row, inputNoteSet, resultNoteSet);
+            }
         }
 
         return resultNoteSet;

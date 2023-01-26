@@ -123,7 +123,7 @@ function register(router) {
 
         note.setContent(req.body);
 
-        noteService.scanForLinks(note);
+        noteService.asyncPostProcessContent(note, req.body);
 
         return res.sendStatus(204);
     });
