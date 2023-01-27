@@ -393,7 +393,7 @@ class FNote {
         if (!type && !name) {
             return attributes;
         } else if (type && name) {
-            return attributes.filter(attr => attr.type === type && attr.name === name);
+            return attributes.filter(attr => attr.name === name && attr.type === type);
         } else if (type) {
             return attributes.filter(attr => attr.type === type);
         } else if (name) {
