@@ -747,8 +747,15 @@ class BNote extends AbstractBeccaEntity {
     // will sort the parents so that the non-archived are first and archived at the end
     // this is done so that the non-archived paths are always explored as first when looking for note path
     sortParents() {
-        this.parentBranches.sort((a, b) =>
-            a.parentNote?.hasInheritableArchivedLabel() ? 1 : -1);
+        this.parentBranches.sort((a, b) => {
+            if (a.parentNote?.isArchived) {
+                return 1;
+            } else if (a.parentNote?.isHiddenCompletely()) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
 
         this.parents = this.parentBranches
             .map(branch => branch.parentNote)
@@ -1166,7 +1173,23 @@ class BNote extends AbstractBeccaEntity {
      * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
      */
     isHiddenCompletely() {
-        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+        if (this.noteId === 'root') {
+            return false;
+        }
+
+        for (const parentNote of this.parents) {
+            if (parentNote.noteId === 'root') {
+                return false;
+            } else if (parentNote.noteId === '_hidden') {
+                continue;
+            }
+
+            if (!parentNote.isHiddenCompletely()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

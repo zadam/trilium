@@ -20,7 +20,7 @@ function isHoistedInHiddenSubtree() {
         throw new Error(`Cannot find hoisted note ${hoistedNoteId}`);
     }
 
-    return hoistedNote.hasAncestor('_hidden');
+    return hoistedNote.isHiddenCompletely();
 }
 
 function getHoistedNote() {

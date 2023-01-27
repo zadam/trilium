@@ -199,12 +199,16 @@ class FNote {
 
             const aNote = this.froca.getNoteFromCache([aNoteId]);
 
-            if (aNote.hasLabel('archived')) {
+            if (aNote.isArchived || aNote.isHiddenCompletely()) {
                 return 1;
             }
 
             return -1;
         });
+    }
+
+    get isArchived() {
+        return this.hasAttribute('label', 'archived');
     }
 
     /** @returns {string[]} */
@@ -338,7 +342,7 @@ class FNote {
         const notePaths = this.getAllNotePaths().map(path => ({
             notePath: path,
             isInHoistedSubTree: path.includes(hoistedNotePath),
-            isArchived: path.find(noteId => froca.notes[noteId].hasLabel('archived')),
+            isArchived: path.find(noteId => froca.notes[noteId].isArchived),
             isSearch: path.find(noteId => froca.notes[noteId].type === 'search'),
             isHidden: path.includes('_hidden')
         }));
@@ -364,7 +368,23 @@ class FNote {
      * @return boolean - true if there's no non-hidden path, note is not cloned to the visible tree
      */
     isHiddenCompletely() {
-        return !this.getAllNotePaths().find(notePathArr => !notePathArr.includes('_hidden'));
+        if (this.noteId === 'root') {
+            return false;
+        }
+
+        for (const parentNote of this.getParentNotes()) {
+            if (parentNote.noteId === 'root') {
+                return false;
+            } else if (parentNote.noteId === '_hidden') {
+                continue;
+            }
+
+            if (!parentNote.isHiddenCompletely()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     __filterAttrs(attributes, type, name) {
@@ -521,9 +541,9 @@ class FNote {
      * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getOwnedAttribute(type, name) {
-        const attributes = this.getOwnedAttributes(type, name);
+        const attributes = this.getOwnedAttributes();
 
-        return attributes.length > 0 ? attributes[0] : 0;
+        return attributes.find(attr => attr.name === name && attr.type === type);
     }
 
     /**
@@ -532,9 +552,9 @@ class FNote {
      * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
-        const attributes = this.getAttributes(type, name);
+        const attributes = this.getAttributes();
 
-        return attributes.length > 0 ? attributes[0] : null;
+        return attributes.find(attr => attr.name === name && attr.type === type);
     }
 
     /**
