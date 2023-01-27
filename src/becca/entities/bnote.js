@@ -386,11 +386,10 @@ class BNote extends AbstractBeccaEntity {
      */
     getAttributes(type, name) {
         this.__validateTypeName(type, name);
-
-        this.__getAttributes([]);
+        this.__ensureAttributeCacheIsAvailable();
 
         if (type && name) {
-            return this.__attributeCache.filter(attr => attr.type === type && attr.name === name);
+            return this.__attributeCache.filter(attr => attr.name === name && attr.type === type);
         }
         else if (type) {
             return this.__attributeCache.filter(attr => attr.type === type);
@@ -401,6 +400,13 @@ class BNote extends AbstractBeccaEntity {
         else {
             // a bit unsafe to return the original array, but defensive copy would be costly
             return this.__attributeCache;
+        }
+    }
+
+    /** @private */
+    __ensureAttributeCacheIsAvailable() {
+        if (!this.__attributeCache) {
+            this.__getAttributes([]);
         }
     }
 
@@ -498,9 +504,9 @@ class BNote extends AbstractBeccaEntity {
      */
     hasAttribute(type, name, value = null) {
         return !!this.getAttributes().find(attr =>
-            attr.type === type
-            && attr.name === name
+            attr.name === name
             && (value === undefined || value === null || attr.value === value)
+            && attr.type === type
         );
     }
 
@@ -509,13 +515,13 @@ class BNote extends AbstractBeccaEntity {
         value = value ? value.toLowerCase() : null;
 
         return this.getAttributes().find(
-            attr => attr.type === type
-            && attr.name.toLowerCase() === name
-            && (!value || attr.value.toLowerCase() === value));
+            attr => attr.name.toLowerCase() === name
+            && (!value || attr.value.toLowerCase() === value)
+            && attr.type === type);
     }
 
     getRelationTarget(name) {
-        const relation = this.getAttributes().find(attr => attr.type === 'relation' && attr.name === name);
+        const relation = this.getAttributes().find(attr => attr.name === name && attr.type === 'relation');
 
         return relation ? relation.targetNote : null;
     }
@@ -614,7 +620,7 @@ class BNote extends AbstractBeccaEntity {
     getAttribute(type, name) {
         const attributes = this.getAttributes();
 
-        return attributes.find(attr => attr.type === type && attr.name === name);
+        return attributes.find(attr => attr.name === name && attr.type === type);
     }
 
     /**
@@ -697,10 +703,10 @@ class BNote extends AbstractBeccaEntity {
         this.__validateTypeName(type, name);
 
         if (type && name && value !== undefined && value !== null) {
-            return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name && attr.value === value);
+            return this.ownedAttributes.filter(attr => attr.name === name && attr.value === value && attr.type === type);
         }
         else if (type && name) {
-            return this.ownedAttributes.filter(attr => attr.type === type && attr.name === name);
+            return this.ownedAttributes.filter(attr => attr.name === name && attr.type === type);
         }
         else if (type) {
             return this.ownedAttributes.filter(attr => attr.type === type);
@@ -728,16 +734,21 @@ class BNote extends AbstractBeccaEntity {
         return this.hasAttribute('label', 'archived');
     }
 
-    hasInheritableOwnedArchivedLabel() {
-        return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
+    hasInheritableArchivedLabel() {
+        for (const attr of this.getAttributes()) {
+            if (attr.name === 'archived' && attr.type === LABEL && attr.isInheritable) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    // will sort the parents so that non-search & non-archived are first and archived at the end
-    // this is done so that non-search & non-archived paths are always explored as first when looking for note path
+    // will sort the parents so that the non-archived are first and archived at the end
+    // this is done so that the non-archived paths are always explored as first when looking for note path
     sortParents() {
         this.parentBranches.sort((a, b) =>
-            a.branchId.startsWith('virt-') // FIXME: search virtual notes appear only in froca so this is probably not necessary
-            || a.parentNote?.hasInheritableOwnedArchivedLabel() ? 1 : -1);
+            a.parentNote?.hasInheritableArchivedLabel() ? 1 : -1);
 
         this.parents = this.parentBranches
             .map(branch => branch.parentNote)
@@ -1032,7 +1043,7 @@ class BNote extends AbstractBeccaEntity {
     }
 
     get ownedAttributeCount() {
-        return this.getAttributes().length;
+        return this.getOwnedAttributes().length;
     }
 
     /** @returns {BNote[]} */

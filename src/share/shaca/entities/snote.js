@@ -126,7 +126,9 @@ class SNote extends AbstractShacaEntity {
      * @returns {SAttribute[]} all note's attributes, including inherited ones
      */
     getAttributes(type, name) {
-        this.__getAttributes([]);
+        if (!this.__attributeCache) {
+            this.__getAttributes([]);
+        }
 
         if (type && name) {
             return this.__attributeCache.filter(attr => attr.type === type && attr.name === name && !isCredentials(attr));
@@ -426,11 +428,6 @@ class SNote extends AbstractShacaEntity {
     /** @returns {boolean} */
     get isArchived() {
         return this.hasAttribute('label', 'archived');
-    }
-
-    /** @returns {boolean} */
-    hasInheritableOwnedArchivedLabel() {
-        return !!this.ownedAttributes.find(attr => attr.type === 'label' && attr.name === 'archived' && attr.isInheritable);
     }
 
     /** @returns {boolean} */
