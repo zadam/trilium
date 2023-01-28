@@ -9,7 +9,7 @@ const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
 const noteRevisionService = require('../services/note_revisions');
-const noteAttachmentService = require('../services/note_attachments');
+const noteAncillarieservice = require('../services/note_ancillaries');
 const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
@@ -18,7 +18,7 @@ const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
 const BNote = require('../becca/entities/bnote');
 const BAttribute = require('../becca/entities/battribute');
-const BNoteAttachment = require("../becca/entities/bnote_attachment");
+const BNoteAncillary = require("../becca/entities/bnote_ancillary");
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
@@ -302,7 +302,7 @@ function protectNote(note, protect) {
         }
 
         noteRevisionService.protectNoteRevisions(note);
-        noteAttachmentService.protectNoteAttachments(note);
+        noteAncillarieservice.protectNoteAncillaries(note);
     }
     catch (e) {
         log.error(`Could not un/protect note ID = ${note.noteId}`);
@@ -593,7 +593,7 @@ function saveNoteRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteData(noteId, content, attachments = []) {
+function updateNoteData(noteId, content, ancillaries = []) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
@@ -606,8 +606,8 @@ function updateNoteData(noteId, content, attachments = []) {
 
     note.setContent(content);
 
-    for (const {name, mime, content} of attachments) {
-        note.saveNoteAttachment(name, mime, content);
+    for (const {name, mime, content} of ancillaries) {
+        note.saveNoteAncillary(name, mime, content);
     }
 }
 
@@ -675,14 +675,14 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             new BAttribute(attribute).save({skipValidation: true});
         }
 
-        const noteAttachments = sql.getRows(`
-                SELECT * FROM note_attachments 
+        const noteAncillaries = sql.getRows(`
+                SELECT * FROM note_ancillaries 
                 WHERE isDeleted = 1 
                   AND deleteId = ? 
                   AND noteId = ?`, [deleteId, note.noteId]);
 
-        for (const noteAttachment of noteAttachments) {
-            new BNoteAttachment(noteAttachment).save();
+        for (const noteAncillary of noteAncillaries) {
+            new BNoteAncillary(noteAncillary).save();
         }
 
         const childBranchIds = sql.getColumn(`
@@ -737,7 +737,7 @@ function runOcr(note, buffer) {
     try {
         const plainText = textExtractingService.ocrTextFromBuffer(buffer);
 
-        note.saveNoteAttachment('plainText', 'text/plain', plainText);
+        note.saveNoteAncillary('plainText', 'text/plain', plainText);
     }
     catch (e) {
         log.error(`OCR on note '${note.noteId}' failed with error '${e.message}', stack ${e.stack}`);
@@ -780,10 +780,10 @@ function eraseNotes(noteIdsToErase) {
 
     noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
 
-    const noteAttachmentIdsToErase = sql.getManyRows(`SELECT noteAttachmentId FROM note_attachments WHERE noteId IN (???)`, noteIdsToErase)
-        .map(row => row.noteAttachmentId);
+    const noteAncillaryIdsToErase = sql.getManyRows(`SELECT noteAncillaryId FROM note_ancillaries WHERE noteId IN (???)`, noteIdsToErase)
+        .map(row => row.noteAncillaryId);
 
-    eraseNoteAttachments(noteAttachmentIdsToErase);
+    eraseNoteAncillaries(noteAncillaryIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
@@ -820,18 +820,18 @@ function eraseAttributes(attributeIdsToErase) {
     log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
 }
 
-function eraseNoteAttachments(noteAttachmentIdsToErase) {
-    if (noteAttachmentIdsToErase.length === 0) {
+function eraseNoteAncillaries(noteAncillaryIdsToErase) {
+    if (noteAncillaryIdsToErase.length === 0) {
         return;
     }
 
-    log.info(`Removing note attachments: ${JSON.stringify(noteAttachmentIdsToErase)}`);
+    log.info(`Removing note ancillaries: ${JSON.stringify(noteAncillaryIdsToErase)}`);
 
-    sql.executeMany(`DELETE FROM note_attachments WHERE noteAttachmentId IN (???)`, noteAttachmentIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_attachments' AND entityId IN (???)`, noteAttachmentIdsToErase);
+    sql.executeMany(`DELETE FROM note_ancillaries WHERE noteAncillaryId IN (???)`, noteAncillaryIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_ancillaries' AND entityId IN (???)`, noteAncillaryIdsToErase);
 
-    sql.executeMany(`DELETE FROM note_attachment_contents WHERE noteAttachmentId IN (???)`, noteAttachmentIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_attachment_contents' AND entityId IN (???)`, noteAttachmentIdsToErase);
+    sql.executeMany(`DELETE FROM note_ancillary_contents WHERE noteAncillaryId IN (???)`, noteAncillaryIdsToErase);
+    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_ancillary_contents' AND entityId IN (???)`, noteAncillaryIdsToErase);
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
@@ -968,16 +968,16 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
             attr.save();
         }
 
-        for (const noteAttachment of origNote.getNoteAttachments()) {
-            const duplNoteAttachment = new BNoteAttachment({
-                ...noteAttachment,
-                noteAttachmentId: undefined,
+        for (const noteAncillary of origNote.getNoteAncillaries()) {
+            const duplNoteAncillary = new BNoteAncillary({
+                ...noteAncillary,
+                noteAncillaryId: undefined,
                 noteId: newNote.noteId
             });
 
-            duplNoteAttachment.save();
+            duplNoteAncillary.save();
 
-            duplNoteAttachment.setContent(noteAttachment.getContent());
+            duplNoteAncillary.setContent(noteAncillary.getContent());
         }
 
         for (const childBranch of origNote.getChildBranches()) {

@@ -9,29 +9,29 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
- * NoteAttachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
+ * NoteAncillary represent data related/attached to the note. Conceptually similar to attributes, but intended for
  * larger amounts of data and generally not accessible to the user.
  *
  * @extends AbstractBeccaEntity
  */
-class BNoteAttachment extends AbstractBeccaEntity {
-    static get entityName() { return "note_attachments"; }
-    static get primaryKeyName() { return "noteAttachmentId"; }
-    static get hashedProperties() { return ["noteAttachmentId", "noteId", "name", "content", "utcDateModified"]; }
+class BNoteAncillary extends AbstractBeccaEntity {
+    static get entityName() { return "note_ancillaries"; }
+    static get primaryKeyName() { return "noteAncillaryId"; }
+    static get hashedProperties() { return ["noteAncillaryId", "noteId", "name", "content", "utcDateModified"]; }
 
     constructor(row) {
         super();
 
         if (!row.noteId) {
-            throw new Error("'noteId' must be given to initialize a NoteAttachment entity");
+            throw new Error("'noteId' must be given to initialize a NoteAncillary entity");
         }
 
         if (!row.name) {
-            throw new Error("'name' must be given to initialize a NoteAttachment entity");
+            throw new Error("'name' must be given to initialize a NoteAncillary entity");
         }
 
         /** @type {string} needs to be set at the initialization time since it's used in the .setContent() */
-        this.noteAttachmentId = row.noteAttachmentId || `${this.noteId}_${this.name}`;
+        this.noteAncillaryId = row.noteAncillaryId || `${this.noteId}_${this.name}`;
         /** @type {string} */
         this.noteId = row.noteId;
         /** @type {string} */
@@ -57,14 +57,14 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
-        const res = sql.getRow(`SELECT content FROM note_attachment_contents WHERE noteAttachmentId = ?`, [this.noteAttachmentId]);
+        const res = sql.getRow(`SELECT content FROM note_ancillary_contents WHERE noteAncillaryId = ?`, [this.noteAncillaryId]);
 
         if (!res) {
             if (silentNotFoundError) {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note attachment content for noteAttachmentId=${this.noteAttachmentId}`);
+                throw new Error(`Cannot find note ancillary content for noteAncillaryId=${this.noteAncillaryId}`);
             }
         }
 
@@ -92,10 +92,10 @@ class BNoteAttachment extends AbstractBeccaEntity {
     setContent(content) {
         sql.transactional(() => {
             this.contentCheckSum = this.calculateCheckSum(content);
-            this.save(); // also explicitly save note_attachment to update contentCheckSum
+            this.save(); // also explicitly save note_ancillary to update contentCheckSum
 
             const pojo = {
-                noteAttachmentId: this.noteAttachmentId,
+                noteAncillaryId: this.noteAncillaryId,
                 content: content,
                 utcDateModified: dateUtils.utcNowDateTime()
             };
@@ -104,15 +104,15 @@ class BNoteAttachment extends AbstractBeccaEntity {
                 if (protectedSessionService.isProtectedSessionAvailable()) {
                     pojo.content = protectedSessionService.encrypt(pojo.content);
                 } else {
-                    throw new Error(`Cannot update content of noteAttachmentId=${this.noteAttachmentId} since we're out of protected session.`);
+                    throw new Error(`Cannot update content of noteAncillaryId=${this.noteAncillaryId} since we're out of protected session.`);
                 }
             }
 
-            sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
+            sql.upsert("note_ancillary_contents", "noteAncillaryId", pojo);
 
             entityChangesService.addEntityChange({
-                entityName: 'note_attachment_contents',
-                entityId: this.noteAttachmentId,
+                entityName: 'note_ancillary_contents',
+                entityId: this.noteAncillaryId,
                 hash: this.contentCheckSum,
                 isErased: false,
                 utcDateChanged: pojo.utcDateModified,
@@ -122,7 +122,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     calculateCheckSum(content) {
-        return utils.hash(`${this.noteAttachmentId}|${content.toString()}`);
+        return utils.hash(`${this.noteAncillaryId}|${content.toString()}`);
     }
 
     beforeSaving() {
@@ -130,7 +130,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
             throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
         }
 
-        this.noteAttachmentId = `${this.noteId}_${this.name}`;
+        this.noteAncillaryId = `${this.noteId}_${this.name}`;
 
         super.beforeSaving();
 
@@ -139,7 +139,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     getPojo() {
         return {
-            noteAttachmentId: this.noteAttachmentId,
+            noteAncillaryId: this.noteAncillaryId,
             noteId: this.noteId,
             name: this.name,
             mime: this.mime,
@@ -159,4 +159,4 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BNoteAttachment;
+module.exports = BNoteAncillary;

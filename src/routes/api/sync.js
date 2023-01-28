@@ -114,12 +114,12 @@ function forceNoteSync(req) {
         entityChangesService.moveEntityChangeToTop('note_revision_contents', noteRevisionId);
     }
 
-    for (const noteAttachmentId of sql.getColumn("SELECT noteAttachmentId FROM note_attachments WHERE noteId = ?", [noteId])) {
-        sql.execute(`UPDATE note_attachments SET utcDateModified = ? WHERE noteAttachmentId = ?`, [now, noteAttachmentId]);
-        entityChangesService.moveEntityChangeToTop('note_attachments', noteAttachmentId);
+    for (const noteAncillaryId of sql.getColumn("SELECT noteAncillaryId FROM note_ancillaries WHERE noteId = ?", [noteId])) {
+        sql.execute(`UPDATE note_ancillaries SET utcDateModified = ? WHERE noteAncillaryId = ?`, [now, noteAncillaryId]);
+        entityChangesService.moveEntityChangeToTop('note_ancillaries', noteAncillaryId);
 
-        sql.execute(`UPDATE note_attachment_contents SET utcDateModified = ? WHERE noteAttachmentId = ?`, [now, noteAttachmentId]);
-        entityChangesService.moveEntityChangeToTop('note_attachment_contents', noteAttachmentId);
+        sql.execute(`UPDATE note_ancillary_contents SET utcDateModified = ? WHERE noteAncillaryId = ?`, [now, noteAncillaryId]);
+        entityChangesService.moveEntityChangeToTop('note_ancillary_contents', noteAncillaryId);
     }
 
     log.info(`Forcing note sync for ${noteId}`);

@@ -29,11 +29,11 @@ module.exports = async () => {
                 }
             }
             catch (e) {
-                log.info(`Could not create a note attachment for canvas "${note.noteId}" with error: ${e.message} ${e.stack}`);
+                log.info(`Could not create a note ancillary for canvas "${note.noteId}" with error: ${e.message} ${e.stack}`);
                 continue;
             }
 
-            note.saveNoteAttachment('canvasSvg', 'image/svg+xml', svg);
+            note.saveNoteAncillary('canvasSvg', 'image/svg+xml', svg);
         }
     });
 };

@@ -14,7 +14,7 @@ const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
-const BNoteAttachment = require("../../becca/entities/bnote_attachment");
+const BNoteAncillary = require("../../becca/entities/bnote_ancillary");
 
 /**
  * @param {TaskContext} taskContext
@@ -65,7 +65,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
 
         let parent;
-        let attachmentMeta = false;
+        let ancillaryMeta = false;
 
         for (const segment of pathSegments) {
             if (!cursor || !cursor.children || cursor.children.length === 0) {
@@ -77,10 +77,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             if (!cursor) {
                 for (const file of parent.children) {
-                    for (const attachment of file.attachments || []) {
-                        if (attachment.dataFileName === segment) {
+                    for (const ancillary of file.ancillaries || []) {
+                        if (ancillary.dataFileName === segment) {
                             cursor = file;
-                            attachmentMeta = attachment;
+                            ancillaryMeta = ancillary;
                             break;
                         }
                     }
@@ -95,7 +95,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return {
             parentNoteMeta: parent,
             noteMeta: cursor,
-            attachmentMeta
+            ancillaryMeta
         };
     }
 
@@ -373,7 +373,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function saveNote(filePath, content) {
-        const {parentNoteMeta, noteMeta, attachmentMeta} = getMeta(filePath);
+        const {parentNoteMeta, noteMeta, ancillaryMeta} = getMeta(filePath);
 
         if (noteMeta?.noImport) {
             return;
@@ -381,14 +381,14 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         const noteId = getNoteId(noteMeta, filePath);
 
-        if (attachmentMeta) {
-            const noteAttachment = new BNoteAttachment({
+        if (ancillaryMeta) {
+            const noteAncillary = new BNoteAncillary({
                 noteId,
-                name: attachmentMeta.name,
-                mime: attachmentMeta.mime
+                name: ancillaryMeta.name,
+                mime: ancillaryMeta.mime
             });
 
-            noteAttachment.setContent(content);
+            noteAncillary.setContent(content);
             return;
         }
 

@@ -96,7 +96,7 @@ async function extractTextFromPdf(note, buffer) {
 
         strings = strings.filter(str => str?.trim());
 
-        note.saveNoteAttachment('plainText', 'text/plain', strings.join(" "));
+        note.saveNoteAncillary('plainText', 'text/plain', strings.join(" "));
     }
     catch (e) {
         log.info(`Extracting text from PDF on note '${note.noteId}' failed with error '${e.message}', stack ${e.stack}`);

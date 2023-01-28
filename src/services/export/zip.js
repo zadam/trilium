@@ -170,19 +170,19 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
-        const attachments = note.getNoteAttachments();
+        const ancillaries = note.getNoteAncillaries();
 
-        if (attachments.length > 0) {
-            meta.attachments = attachments
-                .filter(attachment => ["canvasSvg", "mermaidSvg"].includes(attachment.name))
-                .map(attachment => ({
+        if (ancillaries.length > 0) {
+            meta.ancillaries = ancillaries
+                .filter(ancillary => ["canvasSvg", "mermaidSvg"].includes(ancillary.name))
+                .map(ancillary => ({
 
-                name: attachment.name,
-                mime: attachment.mime,
+                name: ancillary.name,
+                mime: ancillary.mime,
                 dataFileName: getDataFileName(
                     null,
-                    attachment.mime,
-                    baseFileName + "_" + attachment.name,
+                    ancillary.mime,
+                    baseFileName + "_" + ancillary.name,
                     existingFileNames
                 )
             }));
@@ -234,11 +234,11 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
 
-        // for some note types it's more user-friendly to see the attachment (if exists) instead of source note
-        const preferredAttachment = (meta.attachments || []).find(attachment => ['mermaidSvg', 'canvasSvg'].includes(attachment.name));
+        // for some note types it's more user-friendly to see the ancillary (if exists) instead of source note
+        const preferredAncillary = (meta.ancillaries || []).find(ancillary => ['mermaidSvg', 'canvasSvg'].includes(ancillary.name));
 
-        if (preferredAttachment) {
-            url += encodeURIComponent(preferredAttachment.dataFileName);
+        if (preferredAncillary) {
+            url += encodeURIComponent(preferredAncillary.dataFileName);
         } else {
             // link can target note which is only "folder-note" and as such will not have a file in an export
             url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
@@ -344,12 +344,12 @@ ${markdownContent}`;
 
         taskContext.increaseProgressCount();
 
-        for (const attachmentMeta of noteMeta.attachments || []) {
-            const noteAttachment = note.getNoteAttachmentByName(attachmentMeta.name);
-            const content = noteAttachment.getContent();
+        for (const ancillaryMeta of noteMeta.ancillaries || []) {
+            const noteAncillary = note.getNoteAncillaryByName(ancillaryMeta.name);
+            const content = noteAncillary.getContent();
 
             archive.append(content, {
-                name: filePathPrefix + attachmentMeta.dataFileName,
+                name: filePathPrefix + ancillaryMeta.dataFileName,
                 date: dateUtils.parseDateTime(note.utcDateModified)
             });
         }

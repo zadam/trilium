@@ -78,9 +78,9 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             this.$display.html(renderedSvg);
 
             // not awaiting intentionally
-            // this is pretty hacky since we update attachment on render
+            // this is pretty hacky since we update ancillary on render
             // but if nothing changed this should not trigger DB write and sync
-            server.put(`notes/${note.noteId}/attachments/mermaidSvg`, {
+            server.put(`notes/${note.noteId}/ancillaries/mermaidSvg`, {
                 mime: 'image/svg+xml',
                 content: renderedSvg
             });

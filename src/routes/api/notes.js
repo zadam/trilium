@@ -54,10 +54,10 @@ function createNote(req) {
 }
 
 function updateNoteData(req) {
-    const {content, attachments} = req.body;
+    const {content, ancillaries} = req.body;
     const {noteId} = req.params;
 
-    return noteService.updateNoteData(noteId, content, attachments);
+    return noteService.updateNoteData(noteId, content, ancillaries);
 }
 
 function deleteNote(req) {
@@ -127,7 +127,7 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
-function saveNoteAttachment(req) {
+function saveNoteAncillary(req) {
     const {noteId, name} = req.params;
     const {mime, content} = req.body;
 
@@ -137,7 +137,7 @@ function saveNoteAttachment(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    note.saveNoteAttachment(name, mime, content);
+    note.saveNoteAncillary(name, mime, content);
 }
 
 function getRelationMap(req) {
@@ -354,5 +354,5 @@ module.exports = {
     getDeleteNotesPreview,
     uploadModifiedFile,
     forceSaveNoteRevision,
-    saveNoteAttachment
+    saveNoteAncillary
 };

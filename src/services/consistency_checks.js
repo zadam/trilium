@@ -200,21 +200,21 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteAttachmentId, note_attachments.noteId AS noteId
-                    FROM note_attachments
+                    SELECT noteAncillaryId, note_ancillaries.noteId AS noteId
+                    FROM note_ancillaries
                       LEFT JOIN notes USING (noteId)
                     WHERE notes.noteId IS NULL
-                      AND note_attachments.isDeleted = 0`,
-            ({noteAttachmentId, noteId}) => {
+                      AND note_ancillaries.isDeleted = 0`,
+            ({noteAncillaryId, noteId}) => {
                 if (this.autoFix) {
-                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
-                    noteAttachment.markAsDeleted();
+                    const noteAncillary = becca.getNoteAncillary(noteAncillaryId);
+                    noteAncillary.markAsDeleted();
 
                     this.reloadNeeded = false;
 
-                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since it references missing note '${noteId}'`);
+                    logFix(`Note ancillary '${noteAncillaryId}' has been deleted since it references missing note '${noteId}'`);
                 } else {
-                    logError(`Note attachment '${noteAttachmentId}' references missing note '${noteId}'`);
+                    logError(`Note ancillary '${noteAncillaryId}' references missing note '${noteId}'`);
                 }
             });
     }
@@ -326,22 +326,22 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteAttachmentId,
-                           note_attachments.noteId AS noteId
-                    FROM note_attachments
+                    SELECT noteAncillaryId,
+                           note_ancillaries.noteId AS noteId
+                    FROM note_ancillaries
                       JOIN notes USING (noteId)
                     WHERE notes.isDeleted = 1
-                      AND note_attachments.isDeleted = 0`,
-            ({noteAttachmentId, noteId}) => {
+                      AND note_ancillaries.isDeleted = 0`,
+            ({noteAncillaryId, noteId}) => {
                 if (this.autoFix) {
-                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
-                    noteAttachment.markAsDeleted();
+                    const noteAncillary = becca.getNoteAncillary(noteAncillaryId);
+                    noteAncillary.markAsDeleted();
 
                     this.reloadNeeded = false;
 
-                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
+                    logFix(`Note ancillary '${noteAncillaryId}' has been deleted since associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Note attachment '${noteAttachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
+                    logError(`Note ancillary '${noteAncillaryId}' is not deleted even though associated note '${noteId}' is deleted.`)
                 }
             });
     }
@@ -637,8 +637,8 @@ class ConsistencyChecks {
         this.runEntityChangeChecks("note_contents", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
         this.runEntityChangeChecks("note_revision_contents", "noteRevisionId");
-        this.runEntityChangeChecks("note_attachments", "noteAttachmentId");
-        this.runEntityChangeChecks("note_attachment_contents", "noteAttachmentId");
+        this.runEntityChangeChecks("note_ancillaries", "noteAncillaryId");
+        this.runEntityChangeChecks("note_ancillary_contents", "noteAncillaryId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");
@@ -734,7 +734,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "note_revisions", "note_attachments", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "note_revisions", "note_ancillaries", "branches", "attributes", "etapi_tokens" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }

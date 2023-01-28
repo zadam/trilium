@@ -284,7 +284,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
         return {
             content: JSON.stringify(content),
-            attachments: [
+            ancillaries: [
                 {
                     name: 'canvasSvg',
                     mime: 'image/svg+xml',

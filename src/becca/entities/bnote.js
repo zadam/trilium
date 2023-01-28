@@ -8,7 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
-const BNoteAttachment = require("./bnote_attachment");
+const BNoteAncillary = require("./bnote_ancillary");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -19,7 +19,7 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 /**
- * Trilium's main entity which can represent text note, image, code note, file attachment etc.
+ * Trilium's main entity which can represent text note, image, code note, file ancillary etc.
  *
  * @extends AbstractBeccaEntity
  */
@@ -337,7 +337,7 @@ class BNote extends AbstractBeccaEntity {
         return this.mime === "application/json";
     }
 
-    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    /** @returns {boolean} true if this note is JavaScript (code or ancillary) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")
@@ -1136,16 +1136,16 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BNoteRevision(row));
     }
 
-    /** @returns {BNoteAttachment[]} */
-    getNoteAttachments() {
-        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
-            .map(row => new BNoteAttachment(row));
+    /** @returns {BNoteAncillary[]} */
+    getNoteAncillaries() {
+        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND isDeleted = 0", [this.noteId])
+            .map(row => new BNoteAncillary(row));
     }
 
-    /** @returns {BNoteAttachment|undefined} */
-    getNoteAttachmentByName(name) {
-        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
-            .map(row => new BNoteAttachment(row))
+    /** @returns {BNoteAncillary|undefined} */
+    getNoteAncillaryByName(name) {
+        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
+            .map(row => new BNoteAncillary(row))
             [0];
     }
 
@@ -1479,28 +1479,28 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @returns {BNoteAttachment}
+     * @returns {BNoteAncillary}
      */
-    saveNoteAttachment(name, mime, content) {
-        let noteAttachment = this.getNoteAttachmentByName(name);
+    saveNoteAncillary(name, mime, content) {
+        let noteAncillary = this.getNoteAncillaryByName(name);
 
-        if (noteAttachment
-            && noteAttachment.mime === mime
-            && noteAttachment.contentCheckSum === noteAttachment.calculateCheckSum(content)) {
+        if (noteAncillary
+            && noteAncillary.mime === mime
+            && noteAncillary.contentCheckSum === noteAncillary.calculateCheckSum(content)) {
 
-            return noteAttachment; // no change
+            return noteAncillary; // no change
         }
 
-        noteAttachment = new BNoteAttachment({
+        noteAncillary = new BNoteAncillary({
             noteId: this.noteId,
             name,
             mime,
             isProtected: this.isProtected
         });
 
-        noteAttachment.setContent(content);
+        noteAncillary.setContent(content);
 
-        return noteAttachment;
+        return noteAncillary;
     }
 
     beforeSaving() {
