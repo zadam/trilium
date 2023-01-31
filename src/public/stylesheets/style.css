@@ -871,12 +871,11 @@ body {
 #launcher-pane .launcher-button {
     font-size: 150%;
     display: inline-block;
-    padding: 15px 15px;
+    padding: 13px 13px;
     cursor: pointer;
     border: none;
     color: var(--launcher-pane-text-color);
     background-color: var(--launcher-pane-background-color);
-    width: 53px;
     height: 53px;
 }
 

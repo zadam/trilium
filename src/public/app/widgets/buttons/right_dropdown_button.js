@@ -4,7 +4,6 @@ const TPL = `
 <div class="dropdown right-dropdown-widget dropright">
     <style>
     .right-dropdown-widget {
-        width: 53px;
         height: 53px;
     }
     </style>
