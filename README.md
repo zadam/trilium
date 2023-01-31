@@ -1,3 +1,8 @@
+# Disclaimer
+
+This is a fork of trilium at: https://github.com/zadam/trilium as of Jan 2023. Use it at your own discretion. 
+I forked this to play around with some features and customize for personal use. It's public so maybe someone else also wanted to try it out.
+
 # Trilium Notes
 
 [English](https://github.com/zadam/trilium/blob/master/README.md) | [Chinese](https://github.com/zadam/trilium/blob/master/README-ZH_CN.md) | [Russian](https://github.com/zadam/trilium/blob/master/README.ru.md)
