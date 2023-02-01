@@ -707,7 +707,7 @@ class FNote {
         return promotedAttrs;
     }
 
-    hasAncestor(ancestorNoteId, visitedNoteIds = null) {
+    hasAncestor(ancestorNoteId, followTemplates = false, visitedNoteIds = null) {
         if (this.noteId === ancestorNoteId) {
             return true;
         }
@@ -721,14 +721,16 @@ class FNote {
 
         visitedNoteIds.add(this.noteId);
 
-        for (const templateNote of this.getNotesToInheritAttributesFrom()) {
-            if (templateNote.hasAncestor(ancestorNoteId, visitedNoteIds)) {
-                return true;
+        if (followTemplates) {
+            for (const templateNote of this.getNotesToInheritAttributesFrom()) {
+                if (templateNote.hasAncestor(ancestorNoteId, followTemplates, visitedNoteIds)) {
+                    return true;
+                }
             }
         }
 
         for (const parentNote of this.getParentNotes()) {
-            if (parentNote.hasAncestor(ancestorNoteId, visitedNoteIds)) {
+            if (parentNote.hasAncestor(ancestorNoteId, followTemplates, visitedNoteIds)) {
                 return true;
             }
         }
