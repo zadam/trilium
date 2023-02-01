@@ -50,7 +50,7 @@ function isAffecting(attrRow, affectedNote) {
 
     if (this.isInheritable) {
         for (const owningNote of owningNotes) {
-            if (owningNote.hasAncestor(attrNote.noteId)) {
+            if (owningNote.hasAncestor(attrNote.noteId, true)) {
                 return true;
             }
         }
