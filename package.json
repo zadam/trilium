@@ -33,7 +33,7 @@
     "archiver": "5.3.1",
     "async-mutex": "0.4.0",
     "axios": "1.2.5",
-    "better-sqlite3": "7.4.5",
+    "better-sqlite3": "8.0.1",
     "canvas": "2.11.0",
     "chokidar": "3.5.3",
     "cls-hooked": "4.2.2",
@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "electron": "16.2.8",
+    "electron": "23.0.0-beta.6",
     "electron-builder": "23.6.0",
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",

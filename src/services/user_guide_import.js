@@ -13,6 +13,7 @@ const yauzl = require("yauzl");
 const htmlSanitizer = require('./html_sanitizer');
 const sql = require('./sql');
 const options = require('./options');
+const cls = require('./cls');
 const {USER_GUIDE_ZIP_DIR} = require('./resource_dir');
 
 async function importUserGuideIfNeeded() {
@@ -32,6 +33,8 @@ async function importUserGuideIfNeeded() {
 
     const hiddenRoot = becca.getNote("_hidden");
     const data = await fs.readFile(USER_GUIDE_ZIP_DIR + "/user-guide.zip", "binary");
+
+    cls.disableOcr(); // no OCR needed for user guide images
 
     await importZip(Buffer.from(data, 'binary'), hiddenRoot);
 

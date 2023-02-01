@@ -729,27 +729,12 @@ function scanForLinks(note, content) {
     }
 }
 
-function runOcr(note, buffer) {
-    if (!note.isImage() || !optionService.getOptionBool('ocrImages')) {
-        return;
-    }
-
-    try {
-        const plainText = textExtractingService.ocrTextFromBuffer(buffer);
-
-        note.saveNoteAncillary('plainText', 'text/plain', plainText);
-    }
-    catch (e) {
-        log.error(`OCR on note '${note.noteId}' failed with error '${e.message}', stack ${e.stack}`);
-    }
-}
-
 /**
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
 async function asyncPostProcessContent(note, content) {
     scanForLinks(note, content);
-    runOcr(note, content);
+    await textExtractingService.runOcr(note, content);
     await textExtractingService.extractTextFromPdf(note, content);
 }
 

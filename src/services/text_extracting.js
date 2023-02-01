@@ -1,7 +1,8 @@
 const Canvas = require("canvas");
 const OCRAD = require("ocrad.js");
-const log = require("./log.js");
-const optionService = require("./options.js");
+const log = require("./log");
+const optionService = require("./options");
+const cls = require("./cls");
 
 function ocrFromByteArray(img) {
     // byte array contains raw uncompressed pixel data
@@ -85,7 +86,7 @@ async function extractTextFromPdf(note, buffer) {
             content.items.forEach(({str}) => strings.push(str));
 
             try {
-                if (optionService.getOptionBool('ocrImages')) {
+                if (optionService.getOptionBool('ocrImages') && !cls.isOcrDisabled()) {
                     await ocrTextFromPdfImages(pdfjsLib, page, strings);
                 }
             }
@@ -117,13 +118,37 @@ async function ocrTextFromBuffer(buffer) {
     const canvas = new Canvas.createCanvas(img.width, img.height);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, img.width, img.height);
+
     const plainText = OCRAD(canvas);
 
     log.info(`OCR of ${buffer.byteLength} image bytes into ${plainText.length} chars of text took ${Date.now() - start}ms`);
     return plainText;
 }
 
+async function runOcr(note, buffer) {
+    console.log("buffer length", buffer.length);
+
+    if (!note.isImage()
+        || !optionService.getOptionBool('ocrImages')
+        || cls.isOcrDisabled()
+        || buffer.length === 0
+    ) {
+        return;
+    }
+
+    try {
+        const plainText = await ocrTextFromBuffer(buffer);
+
+        console.log("OCR", plainText);
+
+        note.saveNoteAncillary('plainText', 'text/plain', plainText);
+    }
+    catch (e) {
+        log.error(`OCR on note '${note.noteId}' failed with error '${e.message}', stack ${e.stack}`);
+    }
+}
+
 module.exports = {
-    ocrTextFromBuffer,
+    runOcr,
     extractTextFromPdf
 };
