@@ -661,7 +661,8 @@ function undeleteBranch(branchId, deleteId, taskContext) {
                            OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
 
         for (const attribute of attributes) {
-            new Attribute(attribute).save();
+            // relation might point to a note which hasn't been undeleted yet and would thus throw up
+            new Attribute(attribute).save({skipValidation: true});
         }
 
         const childBranchIds = sql.getColumn(`
