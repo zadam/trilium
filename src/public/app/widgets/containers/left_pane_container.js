@@ -1,5 +1,6 @@
 import options from "../../services/options.js";
 import FlexContainer from "./flex_container.js";
+import appContext from "../../components/app_context.js";
 
 export default class LeftPaneContainer extends FlexContainer {
     constructor() {
@@ -16,7 +17,15 @@ export default class LeftPaneContainer extends FlexContainer {
 
     entitiesReloadedEvent({loadResults}) {
         if (loadResults.isOptionReloaded("leftPaneVisible")) {
-            this.toggleInt(this.isEnabled());
+            const visible = this.isEnabled();
+            this.toggleInt(visible);
+
+            if (visible) {
+                this.triggerEvent('focusTree');
+            } else {
+                const activeNoteContext = appContext.tabManager.getActiveContext();
+                this.triggerEvent('focusOnDetail', {ntxId: activeNoteContext.ntxId});
+            }
         }
     }
 }

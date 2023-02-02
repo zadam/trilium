@@ -79,11 +79,12 @@ export default class TabManager extends Component {
                 filteredTabs = filteredTabs.filter(tab => tab.active);
             }
 
-            if (filteredTabs.length === 0) {
-                const [notePath] = treeService.getHashValueFromAddress();
+            // resolve before opened tabs can change this
+            const [notePathInUrl, ntxIdInUrl] = treeService.getHashValueFromAddress();
 
+            if (filteredTabs.length === 0) {
                 filteredTabs.push({
-                    notePath: notePath || 'root',
+                    notePath: notePathInUrl || 'root',
                     active: true,
                     hoistedNoteId: glob.extraHoistedNoteId || 'root'
                 });
@@ -95,17 +96,14 @@ export default class TabManager extends Component {
 
             await this.tabsUpdate.allowUpdateWithoutChange(async () => {
                 for (const tab of filteredTabs) {
-
                     await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
                 }
             });
 
             // if there's notePath in the URL, make sure it's open and active
             // (useful, for e.g. opening clipped notes from clipper or opening link in an extra window)
-            if (treeService.isNotePathInAddress()) {
-                const [notePath, ntxId] = treeService.getHashValueFromAddress();
-
-                await appContext.tabManager.switchToNoteContext(ntxId, notePath);
+            if (notePathInUrl) {
+                await appContext.tabManager.switchToNoteContext(ntxIdInUrl, notePathInUrl);
             }
         }
         catch (e) {

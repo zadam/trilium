@@ -886,6 +886,11 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
     }
 
+    async focusTreeEvent() {
+        this.tree.$container.focus();
+        this.tree.setFocus(true);
+    }
+
     /** @returns {FancytreeNode} */
     async getNodeFromPath(notePath, expand = false, logErrors = true) {
         utils.assertArguments(notePath);
