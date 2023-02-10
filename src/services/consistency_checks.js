@@ -153,15 +153,23 @@ class ConsistencyChecks {
                     const noteId = oldBranch.noteId;
                     oldBranch.markAsDeleted("missing-parent");
 
-                    const newBranch = new Branch({
-                        parentNoteId: 'root',
-                        noteId: noteId,
-                        prefix: 'recovered'
-                    }).save();
+                    let message = `Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. `;
+
+                    if (becca.getNote(noteId).getParentBranches().length === 0) {
+                        const newBranch = new Branch({
+                            parentNoteId: 'root',
+                            noteId: noteId,
+                            prefix: 'recovered'
+                        }).save();
+
+                        message += `${newBranch.branchId} was created in the root instead.`;
+                    } else {
+                        message += `There is one or more valid branches, so no new one will be created as a replacement.`;
+                    }
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. ${newBranch.branchId} was created in the root instead.`);
+                    logFix(message);
                 } else {
                     logError(`Branch '${branchId}' references missing parent note '${parentNoteId}'`);
                 }
