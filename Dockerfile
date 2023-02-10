@@ -21,6 +21,16 @@ RUN set -x \
         nasm \
         libpng-dev \
         python3 \
+        build-base \
+        cairo-dev \
+        jpeg-dev \
+        pango-dev \
+        musl-dev \
+        giflib-dev \
+        pixman-dev \
+        pangomm-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
     && npm install \
     && apk del .build-dependencies \
     && npm run webpack \
@@ -29,8 +39,8 @@ RUN set -x \
     && cp -r src/public/app/doc_notes src/public/app-dist/. \
     && rm -rf src/public/app
 
-# Some setup tools need to be kept
-RUN apk add --no-cache su-exec shadow
+# Some tools need to be kept
+RUN apk add --no-cache su-exec shadow libpangocairo
 
 # Add application user and setup proper volume permissions
 RUN adduser -s /bin/false node; exit 0
