@@ -39,4 +39,4 @@ RUN adduser -s /bin/false node; exit 0
 EXPOSE 8080
 CMD [ "./start-docker.sh" ]
 
-HEALTHCHECK CMD sh DockerHealthcheck.sh
+HEALTHCHECK CMD node docker_healthcheck.sh
