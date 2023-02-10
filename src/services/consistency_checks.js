@@ -443,10 +443,17 @@ class ConsistencyChecks {
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     for (const branch of branches) {
-                        branch.parentNoteId = 'root';
-                        branch.save();
+                        // delete the old wrong branch
+                        branch.markAsDeleted("parent-is-search");
 
-                        logFix(`Child branch '${branch.branchId}' has been moved to root since it was a child of a search note '${parentNoteId}'`)
+                        // create a replacement branch in root parent
+                        new Branch({
+                            parentNoteId: 'root',
+                            noteId: branch.noteId,
+                            prefix: 'recovered'
+                        }).save();
+
+                        logFix(`Note '${branch.noteId}' has been moved to root since it was a child of a search note '${parentNoteId}'`)
                     }
 
                     this.reloadNeeded = true;
