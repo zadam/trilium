@@ -40,7 +40,7 @@ RUN set -x \
     && rm -rf src/public/app
 
 # Some tools need to be kept
-RUN apk add --no-cache su-exec shadow libpangocairo
+RUN apk add --no-cache su-exec shadow pango libjpeg giflib
 
 # Add application user and setup proper volume permissions
 RUN adduser -s /bin/false node; exit 0
