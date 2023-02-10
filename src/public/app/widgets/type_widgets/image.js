@@ -90,7 +90,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}`);
+        this.$imageView.prop("src", `api/images/${note.noteId}/${encodeURIComponent(note.title)}`);
     }
 
     copyImageReferenceToClipboardEvent({ntxId}) {
