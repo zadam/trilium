@@ -102,13 +102,14 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
 
                 const entity = becca.getEntity(entityName, entityId);
 
+                // entity might be null (not present in becca) when it's deleted
                 addEntityChange({
                     entityName,
                     entityId,
-                    hash: entity.generateHash(),
+                    hash: entity?.generateHash() || "|deleted",
                     isErased: false,
-                    utcDateChanged: entity.getUtcDateChanged(),
-                    isSynced: entityName !== 'options' || !!entity.isSynced
+                    utcDateChanged: entity?.getUtcDateChanged() || dateUtils.utcNowDateTime(),
+                    isSynced: entityName !== 'options' || !!entity?.isSynced
                 });
             }
         }
