@@ -148,13 +148,20 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branch = becca.getBranch(branchId);
-                    branch.parentNoteId = 'root';
-                    branch.save();
+                    // Delete the old branch and recreate it with root as parent.
+                    const oldBranch = becca.getBranch(branchId);
+                    const noteId = oldBranch.noteId;
+                    oldBranch.markAsDeleted("missing-parent");
+
+                    const newBranch = new Branch({
+                        parentNoteId: 'root',
+                        noteId: noteId,
+                        prefix: 'recovered'
+                    }).save();
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch '${branchId}' was set to root parent since it was referencing missing parent note '${parentNoteId}'`);
+                    logFix(`Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. ${newBranch.branchId} was created in the root instead.`);
                 } else {
                     logError(`Branch '${branchId}' references missing parent note '${parentNoteId}'`);
                 }
