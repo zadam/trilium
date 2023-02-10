@@ -163,6 +163,10 @@ class Becca {
                     .replace('_', '')
         );
 
+        if (!(camelCaseEntityName in this)) {
+            throw new Error(`Unknown entity name '${camelCaseEntityName}' (original argument '${entityName}')`);
+        }
+
         return this[camelCaseEntityName][entityId];
     }
 

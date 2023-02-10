@@ -100,15 +100,38 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
             if (existingRows === 0) {
                 createdCount++;
 
-                const entity = becca.getEntity(entityName, entityId);
+                let hash;
+                let utcDateChanged;
+                let isSynced;
+
+                if (entityName.endsWith("_contents")) {
+                    // FIXME: hacky, not sure if it might cause some problems
+                    hash = "fake value";
+                    utcDateChanged = dateUtils.utcNowDateTime();
+                    isSynced = true; // contents are always synced
+                } else {
+                    const entity = becca.getEntity(entityName, entityId);
+
+                    if (entity) {
+                        hash = entity?.generateHash() || "|deleted";
+                        utcDateChanged = entity?.getUtcDateChanged() || dateUtils.utcNowDateTime();
+                        isSynced = entityName !== 'options' || !!entity?.isSynced;
+                    } else {
+                        // entity might be null (not present in becca) when it's deleted
+                        // FIXME: hacky, not sure if it might cause some problems
+                        hash = "deleted";
+                        utcDateChanged = dateUtils.utcNowDateTime();
+                        isSynced = true; // deletable (the ones with isDeleted) entities are synced
+                    }
+                }
 
                 addEntityChange({
                     entityName,
                     entityId,
-                    hash: entity.generateHash(),
+                    hash: hash,
                     isErased: false,
-                    utcDateChanged: entity.getUtcDateChanged(),
-                    isSynced: entityName !== 'options' || !!entity.isSynced
+                    utcDateChanged: utcDateChanged,
+                    isSynced: isSynced
                 });
             }
         }

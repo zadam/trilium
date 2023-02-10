@@ -148,13 +148,28 @@ class ConsistencyChecks {
                       AND notes.noteId IS NULL`,
             ({branchId, parentNoteId}) => {
                 if (this.autoFix) {
-                    const branch = becca.getBranch(branchId);
-                    branch.parentNoteId = 'root';
-                    branch.save();
+                    // Delete the old branch and recreate it with root as parent.
+                    const oldBranch = becca.getBranch(branchId);
+                    const noteId = oldBranch.noteId;
+                    oldBranch.markAsDeleted("missing-parent");
+
+                    let message = `Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. `;
+
+                    if (becca.getNote(noteId).getParentBranches().length === 0) {
+                        const newBranch = new Branch({
+                            parentNoteId: 'root',
+                            noteId: noteId,
+                            prefix: 'recovered'
+                        }).save();
+
+                        message += `${newBranch.branchId} was created in the root instead.`;
+                    } else {
+                        message += `There is one or more valid branches, so no new one will be created as a replacement.`;
+                    }
 
                     this.reloadNeeded = true;
 
-                    logFix(`Branch '${branchId}' was set to root parent since it was referencing missing parent note '${parentNoteId}'`);
+                    logFix(message);
                 } else {
                     logError(`Branch '${branchId}' references missing parent note '${parentNoteId}'`);
                 }
@@ -467,10 +482,17 @@ class ConsistencyChecks {
                     const branches = branchIds.map(branchId => becca.getBranch(branchId));
 
                     for (const branch of branches) {
-                        branch.parentNoteId = 'root';
-                        branch.save();
+                        // delete the old wrong branch
+                        branch.markAsDeleted("parent-is-search");
 
-                        logFix(`Child branch '${branch.branchId}' has been moved to root since it was a child of a search note '${parentNoteId}'`)
+                        // create a replacement branch in root parent
+                        new Branch({
+                            parentNoteId: 'root',
+                            noteId: branch.noteId,
+                            prefix: 'recovered'
+                        }).save();
+
+                        logFix(`Note '${branch.noteId}' has been moved to root since it was a child of a search note '${parentNoteId}'`)
                     }
 
                     this.reloadNeeded = true;
