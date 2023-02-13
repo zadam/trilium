@@ -8,7 +8,6 @@ const v = require("./validators");
 const searchService = require("../services/search/services/search");
 const SearchContext = require("../services/search/search_context");
 const zipExportService = require("../services/export/zip");
-const noteRevisionService = require("../services/note_revisions.js");
 
 function register(router) {
     eu.route(router, 'get', '/etapi/notes', (req, res, next) => {

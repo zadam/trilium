@@ -90,7 +90,7 @@ async function importZip(fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta) {
-        let userGuideNoteId = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
+        let userGuideNoteId;// = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
 
         userGuideNoteId = '_userGuide' + noteMeta.title.replace(/[^a-z0-9]/ig, '');
 

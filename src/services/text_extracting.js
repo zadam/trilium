@@ -126,8 +126,6 @@ async function ocrTextFromBuffer(buffer) {
 }
 
 async function runOcr(note, buffer) {
-    console.log("buffer length", buffer.length);
-
     if (!note.isImage()
         || !optionService.getOptionBool('ocrImages')
         || cls.isOcrDisabled()

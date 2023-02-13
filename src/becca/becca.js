@@ -2,7 +2,6 @@
 
 const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
-const BNoteRevision = require("./entities/bnote_revision.js");
 
 /**
  * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.

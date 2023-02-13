@@ -1,5 +1,5 @@
 const fs = require("fs-extra");
-const utils = require("../../src/services/utils.js");
+const utils = require("../../src/services/utils");
 const html = require("html");
 
 const SRC_DIR = './src-build/docs-website';

@@ -1,5 +1,5 @@
-const protectedSession = require("./protected_session.js");
-const log = require("./log.js");
+const protectedSession = require("./protected_session");
+const log = require("./log");
 
 /**
  * @param {BNote} note
