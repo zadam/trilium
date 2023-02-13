@@ -831,6 +831,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
         });
 
+        await this.filterHoistedBranch();
+
         const activeNode = await this.getNodeFromPath(appContext.tabManager.getActiveContextNotePath());
 
         if (activeNode) {
@@ -1078,6 +1080,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                     }
                 }
             }, false);
+
+            this.filterHoistedBranch();
         }, 600 * 1000);
     }
 
