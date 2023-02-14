@@ -16,7 +16,7 @@ function openContextMenu(notePath, hoistedNoteId, e) {
             }
 
             if (command === 'openNoteInNewTab') {
-                appContext.tabManager.openContextWithNote(notePath, false, null, hoistedNoteId);
+                appContext.tabManager.openContextWithNote(notePath, { hoistedNoteId });
             }
             else if (command === 'openNoteInNewSplit') {
                 const subContexts = appContext.tabManager.getActiveContext().getSubContexts();

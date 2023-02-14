@@ -46,7 +46,6 @@ import FindWidget from "../widgets/find.js";
 import TocWidget from "../widgets/toc.js";
 import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 import AboutDialog from "../widgets/dialogs/about.js";
-import NoteSourceDialog from "../widgets/dialogs/note_source.js";
 import HelpDialog from "../widgets/dialogs/help.js";
 import RecentChangesDialog from "../widgets/dialogs/recent_changes.js";
 import BackendLogDialog from "../widgets/dialogs/backend_log.js";
@@ -186,7 +185,6 @@ export default class DesktopLayout {
             )
             .child(new BulkActionsDialog())
             .child(new AboutDialog())
-            .child(new NoteSourceDialog())
             .child(new HelpDialog())
             .child(new RecentChangesDialog())
             .child(new BackendLogDialog())

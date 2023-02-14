@@ -103,7 +103,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.openTabWithNote = async (notePath, activate) => {
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.openContextWithNote(notePath, activate);
+        await appContext.tabManager.openContextWithNote(notePath, { activate });
 
         if (activate) {
             appContext.triggerEvent('focusAndSelectTitle');

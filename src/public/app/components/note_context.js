@@ -37,7 +37,9 @@ class NoteContext extends Component {
         return !this.noteId;
     }
 
-    async setNote(inputNotePath, triggerSwitchEvent = true) {
+    async setNote(inputNotePath, opts = {}) {
+        opts.triggerSwitchEvent = opts.triggerSwitchEvent !== undefined ? opts.triggerSwitchEvent : true;
+
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 
         if (!resolvedNotePath) {
@@ -52,12 +54,13 @@ class NoteContext extends Component {
         ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
         this.resetViewScope();
+        this.viewScope.viewMode = opts.viewMode || "default";
 
         this.saveToRecentNotes(resolvedNotePath);
 
         protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
-        if (triggerSwitchEvent) {
+        if (opts.triggerSwitchEvent) {
             await this.triggerEvent('noteSwitched', {
                 noteContext: this,
                 notePath: this.notePath
@@ -183,7 +186,8 @@ class NoteContext extends Component {
             mainNtxId: this.mainNtxId,
             notePath: this.notePath,
             hoistedNoteId: this.hoistedNoteId,
-            active: this.isActive()
+            active: this.isActive(),
+            viewMode: this.viewScope.viewMode
         }
     }
 
@@ -224,9 +228,9 @@ class NoteContext extends Component {
 
         const noteComplement = await this.getNoteComplement();
 
-        const sizeLimit = this.note.type === 'text' ?
-            options.getInt('autoReadonlySizeText')
-                : options.getInt('autoReadonlySizeCode');
+        const sizeLimit = this.note.type === 'text'
+            ? options.getInt('autoReadonlySizeText')
+            : options.getInt('autoReadonlySizeCode');
 
         return noteComplement.content
             && noteComplement.content.length > sizeLimit
@@ -251,6 +255,7 @@ class NoteContext extends Component {
 
     hasNoteList() {
         return this.note
+            && this.viewScope.viewMode === 'default'
             && this.note.hasChildren()
             && ['book', 'text', 'code'].includes(this.note.type)
             && this.note.mime !== 'text/x-sqlite;schema=trilium'

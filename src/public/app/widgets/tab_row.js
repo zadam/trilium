@@ -617,12 +617,13 @@ export default class TabRowWidget extends BasicWidget {
     updateTabById(ntxId) {
         const $tab = this.getTabById(ntxId);
 
-        const {note} = appContext.tabManager.getNoteContextById(ntxId);
+        const noteContext = appContext.tabManager.getNoteContextById(ntxId);
 
-        this.updateTab($tab, note);
+        this.updateTab($tab, noteContext);
     }
 
-    updateTab($tab, note) {
+    /** @param {NoteContext} noteContext */
+    updateTab($tab, noteContext) {
         if (!$tab.length) {
             return;
         }
@@ -632,8 +633,6 @@ export default class TabRowWidget extends BasicWidget {
                 $tab.removeClass(clazz);
             }
         }
-
-        const noteContext = appContext.tabManager.getNoteContextById(this.getTabId($tab));
 
         if (noteContext) {
             const hoistedNote = froca.getNoteFromCache(noteContext.hoistedNoteId);
@@ -651,12 +650,19 @@ export default class TabRowWidget extends BasicWidget {
             }
         }
 
+        const {note} = noteContext;
+
         if (!note) {
             this.updateTitle($tab, 'New tab');
             return;
         }
 
-        this.updateTitle($tab, note.title);
+        const viewMode = noteContext.viewScope?.viewMode;
+        const title = (viewMode && viewMode !== 'default')
+            ? `${viewMode}: ${note.title}`
+            : note.title;
+
+        this.updateTitle($tab, title);
 
         $tab.addClass(note.getCssClass());
         $tab.addClass(utils.getNoteTypeClass(note.type));
@@ -676,7 +682,7 @@ export default class TabRowWidget extends BasicWidget {
             ) {
                 const $tab = this.getTabById(noteContext.ntxId);
 
-                this.updateTab($tab, noteContext.note);
+                this.updateTab($tab, noteContext);
             }
         }
     }
@@ -685,7 +691,7 @@ export default class TabRowWidget extends BasicWidget {
         for (const noteContext of appContext.tabManager.noteContexts) {
             const $tab = this.getTabById(noteContext.ntxId);
 
-            this.updateTab($tab, noteContext.note);
+            this.updateTab($tab, noteContext);
         }
     }
 
@@ -695,7 +701,7 @@ export default class TabRowWidget extends BasicWidget {
         if ($tab) {
             const noteContext = appContext.tabManager.getNoteContextById(ntxId);
 
-            this.updateTab($tab, noteContext.note);
+            this.updateTab($tab, noteContext);
         }
     }
 }

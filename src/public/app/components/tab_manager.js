@@ -96,7 +96,13 @@ export default class TabManager extends Component {
 
             await this.tabsUpdate.allowUpdateWithoutChange(async () => {
                 for (const tab of filteredTabs) {
-                    await this.openContextWithNote(tab.notePath, tab.active, tab.ntxId, tab.hoistedNoteId, tab.mainNtxId);
+                    await this.openContextWithNote(tab.notePath, {
+                        activate: tab.active,
+                        ntxId: tab.ntxId,
+                        mainNtxId: tab.mainNtxId,
+                        hoistedNoteId: tab.hoistedNoteId,
+                        viewMode: tab.viewMode
+                    });
                 }
             });
 
@@ -277,14 +283,24 @@ export default class TabManager extends Component {
             }
         }
 
-        return this.openContextWithNote(notePath, activate, null, hoistedNoteId);
+        return this.openContextWithNote(notePath, { activate, hoistedNoteId });
     }
 
-    async openContextWithNote(notePath, activate, ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
+    async openContextWithNote(notePath, opts = {}) {
+        const activate = !!opts.activate;
+        const ntxId = opts.ntxId || null;
+        const mainNtxId = opts.mainNtxId || null;
+        const hoistedNoteId = opts.hoistedNoteId || 'root';
+        const viewMode = opts.viewMode || "default";
+
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
         if (notePath) {
-            await noteContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
+            await noteContext.setNote(notePath, {
+                // if activate is false then send normal noteSwitched event
+                triggerSwitchEvent: !activate,
+                viewMode: viewMode
+            });
         }
 
         if (activate) {
@@ -310,7 +326,7 @@ export default class TabManager extends Component {
 
         // if no tab with this note has been found we'll create new tab
 
-        await this.openContextWithNote(noteId, true);
+        await this.openContextWithNote(noteId, { activate: true });
     }
 
     async activateNoteContext(ntxId, triggerEvent = true) {

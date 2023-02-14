@@ -187,23 +187,17 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && await this.noteContext.isReadOnly()) {
-            type = 'readOnlyText';
-        }
-
-        if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
+        if (type === 'text' && this.noteContext.viewScope.viewMode === 'source') {
             type = 'readOnlyCode';
-        }
-
-        if (type === 'text') {
+        } else if (type === 'text' && await this.noteContext.isReadOnly()) {
+            type = 'readOnlyText';
+        } else if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {
+            type = 'readOnlyCode';
+        } else if (type === 'text') {
             type = 'editableText';
-        }
-
-        if (type === 'code' || type === 'mermaid') {
+        } else if (type === 'code' || type === 'mermaid') {
             type = 'editableCode';
-        }
-
-        if (type === 'launcher') {
+        } else if (type === 'launcher') {
             type = 'doc';
         }
 
