@@ -121,6 +121,11 @@ export default class RibbonContainer extends NoteContextAwareWidget {
         this.buttonWidgets = [];
     }
 
+    isEnabled() {
+        return super.isEnabled()
+            && this.noteContext.viewScope.viewMode === 'default';
+    }
+
     ribbon(widget) {
         super.child(widget);
 

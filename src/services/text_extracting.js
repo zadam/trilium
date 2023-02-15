@@ -137,8 +137,6 @@ async function runOcr(note, buffer) {
     try {
         const plainText = await ocrTextFromBuffer(buffer);
 
-        console.log("OCR", plainText);
-
         note.saveNoteAncillary('plainText', 'text/plain', plainText);
     }
     catch (e) {
