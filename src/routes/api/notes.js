@@ -127,6 +127,36 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
+function getNoteAncillaries(req) {
+    const includeContent = req.query.includeContent === 'true';
+    const {noteId} = req.params;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+    }
+
+    const noteAncillaries = note.getNoteAncillaries();
+
+    return noteAncillaries.map(ancillary => {
+       const pojo = ancillary.getPojo();
+
+       if (includeContent && utils.isStringNote(null, ancillary.mime)) {
+           pojo.content = ancillary.getContent()?.toString();
+           pojo.contentLength = pojo.content.length;
+
+           const MAX_ANCILLARY_LENGTH = 1_000_000;
+
+           if (pojo.content.length > MAX_ANCILLARY_LENGTH) {
+               pojo.content = pojo.content.substring(0, MAX_ANCILLARY_LENGTH);
+           }
+       }
+
+       return pojo;
+    });
+}
+
 function saveNoteAncillary(req) {
     const {noteId, name} = req.params;
     const {mime, content} = req.body;
@@ -354,5 +384,6 @@ module.exports = {
     getDeleteNotesPreview,
     uploadModifiedFile,
     forceSaveNoteRevision,
+    getNoteAncillaries,
     saveNoteAncillary
 };

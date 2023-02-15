@@ -12,7 +12,8 @@ export default class MermaidExportButton extends NoteContextAwareWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note?.type === 'mermaid'
-            && this.note.isContentAvailable();
+            && this.note.isContentAvailable()
+            && this.noteContext?.viewScope.viewMode === 'default';
     }
 
     doRender() {

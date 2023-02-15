@@ -460,7 +460,9 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     updateTitle($tab, title) {
-        $tab.find('.note-tab-title').text(title);
+        $tab.attr("title", title)
+        $tab.find('.note-tab-title')
+            .text(title);
     }
 
     getTabById(ntxId) {

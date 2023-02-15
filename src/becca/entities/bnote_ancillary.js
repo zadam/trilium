@@ -146,8 +146,7 @@ class BNoteAncillary extends AbstractBeccaEntity {
             isProtected: !!this.isProtected,
             contentCheckSum: this.contentCheckSum,
             isDeleted: false,
-            utcDateModified: this.utcDateModified,
-            content: this.content,
+            utcDateModified: this.utcDateModified
         };
     }
 

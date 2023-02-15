@@ -117,11 +117,19 @@ export default class RootCommandExecutor extends Component {
         });
     }
 
-    async showNoteSourceEvent() {
+    async showNoteSourceCommand() {
         const notePath = appContext.tabManager.getActiveContextNotePath();
 
         if (notePath) {
             await appContext.tabManager.openContextWithNote(notePath, { activate: true, viewMode: 'source' });
+        }
+    }
+
+    async showNoteAncillariesCommand() {
+        const notePath = appContext.tabManager.getActiveContextNotePath();
+
+        if (notePath) {
+            await appContext.tabManager.openContextWithNote(notePath, { activate: true, viewMode: 'ancillaries' });
         }
     }
 }
