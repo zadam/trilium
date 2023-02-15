@@ -203,12 +203,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
-     * @deprecated new name of this API call is runOnBackend so use that
-     * @method
-     */
-    this.runOnServer = this.runOnBackend;
-
-    /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
      *
@@ -322,12 +316,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.triggerEvent = (name, data) => appContext.triggerEvent(name, data);
 
     /**
-     * @method
-     * @deprecated this is now no-op since all the changes should be gracefully handled per widget
-     */
-    this.refreshTree = () => {};
-
-    /**
      * Create note link (jQuery object) for given note.
      *
      * @method
@@ -344,52 +332,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * Adds given text to the editor cursor
      *
      * @method
-     * @deprecated use addTextToActiveContextEditor() instead
-     * @param {string} text - this must be clear text, HTML is not supported.
-     */
-    this.addTextToActiveTabEditor = text => {
-        console.warn("api.addTextToActiveTabEditor() is deprecated, use addTextToActiveContextEditor() instead.");
-
-        return appContext.triggerCommand('addTextToActiveEditor', {text});
-    };
-
-    /**
-     * Adds given text to the editor cursor
-     *
-     * @method
      * @param {string} text - this must be clear text, HTML is not supported.
      */
     this.addTextToActiveContextEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
 
     /**
      * @method
-     * @deprecated use getActiveContextNote() instead
-     * @returns {FNote} active note (loaded into right pane)
-     */
-    this.getActiveTabNote = () => {
-        console.warn("api.getActiveTabNote() is deprecated, use getActiveContextNote() instead.");
-
-        return appContext.tabManager.getActiveContextNote();
-    };
-
-    /**
-     * @method
      * @returns {FNote} active note (loaded into right pane)
      */
     this.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
-
-    /**
-     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
-     *
-     * @method
-     * @deprecated use getActiveContextTextEditor()
-     * @param [callback] - callback receiving "textEditor" instance
-     */
-    this.getActiveTabTextEditor = callback => {
-        console.warn("api.getActiveTabTextEditor() is deprecated, use getActiveContextTextEditor() instead.");
-
-        return appContext.tabManager.getActiveContext()?.getTextEditor(callback);
-    };
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -418,17 +369,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @deprecated use getActiveContextNotePath() instead
-     * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
-     */
-    this.getActiveTabNotePath = () => {
-        console.warn("api.getActiveTabNotePath() is deprecated, use getActiveContextNotePath() instead.");
-
-        return appContext.tabManager.getActiveContextNotePath();
-    };
-
-    /**
-     * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
     this.getActiveContextNotePath = () => appContext.tabManager.getActiveContextNotePath();
@@ -448,17 +388,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<void>}
      */
     this.setupElementTooltip = noteTooltipService.setupElementTooltip;
-
-    /**
-     * @method
-     * @deprecated use protectNote and protectSubtree instead
-     * @returns {Promise<void>}
-     */
-    this.protectActiveNote = async () => {
-        const activeNote = appContext.tabManager.getActiveContextNote();
-
-        await protectedSessionService.protectNote(activeNote.noteId, true, false);
-    };
 
     /**
      * @method
@@ -487,16 +416,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @returns {Promise<FNote>}
      */
     this.getTodayNote = dateNotesService.getTodayNote;
-
-    /**
-     * Returns day note for a given date. If it doesn't exist, it is automatically created.
-     *
-     * @method
-     * @param {string} date - e.g. "2019-04-29"
-     * @returns {Promise<FNote>}
-     * @deprecated use getDayNote instead
-     */
-    this.getDateNote = dateNotesService.getDayNote;
 
     /**
      * Returns day note for a given date. If it doesn't exist, it is automatically created.

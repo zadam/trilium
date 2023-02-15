@@ -38,17 +38,15 @@ function BackendScriptApi(currentNote, apiParams) {
         this[key] = apiParams[key];
     }
 
-    /** @property {axios} Axios library for HTTP requests. See {@link https://axios-http.com} for documentation */
+    /**
+     * @property {axios} Axios library for HTTP requests. See {@link https://axios-http.com} for documentation
+     * @deprecated use native (browser compatible) fetch() instead
+     */
     this.axios = axios;
     /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
     this.dayjs = dayjs;
     /** @property {axios} xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation */
     this.xml2js = xml2js;
-
-    // DEPRECATED - use direct api.unescapeHtml
-    this.utils = {
-        unescapeHtml: utils.unescapeHtml
-    };
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts
@@ -322,17 +320,6 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} date in YYYY-MM-DD format
      * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
      * @returns {BNote|null}
-     * @deprecated use getDayNote instead
-     */
-    this.getDateNote = dateNoteService.getDayNote;
-
-    /**
-     * Returns day note for given date. If such note doesn't exist, it is created.
-     *
-     * @method
-     * @param {string} date in YYYY-MM-DD format
-     * @param {BNote} [rootNote] - specify calendar root note, normally leave empty to use the default calendar
-     * @returns {BNote|null}
      */
     this.getDayNote = dateNoteService.getDayNote;
 
@@ -376,14 +363,6 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {BNote|null}
      */
     this.getYearNote = dateNoteService.getYearNote;
-
-    /**
-     * @method
-     * @deprecated use sortNotes instead
-     * @param {string} parentNoteId - this note's child notes will be sorted
-     * @returns {void}
-     */
-    this.sortNotesByTitle = parentNoteId => treeService.sortNotes(parentNoteId);
 
     /**
      * Sort child notes of a given note.
@@ -456,15 +435,6 @@ function BackendScriptApi(currentNote, apiParams) {
      * @property {module:sql} sql
      */
     this.sql = sql;
-
-    /**
-     * @method
-     * @deprecated this is now no-op since all the changes should be gracefully handled per widget
-     * @returns {void}
-     */
-    this.refreshTree = () => {
-        console.warn("api.refreshTree() is a NO-OP and can be removed from your script.")
-    };
 
     /**
      * @method
