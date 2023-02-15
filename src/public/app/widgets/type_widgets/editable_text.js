@@ -154,6 +154,19 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             }
         });
 
+        this.watchdog.setCreator(async (elementOrData, editorConfig) => {
+            const editor = await BalloonEditor.create(elementOrData, editorConfig);
+
+            editor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+
+            if (glob.isDev && ENABLE_INSPECTOR) {
+                await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector.js');
+                CKEditorInspector.attach(editor);
+            }
+
+            return editor;
+        });
+
         await this.watchdog.create(this.$editor[0], {
             placeholder: "Type the content of your note here ...",
             mention: mentionSetup,
@@ -168,13 +181,6 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
                 enablePreview: true // Enable preview view
             }
         });
-
-        this.watchdog.editor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
-
-        if (glob.isDev && ENABLE_INSPECTOR) {
-            await import(/* webpackIgnore: true */'../../../libraries/ckeditor/inspector.js');
-            CKEditorInspector.attach(this.watchdog.editor);
-        }
     }
 
     async doRefresh(note) {

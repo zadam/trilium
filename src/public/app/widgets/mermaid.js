@@ -75,44 +75,45 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         const wheelZoomLoaded = libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM);
 
         try {
-            const renderedSvg = await this.renderSvg();
-            this.$display.html(renderedSvg);
+            await this.renderSvg(async renderedSvg => {
+                this.$display.html(renderedSvg);
 
-            // not awaiting intentionally
-            // this is pretty hacky since we update ancillary on render
-            // but if nothing changed this should not trigger DB write and sync
-            server.put(`notes/${note.noteId}/ancillaries/mermaidSvg`, {
-                mime: 'image/svg+xml',
-                content: renderedSvg
+                // not awaiting intentionally
+                // this is pretty hacky since we update ancillary on render
+                // but if nothing changed this should not trigger DB write and sync
+                server.put(`notes/${note.noteId}/ancillaries/mermaidSvg`, {
+                    mime: 'image/svg+xml',
+                    content: renderedSvg
+                });
+
+                await wheelZoomLoaded;
+
+                this.$display.attr("id", `mermaid-render-${idCounter}`);
+
+                WZoom.create(`#mermaid-render-${idCounter}`, {
+                    type: 'html',
+                    maxScale: 10,
+                    speed: 20,
+                    zoomOnClick: false
+                });
+
+                this.$errorContainer.hide();
             });
-
-            await wheelZoomLoaded;
-
-            this.$display.attr("id", `mermaid-render-${idCounter}`);
-
-            WZoom.create(`#mermaid-render-${idCounter}`, {
-                type: 'html',
-                maxScale: 10,
-                speed: 20,
-                zoomOnClick: false
-            });
-
-            this.$errorContainer.hide();
         } catch (e) {
             this.$errorMessage.text(e.message);
             this.$errorContainer.show();
         }
     }
 
-    renderSvg() {
-        return new Promise(async res => {
-            idCounter++;
+    async renderSvg(cb) {
+        idCounter++;
 
-            const noteComplement = await froca.getNoteComplement(this.noteId);
-            const content = noteComplement.content || "";
+        const noteComplement = await froca.getNoteComplement(this.noteId);
+        const content = noteComplement.content || "";
 
-            mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content, res);
-        });
+        // this can't be promisified since in case of error this both calls callback with error SVG and throws exception
+        // with error details
+        mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content, cb);
     }
 
     async entitiesReloadedEvent({loadResults}) {
@@ -126,9 +127,9 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             return;
         }
 
-        const renderedSvg = await this.renderSvg();
-
-        this.download(`${this.note.title}.svg`, renderedSvg);
+        await this.renderSvg(renderedSvg => {
+            this.download(`${this.note.title}.svg`, renderedSvg);
+        });
     }
 
     download(filename, text) {
