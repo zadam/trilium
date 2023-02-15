@@ -154,7 +154,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             }
         });
 
-        await this.watchdog.setCreator(async (elementOrData, editorConfig) => {
+        this.watchdog.setCreator(async (elementOrData, editorConfig) => {
             const editor = await BalloonEditor.create(elementOrData, editorConfig);
 
             editor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
