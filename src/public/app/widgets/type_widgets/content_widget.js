@@ -12,7 +12,7 @@ import VimKeyBindingsOptions from "./options/code_notes/vim_key_bindings.js";
 import WrapLinesOptions from "./options/code_notes/wrap_lines.js";
 import CodeAutoReadOnlySizeOptions from "./options/code_notes/code_auto_read_only_size.js";
 import CodeMimeTypesOptions from "./options/code_notes/code_mime_types.js";
-import ImageOptions from "./options/images.js";
+import ImageOptions from "./options/images/images.js";
 import SpellcheckOptions from "./options/spellcheck.js";
 import PasswordOptions from "./options/password.js";
 import EtapiOptions from "./options/etapi.js";
@@ -28,6 +28,8 @@ import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
+import OcrOptions from "./options/images/ocr.js";
+import ExtractTextFromPdfOptions from "./options/images/extract_text_from_pdf.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -68,7 +70,7 @@ const CONTENT_WIDGETS = {
         CodeAutoReadOnlySizeOptions,
         CodeMimeTypesOptions
     ],
-    _optionsImages: [ ImageOptions ],
+    _optionsImages: [ ImageOptions, OcrOptions, ExtractTextFromPdfOptions ],
     _optionsSpellcheck: [ SpellcheckOptions ],
     _optionsPassword: [ PasswordOptions ],
     _optionsEtapi: [ EtapiOptions ],

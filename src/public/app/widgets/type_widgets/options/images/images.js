@@ -1,4 +1,4 @@
-import OptionsWidget from "./options_widget.js";
+import OptionsWidget from "../options_widget.js";
 
 const TPL = `
 <div class="options-section">

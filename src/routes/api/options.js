@@ -61,7 +61,9 @@ const ALLOWED_OPTIONS = new Set([
     'downloadImagesAutomatically',
     'minTocHeadings',
     'checkForUpdates',
-    'disableTray'
+    'disableTray',
+    'ocrImages',
+    'extractTextFromPdf'
 ]);
 
 function getOptions() {
