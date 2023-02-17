@@ -102,13 +102,6 @@
     "esm": "3.2.25",
     "jasmine": "4.5.0",
     "jsdoc": "4.0.1",
-    "build-api-docs": "./bin/build-api-docs.sh",
-    "postinstall": "node src-build/fix_pdfjs.js"
-    "better-sqlite3": "8.1.0",
-    "canvas": "2.11.0",
-    "ocrad.js": "antimatter15/ocrad.js#master",
-    "pdfjs-dist": "3.3.122",
-    "electron": "23.1.0",
     "lorem-ipsum": "2.0.8",
     "rcedit": "3.0.1",
     "webpack": "5.75.0",

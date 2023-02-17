@@ -1,4 +1,3 @@
-import utils from "../../services/utils.js";
 import BasicWidget from "../basic_widget.js";
 
 const TPL = `
@@ -155,9 +154,5 @@ const TPL = `
 export default class HelpDialog extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
-    }
-
-    showHelpEvent() {
-        utils.openDialog(this.$widget);
     }
 }
