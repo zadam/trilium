@@ -5,7 +5,7 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-n exec 16.19.0 npm run webpack
+n exec 16.19.1 npm run webpack
 
 DIR=$1
 
@@ -27,7 +27,7 @@ cp -r electron.js $DIR/
 cp webpack-* $DIR/
 
 # run in subshell (so we return to original dir)
-(cd $DIR && n exec 16.19.0 npm install --only=prod)
+(cd $DIR && n exec 16.19.1 npm install --only=prod)
 
 # cleanup of useless files in dependencies
 rm -r $DIR/node_modules/image-q/demo

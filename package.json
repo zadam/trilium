@@ -101,7 +101,7 @@
     "electron-rebuild": "3.2.9",
     "esm": "3.2.25",
     "jasmine": "4.5.0",
-    "jsdoc": "4.0.0",
+    "jsdoc": "4.0.1",
     "lorem-ipsum": "2.0.8",
     "rcedit": "3.0.1",
     "webpack": "5.75.0",
