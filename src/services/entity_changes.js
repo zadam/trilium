@@ -151,8 +151,6 @@ function fillAllEntityChanges() {
         fillEntityChanges("branches", "branchId");
         fillEntityChanges("note_revisions", "noteRevisionId");
         fillEntityChanges("note_revision_contents", "noteRevisionId");
-        fillEntityChanges("note_ancillaries", "noteAncillaryId");
-        fillEntityChanges("note_ancillary_contents", "noteAncillaryId");
         fillEntityChanges("attributes", "attributeId");
         fillEntityChanges("etapi_tokens", "etapiTokenId");
         fillEntityChanges("options", "name", 'isSynced = 1');

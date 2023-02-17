@@ -54,10 +54,10 @@ function createNote(req) {
 }
 
 function updateNoteData(req) {
-    const {content, ancillaries} = req.body;
+    const {content} = req.body;
     const {noteId} = req.params;
 
-    return noteService.updateNoteData(noteId, content, ancillaries);
+    return noteService.updateNoteData(noteId, content);
 }
 
 function deleteNote(req) {
@@ -125,49 +125,6 @@ function setNoteTypeMime(req) {
     note.type = type;
     note.mime = mime;
     note.save();
-}
-
-function getNoteAncillaries(req) {
-    const includeContent = req.query.includeContent === 'true';
-    const {noteId} = req.params;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    const noteAncillaries = note.getNoteAncillaries();
-
-    return noteAncillaries.map(ancillary => {
-       const pojo = ancillary.getPojo();
-
-       if (includeContent && utils.isStringNote(null, ancillary.mime)) {
-           pojo.content = ancillary.getContent()?.toString();
-           pojo.contentLength = pojo.content.length;
-
-           const MAX_ANCILLARY_LENGTH = 1_000_000;
-
-           if (pojo.content.length > MAX_ANCILLARY_LENGTH) {
-               pojo.content = pojo.content.substring(0, MAX_ANCILLARY_LENGTH);
-           }
-       }
-
-       return pojo;
-    });
-}
-
-function saveNoteAncillary(req) {
-    const {noteId, name} = req.params;
-    const {mime, content} = req.body;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    note.saveNoteAncillary(name, mime, content);
 }
 
 function getRelationMap(req) {
@@ -383,7 +340,5 @@ module.exports = {
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
     uploadModifiedFile,
-    forceSaveNoteRevision,
-    getNoteAncillaries,
-    saveNoteAncillary
+    forceSaveNoteRevision
 };

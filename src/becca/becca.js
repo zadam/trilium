@@ -121,14 +121,6 @@ class Becca {
         return row ? new BNoteRevision(row) : null;
     }
 
-    /** @returns {BNoteAncillary|null} */
-    getNoteAncillary(noteAncillaryId) {
-        const row = sql.getRow("SELECT * FROM note_ancillaries WHERE noteAncillaryId = ?", [noteAncillaryId]);
-
-        const BNoteAncillary = require("./entities/bnote_ancillary"); // avoiding circular dependency problems
-        return row ? new BNoteAncillary(row) : null;
-    }
-
     /** @returns {BOption|null} */
     getOption(name) {
         return this.options[name];
@@ -151,8 +143,6 @@ class Becca {
 
         if (entityName === 'note_revisions') {
             return this.getNoteRevision(entityId);
-        } else if (entityName === 'note_ancillaries') {
-            return this.getNoteAncillary(entityId);
         }
 
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,

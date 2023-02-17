@@ -14,7 +14,6 @@ const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
-const BNoteAncillary = require("../../becca/entities/bnote_ancillary");
 
 /**
  * @param {TaskContext} taskContext
@@ -65,7 +64,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
 
         let parent;
-        let ancillaryMeta = false;
 
         for (const segment of pathSegments) {
             if (!cursor || !cursor.children || cursor.children.length === 0) {
@@ -74,28 +72,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             parent = cursor;
             cursor = parent.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
-
-            if (!cursor) {
-                for (const file of parent.children) {
-                    for (const ancillary of file.ancillaries || []) {
-                        if (ancillary.dataFileName === segment) {
-                            cursor = file;
-                            ancillaryMeta = ancillary;
-                            break;
-                        }
-                    }
-
-                    if (cursor) {
-                        break;
-                    }
-                }
-            }
         }
 
         return {
             parentNoteMeta: parent,
-            noteMeta: cursor,
-            ancillaryMeta
+            noteMeta: cursor
         };
     }
 
@@ -373,24 +354,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function saveNote(filePath, content) {
-        const {parentNoteMeta, noteMeta, ancillaryMeta} = getMeta(filePath);
+        const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
         if (noteMeta?.noImport) {
             return;
         }
 
         const noteId = getNoteId(noteMeta, filePath);
-
-        if (ancillaryMeta) {
-            const noteAncillary = new BNoteAncillary({
-                noteId,
-                name: ancillaryMeta.name,
-                mime: ancillaryMeta.mime
-            });
-
-            noteAncillary.setContent(content);
-            return;
-        }
 
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 

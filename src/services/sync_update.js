@@ -64,7 +64,7 @@ function updateNormalEntity(remoteEntityChange, remoteEntityRow, instanceId) {
         || localEntityChange.utcDateChanged < remoteEntityChange.utcDateChanged
         || localEntityChange.hash !== remoteEntityChange.hash // sync error, we should still update
     ) {
-        if (['note_contents', 'note_revision_contents', 'note_ancillary_contents'].includes(remoteEntityChange.entityName)) {
+        if (['note_contents', 'note_revision_contents'].includes(remoteEntityChange.entityName)) {
             remoteEntityRow.content = handleContent(remoteEntityRow.content);
         }
 
@@ -115,9 +115,7 @@ function eraseEntity(entityChange, instanceId) {
         "branches",
         "attributes",
         "note_revisions",
-        "note_revision_contents",
-        "note_ancillaries",
-        "note_ancillary_contents"
+        "note_revision_contents"
     ];
 
     if (!entityNames.includes(entityName)) {

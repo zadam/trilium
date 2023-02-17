@@ -587,7 +587,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
     }
 
     getData() {
-        // TODO: save also image as ancillary
         return {
             content: JSON.stringify(this.mapData)
         };

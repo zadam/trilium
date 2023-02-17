@@ -28,8 +28,6 @@ import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
-import OcrOptions from "./options/images/ocr.js";
-import ExtractTextFromPdfOptions from "./options/images/extract_text_from_pdf.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -70,7 +68,7 @@ const CONTENT_WIDGETS = {
         CodeAutoReadOnlySizeOptions,
         CodeMimeTypesOptions
     ],
-    _optionsImages: [ ImageOptions, OcrOptions, ExtractTextFromPdfOptions ],
+    _optionsImages: [ ImageOptions ],
     _optionsSpellcheck: [ SpellcheckOptions ],
     _optionsPassword: [ PasswordOptions ],
     _optionsEtapi: [ EtapiOptions ],

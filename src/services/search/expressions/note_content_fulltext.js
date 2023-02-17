@@ -48,16 +48,6 @@ class NoteContentFulltextExp extends Expression {
             this.findInText(row, inputNoteSet, resultNoteSet);
         }
 
-        for (const row of sql.iterateRows(`
-                SELECT noteId, 'plainText' as type, mime, content, isProtected
-                FROM note_ancillaries JOIN note_ancillary_contents USING (noteAncillaryId) 
-                WHERE name IN ('plainText') AND isDeleted = 0`)) {
-
-            if (!resultNoteSet.hasNoteId(row.noteId)) {
-                this.findInText(row, inputNoteSet, resultNoteSet);
-            }
-        }
-
         return resultNoteSet;
     }
 

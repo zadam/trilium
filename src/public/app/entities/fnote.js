@@ -803,7 +803,7 @@ class FNote {
         return labels.length > 0 ? labels[0].value : "";
     }
 
-    /** @returns {boolean} true if this note is JavaScript (code or ancillary) */
+    /** @returns {boolean} true if this note is JavaScript (code or file) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")

@@ -9,7 +9,6 @@ const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
 const noteRevisionService = require('../services/note_revisions');
-const noteAncillarieservice = require('../services/note_ancillaries');
 const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
@@ -18,12 +17,10 @@ const becca = require('../becca/becca');
 const BBranch = require('../becca/entities/bbranch');
 const BNote = require('../becca/entities/bnote');
 const BAttribute = require('../becca/entities/battribute');
-const BNoteAncillary = require("../becca/entities/bnote_ancillary");
 const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
-const textExtractingService = require("./text_extracting");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -302,7 +299,6 @@ function protectNote(note, protect) {
         }
 
         noteRevisionService.protectNoteRevisions(note);
-        noteAncillarieservice.protectNoteAncillaries(note);
     }
     catch (e) {
         log.error(`Could not un/protect note ID = ${note.noteId}`);
@@ -593,7 +589,7 @@ function saveNoteRevisionIfNeeded(note) {
     }
 }
 
-function updateNoteData(noteId, content, ancillaries = []) {
+function updateNoteData(noteId, content) {
     const note = becca.getNote(noteId);
 
     if (!note.isContentAvailable()) {
@@ -605,10 +601,6 @@ function updateNoteData(noteId, content, ancillaries = []) {
     content = saveLinks(note, content);
 
     note.setContent(content);
-
-    for (const {name, mime, content} of ancillaries) {
-        note.saveNoteAncillary(name, mime, content);
-    }
 }
 
 /**
@@ -675,16 +667,6 @@ function undeleteBranch(branchId, deleteId, taskContext) {
             new BAttribute(attribute).save({skipValidation: true});
         }
 
-        const noteAncillaries = sql.getRows(`
-                SELECT * FROM note_ancillaries 
-                WHERE isDeleted = 1 
-                  AND deleteId = ? 
-                  AND noteId = ?`, [deleteId, note.noteId]);
-
-        for (const noteAncillary of noteAncillaries) {
-            new BNoteAncillary(noteAncillary).save();
-        }
-
         const childBranchIds = sql.getColumn(`
             SELECT branches.branchId
             FROM branches
@@ -734,8 +716,6 @@ function scanForLinks(note, content) {
  */
 async function asyncPostProcessContent(note, content) {
     scanForLinks(note, content);
-    await textExtractingService.runOcr(note, content);
-    await textExtractingService.extractTextFromPdf(note, content);
 }
 
 function eraseNotes(noteIdsToErase) {
@@ -764,11 +744,6 @@ function eraseNotes(noteIdsToErase) {
         .map(row => row.noteRevisionId);
 
     noteRevisionService.eraseNoteRevisions(noteRevisionIdsToErase);
-
-    const noteAncillaryIdsToErase = sql.getManyRows(`SELECT noteAncillaryId FROM note_ancillaries WHERE noteId IN (???)`, noteIdsToErase)
-        .map(row => row.noteAncillaryId);
-
-    eraseNoteAncillaries(noteAncillaryIdsToErase);
 
     log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
@@ -803,20 +778,6 @@ function eraseAttributes(attributeIdsToErase) {
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attributes' AND entityId IN (???)`, attributeIdsToErase));
 
     log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
-}
-
-function eraseNoteAncillaries(noteAncillaryIdsToErase) {
-    if (noteAncillaryIdsToErase.length === 0) {
-        return;
-    }
-
-    log.info(`Removing note ancillaries: ${JSON.stringify(noteAncillaryIdsToErase)}`);
-
-    sql.executeMany(`DELETE FROM note_ancillaries WHERE noteAncillaryId IN (???)`, noteAncillaryIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_ancillaries' AND entityId IN (???)`, noteAncillaryIdsToErase);
-
-    sql.executeMany(`DELETE FROM note_ancillary_contents WHERE noteAncillaryId IN (???)`, noteAncillaryIdsToErase);
-    sql.executeMany(`UPDATE entity_changes SET isErased = 1 WHERE entityName = 'note_ancillary_contents' AND entityId IN (???)`, noteAncillaryIdsToErase);
 }
 
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
@@ -951,18 +912,6 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
             }
 
             attr.save();
-        }
-
-        for (const noteAncillary of origNote.getNoteAncillaries()) {
-            const duplNoteAncillary = new BNoteAncillary({
-                ...noteAncillary,
-                noteAncillaryId: undefined,
-                noteId: newNote.noteId
-            });
-
-            duplNoteAncillary.save();
-
-            duplNoteAncillary.setContent(noteAncillary.getContent());
         }
 
         for (const childBranch of origNote.getChildBranches()) {

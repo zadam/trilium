@@ -48,14 +48,6 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
-function isOcrDisabled() {
-    return !!namespace.get('disableOcr');
-}
-
-function disableOcr() {
-    namespace.set('disableOcr', true);
-}
-
 function getAndClearEntityChangeIds() {
     const entityChangeIds = namespace.get('entityChangeIds') || [];
 
@@ -101,6 +93,4 @@ module.exports = {
     getAndClearEntityChangeIds,
     addEntityChange,
     ignoreEntityChangeIds,
-    isOcrDisabled,
-    disableOcr
 };
