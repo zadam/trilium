@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: becca/entities/brecent_note.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,53 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: becca/entities/brecent_note.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
 
+const dateUtils = require('../../services/date_utils');
+const AbstractBeccaEntity = require("./abstract_becca_entity");
 
-    <h3> </h3>
+/**
+ * RecentNote represents recently visited note.
+ *
+ * @extends AbstractBeccaEntity
+ */
+class BRecentNote extends AbstractBeccaEntity {
+    static get entityName() { return "recent_notes"; }
+    static get primaryKeyName() { return "noteId"; }
 
+    constructor(row) {
+        super();
 
+        /** @type {string} */
+        this.noteId = row.noteId;
+        /** @type {string} */
+        this.notePath = row.notePath;
+        /** @type {string} */
+        this.utcDateCreated = row.utcDateCreated || dateUtils.utcNowDateTime();
+    }
 
+    getPojo() {
+        return {
+            noteId: this.noteId,
+            notePath: this.notePath,
+            utcDateCreated: this.utcDateCreated
+        }
+    }
+}
 
-
-
-
-
-
-
-    
-
-
-
-
-
+module.exports = BRecentNote;
+</code></pre>
+        </article>
+    </section>
 
 
 

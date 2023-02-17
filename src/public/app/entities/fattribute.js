@@ -42,7 +42,7 @@ class FAttribute {
 
     get targetNoteId() { // alias
         if (this.type !== 'relation') {
-            throw new Error(`FAttribute ${this.attributeId} is not a relation`);
+            throw new Error(`Attribute ${this.attributeId} is not a relation`);
         }
 
         return this.value;
