@@ -35,35 +35,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {dayjs} day.js library for date manipulation. See {@link https://day.js.org} for documentation */
     this.dayjs = dayjs;
 
-    /**
-     * @property {RightPanelWidget}
-     * @deprecated use api.RightPanelWidget instead
-     */
-    this.CollapsibleWidget = RightPanelWidget;
-
     /** @property {RightPanelWidget} */
     this.RightPanelWidget = RightPanelWidget;
 
     /** @property {NoteContextAwareWidget} */
     this.NoteContextAwareWidget = NoteContextAwareWidget;
-
-    /**
-     * @property {NoteContextAwareWidget}
-     * @deprecated use NoteContextAwareWidget instead
-     */
-    this.TabAwareWidget = NoteContextAwareWidget;
-
-    /**
-     * @property {NoteContextAwareWidget}
-     * @deprecated use NoteContextAwareWidget instead
-     */
-    this.TabCachingWidget = NoteContextAwareWidget;
-
-    /**
-     * @property {NoteContextAwareWidget}
-     * @deprecated use NoteContextAwareWidget instead
-     */
-    this.NoteContextCachingWidget = NoteContextAwareWidget;
 
     /** @property {BasicWidget} */
     this.BasicWidget = BasicWidget;
