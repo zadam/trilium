@@ -39,7 +39,7 @@ export default class TypeWidget extends NoteContextAwareWidget {
     }
 
     /**
-     * @returns {Promise<Object>|*} promise resolving note data. Note data is an object with content.
+     * @returns {Promise<Object>|*} promise resolving note data. Note data is an object with content and ancillaries.
      */
     getData() {}
 

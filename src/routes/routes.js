@@ -126,6 +126,8 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/sort-children', notesApiRoute.sortChildNotes);
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectNote);
     apiRoute(PUT, '/api/notes/:noteId/type', notesApiRoute.setNoteTypeMime);
+    apiRoute(GET, '/api/notes/:noteId/ancillaries', notesApiRoute.getNoteAncillaries);
+    apiRoute(PUT, '/api/notes/:noteId/ancillaries/:name', notesApiRoute.saveNoteAncillary);
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
     apiRoute(DELETE, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.eraseAllNoteRevisions);
     apiRoute(GET, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.getNoteRevision);

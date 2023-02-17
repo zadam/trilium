@@ -1,45 +1,53 @@
-"use strict";
+"use strict"
 
-const BAttribute = require('../../becca/entities/battribute');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
-const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
-const BBranch = require('../../becca/entities/bbranch');
+const becca = require("../becca/becca");
+const fs = require("fs").promises;
+const BAttribute = require('../becca/entities/battribute');
+const utils = require('./utils');
+const log = require('./log');
+const noteService = require('./notes');
+const attributeService = require('./attributes');
+const BBranch = require('../becca/entities/bbranch');
 const path = require('path');
-const commonmark = require('commonmark');
-const protectedSessionService = require('../protected_session');
-const mimeService = require("./mime");
-const treeService = require("../tree");
 const yauzl = require("yauzl");
-const htmlSanitizer = require('../html_sanitizer');
-const becca = require("../../becca/becca");
-const BNoteAncillary = require("../../becca/entities/bnote_ancillary");
+const htmlSanitizer = require('./html_sanitizer');
+const sql = require('./sql');
+const options = require('./options');
+const cls = require('./cls');
+const {USER_GUIDE_ZIP_DIR} = require('./resource_dir');
 
-/**
- * @param {TaskContext} taskContext
- * @param {Buffer} fileBuffer
- * @param {BNote} importRootNote
- * @returns {Promise<*>}
- */
-async function importZip(taskContext, fileBuffer, importRootNote) {
+async function importUserGuideIfNeeded() {
+    const userGuideSha256HashInDb = options.getOption('userGuideSha256Hash');
+    let userGuideSha256HashInFile = await fs.readFile(USER_GUIDE_ZIP_DIR + "/user-guide.zip.sha256");
+
+    if (!userGuideSha256HashInFile || userGuideSha256HashInFile.byteLength < 64) {
+        return;
+    }
+
+    userGuideSha256HashInFile = userGuideSha256HashInFile.toString().substr(0, 64);
+
+    if (userGuideSha256HashInDb === userGuideSha256HashInFile) {
+        // user guide ZIP file has been already imported and is up-to-date
+        return;
+    }
+
+    const hiddenRoot = becca.getNote("_hidden");
+    const data = await fs.readFile(USER_GUIDE_ZIP_DIR + "/user-guide.zip", "binary");
+
+    cls.disableOcr(); // no OCR needed for user guide images
+
+    await importZip(Buffer.from(data, 'binary'), hiddenRoot);
+
+    options.setOption('userGuideSha256Hash', userGuideSha256HashInFile);
+}
+
+async function importZip(fileBuffer, importRootNote) {
     // maps from original noteId (in ZIP file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
-    // path => noteId, used only when meta file is not available
-    const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
-    const mdReader = new commonmark.Parser();
-    const mdWriter = new commonmark.HtmlRenderer();
     let metaFile = null;
-    let firstNote = null;
-    const createdNoteIds = {};
 
     function getNewNoteId(origNoteId) {
-        // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
-        if (!origNoteId.trim()) {
-            return "";
-        }
-
         if (origNoteId === 'root' || origNoteId.startsWith("_")) {
             // these "named" noteIds don't differ between Trilium instances
             return origNoteId;
@@ -53,10 +61,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function getMeta(filePath) {
-        if (!metaFile) {
-            return {};
-        }
-
         const pathSegments = filePath.split(/[\/\\]/g);
 
         let cursor = {
@@ -65,87 +69,39 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
 
         let parent;
-        let ancillaryMeta = false;
 
         for (const segment of pathSegments) {
             if (!cursor || !cursor.children || cursor.children.length === 0) {
-                return {};
+                throw new Error(`Note meta for '${filePath}' not found.`);
             }
 
             parent = cursor;
-            cursor = parent.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
-
-            if (!cursor) {
-                for (const file of parent.children) {
-                    for (const ancillary of file.ancillaries || []) {
-                        if (ancillary.dataFileName === segment) {
-                            cursor = file;
-                            ancillaryMeta = ancillary;
-                            break;
-                        }
-                    }
-
-                    if (cursor) {
-                        break;
-                    }
-                }
-            }
+            cursor = cursor.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
         }
 
         return {
             parentNoteMeta: parent,
-            noteMeta: cursor,
-            ancillaryMeta
+            noteMeta: cursor
         };
     }
 
     function getParentNoteId(filePath, parentNoteMeta) {
-        let parentNoteId;
-
-        if (parentNoteMeta) {
-            parentNoteId = parentNoteMeta.isImportRoot ? importRootNote.noteId : getNewNoteId(parentNoteMeta.noteId);
-        }
-        else {
-            const parentPath = path.dirname(filePath);
-
-            if (parentPath === '.') {
-                parentNoteId = importRootNote.noteId;
-            }
-            else if (parentPath in createdPaths) {
-                parentNoteId = createdPaths[parentPath];
-            }
-            else {
-                // ZIP allows creating out of order records - i.e. file in a directory can appear in the ZIP stream before actual directory
-                parentNoteId = saveDirectory(parentPath);
-            }
-        }
-
-        return parentNoteId;
+        return parentNoteMeta.isImportRoot ? importRootNote.noteId : getNewNoteId(parentNoteMeta.noteId);
     }
 
-    function getNoteId(noteMeta, filePath) {
-        if (noteMeta) {
-            return getNewNoteId(noteMeta.noteId);
+    function getNoteId(noteMeta) {
+        let userGuideNoteId;// = noteMeta.attributes?.find(attr => attr.type === 'label' && attr.name === 'helpNoteId')?.value;
+
+        userGuideNoteId = '_userGuide' + noteMeta.title.replace(/[^a-z0-9]/ig, '');
+
+        if (noteMeta.title.trim() === 'User Guide') {
+            userGuideNoteId = '_userGuide';
         }
 
-        const filePathNoExt = utils.removeTextFileExtension(filePath);
-
-        if (filePathNoExt in createdPaths) {
-            return createdPaths[filePathNoExt];
-        }
-
-        const noteId = utils.newEntityId();
-
-        createdPaths[filePathNoExt] = noteId;
+        const noteId = userGuideNoteId || noteMeta.noteId;
+        noteIdMap[noteMeta.noteId] = noteId;
 
         return noteId;
-    }
-
-    function detectFileTypeAndMime(taskContext, filePath) {
-        const mime = mimeService.getMime(filePath) || "application/octet-stream";
-        const type = mimeService.getType(taskContext.data, mime);
-
-        return { mime, type };
     }
 
     function saveAttributes(note, noteMeta) {
@@ -179,15 +135,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 attr.value = getNewNoteId(attr.value);
             }
 
-            if (taskContext.data.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
-                attr.name = `disabled:${attr.name}`;
-            }
-
-            if (taskContext.data.safeImport) {
-                attr.name = htmlSanitizer.sanitize(attr.name);
-                attr.value = htmlSanitizer.sanitize(attr.value);
-            }
-
             attributes.push(attr);
         }
     }
@@ -195,8 +142,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     function saveDirectory(filePath) {
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
-        const noteId = getNoteId(noteMeta, filePath);
-        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
+        const noteId = getNoteId(noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         let note = becca.getNote(noteId);
@@ -207,24 +153,19 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         ({note} = noteService.createNewNote({
             parentNoteId: parentNoteId,
-            title: noteTitle,
+            title: noteMeta.title,
             content: '',
             noteId: noteId,
-            type: resolveNoteType(noteMeta?.type),
-            mime: noteMeta ? noteMeta.mime : 'text/html',
-            prefix: noteMeta ? noteMeta.prefix : '',
-            isExpanded: noteMeta ? noteMeta.isExpanded : false,
-            notePosition: (noteMeta && firstNote) ? noteMeta.notePosition : undefined,
-            isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+            type: noteMeta.type,
+            mime: noteMeta.mime,
+            prefix: noteMeta.prefix,
+            isExpanded: noteMeta.isExpanded,
+            notePosition: noteMeta.notePosition,
+            isProtected: false,
+            ignoreForbiddenParents: true
         }));
 
-        createdNoteIds[note.noteId] = true;
-
         saveAttributes(note, noteMeta);
-
-        if (!firstNote) {
-            firstNote = note;
-        }
 
         return noteId;
     }
@@ -249,24 +190,17 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         absUrl += `${absUrl.length > 0 ? '/' : ''}${url}`;
 
         const {noteMeta} = getMeta(absUrl);
-
-        if (!noteMeta) {
-            log.info(`Could not find note meta for URL '${absUrl}'.`);
-
-            return null;
-        }
-
-        const targetNoteId = getNoteId(noteMeta, absUrl);
+        const targetNoteId = getNoteId(noteMeta);
         return targetNoteId;
     }
 
-    function processTextNoteContent(content, noteTitle, filePath, noteMeta) {
+    function processTextNoteContent(content, filePath, noteMeta) {
         function isUrlAbsolute(url) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
         }
 
         content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
-            if (noteTitle.trim() === text.trim()) {
+            if (noteMeta.title.trim() === text.trim()) {
                 return ""; // remove whole H1 tag
             } else {
                 return `<h2>${text}</h2>`;
@@ -292,10 +226,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
             const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
 
-            if (!targetNoteId) {
-                return match;
-            }
-
             return `src="api/images/${targetNoteId}/${path.basename(url)}"`;
         });
 
@@ -313,10 +243,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             }
 
             const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
-
-            if (!targetNoteId) {
-                return match;
-            }
 
             return `href="#root/${targetNoteId}"`;
         });
@@ -347,18 +273,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
-    function processNoteContent(noteMeta, type, mime, content, noteTitle, filePath) {
-        if (noteMeta?.format === 'markdown'
-            || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
-            const parsed = mdReader.parse(content);
-            content = mdWriter.render(parsed);
-        }
-
+    function processNoteContent(noteMeta, type, mime, content, filePath) {
         if (type === 'text') {
-            content = processTextNoteContent(content, noteTitle, filePath, noteMeta);
+            content = processTextNoteContent(content, filePath, noteMeta);
         }
 
-        if (type === 'relationMap' && noteMeta) {
+        if (type === 'relationMap') {
             const relationMapLinks = (noteMeta.attributes || [])
                 .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
 
@@ -373,25 +293,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function saveNote(filePath, content) {
-        const {parentNoteMeta, noteMeta, ancillaryMeta} = getMeta(filePath);
+        const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
         if (noteMeta?.noImport) {
             return;
         }
 
-        const noteId = getNoteId(noteMeta, filePath);
-
-        if (ancillaryMeta) {
-            const noteAncillary = new BNoteAncillary({
-                noteId,
-                name: ancillaryMeta.name,
-                mime: ancillaryMeta.mime
-            });
-
-            noteAncillary.setContent(content);
-            return;
-        }
-
+        const noteId = getNoteId(noteMeta);
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (!parentNoteId) {
@@ -412,20 +320,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        let {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
-        type = resolveNoteType(type);
+        let {type, mime} = noteMeta;
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
         }
 
-        const noteTitle = utils.getNoteTitle(filePath, taskContext.data.replaceUnderscoresWithSpaces, noteMeta);
-
-        content = processNoteContent(noteMeta, type, mime, content, noteTitle, filePath);
+        content = processNoteContent(noteMeta, type, mime, content, filePath);
 
         let note = becca.getNote(noteId);
-
-        const isProtected = importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable();
 
         if (note) {
             // only skeleton was created because of altered order of cloned notes in ZIP, we need to update
@@ -433,8 +336,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             if (note.type === undefined) {
                 note.type = type;
                 note.mime = mime;
-                note.title = noteTitle;
-                note.isProtected = isProtected;
+                note.title = noteMeta.title;
+                note.isProtected = false;
                 note.save();
             }
 
@@ -453,84 +356,63 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         else {
             ({note} = noteService.createNewNote({
                 parentNoteId: parentNoteId,
-                title: noteTitle,
+                title: noteMeta.title,
                 content: content,
                 noteId,
                 type,
                 mime,
-                prefix: noteMeta ? noteMeta.prefix : '',
-                isExpanded: noteMeta ? noteMeta.isExpanded : false,
-                // root notePosition should be ignored since it relates to original document
-                // now import root should be placed after existing notes into new parent
-                notePosition: (noteMeta && firstNote) ? noteMeta.notePosition : undefined,
-                isProtected: isProtected,
+                prefix: noteMeta.prefix,
+                isExpanded: noteMeta.isExpanded,
+                notePosition: noteMeta.notePosition,
+                isProtected: false,
+                ignoreForbiddenParents: true
             }));
 
-            createdNoteIds[note.noteId] = true;
-
             saveAttributes(note, noteMeta);
-
-            if (!firstNote) {
-                firstNote = note;
-            }
-
-            if (type === 'text') {
-                filePath = utils.removeTextFileExtension(filePath);
-            }
-        }
-
-        if (!noteMeta && (type === 'file' || type === 'image')) {
-            attributes.push({
-                noteId,
-                type: 'label',
-                name: 'originalFileName',
-                value: path.basename(filePath)
-            });
         }
     }
 
-    // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
-
-    await readZipFile(fileBuffer, async (zipfile, entry) => {
-        const filePath = normalizeFilePath(entry.fileName);
-
-        if (filePath === '!!!meta.json') {
-            const content = await readContent(zipfile, entry);
-
-            metaFile = JSON.parse(content.toString("UTF-8"));
-        }
-
-        zipfile.readEntry();
-    });
+    const entries = [];
 
     await readZipFile(fileBuffer, async (zipfile, entry) => {
         const filePath = normalizeFilePath(entry.fileName);
 
         if (/\/$/.test(entry.fileName)) {
-            saveDirectory(filePath);
+            entries.push({
+                type: 'directory',
+                filePath
+            });
         }
-        else if (filePath !== '!!!meta.json') {
-            const content = await readContent(zipfile, entry);
-
-            saveNote(filePath, content);
+        else {
+            entries.push({
+                type: 'file',
+                filePath,
+                content: await readContent(zipfile, entry)
+            });
         }
 
-        taskContext.increaseProgressCount();
         zipfile.readEntry();
     });
 
-    for (const noteId in createdNoteIds) { // now the noteIds are unique
-        const note = becca.getNote(noteId);
-        await noteService.asyncPostProcessContent(note, note.getContent());
+    metaFile = JSON.parse(entries.find(entry => entry.type === 'file' && entry.filePath === '!!!meta.json').content);
 
-        if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that zip file but that
-            // is usually quite random, so we sort the notes in the way they would appear in the file manager
-            treeService.sortNotes(noteId, 'title', false, true);
+    sql.transactional(() => {
+        deleteUserGuideSubtree();
+
+        for (const {type, filePath, content} of entries) {
+            if (type === 'directory') {
+                saveDirectory(filePath);
+            } else if (type === 'file') {
+                if (filePath === '!!!meta.json') {
+                    continue;
+                }
+
+                saveNote(filePath, content);
+            } else {
+                throw new Error(`Unknown type ${type}`)
+            }
         }
-
-        taskContext.increaseProgressCount();
-    }
+    });
 
     // we're saving attributes and links only now so that all relation and link target notes
     // are already in the database (we don't want to have "broken" relations, not even transitionally)
@@ -542,8 +424,30 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             log.info(`Relation not imported since the target note doesn't exist: ${JSON.stringify(attr)}`);
         }
     }
+}
 
-    return firstNote;
+/**
+ * This is a special implementation of deleting the subtree, because we want to preserve the links to the user guide pages
+ * and clones.
+ */
+function deleteUserGuideSubtree() {
+    const DELETE_ID = 'user-guide';
+
+    function remove(branch) {
+        branch.markAsDeleted(DELETE_ID);
+
+        const note = becca.getNote(branch.noteId);
+
+        for (const branch of note.getChildBranches()) {
+            remove(branch);
+        }
+
+        note.getOwnedAttributes().forEach(attr => attr.markAsDeleted(DELETE_ID));
+
+        note.markAsDeleted(DELETE_ID)
+    }
+
+    remove(becca.getBranchFromChildAndParent('_userGuide', '_hidden'));
 }
 
 /** @returns {string} path without leading or trailing slash and backslashes converted to forward ones */
@@ -589,22 +493,6 @@ function readZipFile(buffer, processEntryCallback) {
     });
 }
 
-function resolveNoteType(type) {
-    type = type || 'text';
-
-    // BC for ZIPs created in Triliun 0.57 and older
-    if (type === 'relation-map') {
-        type = 'relationMap';
-    } else if (type === 'note-map') {
-        type = 'noteMap';
-    } else if (type === 'web-view') {
-        type = 'webView';
-    }
-
-    return type;
-}
-
-
 module.exports = {
-    importZip
+    importUserGuideIfNeeded
 };

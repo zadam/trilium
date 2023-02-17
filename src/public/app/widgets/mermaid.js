@@ -78,6 +78,14 @@ export default class MermaidWidget extends NoteContextAwareWidget {
             await this.renderSvg(async renderedSvg => {
                 this.$display.html(renderedSvg);
 
+                // not awaiting intentionally
+                // this is pretty hacky since we update ancillary on render
+                // but if nothing changed this should not trigger DB write and sync
+                server.put(`notes/${note.noteId}/ancillaries/mermaidSvg`, {
+                    mime: 'image/svg+xml',
+                    content: renderedSvg
+                });
+
                 await wheelZoomLoaded;
 
                 this.$display.attr("id", `mermaid-render-${idCounter}`);

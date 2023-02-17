@@ -7,6 +7,7 @@ const sql = require("./sql");
 const becca = require("../becca/becca");
 const protectedSessionService = require("../services/protected_session");
 const hiddenSubtreeService = require("./hidden_subtree");
+const userGuideImportService = require("./user_guide_import");
 
 function getRunAtHours(note) {
     try {
@@ -53,6 +54,8 @@ function runNotesWithLabel(runAttrValue) {
 sqlInit.dbReady.then(() => {
     cls.init(() => {
         hiddenSubtreeService.checkHiddenSubtree();
+
+        //userGuideImportService.importUserGuideIfNeeded();
     });
 
     if (!process.env.TRILIUM_SAFE_MODE) {

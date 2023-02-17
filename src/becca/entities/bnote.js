@@ -8,6 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
+const BNoteAncillary = require("./bnote_ancillary");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -336,7 +337,7 @@ class BNote extends AbstractBeccaEntity {
         return this.mime === "application/json";
     }
 
-    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
+    /** @returns {boolean} true if this note is JavaScript (code or file) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file" || this.type === 'launcher')
             && (this.mime.startsWith("application/javascript")
@@ -1135,6 +1136,19 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BNoteRevision(row));
     }
 
+    /** @returns {BNoteAncillary[]} */
+    getNoteAncillaries() {
+        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND isDeleted = 0", [this.noteId])
+            .map(row => new BNoteAncillary(row));
+    }
+
+    /** @returns {BNoteAncillary|undefined} */
+    getNoteAncillaryByName(name) {
+        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
+            .map(row => new BNoteAncillary(row))
+            [0];
+    }
+
     /**
      * @returns {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
      */
@@ -1462,6 +1476,31 @@ class BNote extends AbstractBeccaEntity {
         noteRevision.setContent(content);
 
         return noteRevision;
+    }
+
+    /**
+     * @returns {BNoteAncillary}
+     */
+    saveNoteAncillary(name, mime, content) {
+        let noteAncillary = this.getNoteAncillaryByName(name);
+
+        if (noteAncillary
+            && noteAncillary.mime === mime
+            && noteAncillary.contentCheckSum === noteAncillary.calculateCheckSum(content)) {
+
+            return noteAncillary; // no change
+        }
+
+        noteAncillary = new BNoteAncillary({
+            noteId: this.noteId,
+            name,
+            mime,
+            isProtected: this.isProtected
+        });
+
+        noteAncillary.setContent(content);
+
+        return noteAncillary;
     }
 
     beforeSaving() {

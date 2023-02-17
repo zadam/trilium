@@ -12,6 +12,7 @@ const sanitizeFilename = require('sanitize-filename');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 const htmlSanitizer = require("./html_sanitizer");
+const textExtractingService = require("./text_extracting");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -82,6 +83,8 @@ function updateImage(noteId, uploadBuffer, originalName) {
 
             note.setContent(buffer);
         });
+
+        runOcr(note, buffer);
     });
 }
 
@@ -123,6 +126,8 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
 
             note.setContent(buffer);
         });
+
+        textExtractingService.runOcr(note, buffer);
     });
 
     return {

@@ -321,7 +321,7 @@ function getEntityChangeRow(entityName, entityId) {
             throw new Error(`Entity ${entityName} ${entityId} not found.`);
         }
 
-        if (['note_contents', 'note_revision_contents'].includes(entityName) && entity.content !== null) {
+        if (['note_contents', 'note_revision_contents', 'note_ancillary_contents'].includes(entityName) && entity.content !== null) {
             if (typeof entity.content === 'string') {
                 entity.content = Buffer.from(entity.content, 'UTF-8');
             }
