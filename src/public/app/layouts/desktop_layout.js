@@ -48,7 +48,6 @@ import BulkActionsDialog from "../widgets/dialogs/bulk_actions.js";
 import AboutDialog from "../widgets/dialogs/about.js";
 import HelpDialog from "../widgets/dialogs/help.js";
 import RecentChangesDialog from "../widgets/dialogs/recent_changes.js";
-import BackendLogDialog from "../widgets/dialogs/backend_log.js";
 import BranchPrefixDialog from "../widgets/dialogs/branch_prefix.js";
 import SortChildNotesDialog from "../widgets/dialogs/sort_child_notes.js";
 import PasswordNoteSetDialog from "../widgets/dialogs/password_not_set.js";
@@ -187,7 +186,6 @@ export default class DesktopLayout {
             .child(new AboutDialog())
             .child(new HelpDialog())
             .child(new RecentChangesDialog())
-            .child(new BackendLogDialog())
             .child(new BranchPrefixDialog())
             .child(new SortChildNotesDialog())
             .child(new PasswordNoteSetDialog())
