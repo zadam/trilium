@@ -273,7 +273,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         scope: "window"
     },
     {
-        actionName: "showUserGuide",
+        actionName: "showHelp",
         defaultShortcuts: ["F1"],
         description: "Shows built-in Help / cheatsheet",
         scope: "window"

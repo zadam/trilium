@@ -75,7 +75,7 @@ const TPL = `
         margin-right: 5px;
     }
     
-    body.mobile .show-user-guide-button, body.mobile .show-about-dialog-button {
+    body.mobile .show-help-button, body.mobile .show-about-dialog-button {
         /* hidden because these dialogs are not available for mobile */
         display: none;
     }
@@ -195,10 +195,10 @@ const TPL = `
             </ul>
         </li>
 
-        <li class="dropdown-item show-user-guide-button" data-trigger-command="showUserGuide">
+        <li class="dropdown-item show-help-button" data-trigger-command="showHelp">
             <span class="bx bx-info-circle"></span>
-            Show User Guide
-            <kbd data-command="showUserGuide"></kbd>
+            Show Help
+            <kbd data-command="showHelp"></kbd>
         </li>
 
         <li class="dropdown-item show-about-dialog-button">
