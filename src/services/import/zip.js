@@ -325,6 +325,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
             }
         }
+
+        content = content.trim();
+
         return content;
     }
 
