@@ -16,6 +16,11 @@ class BOption extends AbstractBeccaEntity {
     constructor(row) {
         super();
 
+        this.updateFromRow(row);
+        this.becca.options[this.name] = this;
+    }
+
+    updateFromRow(row) {
         /** @type {string} */
         this.name = row.name;
         /** @type {string} */
@@ -24,8 +29,6 @@ class BOption extends AbstractBeccaEntity {
         this.isSynced = !!row.isSynced;
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-
-        this.becca.options[this.name] = this;
     }
 
     beforeSaving() {
