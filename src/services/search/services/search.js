@@ -334,6 +334,11 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     }
 
     for (const token of highlightedTokens) {
+        if (!token) {
+            // Avoid empty tokens, which might cause an infinite loop.
+            continue;
+        }
+
         for (const result of searchResults) {
             // Reset token
             const tokenRegex = new RegExp(utils.escapeRegExp(token), "gi");
