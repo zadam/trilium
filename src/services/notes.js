@@ -52,12 +52,22 @@ function deriveMime(type, mime) {
 }
 
 function copyChildAttributes(parentNote, childNote) {
+    const hasAlreadyTemplate = childNote.hasRelation('template');
+
     for (const attr of parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
+            const name = attr.name.substr(6);
+
+            if (hasAlreadyTemplate && attr.type === 'relation' && name === 'template') {
+                // if the note already has a template, it means the template was chosen by the user explicitly
+                // in the menu. In that case we should override the default templates defined in the child: attrs
+                continue;
+            }
+
             new BAttribute({
                 noteId: childNote.noteId,
                 type: attr.type,
-                name: attr.name.substr(6),
+                name: name,
                 value: attr.value,
                 position: attr.position,
                 isInheritable: attr.isInheritable
@@ -191,20 +201,17 @@ function createNewNote(params) {
 
         asyncPostProcessContent(note, params.content);
 
-        copyChildAttributes(parentNote, note);
-
         if (params.templateNoteId) {
             if (!becca.getNote(params.templateNoteId)) {
                 throw new Error(`Template note '${params.templateNoteId}' does not exist.`);
             }
 
-            // could be already copied from the parent via `child:`, no need to have 2
-            if (!note.hasOwnedRelation('template', params.templateNoteId)) {
-                note.addRelation('template', params.templateNoteId);
-            }
+            note.addRelation('template', params.templateNoteId);
 
             // no special handling for ~inherit since it doesn't matter if it's assigned with the note creation or later
         }
+
+        copyChildAttributes(parentNote, note);
 
         triggerNoteTitleChanged(note);
 
