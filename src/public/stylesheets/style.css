@@ -990,3 +990,9 @@ button.close:hover {
 textarea {
     cursor: auto;
 }
+
+.table thead th,
+.table td, .table th {
+    /* Fix center vertical alignment of table cells */
+    vertical-align: middle;
+}
