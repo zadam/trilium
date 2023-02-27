@@ -14,7 +14,8 @@ function createClassForColor(color) {
     const className = `color-${normalizedColorName}`;
 
     if (!registeredClasses.has(className)) {
-        $("head").append(`<style>.${className} { color: ${color} !important; }</style>`);
+        // make the active fancytree selector more specific than the normal color setting
+        $("head").append(`<style>.${className}, span.fancytree-active.${className} { color: ${color} !important; }</style>`);
 
         registeredClasses.add(className);
     }
