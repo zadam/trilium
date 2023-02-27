@@ -172,10 +172,15 @@ export default class NoteRevisionsDialog extends BasicWidget {
 
         const revisionItem = this.revisionItems.find(r => r.noteRevisionId === noteRevisionId);
 
-        this.$titleButtons.empty();
-        this.$content.empty();
-
         this.$title.html(revisionItem.title);
+
+        this.renderContentButtons(revisionItem);
+
+        await this.renderContent(revisionItem);
+    }
+
+    renderContentButtons(revisionItem) {
+        this.$titleButtons.empty();
 
         const $restoreRevisionButton = $('<button class="btn btn-sm" type="button">Restore this revision</button>');
 
@@ -222,8 +227,14 @@ export default class NoteRevisionsDialog extends BasicWidget {
         if (!revisionItem.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) {
             this.$titleButtons.append($downloadButton);
         }
+    }
+
+    async renderContent(revisionItem) {
+        this.$content.empty();
 
         const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
+
+        console.log(fullNoteRevision);
 
         if (revisionItem.type === 'text') {
             this.$content.html(fullNoteRevision.content);
@@ -233,19 +244,16 @@ export default class NoteRevisionsDialog extends BasicWidget {
 
                 renderMathInElement($content[0], {trust: true});
             }
-        }
-        else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
+        } else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
             this.$content.html($("<pre>").text(fullNoteRevision.content));
-        }
-        else if (revisionItem.type === 'image') {
+        } else if (revisionItem.type === 'image') {
             this.$content.html($("<img>")
                 // reason why we put this inline as base64 is that we do not want to let user copy this
                 // as a URL to be used in a note. Instead, if they copy and paste it into a note, it will be an uploaded as a new note
                 .attr("src", `data:${fullNoteRevision.mime};base64,${fullNoteRevision.content}`)
                 .css("max-width", "100%")
                 .css("max-height", "100%"));
-        }
-        else if (revisionItem.type === 'file') {
+        } else if (revisionItem.type === 'file') {
             const $table = $("<table cellpadding='10'>")
                 .append($("<tr>").append(
                     $("<th>").text("MIME: "),
@@ -267,8 +275,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             }
 
             this.$content.html($table);
-        }
-        else if (revisionItem.type === 'canvas') {
+        } else if (revisionItem.type === 'canvas') {
             /**
              * FIXME: We load a font called Virgil.wof2, which originates from excalidraw.com
              *        REMOVE external dependency!!!! This is defined in the svg in defs.style
@@ -285,12 +292,11 @@ export default class NoteRevisionsDialog extends BasicWidget {
                  */
                 const $svgHtml = $(svg).css({maxWidth: "100%", height: "auto"});
                 this.$content.html($('<div>').append($svgHtml));
-            } catch(err) {
+            } catch (err) {
                 console.error("error parsing fullNoteRevision.content as JSON", fullNoteRevision.content, err);
                 this.$content.html($("<div>").text("Error parsing content. Please check console.error() for more details."));
             }
-        }
-        else {
+        } else {
             this.$content.text("Preview isn't available for this note type.");
         }
     }
