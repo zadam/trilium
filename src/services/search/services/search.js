@@ -155,11 +155,8 @@ function findResultsWithExpression(expression, searchContext) {
     const noteSet = expression.execute(allNoteSet, executionContext, searchContext);
 
     const searchResults = noteSet.notes
+        .filter(note => !note.isDeleted)
         .map(note => {
-            if (note.isDeleted) {
-                return null;
-            }
-
             const notePathArray = executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note);
 
             if (!notePathArray) {
@@ -167,8 +164,7 @@ function findResultsWithExpression(expression, searchContext) {
             }
 
             return new SearchResult(notePathArray);
-        })
-        .filter(note => !!note);
+        });
 
     for (const res of searchResults) {
         res.computeScore(searchContext.fulltextQuery, searchContext.highlightedTokens);

@@ -1168,9 +1168,7 @@ class BNote extends AbstractBeccaEntity {
                 return false;
             } else if (parentNote.noteId === '_hidden') {
                 continue;
-            }
-
-            if (!parentNote.isHiddenCompletely()) {
+            } else if (!parentNote.isHiddenCompletely()) {
                 return false;
             }
         }

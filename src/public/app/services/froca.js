@@ -115,7 +115,7 @@ class Froca {
             const childNote = this.notes[branch.noteId];
 
             if (childNote) {
-                childNote.addParent(branch.parentNoteId, branch.branchId);
+                childNote.addParent(branch.parentNoteId, branch.branchId, false);
             }
 
             const parentNote = this.notes[branch.parentNoteId];
@@ -152,6 +152,7 @@ class Froca {
         // sort all of them at once, this avoids repeated sorts (#1480)
         for (const noteId of noteIdsToSort) {
             this.notes[noteId].sortChildren();
+            this.notes[noteId].sortParents();
         }
     }
 

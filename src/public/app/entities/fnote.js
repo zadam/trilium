@@ -73,7 +73,7 @@ class FNote {
         this.mime = row.mime;
     }
 
-    addParent(parentNoteId, branchId) {
+    addParent(parentNoteId, branchId, sort = true) {
         if (parentNoteId === 'none') {
             return;
         }
@@ -83,6 +83,10 @@ class FNote {
         }
 
         this.parentToBranch[parentNoteId] = branchId;
+
+        if (sort) {
+            this.sortParents();
+        }
     }
 
     addChild(childNoteId, branchId, sort = true) {
@@ -189,7 +193,7 @@ class FNote {
 
     // will sort the parents so that non-search & non-archived are first and archived at the end
     // this is done so that non-search & non-archived paths are always explored as first when looking for note path
-    resortParents() {
+    sortParents() {
         this.parents.sort((aNoteId, bNoteId) => {
             const aBranchId = this.parentToBranch[aNoteId];
 
@@ -197,7 +201,7 @@ class FNote {
                 return 1;
             }
 
-            const aNote = this.froca.getNoteFromCache([aNoteId]);
+            const aNote = this.froca.getNoteFromCache(aNoteId);
 
             if (aNote.isArchived || aNote.isHiddenCompletely()) {
                 return 1;
