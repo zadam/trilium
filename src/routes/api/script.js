@@ -38,7 +38,7 @@ function run(req) {
 }
 
 function getBundlesWithLabel(label, value) {
-    const notes = attributeService.getNotesWithLabelFast(label, value);
+    const notes = attributeService.getNotesWithLabel(label, value);
 
     const bundles = [];
 
