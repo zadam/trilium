@@ -103,8 +103,8 @@ function createNote(req) {
     
     if (labels) {
         for (const labelName in labels) {
-            console.log('set label ' + labelName + ' on the new note!');
-            note.setLabel(labelName, labels[labelName]);
+            const labelValue = htmlSanitizer.sanitize(labels[labelName]);
+            note.setLabel(labelName, labelValue);
         }
     }
 
