@@ -102,7 +102,14 @@ class NoteContentFulltextExp extends Expression {
     }
 
     preprocessContent(content, type, mime) {
-        content = utils.normalize(content.toString());
+
+        try {
+            content = utils.normalize(content.toString());
+        } catch (e) {
+            // a very rare case where the content may be null https://github.com/zadam/trilium/issues/3672
+            log.info(`Cannot get content of note, may be a null data`);
+            return '';
+        }
 
         if (type === 'text' && mime === 'text/html') {
             if (!this.raw && content.length < 20000) { // striptags is slow for very large notes
