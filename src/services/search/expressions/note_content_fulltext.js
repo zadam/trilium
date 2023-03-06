@@ -69,7 +69,7 @@ class NoteContentFulltextExp extends Expression {
             }
         }
 
-        if (!content || typeof content !== 'string') {
+        if (!content) {
             return;
         }
 
