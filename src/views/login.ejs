@@ -52,8 +52,7 @@
         device = "mobile";
     }
     else {
-        // mobile device detection based on https://stackoverflow.com/a/24600597/944162
-        device = /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop";
+        device = isMobile() ? "mobile" : "desktop";
     }
 
     console.log("Setting device cookie to:", device);
@@ -65,6 +64,19 @@
         const expires = "; expires=" + date.toUTCString();
 
         document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    // https://stackoverflow.com/a/73731646/944162
+    function isMobile() {
+        if ('maxTouchPoints' in navigator) return navigator.maxTouchPoints > 0;
+
+        const mQ = matchMedia?.('(pointer:coarse)');
+        if (mQ?.media === '(pointer:coarse)') return !!mQ.matches;
+
+        if ('orientation' in window) return true;
+
+        return /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(navigator.userAgent) ||
+            /\b(Android|Windows Phone|iPad|iPod)\b/i.test(navigator.userAgent);
     }
 </script>
 
