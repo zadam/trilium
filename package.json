@@ -96,7 +96,7 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "electron": "16.2.8",
-    "electron-builder": "23.6.0",
+    "electron-builder": "24.0.0",
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",
     "esm": "3.2.25",
