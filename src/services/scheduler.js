@@ -3,8 +3,7 @@ const cls = require('./cls');
 const sqlInit = require('./sql_init');
 const config = require('./config');
 const log = require('./log');
-const sql = require("./sql");
-const becca = require("../becca/becca");
+const attributeService = require("../services/attributes");
 const protectedSessionService = require("../services/protected_session");
 const hiddenSubtreeService = require("./hidden_subtree");
 
@@ -20,23 +19,9 @@ function getRunAtHours(note) {
 }
 
 function runNotesWithLabel(runAttrValue) {
-    // TODO: should be refactored into becca search
-    const noteIds = sql.getColumn(`
-        SELECT notes.noteId 
-        FROM notes 
-        JOIN attributes ON attributes.noteId = notes.noteId
-                       AND attributes.isDeleted = 0
-                       AND attributes.type = 'label'
-                       AND attributes.name = 'run' 
-                       AND attributes.value = ? 
-        WHERE
-          notes.type = 'code'
-          AND notes.isDeleted = 0`, [runAttrValue]);
-
-    const notes = becca.getNotes(noteIds);
-
     const instanceName = config.General ? config.General.instanceName : null;
     const currentHours = new Date().getHours();
+    const notes = attributeService.getNotesWithLabel('run', runAttrValue);
 
     for (const note of notes) {
         const runOnInstances = note.getLabelValues('runOnInstance');

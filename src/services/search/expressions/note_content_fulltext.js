@@ -69,6 +69,10 @@ class NoteContentFulltextExp extends Expression {
             }
         }
 
+        if (!content) {
+            return;
+        }
+
         content = this.preprocessContent(content, type, mime);
 
         if (this.tokens.length === 1) {
@@ -98,6 +102,7 @@ class NoteContentFulltextExp extends Expression {
                 resultNoteSet.add(becca.notes[noteId]);
             }
         }
+
         return content;
     }
 

@@ -75,7 +75,7 @@ function addClipping(req) {
 }
 
 function createNote(req) {
-    let {title, content, pageUrl, images, clipType} = req.body;
+    let {title, content, pageUrl, images, clipType, labels} = req.body;
 
     if (!title || !title.trim()) {
         title = `Clipped note from ${pageUrl}`;
@@ -99,6 +99,13 @@ function createNote(req) {
 
         note.setLabel('pageUrl', pageUrl);
         note.setLabel('iconClass', 'bx bx-globe');
+    }
+    
+    if (labels) {
+        for (const labelName in labels) {
+            const labelValue = htmlSanitizer.sanitize(labels[labelName]);
+            note.setLabel(labelName, labelValue);
+        }
     }
 
     const rewrittenContent = processContent(images, note, content);
