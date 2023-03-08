@@ -250,12 +250,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         const {noteMeta} = getMeta(absUrl);
 
-        if (!noteMeta) {
-            log.info(`Could not find note meta for URL '${absUrl}'.`);
-
-            return null;
-        }
-
         const targetNoteId = getNoteId(noteMeta, absUrl);
         return targetNoteId;
     }
@@ -344,6 +338,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
             }
         }
+
+        content = content.trim();
+
         return content;
     }
 

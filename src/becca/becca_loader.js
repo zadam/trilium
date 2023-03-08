@@ -84,7 +84,7 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_CHANGE_SYNCED],  ({entity
         return;
     }
 
-    if (["notes", "branches", "attributes", "etapi_tokens"].includes(entityName)) {
+    if (["notes", "branches", "attributes", "etapi_tokens", "options"].includes(entityName)) {
         const EntityClass = entityConstructor.getEntityFromEntityName(entityName);
         const primaryKeyName = EntityClass.primaryKeyName;
 

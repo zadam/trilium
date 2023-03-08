@@ -124,35 +124,43 @@ function getNoteTitleForPath(notePathArray) {
  * Archived (and hidden) notes are also returned, but non-archived paths are preferred if available
  * - this means that archived paths is returned only if there's no non-archived path
  * - you can check whether returned path is archived using isArchived
+ *
+ * @param {BNote} note
+ * @param {string[]} path
  */
 function getSomePath(note, path = []) {
     // first try to find note within hoisted note, otherwise take any existing note path
-    // each branch needs a separate copy since it's mutable
-    return getSomePathInner(note, [...path], true)
-        || getSomePathInner(note, [...path], false);
+    return getSomePathInner(note, path, true)
+        || getSomePathInner(note, path, false);
 }
 
+/**
+ * @param {BNote} note
+ * @param {string[]} path
+ * @param {boolean}respectHoisting
+ * @returns {string[]|false}
+ */
 function getSomePathInner(note, path, respectHoisting) {
     if (note.isRoot()) {
-        path.push(note.noteId);
-        path.reverse();
+        const foundPath = [...path, note.noteId];
+        foundPath.reverse();
 
-        if (respectHoisting && !path.includes(cls.getHoistedNoteId())) {
+        if (respectHoisting && !foundPath.includes(cls.getHoistedNoteId())) {
             return false;
         }
 
-        return path;
+        return foundPath;
     }
 
     const parents = note.parents;
     if (parents.length === 0) {
-        console.log(`Note ${note.noteId} - "${note.title}" has no parents.`);
+        console.log(`Note '${note.noteId}' - '${note.title}' has no parents.`);
 
         return false;
     }
 
     for (const parentNote of parents) {
-        const retPath = getSomePathInner(parentNote, path.concat([note.noteId]), respectHoisting);
+        const retPath = getSomePathInner(parentNote, [...path, note.noteId], respectHoisting);
 
         if (retPath) {
             return retPath;

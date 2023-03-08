@@ -58,7 +58,7 @@ async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logEr
                 return;
             }
 
-            child.resortParents();
+            child.sortParents();
 
             const parents = child.getParentNotes();
 

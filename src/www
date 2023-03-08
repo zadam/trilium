@@ -109,12 +109,12 @@ async function startTrilium() {
             // handle specific listen errors with friendly messages
             switch (error.code) {
                 case 'EACCES':
-                    console.error(`Port ${port} requires elevated privileges`);
+                    console.error(`Port ${port} requires elevated privileges. It's recommended to use port above 1024.`);
                     process.exit(1);
                     break;
 
                 case 'EADDRINUSE':
-                    console.error(`Port ${port} is already in use`);
+                    console.error(`Port ${port} is already in use. Most likely, another Trilium process is already running. You might try to find it, kill it, and try again.`);
                     process.exit(1);
                     break;
 

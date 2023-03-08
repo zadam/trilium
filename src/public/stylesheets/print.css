@@ -13,4 +13,11 @@
     .relation-map-wrapper {
         height: 100vh !important;
     }
+
+    .table thead th,
+    .table td, .table th {
+        /* Fix center vertical alignment of table cells */
+        vertical-align: middle;
+    }
+
 }
