@@ -27,6 +27,7 @@ import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
 import DocTypeWidget from "./type_widgets/doc.js";
 import ContentWidgetTypeWidget from "./type_widgets/content_widget.js";
+import AncillariesTypeWidget from "./type_widgets/ancillaries.js";
 
 const TPL = `
 <div class="note-detail">
@@ -61,7 +62,8 @@ const typeWidgetClasses = {
     'noteMap': NoteMapTypeWidget,
     'webView': WebViewTypeWidget,
     'doc': DocTypeWidget,
-    'contentWidget': ContentWidgetTypeWidget
+    'contentWidget': ContentWidgetTypeWidget,
+    'ancillaries': AncillariesTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -189,6 +191,8 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
         if (type === 'text' && this.noteContext.viewScope.viewMode === 'source') {
             type = 'readOnlyCode';
+        } else if (this.noteContext.viewScope.viewMode === 'ancillaries') {
+            type = 'ancillaries';
         } else if (type === 'text' && await this.noteContext.isReadOnly()) {
             type = 'readOnlyText';
         } else if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {

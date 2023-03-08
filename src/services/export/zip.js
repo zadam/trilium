@@ -170,6 +170,24 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
+        const ancillaries = note.getNoteAncillaries();
+
+        if (ancillaries.length > 0) {
+            meta.ancillaries = ancillaries
+                .filter(ancillary => ["canvasSvg", "mermaidSvg"].includes(ancillary.name))
+                .map(ancillary => ({
+
+                name: ancillary.name,
+                mime: ancillary.mime,
+                dataFileName: getDataFileName(
+                    null,
+                    ancillary.mime,
+                    baseFileName + "_" + ancillary.name,
+                    existingFileNames
+                )
+            }));
+        }
+
         if (childBranches.length > 0) {
             meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
             meta.children = [];
@@ -318,6 +336,16 @@ ${markdownContent}`;
         }
 
         taskContext.increaseProgressCount();
+
+        for (const ancillaryMeta of noteMeta.ancillaries || []) {
+            const noteAncillary = note.getNoteAncillaryByName(ancillaryMeta.name);
+            const content = noteAncillary.getContent();
+
+            archive.append(content, {
+                name: filePathPrefix + ancillaryMeta.dataFileName,
+                date: dateUtils.parseDateTime(note.utcDateModified)
+            });
+        }
 
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
