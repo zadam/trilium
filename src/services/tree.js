@@ -123,7 +123,7 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false) {
+function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false, sortNatural = false) {
     if (!customSortBy) {
         customSortBy = 'title';
     }
@@ -153,7 +153,14 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
             }
 
             function compare(a, b) {
-                return b === null || b === undefined || a < b ? -1 : 1;
+                if (!sortNatural){
+                    // alphabetical sort
+                    return b === null || b === undefined || a < b ? -1 : 1;
+                } else {
+                    // alphanumeric sort, or natural sort
+                    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+                }
+
             }
 
             const topAEl = fetchValue(a, 'top');
@@ -224,8 +231,9 @@ function sortNotesIfNeeded(parentNoteId) {
     const sortReversed = parentNote.getLabelValue('sortDirection')?.toLowerCase() === "desc";
     const sortFoldersFirstLabel = parentNote.getLabel('sortFoldersFirst');
     const sortFoldersFirst = sortFoldersFirstLabel && sortFoldersFirstLabel.value.toLowerCase() !== "false";
-
-    sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst);
+    const sortNaturalLabel = parentNote.getLabel('sortNatural');
+    const sortNatural = sortNaturalLabel && sortNaturalLabel.value.toLowerCase() !== "false";
+    sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst, sortNatural);
 }
 
 /**

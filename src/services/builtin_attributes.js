@@ -42,6 +42,7 @@ module.exports = [
     { type: 'label', name: 'sorted' },
     { type: 'label', name: 'sortDirection' },
     { type: 'label', name: 'sortFoldersFirst' },
+    { type: 'label', name: 'sortNatural' },
     { type: 'label', name: 'top' },
     { type: 'label', name: 'fullContentWidth' },
     { type: 'label', name: 'shareHiddenFromTree' },

@@ -94,13 +94,13 @@ function undeleteNote(req) {
 
 function sortChildNotes(req) {
     const noteId = req.params.noteId;
-    const {sortBy, sortDirection, foldersFirst} = req.body;
+    const {sortBy, sortDirection, foldersFirst, sortNatural} = req.body;
 
-    log.info(`Sorting '${noteId}' children with ${sortBy} ${sortDirection}, foldersFirst=${foldersFirst}`);
+    log.info(`Sorting '${noteId}' children with ${sortBy} ${sortDirection}, foldersFirst=${foldersFirst}, sortNatural=${sortNatural}`);
 
     const reverse = sortDirection === 'desc';
 
-    treeService.sortNotes(noteId, sortBy, reverse, foldersFirst);
+    treeService.sortNotes(noteId, sortBy, reverse, foldersFirst, sortNatural);
 }
 
 function protectNote(req) {
