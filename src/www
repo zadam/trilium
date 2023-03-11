@@ -100,7 +100,11 @@ async function startTrilium() {
      */
 
     httpServer.keepAliveTimeout = 120000 * 5;
-    httpServer.listen(port, host);
+    if (port !== 0) {
+      httpServer.listen(port, host); // TCP socket.
+    } else {
+      httpServer.listen(host); // Unix socket.
+    }
     httpServer.on('error', error => {
             if (error.syscall !== 'listen') {
                 throw error;
