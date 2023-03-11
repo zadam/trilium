@@ -64,24 +64,11 @@ function getRootCalendarNote() {
 }
 
 function getParentNote(label, dateStr, rootNote) {
-    const pattern = rootNote.getOwnedLabelValue("calendarPattern") || "year/month/day";
-    const labels = pattern.split("/")
-
-    {
-        let labelSet = new Set();
-        for (const label of labels) {
-            if (labelSet.has(label)) {
-                throw new Error(`"${label}" in #calendarPattern must be at most one`);
-            }
-            if (label != 'day' && label != 'week' && label != 'month' && label != 'year') {
-                throw new Error(`"${label}" in #calendarPattern should be one of "day", "week", "month" or "year"`)
-            }
-            labelSet.add(label);
-        }
-        if (!labelSet.has('day')) {
-            throw new Error('#calendarPattern must have "day"');
-        }
+    const type = rootNote.getOwnedLabelValue("calendarType") || "monthly";
+    if (type != "monthly" && type != "weekly") {
+        throw new Error('#calendarType should be "monthly" or "weekly"');
     }
+    const pattern = type == "monthly" ? "year/month/day" : "year/week/day";
 
     let parentLabel = "root";
     for (const currLabel of pattern.split("/")) {
@@ -112,87 +99,6 @@ function getNoteTitle(pattern, dateStr, options = {}) {
     return pattern.replace(/{(\w+)}/g, function(_, match) {
         switch(match) {
             case 'year':
-                console.log('year!!!!!', dateStr.substr(0, 4));
-                return dateStr.substr(0, 4);
-            case 'month':
-                return MONTHS[dateObj.getMonth()];
-            case "monthNumberPadded":
-                return dateStr.substr(5, 2);
-            case "weekNumber":
-                return dateUtils.getWeek(dateObj, startOfTheWeek);
-            case "weekNumberPadded":
-            {
-                let weekNum = dateUtils.getWeek(dateObj, startOfTheWeek);
-                if (weekNum <= 9)
-                    return "0" + weekNum;
-                return weekNum;
-            }
-            case "weekDay":
-                return weekDay;
-            case "weekDay3":
-                return weekDay.substr(0, 3);
-            case "weekDay2":
-                return weekDay.substr(0, 2);
-            case "dayInMonthPadded":
-                return dateStr.substr(8, 2);
-            case "isoDate":
-                return dateUtils.utcDateStr(dateObj);
-            default:
-                throw new Error(`unknown pattern {${match}}`);
-        }
-    });
-}
-
-function getParentNote(label, dateStr, rootNote) {
-    const pattern = rootNote.getOwnedLabelValue("calendarPattern") || "year/month/day";
-    const labels = pattern.split("/")
-
-    {
-        let labelSet = new Set();
-        for (const label of labels) {
-            if (labelSet.has(label)) {
-                throw new Error(`"${label}" in #calendarPattern must be at most one`);
-            }
-            if (label != 'day' && label != 'week' && label != 'month' && label != 'year') {
-                throw new Error(`"${label}" in #calendarPattern should be one of "day", "week", "month" or "year"`)
-            }
-            labelSet.add(label);
-        }
-        if (!labelSet.has('day')) {
-            throw new Error('#calendarPattern must have "day"');
-        }
-    }
-
-    let parentLabel = "root";
-    for (const currLabel of pattern.split("/")) {
-        if (currLabel === label) {
-            break;
-        }
-        parentLabel = currLabel;
-    }
-    switch (parentLabel) {
-        case "root":
-            return rootNote;
-        case "year":
-            return getYearNote(dateStr, rootNote);
-        case "month":
-            return getMonthNote(dateStr, rootNote);
-        case "week":
-            return getWeekNote(dateStr, rootNote);
-        case "day":
-            return getDayNote(dateStr, rootNote);
-    }
-    return null;
-}
-
-function getNoteTitle(pattern, dateStr, options = {}) {
-    const dateObj = dateUtils.parseLocalDate(dateStr);
-    const weekDay = DAYS[dateObj.getDay()];
-    const startOfTheWeek = options.startOfTheWeek || "monday";
-    return pattern.replace(/{(\w+)}/g, function(_, match) {
-        switch(match) {
-            case 'year':
-                console.log('year!!!!!', dateStr.substr(0, 4));
                 return dateStr.substr(0, 4);
             case 'month':
                 return MONTHS[dateObj.getMonth()];
@@ -239,12 +145,14 @@ function getYearNote(dateStr, rootNote = null) {
     }
 
     const pattern = rootNote.getOwnedLabelValue("yearPattern") || "{year}";
-    const noteTitle = getNoteTitle(pattern, dateStr);
     const parentNote = getParentNote("year", dateStr, rootNote);
+
     if (!parentNote) {
         let dateObj = dateUtils.parseLocalDate(dateStr);
         return getDayNote(dateUtils.utcDateTimeStr(dateObj.setMonth(0).setDate(1)), rootNote);
     }
+
+    const noteTitle = getNoteTitle(pattern, dateStr);
 
     sql.transactional(() => {
         yearNote = createNote(parentNote, noteTitle);
@@ -279,12 +187,13 @@ function getMonthNote(dateStr, rootNote = null) {
     }
 
     const pattern = rootNote.getOwnedLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
-    const noteTitle = getNoteTitle(pattern, dateStr);
     const parentNote = getParentNote("month", dateStr, rootNote);
     if (!parentNote) {
         let dateObj = dateUtils.parseLocalDate(dateStr);
         return getDayNote(dateUtils.utcDateTimeStr(dateObj.setDate(1)), rootNote);
     }
+
+    const noteTitle = getNoteTitle(pattern, dateStr);
 
     sql.transactional(() => {
         monthNote = createNote(parentNote, noteTitle);
@@ -301,7 +210,6 @@ function getMonthNote(dateStr, rootNote = null) {
 
     return monthNote;
 }
-
 
 /** @returns {BNote} */
 function getDayNote(dateStr, rootNote = null) {
@@ -368,22 +276,45 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
     const startOfTheWeek = options.startOfTheWeek || "monday";
     const weekNumber = dateUtils.getWeek(dateObj, startOfTheWeek);
     const yearStr = dateStr.trim().substr(0, 4);
-    const weekStr = `${yearStr}WW${weekNumber}`;
+    let weekStr;
+    if (weekNumber != 0) {
+        weekStr = `${yearStr}WW${weekNumber}`;
+    } else {
+        let lastDayOfYear = new Date(dateObj.getFullYear() - 1, 11, 31);
+        console.log(lastDayOfYear);
+        let lastWeekNumber = dateUtils.getWeek(lastDayOfYear, startOfTheWeek);
+        let yearStr = (dateObj.getFullYear() - 1).toString().padStart(4, '0');
+        weekStr = `${yearStr}WW${lastWeekNumber}`;
+    }
 
     let weekNote = searchService.findFirstNoteWithQuery(`#${WEEK_LABEL}="${weekStr}"`,
         new SearchContext({ancestorNoteId: rootNote.noteId}));
 
     if (weekNote) {
-        return weekNote;
+        // Check whether its year note is right, if not, clone this parentNote
+        const yearNotes = weekNote.getParentNotes();
+        if (!yearNotes) {
+            throw new Error("Error Day notes structure, week note don't have parents");
+        }
+        for (const yearNote of yearNotes) {
+            const yearAttr = yearNote.getOwnedLabelValue(YEAR_LABEL);
+            if (yearAttr == yearStr) {
+                return weekNote;
+            }
+        }
+        const parentNote = getParentNote("week", dateStr, rootNote);
+        return yearNotes[0].cloneTo(parentNote.noteId);
     }
 
     const pattern = rootNote.getOwnedLabelValue("weekPattern") || "WW{weekNumber}";
-    const noteTitle = getNoteTitle(pattern, dateStr, options);
     const parentNote = getParentNote("week", dateStr, rootNote);
+
     if (!parentNote) {
         const weekDateObj = getStartOfTheWeek(dateObj, startOfTheWeek);
         return getDayNote(dateUtils.utcDateTimeStr(weekDateObj), rootNote);
     }
+
+    const noteTitle = getNoteTitle(pattern, dateStr, options);
 
     sql.transactional(() => {
         weekNote = createNote(parentNote, noteTitle);
