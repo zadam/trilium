@@ -303,7 +303,11 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
             }
         }
         const parentNote = getParentNote("week", dateStr, rootNote);
-        return yearNotes[0].cloneTo(parentNote.noteId);
+        if (!parentNote) {
+            throw new Error(`Can't find weekly parent note of date "${dateStr}"`);
+        }
+        yearNotes[0].cloneTo(parentNote.noteId);
+        return yearNotes[0];
     }
 
     const pattern = rootNote.getOwnedLabelValue("weekPattern") || "WW{weekNumber}";
