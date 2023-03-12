@@ -11,7 +11,8 @@ if (config.https) {
 const port = require('./src/services/port');
 const host = require('./src/services/host');
 
-let options = {timeout: 2000};
+const options = { timeout: 2000 };
+
 const callback = res => {
     console.log(`STATUS: ${res.statusCode}`);
     if (res.statusCode === 200) {
@@ -20,7 +21,9 @@ const callback = res => {
         process.exit(1);
     }
 };
+
 let request;
+
 if (port !== 0) { // TCP socket.
     const url = `http://${host}:${port}/api/health-check`;
     request = http.request(url, options, callback);
@@ -29,6 +32,7 @@ if (port !== 0) { // TCP socket.
     options.path = '/api/health-check';
     request = http.request(options, callback);
 }
+
 request.on("error", err => {
     console.log("ERROR");
     process.exit(1);

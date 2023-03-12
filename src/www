@@ -100,14 +100,14 @@ async function startTrilium() {
      */
 
     httpServer.keepAliveTimeout = 120000 * 5;
-    const listenTcp = port !== 0;
-    if (listenTcp) {
+    const listenOnTcp = port !== 0;
+    if (listenOnTcp) {
       httpServer.listen(port, host); // TCP socket.
     } else {
       httpServer.listen(host); // Unix socket.
     }
     httpServer.on('error', error => {
-            if (!listenTcp || error.syscall !== 'listen') {
+            if (!listenOnTcp || error.syscall !== 'listen') {
                 throw error;
             }
 
@@ -130,7 +130,7 @@ async function startTrilium() {
     )
 
     httpServer.on('listening', () => {
-        if (listenTcp) {
+        if (listenOnTcp) {
             log.info(`Listening on port ${port}`)
         } else {
             log.info(`Listening on unix socket ${host}`)
