@@ -48,8 +48,8 @@ function sanitize(dirtyHtml) {
         allowedSchemes: [
             'http', 'https', 'ftp', 'ftps', 'mailto', 'data', 'evernote', 'file', 'facetime', 'irc', 'gemini', 'git',
             'gopher', 'imap', 'irc', 'irc6', 'jabber', 'jar', 'lastfm', 'ldap', 'ldaps', 'magnet', 'message',
-            'mumble', 'nfs', 'pop', 'rmi', 's3', 'sftp', 'skype', 'sms', 'spotify', 'steam', 'svn', 'udp', 'view-source',
-            'vnc', 'ws', 'wss', 'xmpp', 'jdbc', 'slack'
+            'mumble', 'nfs', 'onenote', 'pop', 'rmi', 's3', 'sftp', 'skype', 'sms', 'spotify', 'steam', 'svn', 'udp',
+            'view-source', 'vnc', 'ws', 'wss', 'xmpp', 'jdbc', 'slack'
         ],
         transformTags,
     });
