@@ -14,13 +14,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "backInNoteHistory",
         // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-        defaultShortcuts: isMac ? ["Meta+Left"] : ["Alt+Left"],
+        defaultShortcuts: isMac ? ["CommandOrControl+Left"] : ["Alt+Left"],
         scope: "window"
     },
     {
         actionName: "forwardInNoteHistory",
         // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-        defaultShortcuts: isMac ? ["Meta+Right"] : ["Alt+Right"],
+        defaultShortcuts: isMac ? ["CommandOrControl+Right"] : ["Alt+Right"],
         scope: "window"
     },
     {
