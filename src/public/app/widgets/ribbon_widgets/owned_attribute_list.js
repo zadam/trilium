@@ -48,7 +48,7 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
     getTitle() {
         return {
             show: !this.note.isLaunchBarConfig(),
-            title: "Owned attributes",
+            title: "Owned Attributes",
             icon: "bx bx-list-check"
         };
     }
