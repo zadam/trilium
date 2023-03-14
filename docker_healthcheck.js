@@ -1,5 +1,8 @@
 const http = require("http");
-const config = require("./src/services/config");
+const ini = require("ini");
+const fs = require("fs");
+const dataDir = require("./src/services/data_dir");
+const config = ini.parse(fs.readFileSync(dataDir.CONFIG_INI_PATH, 'utf-8'));
 
 if (config.https) {
     // built-in TLS (terminated by trilium) is not supported yet, PRs are welcome
