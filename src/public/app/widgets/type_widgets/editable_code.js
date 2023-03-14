@@ -77,12 +77,15 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             this.codeEditor.setValue(noteComplement.content || "");
             this.codeEditor.clearHistory();
 
-            const info = CodeMirror.findModeByMIME(note.mime);
-
-            if (info) {
-                this.codeEditor.setOption("mode", info.mime);
-                CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            let info = CodeMirror.findModeByMIME(note.mime);
+            if (!info) {
+                // Switch back to plain text if CodeMirror does not have a mode for whatever MIME type we're editing.
+                // To avoid inheriting a mode from a previously open code note.
+                info = CodeMirror.findModeByMIME("text/plain");
             }
+
+            this.codeEditor.setOption("mode", info.mime);
+            CodeMirror.autoLoadMode(this.codeEditor, info.mode);
         });
 
         this.show();
