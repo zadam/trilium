@@ -1376,7 +1376,7 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param parentNoteId
-     * @returns {{success: boolean, message: string}}
+     * @returns {{success: boolean, message: string, branchId: string, notePath: string}}
      */
     cloneTo(parentNoteId) {
         const cloningService = require("../../services/cloning");

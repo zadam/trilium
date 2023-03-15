@@ -6,8 +6,8 @@ const dataDir = require('./data_dir');
 function parseAndValidate(portStr, source) {
     const portNum = parseInt(portStr);
 
-    if (!portNum || portNum < 0 || portNum >= 65536) {
-        console.log(`FATAL ERROR: Invalid port value "${portStr}" from ${source}, should be a number between 0 and 65536.`);
+    if (isNaN(portNum) || portNum < 0 || portNum >= 65536) {
+        console.log(`FATAL ERROR: Invalid port value "${portStr}" from ${source}, should be an integer between 0 and 65536.`);
         process.exit(-1);
     }
 
