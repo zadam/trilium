@@ -27,7 +27,7 @@ class FNoteComplement {
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
 
-        // "combined" date modified give larger out of note's and note_content's dateModified
+        // "combined" date modified give larger out of note's and blob's dateModified
 
         /** @type {string} */
         this.combinedDateModified = row.combinedDateModified;

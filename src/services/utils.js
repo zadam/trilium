@@ -25,6 +25,19 @@ function md5(content) {
     return crypto.createHash('md5').update(content).digest('hex');
 }
 
+function hashedBlobId(content) {
+    // sha512 is faster than sha256
+    const base64Hash = crypto.createHash('sha512').update(content).digest('base64');
+
+    // 20 characters of base64 gives us 120 bit of entropy which is plenty enough
+    return base64Hash.substr(0, 20);
+}
+
+function randomBlobId(content) {
+    // underscore prefix to easily differentiate the random as opposed to hashed
+    return '_' + randomString(19);
+}
+
 function toBase64(plainText) {
     return Buffer.from(plainText).toString('base64');
 }
@@ -343,5 +356,7 @@ module.exports = {
     deferred,
     removeDiacritic,
     normalize,
-    filterAttributeName
+    filterAttributeName,
+    hashedBlobId,
+    randomBlobId
 };

@@ -6,13 +6,10 @@ CREATE TABLE IF NOT EXISTS "note_ancillaries"
     mime         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
     contentCheckSum    TEXT not null,
+    blobId    TEXT not null,
     utcDateModified TEXT not null,
     isDeleted    INT  not null,
     `deleteId`    TEXT DEFAULT NULL);
-
-CREATE TABLE IF NOT EXISTS "note_ancillary_contents" (`noteAncillaryId`	TEXT NOT NULL PRIMARY KEY,
-                                                     `content`	TEXT DEFAULT NULL,
-                                                     `utcDateModified` TEXT NOT NULL);
 
 CREATE INDEX IDX_note_ancillaries_name
     on note_ancillaries (name);

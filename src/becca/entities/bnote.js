@@ -46,6 +46,7 @@ class BNote extends AbstractBeccaEntity {
             row.type,
             row.mime,
             row.isProtected,
+            row.blobId,
             row.dateCreated,
             row.dateModified,
             row.utcDateCreated,
@@ -53,19 +54,21 @@ class BNote extends AbstractBeccaEntity {
         ]);
     }
 
-    update([noteId, title, type, mime, isProtected, dateCreated, dateModified, utcDateCreated, utcDateModified]) {
+    update([noteId, title, type, mime, isProtected, blobId, dateCreated, dateModified, utcDateCreated, utcDateModified]) {
         // ------ Database persisted attributes ------
 
         /** @type {string} */
         this.noteId = noteId;
         /** @type {string} */
         this.title = title;
-        /** @type {boolean} */
-        this.isProtected = !!isProtected;
         /** @type {string} */
         this.type = type;
         /** @type {string} */
         this.mime = mime;
+        /** @type {boolean} */
+        this.isProtected = !!isProtected;
+        /** @type {string} */
+        this.blobId = blobId;
         /** @type {string} */
         this.dateCreated = dateCreated || dateUtils.localNowDateTime();
         /** @type {string} */
@@ -206,14 +209,14 @@ class BNote extends AbstractBeccaEntity {
 
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
-        const row = sql.getRow(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!row) {
             if (silentNotFoundError) {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note content for noteId=${this.noteId}`);
+                throw new Error(`Cannot find note content for noteId '${this.noteId}', blobId '${this.blobId}'.`);
             }
         }
 
@@ -245,8 +248,8 @@ class BNote extends AbstractBeccaEntity {
                 LENGTH(content) AS contentLength, 
                 dateModified,
                 utcDateModified 
-            FROM note_contents 
-            WHERE noteId = ?`, [this.noteId]);
+            FROM blobs 
+            WHERE blobId = ?`, [this.blobId]);
     }
 
     get dateCreatedObj() {
@@ -276,6 +279,10 @@ class BNote extends AbstractBeccaEntity {
         return JSON.parse(content);
     }
 
+    isHot() {
+        return ['text', 'code', 'relationMap', 'canvas', 'mermaid'].includes(this.type);
+    }
+
     setContent(content, ignoreMissingProtectedSession = false) {
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to note '${this.noteId}'`);
@@ -288,39 +295,57 @@ class BNote extends AbstractBeccaEntity {
             content = Buffer.isBuffer(content) ? content : Buffer.from(content);
         }
 
-        const pojo = {
-            noteId: this.noteId,
-            content: content,
-            dateModified: dateUtils.localNowDateTime(),
-            utcDateModified: dateUtils.utcNowDateTime()
-        };
-
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                pojo.content = protectedSessionService.encrypt(pojo.content);
+                content = protectedSessionService.encrypt(content);
             }
             else if (!ignoreMissingProtectedSession) {
                 throw new Error(`Cannot update content of noteId '${this.noteId}' since we're out of protected session.`);
             }
         }
 
-        sql.upsert("note_contents", "noteId", pojo);
+        let newBlobId;
+        let blobNeedsInsert;
 
-        const hash = utils.hash(`${this.noteId}|${pojo.content.toString()}`);
+        if (this.isHot()) {
+            newBlobId = this.blobId || utils.randomBlobId();
+            blobNeedsInsert = true;
+        } else {
+            newBlobId = utils.hashedBlobId(content);
+            blobNeedsInsert = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [newBlobId]);
+        }
 
-        entityChangesService.addEntityChange({
-            entityName: 'note_contents',
-            entityId: this.noteId,
-            hash: hash,
-            isErased: false,
-            utcDateChanged: pojo.utcDateModified,
-            isSynced: true
-        });
+        if (blobNeedsInsert) {
+            const pojo = {
+                blobId: this.blobId,
+                content: content,
+                dateModified: dateUtils.localNowDateTime(),
+                utcDateModified: dateUtils.utcNowDateTime()
+            };
 
-        eventService.emit(eventService.ENTITY_CHANGED, {
-            entityName: 'note_contents',
-            entity: this
-        });
+            sql.upsert("blobs", "blobId", pojo);
+
+            const hash = utils.hash(`${this.blobId}|${pojo.content.toString()}`);
+
+            entityChangesService.addEntityChange({
+                entityName: 'blobs',
+                entityId: this.blobId,
+                hash: hash,
+                isErased: false,
+                utcDateChanged: pojo.utcDateModified,
+                isSynced: true
+            });
+
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: 'blobs',
+                entity: this
+            });
+        }
+
+        if (newBlobId !== this.blobId) {
+            this.blobId = newBlobId;
+            this.save();
+        }
     }
 
     setJsonContent(content) {
@@ -1517,6 +1542,7 @@ class BNote extends AbstractBeccaEntity {
             isProtected: this.isProtected,
             type: this.type,
             mime: this.mime,
+            blobId: this.blobId,
             isDeleted: false,
             dateCreated: this.dateCreated,
             dateModified: this.dateModified,

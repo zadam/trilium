@@ -383,86 +383,86 @@ class ConsistencyChecks {
                 }
             });
 
-        this.findAndFixIssues(`
-                    SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
-                    FROM notes
-                      LEFT JOIN note_contents USING (noteId)
-                    WHERE note_contents.noteId IS NULL`,
-            ({noteId, isProtected, type, mime}) => {
-                if (this.autoFix) {
-                    // it might be possible that the note_content is not available only because of the interrupted
-                    // sync, and it will come later. It's therefore important to guarantee that this artifical
-                    // record won't overwrite the real one coming from the sync.
-                    const fakeDate = "2000-01-01 00:00:00Z";
-
-                    // manually creating row since this can also affect deleted notes
-                    sql.upsert("note_contents", "noteId", {
-                        noteId: noteId,
-                        content: getBlankContent(isProtected, type, mime),
-                        utcDateModified: fakeDate,
-                        dateModified: fakeDate
-                    });
-
-                    const hash = utils.hash(utils.randomString(10));
-
-                    entityChangesService.addEntityChange({
-                        entityName: 'note_contents',
-                        entityId: noteId,
-                        hash: hash,
-                        isErased: false,
-                        utcDateChanged: fakeDate,
-                        isSynced: true
-                    });
-
-                    this.reloadNeeded = true;
-
-                    logFix(`Note '${noteId}' content was set to empty string since there was no corresponding row`);
-                } else {
-                    logError(`Note '${noteId}' content row does not exist`);
-                }
-            });
+        // this.findAndFixIssues(`
+        //             SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
+        //             FROM notes
+        //               LEFT JOIN note_contents USING (noteId)
+        //             WHERE note_contents.noteId IS NULL`,
+        //     ({noteId, isProtected, type, mime}) => {
+        //         if (this.autoFix) {
+        //             // it might be possible that the note_content is not available only because of the interrupted
+        //             // sync, and it will come later. It's therefore important to guarantee that this artifical
+        //             // record won't overwrite the real one coming from the sync.
+        //             const fakeDate = "2000-01-01 00:00:00Z";
+        //
+        //             // manually creating row since this can also affect deleted notes
+        //             sql.upsert("note_contents", "noteId", {
+        //                 noteId: noteId,
+        //                 content: getBlankContent(isProtected, type, mime),
+        //                 utcDateModified: fakeDate,
+        //                 dateModified: fakeDate
+        //             });
+        //
+        //             const hash = utils.hash(utils.randomString(10));
+        //
+        //             entityChangesService.addEntityChange({
+        //                 entityName: 'note_contents',
+        //                 entityId: noteId,
+        //                 hash: hash,
+        //                 isErased: false,
+        //                 utcDateChanged: fakeDate,
+        //                 isSynced: true
+        //             });
+        //
+        //             this.reloadNeeded = true;
+        //
+        //             logFix(`Note '${noteId}' content was set to empty string since there was no corresponding row`);
+        //         } else {
+        //             logError(`Note '${noteId}' content row does not exist`);
+        //         }
+        //     });
 
         if (sqlInit.getDbSize() < 500000) {
             // querying for "content IS NULL" is expensive since content is not indexed. See e.g. https://github.com/zadam/trilium/issues/2887
 
-            this.findAndFixIssues(`
-                        SELECT notes.noteId, notes.type, notes.mime
-                        FROM notes
-                                 JOIN note_contents USING (noteId)
-                        WHERE isDeleted = 0
-                          AND isProtected = 0
-                          AND content IS NULL`,
-                ({noteId, type, mime}) => {
-                    if (this.autoFix) {
-                        const note = becca.getNote(noteId);
-                        const blankContent = getBlankContent(false, type, mime);
-                        note.setContent(blankContent);
-
-                        this.reloadNeeded = true;
-
-                        logFix(`Note '${noteId}' content was set to '${blankContent}' since it was null even though it is not deleted`);
-                    } else {
-                        logError(`Note '${noteId}' content is null even though it is not deleted`);
-                    }
-                });
+            // this.findAndFixIssues(`
+            //             SELECT notes.noteId, notes.type, notes.mime
+            //             FROM notes
+            //                      JOIN note_contents USING (noteId)
+            //             WHERE isDeleted = 0
+            //               AND isProtected = 0
+            //               AND content IS NULL`,
+            //     ({noteId, type, mime}) => {
+            //         if (this.autoFix) {
+            //             const note = becca.getNote(noteId);
+            //             const blankContent = getBlankContent(false, type, mime);
+            //             note.setContent(blankContent);
+            //
+            //             this.reloadNeeded = true;
+            //
+            //             logFix(`Note '${noteId}' content was set to '${blankContent}' since it was null even though it is not deleted`);
+            //         } else {
+            //             logError(`Note '${noteId}' content is null even though it is not deleted`);
+            //         }
+            //     });
         }
 
-        this.findAndFixIssues(`
-                    SELECT note_revisions.noteRevisionId
-                    FROM note_revisions
-                      LEFT JOIN note_revision_contents USING (noteRevisionId)
-                    WHERE note_revision_contents.noteRevisionId IS NULL`,
-            ({noteRevisionId}) => {
-                if (this.autoFix) {
-                    noteRevisionService.eraseNoteRevisions([noteRevisionId]);
-
-                    this.reloadNeeded = true;
-
-                    logFix(`Note revision content '${noteRevisionId}' was set to erased since it did not exist.`);
-                } else {
-                    logError(`Note revision content '${noteRevisionId}' does not exist`);
-                }
-            });
+        // this.findAndFixIssues(`
+        //             SELECT note_revisions.noteRevisionId
+        //             FROM note_revisions
+        //               LEFT JOIN note_revision_contents USING (noteRevisionId)
+        //             WHERE note_revision_contents.noteRevisionId IS NULL`,
+        //     ({noteRevisionId}) => {
+        //         if (this.autoFix) {
+        //             noteRevisionService.eraseNoteRevisions([noteRevisionId]);
+        //
+        //             this.reloadNeeded = true;
+        //
+        //             logFix(`Note revision content '${noteRevisionId}' was set to erased since it did not exist.`);
+        //         } else {
+        //             logError(`Note revision content '${noteRevisionId}' does not exist`);
+        //         }
+        //     });
 
         this.findAndFixIssues(`
                     SELECT parentNoteId
@@ -656,11 +656,11 @@ class ConsistencyChecks {
 
     findEntityChangeIssues() {
         this.runEntityChangeChecks("notes", "noteId");
-        this.runEntityChangeChecks("note_contents", "noteId");
+        //this.runEntityChangeChecks("note_contents", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
-        this.runEntityChangeChecks("note_revision_contents", "noteRevisionId");
+        //this.runEntityChangeChecks("note_revision_contents", "noteRevisionId");
         this.runEntityChangeChecks("note_ancillaries", "noteAncillaryId");
-        this.runEntityChangeChecks("note_ancillary_contents", "noteAncillaryId");
+        //this.runEntityChangeChecks("note_ancillary_contents", "noteAncillaryId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");

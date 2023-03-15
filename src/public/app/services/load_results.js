@@ -94,8 +94,10 @@ export default class LoadResults {
         return componentIds && componentIds.find(sId => sId !== componentId) !== undefined;
     }
 
-    addNoteContent(noteId, componentId) {
-        this.contentNoteIdToComponentId.push({noteId, componentId});
+    addNoteContent(noteIds, componentId) {
+        for (const noteId of noteIds) {
+            this.contentNoteIdToComponentId.push({noteId, componentId});
+        }
     }
 
     isNoteContentReloaded(noteId, componentId) {

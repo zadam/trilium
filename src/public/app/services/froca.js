@@ -35,7 +35,7 @@ class Froca {
         this.attributes = {};
 
         /** @type {Object.<string, Promise<FNoteComplement>>} */
-        this.noteComplementPromises = {};
+        this.blobPromises = {};
 
         this.addResp(resp);
     }
@@ -314,20 +314,20 @@ class Froca {
      * @returns {Promise<FNoteComplement>}
      */
     async getNoteComplement(noteId) {
-        if (!this.noteComplementPromises[noteId]) {
-            this.noteComplementPromises[noteId] = server.get(`notes/${noteId}`)
+        if (!this.blobPromises[noteId]) {
+            this.blobPromises[noteId] = server.get(`notes/${noteId}`)
                 .then(row => new FNoteComplement(row))
                 .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
 
             // we don't want to keep large payloads forever in memory, so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)
             // this is also a workaround for missing invalidation after change
-            this.noteComplementPromises[noteId].then(
-                () => setTimeout(() => this.noteComplementPromises[noteId] = null, 1000)
+            this.blobPromises[noteId].then(
+                () => setTimeout(() => this.blobPromises[noteId] = null, 1000)
             );
         }
 
-        return await this.noteComplementPromises[noteId];
+        return await this.blobPromises[noteId];
     }
 }
 

@@ -19,10 +19,10 @@ async function processEntityChanges(entityChanges) {
                 processAttributeChange(loadResults, ec);
             } else if (ec.entityName === 'note_reordering') {
                 processNoteReordering(loadResults, ec);
-            } else if (ec.entityName === 'note_contents') {
-                delete froca.noteComplementPromises[ec.entityId];
+            } else if (ec.entityName === 'blobs') {
+                delete froca.blobPromises[ec.entityId];
 
-                loadResults.addNoteContent(ec.entityId, ec.componentId);
+                loadResults.addNoteContent(ec.noteIds, ec.componentId);
             } else if (ec.entityName === 'note_revisions') {
                 loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'note_revision_contents') {

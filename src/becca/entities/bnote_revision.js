@@ -35,6 +35,8 @@ class BNoteRevision extends AbstractBeccaEntity {
         /** @type {string} */
         this.title = row.title;
         /** @type {string} */
+        this.blobId = row.blobId;
+        /** @type {string} */
         this.dateLastEdited = row.dateLastEdited;
         /** @type {string} */
         this.dateCreated = row.dateCreated;
@@ -74,14 +76,14 @@ class BNoteRevision extends AbstractBeccaEntity {
 
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
-        const res = sql.getRow(`SELECT content FROM note_revision_contents WHERE noteRevisionId = ?`, [this.noteRevisionId]);
+        const res = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!res) {
             if (silentNotFoundError) {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note revision content for noteRevisionId=${this.noteRevisionId}`);
+                throw new Error(`Cannot find note revision content for noteRevisionId '${this.noteRevisionId}', blobId '${this.blobId}'`);
             }
         }
 
@@ -107,44 +109,42 @@ class BNoteRevision extends AbstractBeccaEntity {
     }
 
     setContent(content) {
-        const pojo = {
-            noteRevisionId: this.noteRevisionId,
-            content: content,
-            utcDateModified: dateUtils.utcNowDateTime()
-        };
-
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                pojo.content = protectedSessionService.encrypt(pojo.content);
+                content = protectedSessionService.encrypt(content);
             }
             else {
-                throw new Error(`Cannot update content of noteRevisionId=${this.noteRevisionId} since we're out of protected session.`);
+                throw new Error(`Cannot update content of noteRevisionId '${this.noteRevisionId}' since we're out of protected session.`);
             }
         }
 
-        sql.upsert("note_revision_contents", "noteRevisionId", pojo);
+        this.blobId = utils.hashedBlobId(content);
 
-        const hash = utils.hash(`${this.noteRevisionId}|${pojo.content.toString()}`);
+        const blobAlreadyExists = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [this.blobId]);
 
-        entityChangesService.addEntityChange({
-            entityName: 'note_revision_contents',
-            entityId: this.noteRevisionId,
-            hash: hash,
-            isErased: false,
-            utcDateChanged: this.getUtcDateChanged(),
-            isSynced: true
-        });
-    }
+        if (!blobAlreadyExists) {
+            const pojo = {
+                blobId: this.blobId,
+                content: content,
+                dateModified: dateUtils.localNowDate(),
+                utcDateModified: dateUtils.utcNowDateTime()
+            };
 
-    /** @returns {{contentLength, dateModified, utcDateModified}} */
-    getContentMetadata() {
-        return sql.getRow(`
-            SELECT 
-                LENGTH(content) AS contentLength, 
-                dateModified,
-                utcDateModified 
-            FROM note_revision_contents 
-            WHERE noteRevisionId = ?`, [this.noteRevisionId]);
+            sql.insert("blobs", pojo);
+
+            const hash = utils.hash(`${this.noteRevisionId}|${pojo.content.toString()}`);
+
+            entityChangesService.addEntityChange({
+                entityName: 'blobs',
+                entityId: this.blobId,
+                hash: hash,
+                isErased: false,
+                utcDateChanged: this.getUtcDateChanged(),
+                isSynced: true
+            });
+        }
+
+        this.save(); // saving this.blobId
     }
 
     beforeSaving() {
@@ -161,6 +161,7 @@ class BNoteRevision extends AbstractBeccaEntity {
             mime: this.mime,
             isProtected: this.isProtected,
             title: this.title,
+            blobId: this.blobId,
             dateLastEdited: this.dateLastEdited,
             dateCreated: this.dateCreated,
             utcDateLastEdited: this.utcDateLastEdited,

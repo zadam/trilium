@@ -129,13 +129,14 @@ function fillInAdditionalProperties(entityChange) {
                 entityChange.positions[childBranch.branchId] = childBranch.notePosition;
             }
         }
-    }
-    else if (entityChange.entityName === 'options') {
+    } else if (entityChange.entityName === 'options') {
         entityChange.entity = becca.getOption(entityChange.entityId);
 
         if (!entityChange.entity) {
             entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
         }
+    } else if (entityChange.entityName === 'blob') {
+        entityChange.noteIds = sql.getColumn("SELECT noteId FROM notes WHERE blobId = ? AND isDeleted = 0", [entityChange.entityId]);
     }
 
     if (entityChange.entity instanceof AbstractBeccaEntity) {
