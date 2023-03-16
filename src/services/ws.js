@@ -135,7 +135,7 @@ function fillInAdditionalProperties(entityChange) {
         if (!entityChange.entity) {
             entityChange.entity = sql.getRow(`SELECT * FROM options WHERE name = ?`, [entityChange.entityId]);
         }
-    } else if (entityChange.entityName === 'blob') {
+    } else if (entityChange.entityName === 'blobs') {
         entityChange.noteIds = sql.getColumn("SELECT noteId FROM notes WHERE blobId = ? AND isDeleted = 0", [entityChange.entityId]);
     }
 

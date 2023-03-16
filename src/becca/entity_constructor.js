@@ -1,6 +1,6 @@
 const BNote = require('./entities/bnote');
 const BNoteRevision = require('./entities/bnote_revision');
-const BNoteAttachment = require("./entities/bnote_attachment.js");
+const BNoteAttachment = require("./entities/bnote_attachment");
 const BBranch = require('./entities/bbranch');
 const BAttribute = require('./entities/battribute');
 const BRecentNote = require('./entities/brecent_note');

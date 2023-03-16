@@ -17,27 +17,31 @@ const AbstractBeccaEntity = require("./abstract_becca_entity");
 class BNoteAttachment extends AbstractBeccaEntity {
     static get entityName() { return "note_attachments"; }
     static get primaryKeyName() { return "noteAttachmentId"; }
-    static get hashedProperties() { return ["noteAttachmentId", "noteId", "name", "content", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteAttachmentId", "parentId", "role", "mime", "title", "utcDateModified"]; }
 
     constructor(row) {
         super();
 
-        if (!row.noteId) {
+        if (!row.parentId?.trim()) {
             throw new Error("'noteId' must be given to initialize a NoteAttachment entity");
-        }
-
-        if (!row.name) {
-            throw new Error("'name' must be given to initialize a NoteAttachment entity");
+        } else if (!row.role?.trim()) {
+            throw new Error("'role' must be given to initialize a NoteAttachment entity");
+        } else if (!row.mime?.trim()) {
+            throw new Error("'mime' must be given to initialize a NoteAttachment entity");
+        } else if (!row.title?.trim()) {
+            throw new Error("'title' must be given to initialize a NoteAttachment entity");
         }
 
         /** @type {string} needs to be set at the initialization time since it's used in the .setContent() */
-        this.noteAttachmentId = row.noteAttachmentId || `${this.noteId}_${this.name}`;
+        this.noteAttachmentId = row.noteAttachmentId || `${this.noteId}_${this.name}`; // FIXME
+        /** @type {string} either noteId or noteRevisionId to which this attachment belongs */
+        this.parentId = row.parentId;
         /** @type {string} */
-        this.noteId = row.noteId;
-        /** @type {string} */
-        this.name = row.name;
+        this.role = row.role;
         /** @type {string} */
         this.mime = row.mime;
+        /** @type {string} */
+        this.title = row.title;
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
         /** @type {string} */
@@ -45,7 +49,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     getNote() {
-        return becca.notes[this.noteId];
+        return becca.notes[this.parentId];
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
@@ -127,7 +131,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
             throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
         }
 
-        this.noteAttachmentId = `${this.noteId}_${this.name}`;
+        this.noteAttachmentId = `${this.noteId}_${this.name}`; // FIXME
 
         super.beforeSaving();
 
@@ -137,7 +141,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
     getPojo() {
         return {
             noteAttachmentId: this.noteAttachmentId,
-            noteId: this.noteId,
+            parentId: this.parentId,
             name: this.name,
             mime: this.mime,
             isProtected: !!this.isProtected,

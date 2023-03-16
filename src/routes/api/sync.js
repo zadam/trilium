@@ -12,7 +12,7 @@ const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
 const utils = require('../../services/utils');
 const ws = require('../../services/ws');
-const becca = require("../../becca/becca.js");
+const becca = require("../../becca/becca");
 
 async function testSync() {
     try {

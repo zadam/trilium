@@ -120,7 +120,7 @@ class BNoteRevision extends AbstractBeccaEntity {
 
         this.blobId = utils.hashedBlobId(content);
 
-        const blobAlreadyExists = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [this.blobId]);
+        const blobAlreadyExists = !!sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [this.blobId]);
 
         if (!blobAlreadyExists) {
             const pojo = {

@@ -125,7 +125,7 @@ class Becca {
     getNoteAttachment(noteAttachmentId) {
         const row = sql.getRow("SELECT * FROM note_attachments WHERE noteAttachmentId = ?", [noteAttachmentId]);
 
-        const BNoteAttachment = require("./entities/bnote_attachment.js"); // avoiding circular dependency problems
+        const BNoteAttachment = require("./entities/bnote_attachment"); // avoiding circular dependency problems
         return row ? new BNoteAttachment(row) : null;
     }
 

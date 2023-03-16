@@ -338,6 +338,7 @@ ${markdownContent}`;
         taskContext.increaseProgressCount();
 
         for (const attachmentMeta of noteMeta.attachments || []) {
+            // FIXME
             const noteAttachment = note.getNoteAttachmentByName(attachmentMeta.name);
             const content = noteAttachment.getContent();
 

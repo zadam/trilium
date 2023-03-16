@@ -217,7 +217,7 @@ class ConsistencyChecks {
         this.findAndFixIssues(`
                     SELECT noteAttachmentId, note_attachments.noteId AS noteId
                     FROM note_attachments
-                      LEFT JOIN notes USING (noteId)
+                      LEFT JOIN notes ON notes.noteId = note_attachments.parentId
                     WHERE notes.noteId IS NULL
                       AND note_attachments.isDeleted = 0`,
             ({noteAttachmentId, noteId}) => {

@@ -14,7 +14,7 @@ const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
-const BNoteAttachment = require("../../becca/entities/bnote_attachment.js");
+const BNoteAttachment = require("../../becca/entities/bnote_attachment");
 
 /**
  * @param {TaskContext} taskContext
@@ -380,8 +380,9 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         if (attachmentMeta) {
             const noteAttachment = new BNoteAttachment({
-                noteId,
-                name: attachmentMeta.name,
+                parentId: noteId,
+                title: attachmentMeta.title,
+                role: attachmentMeta.role,
                 mime: attachmentMeta.mime
             });
 
