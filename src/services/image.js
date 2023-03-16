@@ -129,7 +129,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
         fileName,
         note,
         noteId: note.noteId,
-        url: `api/images/${note.noteId}/${fileName}`
+        url: `api/images/${note.noteId}/${encodeURIComponent(fileName)}`
     };
 }
 

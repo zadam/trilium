@@ -21,6 +21,7 @@ const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
+const {attach} = require("jsdom/lib/jsdom/living/helpers/svg/basic-types.js");
 
 function getNewNotePosition(parentNoteId) {
     const note = becca.notes[parentNoteId];
@@ -370,7 +371,7 @@ function findRelationMapLinks(content, foundLinks) {
     }
 }
 
-const imageUrlToNoteIdMapping = {};
+const imageUrlToAttachmentIdMapping = {};
 
 async function downloadImage(noteId, imageUrl) {
     try {
@@ -379,13 +380,11 @@ async function downloadImage(noteId, imageUrl) {
         const title = path.basename(parsedUrl.pathname);
 
         const imageService = require('../services/image');
-        const {note} = imageService.saveImage(noteId, imageBuffer, title, true, true);
+        const {attachment} = imageService.saveImageToAttachment(noteId, imageBuffer, title, true, true);
 
-        note.addLabel('imageUrl', imageUrl);
+        imageUrlToAttachmentIdMapping[imageUrl] = attachment.attachmentId;
 
-        imageUrlToNoteIdMapping[imageUrl] = note.noteId;
-
-        log.info(`Download of '${imageUrl}' succeeded and was saved as image note '${note.noteId}'`);
+        log.info(`Download of '${imageUrl}' succeeded and was saved as image attachment '${attachment.attachmentId}' of note '${noteId}'`);
     }
     catch (e) {
         log.error(`Download of '${imageUrl}' for note '${noteId}' failed with error: ${e.message} ${e.stack}`);
@@ -395,10 +394,10 @@ async function downloadImage(noteId, imageUrl) {
 /** url => download promise */
 const downloadImagePromises = {};
 
-function replaceUrl(content, url, imageNote) {
+function replaceUrl(content, url, attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/images/${imageNote.noteId}/${imageNote.title}"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/notes/${attachment.parentId}/images/${encodeURIComponent(attachment.title)}"`);
 }
 
 function downloadImages(noteId, content) {
@@ -424,30 +423,20 @@ function downloadImages(noteId, content) {
 
             content = `${content.substr(0, imageMatch.index)}<img src="api/images/${note.noteId}/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
-        else if (!url.includes('api/images/')
+        else if (!url.includes('api/images/') && !/api\/notes\/.+\/images\/.*/.test(url)
             // this is an exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
-            if (url in imageUrlToNoteIdMapping) {
-                const imageNote = becca.getNote(imageUrlToNoteIdMapping[url]);
+            if (url in imageUrlToAttachmentIdMapping) {
+                const attachment = becca.getAttachment(imageUrlToAttachmentIdMapping[url]);
 
-                if (!imageNote || imageNote.isDeleted) {
-                    delete imageUrlToNoteIdMapping[url];
+                if (!attachment) {
+                    delete imageUrlToAttachmentIdMapping[url];
                 }
                 else {
-                    content = replaceUrl(content, url, imageNote);
+                    content = replaceUrl(content, url, attachment);
                     continue;
                 }
-            }
-
-            const existingImage = (attributeService.getNotesWithLabel('imageUrl', url))
-                .find(note => note.type === 'image');
-
-            if (existingImage) {
-                imageUrlToNoteIdMapping[url] = existingImage.noteId;
-
-                content = replaceUrl(content, url, existingImage);
-                continue;
             }
 
             if (url in downloadImagePromises) {
@@ -472,7 +461,7 @@ function downloadImages(noteId, content) {
             // which upon the download of all the images will update the note if the links have not been fixed before
 
             sql.transactional(() => {
-                const imageNotes = becca.getNotes(Object.values(imageUrlToNoteIdMapping), true);
+                const imageNotes = becca.getNotes(Object.values(imageUrlToAttachmentIdMapping), true);
 
                 const origNote = becca.getNote(noteId);
 
@@ -484,8 +473,8 @@ function downloadImages(noteId, content) {
                 const origContent = origNote.getContent();
                 let updatedContent = origContent;
 
-                for (const url in imageUrlToNoteIdMapping) {
-                    const imageNote = imageNotes.find(note => note.noteId === imageUrlToNoteIdMapping[url]);
+                for (const url in imageUrlToAttachmentIdMapping) {
+                    const imageNote = imageNotes.find(note => note.noteId === imageUrlToAttachmentIdMapping[url]);
 
                     if (imageNote && !imageNote.isDeleted) {
                         updatedContent = replaceUrl(updatedContent, url, imageNote);
