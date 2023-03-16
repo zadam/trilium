@@ -13,6 +13,7 @@ const noteRevisionService = require('./note_revisions');
 const becca = require("../becca/becca");
 const utils = require("../services/utils");
 const {sanitizeAttributeName} = require("./sanitize_attribute_name");
+const {note} = require("../../spec/search/becca_mocking.js");
 const noteTypes = require("../services/note_types").getNoteTypeNames();
 
 class ConsistencyChecks {
@@ -214,25 +215,27 @@ class ConsistencyChecks {
                 }
             });
 
-        // FIXME
-        // this.findAndFixIssues(`
-        //             SELECT attachmentId, attachments.parentId AS noteId
-        //             FROM attachments
-        //               LEFT JOIN notes ON notes.noteId = attachments.parentId
-        //             WHERE notes.noteId IS NULL
-        //               AND attachments.isDeleted = 0`,
-        //     ({attachmentId, noteId}) => {
-        //         if (this.autoFix) {
-        //             const attachment = becca.getAttachment(attachmentId);
-        //             attachment.markAsDeleted();
-        //
-        //             this.reloadNeeded = false;
-        //
-        //             logFix(`Note attachment '${attachmentId}' has been deleted since it references missing note '${noteId}'`);
-        //         } else {
-        //             logError(`Note attachment '${attachmentId}' references missing note '${noteId}'`);
-        //         }
-        //     });
+        this.findAndFixIssues(`
+                    SELECT attachmentId, attachments.parentId AS noteId
+                    FROM attachments
+                    WHERE attachments.parentId NOT IN (
+                            SELECT noteId FROM notes
+                            UNION ALL
+                            SELECT noteRevisionId FROM note_revisions
+                        )
+                      AND attachments.isDeleted = 0`,
+            ({attachmentId, parentId}) => {
+                if (this.autoFix) {
+                    const attachment = becca.getAttachment(attachmentId);
+                    attachment.markAsDeleted();
+
+                    this.reloadNeeded = false;
+
+                    logFix(`Note attachment '${attachmentId}' has been deleted since it references missing note/revision '${parentId}'`);
+                } else {
+                    logError(`Note attachment '${attachmentId}' references missing note/revision '${parentId}'`);
+                }
+            });
     }
 
     findExistencyIssues() {
@@ -384,86 +387,95 @@ class ConsistencyChecks {
                 }
             });
 
-        // this.findAndFixIssues(`
-        //             SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
-        //             FROM notes
-        //               LEFT JOIN note_contents USING (noteId)
-        //             WHERE note_contents.noteId IS NULL`,
-        //     ({noteId, isProtected, type, mime}) => {
-        //         if (this.autoFix) {
-        //             // it might be possible that the note_content is not available only because of the interrupted
-        //             // sync, and it will come later. It's therefore important to guarantee that this artifical
-        //             // record won't overwrite the real one coming from the sync.
-        //             const fakeDate = "2000-01-01 00:00:00Z";
-        //
-        //             // manually creating row since this can also affect deleted notes
-        //             sql.upsert("note_contents", "noteId", {
-        //                 noteId: noteId,
-        //                 content: getBlankContent(isProtected, type, mime),
-        //                 utcDateModified: fakeDate,
-        //                 dateModified: fakeDate
-        //             });
-        //
-        //             const hash = utils.hash(utils.randomString(10));
-        //
-        //             entityChangesService.addEntityChange({
-        //                 entityName: 'note_contents',
-        //                 entityId: noteId,
-        //                 hash: hash,
-        //                 isErased: false,
-        //                 utcDateChanged: fakeDate,
-        //                 isSynced: true
-        //             });
-        //
-        //             this.reloadNeeded = true;
-        //
-        //             logFix(`Note '${noteId}' content was set to empty string since there was no corresponding row`);
-        //         } else {
-        //             logError(`Note '${noteId}' content row does not exist`);
-        //         }
-        //     });
+        this.findAndFixIssues(`
+                    SELECT notes.noteId, notes.isProtected, notes.type, notes.mime
+                    FROM notes
+                      LEFT JOIN blobs USING (blobId)
+                    WHERE blobs.blobId IS NULL
+                        AND notes.isDeleted = 0`,
+            ({noteId, isProtected, type, mime}) => {
+                if (this.autoFix) {
+                    // it might be possible that the blob is not available only because of the interrupted
+                    // sync, and it will come later. It's therefore important to guarantee that this artifical
+                    // record won't overwrite the real one coming from the sync.
+                    const fakeDate = "2000-01-01 00:00:00Z";
+
+                    const blankContent = getBlankContent(isProtected, type, mime);
+                    const blobId = utils.hashedBlobId(blankContent);
+                    const blobAlreadyExists = !!sql.getValue("SELECT 1 FROM blobs WHERE blobId = ?", [blobId]);
+
+                    if (!blobAlreadyExists) {
+                        // manually creating row since this can also affect deleted notes
+                        sql.upsert("blobs", "blobId", {
+                            noteId: noteId,
+                            content: blankContent,
+                            utcDateModified: fakeDate,
+                            dateModified: fakeDate
+                        });
+
+                        const hash = utils.hash(utils.randomString(10));
+
+                        entityChangesService.addEntityChange({
+                            entityName: 'blobs',
+                            entityId: blobId,
+                            hash: hash,
+                            isErased: false,
+                            utcDateChanged: fakeDate,
+                            isSynced: true
+                        });
+                    }
+
+                    sql.execute("UPDATE notes SET blobId = ? WHERE noteId = ?", [blobId, noteId]);
+
+                    this.reloadNeeded = true;
+
+                    logFix(`Note '${noteId}' content was set to empty string since there was no corresponding row`);
+                } else {
+                    logError(`Note '${noteId}' content row does not exist`);
+                }
+            });
 
         if (sqlInit.getDbSize() < 500000) {
             // querying for "content IS NULL" is expensive since content is not indexed. See e.g. https://github.com/zadam/trilium/issues/2887
 
-            // this.findAndFixIssues(`
-            //             SELECT notes.noteId, notes.type, notes.mime
-            //             FROM notes
-            //                      JOIN note_contents USING (noteId)
-            //             WHERE isDeleted = 0
-            //               AND isProtected = 0
-            //               AND content IS NULL`,
-            //     ({noteId, type, mime}) => {
-            //         if (this.autoFix) {
-            //             const note = becca.getNote(noteId);
-            //             const blankContent = getBlankContent(false, type, mime);
-            //             note.setContent(blankContent);
-            //
-            //             this.reloadNeeded = true;
-            //
-            //             logFix(`Note '${noteId}' content was set to '${blankContent}' since it was null even though it is not deleted`);
-            //         } else {
-            //             logError(`Note '${noteId}' content is null even though it is not deleted`);
-            //         }
-            //     });
+            this.findAndFixIssues(`
+                        SELECT notes.noteId, notes.type, notes.mime
+                        FROM notes
+                                 JOIN blobs USING (blobId)
+                        WHERE isDeleted = 0
+                          AND isProtected = 0
+                          AND content IS NULL`,
+                ({noteId, type, mime}) => {
+                    if (this.autoFix) {
+                        const note = becca.getNote(noteId);
+                        const blankContent = getBlankContent(false, type, mime);
+                        note.setContent(blankContent);
+
+                        this.reloadNeeded = true;
+
+                        logFix(`Note '${noteId}' content was set to '${blankContent}' since it was null even though it is not deleted`);
+                    } else {
+                        logError(`Note '${noteId}' content is null even though it is not deleted`);
+                    }
+                });
         }
 
-        // this.findAndFixIssues(`
-        //             SELECT note_revisions.noteRevisionId
-        //             FROM note_revisions
-        //               LEFT JOIN note_revision_contents USING (noteRevisionId)
-        //             WHERE note_revision_contents.noteRevisionId IS NULL`,
-        //     ({noteRevisionId}) => {
-        //         if (this.autoFix) {
-        //             noteRevisionService.eraseNoteRevisions([noteRevisionId]);
-        //
-        //             this.reloadNeeded = true;
-        //
-        //             logFix(`Note revision content '${noteRevisionId}' was set to erased since it did not exist.`);
-        //         } else {
-        //             logError(`Note revision content '${noteRevisionId}' does not exist`);
-        //         }
-        //     });
+        this.findAndFixIssues(`
+                    SELECT note_revisions.noteRevisionId
+                    FROM note_revisions
+                      LEFT JOIN blobs USING (blobId)
+                    WHERE blobs.blobId IS NULL`,
+            ({noteRevisionId}) => {
+                if (this.autoFix) {
+                    noteRevisionService.eraseNoteRevisions([noteRevisionId]);
+
+                    this.reloadNeeded = true;
+
+                    logFix(`Note revision content '${noteRevisionId}' was set to erased since its content did not exist.`);
+                } else {
+                    logError(`Note revision content '${noteRevisionId}' does not exist`);
+                }
+            });
 
         this.findAndFixIssues(`
                     SELECT parentNoteId
@@ -487,7 +499,7 @@ class ConsistencyChecks {
                         branch.markAsDeleted("parent-is-search");
 
                         // create a replacement branch in root parent
-                        new Branch({
+                        new BBranch({
                             parentNoteId: 'root',
                             noteId: branch.noteId,
                             prefix: 'recovered'
