@@ -1408,9 +1408,9 @@ class BNote extends AbstractBeccaEntity {
                 ? this.dateModified
                 : contentMetadata.dateModified,
             dateCreated: dateUtils.localNowDateTime()
-        }, true).save();
+        }, true);
 
-        noteRevision.setContent(content);
+        noteRevision.setContent(content, { forceSave: true });
 
         return noteRevision;
     }

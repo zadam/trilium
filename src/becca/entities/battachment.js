@@ -89,20 +89,18 @@ class BAttachment extends AbstractBeccaEntity {
         return {
             attachmentId: this.attachmentId,
             parentId: this.parentId,
-            name: this.name,
+            role: this.role,
             mime: this.mime,
+            title: this.title,
             isProtected: !!this.isProtected,
-            contentCheckSum: this.contentCheckSum, // FIXME
             isDeleted: false,
+            utcDateScheduledForDeletionSince: this.utcDateScheduledForDeletionSince,
             utcDateModified: this.utcDateModified
         };
     }
 
     getPojoToSave() {
-        const pojo = this.getPojo();
-        delete pojo.content; // not getting persisted
-
-        return pojo;
+        return this.getPojo();
     }
 }
 

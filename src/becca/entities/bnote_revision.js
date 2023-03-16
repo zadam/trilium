@@ -106,14 +106,12 @@ class BNoteRevision extends AbstractBeccaEntity {
             utcDateLastEdited: this.utcDateLastEdited,
             utcDateCreated: this.utcDateCreated,
             utcDateModified: this.utcDateModified,
-            content: this.content, // used when retrieving full note revision to frontend
             contentLength: this.contentLength
         };
     }
 
     getPojoToSave() {
         const pojo = this.getPojo();
-        delete pojo.content; // not getting persisted
         delete pojo.contentLength; // not getting persisted
 
         if (pojo.isProtected) {
