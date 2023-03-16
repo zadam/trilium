@@ -208,37 +208,8 @@ class BNote extends AbstractBeccaEntity {
      */
 
     /** @returns {*} */
-    getContent(silentNotFoundError = false) {
-        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
-
-        if (!row) {
-            if (silentNotFoundError) {
-                return undefined;
-            }
-            else {
-                throw new Error(`Cannot find note content for noteId '${this.noteId}', blobId '${this.blobId}'.`);
-            }
-        }
-
-        let content = row.content;
-
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = content === null ? null : protectedSessionService.decrypt(content);
-            }
-            else {
-                content = "";
-            }
-        }
-
-        if (this.isStringNote()) {
-            return content === null
-                ? ""
-                : content.toString("UTF-8");
-        }
-        else {
-            return content;
-        }
+    getContent() {
+        return this._getContent();
     }
 
     /** @returns {{contentLength, dateModified, utcDateModified}} */
@@ -250,6 +221,29 @@ class BNote extends AbstractBeccaEntity {
                 utcDateModified 
             FROM blobs 
             WHERE blobId = ?`, [this.blobId]);
+    }
+
+    /** @returns {*} */
+    getJsonContent() {
+        const content = this.getContent();
+
+        if (!content || !content.trim()) {
+            return null;
+        }
+
+        return JSON.parse(content);
+    }
+
+    _isHot() {
+        return ['text', 'code', 'relationMap', 'canvas', 'mermaid'].includes(this.type);
+    }
+
+    setContent(content) {
+        this._setContent(content)
+    }
+
+    setJsonContent(content) {
+        this.setContent(JSON.stringify(content, null, '\t'));
     }
 
     get dateCreatedObj() {
@@ -266,90 +260,6 @@ class BNote extends AbstractBeccaEntity {
 
     get utcDateModifiedObj() {
         return this.utcDateModified === null ? null : dayjs.utc(this.utcDateModified);
-    }
-
-    /** @returns {*} */
-    getJsonContent() {
-        const content = this.getContent();
-
-        if (!content || !content.trim()) {
-            return null;
-        }
-
-        return JSON.parse(content);
-    }
-
-    isHot() {
-        return ['text', 'code', 'relationMap', 'canvas', 'mermaid'].includes(this.type);
-    }
-
-    setContent(content, ignoreMissingProtectedSession = false) {
-        if (content === null || content === undefined) {
-            throw new Error(`Cannot set null content to note '${this.noteId}'`);
-        }
-
-        if (this.isStringNote()) {
-            content = content.toString();
-        }
-        else {
-            content = Buffer.isBuffer(content) ? content : Buffer.from(content);
-        }
-
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = protectedSessionService.encrypt(content);
-            }
-            else if (!ignoreMissingProtectedSession) {
-                throw new Error(`Cannot update content of noteId '${this.noteId}' since we're out of protected session.`);
-            }
-        }
-
-        let newBlobId;
-        let blobNeedsInsert;
-
-        if (this.isHot()) {
-            newBlobId = this.blobId || utils.randomBlobId();
-            blobNeedsInsert = true;
-        } else {
-            newBlobId = utils.hashedBlobId(content);
-            blobNeedsInsert = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [newBlobId]);
-        }
-
-        if (blobNeedsInsert) {
-            const pojo = {
-                blobId: this.blobId,
-                content: content,
-                dateModified: dateUtils.localNowDateTime(),
-                utcDateModified: dateUtils.utcNowDateTime()
-            };
-
-            sql.upsert("blobs", "blobId", pojo);
-
-            const hash = utils.hash(`${this.blobId}|${pojo.content.toString()}`);
-
-            entityChangesService.addEntityChange({
-                entityName: 'blobs',
-                entityId: this.blobId,
-                hash: hash,
-                isErased: false,
-                utcDateChanged: pojo.utcDateModified,
-                isSynced: true
-            });
-
-            eventService.emit(eventService.ENTITY_CHANGED, {
-                entityName: 'blobs',
-                entity: this
-            });
-        }
-
-        if (newBlobId !== this.blobId) {
-            this.blobId = newBlobId;
-            this.save();
-        }
-    }
-
-    setJsonContent(content) {
-        this.setContent(JSON.stringify(content, null, '\t'));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */

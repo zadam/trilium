@@ -17,7 +17,8 @@ const AbstractBeccaEntity = require("./abstract_becca_entity");
 class BAttachment extends AbstractBeccaEntity {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
-    static get hashedProperties() { return ["attachmentId", "parentId", "role", "mime", "title", "utcDateModified"]; }
+    static get hashedProperties() { return ["attachmentId", "parentId", "role", "mime", "title", "blobId",
+                                            "utcDateScheduledForDeletionSince", "utcDateModified"]; }
 
     constructor(row) {
         super();
@@ -32,7 +33,7 @@ class BAttachment extends AbstractBeccaEntity {
             throw new Error("'title' must be given to initialize a Attachment entity");
         }
 
-        /** @type {string} needs to be set at the initialization time since it's used in the .setContent() */
+        /** @type {string} */
         this.attachmentId = row.attachmentId || `${this.noteId}_${this.name}`; // FIXME
         /** @type {string} either noteId or noteRevisionId to which this attachment belongs */
         this.parentId = row.parentId;
@@ -44,6 +45,8 @@ class BAttachment extends AbstractBeccaEntity {
         this.title = row.title;
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
+        /** @type {string} */
+        this.utcDateScheduledForDeletionSince = row.utcDateScheduledForDeletionSince;
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
@@ -58,68 +61,12 @@ class BAttachment extends AbstractBeccaEntity {
     }
 
     /** @returns {*} */
-    getContent(silentNotFoundError = false) {
-        const res = sql.getRow(`SELECT content FROM attachment_contents WHERE attachmentId = ?`, [this.attachmentId]);
-
-        if (!res) {
-            if (silentNotFoundError) {
-                return undefined;
-            }
-            else {
-                throw new Error(`Cannot find note attachment content for attachmentId=${this.attachmentId}`);
-            }
-        }
-
-        let content = res.content;
-
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = protectedSessionService.decrypt(content);
-            }
-            else {
-                content = "";
-            }
-        }
-
-        if (this.isStringNote()) {
-            return content === null
-                ? ""
-                : content.toString("UTF-8");
-        }
-        else {
-            return content;
-        }
+    getContent() {
+        return this._getContent();
     }
 
     setContent(content) {
-        sql.transactional(() => {
-            this.save(); // also explicitly save attachment to update contentCheckSum
-
-            const pojo = {
-                attachmentId: this.attachmentId,
-                content: content,
-                utcDateModified: dateUtils.utcNowDateTime()
-            };
-
-            if (this.isProtected) {
-                if (protectedSessionService.isProtectedSessionAvailable()) {
-                    pojo.content = protectedSessionService.encrypt(pojo.content);
-                } else {
-                    throw new Error(`Cannot update content of attachmentId=${this.attachmentId} since we're out of protected session.`);
-                }
-            }
-
-            sql.upsert("attachment_contents", "attachmentId", pojo);
-
-            entityChangesService.addEntityChange({
-                entityName: 'attachment_contents',
-                entityId: this.attachmentId,
-                hash: this.contentCheckSum, // FIXME
-                isErased: false,
-                utcDateChanged: pojo.utcDateModified,
-                isSynced: true
-            });
-        });
+        this._setContent(content);
     }
 
     calculateCheckSum(content) {

@@ -231,9 +231,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = false;
 
-                    logFix(`Note attachment '${attachmentId}' has been deleted since it references missing note/revision '${parentId}'`);
+                    logFix(`Attachment '${attachmentId}' has been deleted since it references missing note/revision '${parentId}'`);
                 } else {
-                    logError(`Note attachment '${attachmentId}' references missing note/revision '${parentId}'`);
+                    logError(`Attachment '${attachmentId}' references missing note/revision '${parentId}'`);
                 }
             });
     }
@@ -358,9 +358,9 @@ class ConsistencyChecks {
 
                     this.reloadNeeded = false;
 
-                    logFix(`Note attachment '${attachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
+                    logFix(`Attachment '${attachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Note attachment '${attachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
+                    logError(`Attachment '${attachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
                 }
             });
     }

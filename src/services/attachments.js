@@ -8,7 +8,7 @@ function protectAttachments(note) {
     for (const attachment of note.getAttachments()) {
         if (note.isProtected !== attachment.isProtected) {
             if (!protectedSession.isProtectedSessionAvailable()) {
-                log.error("Protected session is not available to fix note attachments.");
+                log.error("Protected session is not available to fix attachments.");
 
                 return;
             }
@@ -24,7 +24,7 @@ function protectAttachments(note) {
                 attachment.save();
             }
             catch (e) {
-                log.error(`Could not un/protect note attachment ID = ${attachment.attachmentId}`);
+                log.error(`Could not un/protect attachment ID = ${attachment.attachmentId}`);
 
                 throw e;
             }

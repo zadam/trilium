@@ -7,6 +7,7 @@ const eventService = require("../../services/events");
 const dateUtils = require("../../services/date_utils");
 const cls = require("../../services/cls");
 const log = require("../../services/log");
+const protectedSessionService = require("../../services/protected_session.js");
 
 let becca = null;
 
@@ -116,6 +117,113 @@ class AbstractBeccaEntity {
         });
 
         return this;
+    }
+
+    /** @protected */
+    _isHot() {
+        return false;
+    }
+
+    /** @protected */
+    _setContent(content) {
+        if (content === null || content === undefined) {
+            throw new Error(`Cannot set null content to ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}'`);
+        }
+
+        if (this.isStringNote()) {
+            content = content.toString();
+        }
+        else {
+            content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        }
+
+        if (this.isProtected) {
+            if (protectedSessionService.isProtectedSessionAvailable()) {
+                content = protectedSessionService.encrypt(content);
+            }
+            else {
+                throw new Error(`Cannot update content of blob since we're out of protected session.`);
+            }
+        }
+
+        sql.transactional(() => {
+            let newBlobId = this._saveBlob(content);
+
+            if (newBlobId !== this.blobId) {
+                this.blobId = newBlobId;
+                this.save();
+            }
+        });
+    }
+
+    /** @protected */
+    _saveBlob(content) {
+        let newBlobId;
+        let blobNeedsInsert;
+
+        if (this._isHot()) {
+            newBlobId = this.blobId || utils.randomBlobId();
+            blobNeedsInsert = true;
+        } else {
+            newBlobId = utils.hashedBlobId(content);
+            blobNeedsInsert = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [newBlobId]);
+        }
+
+        if (blobNeedsInsert) {
+            const pojo = {
+                blobId: newBlobId,
+                content: content,
+                dateModified: dateUtils.localNowDateTime(),
+                utcDateModified: dateUtils.utcNowDateTime()
+            };
+
+            sql.upsert("blobs", "blobId", pojo);
+
+            const hash = utils.hash(`${newBlobId}|${pojo.content.toString()}`);
+
+            entityChangesService.addEntityChange({
+                entityName: 'blobs',
+                entityId: newBlobId,
+                hash: hash,
+                isErased: false,
+                utcDateChanged: pojo.utcDateModified,
+                isSynced: true
+            });
+
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: 'blobs',
+                entity: this
+            });
+        }
+
+        return newBlobId;
+    }
+
+    /** @protected */
+    _getContent() {
+        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
+
+        if (!row) {
+            throw new Error(`Cannot find content for ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}', blobId '${this.blobId}'`);
+        }
+
+        let content = row.content;
+
+        if (this.isProtected) {
+            if (protectedSessionService.isProtectedSessionAvailable()) {
+                content = content === null ? null : protectedSessionService.decrypt(content);
+            } else {
+                content = "";
+            }
+        }
+
+        if (this.isStringNote()) {
+            return content === null
+                ? ""
+                : content.toString("UTF-8");
+        } else {
+            return content;
+        }
     }
 
     /**

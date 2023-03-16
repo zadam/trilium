@@ -75,76 +75,12 @@ class BNoteRevision extends AbstractBeccaEntity {
      */
 
     /** @returns {*} */
-    getContent(silentNotFoundError = false) {
-        const res = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
-
-        if (!res) {
-            if (silentNotFoundError) {
-                return undefined;
-            }
-            else {
-                throw new Error(`Cannot find note revision content for noteRevisionId '${this.noteRevisionId}', blobId '${this.blobId}'`);
-            }
-        }
-
-        let content = res.content;
-
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = protectedSessionService.decrypt(content);
-            }
-            else {
-                content = "";
-            }
-        }
-
-        if (this.isStringNote()) {
-            return content === null
-                ? ""
-                : content.toString("UTF-8");
-        }
-        else {
-            return content;
-        }
+    getContent() {
+        return this._getContent();
     }
 
     setContent(content) {
-        if (this.isProtected) {
-            if (protectedSessionService.isProtectedSessionAvailable()) {
-                content = protectedSessionService.encrypt(content);
-            }
-            else {
-                throw new Error(`Cannot update content of noteRevisionId '${this.noteRevisionId}' since we're out of protected session.`);
-            }
-        }
-
-        this.blobId = utils.hashedBlobId(content);
-
-        const blobAlreadyExists = !!sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [this.blobId]);
-
-        if (!blobAlreadyExists) {
-            const pojo = {
-                blobId: this.blobId,
-                content: content,
-                dateModified: dateUtils.localNowDate(),
-                utcDateModified: dateUtils.utcNowDateTime()
-            };
-
-            sql.insert("blobs", pojo);
-
-            const hash = utils.hash(`${this.noteRevisionId}|${pojo.content.toString()}`);
-
-            entityChangesService.addEntityChange({
-                entityName: 'blobs',
-                entityId: this.blobId,
-                hash: hash,
-                isErased: false,
-                utcDateChanged: this.getUtcDateChanged(),
-                isSynced: true
-            });
-        }
-
-        this.save(); // saving this.blobId
+        this._setContent(content);
     }
 
     beforeSaving() {
