@@ -157,7 +157,7 @@ class ConsistencyChecks {
                     let message = `Branch '${branchId}' was was missing parent note '${parentNoteId}', so it was deleted. `;
 
                     if (becca.getNote(noteId).getParentBranches().length === 0) {
-                        const newBranch = new Branch({
+                        const newBranch = new BBranch({
                             parentNoteId: 'root',
                             noteId: noteId,
                             prefix: 'recovered'
