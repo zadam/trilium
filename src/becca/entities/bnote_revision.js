@@ -2,10 +2,8 @@
 
 const protectedSessionService = require('../../services/protected_session');
 const utils = require('../../services/utils');
-const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const becca = require('../becca');
-const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
@@ -79,8 +77,13 @@ class BNoteRevision extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    setContent(content) {
-        this._setContent(content);
+    /**
+     * @param content
+     * @param {object} [opts]
+     * @param {object} [opts.forceSave=false] - will also save this BNoteRevision entity
+     */
+    setContent(content, opts) {
+        this._setContent(content, opts);
     }
 
     beforeSaving() {

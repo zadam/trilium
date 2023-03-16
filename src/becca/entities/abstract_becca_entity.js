@@ -125,7 +125,10 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    _setContent(content) {
+    _setContent(content, opts = {}) {
+        // client code asks to save entity even if blobId didn't change (something else was changed)
+        opts.forceSave = !!opts.forceSave;
+
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}'`);
         }
@@ -149,7 +152,7 @@ class AbstractBeccaEntity {
         sql.transactional(() => {
             let newBlobId = this._saveBlob(content);
 
-            if (newBlobId !== this.blobId) {
+            if (newBlobId !== this.blobId || opts.forceSave) {
                 this.blobId = newBlobId;
                 this.save();
             }

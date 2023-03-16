@@ -127,7 +127,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectNote);
     apiRoute(PUT, '/api/notes/:noteId/type', notesApiRoute.setNoteTypeMime);
     apiRoute(GET, '/api/notes/:noteId/attachments', notesApiRoute.getAttachments);
-    apiRoute(PUT, '/api/notes/:noteId/attachments/:name', notesApiRoute.saveAttachment);
+    apiRoute(POST, '/api/notes/:noteId/attachments', notesApiRoute.saveAttachment);
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
     apiRoute(DELETE, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.eraseAllNoteRevisions);
     apiRoute(GET, '/api/notes/:noteId/revisions/:noteRevisionId', noteRevisionsApiRoute.getNoteRevision);

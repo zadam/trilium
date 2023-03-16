@@ -158,8 +158,8 @@ function getAttachments(req) {
 }
 
 function saveAttachment(req) {
-    const {noteId, name} = req.params;
-    const {mime, content} = req.body;
+    const {noteId} = req.params;
+    const {attachmentId, role, mime, title, content} = req.body;
 
     const note = becca.getNote(noteId);
 
@@ -167,7 +167,7 @@ function saveAttachment(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    note.saveAttachment(name, mime, content);
+    note.saveAttachment({attachmentId, role, mime, title, content});
 }
 
 function getRelationMap(req) {

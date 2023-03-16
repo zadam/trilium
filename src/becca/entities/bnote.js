@@ -5,14 +5,13 @@ const log = require('../../services/log');
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
-const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
 const BAttachment = require("./battachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
-const eventService = require("../../services/events");
+const NotFoundError = require("../../errors/not_found_error.js");
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -238,8 +237,13 @@ class BNote extends AbstractBeccaEntity {
         return ['text', 'code', 'relationMap', 'canvas', 'mermaid'].includes(this.type);
     }
 
-    setContent(content) {
-        this._setContent(content)
+    /**
+     * @param content
+     * @param {object} [opts]
+     * @param {object} [opts.forceSave=false] - will also save this BNote entity
+     */
+    setContent(content, opts) {
+        this._setContent(content, opts);
     }
 
     setJsonContent(content) {
@@ -1414,17 +1418,26 @@ class BNote extends AbstractBeccaEntity {
     /**
      * @returns {BAttachment}
      */
-    saveAttachment(name, mime, content) {
-        let attachment = this.getAttachmentByName(name);
+    saveAttachment({attachmentId, role, mime, title, content}) {
+        let attachment;
 
-        attachment = new BAttachment({
-            noteId: this.noteId,
-            name,
-            mime,
-            isProtected: this.isProtected
-        });
+        if (attachmentId) {
+            attachment = this.becca.getAttachment(attachmentId);
 
-        attachment.setContent(content);
+            if (!attachment) {
+                throw new NotFoundError(`Attachment '${attachmentId}' has not been found.`);
+            }
+        } else {
+            attachment = new BAttachment({
+                noteId: this.noteId,
+                title,
+                role,
+                mime,
+                isProtected: this.isProtected
+            });
+        }
+
+        attachment.setContent(content, { forceSave: true });
 
         return attachment;
     }

@@ -1,11 +1,8 @@
 "use strict";
 
-const protectedSessionService = require('../../services/protected_session');
 const utils = require('../../services/utils');
-const sql = require('../../services/sql');
 const dateUtils = require('../../services/date_utils');
 const becca = require('../becca');
-const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
@@ -34,7 +31,7 @@ class BAttachment extends AbstractBeccaEntity {
         }
 
         /** @type {string} */
-        this.attachmentId = row.attachmentId || `${this.noteId}_${this.name}`; // FIXME
+        this.attachmentId = row.attachmentId;
         /** @type {string} either noteId or noteRevisionId to which this attachment belongs */
         this.parentId = row.parentId;
         /** @type {string} */
@@ -65,8 +62,13 @@ class BAttachment extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    setContent(content) {
-        this._setContent(content);
+    /**
+     * @param content
+     * @param {object} [opts]
+     * @param {object} [opts.forceSave=false] - will also save this BAttachment entity
+     */
+    setContent(content, opts) {
+        this._setContent(content, opts);
     }
 
     calculateCheckSum(content) {
@@ -77,8 +79,6 @@ class BAttachment extends AbstractBeccaEntity {
         if (!this.name.match(/^[a-z0-9]+$/i)) {
             throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
         }
-
-        this.attachmentId = `${this.noteId}_${this.name}`; // FIXME
 
         super.beforeSaving();
 
