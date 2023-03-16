@@ -147,13 +147,13 @@ function fillInAdditionalProperties(entityChange) {
 // entities with higher number can reference the entities with lower number
 const ORDERING = {
     "etapi_tokens": 0,
-    "attributes": 1,
-    "branches": 1,
-    "note_contents": 1,
-    "note_reordering": 1,
-    "note_revision_contents": 2,
-    "note_revisions": 1,
-    "notes": 0,
+    "attributes": 2,
+    "branches": 2,
+    "blobs": 0,
+    "note_reordering": 2,
+    "note_revisions": 2,
+    "note_attachments": 3,
+    "notes": 1,
     "options": 0
 };
 

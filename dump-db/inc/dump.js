@@ -74,7 +74,7 @@ function dumpDocument(documentPath, targetPath, options) {
                 return;
             }
 
-            let {content} = sql.getRow("SELECT content FROM note_contents WHERE noteId = ?", [noteId]);
+            let {content} = sql.getRow("SELECT content FROM blobs WHERE blobId = ?", [note.blobId]);
 
             if (content !== null && note.isProtected && dataKey) {
                 content = decryptService.decrypt(dataKey, content);

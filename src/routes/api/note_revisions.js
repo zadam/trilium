@@ -12,9 +12,9 @@ const becca = require("../../becca/becca");
 function getNoteRevisions(req) {
     return becca.getNoteRevisionsFromQuery(`
         SELECT note_revisions.*,
-               LENGTH(note_revision_contents.content) AS contentLength
+               LENGTH(blobs.content) AS contentLength
         FROM note_revisions
-        JOIN note_revision_contents ON note_revisions.noteRevisionId = note_revision_contents.noteRevisionId 
+        JOIN blobs ON note_revisions.blobId = blobs.blobId 
         WHERE noteId = ?
         ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }

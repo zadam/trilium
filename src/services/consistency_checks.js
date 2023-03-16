@@ -656,11 +656,9 @@ class ConsistencyChecks {
 
     findEntityChangeIssues() {
         this.runEntityChangeChecks("notes", "noteId");
-        //this.runEntityChangeChecks("note_contents", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
-        //this.runEntityChangeChecks("note_revision_contents", "noteRevisionId");
         this.runEntityChangeChecks("note_ancillaries", "noteAncillaryId");
-        //this.runEntityChangeChecks("note_ancillary_contents", "noteAncillaryId");
+        this.runEntityChangeChecks("blobs", "blobId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
         this.runEntityChangeChecks("etapi_tokens", "etapiTokenId");

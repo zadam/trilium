@@ -220,7 +220,7 @@ function createNewNote(params) {
             entity: note
         });
 
-        eventService.emit(eventService.ENTITY_CREATED, {
+        eventService.emit(eventService.ENTITY_CREATED, { // FIXME
             entityName: 'note_contents',
             entity: note
         });
@@ -499,7 +499,7 @@ function downloadImages(noteId, content) {
                     asyncPostProcessContent(origNote, updatedContent);
 
                     eventService.emit(eventService.ENTITY_CHANGED, {
-                        entityName: 'note_contents',
+                        entityName: 'note_contents', // FIXME
                         entity: origNote
                     });
 
@@ -732,9 +732,6 @@ function eraseNotes(noteIdsToErase) {
 
     sql.executeMany(`DELETE FROM notes WHERE noteId IN (???)`, noteIdsToErase);
     setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'notes' AND entityId IN (???)`, noteIdsToErase));
-
-    sql.executeMany(`DELETE FROM note_contents WHERE noteId IN (???)`, noteIdsToErase);
-    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'note_contents' AND entityId IN (???)`, noteIdsToErase));
 
     // we also need to erase all "dependent" entities of the erased notes
     const branchIdsToErase = sql.getManyRows(`SELECT branchId FROM branches WHERE noteId IN (???)`, noteIdsToErase)

@@ -41,8 +41,6 @@ class BNoteAncillary extends AbstractBeccaEntity {
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
         /** @type {string} */
-        this.contentCheckSum = row.contentCheckSum;
-        /** @type {string} */
         this.utcDateModified = row.utcDateModified;
     }
 
@@ -91,7 +89,6 @@ class BNoteAncillary extends AbstractBeccaEntity {
 
     setContent(content) {
         sql.transactional(() => {
-            this.contentCheckSum = this.calculateCheckSum(content);
             this.save(); // also explicitly save note_ancillary to update contentCheckSum
 
             const pojo = {
@@ -113,7 +110,7 @@ class BNoteAncillary extends AbstractBeccaEntity {
             entityChangesService.addEntityChange({
                 entityName: 'note_ancillary_contents',
                 entityId: this.noteAncillaryId,
-                hash: this.contentCheckSum,
+                hash: this.contentCheckSum, // FIXME
                 isErased: false,
                 utcDateChanged: pojo.utcDateModified,
                 isSynced: true
@@ -144,7 +141,7 @@ class BNoteAncillary extends AbstractBeccaEntity {
             name: this.name,
             mime: this.mime,
             isProtected: !!this.isProtected,
-            contentCheckSum: this.contentCheckSum,
+            contentCheckSum: this.contentCheckSum, // FIXME
             isDeleted: false,
             utcDateModified: this.utcDateModified
         };

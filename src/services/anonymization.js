@@ -14,9 +14,8 @@ function getFullAnonymizationScript() {
     const anonymizeScript = `
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
 UPDATE notes SET title = 'title' WHERE title NOT IN ('root', '_hidden', '_share');
-UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL;
+UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
 UPDATE note_revisions SET title = 'title';
-UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL;
 
 UPDATE attributes SET name = 'name', value = 'value' WHERE type = 'label' AND name NOT IN(${builtinAttrNames});
 UPDATE attributes SET name = 'name' WHERE type = 'relation' AND name NOT IN (${builtinAttrNames});
@@ -34,14 +33,11 @@ VACUUM;
 }
 
 function getLightAnonymizationScript() {
-    return `
-         UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL AND noteId NOT IN (
-                SELECT noteId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
-         );
-         UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL AND noteRevisionId NOT IN (
-                SELECT noteRevisionId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
-         );
-     `;
+    return `UPDATE blobs SET content = 'text' WHERE content IS NOT NULL AND blobId NOT IN (
+                SELECT blobId FROM notes WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+              UNION ALL
+                SELECT blobId FROM note_revisions WHERE mime IN ('application/javascript;env=backend', 'application/javascript;env=frontend')
+            );`;
 }
 
 async function createAnonymizedCopy(type) {

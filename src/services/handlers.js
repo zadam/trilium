@@ -59,7 +59,7 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
 });
 
 eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
-    if (entityName === 'note_contents') {
+    if (entityName === 'note_contents') { // FIXME
         runAttachedRelations(entity, 'runOnNoteContentChange', entity);
     }
 });

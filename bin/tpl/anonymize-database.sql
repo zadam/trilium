@@ -1,10 +1,8 @@
 
 UPDATE etapi_tokens SET tokenHash = 'API token hash value';
 UPDATE notes SET title = 'title' WHERE noteId != 'root' AND noteId NOT LIKE '\_%' ESCAPE '\';
-UPDATE note_contents SET content = 'text' WHERE content IS NOT NULL;
+UPDATE blobs SET content = 'text' WHERE content IS NOT NULL;
 UPDATE note_revisions SET title = 'title';
-UPDATE note_revision_contents SET content = 'text' WHERE content IS NOT NULL;
-UPDATE note_ancillary_contents SET content = 'text' WHERE content IS NOT NULL;
 
 UPDATE attributes SET name = 'name', value = 'value'
                   WHERE type = 'label'

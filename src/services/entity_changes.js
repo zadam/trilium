@@ -104,7 +104,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
                 let utcDateChanged;
                 let isSynced;
 
-                if (entityName.endsWith("_contents")) {
+                if (entityName === 'blobs') {
                     // FIXME: hacky, not sure if it might cause some problems
                     hash = "fake value";
                     utcDateChanged = dateUtils.utcNowDateTime();
@@ -147,12 +147,10 @@ function fillAllEntityChanges() {
         sql.execute("DELETE FROM entity_changes WHERE isErased = 0");
 
         fillEntityChanges("notes", "noteId");
-        fillEntityChanges("note_contents", "noteId");
         fillEntityChanges("branches", "branchId");
         fillEntityChanges("note_revisions", "noteRevisionId");
-        fillEntityChanges("note_revision_contents", "noteRevisionId");
         fillEntityChanges("note_ancillaries", "noteAncillaryId");
-        fillEntityChanges("note_ancillary_contents", "noteAncillaryId");
+        fillEntityChanges("blobs", "blobId");
         fillEntityChanges("attributes", "attributeId");
         fillEntityChanges("etapi_tokens", "etapiTokenId");
         fillEntityChanges("options", "name", 'isSynced = 1');

@@ -64,7 +64,7 @@ function updateNormalEntity(remoteEntityChange, remoteEntityRow, instanceId) {
         || localEntityChange.utcDateChanged < remoteEntityChange.utcDateChanged
         || localEntityChange.hash !== remoteEntityChange.hash // sync error, we should still update
     ) {
-        if (['note_contents', 'note_revision_contents', 'note_ancillary_contents'].includes(remoteEntityChange.entityName)) {
+        if (remoteEntityChange.entityName === 'blobs') {
             remoteEntityRow.content = handleContent(remoteEntityRow.content);
         }
 
@@ -94,7 +94,7 @@ function updateNoteReordering(entityChange, entity, instanceId) {
 
 function handleContent(content) {
     // we always use Buffer object which is different from normal saving - there we use simple string type for
-    // "string notes". The problem is that in general it's not possible to detect whether a note_content
+    // "string notes". The problem is that in general it's not possible to detect whether a blob content
     // is string note or note (syncs can arrive out of order)
     content = content === null ? null : Buffer.from(content, 'base64');
 
@@ -111,13 +111,11 @@ function eraseEntity(entityChange, instanceId) {
 
     const entityNames = [
         "notes",
-        "note_contents",
         "branches",
         "attributes",
         "note_revisions",
-        "note_revision_contents",
         "note_ancillaries",
-        "note_ancillary_contents"
+        "blobs",
     ];
 
     if (!entityNames.includes(entityName)) {

@@ -125,7 +125,7 @@ class Becca {
     getNoteAncillary(noteAncillaryId) {
         const row = sql.getRow("SELECT * FROM note_ancillaries WHERE noteAncillaryId = ?", [noteAncillaryId]);
 
-        const BNoteAncillary = require("./entities/bnote_ancillary"); // avoiding circular dependency problems
+        const BNoteAncillary = require("./entities/bnote_attachment.js"); // avoiding circular dependency problems
         return row ? new BNoteAncillary(row) : null;
     }
 

@@ -4,18 +4,19 @@ const NotFoundError = require("../../errors/not_found_error");
 
 function getNoteSize(req) {
     const {noteId} = req.params;
+    const note = becca.getNote(noteId);
 
     const noteSize = sql.getValue(`
         SELECT
-            COALESCE((SELECT LENGTH(content) FROM note_contents WHERE noteId = ?), 0)
+            COALESCE((SELECT LENGTH(content) FROM blobs WHERE blobId = ?), 0)
             +
             COALESCE(
                     (SELECT SUM(LENGTH(content))
                      FROM note_revisions
-                              JOIN note_revision_contents USING (noteRevisionId)
+                              JOIN blobs USING (blobId)
                      WHERE note_revisions.noteId = ?),
                     0
-            )`, [noteId, noteId]);
+            )`, [note.blobId, noteId]);
 
     return {
         noteSize
@@ -38,14 +39,15 @@ function getSubtreeSize(req) {
         SELECT
             COALESCE((
                 SELECT SUM(LENGTH(content)) 
-                FROM note_contents 
-                JOIN param_list ON param_list.paramId = note_contents.noteId
+                FROM notes
+                JOIN blobs USING (blobId)    
+                JOIN param_list ON param_list.paramId = notes.noteId
             ), 0)
             +
             COALESCE(
                     (SELECT SUM(LENGTH(content))
                      FROM note_revisions
-                     JOIN note_revision_contents USING (noteRevisionId)
+                     JOIN blobs USING (blobId)
                      JOIN param_list ON param_list.paramId = note_revisions.noteId),
                     0
             )`);

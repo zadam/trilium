@@ -12,7 +12,7 @@ const CREDENTIALS = 'shareCredentials';
 const isCredentials = attr => attr.type === 'label' && attr.name === CREDENTIALS;
 
 class SNote extends AbstractShacaEntity {
-    constructor([noteId, title, type, mime, utcDateModified, isProtected]) {
+    constructor([noteId, title, type, mime, blobId, utcDateModified, isProtected]) {
         super();
 
         /** @param {string} */
@@ -23,6 +23,8 @@ class SNote extends AbstractShacaEntity {
         this.type = type;
         /** @param {string} */
         this.mime = mime;
+        /** @param {string} */
+        this.blobId = blobId;
         /** @param {string} */
         this.utcDateModified = utcDateModified; // used for caching of images
         /** @param {boolean} */
@@ -92,14 +94,14 @@ class SNote extends AbstractShacaEntity {
     }
 
     getContent(silentNotFoundError = false) {
-        const row = sql.getRow(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+        const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 
         if (!row) {
             if (silentNotFoundError) {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note content for noteId=${this.noteId}`);
+                throw new Error(`Cannot find note content for noteId '${this.noteId}', blobId '${this.blobId}'`);
             }
         }
 

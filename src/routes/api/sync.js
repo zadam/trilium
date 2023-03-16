@@ -12,6 +12,7 @@ const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
 const utils = require('../../services/utils');
 const ws = require('../../services/ws');
+const becca = require("../../becca/becca.js");
 
 async function testSync() {
     try {
@@ -85,14 +86,15 @@ function forceFullSync() {
 
 function forceNoteSync(req) {
     const noteId = req.params.noteId;
+    const note = becca.getNote(noteId);
 
     const now = dateUtils.utcNowDateTime();
 
     sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
     entityChangesService.moveEntityChangeToTop('notes', noteId);
 
-    sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
-    entityChangesService.moveEntityChangeToTop('note_contents', noteId);
+    sql.execute(`UPDATE blobs SET utcDateModified = ? WHERE blobId = ?`, [now, note.blobId]);
+    entityChangesService.moveEntityChangeToTop('blobs', note.blobId);
 
     for (const branchId of sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
@@ -109,17 +111,11 @@ function forceNoteSync(req) {
     for (const noteRevisionId of sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
         entityChangesService.moveEntityChangeToTop('note_revisions', noteRevisionId);
-
-        sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
-        entityChangesService.moveEntityChangeToTop('note_revision_contents', noteRevisionId);
     }
 
     for (const noteAncillaryId of sql.getColumn("SELECT noteAncillaryId FROM note_ancillaries WHERE noteId = ?", [noteId])) {
         sql.execute(`UPDATE note_ancillaries SET utcDateModified = ? WHERE noteAncillaryId = ?`, [now, noteAncillaryId]);
         entityChangesService.moveEntityChangeToTop('note_ancillaries', noteAncillaryId);
-
-        sql.execute(`UPDATE note_ancillary_contents SET utcDateModified = ? WHERE noteAncillaryId = ?`, [now, noteAncillaryId]);
-        entityChangesService.moveEntityChangeToTop('note_ancillary_contents', noteAncillaryId);
     }
 
     log.info(`Forcing note sync for ${noteId}`);

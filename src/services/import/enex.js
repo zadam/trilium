@@ -206,7 +206,7 @@ function importEnex(taskContext, file, parentNote) {
         }
     });
 
-    function updateDates(noteId, utcDateCreated, utcDateModified) {
+    function updateDates(note, utcDateCreated, utcDateModified) {
         // it's difficult to force custom dateCreated and dateModified to Note entity, so we do it post-creation with SQL
         sql.execute(`
                 UPDATE notes 
@@ -215,13 +215,13 @@ function importEnex(taskContext, file, parentNote) {
                     dateModified = ?,
                     utcDateModified = ?
                 WHERE noteId = ?`,
-            [utcDateCreated, utcDateCreated, utcDateModified, utcDateModified, noteId]);
+            [utcDateCreated, utcDateCreated, utcDateModified, utcDateModified, note.noteId]);
 
         sql.execute(`
-                UPDATE note_contents
+                UPDATE blobs
                 SET utcDateModified = ?
-                WHERE noteId = ?`,
-            [utcDateModified, noteId]);
+                WHERE blobId = ?`,
+            [utcDateModified, note.blobId]);
     }
 
     function saveNote() {
@@ -287,7 +287,7 @@ function importEnex(taskContext, file, parentNote) {
                     resourceNote.addAttribute(attr.type, attr.name, attr.value);
                 }
 
-                updateDates(resourceNote.noteId, utcDateCreated, utcDateModified);
+                updateDates(resourceNote, utcDateCreated, utcDateModified);
 
                 taskContext.increaseProgressCount();
 
@@ -310,7 +310,7 @@ function importEnex(taskContext, file, parentNote) {
                         }
                     }
 
-                    updateDates(imageNote.noteId, utcDateCreated, utcDateModified);
+                    updateDates(imageNote, utcDateCreated, utcDateModified);
 
                     const imageLink = `<img src="${url}">`;
 
@@ -337,7 +337,7 @@ function importEnex(taskContext, file, parentNote) {
 
         noteService.asyncPostProcessContent(noteEntity, content);
 
-        updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
+        updateDates(noteEntity, utcDateCreated, utcDateModified);
     }
 
     saxStream.on("closetag", tag => {

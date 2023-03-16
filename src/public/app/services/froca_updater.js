@@ -25,8 +25,6 @@ async function processEntityChanges(entityChanges) {
                 loadResults.addNoteContent(ec.noteIds, ec.componentId);
             } else if (ec.entityName === 'note_revisions') {
                 loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.componentId);
-            } else if (ec.entityName === 'note_revision_contents') {
-                // this should change only when toggling isProtected, ignore
             } else if (ec.entityName === 'options') {
                 if (ec.entity.name === 'openTabs') {
                     continue; // only noise
@@ -36,7 +34,7 @@ async function processEntityChanges(entityChanges) {
 
                 loadResults.addOption(ec.entity.name);
             }
-            else if (['etapi_tokens', 'note_ancillaries', 'note_ancillary_contents'].includes(ec.entityName)) {
+            else if (['etapi_tokens', 'note_ancillaries'].includes(ec.entityName)) {
                 // NOOP
             }
             else {

@@ -103,7 +103,7 @@ function loadNeededInfoFromDatabase() {
             noteId, 
             LENGTH(content) AS length 
         FROM notes
-             JOIN note_contents USING(noteId) 
+             JOIN blobs USING(blobId) 
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteContentLengths) {
@@ -122,7 +122,7 @@ function loadNeededInfoFromDatabase() {
             LENGTH(content) AS length 
         FROM notes
              JOIN note_revisions USING(noteId) 
-             JOIN note_revision_contents USING(noteRevisionId) 
+             JOIN blobs USING(blobId) 
         WHERE notes.isDeleted = 0`);
 
     for (const {noteId, length} of noteRevisionContentLengths) {

@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS "note_ancillaries"
     name         TEXT not null,
     mime         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
-    contentCheckSum    TEXT not null,
     blobId    TEXT not null,
     utcDateModified TEXT not null,
     isDeleted    INT  not null,

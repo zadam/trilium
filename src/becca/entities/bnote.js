@@ -8,7 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
-const BNoteAncillary = require("./bnote_ancillary");
+const BNoteAncillary = require("./bnote_attachment.js");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -1506,13 +1506,6 @@ class BNote extends AbstractBeccaEntity {
      */
     saveNoteAncillary(name, mime, content) {
         let noteAncillary = this.getNoteAncillaryByName(name);
-
-        if (noteAncillary
-            && noteAncillary.mime === mime
-            && noteAncillary.contentCheckSum === noteAncillary.calculateCheckSum(content)) {
-
-            return noteAncillary; // no change
-        }
 
         noteAncillary = new BNoteAncillary({
             noteId: this.noteId,

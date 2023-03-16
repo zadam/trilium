@@ -14,7 +14,7 @@ const treeService = require("../tree");
 const yauzl = require("yauzl");
 const htmlSanitizer = require('../html_sanitizer');
 const becca = require("../../becca/becca");
-const BNoteAncillary = require("../../becca/entities/bnote_ancillary");
+const BNoteAncillary = require("../../becca/entities/bnote_attachment.js");
 
 /**
  * @param {TaskContext} taskContext
