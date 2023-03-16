@@ -21,7 +21,7 @@ class BAttachment extends AbstractBeccaEntity {
         super();
 
         if (!row.parentId?.trim()) {
-            throw new Error("'noteId' must be given to initialize a Attachment entity");
+            throw new Error("'parentId' must be given to initialize a Attachment entity");
         } else if (!row.role?.trim()) {
             throw new Error("'role' must be given to initialize a Attachment entity");
         } else if (!row.mime?.trim()) {
@@ -40,6 +40,8 @@ class BAttachment extends AbstractBeccaEntity {
         this.mime = row.mime;
         /** @type {string} */
         this.title = row.title;
+        /** @type {string} */
+        this.blobId = row.blobId;
         /** @type {boolean} */
         this.isProtected = !!row.isProtected;
         /** @type {string} */
@@ -71,15 +73,7 @@ class BAttachment extends AbstractBeccaEntity {
         this._setContent(content, opts);
     }
 
-    calculateCheckSum(content) {
-        return utils.hash(`${this.attachmentId}|${content.toString()}`);
-    }
-
     beforeSaving() {
-        if (!this.name.match(/^[a-z0-9]+$/i)) {
-            throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
-        }
-
         super.beforeSaving();
 
         this.utcDateModified = dateUtils.utcNowDateTime();
@@ -92,6 +86,7 @@ class BAttachment extends AbstractBeccaEntity {
             role: this.role,
             mime: this.mime,
             title: this.title,
+            blobId: this.blobId,
             isProtected: !!this.isProtected,
             isDeleted: false,
             utcDateScheduledForDeletionSince: this.utcDateScheduledForDeletionSince,

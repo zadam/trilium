@@ -12,6 +12,8 @@ const sanitizeFilename = require('sanitize-filename');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 const htmlSanitizer = require("./html_sanitizer");
+const {attach} = require("jsdom/lib/jsdom/living/helpers/svg/basic-types.js");
+const NotFoundError = require("../errors/not_found_error.js");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -119,9 +121,7 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
                 note.title = sanitizeFilename(originalName);
             }
 
-            note.save();
-
-            note.setContent(buffer);
+            note.setContent(buffer, { forceSave: true });
         });
     });
 
@@ -130,6 +130,47 @@ function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch, 
         note,
         noteId: note.noteId,
         url: `api/images/${note.noteId}/${fileName}`
+    };
+}
+
+function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSwitch, trimFilename = false) {
+    log.info(`Saving image '${originalName}' as attachment into note '${noteId}'`);
+
+    if (trimFilename && originalName.length > 40) {
+        // https://github.com/zadam/trilium/issues/2307
+        originalName = "image";
+    }
+
+    const fileName = sanitizeFilename(originalName);
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Could not find note '${noteId}'`);
+    }
+
+    const attachment = note.saveAttachment({
+        role: 'image',
+        mime: 'unknown',
+        title: fileName
+    });
+
+    // resizing images asynchronously since JIMP does not support sync operation
+    processImage(uploadBuffer, originalName, shrinkImageSwitch).then(({buffer, imageFormat}) => {
+        sql.transactional(() => {
+            attachment.mime = getImageMimeFromExtension(imageFormat.ext);
+
+            if (!originalName.includes(".")) {
+                originalName += `.${imageFormat.ext}`;
+                attachment.title = sanitizeFilename(originalName);
+            }
+
+            attachment.setContent(buffer, { forceSave: true });
+        });
+    });
+
+    return {
+        attachment,
+        url: `api/notes/${note.noteId}/images/${attachment.attachmentId}/${encodeURIComponent(fileName)}`
     };
 }
 
@@ -187,5 +228,6 @@ async function resize(buffer, quality) {
 
 module.exports = {
     saveImage,
+    saveImageToAttachment,
     updateImage
 };

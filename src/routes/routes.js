@@ -195,6 +195,7 @@ function register(app) {
 
     // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
+    route(GET, '/api/notes/:noteId/images/:attachmentId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnAttachedImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
     route(PUT, '/api/images/:noteId', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], imageRoute.updateImage, apiResultHandler);
 

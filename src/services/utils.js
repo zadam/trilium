@@ -165,7 +165,7 @@ function sanitizeFilenameForHeader(filename) {
         sanitizedFilename = "file";
     }
 
-    return encodeURIComponent(sanitizedFilename)
+    return encodeURIComponent(sanitizedFilename);
 }
 
 function getContentDisposition(filename) {

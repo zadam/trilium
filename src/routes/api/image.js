@@ -11,14 +11,11 @@ function returnImage(req, res) {
     const image = becca.getNote(req.params.noteId);
 
     if (!image) {
-        return res.sendStatus(404);
+        res.set('Content-Type', 'image/png');
+        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
     }
     else if (!["image", "canvas"].includes(image.type)){
         return res.sendStatus(400);
-    }
-    else if (image.isDeleted || image.data === null) {
-        res.set('Content-Type', 'image/png');
-        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
     }
 
     /**
@@ -46,6 +43,29 @@ function returnImage(req, res) {
     }
 }
 
+function returnAttachedImage(req, res) {
+    const note = becca.getNote(req.params.noteId);
+
+    if (!note) {
+        return res.sendStatus(404);
+    }
+
+    const attachment = becca.getAttachment(req.params.attachmentId);
+
+    if (!attachment || attachment.parentId !== note.noteId) {
+        res.set('Content-Type', 'image/png');
+        return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
+    }
+
+    if (!["image"].includes(attachment.role)) {
+        return res.sendStatus(400);
+    }
+
+    res.set('Content-Type', attachment.mime);
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.send(attachment.getContent());
+}
+
 function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
@@ -57,10 +77,10 @@ function uploadImage(req) {
     }
 
     if (!["image/png", "image/jpg", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
-        throw new ValidationError(`Unknown image type: ${file.mimetype}`);
+        throw new ValidationError(`Unknown image type '${file.mimetype}'`);
     }
 
-    const {url} = imageService.saveImage(noteId, file.buffer, file.originalname, true, true);
+    const {url} = imageService.saveImageToAttachment(noteId, file.buffer, file.originalname, true, true);
 
     return {
         uploaded: true,
@@ -92,6 +112,7 @@ function updateImage(req) {
 
 module.exports = {
     returnImage,
+    returnAttachedImage,
     uploadImage,
     updateImage
 };

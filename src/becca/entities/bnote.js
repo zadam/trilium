@@ -1429,7 +1429,7 @@ class BNote extends AbstractBeccaEntity {
             }
         } else {
             attachment = new BAttachment({
-                noteId: this.noteId,
+                parentId: this.noteId,
                 title,
                 role,
                 mime,
@@ -1437,7 +1437,11 @@ class BNote extends AbstractBeccaEntity {
             });
         }
 
-        attachment.setContent(content, { forceSave: true });
+        if (content !== undefined && content !== null) {
+            attachment.setContent(content, {forceSave: true});
+        } else {
+            attachment.save();
+        }
 
         return attachment;
     }

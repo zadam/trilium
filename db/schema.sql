@@ -112,9 +112,10 @@ CREATE TABLE IF NOT EXISTS "attachments"
     mime         TEXT not null,
     title         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
-    blobId    TEXT not null,
+    blobId    TEXT DEFAULT null,
+    utcDateScheduledForDeletionSince TEXT DEFAULT NULL,
     utcDateModified TEXT not null,
     isDeleted    INT  not null,
     deleteId    TEXT DEFAULT NULL);
-CREATE UNIQUE INDEX IDX_attachments_parentId_role
+CREATE INDEX IDX_attachments_parentId_role
     on attachments (parentId, role);
