@@ -198,8 +198,8 @@ class BBranch extends AbstractBeccaEntity {
                 relation.markAsDeleted(deleteId);
             }
 
-            for (const noteAttachment of note.getNoteAttachments()) {
-                noteAttachment.markAsDeleted(deleteId);
+            for (const attachment of note.getAttachments()) {
+                attachment.markAsDeleted(deleteId);
             }
 
             note.markAsDeleted(deleteId);

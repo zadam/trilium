@@ -127,7 +127,7 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
-function getNoteAttachments(req) {
+function getAttachments(req) {
     const includeContent = req.query.includeContent === 'true';
     const {noteId} = req.params;
 
@@ -137,9 +137,9 @@ function getNoteAttachments(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    const noteAttachments = note.getNoteAttachments();
+    const attachments = note.getAttachments();
 
-    return noteAttachments.map(attachment => {
+    return attachments.map(attachment => {
        const pojo = attachment.getPojo();
 
        if (includeContent && utils.isStringNote(null, attachment.mime)) {
@@ -157,7 +157,7 @@ function getNoteAttachments(req) {
     });
 }
 
-function saveNoteAttachment(req) {
+function saveAttachment(req) {
     const {noteId, name} = req.params;
     const {mime, content} = req.body;
 
@@ -167,7 +167,7 @@ function saveNoteAttachment(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    note.saveNoteAttachment(name, mime, content);
+    note.saveAttachment(name, mime, content);
 }
 
 function getRelationMap(req) {
@@ -384,6 +384,6 @@ module.exports = {
     getDeleteNotesPreview,
     uploadModifiedFile,
     forceSaveNoteRevision,
-    getNoteAttachments,
-    saveNoteAttachment
+    getAttachments,
+    saveAttachment
 };

@@ -149,7 +149,7 @@ function fillAllEntityChanges() {
         fillEntityChanges("notes", "noteId");
         fillEntityChanges("branches", "branchId");
         fillEntityChanges("note_revisions", "noteRevisionId");
-        fillEntityChanges("note_attachments", "noteAttachmentId");
+        fillEntityChanges("attachments", "attachmentId");
         fillEntityChanges("blobs", "blobId");
         fillEntityChanges("attributes", "attributeId");
         fillEntityChanges("etapi_tokens", "etapiTokenId");

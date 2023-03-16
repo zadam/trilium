@@ -214,24 +214,25 @@ class ConsistencyChecks {
                 }
             });
 
-        this.findAndFixIssues(`
-                    SELECT noteAttachmentId, note_attachments.noteId AS noteId
-                    FROM note_attachments
-                      LEFT JOIN notes ON notes.noteId = note_attachments.parentId
-                    WHERE notes.noteId IS NULL
-                      AND note_attachments.isDeleted = 0`,
-            ({noteAttachmentId, noteId}) => {
-                if (this.autoFix) {
-                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
-                    noteAttachment.markAsDeleted();
-
-                    this.reloadNeeded = false;
-
-                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since it references missing note '${noteId}'`);
-                } else {
-                    logError(`Note attachment '${noteAttachmentId}' references missing note '${noteId}'`);
-                }
-            });
+        // FIXME
+        // this.findAndFixIssues(`
+        //             SELECT attachmentId, attachments.parentId AS noteId
+        //             FROM attachments
+        //               LEFT JOIN notes ON notes.noteId = attachments.parentId
+        //             WHERE notes.noteId IS NULL
+        //               AND attachments.isDeleted = 0`,
+        //     ({attachmentId, noteId}) => {
+        //         if (this.autoFix) {
+        //             const attachment = becca.getAttachment(attachmentId);
+        //             attachment.markAsDeleted();
+        //
+        //             this.reloadNeeded = false;
+        //
+        //             logFix(`Note attachment '${attachmentId}' has been deleted since it references missing note '${noteId}'`);
+        //         } else {
+        //             logError(`Note attachment '${attachmentId}' references missing note '${noteId}'`);
+        //         }
+        //     });
     }
 
     findExistencyIssues() {
@@ -341,22 +342,22 @@ class ConsistencyChecks {
             });
 
         this.findAndFixIssues(`
-                    SELECT noteAttachmentId,
-                           note_attachments.noteId AS noteId
-                    FROM note_attachments
-                      JOIN notes USING (noteId)
+                    SELECT attachmentId,
+                           attachments.parentId AS noteId
+                    FROM attachments
+                      JOIN notes ON notes.noteId = attachments.parentId
                     WHERE notes.isDeleted = 1
-                      AND note_attachments.isDeleted = 0`,
-            ({noteAttachmentId, noteId}) => {
+                      AND attachments.isDeleted = 0`,
+            ({attachmentId, noteId}) => {
                 if (this.autoFix) {
-                    const noteAttachment = becca.getNoteAttachment(noteAttachmentId);
-                    noteAttachment.markAsDeleted();
+                    const attachment = becca.getAttachment(attachmentId);
+                    attachment.markAsDeleted();
 
                     this.reloadNeeded = false;
 
-                    logFix(`Note attachment '${noteAttachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
+                    logFix(`Note attachment '${attachmentId}' has been deleted since associated note '${noteId}' is deleted.`);
                 } else {
-                    logError(`Note attachment '${noteAttachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
+                    logError(`Note attachment '${attachmentId}' is not deleted even though associated note '${noteId}' is deleted.`)
                 }
             });
     }
@@ -657,7 +658,7 @@ class ConsistencyChecks {
     findEntityChangeIssues() {
         this.runEntityChangeChecks("notes", "noteId");
         this.runEntityChangeChecks("note_revisions", "noteRevisionId");
-        this.runEntityChangeChecks("note_attachments", "noteAttachmentId");
+        this.runEntityChangeChecks("attachments", "attachmentId");
         this.runEntityChangeChecks("blobs", "blobId");
         this.runEntityChangeChecks("branches", "branchId");
         this.runEntityChangeChecks("attributes", "attributeId");
@@ -754,7 +755,7 @@ class ConsistencyChecks {
             return `${tableName}: ${count}`;
         }
 
-        const tables = [ "notes", "note_revisions", "note_attachments", "branches", "attributes", "etapi_tokens" ];
+        const tables = [ "notes", "note_revisions", "attachments", "branches", "attributes", "etapi_tokens" ];
 
         log.info(`Table counts: ${tables.map(tableName => getTableRowCount(tableName)).join(", ")}`);
     }

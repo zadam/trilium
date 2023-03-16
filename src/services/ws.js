@@ -152,7 +152,7 @@ const ORDERING = {
     "blobs": 0,
     "note_reordering": 2,
     "note_revisions": 2,
-    "note_attachments": 3,
+    "attachments": 3,
     "notes": 1,
     "options": 0
 };

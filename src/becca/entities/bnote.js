@@ -8,7 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
-const BNoteAttachment = require("./bnote_attachment");
+const BAttachment = require("./battachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -1161,16 +1161,16 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BNoteRevision(row));
     }
 
-    /** @returns {BNoteAttachment[]} */
-    getNoteAttachments() {
-        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
-            .map(row => new BNoteAttachment(row));
+    /** @returns {BAttachment[]} */
+    getAttachments() {
+        return sql.getRows("SELECT * FROM attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
+            .map(row => new BAttachment(row));
     }
 
-    /** @returns {BNoteAttachment|undefined} */
-    getNoteAttachmentByName(name) {
-        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
-            .map(row => new BNoteAttachment(row))
+    /** @returns {BAttachment|undefined} */
+    getAttachmentByName(name) {
+        return sql.getRows("SELECT * FROM attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
+            .map(row => new BAttachment(row))
             [0];
     }
 
@@ -1502,21 +1502,21 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @returns {BNoteAttachment}
+     * @returns {BAttachment}
      */
-    saveNoteAttachment(name, mime, content) {
-        let noteAttachment = this.getNoteAttachmentByName(name);
+    saveAttachment(name, mime, content) {
+        let attachment = this.getAttachmentByName(name);
 
-        noteAttachment = new BNoteAttachment({
+        attachment = new BAttachment({
             noteId: this.noteId,
             name,
             mime,
             isProtected: this.isProtected
         });
 
-        noteAttachment.setContent(content);
+        attachment.setContent(content);
 
-        return noteAttachment;
+        return attachment;
     }
 
     beforeSaving() {

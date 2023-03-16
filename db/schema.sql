@@ -35,34 +35,26 @@ CREATE TABLE IF NOT EXISTS "notes" (
                                        `isProtected`	INT NOT NULL DEFAULT 0,
                                        `type` TEXT NOT NULL DEFAULT 'text',
                                        `mime` TEXT NOT NULL DEFAULT 'text/html',
+                                       `blobId` TEXT DEFAULT NULL,
                                        `isDeleted`	INT NOT NULL DEFAULT 0,
                                        `deleteId`   TEXT DEFAULT NULL,
                                        `dateCreated`	TEXT NOT NULL,
                                        `dateModified`	TEXT NOT NULL,
                                        `utcDateCreated`	TEXT NOT NULL,
-                                       `utcDateModified`	TEXT NOT NULL,
+                                       `utcDateModified`	TEXT NOT NULL
                                        PRIMARY KEY(`noteId`));
-CREATE TABLE IF NOT EXISTS "note_contents" (
-                                               `noteId`	TEXT NOT NULL,
-                                               `content`	TEXT NULL DEFAULT NULL,
-                                               `dateModified` TEXT NOT NULL,
-                                               `utcDateModified` TEXT NOT NULL,
-                                               PRIMARY KEY(`noteId`)
-);
 CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
                                              `noteId`	TEXT NOT NULL,
                                              type TEXT DEFAULT '' NOT NULL,
                                              mime TEXT DEFAULT '' NOT NULL,
                                              `title`	TEXT NOT NULL,
                                              `isProtected`	INT NOT NULL DEFAULT 0,
+                                             `blobId` TEXT DEFAULT NULL,
                                              `utcDateLastEdited` TEXT NOT NULL,
                                              `utcDateCreated` TEXT NOT NULL,
                                              `utcDateModified` TEXT NOT NULL,
                                              `dateLastEdited` TEXT NOT NULL,
                                              `dateCreated` TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
-                                                     `content`	TEXT,
-                                                     `utcDateModified` TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS "options"
 (
     name TEXT not null PRIMARY KEY,
@@ -112,18 +104,17 @@ CREATE TABLE IF NOT EXISTS "recent_notes"
     notePath TEXT not null,
     utcDateCreated TEXT not null
 );
-CREATE TABLE IF NOT EXISTS "note_attachments"
+CREATE TABLE IF NOT EXISTS "attachments"
 (
-    noteAttachmentId      TEXT not null primary key,
-    noteId       TEXT not null,
-    name         TEXT not null,
+    attachmentId      TEXT not null primary key,
+    parentId       TEXT not null,
+    role         TEXT not null,
     mime         TEXT not null,
+    title         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
+    blobId    TEXT not null,
     utcDateModified TEXT not null,
     isDeleted    INT  not null,
-    `deleteId`    TEXT DEFAULT NULL);
-
-CREATE INDEX IDX_note_attachments_name
-    on note_attachments (name);
-CREATE UNIQUE INDEX IDX_note_attachments_noteId_name
-    on note_attachments (noteId, name);
+    deleteId    TEXT DEFAULT NULL);
+CREATE UNIQUE INDEX IDX_attachments_parentId_role
+    on attachments (parentId, role);

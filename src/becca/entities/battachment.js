@@ -9,31 +9,31 @@ const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 
 /**
- * NoteAttachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
+ * Attachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
  * larger amounts of data and generally not accessible to the user.
  *
  * @extends AbstractBeccaEntity
  */
-class BNoteAttachment extends AbstractBeccaEntity {
-    static get entityName() { return "note_attachments"; }
-    static get primaryKeyName() { return "noteAttachmentId"; }
-    static get hashedProperties() { return ["noteAttachmentId", "parentId", "role", "mime", "title", "utcDateModified"]; }
+class BAttachment extends AbstractBeccaEntity {
+    static get entityName() { return "attachments"; }
+    static get primaryKeyName() { return "attachmentId"; }
+    static get hashedProperties() { return ["attachmentId", "parentId", "role", "mime", "title", "utcDateModified"]; }
 
     constructor(row) {
         super();
 
         if (!row.parentId?.trim()) {
-            throw new Error("'noteId' must be given to initialize a NoteAttachment entity");
+            throw new Error("'noteId' must be given to initialize a Attachment entity");
         } else if (!row.role?.trim()) {
-            throw new Error("'role' must be given to initialize a NoteAttachment entity");
+            throw new Error("'role' must be given to initialize a Attachment entity");
         } else if (!row.mime?.trim()) {
-            throw new Error("'mime' must be given to initialize a NoteAttachment entity");
+            throw new Error("'mime' must be given to initialize a Attachment entity");
         } else if (!row.title?.trim()) {
-            throw new Error("'title' must be given to initialize a NoteAttachment entity");
+            throw new Error("'title' must be given to initialize a Attachment entity");
         }
 
         /** @type {string} needs to be set at the initialization time since it's used in the .setContent() */
-        this.noteAttachmentId = row.noteAttachmentId || `${this.noteId}_${this.name}`; // FIXME
+        this.attachmentId = row.attachmentId || `${this.noteId}_${this.name}`; // FIXME
         /** @type {string} either noteId or noteRevisionId to which this attachment belongs */
         this.parentId = row.parentId;
         /** @type {string} */
@@ -59,14 +59,14 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     /** @returns {*} */
     getContent(silentNotFoundError = false) {
-        const res = sql.getRow(`SELECT content FROM note_attachment_contents WHERE noteAttachmentId = ?`, [this.noteAttachmentId]);
+        const res = sql.getRow(`SELECT content FROM attachment_contents WHERE attachmentId = ?`, [this.attachmentId]);
 
         if (!res) {
             if (silentNotFoundError) {
                 return undefined;
             }
             else {
-                throw new Error(`Cannot find note attachment content for noteAttachmentId=${this.noteAttachmentId}`);
+                throw new Error(`Cannot find note attachment content for attachmentId=${this.attachmentId}`);
             }
         }
 
@@ -93,10 +93,10 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     setContent(content) {
         sql.transactional(() => {
-            this.save(); // also explicitly save note_attachment to update contentCheckSum
+            this.save(); // also explicitly save attachment to update contentCheckSum
 
             const pojo = {
-                noteAttachmentId: this.noteAttachmentId,
+                attachmentId: this.attachmentId,
                 content: content,
                 utcDateModified: dateUtils.utcNowDateTime()
             };
@@ -105,15 +105,15 @@ class BNoteAttachment extends AbstractBeccaEntity {
                 if (protectedSessionService.isProtectedSessionAvailable()) {
                     pojo.content = protectedSessionService.encrypt(pojo.content);
                 } else {
-                    throw new Error(`Cannot update content of noteAttachmentId=${this.noteAttachmentId} since we're out of protected session.`);
+                    throw new Error(`Cannot update content of attachmentId=${this.attachmentId} since we're out of protected session.`);
                 }
             }
 
-            sql.upsert("note_attachment_contents", "noteAttachmentId", pojo);
+            sql.upsert("attachment_contents", "attachmentId", pojo);
 
             entityChangesService.addEntityChange({
-                entityName: 'note_attachment_contents',
-                entityId: this.noteAttachmentId,
+                entityName: 'attachment_contents',
+                entityId: this.attachmentId,
                 hash: this.contentCheckSum, // FIXME
                 isErased: false,
                 utcDateChanged: pojo.utcDateModified,
@@ -123,7 +123,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 
     calculateCheckSum(content) {
-        return utils.hash(`${this.noteAttachmentId}|${content.toString()}`);
+        return utils.hash(`${this.attachmentId}|${content.toString()}`);
     }
 
     beforeSaving() {
@@ -131,7 +131,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
             throw new Error(`Name must be alphanumerical, "${this.name}" given.`);
         }
 
-        this.noteAttachmentId = `${this.noteId}_${this.name}`; // FIXME
+        this.attachmentId = `${this.noteId}_${this.name}`; // FIXME
 
         super.beforeSaving();
 
@@ -140,7 +140,7 @@ class BNoteAttachment extends AbstractBeccaEntity {
 
     getPojo() {
         return {
-            noteAttachmentId: this.noteAttachmentId,
+            attachmentId: this.attachmentId,
             parentId: this.parentId,
             name: this.name,
             mime: this.mime,
@@ -159,4 +159,4 @@ class BNoteAttachment extends AbstractBeccaEntity {
     }
 }
 
-module.exports = BNoteAttachment;
+module.exports = BAttachment;

@@ -170,7 +170,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
-        const attachments = note.getNoteAttachments();
+        const attachments = note.getAttachments();
 
         if (attachments.length > 0) {
             meta.attachments = attachments
@@ -339,8 +339,8 @@ ${markdownContent}`;
 
         for (const attachmentMeta of noteMeta.attachments || []) {
             // FIXME
-            const noteAttachment = note.getNoteAttachmentByName(attachmentMeta.name);
-            const content = noteAttachment.getContent();
+            const attachment = note.getAttachmentByName(attachmentMeta.name);
+            const content = attachment.getContent();
 
             archive.append(content, {
                 name: filePathPrefix + attachmentMeta.dataFileName,
