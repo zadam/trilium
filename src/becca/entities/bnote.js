@@ -8,7 +8,7 @@ const dateUtils = require('../../services/date_utils');
 const entityChangesService = require('../../services/entity_changes');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const BNoteRevision = require("./bnote_revision");
-const BNoteAncillary = require("./bnote_attachment.js");
+const BNoteAttachment = require("./bnote_attachment.js");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
@@ -1161,16 +1161,16 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BNoteRevision(row));
     }
 
-    /** @returns {BNoteAncillary[]} */
-    getNoteAncillaries() {
-        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND isDeleted = 0", [this.noteId])
-            .map(row => new BNoteAncillary(row));
+    /** @returns {BNoteAttachment[]} */
+    getNoteAttachments() {
+        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND isDeleted = 0", [this.noteId])
+            .map(row => new BNoteAttachment(row));
     }
 
-    /** @returns {BNoteAncillary|undefined} */
-    getNoteAncillaryByName(name) {
-        return sql.getRows("SELECT * FROM note_ancillaries WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
-            .map(row => new BNoteAncillary(row))
+    /** @returns {BNoteAttachment|undefined} */
+    getNoteAttachmentByName(name) {
+        return sql.getRows("SELECT * FROM note_attachments WHERE noteId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
+            .map(row => new BNoteAttachment(row))
             [0];
     }
 
@@ -1502,21 +1502,21 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
-     * @returns {BNoteAncillary}
+     * @returns {BNoteAttachment}
      */
-    saveNoteAncillary(name, mime, content) {
-        let noteAncillary = this.getNoteAncillaryByName(name);
+    saveNoteAttachment(name, mime, content) {
+        let noteAttachment = this.getNoteAttachmentByName(name);
 
-        noteAncillary = new BNoteAncillary({
+        noteAttachment = new BNoteAttachment({
             noteId: this.noteId,
             name,
             mime,
             isProtected: this.isProtected
         });
 
-        noteAncillary.setContent(content);
+        noteAttachment.setContent(content);
 
-        return noteAncillary;
+        return noteAttachment;
     }
 
     beforeSaving() {

@@ -170,19 +170,19 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
-        const ancillaries = note.getNoteAncillaries();
+        const attachments = note.getNoteAttachments();
 
-        if (ancillaries.length > 0) {
-            meta.ancillaries = ancillaries
-                .filter(ancillary => ["canvasSvg", "mermaidSvg"].includes(ancillary.name))
-                .map(ancillary => ({
+        if (attachments.length > 0) {
+            meta.attachments = attachments
+                .filter(attachment => ["canvasSvg", "mermaidSvg"].includes(attachment.name))
+                .map(attachment => ({
 
-                name: ancillary.name,
-                mime: ancillary.mime,
+                name: attachment.name,
+                mime: attachment.mime,
                 dataFileName: getDataFileName(
                     null,
-                    ancillary.mime,
-                    baseFileName + "_" + ancillary.name,
+                    attachment.mime,
+                    baseFileName + "_" + attachment.name,
                     existingFileNames
                 )
             }));
@@ -337,12 +337,12 @@ ${markdownContent}`;
 
         taskContext.increaseProgressCount();
 
-        for (const ancillaryMeta of noteMeta.ancillaries || []) {
-            const noteAncillary = note.getNoteAncillaryByName(ancillaryMeta.name);
-            const content = noteAncillary.getContent();
+        for (const attachmentMeta of noteMeta.attachments || []) {
+            const noteAttachment = note.getNoteAttachmentByName(attachmentMeta.name);
+            const content = noteAttachment.getContent();
 
             archive.append(content, {
-                name: filePathPrefix + ancillaryMeta.dataFileName,
+                name: filePathPrefix + attachmentMeta.dataFileName,
                 date: dateUtils.parseDateTime(note.utcDateModified)
             });
         }

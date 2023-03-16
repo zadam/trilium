@@ -121,12 +121,12 @@ class Becca {
         return row ? new BNoteRevision(row) : null;
     }
 
-    /** @returns {BNoteAncillary|null} */
-    getNoteAncillary(noteAncillaryId) {
-        const row = sql.getRow("SELECT * FROM note_ancillaries WHERE noteAncillaryId = ?", [noteAncillaryId]);
+    /** @returns {BNoteAttachment|null} */
+    getNoteAttachment(noteAttachmentId) {
+        const row = sql.getRow("SELECT * FROM note_attachments WHERE noteAttachmentId = ?", [noteAttachmentId]);
 
-        const BNoteAncillary = require("./entities/bnote_attachment.js"); // avoiding circular dependency problems
-        return row ? new BNoteAncillary(row) : null;
+        const BNoteAttachment = require("./entities/bnote_attachment.js"); // avoiding circular dependency problems
+        return row ? new BNoteAttachment(row) : null;
     }
 
     /** @returns {BOption|null} */
@@ -151,8 +151,8 @@ class Becca {
 
         if (entityName === 'note_revisions') {
             return this.getNoteRevision(entityId);
-        } else if (entityName === 'note_ancillaries') {
-            return this.getNoteAncillary(entityId);
+        } else if (entityName === 'note_attachments') {
+            return this.getNoteAttachment(entityId);
         }
 
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,

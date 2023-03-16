@@ -54,10 +54,10 @@ function createNote(req) {
 }
 
 function updateNoteData(req) {
-    const {content, ancillaries} = req.body;
+    const {content, attachments} = req.body;
     const {noteId} = req.params;
 
-    return noteService.updateNoteData(noteId, content, ancillaries);
+    return noteService.updateNoteData(noteId, content, attachments);
 }
 
 function deleteNote(req) {
@@ -127,7 +127,7 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
-function getNoteAncillaries(req) {
+function getNoteAttachments(req) {
     const includeContent = req.query.includeContent === 'true';
     const {noteId} = req.params;
 
@@ -137,19 +137,19 @@ function getNoteAncillaries(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    const noteAncillaries = note.getNoteAncillaries();
+    const noteAttachments = note.getNoteAttachments();
 
-    return noteAncillaries.map(ancillary => {
-       const pojo = ancillary.getPojo();
+    return noteAttachments.map(attachment => {
+       const pojo = attachment.getPojo();
 
-       if (includeContent && utils.isStringNote(null, ancillary.mime)) {
-           pojo.content = ancillary.getContent()?.toString();
+       if (includeContent && utils.isStringNote(null, attachment.mime)) {
+           pojo.content = attachment.getContent()?.toString();
            pojo.contentLength = pojo.content.length;
 
-           const MAX_ANCILLARY_LENGTH = 1_000_000;
+           const MAX_ATTACHMENT_LENGTH = 1_000_000;
 
-           if (pojo.content.length > MAX_ANCILLARY_LENGTH) {
-               pojo.content = pojo.content.substring(0, MAX_ANCILLARY_LENGTH);
+           if (pojo.content.length > MAX_ATTACHMENT_LENGTH) {
+               pojo.content = pojo.content.substring(0, MAX_ATTACHMENT_LENGTH);
            }
        }
 
@@ -157,7 +157,7 @@ function getNoteAncillaries(req) {
     });
 }
 
-function saveNoteAncillary(req) {
+function saveNoteAttachment(req) {
     const {noteId, name} = req.params;
     const {mime, content} = req.body;
 
@@ -167,7 +167,7 @@ function saveNoteAncillary(req) {
         throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
     }
 
-    note.saveNoteAncillary(name, mime, content);
+    note.saveNoteAttachment(name, mime, content);
 }
 
 function getRelationMap(req) {
@@ -384,6 +384,6 @@ module.exports = {
     getDeleteNotesPreview,
     uploadModifiedFile,
     forceSaveNoteRevision,
-    getNoteAncillaries,
-    saveNoteAncillary
+    getNoteAttachments,
+    saveNoteAttachment
 };

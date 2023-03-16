@@ -4,27 +4,27 @@ const log = require("./log");
 /**
  * @param {BNote} note
  */
-function protectNoteAncillaries(note) {
-    for (const noteAncillary of note.getNoteAncillaries()) {
-        if (note.isProtected !== noteAncillary.isProtected) {
+function protectNoteAttachments(note) {
+    for (const noteAttachment of note.getNoteAttachments()) {
+        if (note.isProtected !== noteAttachment.isProtected) {
             if (!protectedSession.isProtectedSessionAvailable()) {
-                log.error("Protected session is not available to fix note ancillaries.");
+                log.error("Protected session is not available to fix note attachments.");
 
                 return;
             }
 
             try {
-                const content = noteAncillary.getContent();
+                const content = noteAttachment.getContent();
 
-                noteAncillary.isProtected = note.isProtected;
+                noteAttachment.isProtected = note.isProtected;
 
                 // this will force de/encryption
-                noteAncillary.setContent(content);
+                noteAttachment.setContent(content);
 
-                noteAncillary.save();
+                noteAttachment.save();
             }
             catch (e) {
-                log.error(`Could not un/protect note ancillary ID = ${noteAncillary.noteAncillaryId}`);
+                log.error(`Could not un/protect note attachment ID = ${noteAttachment.noteAttachmentId}`);
 
                 throw e;
             }
@@ -33,5 +33,5 @@ function protectNoteAncillaries(note) {
 }
 
 module.exports = {
-    protectNoteAncillaries
+    protectNoteAttachments
 }

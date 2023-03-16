@@ -112,9 +112,9 @@ CREATE TABLE IF NOT EXISTS "recent_notes"
     notePath TEXT not null,
     utcDateCreated TEXT not null
 );
-CREATE TABLE IF NOT EXISTS "note_ancillaries"
+CREATE TABLE IF NOT EXISTS "note_attachments"
 (
-    noteAncillaryId      TEXT not null primary key,
+    noteAttachmentId      TEXT not null primary key,
     noteId       TEXT not null,
     name         TEXT not null,
     mime         TEXT not null,
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS "note_ancillaries"
     isDeleted    INT  not null,
     `deleteId`    TEXT DEFAULT NULL);
 
-CREATE INDEX IDX_note_ancillaries_name
-    on note_ancillaries (name);
-CREATE UNIQUE INDEX IDX_note_ancillaries_noteId_name
-    on note_ancillaries (noteId, name);
+CREATE INDEX IDX_note_attachments_name
+    on note_attachments (name);
+CREATE UNIQUE INDEX IDX_note_attachments_noteId_name
+    on note_attachments (noteId, name);
