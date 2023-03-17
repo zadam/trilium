@@ -307,7 +307,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     for (const result of searchResults) {
         const note = becca.notes[result.noteId];
 
-        result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
+        result.highlightedNotePathTitle = result.notePathTitle.replace(/[<{}]/g, '');
 
         if (highlightedTokens.find(token => note.type.includes(token))) {
             result.highlightedNotePathTitle += ` "type: ${note.type}'`;
