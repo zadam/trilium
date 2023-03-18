@@ -475,7 +475,7 @@ function BackendScriptApi(currentNote, apiParams) {
         const noteId = 'al_' + opts.id;
 
         const launcherNote =
-            becca.getNote(opts.id) ||
+            becca.getNote(noteId) ||
             specialNotesService.createLauncher({
                 noteId: noteId,
                 parentNoteId: parentNoteId,
@@ -514,7 +514,7 @@ function BackendScriptApi(currentNote, apiParams) {
         if (opts.icon) {
             launcherNote.setLabel('iconClass', `bx ${opts.icon}`);
         } else {
-            launcherNote.removeLabel('keyboardShortcut');
+            launcherNote.removeLabel('iconClass');
         }
 
         return {note: launcherNote};
