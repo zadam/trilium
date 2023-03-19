@@ -62,6 +62,7 @@ module.exports = [
     { type: 'label', name: 'keepCurrentHoisting'},
     { type: 'label', name: 'executeButton'},
     { type: 'label', name: 'executeDescription'},
+    { type: 'label', name: 'newNotesOnTop'},
 
     // relation names
     { type: 'relation', name: 'internalLink' },
