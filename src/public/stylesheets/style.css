@@ -781,9 +781,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 3px;
+    border-radius: 5px;
     border: 1px solid var(--scrollbar-border-color);
-    background-color: var(--active-item-background-color);
+    background-color: var(--scrollbar-background-color);
 }
 
 ::-webkit-scrollbar-corner {

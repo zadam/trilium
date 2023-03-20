@@ -64,7 +64,8 @@
     --inactive-tab-hover-background-color: #525252;
     --inactive-tab-text-color: #bbb;
 
-    --scrollbar-border-color: #888;
+    --scrollbar-border-color: #666;
+    --scrollbar-background-color: #333;
     --tooltip-background-color: #333;
     --link-color: lightskyblue;
 
