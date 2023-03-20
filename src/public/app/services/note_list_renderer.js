@@ -12,31 +12,31 @@ const TPL = `
         position: relative;
         height: 100%;
     }
-    
+
     .note-list.grid-view .note-list-container {
         display: flex;
         flex-wrap: wrap;
     }
-    
+
     .note-list.grid-view .note-book-card {
         flex-basis: 300px;
         border: 1px solid transparent;
     }
-    
+
     .note-list.grid-view .note-expander {
         display: none;
     }
-    
+
     .note-list.grid-view .note-book-card {
         max-height: 300px;
     }
-    
+
     .note-list.grid-view .note-book-card:hover {
         cursor: pointer;
         border: 1px solid var(--main-border-color);
         background: var(--more-accented-background-color);
     }
-    
+
     .note-book-card {
         border-radius: 10px;
         background-color: var(--accented-background-color);
@@ -48,50 +48,50 @@ const TPL = `
         flex-shrink: 0;
         flex-grow: 1;
     }
-    
+
     .note-book-card:not(.expanded) .note-book-content {
         display: none !important;
         padding: 10px
     }
-    
+
     .note-book-card.expanded .note-book-content {
         display: block;
         min-height: 0;
         height: 100%;
         padding-top: 10px;
     }
-    
+
     .note-book-header {
         margin-bottom: 0;
         word-break: break-all;
     }
-    
+
     /* not-expanded title is limited to one line only */
     .note-book-card:not(.expanded) .note-book-header {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-    
+
     .note-book-header .rendered-note-attributes {
         font-size: medium;
     }
-    
+
     .note-book-header .rendered-note-attributes:before {
         content: "\\00a0\\00a0";
     }
-    
+
     .note-book-header .note-icon {
         font-size: 100%;
         display: inline-block;
         padding-right: 7px;
         position: relative;
     }
-    
+
     .note-book-card .note-book-card {
         border: 1px solid var(--main-border-color);
     }
-    
+
     .note-book-content.type-image, .note-book-content.type-file, .note-book-content.type-protectedSession {
         display: flex;
         align-items: center;
@@ -99,46 +99,46 @@ const TPL = `
         text-align: center;
         padding: 10px;
     }
-    
+
     .note-book-content.type-image img, .note-book-content.type-canvas svg {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
     }
-    
+
     .note-book-card.type-image .note-book-content img,
     .note-book-card.type-text .note-book-content img,
     .note-book-card.type-canvas .note-book-content img {
         max-width: 100%;
         max-height: 100%;
     }
-    
+
     .note-book-header {
         flex-grow: 0;
     }
-    
+
     .note-list-wrapper {
         height: 100%;
         overflow: auto;
     }
-    
+
     .note-expander {
         font-size: x-large;
         position: relative;
         top: 3px;
         cursor: pointer;
     }
-    
+
     .note-list-pager {
         text-align: center;
     }
     </style>
-    
+
     <div class="note-list-wrapper">
         <div class="note-list-pager"></div>
-    
+
         <div class="note-list-container"></div>
-        
+
         <div class="note-list-pager"></div>
     </div>
 </div>`;
@@ -272,7 +272,7 @@ class NoteListRenderer {
         const $card = $('<div class="note-book-card">')
             .attr('data-note-id', note.noteId)
             .append(
-                $('<h5 class="note-book-header">')
+                $('<h1 class="note-book-header">')
                     .append($expander)
                     .append($('<span class="note-icon">').addClass(note.getIcon()))
                     .append(this.viewType === 'grid'
