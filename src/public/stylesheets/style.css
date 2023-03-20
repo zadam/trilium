@@ -773,7 +773,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 
 body {
     /* FF basic styling */
-    scrollbar-color: var(--active-item-background-color) var(--main-background-color);
+    scrollbar-color: var(--scrollbar-background-color) var(--main-background-color);
 }
 
 ::-webkit-scrollbar {
