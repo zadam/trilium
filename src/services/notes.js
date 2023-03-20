@@ -23,17 +23,18 @@ const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const {attach} = require("jsdom/lib/jsdom/living/helpers/svg/basic-types.js");
 
-function getNewNotePosition(parentNoteId) {
-    const note = becca.notes[parentNoteId];
+function getNewNotePosition(parentNote) {
+    if (parentNote.hasLabel('newNotesOnTop')) {
+        const minNotePos = parentNote.getChildBranches()
+            .reduce((min, note) => Math.min(min, note.notePosition), 0);
 
-    if (!note) {
-        throw new Error(`Can't find note ${parentNoteId}`);
+        return minNotePos - 10;
+    } else {
+        const maxNotePos = parentNote.getChildBranches()
+            .reduce((max, note) => Math.max(max, note.notePosition), 0);
+
+        return maxNotePos + 10;
     }
-
-    const maxNotePos = note.getChildBranches()
-        .reduce((max, note) => Math.max(max, note.notePosition), 0);
-
-    return maxNotePos + 10;
 }
 
 function triggerNoteTitleChanged(note) {
@@ -187,7 +188,7 @@ function createNewNote(params) {
             branch = new BBranch({
                 noteId: note.noteId,
                 parentNoteId: params.parentNoteId,
-                notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(params.parentNoteId),
+                notePosition: params.notePosition !== undefined ? params.notePosition : getNewNotePosition(parentNote),
                 prefix: params.prefix,
                 isExpanded: !!params.isExpanded
             }).save();
