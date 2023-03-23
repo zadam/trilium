@@ -706,7 +706,14 @@ class FNote {
             });
 
         // attrs are not resorted if position changes after initial load
-        promotedAttrs.sort((a, b) => a.position < b.position ? -1 : 1);
+        promotedAttrs.sort((a, b) => {
+            if (a.noteId === b.noteId) {
+                return a.position < b.position ? -1 : 1;
+            } else {
+                // inherited promoted attributes should stay grouped: https://github.com/zadam/trilium/issues/3761
+                return a.noteId < b.noteId ? -1 : 1;
+            }
+        });
 
         return promotedAttrs;
     }
