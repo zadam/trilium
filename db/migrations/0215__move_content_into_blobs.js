@@ -1,4 +1,3 @@
-const sql = require("../../src/services/sql");
 module.exports = () => {
     const sql = require("../../src/services/sql");
     const utils = require("../../src/services/utils");
