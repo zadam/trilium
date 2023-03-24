@@ -490,13 +490,6 @@ class FNote {
             return;
         }
 
-        if (options.is("hideIncludedImages_main")) {
-            const imageLinks = this.getRelations('imageLink');
-
-            // image is already visible in the parent note so no need to display it separately in the book
-            childBranches = childBranches.filter(branch => !imageLinks.find(rel => rel.value === branch.noteId));
-        }
-
         // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
         // which would seriously slow down everything.
         // we check this flag only once user chooses to expand the parent. This has the negative consequence that

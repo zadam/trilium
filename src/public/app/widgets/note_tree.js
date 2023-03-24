@@ -121,15 +121,6 @@ const TPL = `
         </div>
         <div class="form-check">
             <label class="form-check-label">
-                <input class="form-check-input hide-included-images" type="checkbox" value="">
-                
-                Hide images included in a note
-                <span class="bx bx-info-circle" 
-                      title="Images which are shown in the parent text note will not be displayed in the tree"></span>
-            </label>
-        </div>
-        <div class="form-check">
-            <label class="form-check-label">
                 <input class="form-check-input auto-collapse-note-tree" type="checkbox" value="">
                 
                 Automatically collapse notes
@@ -194,7 +185,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         this.$treeSettingsPopup = this.$widget.find('.tree-settings-popup');
         this.$hideArchivedNotesCheckbox = this.$treeSettingsPopup.find('.hide-archived-notes');
-        this.$hideIncludedImages = this.$treeSettingsPopup.find('.hide-included-images');
         this.$autoCollapseNoteTree = this.$treeSettingsPopup.find('.auto-collapse-note-tree');
 
         this.$treeSettingsButton = this.$widget.find('.tree-settings-button');
@@ -205,7 +195,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
 
             this.$hideArchivedNotesCheckbox.prop("checked", this.hideArchivedNotes);
-            this.$hideIncludedImages.prop("checked", this.hideIncludedImages);
             this.$autoCollapseNoteTree.prop("checked", this.autoCollapseNoteTree);
 
             const top = this.$treeActions[0].offsetTop - (this.$treeSettingsPopup.outerHeight());
@@ -229,7 +218,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         this.$saveTreeSettingsButton = this.$treeSettingsPopup.find('.save-tree-settings-button');
         this.$saveTreeSettingsButton.on('click', async () => {
             await this.setHideArchivedNotes(this.$hideArchivedNotesCheckbox.prop("checked"));
-            await this.setHideIncludedImages(this.$hideIncludedImages.prop("checked"));
             await this.setAutoCollapseNoteTree(this.$autoCollapseNoteTree.prop("checked"));
 
             this.$treeSettingsPopup.hide();
@@ -277,14 +265,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     async setHideArchivedNotes(val) {
         await options.save(`hideArchivedNotes_${this.treeName}`, val.toString());
-    }
-
-    get hideIncludedImages() {
-        return options.is(`hideIncludedImages_${this.treeName}`);
-    }
-
-    async setHideIncludedImages(val) {
-        await options.save(`hideIncludedImages_${this.treeName}`, val.toString());
     }
 
     get autoCollapseNoteTree() {

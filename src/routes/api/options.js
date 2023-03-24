@@ -136,8 +136,7 @@ function isAllowed(name) {
     return ALLOWED_OPTIONS.has(name)
         || name.startsWith("keyboardShortcuts")
         || name.endsWith("Collapsed")
-        || name.startsWith("hideArchivedNotes")
-        || name.startsWith("hideIncludedImages");
+        || name.startsWith("hideArchivedNotes");
 }
 
 module.exports = {
