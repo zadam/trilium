@@ -49,7 +49,7 @@ const TPL = `
         display: flex;
         align-items: flex-end;
         justify-content: flex-end;
-        right: 11.77px;
+        right: 17px;
     }
     
     button.tree-floating-button {
