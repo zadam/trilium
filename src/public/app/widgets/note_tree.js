@@ -41,7 +41,6 @@ const TPL = `
     }
     
     .tree-actions {
-        padding: 4px 0;
         background-color: var(--launcher-pane-background-color);
         z-index: 100;
         position: absolute;
@@ -50,12 +49,14 @@ const TPL = `
         align-items: flex-end;
         justify-content: flex-end;
         right: 17px;
+        border-radius: 7px;
+        border: 1px solid var(--main-border-color);
     }
     
     button.tree-floating-button {
+        margin: 1px;
         font-size: 1.5em;
         padding: 5px;
-        margin-right: 5px;
         max-height: 34px;
         color: var(--launcher-pane-text-color);
         background-color: var(--button-background-color);
