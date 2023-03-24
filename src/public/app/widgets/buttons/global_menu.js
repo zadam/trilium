@@ -230,6 +230,7 @@ export default class GlobalMenuWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        this.$dropdown = this.$widget.find("[data-toggle='dropdown']");
         const $button = this.$widget.find(".global-menu-button");
         $button.tooltip({ trigger: "hover" });
         $button.on("click", () => $button.tooltip("hide"));
@@ -248,7 +249,7 @@ export default class GlobalMenuWidget extends BasicWidget {
                 return;
             }
 
-            this.$widget.find("[data-toggle='dropdown']").dropdown('toggle');
+            this.$dropdown.dropdown('toggle');
         });
 
         this.$widget.find(".global-menu-button-update-available").append(
@@ -309,5 +310,13 @@ export default class GlobalMenuWidget extends BasicWidget {
 
     downloadLatestVersionCommand() {
         window.open("https://github.com/zadam/trilium/releases/latest");
+    }
+
+    activeContextChangedEvent() {
+        this.$dropdown.dropdown('hide');
+    }
+
+    noteSwitchedEvent() {
+        this.$dropdown.dropdown('hide');
     }
 }
