@@ -70,10 +70,16 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        this.$noteTitle.val(note.title);
+        const viewMode = this.noteContext.viewScope.viewMode;
+        this.$noteTitle.val(viewMode === 'default'
+            ? note.title
+            : `${viewMode}: ${note.title}`);
 
-        this.$noteTitle.prop("readonly", (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
-                                        || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(note.noteId));
+        this.$noteTitle.prop("readonly",
+            (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
+            || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(note.noteId)
+            || viewMode !== 'default'
+        );
 
         this.setProtectedStatus(note);
     }

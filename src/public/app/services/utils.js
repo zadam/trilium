@@ -114,6 +114,17 @@ function formatLabel(label) {
     return str;
 }
 
+function formatSize(size) {
+    size = Math.max(Math.round(size / 1024), 1);
+
+    if (size < 1024) {
+        return `${size} KiB`;
+    }
+    else {
+        return `${Math.round(size / 102.4) / 10} MiB`;
+    }
+}
+
 function toObject(array, fn) {
     const obj = {};
 
@@ -363,6 +374,7 @@ export default {
     formatDate,
     formatDateISO,
     formatDateTime,
+    formatSize,
     localNowDateTime,
     now,
     isElectron,

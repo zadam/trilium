@@ -119,6 +119,10 @@ button.close:hover {
     border-radius: var(--button-border-radius);
 }
 
+.icon-action-always-border {
+    border-color: var(--button-border-color);
+}
+
 .icon-action:hover:not(.disabled) {
     text-decoration: none;
     border-color: var(--button-border-color);

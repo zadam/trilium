@@ -1,14 +1,29 @@
 import TypeWidget from "./type_widget.js";
 import server from "../../services/server.js";
+import utils from "../../services/utils.js";
+import AttachmentActionsWidget from "../buttons/attachments_actions.js";
 
 const TPL = `
-<div class="note-attachments note-detail-printable">
+<div class="attachments note-detail-printable">
     <style>
-        .note-attachments {
+        .attachments {
             padding: 15px;
         }
         
-        .attachment-content {
+        .attachment-wrapper {
+            margin-bottom: 20px;
+        }
+        
+        .attachment-title-line {
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .attachment-details {
+            margin-left: 10px;
+        }
+        
+        .attachment-content pre {
             max-height: 400px;
             background: var(--accented-background-color);
             padding: 10px;
@@ -16,18 +31,15 @@ const TPL = `
             margin-bottom: 10px;
         }
         
-        .attachment-details th {
-            padding-left: 10px;
-            padding-right: 10px;
+        .attachment-content img {
+            margin: 10px;
+            max-height: 300px; 
+            max-width: 90%; 
+            object-fit: contain;
         }
     </style>
 
-    <div class="alert alert-info" style="margin: 10px 0 10px 0; padding: 20px;">
-        Note attachments are pieces of data attached to a given note, providing attachment support. 
-        This view is useful for diagnostics.
-    </div>
-    
-    <div class="note-attachment-list"></div>
+    <div class="attachment-list"></div>
 </div>`;
 
 export default class AttachmentsTypeWidget extends TypeWidget {
@@ -35,13 +47,14 @@ export default class AttachmentsTypeWidget extends TypeWidget {
 
     doRender() {
         this.$widget = $(TPL);
-        this.$list = this.$widget.find('.note-attachment-list');
+        this.$list = this.$widget.find('.attachment-list');
 
         super.doRender();
     }
 
     async doRefresh(note) {
         this.$list.empty();
+        this.children = [];
 
         const attachments = await server.get(`notes/${this.noteId}/attachments?includeContent=true`);
 
@@ -52,28 +65,36 @@ export default class AttachmentsTypeWidget extends TypeWidget {
         }
 
         for (const attachment of attachments) {
+            const attachmentActionsWidget = new AttachmentActionsWidget();
+            this.child(attachmentActionsWidget);
+
             this.$list.append(
-                $('<div class="note-attachment-wrapper">')
+                $('<div class="attachment-wrapper">')
                     .append(
-                        $('<h4>').append($('<span class="attachment-name">').text(attachment.name))
-                    )
-                    .append(
-                        $('<table class="attachment-details">')
+                        $('<div class="attachment-title-line">')
+                            .append($('<h4>').append($('<span class="attachment-title">').text(attachment.title)))
                             .append(
-                                $('<tr>')
-                                    .append($('<th>').text('Length:'))
-                                    .append($('<td>').text(attachment.contentLength))
-                                    .append($('<th>').text('MIME:'))
-                                    .append($('<td>').text(attachment.mime))
-                                    .append($('<th>').text('Date modified:'))
-                                    .append($('<td>').text(attachment.utcDateModified))
+                                $('<div class="attachment-details">')
+                                    .text(`Role: ${attachment.role}, Size: ${utils.formatSize(attachment.contentLength)}`)
                             )
+                            .append($('<div style="flex: 1 1;">')) // spacer
+                            .append(attachmentActionsWidget.render())
                     )
                     .append(
-                        $('<pre class="attachment-content">')
-                            .text(attachment.content)
+                        $('<div class="attachment-content">')
+                            .append(this.renderContent(attachment))
                     )
             );
+        }
+    }
+
+    renderContent(attachment) {
+        if (attachment.content) {
+            return $("<pre>").text(attachment.content);
+        } else if (attachment.role === 'image') {
+            return `<img src="api/notes/${attachment.parentId}/images/${attachment.attachmentId}/${encodeURIComponent(attachment.title)}?${attachment.utcDateModified}">`;
+        } else {
+            return '';
         }
     }
 }

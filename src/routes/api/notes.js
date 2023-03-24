@@ -142,14 +142,19 @@ function getAttachments(req) {
     return attachments.map(attachment => {
        const pojo = attachment.getPojo();
 
-       if (includeContent && utils.isStringNote(null, attachment.mime)) {
-           pojo.content = attachment.getContent()?.toString();
-           pojo.contentLength = pojo.content.length;
+       if (includeContent) {
+           if (utils.isStringNote(null, attachment.mime)) {
+               pojo.content = attachment.getContent()?.toString();
+               pojo.contentLength = pojo.content.length;
 
-           const MAX_ATTACHMENT_LENGTH = 1_000_000;
+               const MAX_ATTACHMENT_LENGTH = 1_000_000;
 
-           if (pojo.content.length > MAX_ATTACHMENT_LENGTH) {
-               pojo.content = pojo.content.substring(0, MAX_ATTACHMENT_LENGTH);
+               if (pojo.content.length > MAX_ATTACHMENT_LENGTH) {
+                   pojo.content = pojo.content.substring(0, MAX_ATTACHMENT_LENGTH);
+               }
+           } else {
+               const content = attachment.getContent();
+               pojo.contentLength = content?.length;
            }
        }
 
