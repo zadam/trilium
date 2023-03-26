@@ -299,7 +299,9 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     // which would make the resulting HTML string invalid.
     // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
     // < and > are used for marking <small> and </small>
-    highlightedTokens = highlightedTokens.map(token => token.replace('/[<\{\}]/g', ''));
+    highlightedTokens = highlightedTokens
+        .map(token => token.replace('/[<\{\}]/g', ''))
+        .filter(token => !!token?.trim());
 
     // sort by the longest, so we first highlight the longest matches
     highlightedTokens.sort((a, b) => a.length > b.length ? -1 : 1);
@@ -307,7 +309,7 @@ function highlightSearchResults(searchResults, highlightedTokens) {
     for (const result of searchResults) {
         const note = becca.notes[result.noteId];
 
-        result.highlightedNotePathTitle = result.notePathTitle.replace('/[<\{\}]/g', '');
+        result.highlightedNotePathTitle = result.notePathTitle.replace(/[<{}]/g, '');
 
         if (highlightedTokens.find(token => note.type.includes(token))) {
             result.highlightedNotePathTitle += ` "type: ${note.type}'`;

@@ -60,7 +60,7 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
             const $row = $("<tr>");
 
             for (const key in result) {
-                $row.append($("<th>").html(key));
+                $row.append($("<th>").text(key));
             }
 
             $table.append($row);
@@ -69,7 +69,7 @@ export default class SqlResultWidget extends NoteContextAwareWidget {
                 const $row = $("<tr>");
 
                 for (const key in result) {
-                    $row.append($("<td>").html(result[key]));
+                    $row.append($("<td>").text(result[key]));
                 }
 
                 $table.append($row);

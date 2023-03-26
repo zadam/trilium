@@ -70,7 +70,9 @@ function reload() {
 }
 
 function postProcessEntityUpdate(entityName, entity) {
-    if (entityName === 'branches') {
+    if (entityName === 'notes') {
+        noteUpdated(entity);
+    } else if (entityName === 'branches') {
         branchUpdated(entity);
     } else if (entityName === 'attributes') {
         attributeUpdated(entity);
@@ -159,6 +161,15 @@ function branchDeleted(branchId) {
 
     delete becca.childParentToBranch[`${branch.noteId}-${branch.parentNoteId}`];
     delete becca.branches[branch.branchId];
+}
+
+function noteUpdated(entity) {
+    const note = becca.notes[entity.noteId];
+
+    if (note) {
+        // type / mime could have been changed, and they are present in flatTextCache
+        note.flatTextCache = null;
+    }
 }
 
 function branchUpdated(branch) {
