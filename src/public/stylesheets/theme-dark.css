@@ -72,7 +72,7 @@
 }
 
 body .global-menu-button {
-    background-image: url("../images/icon-grey.png");
+    background-image: url("../images/icon-grey.svg");
 }
 
 body ::-webkit-calendar-picker-indicator {
