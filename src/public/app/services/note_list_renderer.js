@@ -62,7 +62,9 @@ const TPL = `
     }
 
     .note-book-header {
+        border-bottom: 1px solid var(--main-border-color);
         margin-bottom: 0;
+        padding-bottom: .5rem;
         word-break: break-all;
     }
 
