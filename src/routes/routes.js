@@ -56,6 +56,7 @@ const backendLogRoute = require('./api/backend_log');
 const statsRoute = require('./api/stats');
 const fontsRoute = require('./api/fonts');
 const etapiTokensApiRoutes = require('./api/etapi_tokens');
+const otherRoute = require('./api/other');
 const shareRoutes = require('../share/routes');
 const etapiAuthRoutes = require('../etapi/auth');
 const etapiAppInfoRoutes = require('../etapi/app_info');
@@ -298,6 +299,7 @@ function register(app) {
     apiRoute(POST, '/api/delete-notes-preview', notesApiRoute.getDeleteNotesPreview);
 
     route(GET, '/api/fonts', [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
+    apiRoute(GET, '/api/other/icon-usage', otherRoute.getIconUsage);
 
     apiRoute(GET, '/api/etapi-tokens', etapiTokensApiRoutes.getTokens);
     apiRoute(POST, '/api/etapi-tokens', etapiTokensApiRoutes.createToken);

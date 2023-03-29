@@ -1,5 +1,6 @@
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import attributeService from "../services/attributes.js";
+import server from "../services/server.js";
 
 const TPL = `
 <div class="note-icon-widget dropdown">
@@ -147,6 +148,8 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
     }
 
     async renderDropdown(categoryId, search) {
+        const iconToCountPromise = this.getIconToCountMap();
+
         this.$iconList.empty();
 
         if (this.getIconLabels().length > 0) {
@@ -165,41 +168,50 @@ export default class NoteIconWidget extends NoteContextAwareWidget {
 
         search = search?.trim()?.toLowerCase();
 
-        for (const icon of icons) {
+        const filteredIcons = icons.filter(icon => {
             if (categoryId && icon.category_id !== categoryId) {
-                continue;
+                return false;
             }
 
             if (search) {
                 if (!icon.name.includes(search) && !icon.term?.find(t => t.includes(search))) {
-                    continue;
+                    return false;
                 }
             }
 
-            this.$iconList.append(
-                $('<span>')
-                    .addClass(this.getIconClass(icon))
-                    .attr("title", icon.name)
-            );
+            return true;
+        });
+
+        const iconToCount = await iconToCountPromise;
+
+        filteredIcons.sort((a, b) => {
+            const countA = iconToCount[a.className] || 0;
+            const countB = iconToCount[b.className] || 0;
+
+            return countB - countA;
+        });
+
+        for (const icon of filteredIcons) {
+            this.$iconList.append(this.renderIcon(icon));
         }
 
         this.$iconSearch.focus();
     }
 
+    async getIconToCountMap() {
+        const {iconClassToCountMap} = await server.get('other/icon-usage');
+
+        return iconClassToCountMap;
+    }
+
+    renderIcon(icon) {
+        return $('<span>')
+            .addClass("bx " + icon.className)
+            .attr("title", icon.name);
+    }
+
     getIconLabels() {
         return this.note.getOwnedLabels()
             .filter(label => ['workspaceIconClass', 'iconClass'].includes(label.name));
-    }
-
-    getIconClass(icon) {
-        if (icon.type_of_icon === 'LOGO') {
-            return `bx bxl-${icon.name}`;
-        }
-        else if (icon.type_of_icon === 'SOLID') {
-            return `bx bxs-${icon.name}`;
-        }
-        else {
-            return `bx bx-${icon.name}`;
-        }
     }
 }
