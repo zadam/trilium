@@ -175,6 +175,22 @@ function saveAttachment(req) {
     note.saveAttachment({attachmentId, role, mime, title, content});
 }
 
+function deleteAttachment(req) {
+    const {noteId, attachmentId} = req.params;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+    }
+
+    const attachment = note.getAttachmentById(attachmentId);
+
+    if (attachment) {
+        attachment.markAsDeleted();
+    }
+}
+
 function getRelationMap(req) {
     const {relationMapNoteId, noteIds} = req.body;
 
@@ -390,5 +406,6 @@ module.exports = {
     uploadModifiedFile,
     forceSaveNoteRevision,
     getAttachments,
-    saveAttachment
+    saveAttachment,
+    deleteAttachment
 };

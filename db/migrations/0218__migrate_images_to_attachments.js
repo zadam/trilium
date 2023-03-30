@@ -11,7 +11,9 @@ module.exports = () => {
             try {
                 const attachment = note.convertToParentAttachment({force: false});
 
-                log.info(`Auto-converted note '${note.noteId}' into attachment '${attachment.attachmentId}'.`)
+                if (attachment) {
+                    log.info(`Auto-converted note '${note.noteId}' into attachment '${attachment.attachmentId}'.`);
+                }
             }
             catch (e) {
                 log.error(`Cannot convert note '${note.noteId}' to attachment: ${e.message} ${e.stack}`);

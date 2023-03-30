@@ -1086,11 +1086,15 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BAttachment(row));
     }
 
-    /** @returns {BAttachment|undefined} */
-    getAttachmentByName(name) {
-        return sql.getRows("SELECT * FROM attachments WHERE parentId = ? AND name = ? AND isDeleted = 0", [this.noteId, name])
-            .map(row => new BAttachment(row))
-            [0];
+    /** @returns {BAttachment|null} */
+    getAttachmentById(attachmentId) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE parentId = ? 
+                  AND attachmentId = ?
+                  AND isDeleted = 0`, [this.noteId, attachmentId])
+            .map(row => new BAttachment(row))[0];
     }
 
     /**

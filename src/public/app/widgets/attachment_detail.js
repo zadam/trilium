@@ -2,15 +2,12 @@ import TypeWidget from "./type_widget.js";
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import AttachmentActionsWidget from "../buttons/attachments_actions.js";
+import BasicWidget from "./basic_widget.js";
 
 const TPL = `
-<div class="attachments note-detail-printable">
+<div class="attachment-detail">
     <style>
-        .attachments {
-            padding: 15px;
-        }
-        
-        .attachment-wrapper {
+        .attachment-detail-wrapper {
             margin-bottom: 20px;
         }
         
@@ -39,15 +36,19 @@ const TPL = `
         }
     </style>
 
-    <div class="attachment-list"></div>
+    <div class="attachment-detail-wrapper"></div>
 </div>`;
 
-export default class AttachmentsTypeWidget extends TypeWidget {
-    static getType() { return "attachments"; }
+export default class AttachmentDetailWidget extends BasicWidget {
+    constructor(attachment) {
+        super();
+
+        this.attachment = attachment;
+    }
 
     doRender() {
         this.$widget = $(TPL);
-        this.$list = this.$widget.find('.attachment-list');
+        this.$wrapper = this.$widget.find('.attachment-detail-wrapper');
 
         super.doRender();
     }
@@ -69,7 +70,7 @@ export default class AttachmentsTypeWidget extends TypeWidget {
             this.child(attachmentActionsWidget);
 
             this.$list.append(
-                $('<div class="attachment-wrapper">')
+                $('<div class="attachment-detail-wrapper">')
                     .append(
                         $('<div class="attachment-title-line">')
                             .append($('<h4>').append($('<span class="attachment-title">').text(attachment.title)))

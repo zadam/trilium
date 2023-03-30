@@ -1,4 +1,5 @@
 import BasicWidget from "../basic_widget.js";
+import server from "../../services/server.js";
 
 const TPL = `
 <div class="dropdown attachment-actions">
@@ -38,58 +39,9 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     doRender() {
         this.$widget = $(TPL);
-
-        // this.$findInTextButton = this.$widget.find('.find-in-text-button');
-        // this.$printActiveNoteButton = this.$widget.find('.print-active-note-button');
-        // this.$showSourceButton = this.$widget.find('.show-source-button');
-        // this.$renderNoteButton = this.$widget.find('.render-note-button');
-        //
-        // this.$exportNoteButton = this.$widget.find('.export-note-button');
-        // this.$exportNoteButton.on("click", () => {
-        //     if (this.$exportNoteButton.hasClass("disabled")) {
-        //         return;
-        //     }
-        //
-        //     this.triggerCommand("showExportDialog", {
-        //         notePath: this.noteContext.notePath,
-        //         defaultType: "single"
-        //     });
-        // });
-        //
-        // this.$importNoteButton = this.$widget.find('.import-files-button');
-        // this.$importNoteButton.on("click", () => this.triggerCommand("showImportDialog", {noteId: this.noteId}));
-        //
-        // this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
-        //
-        // this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
-        //
-        // this.$deleteNoteButton = this.$widget.find(".delete-note-button");
-        // this.$deleteNoteButton.on("click", () => {
-        //     if (this.note.noteId === 'root') {
-        //         return;
-        //     }
-        //
-        //     branchService.deleteNotes([this.note.getParentBranches()[0].branchId], true);
-        // });
     }
 
-    refreshWithNote(note) {
-        // this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book', 'search'].includes(note.type));
-        //
-        // this.toggleDisabled(this.$showSourceButton, ['text', 'relationMap', 'mermaid'].includes(note.type));
-        //
-        // this.toggleDisabled(this.$printActiveNoteButton, ['text', 'code'].includes(note.type));
-        //
-        // this.$renderNoteButton.toggle(note.type === 'render');
-        //
-        // this.$openNoteExternallyButton.toggle(utils.isElectron());
-    }
-
-    toggleDisabled($el, enable) {
-        if (enable) {
-            $el.removeAttr('disabled');
-        } else {
-            $el.attr('disabled', 'disabled');
-        }
+    async deleteAttachmentCommand() {
+        await server.remove(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}`);
     }
 }
