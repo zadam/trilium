@@ -123,9 +123,14 @@ function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false, sortNatural = false) {
+function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false, sortNatural = false, sortLocale) {
     if (!customSortBy) {
         customSortBy = 'title';
+    }
+
+    if (!sortLocale) {
+        // sortLocale can not be empty string or null value, default value must be set to undefined.
+        sortLocale = undefined;
     }
 
     sql.transactional(() => {
@@ -157,8 +162,8 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
                     // alphabetical sort
                     return b === null || b === undefined || a < b ? -1 : 1;
                 } else {
-                    // alphanumeric sort, or natural sort
-                    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+                    // natural sort
+                    return a.localeCompare(b, sortLocale, {numeric: true, sensitivity: 'base'});
                 }
 
             }
@@ -233,7 +238,9 @@ function sortNotesIfNeeded(parentNoteId) {
     const sortFoldersFirst = sortFoldersFirstLabel && sortFoldersFirstLabel.value.toLowerCase() !== "false";
     const sortNaturalLabel = parentNote.getLabel('sortNatural');
     const sortNatural = sortNaturalLabel && sortNaturalLabel.value.toLowerCase() !== "false";
-    sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst, sortNatural);
+    const sortLocale = parentNote.getLabelValue('sortLocale');
+
+    sortNotes(parentNoteId, sortedLabel.value, sortReversed, sortFoldersFirst, sortNatural, sortLocale);
 }
 
 /**
