@@ -46,7 +46,7 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
     if (entityName === 'attributes') {
         runAttachedRelations(entity.getNote(), 'runOnAttributeChange', entity);
 
-        if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst'].includes(entity.name)) {
+        if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst', 'sortNatural', 'sortLocale'].includes(entity.name)) {
             handleSortedAttribute(entity);
         } else if (entity.type === 'label') {
             handleMaybeSortingLabel(entity);
@@ -101,7 +101,7 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
                 noteService.duplicateSubtreeWithoutRoot(templateNote.noteId, note.noteId);
             }
         }
-        else if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst'].includes(entity.name)) {
+        else if (entity.type === 'label' && ['sorted', 'sortDirection', 'sortFoldersFirst', 'sortNatural', 'sortLocale'].includes(entity.name)) {
             handleSortedAttribute(entity);
         }
         else if (entity.type === 'label') {
