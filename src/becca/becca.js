@@ -123,7 +123,7 @@ class Becca {
 
     /** @returns {BAttachment|null} */
     getAttachment(attachmentId) {
-        const row = sql.getRow("SELECT * FROM attachments WHERE attachmentId = ?", [attachmentId]);
+        const row = sql.getRow("SELECT * FROM attachments WHERE attachmentId = ? AND isDeleted = 0", [attachmentId]);
 
         const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
         return row ? new BAttachment(row) : null;

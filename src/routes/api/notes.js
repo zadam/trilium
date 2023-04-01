@@ -127,70 +127,6 @@ function setNoteTypeMime(req) {
     note.save();
 }
 
-function getAttachments(req) {
-    const includeContent = req.query.includeContent === 'true';
-    const {noteId} = req.params;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    const attachments = note.getAttachments();
-
-    return attachments.map(attachment => {
-       const pojo = attachment.getPojo();
-
-       if (includeContent) {
-           if (utils.isStringNote(null, attachment.mime)) {
-               pojo.content = attachment.getContent()?.toString();
-               pojo.contentLength = pojo.content.length;
-
-               const MAX_ATTACHMENT_LENGTH = 1_000_000;
-
-               if (pojo.content.length > MAX_ATTACHMENT_LENGTH) {
-                   pojo.content = pojo.content.substring(0, MAX_ATTACHMENT_LENGTH);
-               }
-           } else {
-               const content = attachment.getContent();
-               pojo.contentLength = content?.length;
-           }
-       }
-
-       return pojo;
-    });
-}
-
-function saveAttachment(req) {
-    const {noteId} = req.params;
-    const {attachmentId, role, mime, title, content} = req.body;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    note.saveAttachment({attachmentId, role, mime, title, content});
-}
-
-function deleteAttachment(req) {
-    const {noteId, attachmentId} = req.params;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    const attachment = note.getAttachmentById(attachmentId);
-
-    if (attachment) {
-        attachment.markAsDeleted();
-    }
-}
-
 function getRelationMap(req) {
     const {relationMapNoteId, noteIds} = req.body;
 
@@ -404,8 +340,5 @@ module.exports = {
     eraseDeletedNotesNow,
     getDeleteNotesPreview,
     uploadModifiedFile,
-    forceSaveNoteRevision,
-    getAttachments,
-    saveAttachment,
-    deleteAttachment
+    forceSaveNoteRevision
 };

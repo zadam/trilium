@@ -1,6 +1,9 @@
 import BasicWidget from "../basic_widget.js";
 import server from "../../services/server.js";
 import dialogService from "../../services/dialog.js";
+import toastService from "../../services/toast.js";
+import ws from "../../services/ws.js";
+import appContext from "../../components/app_context.js";
 
 const TPL = `
 <div class="dropdown attachment-actions">
@@ -11,7 +14,7 @@ const TPL = `
     }
     
     .attachment-actions .dropdown-menu {
-        width: 15em;
+        width: 20em;
     }
     
     .attachment-actions .dropdown-item[disabled], .attachment-actions .dropdown-item[disabled]:hover {
@@ -25,9 +28,9 @@ const TPL = `
         aria-expanded="false" class="icon-action icon-action-always-border bx bx-dots-vertical-rounded"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
-        <a data-trigger-command="deleteAttachment" class="dropdown-item delete-attachment-button">Delete attachment</a>
-        <a data-trigger-command="pullAttachmentIntoNote" class="dropdown-item pull-attachment-into-note-button">Pull attachment into note</a>
-        <a data-trigger-command="pullAttachmentIntoNote" class="dropdown-item pull-attachment-into-note-button">Copy into clipboard</a>
+        <a data-trigger-command="deleteAttachment" class="dropdown-item">Delete attachment</a>
+        <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item">Convert attachment into note</a>
+        <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item pull-attachment-into-note-button">Copy into clipboard</a>
     </div>
 </div>`;
 
@@ -46,6 +49,20 @@ export default class AttachmentActionsWidget extends BasicWidget {
     async deleteAttachmentCommand() {
         if (await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
             await server.remove(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}`);
+
+            toastService.showMessage(`Attachment '${this.attachment.title}' has been deleted.`);
+        }
+    }
+
+    async convertAttachmentIntoNoteCommand() {
+        if (await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`)) {
+            const {note: newNote} = await server.post(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}/convert-to-note`)
+
+            toastService.showMessage(`Attachment '${this.attachment.title}' has been converted to note.`);
+
+            await ws.waitForMaxKnownEntityChangeId();
+
+            await appContext.tabManager.getActiveContext().setNote(newNote.noteId);
         }
     }
 }

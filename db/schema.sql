@@ -35,13 +35,12 @@ CREATE TABLE IF NOT EXISTS "notes" (
                                        `isProtected`	INT NOT NULL DEFAULT 0,
                                        `type` TEXT NOT NULL DEFAULT 'text',
                                        `mime` TEXT NOT NULL DEFAULT 'text/html',
-                                       `blobId` TEXT DEFAULT NULL,
                                        `isDeleted`	INT NOT NULL DEFAULT 0,
                                        `deleteId`   TEXT DEFAULT NULL,
                                        `dateCreated`	TEXT NOT NULL,
                                        `dateModified`	TEXT NOT NULL,
                                        `utcDateCreated`	TEXT NOT NULL,
-                                       `utcDateModified`	TEXT NOT NULL
+                                       `utcDateModified`	TEXT NOT NULL, blobId TEXT DEFAULT NULL,
                                        PRIMARY KEY(`noteId`));
 CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
                                              `noteId`	TEXT NOT NULL,
@@ -49,12 +48,11 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIM
                                              mime TEXT DEFAULT '' NOT NULL,
                                              `title`	TEXT NOT NULL,
                                              `isProtected`	INT NOT NULL DEFAULT 0,
-                                             `blobId` TEXT DEFAULT NULL,
                                              `utcDateLastEdited` TEXT NOT NULL,
                                              `utcDateCreated` TEXT NOT NULL,
                                              `utcDateModified` TEXT NOT NULL,
                                              `dateLastEdited` TEXT NOT NULL,
-                                             `dateCreated` TEXT NOT NULL);
+                                             `dateCreated` TEXT NOT NULL, blobId TEXT DEFAULT NULL);
 CREATE TABLE IF NOT EXISTS "options"
 (
     name TEXT not null PRIMARY KEY,
@@ -103,6 +101,13 @@ CREATE TABLE IF NOT EXISTS "recent_notes"
     noteId TEXT not null primary key,
     notePath TEXT not null,
     utcDateCreated TEXT not null
+);
+CREATE TABLE IF NOT EXISTS "blobs" (
+                                               `blobId`	TEXT NOT NULL,
+                                               `content`	TEXT NULL DEFAULT NULL,
+                                               `dateModified` TEXT NOT NULL,
+                                               `utcDateModified` TEXT NOT NULL,
+                                               PRIMARY KEY(`blobId`)
 );
 CREATE TABLE IF NOT EXISTS "attachments"
 (

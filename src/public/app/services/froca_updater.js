@@ -33,8 +33,9 @@ async function processEntityChanges(entityChanges) {
                 options.set(ec.entity.name, ec.entity.value);
 
                 loadResults.addOption(ec.entity.name);
-            }
-            else if (['etapi_tokens', 'attachments'].includes(ec.entityName)) {
+            } else if (ec.entityName === 'attachments') {
+                loadResults.addAttachment(ec.entity);
+            } else if (ec.entityName === 'etapi_tokens') {
                 // NOOP
             }
             else {

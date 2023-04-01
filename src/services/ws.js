@@ -137,6 +137,8 @@ function fillInAdditionalProperties(entityChange) {
         }
     } else if (entityChange.entityName === 'blobs') {
         entityChange.noteIds = sql.getColumn("SELECT noteId FROM notes WHERE blobId = ? AND isDeleted = 0", [entityChange.entityId]);
+    } else if (entityChange.entityName === 'attachments') {
+        entityChange.entity = sql.getRow(`SELECT * FROM attachments WHERE attachmentId = ?`, [entityChange.entityId]);
     }
 
     if (entityChange.entity instanceof AbstractBeccaEntity) {

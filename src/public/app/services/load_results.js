@@ -23,6 +23,8 @@ export default class LoadResults {
         this.contentNoteIdToComponentId = [];
 
         this.options = [];
+
+        this.attachments = [];
     }
 
     getEntity(entityName, entityId) {
@@ -116,6 +118,14 @@ export default class LoadResults {
         return this.options.includes(name);
     }
 
+    addAttachment(attachment) {
+        this.attachments.push(attachment);
+    }
+
+    getAttachments() {
+        return this.attachments;
+    }
+
     /**
      * @returns {boolean} true if there are changes which could affect the attributes (including inherited ones)
      *          notably changes in note itself should not have any effect on attributes
@@ -132,7 +142,8 @@ export default class LoadResults {
             && this.noteReorderings.length === 0
             && this.noteRevisions.length === 0
             && this.contentNoteIdToComponentId.length === 0
-            && this.options.length === 0;
+            && this.options.length === 0
+            && this.attachments.length === 0;
     }
 
     isEmptyForTree() {
