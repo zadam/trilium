@@ -1,5 +1,6 @@
 import BasicWidget from "../basic_widget.js";
 import server from "../../services/server.js";
+import dialogService from "../../services/dialog.js";
 
 const TPL = `
 <div class="dropdown attachment-actions">
@@ -39,9 +40,12 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     doRender() {
         this.$widget = $(TPL);
+        this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
     }
 
     async deleteAttachmentCommand() {
-        await server.remove(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}`);
+        if (await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
+            await server.remove(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}`);
+        }
     }
 }

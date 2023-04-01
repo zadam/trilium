@@ -1,5 +1,3 @@
-import TypeWidget from "./type_widget.js";
-import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import AttachmentActionsWidget from "../buttons/attachments_actions.js";
 import BasicWidget from "./basic_widget.js";
@@ -36,7 +34,16 @@ const TPL = `
         }
     </style>
 
-    <div class="attachment-detail-wrapper"></div>
+    <div class="attachment-detail-wrapper">
+        <div class="attachment-title-line">
+            <h4 class="attachment-title"></h4>                
+            <div class="attachment-details"></div>
+            <div style="flex: 1 1;">
+            <div class="attachment-actions-container"></div>
+        </div>
+        
+        <div class="attachment-content"></div>
+    </div>
 </div>`;
 
 export default class AttachmentDetailWidget extends BasicWidget {
@@ -44,56 +51,27 @@ export default class AttachmentDetailWidget extends BasicWidget {
         super();
 
         this.attachment = attachment;
+        this.attachmentActionsWidget = new AttachmentActionsWidget(attachment);
+        this.child(this.attachmentActionsWidget);
     }
 
     doRender() {
         this.$widget = $(TPL);
         this.$wrapper = this.$widget.find('.attachment-detail-wrapper');
+        this.$wrapper.find('.attachment-title').text(this.attachment.title);
+        this.$wrapper.find('.attachment-details')
+            .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
+        this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
+        this.$wrapper.find('.attachment-content').append(this.renderContent());
 
         super.doRender();
     }
 
-    async doRefresh(note) {
-        this.$list.empty();
-        this.children = [];
-
-        const attachments = await server.get(`notes/${this.noteId}/attachments?includeContent=true`);
-
-        if (attachments.length === 0) {
-            this.$list.html("<strong>This note has no attachments.</strong>");
-
-            return;
-        }
-
-        for (const attachment of attachments) {
-            const attachmentActionsWidget = new AttachmentActionsWidget(attachment);
-            this.child(attachmentActionsWidget);
-
-            this.$list.append(
-                $('<div class="attachment-detail-wrapper">')
-                    .append(
-                        $('<div class="attachment-title-line">')
-                            .append($('<h4>').append($('<span class="attachment-title">').text(attachment.title)))
-                            .append(
-                                $('<div class="attachment-details">')
-                                    .text(`Role: ${attachment.role}, Size: ${utils.formatSize(attachment.contentLength)}`)
-                            )
-                            .append($('<div style="flex: 1 1;">')) // spacer
-                            .append(attachmentActionsWidget.render())
-                    )
-                    .append(
-                        $('<div class="attachment-content">')
-                            .append(this.renderContent(attachment))
-                    )
-            );
-        }
-    }
-
-    renderContent(attachment) {
-        if (attachment.content) {
-            return $("<pre>").text(attachment.content);
-        } else if (attachment.role === 'image') {
-            return `<img src="api/notes/${attachment.parentId}/images/${attachment.attachmentId}/${encodeURIComponent(attachment.title)}?${attachment.utcDateModified}">`;
+    renderContent() {
+        if (this.attachment.content) {
+            return $("<pre>").text(this.attachment.content);
+        } else if (this.attachment.role === 'image') {
+            return `<img src="api/notes/${this.attachment.parentId}/images/${this.attachment.attachmentId}/${encodeURIComponent(this.attachment.title)}?${this.attachment.utcDateModified}">`;
         } else {
             return '';
         }

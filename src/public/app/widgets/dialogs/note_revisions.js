@@ -234,8 +234,6 @@ export default class NoteRevisionsDialog extends BasicWidget {
 
         const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
-        console.log(fullNoteRevision);
-
         if (revisionItem.type === 'text') {
             this.$content.html(fullNoteRevision.content);
 
