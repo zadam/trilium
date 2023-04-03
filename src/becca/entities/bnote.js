@@ -534,6 +534,20 @@ class BNote extends AbstractBeccaEntity {
 
     /**
      * @param {string} name - label name
+     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     */
+    isLabelTruthy(name) {
+        const label = this.getLabel(name);
+
+        if (!label) {
+            return false;
+        }
+
+        return label && label.value !== 'false';
+    }
+
+    /**
+     * @param {string} name - label name
      * @param {string} [value] - label value
      * @returns {boolean} true if label exists (excluding inherited)
      */

@@ -23,7 +23,7 @@ const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 
 function getNewNotePosition(parentNote) {
-    if (parentNote.hasLabel('newNotesOnTop')) {
+    if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
             .reduce((min, note) => Math.min(min, note.notePosition), 0);
 
