@@ -37,7 +37,7 @@ const TPL = `
 
     <div class="attachment-detail-wrapper">
         <div class="attachment-title-line">
-            <h4 class="attachment-title"></h4>                
+            <h4 class="attachment-title"><a href="javascript:" data-trigger-command="openAttachmentDetail"></a></h4>                
             <div class="attachment-details"></div>
             <div style="flex: 1 1;"></div>
             <div class="attachment-actions-container"></div>
@@ -73,7 +73,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
                     .html()
             );
         this.$wrapper = this.$widget.find('.attachment-detail-wrapper');
-        this.$wrapper.find('.attachment-title').text(this.attachment.title);
+        this.$wrapper.find('.attachment-title a').text(this.attachment.title);
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
@@ -90,9 +90,11 @@ export default class AttachmentDetailWidget extends BasicWidget {
         }
     }
 
-    async entitiesReloadedEvent({loadResults}) {
-        console.log("AttachmentDetailWidget: entitiesReloadedEvent");
+    openAttachmentDetailCommand() {
 
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
         const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachment.attachmentId);
 
         if (attachmentChange) {

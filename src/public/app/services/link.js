@@ -87,7 +87,16 @@ function getNotePathFromLink($link) {
 
     const url = $link.attr('href');
 
-    return url ? getNotePathFromUrl(url) : null;
+    const notePath = url ? getNotePathFromUrl(url) : null;
+    const viewScope = {
+        viewMode: $link.attr('data-view-mode'),
+        attachmentId: $link.attr('data-attachment-id'),
+    };
+
+    return {
+        notePath,
+        viewScope
+    };
 }
 
 function goToLink(evt) {
@@ -101,22 +110,25 @@ function goToLink(evt) {
     evt.preventDefault();
     evt.stopPropagation();
 
-    const notePath = getNotePathFromLink($link);
+    const {notePath, viewScope} = getNotePathFromLink($link);
 
     const ctrlKey = utils.isCtrlKey(evt);
+    const isLeftClick = evt.which === 1;
+    const isMiddleClick = evt.which === 2;
+    const openInNewTab = (isLeftClick && ctrlKey) || isMiddleClick;
 
     if (notePath) {
-        if ((evt.which === 1 && ctrlKey) || evt.which === 2) {
-            appContext.tabManager.openTabWithNoteWithHoisting(notePath);
+        if (openInNewTab) {
+            appContext.tabManager.openTabWithNoteWithHoisting(notePath, { viewScope });
         }
-        else if (evt.which === 1) {
+        else if (isLeftClick) {
             const ntxId = $(evt.target).closest("[data-ntx-id]").attr("data-ntx-id");
 
             const noteContext = ntxId
                 ? appContext.tabManager.getNoteContextById(ntxId)
                 : appContext.tabManager.getActiveContext();
 
-            noteContext.setNote(notePath).then(() => {
+            noteContext.setNote(notePath, { viewScope }).then(() => {
                 if (noteContext !== appContext.tabManager.getActiveContext()) {
                     appContext.tabManager.activateNoteContext(noteContext.ntxId);
                 }
@@ -124,7 +136,7 @@ function goToLink(evt) {
         }
     }
     else {
-        if ((evt.which === 1 && ctrlKey) || evt.which === 2
+        if (openInNewTab
             || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
             || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
         ) {
@@ -147,7 +159,7 @@ function goToLink(evt) {
 function linkContextMenu(e) {
     const $link = $(e.target).closest("a");
 
-    const notePath = getNotePathFromLink($link);
+    const {notePath, viewScope} = getNotePathFromLink($link);
 
     if (!notePath) {
         return;
@@ -155,7 +167,7 @@ function linkContextMenu(e) {
 
     e.preventDefault();
 
-    linkContextMenuService.openContextMenu(notePath, null, e);
+    linkContextMenuService.openContextMenu(notePath, e, viewScope, null);
 }
 
 async function loadReferenceLinkTitle(noteId, $el) {

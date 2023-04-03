@@ -27,7 +27,8 @@ import NoteMapTypeWidget from "./type_widgets/note_map.js";
 import WebViewTypeWidget from "./type_widgets/web_view.js";
 import DocTypeWidget from "./type_widgets/doc.js";
 import ContentWidgetTypeWidget from "./type_widgets/content_widget.js";
-import AttachmentsTypeWidget from "./type_widgets/attachments.js";
+import AttachmentListTypeWidget from "./type_widgets/attachment_list.js";
+import AttachmentDetailTypeWidget from "./type_widgets/attachment_detail.js";
 
 const TPL = `
 <div class="note-detail">
@@ -63,7 +64,8 @@ const typeWidgetClasses = {
     'webView': WebViewTypeWidget,
     'doc': DocTypeWidget,
     'contentWidget': ContentWidgetTypeWidget,
-    'attachments': AttachmentsTypeWidget
+    'attachmentDetail': AttachmentDetailTypeWidget,
+    'attachmentList': AttachmentListTypeWidget
 };
 
 export default class NoteDetailWidget extends NoteContextAwareWidget {
@@ -188,11 +190,12 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
         }
 
         let type = note.type;
+        const viewScope = this.noteContext.viewScope;
 
-        if (type === 'text' && this.noteContext.viewScope.viewMode === 'source') {
+        if (type === 'text' && viewScope.viewMode === 'source') {
             type = 'readOnlyCode';
-        } else if (this.noteContext.viewScope.viewMode === 'attachments') {
-            type = 'attachments';
+        } else if (viewScope.viewMode === 'attachments') {
+            type = viewScope.attachmentId ? 'attachmentDetail' : 'attachmentList';
         } else if (type === 'text' && await this.noteContext.isReadOnly()) {
             type = 'readOnlyText';
         } else if ((type === 'code' || type === 'mermaid') && await this.noteContext.isReadOnly()) {

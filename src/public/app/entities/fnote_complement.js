@@ -1,4 +1,5 @@
 /**
+ * FIXME: probably make it a FBlob
  * Complements the FNote with the main note content and other extra attributes
  */
 class FNoteComplement {

@@ -13,7 +13,7 @@ export default class OpenNoteButtonWidget extends OnClickButtonWidget {
             .icon(() => this.noteToOpen.getIcon())
             .onClick((widget, evt) => this.launch(evt))
             .onAuxClick((widget, evt) => this.launch(evt))
-            .onContextMenu(evt => linkContextMenuService.openContextMenu(this.noteToOpen.noteId, null, evt));
+            .onContextMenu(evt => linkContextMenuService.openContextMenu(this.noteToOpen.noteId, evt));
     }
 
     async launch(evt) {

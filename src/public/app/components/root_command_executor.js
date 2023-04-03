@@ -117,7 +117,12 @@ export default class RootCommandExecutor extends Component {
         const notePath = appContext.tabManager.getActiveContextNotePath();
 
         if (notePath) {
-            await appContext.tabManager.openContextWithNote(notePath, { activate: true, viewMode: 'source' });
+            await appContext.tabManager.openContextWithNote(notePath, {
+                activate: true,
+                viewScope: {
+                    viewMode: 'source'
+                }
+            });
         }
     }
 
@@ -125,7 +130,25 @@ export default class RootCommandExecutor extends Component {
         const notePath = appContext.tabManager.getActiveContextNotePath();
 
         if (notePath) {
-            await appContext.tabManager.openContextWithNote(notePath, { activate: true, viewMode: 'attachments' });
+            await appContext.tabManager.openContextWithNote(notePath, {
+                activate: true,
+                viewScope: {
+                    viewMode: 'attachments'
+                }
+            });
+        }
+    }
+
+    async showAttachmentDetailCommand() {
+        const notePath = appContext.tabManager.getActiveContextNotePath();
+
+        if (notePath) {
+            await appContext.tabManager.openContextWithNote(notePath, {
+                activate: true,
+                viewScope: {
+                    viewMode: 'attachments'
+                }
+            });
         }
     }
 }

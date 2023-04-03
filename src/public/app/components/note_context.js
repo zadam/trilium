@@ -53,8 +53,8 @@ class NoteContext extends Component {
         this.notePath = resolvedNotePath;
         ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
-        this.resetViewScope();
-        this.viewScope.viewMode = opts.viewMode || "default";
+        this.viewScope = opts.viewScope || {};
+        this.viewScope.viewMode = this.viewScope.viewMode || "default";
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -187,7 +187,7 @@ class NoteContext extends Component {
             notePath: this.notePath,
             hoistedNoteId: this.hoistedNoteId,
             active: this.isActive(),
-            viewMode: this.viewScope.viewMode
+            viewScope: this.viewScope
         }
     }
 

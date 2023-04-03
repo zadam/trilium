@@ -3,24 +3,24 @@ import server from "../../services/server.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
 
 const TPL = `
-<div class="attachments note-detail-printable">
+<div class="attachment-list note-detail-printable">
     <style>
-        .attachments {
+        .attachment-list {
             padding: 15px;
         }
     </style>
 
-    <div class="attachment-list"></div>
+    <div class="attachment-list-wrapper"></div>
 </div>`;
 
-export default class AttachmentsTypeWidget extends TypeWidget {
+export default class AttachmentListTypeWidget extends TypeWidget {
     static getType() {
-        return "attachments";
+        return "attachmentList";
     }
 
     doRender() {
         this.$widget = $(TPL);
-        this.$list = this.$widget.find('.attachment-list');
+        this.$list = this.$widget.find('.attachment-list-wrapper');
 
         super.doRender();
     }

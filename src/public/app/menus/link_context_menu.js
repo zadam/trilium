@@ -1,7 +1,7 @@
 import contextMenu from "./context_menu.js";
 import appContext from "../components/app_context.js";
 
-function openContextMenu(notePath, hoistedNoteId, e) {
+function openContextMenu(notePath, e, viewScope = {}, hoistedNoteId = null) {
     contextMenu.show({
         x: e.pageX,
         y: e.pageY,
@@ -16,16 +16,16 @@ function openContextMenu(notePath, hoistedNoteId, e) {
             }
 
             if (command === 'openNoteInNewTab') {
-                appContext.tabManager.openContextWithNote(notePath, { hoistedNoteId });
+                appContext.tabManager.openContextWithNote(notePath, { hoistedNoteId, viewScope });
             }
             else if (command === 'openNoteInNewSplit') {
                 const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
                 const {ntxId} = subContexts[subContexts.length - 1];
 
-                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId});
+                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId, viewScope});
             }
             else if (command === 'openNoteInNewWindow') {
-                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId, viewScope});
             }
         }
     });

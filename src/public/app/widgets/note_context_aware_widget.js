@@ -61,6 +61,10 @@ export default class NoteContextAwareWidget extends BasicWidget {
         }
     }
 
+    /**
+     * @param {FNote} note
+     * @returns {Promise<void>}
+     */
     async refreshWithNote(note) {}
 
     async noteSwitchedEvent({noteContext, notePath}) {

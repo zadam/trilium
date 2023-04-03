@@ -51,6 +51,9 @@ class FNote {
         /** @type {Object.<string, string>} */
         this.childToBranch = {};
 
+        /** @type {FAttachment[]|null} */
+        this.attachments = null; // lazy loaded
+
         this.update(row);
     }
 
@@ -223,6 +226,23 @@ class FNote {
     /** @returns {Promise<FNote[]>} */
     async getChildNotes() {
         return await this.froca.getNotes(this.children);
+    }
+
+    /** @returns {Promise<FAttachment[]>} */
+    async getAttachments() {
+        if (!this.attachments) {
+            this.attachments = (await server.get(`notes/${this.noteId}/attachments`))
+                .map(row => new FAttachment(froca, row));
+        }
+
+        return this.attachments;
+    }
+
+    /** @returns {Promise<FAttachment>} */
+    async getAttachmentById(attachmentId) {
+        const attachments = await this.getAttachments();
+
+        return attachments.find(att => att.attachmentId === attachmentId);
     }
 
     /**

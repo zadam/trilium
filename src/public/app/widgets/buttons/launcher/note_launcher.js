@@ -27,7 +27,7 @@ export default class NoteLauncher extends AbstractLauncher {
 
                 const hoistedNoteId = this.getHoistedNoteId();
 
-                linkContextMenuService.openContextMenu(targetNoteId, hoistedNoteId, evt);
+                linkContextMenuService.openContextMenu(targetNoteId, evt, {}, hoistedNoteId);
             });
     }
 

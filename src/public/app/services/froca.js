@@ -34,6 +34,10 @@ class Froca {
         /** @type {Object.<string, FAttribute>} */
         this.attributes = {};
 
+        /** @type {Object.<string, FAttachment>} */
+        this.attachments = {};
+
+        // FIXME
         /** @type {Object.<string, Promise<FNoteComplement>>} */
         this.blobPromises = {};
 
@@ -311,6 +315,7 @@ class Froca {
     }
 
     /**
+     * // FIXME
      * @returns {Promise<FNoteComplement>}
      */
     async getNoteComplement(noteId) {

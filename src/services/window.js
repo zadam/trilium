@@ -15,7 +15,7 @@ let mainWindow;
 /** @type {Electron.BrowserWindow} */
 let setupWindow;
 
-async function createExtraWindow(notePath, hoistedNoteId = 'root') {
+async function createExtraWindow(notePath, hoistedNoteId = 'root', viewScope = {}) {
     const spellcheckEnabled = optionService.getOptionBool('spellCheckEnabled');
 
     const {BrowserWindow} = require('electron');
@@ -35,13 +35,13 @@ async function createExtraWindow(notePath, hoistedNoteId = 'root') {
     });
 
     win.setMenuBarVisibility(false);
-    win.loadURL(`http://127.0.0.1:${port}/?extra=1&extraHoistedNoteId=${hoistedNoteId}#${notePath}`);
+    win.loadURL(`http://127.0.0.1:${port}/?extraWindow=1&extraHoistedNoteId=${hoistedNoteId}&extraViewScope=${JSON.stringify(viewScope)}#${notePath}`);
 
     configureWebContents(win.webContents, spellcheckEnabled);
 }
 
 ipcMain.on('create-extra-window', (event, arg) => {
-    createExtraWindow(arg.notePath, arg.hoistedNoteId);
+    createExtraWindow(arg.notePath, arg.hoistedNoteId, arg.viewScope);
 });
 
 async function createMainWindow(app) {

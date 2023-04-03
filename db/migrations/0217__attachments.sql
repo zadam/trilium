@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS "attachments"
     title         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
     blobId    TEXT DEFAULT null,
-    utcDateScheduledForDeletionSince TEXT DEFAULT NULL,
+    dateModified TEXT NOT NULL,
     utcDateModified TEXT not null,
+    utcDateScheduledForDeletionSince TEXT DEFAULT NULL,
     isDeleted    INT  not null,
     deleteId    TEXT DEFAULT NULL);
 

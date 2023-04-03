@@ -86,7 +86,8 @@ export default class TabManager extends Component {
                 filteredTabs.push({
                     notePath: notePathInUrl || 'root',
                     active: true,
-                    hoistedNoteId: glob.extraHoistedNoteId || 'root'
+                    hoistedNoteId: glob.extraHoistedNoteId || 'root',
+                    viewScope: glob.extraViewScope || {}
                 });
             }
 
@@ -101,7 +102,7 @@ export default class TabManager extends Component {
                         ntxId: tab.ntxId,
                         mainNtxId: tab.mainNtxId,
                         hoistedNoteId: tab.hoistedNoteId,
-                        viewMode: tab.viewMode
+                        viewScope: tab.viewScope
                     });
                 }
             });
@@ -271,7 +272,7 @@ export default class TabManager extends Component {
     /**
      * If the requested notePath is within current note hoisting scope then keep the note hoisting also for the new tab.
      */
-    async openTabWithNoteWithHoisting(notePath, activate = false) {
+    async openTabWithNoteWithHoisting(notePath, opts = {}) {
         const noteContext = this.getActiveContext();
         let hoistedNoteId = 'root';
 
@@ -283,7 +284,9 @@ export default class TabManager extends Component {
             }
         }
 
-        return this.openContextWithNote(notePath, { activate, hoistedNoteId });
+        opts.hoistedNoteId = hoistedNoteId;
+
+        return this.openContextWithNote(notePath, opts);
     }
 
     async openContextWithNote(notePath, opts = {}) {
@@ -291,7 +294,7 @@ export default class TabManager extends Component {
         const ntxId = opts.ntxId || null;
         const mainNtxId = opts.mainNtxId || null;
         const hoistedNoteId = opts.hoistedNoteId || 'root';
-        const viewMode = opts.viewMode || "default";
+        const viewScope = opts.viewScope || { viewMode: "default" };
 
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
@@ -299,7 +302,7 @@ export default class TabManager extends Component {
             await noteContext.setNote(notePath, {
                 // if activate is false then send normal noteSwitched event
                 triggerSwitchEvent: !activate,
-                viewMode: viewMode
+                viewScope: viewScope
             });
         }
 

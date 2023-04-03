@@ -38,7 +38,7 @@ export default class Entrypoints extends Component {
 
         await ws.waitForMaxKnownEntityChangeId();
 
-        await appContext.tabManager.openTabWithNoteWithHoisting(note.noteId, true);
+        await appContext.tabManager.openTabWithNoteWithHoisting(note.noteId, {activate: true});
 
         appContext.triggerEvent('focusAndSelectTitle', {isNewNote: true});
     }
@@ -135,7 +135,7 @@ export default class Entrypoints extends Component {
         utils.reloadFrontendApp("Switching to mobile version");
     }
 
-    async openInWindowCommand({notePath, hoistedNoteId}) {
+    async openInWindowCommand({notePath, hoistedNoteId, viewScope}) {
         if (!hoistedNoteId) {
             hoistedNoteId = 'root';
         }
@@ -143,10 +143,10 @@ export default class Entrypoints extends Component {
         if (utils.isElectron()) {
             const {ipcRenderer} = utils.dynamicRequire('electron');
 
-            ipcRenderer.send('create-extra-window', {notePath, hoistedNoteId});
+            ipcRenderer.send('create-extra-window', {notePath, hoistedNoteId, viewScope});
         }
         else {
-            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extra=1#${notePath}`;
+            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extraWindow=1&extraHoistedNoteId=${hoistedNoteId}&extraViewScope=${JSON.stringify(viewScope)}#${notePath}`;
 
             window.open(url, '', 'width=1000,height=800');
         }

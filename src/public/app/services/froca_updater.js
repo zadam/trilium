@@ -34,7 +34,7 @@ async function processEntityChanges(entityChanges) {
 
                 loadResults.addOption(ec.entity.name);
             } else if (ec.entityName === 'attachments') {
-                loadResults.addAttachment(ec.entity);
+                processAttachment(loadResults, ec);
             } else if (ec.entityName === 'etapi_tokens') {
                 // NOOP
             }
@@ -229,6 +229,43 @@ function processAttributeChange(loadResults, ec) {
             targetNote.targetRelations.push(attribute.attributeId);
         }
     }
+}
+
+function processAttachment(loadResults, ec) {
+    if (ec.isErased && ec.entityId in froca.attachments) {
+        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
+        return;
+    }
+
+    const attachment = froca.attachments[ec.entityId];
+
+    if (ec.isErased || ec.entity?.isDeleted) {
+        if (attachment) {
+            const note = attachment.getNote();
+
+            if (note && note.attachments) {
+                note.attachments = note.attachments.filter(att => att.attachmentId !== attachment.attachmentId);
+            }
+
+            loadResults.addAttachment(ec.entity);
+
+            delete froca.attachments[ec.entityId];
+        }
+
+        return;
+    }
+
+    if (attachment) {
+        attachment.update(ec.entity);
+    } else {
+        const note = froca.notes[ec.entity.parentId];
+
+        if (note && note.attachments) {
+            note.attachments.push(new FAttachment(froca, ec.entity));
+        }
+    }
+
+    loadResults.addAttachment(ec.entity);
 }
 
 export default {
