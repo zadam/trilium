@@ -55,7 +55,14 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
         this.$container = this.$widget.find(".note-map-container");
         this.$styleResolver = this.$widget.find('.style-resolver');
 
-        window.addEventListener('resize', () => this.setDimensions(), false);
+
+        try {
+            new ResizeObserver(() => this.setDimensions()).observe(this.$container[0])
+        } catch (error) {
+            window.addEventListener('resize', () => this.setDimensions(), false);
+        }
+
+
 
         this.$widget.find(".map-type-switcher button").on("click",  async e => {
             const type = $(e.target).closest("button").attr("data-type");
