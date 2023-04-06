@@ -57,7 +57,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         window.addEventListener('resize', () => this.setDimensions(), false);
 
-        this.$widget.find(".map-type-switcher button").on("click",  async e => {
+        this.$widget.find(".map-type-switcher button").on("click", async e => {
             const type = $(e.target).closest("button").attr("data-type");
 
             await attributeService.setLabel(this.noteId, 'mapType', type);
@@ -91,6 +91,8 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
 
         await libraryLoader.requireLibrary(libraryLoader.FORCE_GRAPH);
 
+        let isContextMenuOpening = false
+
         this.graph = ForceGraph()(this.$container[0])
             .width(this.$container.width())
             .height(this.$container.height())
@@ -112,8 +114,15 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .linkDirectionalArrowRelPos(1)
             .linkWidth(1)
             .linkColor(() => this.css.mutedTextColor)
-            .onNodeClick(node => appContext.tabManager.getActiveContext().setNote(node.id))
-            .onNodeRightClick((node, e) => linkContextMenuService.openContextMenu(node.id, null, e));
+            .onNodeClick(node => {
+                if (!isContextMenuOpening) {
+                    appContext.tabManager.getActiveContext().setNote(node.id)
+                }
+            })
+            .onNodeRightClick(async (node, e) => {
+                isContextMenuOpening = true
+                linkContextMenuService.openContextMenu(node.id, null, e, () => {isContextMenuOpening = false})
+            });
 
         if (this.mapType === 'link') {
             this.graph

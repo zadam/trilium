@@ -1,7 +1,7 @@
 import contextMenu from "./context_menu.js";
 import appContext from "../components/app_context.js";
 
-function openContextMenu(notePath, hoistedNoteId, e) {
+function openContextMenu(notePath, hoistedNoteId, e, callback) {
     contextMenu.show({
         x: e.pageX,
         y: e.pageY,
@@ -10,23 +10,24 @@ function openContextMenu(notePath, hoistedNoteId, e) {
             {title: "Open note in a new split", command: "openNoteInNewSplit", uiIcon: "bx bx-dock-right"},
             {title: "Open note in a new window", command: "openNoteInNewWindow", uiIcon: "bx bx-window-open"}
         ],
-        selectMenuItemHandler: ({command}) => {
+        selectMenuItemHandler: async ({command}) => {
             if (!hoistedNoteId) {
                 hoistedNoteId = appContext.tabManager.getActiveContext().hoistedNoteId;
             }
 
             if (command === 'openNoteInNewTab') {
-                appContext.tabManager.openContextWithNote(notePath, { hoistedNoteId });
+                await appContext.tabManager.openContextWithNote(notePath, {hoistedNoteId});
             }
             else if (command === 'openNoteInNewSplit') {
                 const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
                 const {ntxId} = subContexts[subContexts.length - 1];
 
-                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId});
+                await appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId});
             }
             else if (command === 'openNoteInNewWindow') {
-                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+                await appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId});
             }
+            callback && callback()
         }
     });
 }
