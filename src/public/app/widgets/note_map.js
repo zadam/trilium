@@ -120,8 +120,10 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
                 }
             })
             .onNodeRightClick(async (node, e) => {
-                isContextMenuOpening = true
-                linkContextMenuService.openContextMenu(node.id, null, e, () => {isContextMenuOpening = false})
+                isContextMenuOpening = true;
+
+                const contextMenu = await linkContextMenuService.openContextMenu(node.id, null, e);
+                const removeHideHandler = contextMenu.onHide(() => {isContextMenuOpening = false; removeHideHandler()});
             });
 
         if (this.mapType === 'link') {

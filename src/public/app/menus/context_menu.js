@@ -5,6 +5,8 @@ class ContextMenu {
         this.$widget = $("#context-menu-container");
         this.dateContextMenuOpenedMs = 0;
 
+        this.hideHandlers = [];
+
         $(document).on('click', () => this.hide());
     }
 
@@ -20,6 +22,8 @@ class ContextMenu {
         this.positionMenu();
 
         this.dateContextMenuOpenedMs = Date.now();
+
+        return this;
     }
 
     positionMenu() {
@@ -148,7 +152,21 @@ class ContextMenu {
         // we might filter out right clicks, but then it's better if even right clicks close the context menu
         if (Date.now() - this.dateContextMenuOpenedMs > 300) {
             this.$widget.hide();
+
+            setTimeout(() => {
+                this.hideHandlers.forEach(fn => {
+                    fn(this);
+                });
+            }, 0);
+
         }
+    }
+    onHide(fn) {
+        this.hideHandlers.push(fn);
+        return () => {
+            const fnIndex = this.hideHandlers.findIndex(v => v === fn);
+            this.hideHandlers.splice(fnIndex, 1);
+        };
     }
 }
 

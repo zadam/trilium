@@ -1,8 +1,8 @@
 import contextMenu from "./context_menu.js";
 import appContext from "../components/app_context.js";
 
-function openContextMenu(notePath, hoistedNoteId, e, callback) {
-    contextMenu.show({
+function openContextMenu(notePath, hoistedNoteId, e) {
+    return contextMenu.show({
         x: e.pageX,
         y: e.pageY,
         items: [
@@ -16,20 +16,19 @@ function openContextMenu(notePath, hoistedNoteId, e, callback) {
             }
 
             if (command === 'openNoteInNewTab') {
-                await appContext.tabManager.openContextWithNote(notePath, {hoistedNoteId});
+                appContext.tabManager.openContextWithNote(notePath, {hoistedNoteId});
             }
             else if (command === 'openNoteInNewSplit') {
                 const subContexts = appContext.tabManager.getActiveContext().getSubContexts();
                 const {ntxId} = subContexts[subContexts.length - 1];
 
-                await appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId});
+                appContext.triggerCommand("openNewNoteSplit", {ntxId, notePath, hoistedNoteId});
             }
             else if (command === 'openNoteInNewWindow') {
-                await appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId});
+                appContext.triggerCommand('openInWindow', {notePath, hoistedNoteId});
             }
-            callback && callback()
         }
-    });
+    })
 }
 
 export default {
