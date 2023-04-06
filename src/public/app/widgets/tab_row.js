@@ -280,14 +280,7 @@ export default class TabRowWidget extends BasicWidget {
             this.layoutTabs();
         };
 
-        // ResizeObserver exists only in FF69
-        if (typeof ResizeObserver !== "undefined") {
-            new ResizeObserver(resizeListener).observe(this.$widget[0]);
-        }
-        else {
-            // for older firefox
-            window.addEventListener('resize', resizeListener);
-        }
+        new ResizeObserver(resizeListener).observe(this.$widget[0]);
 
         this.tabEls.forEach((tabEl) => this.setTabCloseEvent(tabEl));
     }

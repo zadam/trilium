@@ -100,12 +100,7 @@ export default class NoteMapRibbonWidget extends NoteContextAwareWidget {
             }
         }
 
-        try {
-            new ResizeObserver(handleResize).observe(this.$widget[0])
-        } catch (error) {
-            window.addEventListener('resize', handleResize, false);
-        }
-
+        new ResizeObserver(handleResize).observe(this.$widget[0])
     }
 
     setSmallSize() {
