@@ -128,6 +128,10 @@ export default class DesktopLayout {
                                     )
                                     .child(
                                         new RibbonContainer()
+                                            // order of the widgets matter. Some of these want to "activate" themselves
+                                            // when visible, when this happens to multiple of them, the first one "wins".
+                                            // promoted attributes should always win.
+                                            .ribbon(new PromotedAttributesWidget())
                                             .ribbon(new ScriptExecutorWidget())
                                             .ribbon(new SearchDefinitionWidget())
                                             .ribbon(new EditedNotesWidget())
@@ -135,7 +139,6 @@ export default class DesktopLayout {
                                             .ribbon(new NotePropertiesWidget())
                                             .ribbon(new FilePropertiesWidget())
                                             .ribbon(new ImagePropertiesWidget())
-                                            .ribbon(new PromotedAttributesWidget())
                                             .ribbon(new BasicPropertiesWidget())
                                             .ribbon(new OwnedAttributeListWidget())
                                             .ribbon(new InheritedAttributesWidget())
