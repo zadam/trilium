@@ -267,9 +267,16 @@ const ATTR_HELP = {
 };
 
 export default class AttributeDetailWidget extends NoteContextAwareWidget {
+    constructor() {
+        super()
+        this.isComposing = false
+    }
+    bindComposeEvent(el) {
+        el.on('compositionstart', () => {this.isComposing = true});
+        el.on('compositionend', () => {this.isComposing = false});
+    }
     async refresh() {
         // switching note/tab should close the widget
-
         this.hide();
     }
 
@@ -285,10 +292,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$title = this.$widget.find('.attr-detail-title');
 
         this.$inputName = this.$widget.find('.attr-input-name');
+        this.bindComposeEvent(this.$inputName)
+
         this.$inputName.on('keyup', () => this.userEditedAttribute());
         this.$inputName.on('change', () => this.userEditedAttribute());
         this.$inputName.on('autocomplete:closed', () => this.userEditedAttribute());
-
         this.$inputName.on('focus', () => {
             attributeAutocompleteService.initAttributeNameAutocomplete({
                 $el: this.$inputName,
@@ -299,6 +307,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$rowValue = this.$widget.find('.attr-row-value');
         this.$inputValue = this.$widget.find('.attr-input-value');
+        this.bindComposeEvent(this.$inputValue)
+
         this.$inputValue.on('keyup', () => this.userEditedAttribute());
         this.$inputValue.on('change', () => this.userEditedAttribute());
         this.$inputValue.on('autocomplete:closed', () => this.userEditedAttribute());
@@ -328,6 +338,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$rowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
         this.$inputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
+        this.bindComposeEvent(this.$inputInverseRelation)
+
         this.$inputInverseRelation.on('keyup', () => this.userEditedAttribute());
 
         this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
@@ -343,7 +355,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
                 this.attribute.value = pathChunks[pathChunks.length - 1]; // noteId
 
-                this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+                this.triggerCommand('updateAttributeList', {attributes: this.allAttributes});
                 this.updateRelatedNotes();
             });
 
@@ -544,6 +556,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
     }
 
     userEditedAttribute() {
+        if (this.isComposing) return
+
         this.updateAttributeInEditor();
         this.updateHelp();
         this.relatedNotesSpacedUpdate.scheduleUpdate();
@@ -651,7 +665,7 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
             this.attribute.value = this.$inputValue.val();
         }
 
-        this.triggerCommand('updateAttributeList', { attributes: this.allAttributes });
+        this.triggerCommand('updateAttributeList', {attributes: this.allAttributes});
     }
 
     buildDefinitionValue() {
