@@ -24,6 +24,7 @@ const FONT_FAMILIES = [
     { value: "Bradley Hand", label: "Bradley Hand" },
     { value: "Luminari", label: "Luminari" },
     { value: "Comic Sans MS", label: "Comic Sans MS" },
+    { value: "Microsoft YaHei", label: "Microsoft YaHei" },
 ];
 
 const TPL = `
