@@ -10,7 +10,6 @@ export async function uploadFiles(parentNoteId, files, options) {
     }
 
     const taskId = utils.randomString(10);
-    let noteId;
     let counter = 0;
 
     for (const file of files) {
@@ -25,19 +24,19 @@ export async function uploadFiles(parentNoteId, files, options) {
             formData.append(key, options[key]);
         }
 
-        ({noteId} = await $.ajax({
+        await $.ajax({
             url: `${baseApiUrl}notes/${parentNoteId}/import`,
             headers: await server.getHeaders(),
             data: formData,
             dataType: 'json',
             type: 'POST',
             timeout: 60 * 60 * 1000,
-            error: function(xhr) {
+            error: function (xhr) {
                 toastService.showError(`Import failed: ${xhr.responseText}`);
             },
             contentType: false, // NEEDED, DON'T REMOVE THIS
             processData: false, // NEEDED, DON'T REMOVE THIS
-        }));
+        });
     }
 }
 
@@ -74,4 +73,4 @@ ws.subscribeToMessages(async message => {
 
 export default {
     uploadFiles
-}
+};
