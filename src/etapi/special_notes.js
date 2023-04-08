@@ -20,7 +20,7 @@ function register(router) {
         const {date} = req.params;
 
         if (!isValidDate(date)) {
-            throw getDateInvalidError(res, date);
+            throw getDateInvalidError(date);
         }
 
         const note = specialNotesService.getInboxNote(date);
@@ -31,7 +31,7 @@ function register(router) {
         const {date} = req.params;
 
         if (!isValidDate(date)) {
-            throw getDateInvalidError(res, date);
+            throw getDateInvalidError(date);
         }
 
         const note = dateNotesService.getDayNote(date);
@@ -42,7 +42,7 @@ function register(router) {
         const {date} = req.params;
 
         if (!isValidDate(date)) {
-            throw getDateInvalidError(res, date);
+            throw getDateInvalidError(date);
         }
 
         const note = dateNotesService.getWeekNote(date);
@@ -53,7 +53,7 @@ function register(router) {
         const {month} = req.params;
 
         if (!/[0-9]{4}-[0-9]{2}/.test(month)) {
-            throw getMonthInvalidError(res, month);
+            throw getMonthInvalidError(month);
         }
 
         const note = dateNotesService.getMonthNote(month);
@@ -64,7 +64,7 @@ function register(router) {
         const {year} = req.params;
 
         if (!/[0-9]{4}/.test(year)) {
-            throw getYearInvalidError(res, year);
+            throw getYearInvalidError(year);
         }
 
         const note = dateNotesService.getYearNote(year);
