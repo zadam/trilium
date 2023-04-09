@@ -10,7 +10,7 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    const beforeBranch = await froca.getBranch(beforeBranchId);
+    const beforeBranch = froca.getBranch(beforeBranchId);
 
     if (['root', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(beforeBranch.noteId)) {
         toastService.showError('Cannot move notes here.');
@@ -31,7 +31,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     branchIdsToMove = filterRootNote(branchIdsToMove);
     branchIdsToMove = filterSearchBranches(branchIdsToMove);
 
-    const afterNote = await froca.getBranch(afterBranchId).getNote();
+    const afterNote = froca.getBranch(afterBranchId).getNote();
 
     const forbiddenNoteIds = [
         'root',
@@ -59,7 +59,7 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 }
 
 async function moveToParentNote(branchIdsToMove, newParentBranchId) {
-    const newParentBranch = await froca.getBranch(newParentBranchId);
+    const newParentBranch = froca.getBranch(newParentBranchId);
 
     if (newParentBranch.noteId === '_lbRoot') {
         toastService.showError('Cannot move notes here.');
@@ -165,7 +165,7 @@ function filterRootNote(branchIds) {
     const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     return branchIds.filter(branchId => {
-       const branch = froca.getBranch(branchId);
+        const branch = froca.getBranch(branchId);
 
         return branch.noteId !== 'root'
             && branch.noteId !== hoistedNoteId;

@@ -7,7 +7,7 @@ const BAttribute = require('../becca/entities/battribute');
 const {formatAttrForSearch} = require("./attribute_formatter");
 const BUILTIN_ATTRIBUTES = require("./builtin_attributes");
 
-const ATTRIBUTE_TYPES = [ 'label', 'relation' ];
+const ATTRIBUTE_TYPES = ['label', 'relation'];
 
 /** @returns {BNote[]} */
 function getNotesWithLabel(name, value = undefined) {
@@ -122,7 +122,7 @@ function isAttributeType(type) {
 
 function isAttributeDangerous(type, name) {
     return BUILTIN_ATTRIBUTES.some(attr =>
-        attr.type === attr.type &&
+        attr.type === type &&
         attr.name.toLowerCase() === name.trim().toLowerCase() &&
         attr.isDangerous
     );

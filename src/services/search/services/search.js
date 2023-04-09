@@ -73,7 +73,7 @@ function searchFromRelation(note, relationName) {
         return [];
     }
 
-    const result = scriptService.executeNote(scriptNote, { originEntity: note });
+    const result = scriptService.executeNote(scriptNote, {originEntity: note});
 
     if (!Array.isArray(result)) {
         log.info(`Result from ${scriptNote.noteId} is not an array.`);
@@ -288,7 +288,7 @@ function searchNotesForAutocomplete(query) {
             noteTitle: beccaService.getNoteTitle(result.noteId),
             notePathTitle: result.notePathTitle,
             highlightedNotePathTitle: result.highlightedNotePathTitle
-        }
+        };
     });
 }
 
@@ -370,7 +370,7 @@ function formatAttribute(attr) {
         let label = `#${utils.escapeHtml(attr.name)}`;
 
         if (attr.value) {
-            const val = /[^\w_-]/.test(attr.value) ? `"${attr.value}"` : attr.value;
+            const val = /[^\w-]/.test(attr.value) ? `"${attr.value}"` : attr.value;
 
             label += `=${utils.escapeHtml(val)}`;
         }
