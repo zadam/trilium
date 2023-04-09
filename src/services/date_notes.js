@@ -64,6 +64,7 @@ function getRootCalendarNote() {
 }
 
 function getParentNote(label, dateStr, rootNote) {
+    console.log('getParentNote', label, dateStr);
     const type = rootNote.getOwnedLabelValue("calendarType") || "monthly";
     if (type != "monthly" && type != "weekly") {
         throw new Error('#calendarType should be "monthly" or "weekly"');
@@ -291,6 +292,7 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
         new SearchContext({ancestorNoteId: rootNote.noteId}));
 
     if (weekNote) {
+        console.log('getWeekNote: find weekNote');
         // Check whether its year note is right, if not, clone this parentNote
         const yearNotes = weekNote.getParentNotes();
         if (!yearNotes) {
@@ -302,11 +304,18 @@ function getWeekNote(dateStr, options = {}, rootNote = null) {
                 return weekNote;
             }
         }
+        // wrong year
+        console.log('getWeekNote: not year');
         const parentNote = getParentNote("week", dateStr, rootNote);
         if (!parentNote) {
             throw new Error(`Can't find weekly parent note of date "${dateStr}"`);
         }
-        weekNote.cloneTo(parentNote.noteId);
+        console.log('getWeekNote: clone');
+        const status = weekNote.cloneTo(parentNote.noteId);
+        if (!status.success) {
+            throw new Error(`Failed to clone weekly note of date "${dateStr}": ${status.message}`);
+        }
+        console.log('getWeekNote: return');
         return weekNote;
     }
 
