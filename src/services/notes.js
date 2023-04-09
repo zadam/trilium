@@ -23,7 +23,7 @@ const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 
 function getNewNotePosition(parentNote) {
-    if (parentNote.hasLabel('newNotesOnTop')) {
+    if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
             .reduce((min, note) => Math.min(min, note.notePosition), 0);
 
@@ -841,7 +841,7 @@ function duplicateSubtree(origNoteId, newParentNoteId) {
         throw new Error('Duplicating root is not possible');
     }
 
-    log.info(`Duplicating ${origNoteId} subtree into ${newParentNoteId}`);
+    log.info(`Duplicating '${origNoteId}' subtree into '${newParentNoteId}'`);
 
     const origNote = becca.notes[origNoteId];
     // might be null if orig note is not in the target newParentNoteId
@@ -919,7 +919,8 @@ function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapp
                 attr.value = noteIdMapping[attr.value];
             }
 
-            attr.save();
+            // the relation targets may not be created yet, the mapping is pre-generated
+            attr.save({skipValidation: true});
         }
 
         for (const childBranch of origNote.getChildBranches()) {

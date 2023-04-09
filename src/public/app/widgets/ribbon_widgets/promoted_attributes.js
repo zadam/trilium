@@ -63,7 +63,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
         return {
             show: true,
             activate: true,
-            title: "Promoted attributes",
+            title: "Promoted Attributes",
             icon: "bx bx-table"
         };
     }

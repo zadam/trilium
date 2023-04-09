@@ -39,7 +39,14 @@ export default class SharedInfoWidget extends NoteContextAwareWidget {
             this.$sharedText.text("This note is shared publicly on");
         }
         else {
-            link = `${location.protocol}//${location.host}${location.pathname}share/${shareId}`;
+            let host = location.host;
+            if (host.endsWith('/')) {
+                // seems like IE has trailing slash
+                // https://github.com/zadam/trilium/issues/3782
+                host = host.substr(0, host.length - 1);
+            }
+
+            link = `${location.protocol}//${host}${location.pathname}share/${shareId}`;
             this.$sharedText.text("This note is shared locally on");
         }
 
