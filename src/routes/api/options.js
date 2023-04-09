@@ -74,7 +74,7 @@ function getOptions() {
         }
     }
 
-    resultMap['isPasswordSet'] = !!optionMap['passwordVerificationHash'] ? 'true' : 'false';
+    resultMap['isPasswordSet'] = optionMap['passwordVerificationHash'] ? 'true' : 'false';
 
     return resultMap;
 }

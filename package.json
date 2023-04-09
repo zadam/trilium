@@ -99,6 +99,7 @@
     "electron-builder": "23.6.0",
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",
+    "eslint": "^8.38.0",
     "esm": "3.2.25",
     "jasmine": "4.5.0",
     "jsdoc": "4.0.1",

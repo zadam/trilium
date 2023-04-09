@@ -125,7 +125,7 @@ function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = 
     }
 
     if (root) {
-        scriptEnv = !!backendOverrideContent
+        scriptEnv = backendOverrideContent
             ? 'backend'
             : note.getScriptEnv();
     }
