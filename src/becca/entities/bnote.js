@@ -97,7 +97,7 @@ class BNote extends AbstractBeccaEntity {
          * @private */
         this.parents = [];
         /** @type {BNote[]}
-         * @private*/
+         * @private */
         this.children = [];
         /** @type {BAttribute[]}
          * @private */
@@ -107,11 +107,11 @@ class BNote extends AbstractBeccaEntity {
          * @private */
         this.__attributeCache = null;
         /** @type {BAttribute[]|null}
-         * @private*/
+         * @private */
         this.inheritableAttributeCache = null;
 
         /** @type {BAttribute[]}
-         * @private*/
+         * @private */
         this.targetRelations = [];
 
         this.becca.addNote(this.noteId, this);
