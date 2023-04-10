@@ -18,7 +18,8 @@ module.exports = {
             parser: 'jsonc-eslint-parser',
             rules: {
                 'jsonc/sort-keys': [
-                    'error',
+                    // here is rule  (to be deleted)
+                    'off',
                     {
                         pathPattern: '^$',
                         order: [
@@ -135,7 +136,8 @@ module.exports = {
         'no-inner-declarations': 'off',
 
         // prettier
-        'prettier/prettier': ['error', { endOfLine: 'auto' }],
+        // all about formating, it might take a while to excute it. you can change the config in .prettierrc.js (to be deleted)
+        'prettier/prettier': ['off', { endOfLine: 'auto' }],
 
         // airbnb-base
         'no-console': 'off',
@@ -211,5 +213,6 @@ module.exports = {
         'import/no-named-as-default-member': 'off',
         yoda: 'off',
         'no-script-url': 'off',
+
     },
 };

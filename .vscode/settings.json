@@ -2,6 +2,9 @@
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
+  "[json]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
   "eslint.probe": [
