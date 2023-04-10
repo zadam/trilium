@@ -29,6 +29,9 @@ const TPL = `
     .promoted-attribute-cell div.input-group {
         margin-left: 10px;
     }
+    .promoted-attribute-cell strong {
+        word-break:keep-all;
+    }
     </style>
     
     <div class="promoted-attributes-container"></div>
@@ -54,13 +57,13 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
         const promotedDefAttrs = note.getPromotedDefinitionAttributes();
 
         if (promotedDefAttrs.length === 0) {
-            return { show: false };
+            return {show: false};
         }
 
         return {
             show: true,
             activate: true,
-            title: "Promoted attributes",
+            title: "Promoted Attributes",
             icon: "bx bx-table"
         };
     }
@@ -144,7 +147,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                         return;
                     }
 
-                    attributeValues = attributeValues.map(attribute => ({ value: attribute }));
+                    attributeValues = attributeValues.map(attribute => ({value: attribute}));
 
                     $input.autocomplete({
                         appendTo: document.querySelector('body'),
@@ -164,7 +167,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                         }
                     }]);
 
-                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e))
+                    $input.on('autocomplete:selected', e => this.promotedAttributeChanged(e));
                 });
             }
             else if (definition.labelType === 'number') {

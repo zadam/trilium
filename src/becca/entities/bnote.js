@@ -100,7 +100,7 @@ class BNote extends AbstractBeccaEntity {
          * @private */
         this.parents = [];
         /** @type {BNote[]}
-         * @private*/
+         * @private */
         this.children = [];
         /** @type {BAttribute[]}
          * @private */
@@ -110,11 +110,11 @@ class BNote extends AbstractBeccaEntity {
          * @private */
         this.__attributeCache = null;
         /** @type {BAttribute[]|null}
-         * @private*/
+         * @private */
         this.inheritableAttributeCache = null;
 
         /** @type {BAttribute[]}
-         * @private*/
+         * @private */
         this.targetRelations = [];
 
         this.becca.addNote(this.noteId, this);
@@ -471,6 +471,20 @@ class BNote extends AbstractBeccaEntity {
      * @returns {boolean} true if label exists (including inherited)
      */
     hasLabel(name, value) { return this.hasAttribute(LABEL, name, value); }
+
+    /**
+     * @param {string} name - label name
+     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     */
+    isLabelTruthy(name) {
+        const label = this.getLabel(name);
+
+        if (!label) {
+            return false;
+        }
+
+        return label && label.value !== 'false';
+    }
 
     /**
      * @param {string} name - label name

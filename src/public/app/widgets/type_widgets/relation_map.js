@@ -470,11 +470,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
     async createNoteBox(noteId, title, x, y) {
         const $link = await linkService.createNoteLink(noteId, {title});
-        $link.mousedown(e => {
-            console.log(e);
-
-            linkService.goToLink(e);
-        });
+        $link.mousedown(e => linkService.goToLink(e));
 
         const note = await froca.getNote(noteId);
 

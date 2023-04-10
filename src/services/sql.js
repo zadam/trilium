@@ -217,7 +217,7 @@ function wrap(query, func) {
             // in these cases error should be simply ignored.
             console.log(e.message);
 
-            return null
+            return null;
         }
 
         throw e;
@@ -281,7 +281,7 @@ function fillParamList(paramIds, truncate = true) {
     }
 
     // doing it manually to avoid this showing up on the sloq query list
-    const s = stmt(`INSERT INTO param_list VALUES ${paramIds.map(paramId => `(?)`).join(',')}`, paramIds);
+    const s = stmt(`INSERT INTO param_list VALUES ${paramIds.map(paramId => `(?)`).join(',')}`);
 
     s.run(paramIds);
 }

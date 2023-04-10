@@ -99,10 +99,15 @@ class ContextMenu {
                 const $item = $("<li>")
                     .addClass("dropdown-item")
                     .append($link)
+                    .on('contextmenu', e => false)
                     // important to use mousedown instead of click since the former does not change focus
                     // (especially important for focused text for spell check)
                     .on('mousedown', e => {
                         e.stopPropagation();
+
+                        if (e.which !== 1) { // only left click triggers menu items
+                            return false;
+                        }
 
                         this.hide();
 
@@ -142,7 +147,9 @@ class ContextMenu {
         // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
         // we might filter out right clicks, but then it's better if even right clicks close the context menu
         if (Date.now() - this.dateContextMenuOpenedMs > 300) {
-            this.$widget.hide();
+            // seems like if we hide the menu immediately, some clicks can get propagated to the underlying component
+            // see https://github.com/zadam/trilium/pull/3805 for details
+            setTimeout(() => this.$widget.hide(), 100);
         }
     }
 }

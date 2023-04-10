@@ -5,6 +5,7 @@ function lex(str) {
     const fulltextTokens = [];
     const expressionTokens = [];
 
+    /** @type {boolean|string} */
     let quotes = false; // otherwise contains used quote - ', " or `
     let fulltextEnded = false;
     let currentWord = '';

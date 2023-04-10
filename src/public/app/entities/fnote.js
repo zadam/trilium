@@ -609,6 +609,20 @@ class FNote {
     hasLabel(name) { return this.hasAttribute(LABEL, name); }
 
     /**
+     * @param {string} name - label name
+     * @returns {boolean} true if label exists (including inherited) and does not have "false" value.
+     */
+    isLabelTruthy(name) {
+        const label = this.getLabel(name);
+
+        if (!label) {
+            return false;
+        }
+
+        return label && label.value !== 'false';
+    }
+
+    /**
      * @param {string} name - relation name
      * @returns {boolean} true if relation exists (excluding inherited)
      */
@@ -719,7 +733,14 @@ class FNote {
             });
 
         // attrs are not resorted if position changes after initial load
-        promotedAttrs.sort((a, b) => a.position < b.position ? -1 : 1);
+        promotedAttrs.sort((a, b) => {
+            if (a.noteId === b.noteId) {
+                return a.position < b.position ? -1 : 1;
+            } else {
+                // inherited promoted attributes should stay grouped: https://github.com/zadam/trilium/issues/3761
+                return a.noteId < b.noteId ? -1 : 1;
+            }
+        });
 
         return promotedAttrs;
     }
