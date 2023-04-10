@@ -12,3 +12,4 @@ server-package.json
 .idea/httpRequests/
 data/
 tmp/
+.eslintcache

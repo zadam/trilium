@@ -26,7 +26,9 @@
     "test-jasmine": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
     "test": "npm run test-jasmine && npm run test-es6",
-    "postinstall": "rimraf ./node_modules/canvas"
+    "postinstall": "rimraf ./node_modules/canvas",
+    "lint": "eslint .  --cache",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
@@ -100,15 +102,27 @@
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",
     "eslint": "^8.38.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsonc": "^2.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "esm": "3.2.25",
+    "husky": "^8.0.3",
     "jasmine": "4.5.0",
     "jsdoc": "4.0.1",
+    "jsonc-eslint-parser": "^2.2.0",
+    "lint-staged": "^13.2.1",
     "lorem-ipsum": "2.0.8",
+    "prettier": "2.8.7",
     "rcedit": "3.0.1",
     "webpack": "5.75.0",
     "webpack-cli": "5.0.1"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix"
   }
 }
