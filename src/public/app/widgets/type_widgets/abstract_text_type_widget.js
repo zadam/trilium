@@ -3,47 +3,71 @@ import appContext from "../../components/app_context.js";
 import froca from "../../services/froca.js";
 import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
+import utils from "../../services/utils.js";
 
 export default class AbstractTextTypeWidget extends TypeWidget {
     setupImageOpening(singleClickOpens) {
         this.$widget.on("dblclick", "img", e => this.openImageInCurrentTab($(e.target)));
 
         this.$widget.on("click", "img", e => {
-            if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
+            const isLeftClick = e.which === 1;
+            const isMiddleClick = e.which === 2;
+            const ctrlKey = utils.isCtrlKey(e);
+
+            if ((isLeftClick && ctrlKey) || isMiddleClick) {
                 this.openImageInNewTab($(e.target));
             }
-            else if (e.which === 1 && singleClickOpens) {
+            else if (isLeftClick && singleClickOpens) {
                 this.openImageInCurrentTab($(e.target));
             }
         });
     }
 
     openImageInCurrentTab($img) {
-        const imgSrc = $img.prop("src");
-        const noteId = this.getNoteIdFromImage(imgSrc);
+        const { noteId, viewScope } = this.parseFromImage($img);
 
         if (noteId) {
-            appContext.tabManager.getActiveContext().setNote(noteId);
+            appContext.tabManager.getActiveContext().setNote(noteId, { viewScope });
         } else {
-            window.open(imgSrc, '_blank');
+            window.open($img.prop("src"), '_blank');
         }
     }
 
     openImageInNewTab($img) {
-        const imgSrc = $img.prop("src");
-        const noteId = this.getNoteIdFromImage(imgSrc);
+        const { noteId, viewScope } = this.parseFromImage($img);
 
         if (noteId) {
-            appContext.tabManager.openTabWithNoteWithHoisting(noteId);
+            appContext.tabManager.openTabWithNoteWithHoisting(noteId, { viewScope });
         } else {
-            window.open(imgSrc, '_blank');
+            window.open($img.prop("src"), '_blank');
         }
     }
 
-    getNoteIdFromImage(imgSrc) {
-        const match = imgSrc.match(/\/api\/images\/([A-Za-z0-9_]+)\//);
+    parseFromImage($img) {
+        let noteId, viewScope;
 
-        return match ? match[1] : null;
+        const imgSrc = $img.prop("src");
+
+        const imageNoteMatch = imgSrc.match(/\/api\/images\/([A-Za-z0-9_]+)\//);
+        if (imageNoteMatch) {
+            return {
+                noteId: imageNoteMatch[1],
+                viewScope: {}
+            }
+        }
+
+        const attachmentMatch = imgSrc.match(/\/api\/notes\/([A-Za-z0-9_]+)\/images\/([A-Za-z0-9_]+)\//);
+        if (attachmentMatch) {
+            return {
+                noteId: attachmentMatch[1],
+                viewScope: {
+                    viewMode: 'attachments',
+                    attachmentId: attachmentMatch[2]
+                }
+            }
+        }
+
+        return null;
     }
 
     async loadIncludedNote(noteId, $el) {

@@ -116,10 +116,6 @@ export default class AttachmentDetailWidget extends BasicWidget {
         }
     }
 
-    openAttachmentDetailCommand() {
-
-    }
-
     async entitiesReloadedEvent({loadResults}) {
         const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachment.attachmentId);
 
