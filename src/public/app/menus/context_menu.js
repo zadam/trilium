@@ -99,10 +99,15 @@ class ContextMenu {
                 const $item = $("<li>")
                     .addClass("dropdown-item")
                     .append($link)
+                    .on('contextmenu', e => false)
                     // important to use mousedown instead of click since the former does not change focus
                     // (especially important for focused text for spell check)
                     .on('mousedown', e => {
                         e.stopPropagation();
+
+                        if (e.which !== 1) { // only left click triggers menu items
+                            return false;
+                        }
 
                         this.hide();
 

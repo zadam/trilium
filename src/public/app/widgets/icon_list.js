@@ -11175,6 +11175,22 @@ const icons = [
     }
 ];
 
+function getIconClass(icon) {
+    if (icon.type_of_icon === 'LOGO') {
+        return `bxl-${icon.name}`;
+    }
+    else if (icon.type_of_icon === 'SOLID') {
+        return `bxs-${icon.name}`;
+    }
+    else {
+        return `bx-${icon.name}`;
+    }
+}
+
+for (const icon of icons) {
+    icon.className = getIconClass(icon);
+}
+
 export default {
     categories,
     icons

@@ -16,16 +16,17 @@ const TPL = `
     }
     
     .global-menu-button {
-        background-image: url("${window.glob.assetPath}/images/icon-black.png");
+        background-image: url("${window.glob.assetPath}/images/icon-black.svg");
         background-repeat: no-repeat;
-        background-position: 50% 45%;
+        background-position: 50% 80%;
+        background-size: 45px;
         width: 100%;
         height: 100%;
         position: relative;
     }
     
     .global-menu-button:hover {
-        background-image: url("${window.glob.assetPath}/images/icon-color.png");
+        background-image: url("${window.glob.assetPath}/images/icon-color.svg");
         border: 0;
     }
     
