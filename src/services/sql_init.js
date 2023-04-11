@@ -106,7 +106,7 @@ async function createInitialDatabase() {
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
         const optionService = require("./options");
-        optionService.setOption('openTabs', JSON.stringify([
+        optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: startNoteId,
                 active: true

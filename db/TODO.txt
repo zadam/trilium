@@ -1,5 +1,4 @@
 - isDeleted = 0 by default
-- rename openTabs to openNoteContexts
 - unify readOnly handling to a single attribute:
   * readOnly - like now
   * readOnly=auto - like without readOnly (used to override inherited readOnly)

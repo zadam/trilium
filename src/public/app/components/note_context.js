@@ -179,7 +179,7 @@ class NoteContext extends Component {
         return appContext.tabManager.activeNtxId === this.ntxId;
     }
 
-    getTabState() {
+    getPojoState() {
         if (!this.notePath && this.hoistedNoteId === 'root') {
             // keeping empty hoisted tab is esp. important for mobile (e.g. opened launcher config)
             return null;

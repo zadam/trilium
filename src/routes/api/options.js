@@ -24,7 +24,7 @@ const ALLOWED_OPTIONS = new Set([
     'detailFontFamily',
     'monospaceFontSize',
     'monospaceFontFamily',
-    'openTabs',
+    'openNoteContexts',
     'noteInfoWidget',
     'attributesWidget',
     'linkMapWidget',
@@ -102,8 +102,8 @@ function update(name, value) {
         return false;
     }
 
-    if (name !== 'openTabs') {
-        log.info(`Updating option ${name} to ${value}`);
+    if (name !== 'openNoteContexts') {
+        log.info(`Updating option '${name}' to '${value}'`);
     }
 
     optionService.setOption(name, value);

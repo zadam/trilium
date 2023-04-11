@@ -26,7 +26,7 @@ async function processEntityChanges(entityChanges) {
             } else if (ec.entityName === 'note_revisions') {
                 loadResults.addNoteRevision(ec.entityId, ec.noteId, ec.componentId);
             } else if (ec.entityName === 'options') {
-                if (ec.entity.name === 'openTabs') {
+                if (ec.entity.name === 'openNoteContexts') {
                     continue; // only noise
                 }
 

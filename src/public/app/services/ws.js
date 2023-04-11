@@ -53,7 +53,7 @@ const processedEntityChangeIds = new Set();
 function logRows(entityChanges) {
     const filteredRows = entityChanges.filter(row =>
         !processedEntityChangeIds.has(row.id)
-        && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
+        && (row.entityName !== 'options' || row.entityId !== 'openNoteContexts'));
 
     if (filteredRows.length > 0) {
         console.debug(utils.now(), "Frontend update data: ", filteredRows);

@@ -11,7 +11,7 @@ function initDocumentOptions() {
 }
 
 function initNotSyncedOptions(initialized, opts = {}) {
-    optionService.createOption('openTabs', JSON.stringify([
+    optionService.createOption('openNoteContexts', JSON.stringify([
         {
             notePath: 'root',
             active: true
@@ -104,7 +104,7 @@ function initStartupOptions() {
     }
 
     if (process.env.TRILIUM_START_NOTE_ID || process.env.TRILIUM_SAFE_MODE) {
-        optionService.setOption('openTabs', JSON.stringify([
+        optionService.setOption('openNoteContexts', JSON.stringify([
             {
                 notePath: process.env.TRILIUM_START_NOTE_ID || 'root',
                 active: true

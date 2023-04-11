@@ -26,12 +26,12 @@ export default class TabManager extends Component {
                 return;
             }
 
-            const openTabs = this.noteContexts
-                .map(nc => nc.getTabState())
+            const openNoteContexts = this.noteContexts
+                .map(nc => nc.getPojoState())
                 .filter(t => !!t);
 
             await server.put('options', {
-                openTabs: JSON.stringify(openTabs)
+                openNoteContexts: JSON.stringify(openNoteContexts)
             });
         });
 
@@ -50,17 +50,17 @@ export default class TabManager extends Component {
 
     async loadTabs() {
         try {
-            const tabsToOpen = appContext.isMainWindow
-                ? (options.getJson('openTabs') || [])
+            const noteContextsToOpen = appContext.isMainWindow
+                ? (options.getJson('openNoteContexts') || [])
                 : [];
 
             // preload all notes at once
             await froca.getNotes([
-                    ...tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
-                    ...tabsToOpen.map(tab => tab.hoistedNoteId),
+                    ...noteContextsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
+                    ...noteContextsToOpen.map(tab => tab.hoistedNoteId),
             ], true);
 
-            const filteredTabs = tabsToOpen.filter(openTab => {
+            const filteredNoteContexts = noteContextsToOpen.filter(openTab => {
                 if (utils.isMobile()) { // mobile frontend doesn't have tabs so show only the active tab
                     return !!openTab.active;
                 }
@@ -81,22 +81,22 @@ export default class TabManager extends Component {
             // resolve before opened tabs can change this
             const parsedFromUrl = treeService.parseNavigationStateFromAddress();
 
-            if (filteredTabs.length === 0) {
+            if (filteredNoteContexts.length === 0) {
                 parsedFromUrl.ntxId = parsedFromUrl.ntxId || NoteContext.generateNtxId(); // generate already here, so that we later know which one to activate
 
-                filteredTabs.push({
+                filteredNoteContexts.push({
                     notePath: parsedFromUrl.notePath || 'root',
                     ntxId: parsedFromUrl.ntxId,
                     active: true,
                     hoistedNoteId: parsedFromUrl.hoistedNoteId || 'root',
                     viewScope: parsedFromUrl.viewScope || {}
                 });
-            } else if (!filteredTabs.find(tab => tab.active)) {
-                filteredTabs[0].active = true;
+            } else if (!filteredNoteContexts.find(tab => tab.active)) {
+                filteredNoteContexts[0].active = true;
             }
 
             await this.tabsUpdate.allowUpdateWithoutChange(async () => {
-                for (const tab of filteredTabs) {
+                for (const tab of filteredNoteContexts) {
                     await this.openContextWithNote(tab.notePath, {
                         activate: tab.active,
                         ntxId: tab.ntxId,
@@ -119,7 +119,7 @@ export default class TabManager extends Component {
             }
         }
         catch (e) {
-            logError(`Loading tabs '${options.get('openTabs')}' failed: ${e.message} ${e.stack}`);
+            logError(`Loading note contexts '${options.get('openNoteContexts')}' failed: ${e.message} ${e.stack}`);
 
             // try to recover
             await this.openEmptyTab();
