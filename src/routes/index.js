@@ -35,9 +35,6 @@ function index(req, res) {
         appCssNoteIds: getAppCssNoteIds(),
         isDev: env.isDev(),
         isMainWindow: !req.query.extraWindow,
-        extraHoistedNoteId: req.query.extraHoistedNoteId,
-        // make sure only valid JSON gets rendered
-        extraViewScope: JSON.stringify(req.query.extraViewScope ? JSON.parse(req.query.extraViewScope) : {}),
         isProtectedSessionAvailable: protectedSessionService.isProtectedSessionAvailable(),
         maxContentWidth: parseInt(options.maxContentWidth),
         triliumVersion: packageJson.version,

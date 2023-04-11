@@ -70,35 +70,18 @@ export default class NoteTitleWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        this.$noteTitle.val(await this.getTitleText(note));
-
-        this.$noteTitle.prop("readonly",
-            (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
+        const isReadOnly = (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable())
             || ['_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(note.noteId)
-            || this.noteContext.viewScope.viewMode !== 'default'
+            || this.noteContext.viewScope.viewMode !== 'default';
+
+        this.$noteTitle.val(
+            isReadOnly
+                ? await this.noteContext.getNavigationTitle()
+                : note.title
         );
+        this.$noteTitle.prop("readonly", isReadOnly);
 
         this.setProtectedStatus(note);
-    }
-
-    /** @param {FNote} note */
-    async getTitleText(note) {
-        const viewScope = this.noteContext.viewScope;
-
-        let title = viewScope.viewMode === 'default'
-            ? note.title
-            : `${note.title}: ${viewScope.viewMode}`;
-
-        if (viewScope.attachmentId) {
-            // assuming the attachment has been already loaded
-            const attachment = await note.getAttachmentById(viewScope.attachmentId);
-
-            if (attachment) {
-                title += `: ${attachment.title}`;
-            }
-        }
-
-        return title;
     }
 
     /** @param {FNote} note */

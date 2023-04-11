@@ -99,6 +99,37 @@ function parseNotePathAndScope($link) {
     };
 }
 
+function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
+    notePath = notePath || "";
+    const params = [
+        ntxId ? { ntxId: ntxId } : null,
+        (hoistedNoteId && hoistedNoteId !== 'root') ? { hoistedNoteId: hoistedNoteId } : null,
+        viewScope.viewMode !== 'default' ? { viewMode: viewScope.viewMode } : null,
+        viewScope.attachmentId ? { attachmentId: viewScope.attachmentId } : null
+    ].filter(p => !!p);
+
+    const paramStr = params.map(pair => {
+        const name = Object.keys(pair)[0];
+        const value = pair[name];
+
+        return `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    }).join("&");
+
+    if (!notePath && !paramStr) {
+        return "";
+    }
+
+    let hash = `#${notePath}`;
+
+    if (paramStr) {
+        hash += `?${paramStr}`;
+    }
+
+    console.log(hash);
+
+    return hash;
+}
+
 function goToLink(evt) {
     const $link = $(evt.target).closest("a,.block-link");
     const hrefLink = $link.attr('href');
@@ -223,5 +254,6 @@ export default {
     createNoteLink,
     goToLink,
     loadReferenceLinkTitle,
-    parseNotePathAndScope
+    parseNotePathAndScope,
+    calculateHash
 };

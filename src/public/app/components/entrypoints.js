@@ -8,6 +8,7 @@ import toastService from "../services/toast.js";
 import ws from "../services/ws.js";
 import bundleService from "../services/bundle.js";
 import froca from "../services/froca.js";
+import linkService from "../services/link.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -136,17 +137,15 @@ export default class Entrypoints extends Component {
     }
 
     async openInWindowCommand({notePath, hoistedNoteId, viewScope}) {
-        if (!hoistedNoteId) {
-            hoistedNoteId = 'root';
-        }
+        const extraWindowHash = linkService.calculateHash({notePath, hoistedNoteId, viewScope});
 
         if (utils.isElectron()) {
             const {ipcRenderer} = utils.dynamicRequire('electron');
 
-            ipcRenderer.send('create-extra-window', {notePath, hoistedNoteId, viewScope});
+            ipcRenderer.send('create-extra-window', { extraWindowHash });
         }
         else {
-            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extraWindow=1&extraHoistedNoteId=${hoistedNoteId}&extraViewScope=${JSON.stringify(viewScope)}#${notePath}`;
+            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extraWindow=1${extraWindowHash}`;
 
             window.open(url, '', 'width=1000,height=800');
         }

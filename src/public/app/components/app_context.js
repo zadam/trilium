@@ -155,14 +155,14 @@ $(window).on('beforeunload', () => {
 
 $(window).on('hashchange', function() {
     if (treeService.isNotePathInAddress()) {
-        const [notePath, ntxId] = treeService.getHashValueFromAddress();
+        const {notePath, ntxId, viewScope} = treeService.parseNavigationStateFromAddress();
 
         if (!notePath && !ntxId) {
             console.log(`Invalid hash value "${document.location.hash}", ignoring.`);
             return;
         }
 
-        appContext.tabManager.switchToNoteContext(ntxId, notePath);
+        appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
     }
 });
 

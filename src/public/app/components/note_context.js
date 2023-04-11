@@ -12,11 +12,15 @@ class NoteContext extends Component {
     constructor(ntxId = null, hoistedNoteId = 'root', mainNtxId = null) {
         super();
 
-        this.ntxId = ntxId || utils.randomString(4);
+        this.ntxId = ntxId || this.constructor.generateNtxId();
         this.hoistedNoteId = hoistedNoteId;
         this.mainNtxId = mainNtxId;
 
         this.resetViewScope();
+    }
+
+    static generateNtxId() {
+        return utils.randomString(6);
     }
 
     setEmpty() {
@@ -57,9 +61,8 @@ class NoteContext extends Component {
         utils.closeActiveDialog();
 
         this.notePath = resolvedNotePath;
-        ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
-
         this.viewScope = opts.viewScope;
+        ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -297,6 +300,29 @@ class NoteContext extends Component {
         // it is used to e.g. make read-only note temporarily editable or to hide TOC
         // this is reset after navigating to a different note
         this.viewScope = {};
+    }
+
+    async getNavigationTitle() {
+        if (!this.note) {
+            return null;
+        }
+
+        const { note, viewScope } = this;
+
+        let title = viewScope.viewMode === 'default'
+            ? note.title
+            : `${note.title}: ${viewScope.viewMode}`;
+
+        if (viewScope.attachmentId) {
+            // assuming the attachment has been already loaded
+            const attachment = await note.getAttachmentById(viewScope.attachmentId);
+
+            if (attachment) {
+                title += `: ${attachment.title}`;
+            }
+        }
+
+        return title;
     }
 }
 

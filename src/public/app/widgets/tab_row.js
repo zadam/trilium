@@ -618,7 +618,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     /** @param {NoteContext} noteContext */
-    updateTab($tab, noteContext) {
+    async updateTab($tab, noteContext) {
         if (!$tab.length) {
             return;
         }
@@ -652,11 +652,7 @@ export default class TabRowWidget extends BasicWidget {
             return;
         }
 
-        const viewMode = noteContext.viewScope?.viewMode;
-        const title = (viewMode && viewMode !== 'default')
-            ? `${viewMode}: ${note.title}`
-            : note.title;
-
+        const title = await noteContext.getNavigationTitle();
         this.updateTitle($tab, title);
 
         $tab.addClass(note.getCssClass());

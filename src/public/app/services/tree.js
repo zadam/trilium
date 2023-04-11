@@ -23,8 +23,8 @@ async function resolveNotePath(notePath, hoistedNoteId = 'root') {
 async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logErrors = true) {
     utils.assertArguments(notePath);
 
-    // we might get notePath with the ntxId suffix, remove it if present
-    notePath = notePath.split("-")[0].trim();
+    // we might get notePath with the params suffix, remove it if present
+    notePath = notePath.split("?")[0].trim();
 
     if (notePath.length === 0) {
         return;
@@ -159,8 +159,8 @@ function getNoteIdFromNotePath(notePath) {
 
     const lastSegment = path[path.length - 1];
 
-    // path could have also ntxId suffix
-    return lastSegment.split("-")[0];
+    // path could have also params suffix
+    return lastSegment.split("?")[0];
 }
 
 async function getBranchIdFromNotePath(notePath) {
@@ -185,8 +185,8 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
 
         const lastSegment = path[path.length - 1];
 
-        // path could have also ntxId suffix
-        noteId = lastSegment.split("-")[0];
+        // path could have also params suffix
+        noteId = lastSegment.split("?")[0];
 
         if (path.length > 1) {
             parentNoteId = path[path.length - 2];
@@ -297,14 +297,44 @@ async function getNoteTitleWithPathAsSuffix(notePath) {
     return $titleWithPath;
 }
 
-function getHashValueFromAddress() {
-    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
+function parseNavigationStateFromAddress() {
+    const str = document.location.hash?.substr(1) || ""; // strip initial #
 
-    return str.split("-");
+    const [notePath, paramString] = str.split("?");
+    const viewScope = {
+        viewMode: 'default'
+    };
+    let ntxId = null;
+    let hoistedNoteId = null;
+
+    if (paramString) {
+        for (const pair of paramString.split("&")) {
+            let [name, value] = pair.split("=");
+            name = decodeURIComponent(name);
+            value = decodeURIComponent(value);
+
+            if (name === 'ntxId') {
+                ntxId = value;
+            } else if (name === 'hoistedNoteId') {
+                hoistedNoteId = value;
+            } else if (['viewMode', 'attachmentId'].includes(name)) {
+                viewScope[name] = value;
+            } else {
+                console.warn(`Unrecognized hash parameter '${name}'.`);
+            }
+        }
+    }
+
+    return {
+        notePath,
+        ntxId,
+        hoistedNoteId,
+        viewScope
+    };
 }
 
 function isNotePathInAddress() {
-    const [notePath, ntxId] = getHashValueFromAddress();
+    const {notePath, ntxId} = parseNavigationStateFromAddress();
 
     return notePath.startsWith("root")
         // empty string is for empty/uninitialized tab
@@ -338,7 +368,7 @@ export default {
     getNoteTitle,
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,
-    getHashValueFromAddress,
+    parseNavigationStateFromAddress,
     isNotePathInAddress,
     parseNotePath,
     isNotePathInHiddenSubtree

@@ -8,6 +8,7 @@ import utils from "../services/utils.js";
 import NoteContext from "./note_context.js";
 import appContext from "./app_context.js";
 import Mutex from "../utils/mutex.js";
+import linkService from "../services/link.js";
 
 export default class TabManager extends Component {
     constructor() {
@@ -53,45 +54,44 @@ export default class TabManager extends Component {
                 ? (options.getJson('openTabs') || [])
                 : [];
 
-            let filteredTabs = [];
-
             // preload all notes at once
             await froca.getNotes([
                     ...tabsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
                     ...tabsToOpen.map(tab => tab.hoistedNoteId),
             ], true);
 
-            for (const openTab of tabsToOpen) {
-                if (openTab.notePath && !(treeService.getNoteIdFromNotePath(openTab.notePath) in froca.notes)) {
+            const filteredTabs = tabsToOpen.filter(openTab => {
+                if (utils.isMobile()) { // mobile frontend doesn't have tabs so show only the active tab
+                    return !!openTab.active;
+                }
+
+                const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
+                if (!(noteId in froca.notes)) {
                     // note doesn't exist so don't try to open tab for it
-                    continue;
+                    return false;
                 }
 
                 if (!(openTab.hoistedNoteId in froca.notes)) {
                     openTab.hoistedNoteId = 'root';
                 }
 
-                filteredTabs.push(openTab);
-            }
-
-            if (utils.isMobile()) {
-                // mobile frontend doesn't have tabs so show only the active tab
-                filteredTabs = filteredTabs.filter(tab => tab.active);
-            }
+                return true;
+            });
 
             // resolve before opened tabs can change this
-            const [notePathInUrl, ntxIdInUrl] = treeService.getHashValueFromAddress();
+            const parsedFromUrl = treeService.parseNavigationStateFromAddress();
 
             if (filteredTabs.length === 0) {
-                filteredTabs.push({
-                    notePath: notePathInUrl || 'root',
-                    active: true,
-                    hoistedNoteId: glob.extraHoistedNoteId || 'root',
-                    viewScope: glob.extraViewScope || {}
-                });
-            }
+                parsedFromUrl.ntxId = parsedFromUrl.ntxId || NoteContext.generateNtxId(); // generate already here, so that we later know which one to activate
 
-            if (!filteredTabs.find(tab => tab.active)) {
+                filteredTabs.push({
+                    notePath: parsedFromUrl.notePath || 'root',
+                    ntxId: parsedFromUrl.ntxId,
+                    active: true,
+                    hoistedNoteId: parsedFromUrl.hoistedNoteId || 'root',
+                    viewScope: parsedFromUrl.viewScope || {}
+                });
+            } else if (!filteredTabs.find(tab => tab.active)) {
                 filteredTabs[0].active = true;
             }
 
@@ -109,8 +109,13 @@ export default class TabManager extends Component {
 
             // if there's notePath in the URL, make sure it's open and active
             // (useful, for e.g. opening clipped notes from clipper or opening link in an extra window)
-            if (notePathInUrl) {
-                await appContext.tabManager.switchToNoteContext(ntxIdInUrl, notePathInUrl);
+            if (parsedFromUrl.notePath) {
+                await appContext.tabManager.switchToNoteContext(
+                    parsedFromUrl.ntxId,
+                    parsedFromUrl.notePath,
+                    parsedFromUrl.viewScope,
+                    parsedFromUrl.hoistedNoteId
+                );
             }
         }
         catch (e) {
@@ -123,26 +128,39 @@ export default class TabManager extends Component {
 
     noteSwitchedEvent({noteContext}) {
         if (noteContext.isActive()) {
-            this.setCurrentNotePathToHash();
+            this.setCurrentNavigationStateToHash();
         }
 
         this.tabsUpdate.scheduleUpdate();
     }
 
-    setCurrentNotePathToHash() {
-        const activeNoteContext = this.getActiveContext();
+    setCurrentNavigationStateToHash() {
+        const calculatedHash = this.calculateHash();
 
-        if (window.history.length === 0 // first history entry
-            || (activeNoteContext && activeNoteContext.notePath !== treeService.getHashValueFromAddress()[0])) {
-            const url = `#${activeNoteContext.notePath || ""}-${activeNoteContext.ntxId}`;
-
+        // update if it's the first history entry or there has been a change
+        if (window.history.length === 0 || calculatedHash !== window.location?.hash) {
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
-            window.history.pushState(null, "", url);
+            window.history.pushState(null, "", calculatedHash);
         }
 
+        const activeNoteContext = this.getActiveContext();
         this.updateDocumentTitle(activeNoteContext);
 
         this.triggerEvent('activeNoteChanged'); // trigger this even in on popstate event
+    }
+
+    calculateHash() {
+        const activeNoteContext = this.getActiveContext();
+        if (!activeNoteContext) {
+            return "";
+        }
+
+        return linkService.calculateHash({
+            notePath: activeNoteContext.notePath,
+            ntxId: activeNoteContext.ntxId,
+            hoistedNoteId: activeNoteContext.hoistedNoteId,
+            viewScope: activeNoteContext.viewScope
+        });
     }
 
     /** @returns {NoteContext[]} */
@@ -212,14 +230,18 @@ export default class TabManager extends Component {
         return activeNote ? activeNote.mime : null;
     }
 
-    async switchToNoteContext(ntxId, notePath) {
+    async switchToNoteContext(ntxId, notePath, viewScope = {}, hoistedNoteId = null) {
         const noteContext = this.noteContexts.find(nc => nc.ntxId === ntxId)
             || await this.openEmptyTab();
 
         await this.activateNoteContext(noteContext.ntxId);
 
+        if (hoistedNoteId) {
+            await noteContext.setHoistedNoteId(hoistedNoteId);
+        }
+
         if (notePath) {
-            await noteContext.setNote(notePath);
+            await noteContext.setNote(notePath, { viewScope });
         }
     }
 
@@ -347,7 +369,7 @@ export default class TabManager extends Component {
 
         this.tabsUpdate.scheduleUpdate();
 
-        this.setCurrentNotePathToHash();
+        this.setCurrentNavigationStateToHash();
     }
 
     /**
@@ -564,21 +586,21 @@ export default class TabManager extends Component {
         this.tabsUpdate.scheduleUpdate();
     }
 
-    updateDocumentTitle(activeNoteContext) {
+    async updateDocumentTitle(activeNoteContext) {
         const titleFragments = [
             // it helps to navigate in history if note title is included in the title
-            activeNoteContext.note?.title,
+            await activeNoteContext.getNavigationTitle(),
             "Trilium Notes"
         ].filter(Boolean);
 
         document.title = titleFragments.join(" - ");
     }
 
-    entitiesReloadedEvent({loadResults}) {
+    async entitiesReloadedEvent({loadResults}) {
         const activeContext = this.getActiveContext();
 
         if (activeContext && loadResults.isNoteReloaded(activeContext.noteId)) {
-            this.updateDocumentTitle(activeContext);
+            await this.updateDocumentTitle(activeContext);
         }
     }
 }
