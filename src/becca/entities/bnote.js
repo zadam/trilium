@@ -1218,10 +1218,10 @@ class BNote extends AbstractBeccaEntity {
      * @param {string} name - name of the attribute, not including the leading ~/#
      * @param {string} [value] - value of the attribute - text for labels, target note ID for relations; optional.
      * @param {boolean} [isInheritable=false]
-     * @param {int} [position]
+     * @param {int|null} [position]
      * @returns {BAttribute}
      */
-    addAttribute(type, name, value = "", isInheritable = false, position = 1000) {
+    addAttribute(type, name, value = "", isInheritable = false, position = null) {
         const BAttribute = require("./battribute");
 
         return new BAttribute({

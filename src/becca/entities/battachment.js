@@ -4,10 +4,9 @@ const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const becca = require('../becca');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
+const sql = require("../../services/sql");
 
 /**
- * FIXME: how to order attachments?
- *
  * Attachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
  * larger amounts of data and generally not accessible to the user.
  *
@@ -42,6 +41,8 @@ class BAttachment extends AbstractBeccaEntity {
         this.mime = row.mime;
         /** @type {string} */
         this.title = row.title;
+        /** @type {number} */
+        this.position = row.position;
         /** @type {string} */
         this.blobId = row.blobId;
         /** @type {boolean} */
@@ -80,6 +81,12 @@ class BAttachment extends AbstractBeccaEntity {
     beforeSaving() {
         super.beforeSaving();
 
+        if (this.position === undefined || this.position === null) {
+            this.position = 10 + sql.getValue(`SELECT COALESCE(MAX(position), 0)
+                                              FROM attachments
+                                              WHERE parentId = ?`, [this.noteId]);
+        }
+
         this.dateModified = dateUtils.localNowDateTime();
         this.utcDateModified = dateUtils.utcNowDateTime();
     }
@@ -91,6 +98,7 @@ class BAttachment extends AbstractBeccaEntity {
             role: this.role,
             mime: this.mime,
             title: this.title,
+            position: this.position,
             blobId: this.blobId,
             isProtected: !!this.isProtected,
             isDeleted: false,

@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS "attachments"
     mime         TEXT not null,
     title         TEXT not null,
     isProtected    INT  not null DEFAULT 0,
+    position     INT  default 0 not null,
     blobId    TEXT DEFAULT null,
     dateModified TEXT NOT NULL,
     utcDateModified TEXT not null,

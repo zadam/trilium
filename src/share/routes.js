@@ -37,6 +37,7 @@ function requestCredentials(res) {
         .sendStatus(401);
 }
 
+/** @returns {SNote|boolean} */
 function checkNoteAccess(noteId, req, res) {
     const note = shaca.getNote(noteId);
 
