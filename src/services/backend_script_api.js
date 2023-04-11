@@ -471,7 +471,7 @@ function BackendScriptApi(currentNote, apiParams) {
         if (opts.type === 'script' && !opts.scriptNoteId) { throw new Error("scriptNoteId is mandatory for launchers of type 'script'"); }
         if (opts.type === 'customWidget' && !opts.widgetNoteId) { throw new Error("widgetNoteId is mandatory for launchers of type 'customWidget'"); }
 
-        const parentNoteId = !!opts.isVisible ? '_lbVisibleLaunchers' : '_lbAvailableLaunchers';
+        const parentNoteId = opts.isVisible ? '_lbVisibleLaunchers' : '_lbAvailableLaunchers';
         const noteId = 'al_' + opts.id;
 
         const launcherNote =

@@ -14,7 +14,7 @@ async function processEntityChanges(entityChanges) {
             if (ec.entityName === 'notes') {
                 processNoteChange(loadResults, ec);
             } else if (ec.entityName === 'branches') {
-                processBranchChange(loadResults, ec);
+                await processBranchChange(loadResults, ec);
             } else if (ec.entityName === 'attributes') {
                 processAttributeChange(loadResults, ec);
             } else if (ec.entityName === 'note_reordering') {
@@ -104,7 +104,7 @@ function processNoteChange(loadResults, ec) {
     }
 }
 
-function processBranchChange(loadResults, ec) {
+async function processBranchChange(loadResults, ec) {
     if (ec.isErased && ec.entityId in froca.branches) {
         utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
         return;
@@ -138,7 +138,15 @@ function processBranchChange(loadResults, ec) {
     loadResults.addBranch(ec.entityId, ec.componentId);
 
     const childNote = froca.notes[ec.entity.noteId];
-    const parentNote = froca.notes[ec.entity.parentNoteId];
+    let parentNote = froca.notes[ec.entity.parentNoteId];
+
+    if (childNote && !parentNote) {
+        // a branch cannot exist without the parent
+        // a note loaded into froca has to also contain all its ancestors
+        // this problem happened e.g. in sharing where _share was hidden and thus not loaded
+        // sharing meant cloning into _share, which crashed because _share was not loaded
+        parentNote = await froca.getNote(ec.entity.parentNoteId);
+    }
 
     if (branch) {
         branch.update(ec.entity);

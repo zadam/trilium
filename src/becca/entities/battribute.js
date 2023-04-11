@@ -96,7 +96,7 @@ class BAttribute extends AbstractBeccaEntity {
         }
 
         if (this.type === 'relation' && !(this.value in this.becca.notes)) {
-            throw new Error(`Cannot save relation '${this.name}' of note '${this.noteId}' since it target not existing note '${this.value}'.`);
+            throw new Error(`Cannot save relation '${this.name}' of note '${this.noteId}' since it targets not existing note '${this.value}'.`);
         }
     }
 

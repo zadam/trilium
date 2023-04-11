@@ -285,7 +285,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
         this.$title = this.$widget.find('.attr-detail-title');
 
         this.$inputName = this.$widget.find('.attr-input-name');
-        this.$inputName.on('keyup', () => this.userEditedAttribute());
+        this.$inputName.on('input', ev => {
+            if (!ev.originalEvent?.isComposing) { // https://github.com/zadam/trilium/pull/3812
+                this.userEditedAttribute();
+            }
+        });
         this.$inputName.on('change', () => this.userEditedAttribute());
         this.$inputName.on('autocomplete:closed', () => this.userEditedAttribute());
 
@@ -299,7 +303,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$rowValue = this.$widget.find('.attr-row-value');
         this.$inputValue = this.$widget.find('.attr-input-value');
-        this.$inputValue.on('keyup', () => this.userEditedAttribute());
+        this.$inputValue.on('input', ev => {
+            if (!ev.originalEvent?.isComposing) { // https://github.com/zadam/trilium/pull/3812
+                this.userEditedAttribute();
+            }
+        });
         this.$inputValue.on('change', () => this.userEditedAttribute());
         this.$inputValue.on('autocomplete:closed', () => this.userEditedAttribute());
         this.$inputValue.on('focus', () => {
@@ -328,7 +336,11 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
         this.$rowInverseRelation = this.$widget.find('.attr-row-inverse-relation');
         this.$inputInverseRelation = this.$widget.find('.attr-input-inverse-relation');
-        this.$inputInverseRelation.on('keyup', () => this.userEditedAttribute());
+        this.$inputInverseRelation.on('input', ev => {
+            if (!ev.originalEvent?.isComposing) { // https://github.com/zadam/trilium/pull/3812
+                this.userEditedAttribute();
+            }
+        });
 
         this.$rowTargetNote = this.$widget.find('.attr-row-target-note');
         this.$inputTargetNote = this.$widget.find('.attr-input-target-note');

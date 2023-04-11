@@ -65,6 +65,26 @@ const TPL = `<div class="sort-child-notes-dialog modal mx-auto" tabindex="-1" ro
                             sort folders at the top
                         </label>
                     </div>
+                    
+                    <br />
+                    
+                    <h5>Natural Sort</h5>
+
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" name="sort-natural" value="1">
+                            sort with respect to different character sorting and collation rules in different languages or regions.
+                        </label>
+                    </div>
+                    <br />
+                    
+                    <div class="form-check">
+                        <label>
+                            Natural sort language
+                            <input class="form-control" name="sort-locale">
+                            The language code for natural sort, e.g. "zh-CN" for Chinese.
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Sort <kbd>enter</kbd></button>
@@ -83,8 +103,10 @@ export default class SortChildNotesDialog extends BasicWidget {
             const sortBy = this.$form.find("input[name='sort-by']:checked").val();
             const sortDirection = this.$form.find("input[name='sort-direction']:checked").val();
             const foldersFirst = this.$form.find("input[name='sort-folders-first']").is(":checked");
+            const sortNatural = this.$form.find("input[name='sort-natural']").is(":checked");
+            const sortLocale = this.$form.find("input[name='sort-locale']").val();
 
-            await server.put(`notes/${this.parentNoteId}/sort-children`, {sortBy, sortDirection, foldersFirst});
+            await server.put(`notes/${this.parentNoteId}/sort-children`, {sortBy, sortDirection, foldersFirst, sortNatural, sortLocale});
 
             utils.closeActiveDialog();
         });

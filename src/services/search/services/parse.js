@@ -155,7 +155,7 @@ function getExpression(tokens, searchContext, level = 0) {
 
             i++;
 
-            return new NoteContentFulltextExp(operator.token, {tokens: [tokens[i].token], raw });
+            return new NoteContentFulltextExp(operator.token, {tokens: [tokens[i].token], raw});
         }
 
         if (tokens[i].token === 'parents') {
@@ -389,7 +389,7 @@ function getExpression(tokens, searchContext, level = 0) {
         else if (token === 'note') {
             i++;
 
-            expressions.push(parseNoteProperty(tokens));
+            expressions.push(parseNoteProperty());
 
             continue;
         }

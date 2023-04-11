@@ -147,7 +147,9 @@ class ContextMenu {
         // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
         // we might filter out right clicks, but then it's better if even right clicks close the context menu
         if (Date.now() - this.dateContextMenuOpenedMs > 300) {
-            this.$widget.hide();
+            // seems like if we hide the menu immediately, some clicks can get propagated to the underlying component
+            // see https://github.com/zadam/trilium/pull/3805 for details
+            setTimeout(() => this.$widget.hide(), 100);
         }
     }
 }
