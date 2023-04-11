@@ -119,7 +119,14 @@ class AbstractBeccaEntity {
         return this;
     }
 
-    /** @protected */
+    /**
+     * Hot entities keep stable blobId which is continuously updated and is not shared with other entities.
+     * Cold entities can still update its blob, but the blobId will change (and new blob will be created).
+     * Functionally this is the same, it's an optimization to avoid creating a new blob every second with auto saved
+     * text notes.
+     *
+     * @protected
+     */
     _isHot() {
         return false;
     }
@@ -128,6 +135,7 @@ class AbstractBeccaEntity {
     _setContent(content, opts = {}) {
         // client code asks to save entity even if blobId didn't change (something else was changed)
         opts.forceSave = !!opts.forceSave;
+        opts.forceCold = !!opts.forceCold;
 
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}'`);
@@ -150,7 +158,7 @@ class AbstractBeccaEntity {
         }
 
         sql.transactional(() => {
-            let newBlobId = this._saveBlob(content);
+            let newBlobId = this._saveBlob(content, opts);
 
             if (newBlobId !== this.blobId || opts.forceSave) {
                 this.blobId = newBlobId;
@@ -160,11 +168,11 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    _saveBlob(content) {
+    _saveBlob(content, opts) {
         let newBlobId;
         let blobNeedsInsert;
 
-        if (this._isHot()) {
+        if (this._isHot() && !opts.forceCold) {
             newBlobId = this.blobId || utils.randomBlobId();
             blobNeedsInsert = true;
         } else {

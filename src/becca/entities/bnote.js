@@ -241,6 +241,7 @@ class BNote extends AbstractBeccaEntity {
      * @param content
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BNote entity
+     * @param {object} [opts.forceCold=false] - blob has to be saved as cold
      */
     setContent(content, opts) {
         this._setContent(content, opts);
@@ -1521,35 +1522,43 @@ class BNote extends AbstractBeccaEntity {
      * @returns {BNoteRevision|null}
      */
     saveNoteRevision() {
-        const content = this.getContent();
+        return sql.transactional(() => {
+            const content = this.getContent();
+            const contentMetadata = this.getContentMetadata();
 
-        if (!content || (Buffer.isBuffer(content) && content.byteLength === 0)) {
-            return null;
-        }
+            const noteRevision = new BNoteRevision({
+                noteId: this.noteId,
+                // title and text should be decrypted now
+                title: this.title,
+                type: this.type,
+                mime: this.mime,
+                isProtected: this.isProtected,
+                utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
+                    ? this.utcDateModified
+                    : contentMetadata.utcDateModified,
+                utcDateCreated: dateUtils.utcNowDateTime(),
+                utcDateModified: dateUtils.utcNowDateTime(),
+                dateLastEdited: this.dateModified > contentMetadata.dateModified
+                    ? this.dateModified
+                    : contentMetadata.dateModified,
+                dateCreated: dateUtils.localNowDateTime()
+            }, true);
 
-        const contentMetadata = this.getContentMetadata();
+            noteRevision.setContent(content, { forceSave: true });
 
-        const noteRevision = new BNoteRevision({
-            noteId: this.noteId,
-            // title and text should be decrypted now
-            title: this.title,
-            type: this.type,
-            mime: this.mime,
-            isProtected: this.isProtected,
-            utcDateLastEdited: this.utcDateModified > contentMetadata.utcDateModified
-                ? this.utcDateModified
-                : contentMetadata.utcDateModified,
-            utcDateCreated: dateUtils.utcNowDateTime(),
-            utcDateModified: dateUtils.utcNowDateTime(),
-            dateLastEdited: this.dateModified > contentMetadata.dateModified
-                ? this.dateModified
-                : contentMetadata.dateModified,
-            dateCreated: dateUtils.localNowDateTime()
-        }, true);
+            for (const noteAttachment of this.getAttachments()) {
+                const content = noteAttachment.getContent();
 
-        noteRevision.setContent(content, { forceSave: true });
+                const revisionAttachment = noteAttachment.copy();
+                revisionAttachment.parentId = noteRevision.noteRevisionId;
+                revisionAttachment.setContent(content, {
+                    forceSave: true,
+                    forceCold: true
+                });
+            }
 
-        return noteRevision;
+            return noteRevision;
+        });
     }
 
     /**

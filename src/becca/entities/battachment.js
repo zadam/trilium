@@ -55,6 +55,19 @@ class BAttachment extends AbstractBeccaEntity {
         this.utcDateScheduledForDeletionSince = row.utcDateScheduledForDeletionSince;
     }
 
+    /** @returns {BAttachment} */
+    copy() {
+        return new BAttachment({
+            parentId: this.parentId,
+            role: this.role,
+            mime: this.mime,
+            title: this.title,
+            blobId: this.blobId,
+            isProtected: this.isProtected,
+            utcDateScheduledForDeletionSince: this.utcDateScheduledForDeletionSince
+        });
+    }
+
     getNote() {
         return becca.notes[this.parentId];
     }
@@ -73,6 +86,7 @@ class BAttachment extends AbstractBeccaEntity {
      * @param content
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BAttachment entity
+     * @param {object} [opts.forceCold=false] - blob has to be saved as cold
      */
     setContent(content, opts) {
         this._setContent(content, opts);
