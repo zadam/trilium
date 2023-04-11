@@ -40,6 +40,8 @@ export default class AttachmentListTypeWidget extends TypeWidget {
 
         for (const attachment of attachments) {
             const attachmentDetailWidget = new AttachmentDetailWidget(attachment);
+            attachmentDetailWidget.isFullDetail = false;
+
             this.child(attachmentDetailWidget);
 
             this.renderedAttachmentIds.add(attachment.attachmentId);

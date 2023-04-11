@@ -78,39 +78,39 @@ async function createNoteLink(notePath, options = {}) {
     return $container;
 }
 
-function getNotePathFromLink($link) {
-    const notePathAttr = $link.attr("data-note-path");
+function parseNotePathAndScope($link) {
+    let notePath = $link.attr("data-note-path");
 
-    if (notePathAttr) {
-        return notePathAttr;
+    if (!notePath) {
+        const url = $link.attr('href');
+
+        notePath = url ? getNotePathFromUrl(url) : null;
     }
 
-    const url = $link.attr('href');
-
-    const notePath = url ? getNotePathFromUrl(url) : null;
     const viewScope = {
-        viewMode: $link.attr('data-view-mode'),
+        viewMode: $link.attr('data-view-mode') || 'default',
         attachmentId: $link.attr('data-attachment-id'),
     };
 
     return {
         notePath,
+        noteId: treeService.getNoteIdFromNotePath(notePath),
         viewScope
     };
 }
 
 function goToLink(evt) {
     const $link = $(evt.target).closest("a,.block-link");
-    const address = $link.attr('href');
+    const hrefLink = $link.attr('href');
 
-    if (address?.startsWith("data:")) {
+    if (hrefLink?.startsWith("data:")) {
         return true;
     }
 
     evt.preventDefault();
     evt.stopPropagation();
 
-    const {notePath, viewScope} = getNotePathFromLink($link);
+    const { notePath, viewScope } = parseNotePathAndScope($link);
 
     const ctrlKey = utils.isCtrlKey(evt);
     const isLeftClick = evt.which === 1;
@@ -135,20 +135,19 @@ function goToLink(evt) {
             });
         }
     }
-    else {
-        if (openInNewTab
-            || $link.hasClass("ck-link-actions__preview") // within edit link dialog single click suffices
-            || $link.closest("[contenteditable]").length === 0 // outside of CKEditor single click suffices
-        ) {
-            if (address) {
-                if (address.toLowerCase().startsWith('http')) {
-                    window.open(address, '_blank');
-                }
-                else if (address.toLowerCase().startsWith('file:') && utils.isElectron()) {
-                    const electron = utils.dynamicRequire('electron');
+    else if (hrefLink) {
+        // this branch handles external links
+        const isWithinCKLinkDialog = $link.hasClass("ck-link-actions__preview");
+        const isOutsideCKEditor = $link.closest("[contenteditable]").length === 0;
 
-                    electron.shell.openPath(address);
-                }
+        if (openInNewTab || isWithinCKLinkDialog || isOutsideCKEditor) {
+            if (hrefLink.toLowerCase().startsWith('http')) {
+                window.open(hrefLink, '_blank');
+            }
+            else if (hrefLink.toLowerCase().startsWith('file:') && utils.isElectron()) {
+                const electron = utils.dynamicRequire('electron');
+
+                electron.shell.openPath(hrefLink);
             }
         }
     }
@@ -159,7 +158,7 @@ function goToLink(evt) {
 function linkContextMenu(e) {
     const $link = $(e.target).closest("a");
 
-    const {notePath, viewScope} = getNotePathFromLink($link);
+    const { notePath, viewScope } = parseNotePathAndScope($link);
 
     if (!notePath) {
         return;
@@ -223,5 +222,6 @@ export default {
     getNotePathFromUrl,
     createNoteLink,
     goToLink,
-    loadReferenceLinkTitle
+    loadReferenceLinkTitle,
+    parseNotePathAndScope
 };

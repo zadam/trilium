@@ -39,10 +39,16 @@ class NoteContext extends Component {
 
     async setNote(inputNotePath, opts = {}) {
         opts.triggerSwitchEvent = opts.triggerSwitchEvent !== undefined ? opts.triggerSwitchEvent : true;
+        opts.viewScope = opts.viewScope || {};
+        opts.viewScope.viewMode = opts.viewScope.viewMode || "default";
 
         const resolvedNotePath = await this.getResolvedNotePath(inputNotePath);
 
         if (!resolvedNotePath) {
+            return;
+        }
+
+        if (this.notePath === resolvedNotePath && utils.areObjectsEqual(this.viewScope, opts.viewScope)) {
             return;
         }
 
@@ -53,8 +59,7 @@ class NoteContext extends Component {
         this.notePath = resolvedNotePath;
         ({noteId: this.noteId, parentNoteId: this.parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(resolvedNotePath));
 
-        this.viewScope = opts.viewScope || {};
-        this.viewScope.viewMode = this.viewScope.viewMode || "default";
+        this.viewScope = opts.viewScope;
 
         this.saveToRecentNotes(resolvedNotePath);
 
@@ -134,10 +139,6 @@ class NoteContext extends Component {
 
         if (!resolvedNotePath) {
             logError(`Cannot resolve note path ${inputNotePath}`);
-            return;
-        }
-
-        if (resolvedNotePath === this.notePath) {
             return;
         }
 

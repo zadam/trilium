@@ -20,16 +20,27 @@ const TPL = `
         }
         
         .attachment-content pre {
-            max-height: 400px;
             background: var(--accented-background-color);
             padding: 10px;
             margin-top: 10px;
             margin-bottom: 10px;
         }
         
+        .attachment-detail-wrapper.list-view .attachment-content pre {
+            max-height: 400px;
+        }
+        
         .attachment-content img {
             margin: 10px;
+        }
+        
+        .attachment-detail-wrapper.list-view .attachment-content img {
             max-height: 300px; 
+            max-width: 90%; 
+            object-fit: contain;
+        }
+        
+        .attachment-detail-wrapper.full-detail .attachment-content img {
             max-width: 90%; 
             object-fit: contain;
         }
@@ -37,7 +48,7 @@ const TPL = `
 
     <div class="attachment-detail-wrapper">
         <div class="attachment-title-line">
-            <h4 class="attachment-title"><a href="javascript:" data-trigger-command="openAttachmentDetail"></a></h4>                
+            <h4 class="attachment-title"></h4>                
             <div class="attachment-details"></div>
             <div style="flex: 1 1;"></div>
             <div class="attachment-actions-container"></div>
@@ -54,6 +65,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
         this.contentSized();
         this.attachment = attachment;
         this.attachmentActionsWidget = new AttachmentActionsWidget(attachment);
+        this.isFullDetail = true;
         this.child(this.attachmentActionsWidget);
     }
 
@@ -73,7 +85,21 @@ export default class AttachmentDetailWidget extends BasicWidget {
                     .html()
             );
         this.$wrapper = this.$widget.find('.attachment-detail-wrapper');
-        this.$wrapper.find('.attachment-title a').text(this.attachment.title);
+        this.$wrapper.addClass(this.isFullDetail ? "full-detail" : "list-view");
+
+        if (!this.isFullDetail) {
+            this.$wrapper.find('.attachment-title').append(
+                $('<a href="javascript:">')
+                    .attr("data-note-path", this.attachment.parentId)
+                    .attr("data-view-mode", "attachments")
+                    .attr("data-attachment-id", this.attachment.attachmentId)
+                    .text(this.attachment.title)
+            );
+        } else {
+            this.$wrapper.find('.attachment-title')
+                .text(this.attachment.title);
+        }
+
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());

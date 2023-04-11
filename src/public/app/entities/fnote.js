@@ -5,6 +5,7 @@ import options from "../services/options.js";
 import froca from "../services/froca.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import cssClassManager from "../services/css_class_manager.js";
+import FAttachment from "./fattachment.js";
 
 const LABEL = 'label';
 const RELATION = 'relation';

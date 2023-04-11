@@ -30,18 +30,19 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
         this.children = [];
         this.renderedAttachmentIds = new Set();
 
-        const attachment = await server.get(`notes/${this.noteId}/attachments/${this.noteContext.viewScope.attachment.attachmentId}/?includeContent=true`);
+        const attachment = await server.get(`notes/${this.noteId}/attachments/${this.noteContext.viewScope.attachmentId}/?includeContent=true`);
 
         if (!attachment) {
-            this.$list.html("<strong>This attachment has been deleted.</strong>");
+            this.$wrapper.html("<strong>This attachment has been deleted.</strong>");
 
             return;
         }
 
         const attachmentDetailWidget = new AttachmentDetailWidget(attachment);
+        attachmentDetailWidget.isFullDetail = true;
         this.child(attachmentDetailWidget);
 
-        this.$list.append(attachmentDetailWidget.render());
+        this.$wrapper.append(attachmentDetailWidget.render());
     }
 
     async entitiesReloadedEvent({loadResults}) {

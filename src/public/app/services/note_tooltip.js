@@ -31,17 +31,11 @@ async function mouseEnterHandler() {
         return;
     }
 
-    let notePath = linkService.getNotePathFromUrl($link.attr("href"));
+    const { notePath, noteId, viewScope } = linkService.parseNotePathAndScope($link);
 
-    if (!notePath) {
-        notePath = $link.attr("data-note-path");
-    }
-
-    if (!notePath) {
+    if (!notePath || viewScope.viewMode !== 'default') {
         return;
     }
-
-    const noteId = treeService.getNoteIdFromNotePath(notePath);
 
     const note = await froca.getNote(noteId);
     const content = await renderTooltip(note);

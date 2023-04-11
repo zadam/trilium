@@ -31,3 +31,5 @@ class FAttachment {
         return this.froca.notes[this.parentId];
     }
 }
+
+export default FAttachment;
