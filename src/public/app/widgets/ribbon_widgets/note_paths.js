@@ -72,7 +72,7 @@ export default class NotePathsWidget extends NoteContextAwareWidget {
             return;
         }
 
-        const sortedNotePaths = this.note.getSortedNotePaths(this.hoistedNoteId)
+        const sortedNotePaths = this.note.getSortedNotePathRecords(this.hoistedNoteId)
             .filter(notePath => !notePath.isHidden);
 
         if (sortedNotePaths.length > 0) {

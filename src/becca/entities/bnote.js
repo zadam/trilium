@@ -12,6 +12,7 @@ const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
 const eventService = require("../../services/events");
+const froca = require("../../public/app/services/froca.js");
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -1150,6 +1151,8 @@ class BNote extends AbstractBeccaEntity {
     }
 
     /**
+     * Gives all possible note paths leading to this note. Paths containing search note are ignored (could form cycles)
+     *
      * @returns {string[][]} - array of notePaths (each represented by array of noteIds constituting the particular note path)
      */
     getAllNotePaths() {
@@ -1157,16 +1160,71 @@ class BNote extends AbstractBeccaEntity {
             return [['root']];
         }
 
-        const notePaths = [];
+        const parentNotes = this.getParentNotes();
+        let notePaths = [];
 
-        for (const parentNote of this.getParentNotes()) {
-            for (const parentPath of parentNote.getAllNotePaths()) {
-                parentPath.push(this.noteId);
-                notePaths.push(parentPath);
-            }
+        if (parentNotes.length === 1) { // optimization for most common case
+            notePaths = parentNotes[0].getAllNotePaths();
+        } else {
+            notePaths = parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
+        }
+
+        for (const notePath of notePaths) {
+            notePath.push(this.noteId);
         }
 
         return notePaths;
+    }
+
+    /**
+     * @param {string} [hoistedNoteId='root']
+     * @return {{isArchived: boolean, isInHoistedSubTree: boolean, notePath: string[], isHidden: boolean}[]}
+     */
+    getSortedNotePathRecords(hoistedNoteId = 'root') {
+        const isHoistedRoot = hoistedNoteId === 'root';
+
+        const notePaths = this.getAllNotePaths().map(path => ({
+            notePath: path,
+            isInHoistedSubTree: isHoistedRoot || path.includes(hoistedNoteId),
+            isArchived: path.some(noteId => froca.notes[noteId].isArchived),
+            isHidden: path.includes('_hidden')
+        }));
+
+        notePaths.sort((a, b) => {
+            if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
+                return a.isInHoistedSubTree ? -1 : 1;
+            } else if (a.isArchived !== b.isArchived) {
+                return a.isArchived ? 1 : -1;
+            } else if (a.isHidden !== b.isHidden) {
+                return a.isHidden ? 1 : -1;
+            } else {
+                return a.notePath.length - b.notePath.length;
+            }
+        });
+
+        return notePaths;
+    }
+
+    /**
+     * Returns note path considered to be the "best"
+     *
+     * @param {string} [hoistedNoteId='root']
+     * @return {string[]} array of noteIds constituting the particular note path
+     */
+    getBestNotePath(hoistedNoteId = 'root') {
+        return this.getSortedNotePathRecords(hoistedNoteId)[0]?.notePath;
+    }
+
+    /**
+     * Returns note path considered to be the "best"
+     *
+     * @param {string} [hoistedNoteId='root']
+     * @return {string} serialized note path (e.g. 'root/a1h315/js725h')
+     */
+    getBestNotePathString(hoistedNoteId = 'root') {
+        const notePath = this.getBestNotePath(hoistedNoteId);
+
+        return notePath?.join("/");
     }
 
     /**

@@ -227,7 +227,7 @@ async function cloneNoteToBranch(childNoteId, parentBranchId, prefix) {
     }
 }
 
-async function cloneNoteToNote(childNoteId, parentNoteId, prefix) {
+async function cloneNoteToParentNote(childNoteId, parentNoteId, prefix) {
     const resp = await server.put(`notes/${childNoteId}/clone-to-note/${parentNoteId}`, {
         prefix: prefix
     });
@@ -254,5 +254,5 @@ export default {
     moveNodeUpInHierarchy,
     cloneNoteAfter,
     cloneNoteToBranch,
-    cloneNoteToNote,
+    cloneNoteToParentNote,
 };

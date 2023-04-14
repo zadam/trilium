@@ -9,11 +9,11 @@ function cloneNoteToBranch(req) {
     return cloningService.cloneNoteToBranch(noteId, parentBranchId, prefix);
 }
 
-function cloneNoteToNote(req) {
+function cloneNoteToParentNote(req) {
     const {noteId, parentNoteId} = req.params;
     const {prefix} = req.body;
 
-    return cloningService.cloneNoteToNote(noteId, parentNoteId, prefix);
+    return cloningService.cloneNoteToParentNote(noteId, parentNoteId, prefix);
 }
 
 function cloneNoteAfter(req) {
@@ -30,7 +30,7 @@ function toggleNoteInParent(req) {
 
 module.exports = {
     cloneNoteToBranch,
-    cloneNoteToNote,
+    cloneNoteToParentNote,
     cloneNoteAfter,
     toggleNoteInParent
 };

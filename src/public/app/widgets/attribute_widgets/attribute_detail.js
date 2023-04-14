@@ -1,6 +1,5 @@
 import server from "../../services/server.js";
 import froca from "../../services/froca.js";
-import treeService from "../../services/tree.js";
 import linkService from "../../services/link.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import noteAutocompleteService from "../../services/note_autocomplete.js";
@@ -9,6 +8,7 @@ import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import SpacedUpdate from "../../services/spaced_update.js";
 import utils from "../../services/utils.js";
 import shortcutService from "../../services/shortcuts.js";
+import appContext from "../../components/app_context.js";
 
 const TPL = `
 <div class="attr-detail">
@@ -598,9 +598,10 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
             const displayedResults = results.length <= DISPLAYED_NOTES ? results : results.slice(0, DISPLAYED_NOTES);
             const displayedNotes = await froca.getNotes(displayedResults.map(res => res.noteId));
+            const hoistedNoteId = appContext.tabManager.getActiveContext()?.hoistedNoteId;
 
             for (const note of displayedNotes) {
-                const notePath = treeService.getSomeNotePath(note);
+                const notePath = note.getBestNotePathString(hoistedNoteId);
                 const $noteLink = await linkService.createNoteLink(notePath, {showNotePath: true});
 
                 this.$relatedNotesList.append(

@@ -120,7 +120,7 @@ function getNoteTitleForPath(notePathArray) {
 }
 
 /**
- * Returns notePath for noteId from cache. Note hoisting is respected.
+ * Returns notePath for noteId. Note hoisting is respected.
  * Archived (and hidden) notes are also returned, but non-archived paths are preferred if available
  * - this means that archived paths is returned only if there's no non-archived path
  * - you can check whether returned path is archived using isArchived
@@ -136,20 +136,20 @@ function getSomePath(note, path = []) {
 
 /**
  * @param {BNote} note
- * @param {string[]} path
- * @param {boolean}respectHoisting
+ * @param {string[]} parentPath
+ * @param {boolean} respectHoisting
  * @returns {string[]|false}
  */
-function getSomePathInner(note, path, respectHoisting) {
+function getSomePathInner(note, parentPath, respectHoisting) {
+    const childPath = [...parentPath, note.noteId];
     if (note.isRoot()) {
-        const foundPath = [...path, note.noteId];
-        foundPath.reverse();
+        childPath.reverse();
 
-        if (respectHoisting && !foundPath.includes(cls.getHoistedNoteId())) {
+        if (respectHoisting && !childPath.includes(cls.getHoistedNoteId())) {
             return false;
         }
 
-        return foundPath;
+        return childPath;
     }
 
     const parents = note.parents;
@@ -159,15 +159,35 @@ function getSomePathInner(note, path, respectHoisting) {
         return false;
     }
 
-    for (const parentNote of parents) {
-        const retPath = getSomePathInner(parentNote, [...path, note.noteId], respectHoisting);
+    const completeNotePaths = parents.map(parentNote => getSomePathInner(parentNote, childPath, respectHoisting));
 
-        if (retPath) {
-            return retPath;
-        }
+    if (completeNotePaths.length === 0) {
+        return false;
+    } else if (completeNotePaths.length === 1) {
+        return completeNotePaths[0];
+    } else {
+        completeNotePaths.sort((a, b) => {
+            if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
+                return a.isInHoistedSubTree ? -1 : 1;
+            } else if (a.isSearch !== b.isSearch) {
+                return a.isSearch ? 1 : -1;
+            } else if (a.isArchived !== b.isArchived) {
+                return a.isArchived ? 1 : -1;
+            } else if (a.isHidden !== b.isHidden) {
+                return a.isHidden ? 1 : -1;
+            } else {
+                return a.notePath.length - b.notePath.length;
+            }
+        });
+
+        // if there are multiple valid paths, take the shortest one
+        const shortestNotePath = completeNotePaths.reduce((shortestPath, nextPath) =>
+            nextPath.length < shortestPath.length
+                ? nextPath
+                : shortestPath, completeNotePaths[0]);
+
+        return shortestNotePath;
     }
-
-    return false;
 }
 
 function getNotePath(noteId) {

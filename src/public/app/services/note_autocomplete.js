@@ -2,7 +2,6 @@ import server from "./server.js";
 import appContext from "../components/app_context.js";
 import utils from './utils.js';
 import noteCreateService from './note_create.js';
-import treeService from './tree.js';
 import froca from "./froca.js";
 
 // this key needs to have this value, so it's hit by the tooltip
@@ -188,7 +187,8 @@ function initNoteAutocomplete($el, options) {
                 templateNoteId: templateNoteId
             });
 
-            suggestion.notePath = treeService.getSomeNotePath(note);
+            const hoistedNoteId = appContext.tabManager.getActiveContext()?.hoistedNoteId;
+            suggestion.notePath = note.getBestNotePathString(hoistedNoteId);
         }
 
         $el.setSelectedNotePath(suggestion.notePath);
