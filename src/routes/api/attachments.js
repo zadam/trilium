@@ -1,7 +1,6 @@
 const becca = require("../../becca/becca");
 const NotFoundError = require("../../errors/not_found_error");
 const utils = require("../../services/utils");
-const noteService = require("../../services/notes");
 
 function getAttachments(req) {
     const includeContent = req.query.includeContent === 'true';
@@ -19,18 +18,12 @@ function getAttachments(req) {
 
 function getAttachment(req) {
     const includeContent = req.query.includeContent === 'true';
-    const {noteId, attachmentId} = req.params;
+    const {attachmentId} = req.params;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    const attachment = note.getAttachmentById(attachmentId);
+    const attachment = becca.getAttachment(attachmentId);
 
     if (!attachment) {
-        throw new NotFoundError(`Attachment '${attachmentId} of note '${noteId}' doesn't exist.`);
+        throw new NotFoundError(`Attachment '${attachmentId}' doesn't exist.`);
     }
 
     return processAttachment(attachment, includeContent);
@@ -72,15 +65,9 @@ function saveAttachment(req) {
 }
 
 function deleteAttachment(req) {
-    const {noteId, attachmentId} = req.params;
+    const {attachmentId} = req.params;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
-    const attachment = note.getAttachmentById(attachmentId);
+    const attachment = becca.getAttachment(attachmentId);
 
     if (attachment) {
         attachment.markAsDeleted();
@@ -88,15 +75,15 @@ function deleteAttachment(req) {
 }
 
 function convertAttachmentToNote(req) {
-    const {noteId, attachmentId} = req.params;
+    const {attachmentId} = req.params;
 
-    const note = becca.getNote(noteId);
+    const attachment = becca.getAttachment(attachmentId);
 
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+    if (!attachment) {
+        throw new NotFoundError(`Attachment '${attachmentId}' doesn't exist.`);
     }
 
-    return note.convertAttachmentToChildNote(attachmentId);
+    return attachment.convertToNote();
 }
 
 module.exports = {

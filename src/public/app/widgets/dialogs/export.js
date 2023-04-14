@@ -219,7 +219,7 @@ export default class ExportDialog extends BasicWidget {
     exportBranch(branchId, type, format, version) {
         this.taskId = utils.randomString(10);
 
-        const url = openService.getUrlForDownload(`api/notes/${branchId}/export/${type}/${format}/${version}/${this.taskId}`);
+        const url = openService.getUrlForDownload(`api/branches/${branchId}/export/${type}/${format}/${version}/${this.taskId}`);
 
         openService.download(url);
     }

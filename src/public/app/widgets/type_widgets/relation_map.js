@@ -237,7 +237,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
     async loadNotesAndRelations() {
         const noteIds = this.mapData.notes.map(note => note.noteId);
-        const data = await server.post("notes/relation-map", {noteIds, relationMapNoteId: this.noteId});
+        const data = await server.post("relation-map", {noteIds, relationMapNoteId: this.noteId});
 
         this.relations = [];
 

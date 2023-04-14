@@ -4,7 +4,6 @@ const becca = require("../becca/becca");
 const noteService = require("./notes");
 const dateUtils = require("./date_utils");
 const log = require("./log");
-const hiddenSubtreeService = require("./hidden_subtree");
 const hoistedNoteService = require("./hoisted_note");
 const searchService = require("./search/services/search");
 const SearchContext = require("./search/search_context");

@@ -4,30 +4,7 @@ const sql = require('./sql');
 const log = require('./log');
 const BBranch = require('../becca/entities/bbranch');
 const entityChangesService = require('./entity_changes');
-const protectedSessionService = require('./protected_session');
 const becca = require('../becca/becca');
-
-function getNotes(noteIds) {
-    // we return also deleted notes which have been specifically asked for
-    const notes = sql.getManyRows(`
-        SELECT 
-          noteId,
-          title,
-          isProtected,
-          type,
-          mime,
-          isDeleted
-        FROM notes
-        WHERE noteId IN (???)`, noteIds);
-
-    protectedSessionService.decryptNotes(notes);
-
-    notes.forEach(note => {
-        note.isProtected = !!note.isProtected
-    });
-
-    return notes;
-}
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {
@@ -39,7 +16,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         return { success: false, message: `Cannot move anything into 'none' parent.` };
     }
 
-    const existing = getExistingBranch(parentNoteId, childNoteId);
+    const existing = becca.getBranchFromChildAndParent(childNoteId, parentNoteId);
 
     if (existing && (branchId === null || existing.branchId !== branchId)) {
         const parentNote = becca.getNote(parentNoteId);
@@ -51,7 +28,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         };
     }
 
-    if (!checkTreeCycle(parentNoteId, childNoteId)) {
+    if (wouldAddingBranchCreateCycle(parentNoteId, childNoteId)) {
         return {
             success: false,
             message: 'Moving/cloning note here would create cycle.'
@@ -68,59 +45,22 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     return { success: true };
 }
 
-function getExistingBranch(parentNoteId, childNoteId) {
-    const branchId = sql.getValue(`
-        SELECT branchId 
-        FROM branches 
-        WHERE noteId = ? 
-          AND parentNoteId = ? 
-          AND isDeleted = 0`, [childNoteId, parentNoteId]);
-
-    return becca.getBranch(branchId);
-}
-
 /**
  * Tree cycle can be created when cloning or when moving existing clone. This method should detect both cases.
  */
-function checkTreeCycle(parentNoteId, childNoteId) {
-    const subtreeNoteIds = [];
+function wouldAddingBranchCreateCycle(parentNoteId, childNoteId) {
+    const childNote = becca.getNote(childNoteId);
+    const parentNote = becca.getNote(parentNoteId);
+
+    if (!childNote || !parentNote) {
+        return false;
+    }
 
     // we'll load the whole subtree - because the cycle can start in one of the notes in the subtree
-    loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
+    const childSubtreeNoteIds = new Set(childNote.getSubtreeNoteIds());
+    const parentAncestorNoteIds = parentNote.getAncestorNoteIds();
 
-    function checkTreeCycleInner(parentNoteId) {
-        if (parentNoteId === 'root') {
-            return true;
-        }
-
-        if (subtreeNoteIds.includes(parentNoteId)) {
-            // while towards the root of the tree we encountered noteId which is already present in the subtree
-            // joining parentNoteId with childNoteId would then clearly create a cycle
-            return false;
-        }
-
-        const parentNoteIds = sql.getColumn("SELECT DISTINCT parentNoteId FROM branches WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
-
-        for (const pid of parentNoteIds) {
-            if (!checkTreeCycleInner(pid)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    return checkTreeCycleInner(parentNoteId);
-}
-
-function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
-    subtreeNoteIds.push(parentNoteId);
-
-    const children = sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
-
-    for (const childNoteId of children) {
-        loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
-    }
+    return parentAncestorNoteIds.some(parentAncestorNoteId => childSubtreeNoteIds.has(parentAncestorNoteId));
 }
 
 function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, foldersFirst = false, sortNatural = false, sortLocale) {
@@ -295,7 +235,6 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
 }
 
 module.exports = {
-    getNotes,
     validateParentChild,
     sortNotes,
     sortNotesIfNeeded,

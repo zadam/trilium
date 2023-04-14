@@ -6,6 +6,10 @@ const becca = require('../becca');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const sql = require("../../services/sql");
 
+const attachmentRoleToNoteTypeMapping = {
+    'image': 'image'
+};
+
 /**
  * Attachment represent data related/attached to the note. Conceptually similar to attributes, but intended for
  * larger amounts of data and generally not accessible to the user.
@@ -90,6 +94,55 @@ class BAttachment extends AbstractBeccaEntity {
      */
     setContent(content, opts) {
         this._setContent(content, opts);
+    }
+
+    /**
+     * @returns {{note: BNote, branch: BBranch}}
+     */
+    convertToNote() {
+        if (this.type === 'search') {
+            throw new Error(`Note of type search cannot have child notes`);
+        }
+
+        if (!this.getNote()) {
+            throw new Error("Cannot find note of this attachment. It is possible that this is note revision's attachment. " +
+                "Converting note revision's attachments to note is not (yet) supported.");
+        }
+
+        if (!(this.role in attachmentRoleToNoteTypeMapping)) {
+            throw new Error(`Mapping from attachment role '${this.role}' to note's type is not defined`);
+        }
+
+        if (!this.isContentAvailable()) { // isProtected is same for attachment
+            throw new Error(`Cannot convert protected attachment outside of protected session`);
+        }
+
+        const noteService = require('../../services/notes');
+
+        const { note, branch } = noteService.createNewNote({
+            parentNoteId: this.parentId,
+            title: this.title,
+            type: attachmentRoleToNoteTypeMapping[this.role],
+            mime: this.mime,
+            content: this.getContent(),
+            isProtected: this.isProtected
+        });
+
+        this.markAsDeleted();
+
+        if (this.role === 'image' && this.type === 'text') {
+            const origContent = this.getContent();
+            const oldAttachmentUrl = `api/attachment/${this.attachmentId}/image/`;
+            const newNoteUrl = `api/images/${note.noteId}/`;
+
+            const fixedContent = utils.replaceAll(origContent, oldAttachmentUrl, newNoteUrl);
+
+            if (origContent !== fixedContent) {
+                this.setContent(fixedContent);
+            }
+        }
+
+        return { note, branch };
     }
 
     beforeSaving() {

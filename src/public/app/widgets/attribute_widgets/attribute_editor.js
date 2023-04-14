@@ -95,7 +95,7 @@ const mentionSetup = {
         {
             marker: '#',
             feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=label&query=${encodeURIComponent(queryText)}`);
+                const names = await server.get(`attribute-names/?type=label&query=${encodeURIComponent(queryText)}`);
 
                 return names.map(name => {
                     return {
@@ -110,7 +110,7 @@ const mentionSetup = {
         {
             marker: '~',
             feed: async queryText => {
-                const names = await server.get(`attributes/names/?type=relation&query=${encodeURIComponent(queryText)}`);
+                const names = await server.get(`attribute-names/?type=relation&query=${encodeURIComponent(queryText)}`);
 
                 return names.map(name => {
                     return {

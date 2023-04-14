@@ -48,7 +48,7 @@ async function openNoteExternally(noteId, mime) {
 }
 
 function downloadNoteRevision(noteId, noteRevisionId) {
-    const url = getUrlForDownload(`api/notes/${noteId}/revisions/${noteRevisionId}/download`);
+    const url = getUrlForDownload(`api/revisions/${noteRevisionId}/download`);
 
     download(url);
 }

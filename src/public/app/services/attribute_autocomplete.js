@@ -20,7 +20,7 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
             source: async (term, cb) => {
                 const type = typeof attributeType === "function" ? attributeType() : attributeType;
 
-                const names = await server.get(`attributes/names/?type=${type}&query=${encodeURIComponent(term)}`);
+                const names = await server.get(`attribute-names/?type=${type}&query=${encodeURIComponent(term)}`);
                 const result = names.map(name => ({name}));
 
                 cb(result);
@@ -52,7 +52,7 @@ async function initLabelValueAutocomplete({ $el, open, nameCallback }) {
         return;
     }
 
-    const attributeValues = (await server.get(`attributes/values/${encodeURIComponent(attributeName)}`))
+    const attributeValues = (await server.get(`attribute-values/${encodeURIComponent(attributeName)}`))
         .map(attribute => ({ value: attribute }));
 
     if (attributeValues.length === 0) {

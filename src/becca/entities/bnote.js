@@ -947,7 +947,7 @@ class BNote extends AbstractBeccaEntity {
         };
     }
 
-    /** @returns {String[]} - includes the subtree node as well */
+    /** @returns {String[]} - includes the subtree root note as well */
     getSubtreeNoteIds({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
         return this.getSubtree({includeArchived, includeHidden, resolveSearch})
             .notes
@@ -1031,6 +1031,11 @@ class BNote extends AbstractBeccaEntity {
         }
 
         return this.ancestorCache;
+    }
+
+    /** @returns {string[]} */
+    getAncestorNoteIds() {
+        return this.getAncestors().map(note => note.noteId);
     }
 
     /** @returns {boolean} */
@@ -1406,61 +1411,6 @@ class BNote extends AbstractBeccaEntity {
         this.deleteNote();
 
         return attachment;
-    }
-
-    /**
-     * @param attachmentId
-     * @returns {{note: BNote, branch: BBranch}}
-     */
-    convertAttachmentToChildNote(attachmentId) {
-        if (this.type === 'search') {
-            throw new Error(`Note of type search cannot have child notes`);
-        }
-
-        const attachment = this.getAttachmentById(attachmentId);
-
-        if (!attachment) {
-            throw new NotFoundError(`Attachment '${attachmentId} of note '${this.noteId}' doesn't exist.`);
-        }
-
-        const attachmentRoleToNoteTypeMapping = {
-            'image': 'image'
-        };
-
-        if (!(attachment.role in attachmentRoleToNoteTypeMapping)) {
-            throw new Error(`Mapping from attachment role '${attachment.role}' to note's type is not defined`);
-        }
-
-        if (!this.isContentAvailable()) { // isProtected is same for attachment
-            throw new Error(`Cannot convert protected attachment outside of protected session`);
-        }
-
-        const noteService = require('../../services/notes');
-
-        const {note, branch} = noteService.createNewNote({
-            parentNoteId: this.noteId,
-            title: attachment.title,
-            type: attachmentRoleToNoteTypeMapping[attachment.role],
-            mime: attachment.mime,
-            content: attachment.getContent(),
-            isProtected: this.isProtected
-        });
-
-        attachment.markAsDeleted();
-
-        if (attachment.role === 'image' && this.type === 'text') {
-            const origContent = this.getContent();
-            const oldAttachmentUrl = `api/notes/${this.noteId}/images/${attachment.attachmentId}/`;
-            const newNoteUrl = `api/images/${note.noteId}/`;
-
-            const fixedContent = utils.replaceAll(origContent, oldAttachmentUrl, newNoteUrl);
-
-            if (origContent !== fixedContent) {
-                this.setContent(fixedContent);
-            }
-        }
-
-        return { note, branch };
     }
 
     /**

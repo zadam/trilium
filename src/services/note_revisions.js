@@ -2,35 +2,32 @@
 
 const log = require('./log');
 const sql = require('./sql');
-const protectedSession = require("./protected_session");
+const protectedSessionService = require("./protected_session");
 
 /**
  * @param {BNote} note
  */
 function protectNoteRevisions(note) {
+    if (!protectedSessionService.isProtectedSessionAvailable()) {
+        throw new Error(`Cannot (un)protect revisions of note '${note.noteId}' without active protected session`);
+    }
+
     for (const revision of note.getNoteRevisions()) {
-        if (note.isProtected !== revision.isProtected) {
-            if (!protectedSession.isProtectedSessionAvailable()) {
-                log.error("Protected session is not available to fix note revisions.");
+        if (note.isProtected === revision.isProtected) {
+            continue;
+        }
 
-                return;
-            }
+        try {
+            const content = revision.getContent();
 
-            try {
-                const content = revision.getContent();
+            revision.isProtected = note.isProtected;
 
-                revision.isProtected = note.isProtected;
+            // this will force de/encryption
+            revision.setContent(content, {forceSave: true});
+        } catch (e) {
+            log.error(`Could not un/protect note revision '${revision.noteRevisionId}'`);
 
-                // this will force de/encryption
-                revision.setContent(content);
-
-                revision.save();
-            }
-            catch (e) {
-                log.error(`Could not un/protect note revision ID = ${revision.noteRevisionId}`);
-
-                throw e;
-            }
+            throw e;
         }
     }
 }

@@ -9,7 +9,6 @@ const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const utils = require('../services/utils');
 const noteRevisionService = require('../services/note_revisions');
-const attributeService = require('../services/attributes');
 const request = require('./request');
 const path = require('path');
 const url = require('url');
@@ -21,8 +20,8 @@ const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
-const {attach} = require("jsdom/lib/jsdom/living/helpers/svg/basic-types.js");
 
+/** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {
     if (parentNote.isLabelTruthy('newNotesOnTop')) {
         const minNotePos = parentNote.getChildBranches()
@@ -37,6 +36,7 @@ function getNewNotePosition(parentNote) {
     }
 }
 
+/** @param {BNote} note */
 function triggerNoteTitleChanged(note) {
     eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
@@ -53,6 +53,10 @@ function deriveMime(type, mime) {
     return noteTypesService.getDefaultMimeForNoteType(type);
 }
 
+/**
+ * @param {BNote} parentNote
+ * @param {BNote} childNote
+ */
 function copyChildAttributes(parentNote, childNote) {
     const hasAlreadyTemplate = childNote.hasRelation('template');
 
@@ -78,6 +82,7 @@ function copyChildAttributes(parentNote, childNote) {
     }
 }
 
+/** @param {BNote} parentNote */
 function getNewNoteTitle(parentNote) {
     let title = "new note";
 
@@ -278,6 +283,12 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
     }
 }
 
+/**
+ * @param {BNote} note
+ * @param {boolean} protect
+ * @param {boolean} includingSubTree
+ * @param {TaskContext} taskContext
+ */
 function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
     protectNote(note, protect);
 
@@ -290,7 +301,15 @@ function protectNoteRecursively(note, protect, includingSubTree, taskContext) {
     }
 }
 
+/**
+ * @param {BNote} note
+ * @param {boolean} protect
+ */
 function protectNote(note, protect) {
+    if (!protectedSessionService.isProtectedSessionAvailable()) {
+        throw new Error(`Cannot (un)protect note '${note.noteId}' with protect flag '${protect}' without active protected session`);
+    }
+
     try {
         if (protect !== note.isProtected) {
             const content = note.getContent();
@@ -310,7 +329,7 @@ function protectNote(note, protect) {
         noteRevisionService.protectNoteRevisions(note);
     }
     catch (e) {
-        log.error(`Could not un/protect note ID = ${note.noteId}`);
+        log.error(`Could not un/protect note '${note.noteId}'`);
 
         throw e;
     }
@@ -565,6 +584,7 @@ function saveLinks(note, content) {
     return content;
 }
 
+/** @param {BNote} note */
 function saveNoteRevisionIfNeeded(note) {
     // files and images are versioned separately
     if (note.type === 'file' || note.type === 'image' || note.hasLabel('disableVersioning')) {
@@ -709,6 +729,8 @@ function scanForLinks(note, content) {
 }
 
 /**
+ * @param {BNote} note
+ * @param {string} content
  * Things which have to be executed after updating content, but asynchronously (separate transaction)
  */
 async function asyncPostProcessContent(note, content) {

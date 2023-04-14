@@ -63,6 +63,12 @@ class BNoteRevision extends AbstractBeccaEntity {
         return utils.isStringNote(this.type, this.mime);
     }
 
+    isContentAvailable() {
+        return !this.noteRevisionId // new note which was not encrypted yet
+            || !this.isProtected
+            || protectedSessionService.isProtectedSessionAvailable()
+    }
+
     /*
      * Note revision content has quite special handling - it's not a separate entity, but a lazily loaded
      * part of NoteRevision entity with its own sync. Reason behind this hybrid design is that

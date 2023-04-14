@@ -188,7 +188,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             const text = 'Do you want to restore this revision? This will overwrite current title/content of the note with this revision.';
 
             if (await dialogService.confirm(text)) {
-                await server.put(`notes/${revisionItem.noteId}/restore-revision/${revisionItem.noteRevisionId}`);
+                await server.post(`revisions/${revisionItem.noteRevisionId}/restore`);
 
                 this.$widget.modal('hide');
 
@@ -202,7 +202,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             const text = 'Do you want to delete this revision? This action will delete revision title and content, but still preserve revision metadata.';
 
             if (await dialogService.confirm(text)) {
-                await server.remove(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
+                await server.remove(`revisions/${revisionItem.noteRevisionId}`);
 
                 this.loadNoteRevisions(revisionItem.noteId);
 
@@ -232,7 +232,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
     async renderContent(revisionItem) {
         this.$content.empty();
 
-        const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
+        const fullNoteRevision = await server.get(`revisions/${revisionItem.noteRevisionId}`);
 
         if (revisionItem.type === 'text') {
             this.$content.html(fullNoteRevision.content);

@@ -23,12 +23,8 @@ function isHoistedInHiddenSubtree() {
     return hoistedNote.isHiddenCompletely();
 }
 
-function getHoistedNote() {
-    return becca.getNote(cls.getHoistedNoteId());
-}
-
 function getWorkspaceNote() {
-    const hoistedNote = getHoistedNote();
+    const hoistedNote = becca.getNote(cls.getHoistedNoteId());
 
     if (hoistedNote.isRoot() || hoistedNote.hasLabel('workspace')) {
         return hoistedNote;
@@ -39,7 +35,6 @@ function getWorkspaceNote() {
 
 module.exports = {
     getHoistedNoteId,
-    getHoistedNote,
     getWorkspaceNote,
     isHoistedInHiddenSubtree
 };

@@ -64,13 +64,7 @@ function getRevisionFilename(noteRevision) {
 function downloadNoteRevision(req, res) {
     const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
-    if (noteRevision.noteId !== req.params.noteId) {
-        return res.setHeader("Content-Type", "text/plain")
-            .status(400)
-            .send(`Note revision ${req.params.noteRevisionId} does not belong to note ${req.params.noteId}`);
-    }
-
-    if (noteRevision.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
+    if (!noteRevision.isContentAvailable()) {
         return res.setHeader("Content-Type", "text/plain")
             .status(401)
             .send("Protected session not available");

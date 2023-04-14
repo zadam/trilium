@@ -142,7 +142,7 @@ export default class PromotedAttributesWidget extends NoteContextAwareWidget {
                 $input.prop("type", "text");
 
                 // no need to await for this, can be done asynchronously
-                server.get(`attributes/values/${encodeURIComponent(valueAttr.name)}`).then(attributeValues => {
+                server.get(`attribute-values/${encodeURIComponent(valueAttr.name)}`).then(attributeValues => {
                     if (attributeValues.length === 0) {
                         return;
                     }
