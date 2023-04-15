@@ -5,8 +5,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    plugins: ['prettier'],
-
+    // plugins: ['prettier'], // to be activated
     extends: ['eslint:recommended', 'airbnb-base', 'plugin:jsonc/recommended-with-jsonc', 'prettier'],
     overrides: [
         {
@@ -18,7 +17,6 @@ module.exports = {
             parser: 'jsonc-eslint-parser',
             rules: {
                 'jsonc/sort-keys': [
-                    // here is rule  (to be deleted)
                     'off',
                     {
                         pathPattern: '^$',
@@ -121,8 +119,6 @@ module.exports = {
         sourceType: 'module',
     },
     rules: {
-        // hi adam, those rules are //temporary off, you can turn them on one by one to check if we really need it. (to be deleted)
-
         // eslint:recommended
         'no-unused-vars': 'off',
         'linebreak-style': 'off',
@@ -136,7 +132,6 @@ module.exports = {
         'no-inner-declarations': 'off',
 
         // prettier
-        // all about formating, it might take a while to excute it. you can change the config in .prettierrc.js (to be deleted)
         'prettier/prettier': ['off', { endOfLine: 'auto' }],
 
         // airbnb-base
@@ -213,6 +208,6 @@ module.exports = {
         'import/no-named-as-default-member': 'off',
         yoda: 'off',
         'no-script-url': 'off',
-
+        'no-prototype-builtins':'off'
     },
 };

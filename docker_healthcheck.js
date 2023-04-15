@@ -8,7 +8,6 @@ if (config.https) {
     // built-in TLS (terminated by trilium) is not supported yet, PRs are welcome
     // for reverse proxy terminated TLS this will works since config.https will be false
     process.exit(0);
-    return;
 }
 
 const port = require('./src/services/port');

@@ -3,7 +3,5 @@ dist
 bin
 docs
 libraries
-spec
-spec-es6
 coverage
 play
