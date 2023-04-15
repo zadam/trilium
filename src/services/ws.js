@@ -13,12 +13,12 @@ const env = require('./env');
 if (env.isDev()) {
     const chokidar = require('chokidar');
     const debounce = require('debounce');
-    const debounceReloadFronted = debounce(reloadFrontend, 200);
+    const debouncedReloadFrontend = debounce(reloadFrontend, 200);
     chokidar
         .watch('src/public')
-        .on('add', debounceReloadFronted)
-        .on('change', debounceReloadFronted)
-        .on('unlink', debounceReloadFronted);
+        .on('add', debouncedReloadFrontend)
+        .on('change', debouncedReloadFrontend)
+        .on('unlink', debouncedReloadFrontend);
 }
 
 let webSocketServer;
