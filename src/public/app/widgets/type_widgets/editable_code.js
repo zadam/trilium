@@ -53,7 +53,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             matchBrackets: true,
             keyMap: options.is('vimKeymapEnabled') ? "vim": "default",
             matchTags: {bothTags: true},
-            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
+            highlightSelectionMatches: {showToken: false, annotateScrollbar: false},
             lint: true,
             gutters: ["CodeMirror-lint-markers"],
             lineNumbers: true,
@@ -62,7 +62,7 @@ export default class EditableCodeTypeWidget extends TypeWidget {
             // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
             lineWrapping: options.is('codeLineWrapEnabled'),
             dragDrop: false, // with true the editor inlines dropped files which is not what we expect
-            placeholder: "Type the content of your code note here..."
+            placeholder: "Type the content of your code note here...",
         });
 
         this.codeEditor.on('change', () => this.spacedUpdate.scheduleUpdate());
