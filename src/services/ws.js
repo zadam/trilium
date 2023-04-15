@@ -9,6 +9,18 @@ const protectedSessionService = require('./protected_session');
 const becca = require("../becca/becca");
 const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
 
+const env = require('./env');
+if (env.isDev()) {
+    const chokidar = require('chokidar');
+    const debounce = require('debounce');
+    const debounceReloadFronted = debounce(reloadFrontend, 200);
+    chokidar
+        .watch('src/public')
+        .on('add', debounceReloadFronted)
+        .on('change', debounceReloadFronted)
+        .on('unlink', debounceReloadFronted);
+}
+
 let webSocketServer;
 let lastSyncedPush = null;
 
