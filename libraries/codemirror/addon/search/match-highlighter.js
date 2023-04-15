@@ -1,167 +1,160 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/5/LICENSE
 
-// Highlighting text that matches the selection
-//
-// Defines an option highlightSelectionMatches, which, when enabled,
-// will style strings that match the selection throughout the
-// document.
-//
-// The option can be set to true to simply enable it, or to a
-// {minChars, style, wordsOnly, showToken, delay} object to explicitly
-// configure it. minChars is the minimum amount of characters that should be
-// selected for the behavior to occur, and style is the token style to
-// apply to the matches. This will be prefixed by "cm-" to create an
-// actual CSS class name. If wordsOnly is enabled, the matches will be
-// highlighted only if the selected text is a word. showToken, when enabled,
-// will cause the current token to be highlighted when nothing is selected.
-// delay is used to specify how much time to wait, in milliseconds, before
-// highlighting the matches. If annotateScrollbar is enabled, the occurrences
-// will be highlighted on the scrollbar via the matchesonscrollbar addon.
-
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require("../../lib/codemirror"), require("./matchesonscrollbar"));
+    mod(require("../../lib/codemirror"));
   else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror", "./matchesonscrollbar"], mod);
+    define(["../../lib/codemirror"], mod);
   else // Plain browser env
     mod(CodeMirror);
 })(function(CodeMirror) {
-  "use strict";
+  var ie_lt8 = /MSIE \d/.test(navigator.userAgent) &&
+    (document.documentMode == null || document.documentMode < 8);
 
-  var defaults = {
-    style: "matchhighlight",
-    minChars: 2,
-    delay: 100,
-    wordsOnly: false,
-    annotateScrollbar: false,
-    showToken: false,
-    trim: true
+  var Pos = CodeMirror.Pos;
+
+  var matching = {"(": ")>", ")": "(<", "[": "]>", "]": "[<", "{": "}>", "}": "{<", "<": ">>", ">": "<<"};
+
+  function bracketRegex(config) {
+    return config && config.bracketRegex || /[(){}[\]]/
   }
 
-  function State(options) {
-    this.options = {}
-    for (var name in defaults)
-      this.options[name] = (options && options.hasOwnProperty(name) ? options : defaults)[name]
-    this.overlay = this.timeout = null;
-    this.matchesonscroll = null;
-    this.active = false;
+  function findMatchingBracket(cm, where, config) {
+    var line = cm.getLineHandle(where.line), pos = where.ch - 1;
+    var afterCursor = config && config.afterCursor
+    if (afterCursor == null)
+      afterCursor = /(^| )cm-fat-cursor($| )/.test(cm.getWrapperElement().className)
+    var re = bracketRegex(config)
+
+    // A cursor is defined as between two characters, but in in vim command mode
+    // (i.e. not insert mode), the cursor is visually represented as a
+    // highlighted box on top of the 2nd character. Otherwise, we allow matches
+    // from before or after the cursor.
+    var match = (!afterCursor && pos >= 0 && re.test(line.text.charAt(pos)) && matching[line.text.charAt(pos)]) ||
+        re.test(line.text.charAt(pos + 1)) && matching[line.text.charAt(++pos)];
+    if (!match) return null;
+    var dir = match.charAt(1) == ">" ? 1 : -1;
+    if (config && config.strict && (dir > 0) != (pos == where.ch)) return null;
+    var style = cm.getTokenTypeAt(Pos(where.line, pos + 1));
+
+    var found = scanForBracket(cm, Pos(where.line, pos + (dir > 0 ? 1 : 0)), dir, style, config);
+    if (found == null) return null;
+    return {from: Pos(where.line, pos), to: found && found.pos,
+            match: found && found.ch == match.charAt(0), forward: dir > 0};
   }
 
-  CodeMirror.defineOption("highlightSelectionMatches", false, function(cm, val, old) {
-    if (old && old != CodeMirror.Init) {
-      removeOverlay(cm);
-      clearTimeout(cm.state.matchHighlighter.timeout);
-      cm.state.matchHighlighter = null;
-      cm.off("cursorActivity", cursorActivity);
-      cm.off("focus", onFocus)
-    }
-    if (val) {
-      var state = cm.state.matchHighlighter = new State(val);
-      if (cm.hasFocus()) {
-        state.active = true
-        highlightMatches(cm)
-      } else {
-        cm.on("focus", onFocus)
-      }
-      cm.on("cursorActivity", cursorActivity);
-    }
-  });
+  // bracketRegex is used to specify which type of bracket to scan
+  // should be a regexp, e.g. /[[\]]/
+  //
+  // Note: If "where" is on an open bracket, then this bracket is ignored.
+  //
+  // Returns false when no bracket was found, null when it reached
+  // maxScanLines and gave up
+  function scanForBracket(cm, where, dir, style, config) {
+    var maxScanLen = (config && config.maxScanLineLength) || 10000;
+    var maxScanLines = (config && config.maxScanLines) || 1000;
 
-  function cursorActivity(cm) {
-    var state = cm.state.matchHighlighter;
-    if (state.active || cm.hasFocus()) scheduleHighlight(cm, state)
-  }
-
-  function onFocus(cm) {
-    var state = cm.state.matchHighlighter
-    if (!state.active) {
-      state.active = true
-      scheduleHighlight(cm, state)
-    }
-  }
-
-  function scheduleHighlight(cm, state) {
-    clearTimeout(state.timeout);
-    state.timeout = setTimeout(function() {highlightMatches(cm);}, state.options.delay);
-  }
-
-  function addOverlay(cm, query, hasBoundary, style) {
-    var state = cm.state.matchHighlighter;
-    cm.addOverlay(state.overlay = makeOverlay(query, hasBoundary, style));
-    if (state.options.annotateScrollbar && cm.showMatchesOnScrollbar) {
-      var searchFor = hasBoundary ? new RegExp((/\w/.test(query.charAt(0)) ? "\\b" : "") +
-                                               query.replace(/[\\\[.+*?(){|^$]/g, "\\$&") +
-                                               (/\w/.test(query.charAt(query.length - 1)) ? "\\b" : "")) : query;
-      state.matchesonscroll = cm.showMatchesOnScrollbar(searchFor, false,
-        {className: "CodeMirror-selection-highlight-scrollbar"});
-    }
-  }
-
-  function removeOverlay(cm) {
-    var state = cm.state.matchHighlighter;
-    if (state.overlay) {
-      cm.removeOverlay(state.overlay);
-      state.overlay = null;
-      if (state.matchesonscroll) {
-        state.matchesonscroll.clear();
-        state.matchesonscroll = null;
+    var stack = [];
+    var re = bracketRegex(config)
+    var lineEnd = dir > 0 ? Math.min(where.line + maxScanLines, cm.lastLine() + 1)
+                          : Math.max(cm.firstLine() - 1, where.line - maxScanLines);
+    for (var lineNo = where.line; lineNo != lineEnd; lineNo += dir) {
+      var line = cm.getLine(lineNo);
+      if (!line) continue;
+      var pos = dir > 0 ? 0 : line.length - 1, end = dir > 0 ? line.length : -1;
+      if (line.length > maxScanLen) continue;
+      if (lineNo == where.line) pos = where.ch - (dir < 0 ? 1 : 0);
+      for (; pos != end; pos += dir) {
+        var ch = line.charAt(pos);
+        if (re.test(ch) && (style === undefined ||
+                            (cm.getTokenTypeAt(Pos(lineNo, pos + 1)) || "") == (style || ""))) {
+          var match = matching[ch];
+          if (match && (match.charAt(1) == ">") == (dir > 0)) stack.push(ch);
+          else if (!stack.length) return {pos: Pos(lineNo, pos), ch: ch};
+          else stack.pop();
+        }
       }
     }
+    return lineNo - dir == (dir > 0 ? cm.lastLine() : cm.firstLine()) ? false : null;
   }
 
-  function highlightMatches(cm) {
+  function matchBrackets(cm, autoclear, config) {
+    // Disable brace matching in long lines, since it'll cause hugely slow updates
+    var maxHighlightLen = cm.state.matchBrackets.maxHighlightLineLength || 1000,
+      highlightNonMatching = config && config.highlightNonMatching;
+    var marks = [], ranges = cm.listSelections();
+    for (var i = 0; i < ranges.length; i++) {
+      var match = ranges[i].empty() && findMatchingBracket(cm, ranges[i].head, config);
+      if (match && (match.match || highlightNonMatching !== false) && cm.getLine(match.from.line).length <= maxHighlightLen) {
+        var style = match.match ? "CodeMirror-matchingbracket" : "CodeMirror-nonmatchingbracket";
+        marks.push(cm.markText(match.from, Pos(match.from.line, match.from.ch + 1), {className: style}));
+        if (match.to && cm.getLine(match.to.line).length <= maxHighlightLen)
+          marks.push(cm.markText(match.to, Pos(match.to.line, match.to.ch + 1), {className: style}));
+      }
+    }
+
+    if (marks.length) {
+      // Kludge to work around the IE bug from issue #1193, where text
+      // input stops going to the textarea whenever this fires.
+      if (ie_lt8 && cm.state.focused) cm.focus();
+
+      var clear = function() {
+        cm.operation(function() {
+          for (var i = 0; i < marks.length; i++) marks[i].clear();
+        });
+      };
+      if (autoclear) setTimeout(clear, 800);
+      else return clear;
+    }
+  }
+
+  function doMatchBrackets(cm) {
     cm.operation(function() {
-      var state = cm.state.matchHighlighter;
-      removeOverlay(cm);
-      if (!cm.somethingSelected() && state.options.showToken) {
-        var re = state.options.showToken === true ? /[\w$]/ : state.options.showToken;
-        var cur = cm.getCursor(), line = cm.getLine(cur.line), start = cur.ch, end = start;
-        while (start && re.test(line.charAt(start - 1))) --start;
-        while (end < line.length && re.test(line.charAt(end))) ++end;
-        if (start < end)
-          addOverlay(cm, line.slice(start, end), re, state.options.style);
-        return;
+      if (cm.state.matchBrackets.currentlyHighlighted) {
+        cm.state.matchBrackets.currentlyHighlighted();
+        cm.state.matchBrackets.currentlyHighlighted = null;
       }
-      var from = cm.getCursor("from"), to = cm.getCursor("to");
-      if (from.line != to.line) return;
-      if (state.options.wordsOnly && !isWord(cm, from, to)) return;
-      var selection = cm.getRange(from, to)
-      if (state.options.trim) selection = selection.replace(/^\s+|\s+$/g, "")
-      if (selection.length >= state.options.minChars)
-        addOverlay(cm, selection, false, state.options.style);
+      cm.state.matchBrackets.currentlyHighlighted = matchBrackets(cm, false, cm.state.matchBrackets);
     });
   }
 
-  function isWord(cm, from, to) {
-    var str = cm.getRange(from, to);
-    if (str.match(/^\w+$/) !== null) {
-        if (from.ch > 0) {
-            var pos = {line: from.line, ch: from.ch - 1};
-            var chr = cm.getRange(pos, from);
-            if (chr.match(/\W/) === null) return false;
-        }
-        if (to.ch < cm.getLine(from.line).length) {
-            var pos = {line: to.line, ch: to.ch + 1};
-            var chr = cm.getRange(to, pos);
-            if (chr.match(/\W/) === null) return false;
-        }
-        return true;
-    } else return false;
+  function clearHighlighted(cm) {
+    if (cm.state.matchBrackets && cm.state.matchBrackets.currentlyHighlighted) {
+      cm.state.matchBrackets.currentlyHighlighted();
+      cm.state.matchBrackets.currentlyHighlighted = null;
+    }
   }
 
-  function boundariesAround(stream, re) {
-    return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) &&
-      (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
-  }
+  CodeMirror.defineOption("matchBrackets", false, function(cm, val, old) {
+    if (old && old != CodeMirror.Init) {
+      cm.off("cursorActivity", doMatchBrackets);
+      cm.off("focus", doMatchBrackets)
+      cm.off("blur", clearHighlighted)
+      clearHighlighted(cm);
+    }
+    if (val) {
+      cm.state.matchBrackets = typeof val == "object" ? val : {};
+      cm.on("cursorActivity", doMatchBrackets);
+      cm.on("focus", doMatchBrackets)
+      cm.on("blur", clearHighlighted)
+    }
+  });
 
-  function makeOverlay(query, hasBoundary, style) {
-    return {token: function(stream) {
-      if (stream.match(query) &&
-          (!hasBoundary || boundariesAround(stream, hasBoundary)))
-        return style;
-      stream.next();
-      stream.skipTo(query.charAt(0)) || stream.skipToEnd();
-    }};
-  }
+  CodeMirror.defineExtension("matchBrackets", function() {matchBrackets(this, true);});
+  CodeMirror.defineExtension("findMatchingBracket", function(pos, config, oldConfig){
+    // Backwards-compatibility kludge
+    if (oldConfig || typeof config == "boolean") {
+      if (!oldConfig) {
+        config = config ? {strict: true} : null
+      } else {
+        oldConfig.strict = config
+        config = oldConfig
+      }
+    }
+    return findMatchingBracket(this, pos, config)
+  });
+  CodeMirror.defineExtension("scanForBracket", function(pos, dir, style, config){
+    return scanForBracket(this, pos, dir, style, config);
+  });
 });
