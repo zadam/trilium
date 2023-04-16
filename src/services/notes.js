@@ -21,6 +21,7 @@ const dayjs = require("dayjs");
 const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
+const fs = require("fs");
 
 function getNewNotePosition(parentNote) {
     if (parentNote.isLabelTruthy('newNotesOnTop')) {
@@ -375,7 +376,24 @@ const imageUrlToNoteIdMapping = {};
 
 async function downloadImage(noteId, imageUrl) {
     try {
-        const imageBuffer = await request.getImage(imageUrl);
+        let imageBuffer;
+
+        if (imageUrl.toLowerCase().startsWith("file://")) {
+            imageBuffer = await new Promise((res, rej) => {
+                const localFilePath = imageUrl.substr("file://".length);
+
+                return fs.readFile(localFilePath, (err, data) => {
+                    if (err) {
+                        rej(err);
+                    } else {
+                        res(data);
+                    }
+                });
+            });
+        } else {
+            imageBuffer = await request.getImage(imageUrl);
+        }
+
         const parsedUrl = url.parse(imageUrl);
         const title = path.basename(parsedUrl.pathname);
 
