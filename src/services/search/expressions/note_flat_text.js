@@ -26,8 +26,6 @@ class NoteFlatTextExp extends Expression {
             if (tokens.length === 0) {
                 const retPath = this.getNotePath(note, path);
 
-                console.log(retPath);
-
                 if (retPath) {
                     const noteId = retPath[retPath.length - 1];
 

@@ -40,7 +40,7 @@ function cloneNoteToParentNote(noteId, parentNoteId, prefix) {
     return {
         success: true,
         branchId: branch.branchId,
-        notePath: `${beccaService.getNotePath(parentNoteId).path}/${noteId}`
+        notePath: `${parentNote.getBestNotePathString()}/${noteId}`
     };
 }
 

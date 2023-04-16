@@ -82,41 +82,7 @@ function getNoteTitleForPath(notePathArray) {
     return titles.join(' / ');
 }
 
-function getNotePath(noteId) {
-    const note = becca.notes[noteId];
-
-    if (!note) {
-        console.trace(`Cannot find note '${noteId}'.`);
-        return;
-    }
-
-    const retPath = note.getBestNotePath();
-
-    if (retPath) {
-        const noteTitle = getNoteTitleForPath(retPath);
-
-        let branchId;
-
-        if (note.isRoot()) {
-            branchId = 'none_root';
-        }
-        else {
-            const parentNote = note.parents[0];
-            branchId = becca.getBranchFromChildAndParent(noteId, parentNote.noteId).branchId;
-        }
-
-        return {
-            noteId: noteId,
-            branchId: branchId,
-            title: noteTitle,
-            notePath: retPath,
-            path: retPath.join('/')
-        };
-    }
-}
-
 module.exports = {
-    getNotePath,
     getNoteTitle,
     getNoteTitleForPath,
     isNotePathArchived
