@@ -24,49 +24,12 @@ function isNotePathArchived(notePath) {
     return false;
 }
 
-/**
- * This assumes that note is available. "archived" note means that there isn't a single non-archived note-path
- * leading to this note.
- *
- * @param noteId
- */
-function isArchived(noteId) {
-    const notePath = getSomePath(noteId);
-
-    return isNotePathArchived(notePath);
-}
-
-/**
- * @param {string} noteId
- * @param {string} ancestorNoteId
- * @returns {boolean} - true if given noteId has ancestorNoteId in any of its paths (even archived)
- */
-function isInAncestor(noteId, ancestorNoteId) {
-    if (ancestorNoteId === 'root' || ancestorNoteId === noteId) {
-        return true;
-    }
-
-    const note = becca.notes[noteId];
-
-    if (!note) {
-        return false;
-    }
-
-    for (const parentNote of note.parents) {
-        if (isInAncestor(parentNote.noteId, ancestorNoteId)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 function getNoteTitle(childNoteId, parentNoteId) {
     const childNote = becca.notes[childNoteId];
     const parentNote = becca.notes[parentNoteId];
 
     if (!childNote) {
-        log.info(`Cannot find note in cache for noteId '${childNoteId}'`);
+        log.info(`Cannot find note '${childNoteId}'`);
         return "[error fetching title]";
     }
 
@@ -119,86 +82,15 @@ function getNoteTitleForPath(notePathArray) {
     return titles.join(' / ');
 }
 
-/**
- * Returns notePath for noteId. Note hoisting is respected.
- * Archived (and hidden) notes are also returned, but non-archived paths are preferred if available
- * - this means that archived paths is returned only if there's no non-archived path
- * - you can check whether returned path is archived using isArchived
- *
- * @param {BNote} note
- * @param {string[]} path
- */
-function getSomePath(note, path = []) {
-    // first try to find note within hoisted note, otherwise take any existing note path
-    return getSomePathInner(note, path, true)
-        || getSomePathInner(note, path, false);
-}
-
-/**
- * @param {BNote} note
- * @param {string[]} parentPath
- * @param {boolean} respectHoisting
- * @returns {string[]|false}
- */
-function getSomePathInner(note, parentPath, respectHoisting) {
-    const childPath = [...parentPath, note.noteId];
-    if (note.isRoot()) {
-        childPath.reverse();
-
-        if (respectHoisting && !childPath.includes(cls.getHoistedNoteId())) {
-            return false;
-        }
-
-        return childPath;
-    }
-
-    const parents = note.parents;
-    if (parents.length === 0) {
-        console.log(`Note '${note.noteId}' - '${note.title}' has no parents.`);
-
-        return false;
-    }
-
-    const completeNotePaths = parents.map(parentNote => getSomePathInner(parentNote, childPath, respectHoisting));
-
-    if (completeNotePaths.length === 0) {
-        return false;
-    } else if (completeNotePaths.length === 1) {
-        return completeNotePaths[0];
-    } else {
-        completeNotePaths.sort((a, b) => {
-            if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
-                return a.isInHoistedSubTree ? -1 : 1;
-            } else if (a.isSearch !== b.isSearch) {
-                return a.isSearch ? 1 : -1;
-            } else if (a.isArchived !== b.isArchived) {
-                return a.isArchived ? 1 : -1;
-            } else if (a.isHidden !== b.isHidden) {
-                return a.isHidden ? 1 : -1;
-            } else {
-                return a.notePath.length - b.notePath.length;
-            }
-        });
-
-        // if there are multiple valid paths, take the shortest one
-        const shortestNotePath = completeNotePaths.reduce((shortestPath, nextPath) =>
-            nextPath.length < shortestPath.length
-                ? nextPath
-                : shortestPath, completeNotePaths[0]);
-
-        return shortestNotePath;
-    }
-}
-
 function getNotePath(noteId) {
     const note = becca.notes[noteId];
 
     if (!note) {
-        console.trace(`Cannot find note '${noteId}' in cache.`);
+        console.trace(`Cannot find note '${noteId}'.`);
         return;
     }
 
-    const retPath = getSomePath(note);
+    const retPath = note.getBestNotePath();
 
     if (retPath) {
         const noteTitle = getNoteTitleForPath(retPath);
@@ -223,23 +115,9 @@ function getNotePath(noteId) {
     }
 }
 
-/**
- * @param noteId
- * @returns {boolean} - true if note exists (is not deleted) and is available in current note hoisting
- */
-function isAvailable(noteId) {
-    const notePath = getNotePath(noteId);
-
-    return !!notePath;
-}
-
 module.exports = {
-    getSomePath,
     getNotePath,
     getNoteTitle,
     getNoteTitleForPath,
-    isAvailable,
-    isArchived,
-    isInAncestor,
     isNotePathArchived
 };

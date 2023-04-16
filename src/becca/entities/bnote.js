@@ -748,6 +748,21 @@ class BNote extends AbstractBeccaEntity {
         return this.hasAttribute('label', 'archived');
     }
 
+    areAllNotePathsArchived() {
+        // there's a slight difference between note being itself archived and all its note paths being archived
+        // - note is archived when it itself has an archived label or inherits it
+        // - note does not have or inherit archived label, but each note paths contains a note with (non-inheritable)
+        //   archived label
+
+        const bestNotePathRecord = this.getSortedNotePathRecords()[0];
+
+        if (!bestNotePathRecord) {
+            throw new Error(`No note path available for note '${this.noteId}'`);
+        }
+
+        return bestNotePathRecord.isArchived;
+    }
+
     hasInheritableArchivedLabel() {
         for (const attr of this.getAttributes()) {
             if (attr.name === 'archived' && attr.type === LABEL && attr.isInheritable) {

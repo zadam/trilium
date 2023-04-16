@@ -157,7 +157,7 @@ function findResultsWithExpression(expression, searchContext) {
     const searchResults = noteSet.notes
         .filter(note => !note.isDeleted)
         .map(note => {
-            const notePathArray = executionContext.noteIdToNotePath[note.noteId] || beccaService.getSomePath(note);
+            const notePathArray = executionContext.noteIdToNotePath[note.noteId] || note.getBestNotePath();
 
             if (!notePathArray) {
                 throw new Error(`Can't find note path for note ${JSON.stringify(note.getPojo())}`);
