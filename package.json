@@ -18,7 +18,7 @@
     "start-electron": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 TRILIUM_ENV=dev electron --inspect=5858 .",
     "start-electron-no-dir": "cross-env TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 electron --inspect=5858 .",
     "switch-server": "rm -rf ./node_modules/better-sqlite3 && npm install",
-    "switch-electron": "rm -rf ./node_modules/better-sqlite3 && npm install && ./node_modules/.bin/electron-rebuild",
+    "switch-electron": "./node_modules/.bin/electron-rebuild",
     "build-backend-docs": "rm -rf ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",
     "build-frontend-docs": "rm -rf ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/right_panel_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
