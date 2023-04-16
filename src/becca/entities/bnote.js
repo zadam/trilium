@@ -12,7 +12,6 @@ const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
 const eventService = require("../../services/events");
-const froca = require("../../public/app/services/froca.js");
 dayjs.extend(utc);
 
 const LABEL = 'label';
@@ -1201,7 +1200,7 @@ class BNote extends AbstractBeccaEntity {
         const notePaths = this.getAllNotePaths().map(path => ({
             notePath: path,
             isInHoistedSubTree: isHoistedRoot || path.includes(hoistedNoteId),
-            isArchived: path.some(noteId => froca.notes[noteId].isArchived),
+            isArchived: path.some(noteId => this.becca.notes[noteId].isArchived),
             isHidden: path.includes('_hidden')
         }));
 
