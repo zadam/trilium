@@ -242,7 +242,7 @@ export default class NoteRevisionsDialog extends BasicWidget {
             if (this.$content.find('span.math-tex').length > 0) {
                 await libraryLoader.requireLibrary(libraryLoader.KATEX);
 
-                renderMathInElement($content[0], {trust: true});
+                renderMathInElement(this.$content[0], {trust: true});
             }
         } else if (revisionItem.type === 'code' || revisionItem.type === 'mermaid') {
             this.$content.html($("<pre>").text(fullNoteRevision.content));
