@@ -404,7 +404,7 @@ async function findSimilarNotes(noteId) {
         let score = computeScore(candidateNote);
 
         if (score >= 1.5) {
-            const notePath = beccaService.getSomePath(candidateNote);
+            const notePath = candidateNote.getBestNotePath();
 
             // this takes care of note hoisting
             if (!notePath) {

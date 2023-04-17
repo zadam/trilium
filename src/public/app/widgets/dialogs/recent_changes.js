@@ -1,7 +1,6 @@
 import linkService from '../../services/link.js';
 import utils from '../../services/utils.js';
 import server from '../../services/server.js';
-import treeService from "../../services/tree.js";
 import froca from "../../services/froca.js";
 import appContext from "../../components/app_context.js";
 import hoistedNoteService from "../../services/hoisted_note.js";
@@ -108,7 +107,7 @@ export default class RecentChangesDialog extends BasicWidget {
                     }
                 } else {
                     const note = await froca.getNote(change.noteId);
-                    const notePath = treeService.getSomeNotePath(note);
+                    const notePath = note.getBestNotePathString();
 
                     if (notePath) {
                         $noteLink = await linkService.createNoteLink(notePath, {

@@ -4,6 +4,7 @@ import froca from "./froca.js";
 import utils from "./utils.js";
 import attributeRenderer from "./attribute_renderer.js";
 import noteContentRenderer from "./note_content_renderer.js";
+import appContext from "../components/app_context.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -83,13 +84,14 @@ async function renderTooltip(note) {
         return '<div>Note has been deleted.</div>';
     }
 
-    const someNotePath = treeService.getSomeNotePath(note);
+    const hoistedNoteId = appContext.tabManager.getActiveContext()?.hoistedNoteId;
+    const bestNotePath = note.getBestNotePathString(hoistedNoteId);
 
-    if (!someNotePath) {
+    if (!bestNotePath) {
         return;
     }
 
-    let content = `<h5 class="note-tooltip-title">${(await treeService.getNoteTitleWithPathAsSuffix(someNotePath)).prop('outerHTML')}</h5>`;
+    let content = `<h5 class="note-tooltip-title">${(await treeService.getNoteTitleWithPathAsSuffix(bestNotePath)).prop('outerHTML')}</h5>`;
 
     const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 

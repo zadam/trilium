@@ -83,7 +83,7 @@ const ACTION_HANDLERS = {
         let res;
 
         if (note.getParentBranches().length > 1) {
-            res = cloningService.cloneNoteToNote(note.noteId, action.targetParentNoteId);
+            res = cloningService.cloneNoteToParentNote(note.noteId, action.targetParentNoteId);
         }
         else {
             res = branchService.moveBranchToNote(note.getParentBranches()[0], action.targetParentNoteId);

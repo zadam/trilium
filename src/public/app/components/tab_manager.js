@@ -388,7 +388,12 @@ export default class TabManager extends Component {
             await this.triggerEvent('beforeNoteContextRemove', { ntxIds: ntxIdsToRemove });
 
             if (!noteContextToRemove.isMainContext()) {
-                await this.activateNoteContext(noteContextToRemove.getMainContext().ntxId);
+                const siblings = noteContextToRemove.getMainContext().getSubContexts();
+                const idx = siblings.findIndex(nc => nc.ntxId === noteContextToRemove.ntxId);
+                const contextToActivateIdx = idx === siblings.length - 1 ? idx - 1 : idx + 1;
+                const contextToActivate = siblings[contextToActivateIdx];
+
+                await this.activateNoteContext(contextToActivate.ntxId);
             }
             else if (this.mainNoteContexts.length <= 1) {
                 await this.openAndActivateEmptyTab();

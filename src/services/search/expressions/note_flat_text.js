@@ -22,9 +22,9 @@ class NoteFlatTextExp extends Expression {
          * @param {string[]} tokens
          * @param {string[]} path
          */
-        function searchDownThePath(note, tokens, path) {
+        const searchDownThePath = (note, tokens, path) => {
             if (tokens.length === 0) {
-                const retPath = beccaService.getSomePath(note, path);
+                const retPath = this.getNotePath(note, path);
 
                 if (retPath) {
                     const noteId = retPath[retPath.length - 1];
@@ -129,6 +129,17 @@ class NoteFlatTextExp extends Expression {
         }
 
         return resultNoteSet;
+    }
+
+    getNotePath(note, path) {
+        if (path.length === 0) {
+            return note.getBestNotePath();
+        } else {
+            const closestNoteId = path[0];
+            const closestNoteBestNotePath = becca.getNote(closestNoteId).getBestNotePath();
+
+            return [...closestNoteBestNotePath, ...path.slice(1)];
+        }
     }
 
     /**
