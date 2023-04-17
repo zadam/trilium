@@ -4,6 +4,7 @@ import FAttribute from "../entities/fattribute.js";
 import server from "./server.js";
 import appContext from "../components/app_context.js";
 import FNoteComplement from "../entities/fnote_complement.js";
+import FAttachment from "../entities/fattachment.js";
 
 /**
  * Froca (FROntend CAche) keeps a read only cache of note tree structure in frontend's memory.
@@ -312,6 +313,12 @@ class Froca {
         }
 
         return child.parentToBranch[parentNoteId];
+    }
+
+    async getAttachment(attachmentId) {
+        const attachmentRow = await server.get(`attachments/${attachmentId}`);
+
+        return attachmentRow ? new FAttachment(this, attachmentRow) : null;
     }
 
     /**

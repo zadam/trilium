@@ -30,7 +30,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
         this.children = [];
         this.renderedAttachmentIds = new Set();
 
-        const attachment = await server.get(`notes/${this.noteId}/attachments/${this.noteContext.viewScope.attachmentId}/?includeContent=true`);
+        const attachment = await server.get(`attachments/${this.noteContext.viewScope.attachmentId}/?includeContent=true`);
 
         if (!attachment) {
             this.$wrapper.html("<strong>This attachment has been deleted.</strong>");

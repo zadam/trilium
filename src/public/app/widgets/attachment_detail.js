@@ -123,7 +123,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
             if (attachmentChange.isDeleted) {
                 this.toggleInt(false);
             } else {
-                this.attachment = await server.get(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}?includeContent=true`);
+                this.attachment = await server.get(`attachments/${this.attachment.attachmentId}?includeContent=true`);
 
                 this.refresh();
             }

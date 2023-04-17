@@ -1545,7 +1545,7 @@ class BNote extends AbstractBeccaEntity {
      */
     saveNoteRevision() {
         return sql.transactional(() => {
-            const content = this.getContent();
+            let noteContent = this.getContent();
             const contentMetadata = this.getContentMetadata();
 
             const noteRevision = new BNoteRevision({
@@ -1566,18 +1566,23 @@ class BNote extends AbstractBeccaEntity {
                 dateCreated: dateUtils.localNowDateTime()
             }, true);
 
-            noteRevision.setContent(content, { forceSave: true });
+            noteRevision.save(); // to generate noteRevisionId which is then used to save attachments
 
             for (const noteAttachment of this.getAttachments()) {
-                const content = noteAttachment.getContent();
+                const attachmentContent = noteAttachment.getContent();
 
                 const revisionAttachment = noteAttachment.copy();
                 revisionAttachment.parentId = noteRevision.noteRevisionId;
-                revisionAttachment.setContent(content, {
+                revisionAttachment.setContent(attachmentContent, {
                     forceSave: true,
                     forceCold: true
                 });
+
+                // content is rewritten to point to the revision attachments
+                noteContent = noteContent.replaceAll(`attachments/${noteAttachment.attachmentId}`, `attachments/${revisionAttachment.attachmentId}`);
             }
+
+            noteRevision.setContent(noteContent, { forceSave: true });
 
             return noteRevision;
         });

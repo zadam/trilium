@@ -23,8 +23,8 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         });
     }
 
-    openImageInCurrentTab($img) {
-        const { noteId, viewScope } = this.parseFromImage($img);
+    async openImageInCurrentTab($img) {
+        const { noteId, viewScope } = await this.parseFromImage($img);
 
         if (noteId) {
             appContext.tabManager.getActiveContext().setNote(noteId, { viewScope });
@@ -43,7 +43,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
         }
     }
 
-    parseFromImage($img) {
+    async parseFromImage($img) {
         let noteId, viewScope;
 
         const imgSrc = $img.prop("src");
@@ -56,13 +56,16 @@ export default class AbstractTextTypeWidget extends TypeWidget {
             }
         }
 
-        const attachmentMatch = imgSrc.match(/\/api\/notes\/([A-Za-z0-9_]+)\/images\/([A-Za-z0-9_]+)\//);
+        const attachmentMatch = imgSrc.match(/\/api\/attachments\/([A-Za-z0-9_]+)\/image\//);
         if (attachmentMatch) {
+            const attachmentId = attachmentMatch[1];
+            const attachment = await froca.getAttachment(attachmentId);
+
             return {
-                noteId: attachmentMatch[1],
+                noteId: attachment.parentId,
                 viewScope: {
                     viewMode: 'attachments',
-                    attachmentId: attachmentMatch[2]
+                    attachmentId: attachmentId
                 }
             }
         }

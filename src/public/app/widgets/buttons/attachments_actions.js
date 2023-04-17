@@ -48,7 +48,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     async deleteAttachmentCommand() {
         if (await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
-            await server.remove(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}`);
+            await server.remove(`attachments/${this.attachment.attachmentId}`);
 
             toastService.showMessage(`Attachment '${this.attachment.title}' has been deleted.`);
         }
@@ -56,7 +56,7 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     async convertAttachmentIntoNoteCommand() {
         if (await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`)) {
-            const {note: newNote} = await server.post(`notes/${this.attachment.parentId}/attachments/${this.attachment.attachmentId}/convert-to-note`)
+            const {note: newNote} = await server.post(`attachments/${this.attachment.attachmentId}/convert-to-note`)
 
             toastService.showMessage(`Attachment '${this.attachment.title}' has been converted to note.`);
 
