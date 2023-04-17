@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.59.3",
+  "version": "0.59.4",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
@@ -13,20 +13,22 @@
     "url": "https://github.com/zadam/trilium.git"
   },
   "scripts": {
-    "start-server": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 node ./src/www",
-    "start-server-no-dir": "cross-env TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 node ./src/www",
+    "start-server": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 nodemon ./src/www",
+    "start-server-no-dir": "cross-env TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 nodemon ./src/www",
     "start-electron": "cross-env TRILIUM_DATA_DIR=./data TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 TRILIUM_ENV=dev electron --inspect=5858 .",
     "start-electron-no-dir": "cross-env TRILIUM_ENV=dev TRILIUM_SYNC_SERVER_HOST=http://tsyncserver:4000 electron --inspect=5858 .",
     "switch-server": "rm -rf ./node_modules/better-sqlite3 && npm install",
-    "switch-electron": "rm -rf ./node_modules/better-sqlite3 && npm install && ./node_modules/.bin/electron-rebuild",
+    "switch-electron": "./node_modules/.bin/electron-rebuild",
     "build-backend-docs": "rm -rf ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",
     "build-frontend-docs": "rm -rf ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/right_panel_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
-    "webpack": "npx webpack -c webpack-desktop.config.js && npx webpack -c webpack-mobile.config.js && npx webpack -c webpack-setup.config.js",
+    "webpack": "webpack -c webpack.config.js",
     "test-jasmine": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
     "test": "npm run test-jasmine && npm run test-es6",
-    "postinstall": "rimraf ./node_modules/canvas"
+    "postinstall": "rimraf ./node_modules/canvas",
+    "lint": "eslint .  --cache",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@braintree/sanitize-url": "6.0.2",
@@ -100,15 +102,28 @@
     "electron-packager": "17.1.1",
     "electron-rebuild": "3.2.9",
     "eslint": "^8.38.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsonc": "^2.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "esm": "3.2.25",
+    "husky": "^8.0.3",
+    "jsonc-eslint-parser": "^2.2.0",
+    "lint-staged": "^13.2.1",
     "jasmine": "4.6.0",
     "jsdoc": "4.0.2",
     "lorem-ipsum": "2.0.8",
+    "prettier": "2.8.7",
+    "nodemon": "^2.0.22",
     "rcedit": "3.0.1",
     "webpack": "5.78.0",
     "webpack-cli": "5.0.1"
   },
   "optionalDependencies": {
     "electron-installer-debian": "3.1.0"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix"
   }
 }

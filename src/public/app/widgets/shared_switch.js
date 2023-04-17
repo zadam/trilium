@@ -25,7 +25,7 @@ export default class SharedSwitchWidget extends SwitchWidget {
     }
 
     async switchOn() {
-        await branchService.cloneNoteToNote(this.noteId, '_share');
+        await branchService.cloneNoteToParentNote(this.noteId, '_share');
 
         syncService.syncNow(true);
     }

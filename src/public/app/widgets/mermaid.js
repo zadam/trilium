@@ -1,7 +1,6 @@
 import libraryLoader from "../services/library_loader.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
 import froca from "../services/froca.js";
-import server from "../services/server.js";
 
 const TPL = `<div class="mermaid-widget">
     <style>
@@ -74,6 +73,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
 
         const wheelZoomLoaded = libraryLoader.requireLibrary(libraryLoader.WHEEL_ZOOM);
 
+        this.$errorContainer.hide();
+
         try {
             await this.renderSvg(async renderedSvg => {
                 this.$display.html(renderedSvg);
@@ -88,8 +89,6 @@ export default class MermaidWidget extends NoteContextAwareWidget {
                     speed: 20,
                     zoomOnClick: false
                 });
-
-                this.$errorContainer.hide();
             });
         } catch (e) {
             this.$errorMessage.text(e.message);

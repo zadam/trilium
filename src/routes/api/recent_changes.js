@@ -3,14 +3,14 @@
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
 const noteService = require('../../services/notes');
-const beccaService = require('../../becca/becca_service');
+const becca = require("../../becca/becca");
 
 function getRecentChanges(req) {
     const {ancestorNoteId} = req.params;
 
     let recentChanges = [];
 
-    const noteRevisions = sql.getRows(`
+    const noteRevisionRows = sql.getRows(`
         SELECT 
             notes.noteId,
             notes.isDeleted AS current_isDeleted,
@@ -24,16 +24,18 @@ function getRecentChanges(req) {
             note_revisions
             JOIN notes USING(noteId)`);
 
-    for (const noteRevision of noteRevisions) {
-        if (beccaService.isInAncestor(noteRevision.noteId, ancestorNoteId)) {
-            recentChanges.push(noteRevision);
+    for (const noteRevisionRow of noteRevisionRows) {
+        const note = becca.getNote(noteRevisionRow.noteId);
+
+        if (note?.hasAncestor(ancestorNoteId)) {
+            recentChanges.push(noteRevisionRow);
         }
     }
 
     // now we need to also collect date points not represented in note revisions:
     // 1. creation for all notes (dateCreated)
     // 2. deletion for deleted notes (dateModified)
-    const notes = sql.getRows(`
+    const noteRows = sql.getRows(`
             SELECT
                 notes.noteId,
                 notes.isDeleted AS current_isDeleted,
@@ -57,9 +59,11 @@ function getRecentChanges(req) {
             FROM notes
             WHERE notes.isDeleted = 1`);
 
-    for (const note of notes) {
-        if (beccaService.isInAncestor(note.noteId, ancestorNoteId)) {
-            recentChanges.push(note);
+    for (const noteRow of noteRows) {
+        const note = becca.getNote(noteRow.noteId);
+
+        if (note?.hasAncestor(ancestorNoteId)) {
+            recentChanges.push(noteRow);
         }
     }
 

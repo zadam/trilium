@@ -140,7 +140,7 @@ async function processBranchChange(loadResults, ec) {
     const childNote = froca.notes[ec.entity.noteId];
     let parentNote = froca.notes[ec.entity.parentNoteId];
 
-    if (childNote && !parentNote) {
+    if (childNote && !childNote.isRoot() && !parentNote) {
         // a branch cannot exist without the parent
         // a note loaded into froca has to also contain all its ancestors
         // this problem happened e.g. in sharing where _share was hidden and thus not loaded
