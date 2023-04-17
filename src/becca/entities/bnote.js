@@ -1474,7 +1474,7 @@ class BNote extends AbstractBeccaEntity {
         let parentContent = parentNote.getContent();
 
         const oldNoteUrl = `api/images/${this.noteId}/`;
-        const newAttachmentUrl = `api/notes/${parentNote.noteId}/images/${attachment.attachmentId}/`;
+        const newAttachmentUrl = `api/attachments/${attachment.attachmentId}/image/`;
 
         const fixedContent = utils.replaceAll(parentContent, oldNoteUrl, newAttachmentUrl);
 

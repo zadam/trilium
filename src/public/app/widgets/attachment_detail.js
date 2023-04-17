@@ -110,7 +110,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
         if (this.attachment.content) {
             return $("<pre>").text(this.attachment.content);
         } else if (this.attachment.role === 'image') {
-            return `<img src="api/notes/${this.attachment.parentId}/images/${this.attachment.attachmentId}/${encodeURIComponent(this.attachment.title)}?${this.attachment.utcDateModified}">`;
+            return `<img src="api/attachments/${this.attachment.attachmentId}/image/${encodeURIComponent(this.attachment.title)}?${this.attachment.utcDateModified}">`;
         } else {
             return '';
         }

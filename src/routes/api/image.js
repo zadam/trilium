@@ -44,15 +44,9 @@ function returnImage(req, res) {
 }
 
 function returnAttachedImage(req, res) {
-    const note = becca.getNote(req.params.noteId);
-
-    if (!note) {
-        return res.sendStatus(404);
-    }
-
     const attachment = becca.getAttachment(req.params.attachmentId);
 
-    if (!attachment || attachment.parentId !== note.noteId) {
+    if (!attachment) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(`${RESOURCE_DIR}/db/image-deleted.png`));
     }

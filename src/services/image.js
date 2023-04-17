@@ -170,7 +170,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
 
     return {
         attachment,
-        url: `api/notes/${note.noteId}/images/${attachment.attachmentId}/${encodeURIComponent(fileName)}`
+        url: `api/attachments/${attachment.attachmentId}/image/${encodeURIComponent(fileName)}`
     };
 }
 

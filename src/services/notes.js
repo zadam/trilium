@@ -435,7 +435,7 @@ const downloadImagePromises = {};
 function replaceUrl(content, url, attachment) {
     const quotedUrl = utils.quoteRegex(url);
 
-    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/notes/${attachment.parentId}/images/${encodeURIComponent(attachment.title)}"`);
+    return content.replace(new RegExp(`\\s+src=[\"']${quotedUrl}[\"']`, "ig"), ` src="api/attachments/${encodeURIComponent(attachment.title)}/image"`);
 }
 
 function downloadImages(noteId, content) {
@@ -461,7 +461,7 @@ function downloadImages(noteId, content) {
 
             content = `${content.substr(0, imageMatch.index)}<img src="api/images/${note.noteId}/${sanitizedTitle}"${content.substr(imageMatch.index + imageMatch[0].length)}`;
         }
-        else if (!url.includes('api/images/') && !/api\/notes\/.+\/images\/.*/.test(url)
+        else if (!url.includes('api/images/') && !/api\/attachments\/.+\/image\/?.*/.test(url)
             // this is an exception for the web clipper's "imageId"
             && (url.length !== 20 || url.toLowerCase().startsWith('http'))) {
 
