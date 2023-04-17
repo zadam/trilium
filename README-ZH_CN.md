@@ -32,6 +32,7 @@ Ukraine is currently suffering from Russian aggression, please consider donating
 * [夜间主题](https://github.com/zadam/trilium/wiki/Themes)
 * [Evernote](https://github.com/zadam/trilium/wiki/Evernote-import) 和 [Markdown 导入导出](https://github.com/zadam/trilium/wiki/Markdown)功能
 * 使用[网页剪藏](https://github.com/zadam/trilium/wiki/Web-clipper)轻松保存互联网上的内容
+* [苹果快捷指令](https://github.com/soulsands/trilium-ios-shortcut) 方便苹果设备直接发消息到Trilium服务
 
 ## 构建
 

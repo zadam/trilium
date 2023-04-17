@@ -34,6 +34,7 @@ Ukraine is currently defending itself from Russian aggression, please consider [
 * [Night theme](https://github.com/zadam/trilium/wiki/Themes)
 * [Evernote](https://github.com/zadam/trilium/wiki/Evernote-import) and [Markdown import & export](https://github.com/zadam/trilium/wiki/Markdown)
 * [Web Clipper](https://github.com/zadam/trilium/wiki/Web-clipper) for easy saving of web content
+* [Apple shortcut](https://github.com/soulsands/trilium-ios-shortcut) for sending messages from Apple devices to Trilium server conveniently
 
 Check out [awesome-trilium](https://github.com/Nriver/awesome-trilium) for 3rd party themes, scripts, plugins and more.
 
