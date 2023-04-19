@@ -1569,11 +1569,9 @@ class BNote extends AbstractBeccaEntity {
             noteRevision.save(); // to generate noteRevisionId which is then used to save attachments
 
             for (const noteAttachment of this.getAttachments()) {
-                const attachmentContent = noteAttachment.getContent();
-
                 const revisionAttachment = noteAttachment.copy();
                 revisionAttachment.parentId = noteRevision.noteRevisionId;
-                revisionAttachment.setContent(attachmentContent, {
+                revisionAttachment.setContent(noteAttachment.getContent(), {
                     forceSave: true,
                     forceCold: true
                 });

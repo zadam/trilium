@@ -95,11 +95,27 @@ function restoreNoteRevision(req) {
     if (noteRevision) {
         const note = noteRevision.getNote();
 
-        note.saveNoteRevision();
+        sql.transactional(() => {
+            note.saveNoteRevision();
 
-        note.title = noteRevision.title;
-        note.setContent(noteRevision.getContent());
-        note.save();
+            for (const oldNoteAttachment of note.getAttachments()) {
+                oldNoteAttachment.markAsDeleted();
+            }
+
+            let revisionContent = noteRevision.getContent();
+
+            for (const revisionAttachment of noteRevision.getAttachments()) {
+                const noteAttachment = revisionAttachment.copy();
+                noteAttachment.parentId = note.noteId;
+                noteAttachment.setContent(revisionAttachment.getContent(), { forceSave: true });
+
+                // content is rewritten to point to the restored revision attachments
+                revisionContent = revisionContent.replaceAll(`attachments/${revisionAttachment.attachmentId}`, `attachments/${noteAttachment.attachmentId}`);
+            }
+
+            note.title = noteRevision.title;
+            note.setContent(revisionContent, { forceSave: true });
+        });
     }
 }
 

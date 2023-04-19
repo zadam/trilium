@@ -28,9 +28,8 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.$wrapper.empty();
         this.children = [];
-        this.renderedAttachmentIds = new Set();
 
-        const attachment = await server.get(`attachments/${this.noteContext.viewScope.attachmentId}/?includeContent=true`);
+        const attachment = await server.get(`attachments/${this.attachmentId}/?includeContent=true`);
 
         if (!attachment) {
             this.$wrapper.html("<strong>This attachment has been deleted.</strong>");
@@ -46,10 +45,14 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachment.attachmentId);
+        const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachmentId);
 
         if (attachmentChange?.isDeleted) {
             this.refresh(); // all other updates are handled within AttachmentDetailWidget
         }
+    }
+
+    get attachmentId() {
+        return this.noteContext.viewScope.attachmentId;
     }
 }

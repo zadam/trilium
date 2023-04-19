@@ -5,6 +5,8 @@ const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
 const becca = require('../becca');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
+const sql = require("../../services/sql");
+const BAttachment = require("./battachment");
 
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past.
@@ -90,6 +92,16 @@ class BNoteRevision extends AbstractBeccaEntity {
      */
     setContent(content, opts) {
         this._setContent(content, opts);
+    }
+
+    /** @returns {BAttachment[]} */
+    getAttachments() {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE parentId = ? 
+                  AND isDeleted = 0`, [this.noteRevisionId])
+            .map(row => new BAttachment(row));
     }
 
     beforeSaving() {
