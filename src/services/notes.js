@@ -336,6 +336,29 @@ function protectNote(note, protect) {
     }
 }
 
+function checkImageAttachments(note, content) {
+    const re = /src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image/g;
+    const foundAttachmentIds = new Set();
+    let match;
+
+    while (match = re.exec(content)) {
+        foundAttachmentIds.push(match[1]);
+    }
+
+    for (const attachment of note.getAttachmentByRole('image')) {
+        const imageInContent = foundAttachmentIds.has(attachment.attachmentId);
+
+        if (attachment.utcDateScheduledForDeletionSince && imageInContent) {
+            attachment.utcDateScheduledForDeletionSince = null;
+            attachment.save();
+        } else if (!attachment.utcDateScheduledForDeletionSince && !imageInContent) {
+            attachment.utcDateScheduledForDeletionSince = dateUtils.utcNowDateTime();
+            attachment.save();
+        }
+    }
+}
+
+
 function findImageLinks(content, foundLinks) {
     const re = /src="[^"]*api\/images\/([a-zA-Z0-9_]+)\//g;
     let match;
@@ -556,6 +579,8 @@ function saveLinks(note, content) {
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
+
+        checkImageAttachments(note, content);
     }
     else if (note.type === 'relationMap') {
         findRelationMapLinks(content, foundLinks);
@@ -735,11 +760,13 @@ function scanForLinks(note, content) {
     }
 
     try {
-        const newContent = saveLinks(note, content);
+        sql.transactional(() => {
+            const newContent = saveLinks(note, content);
 
-        if (content !== newContent) {
-            note.setContent(newContent);
-        }
+            if (content !== newContent) {
+                note.setContent(newContent);
+            }
+        });
     }
     catch (e) {
         log.error(`Could not scan for links note ${note.noteId}: ${e.message} ${e.stack}`);

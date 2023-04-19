@@ -100,6 +100,17 @@ export default class AttachmentDetailWidget extends BasicWidget {
                 .text(this.attachment.title);
         }
 
+        const {utcDateScheduledForDeletionSince} = this.attachment;
+
+        if (utcDateScheduledForDeletionSince) {
+            const scheduledSinceTimestamp = utils.parseDate(utcDateScheduledForDeletionSince)?.getTime();
+            const interval = 3600 * 1000;
+            const deletionTimestamp = scheduledSinceTimestamp + interval;
+            const willBeDeletedInSeconds = Math.round((deletionTimestamp - Date.now()) / 1000);
+
+            this.$wrapper.find('.attachment-title').append(`Will be deleted in ${willBeDeletedInSeconds} seconds.`);
+        }
+
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());

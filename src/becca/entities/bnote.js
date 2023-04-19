@@ -1132,6 +1132,17 @@ class BNote extends AbstractBeccaEntity {
             .map(row => new BAttachment(row))[0];
     }
 
+    /** @returns {BAttachment[]} */
+    getAttachmentByRole(role) {
+        return sql.getRows(`
+                SELECT attachments.*
+                FROM attachments 
+                WHERE parentId = ? 
+                  AND role = ?
+                  AND isDeleted = 0`, [this.noteId, role])
+            .map(row => new BAttachment(row));
+    }
+
     /**
      * Gives all possible note paths leading to this note. Paths containing search note are ignored (could form cycles)
      *
