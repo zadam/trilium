@@ -20,7 +20,7 @@ class BAttachment extends AbstractBeccaEntity {
     static get entityName() { return "attachments"; }
     static get primaryKeyName() { return "attachmentId"; }
     static get hashedProperties() { return ["attachmentId", "parentId", "role", "mime", "title", "blobId",
-                                            "utcDateScheduledForDeletionSince", "utcDateModified"]; }
+                                            "utcDateScheduledForErasureSince", "utcDateModified"]; }
 
     constructor(row) {
         super();
@@ -56,7 +56,7 @@ class BAttachment extends AbstractBeccaEntity {
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
         /** @type {string} */
-        this.utcDateScheduledForDeletionSince = row.utcDateScheduledForDeletionSince;
+        this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
     }
 
     /** @returns {BAttachment} */
@@ -68,7 +68,7 @@ class BAttachment extends AbstractBeccaEntity {
             title: this.title,
             blobId: this.blobId,
             isProtected: this.isProtected,
-            utcDateScheduledForDeletionSince: this.utcDateScheduledForDeletionSince
+            utcDateScheduledForErasureSince: this.utcDateScheduledForErasureSince
         });
     }
 
@@ -171,7 +171,7 @@ class BAttachment extends AbstractBeccaEntity {
             isDeleted: false,
             dateModified: this.dateModified,
             utcDateModified: this.utcDateModified,
-            utcDateScheduledForDeletionSince: this.utcDateScheduledForDeletionSince
+            utcDateScheduledForErasureSince: this.utcDateScheduledForErasureSince
         };
     }
 

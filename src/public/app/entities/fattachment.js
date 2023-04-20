@@ -21,7 +21,7 @@ class FAttachment {
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
         /** @type {string} */
-        this.utcDateScheduledForDeletionSince = row.utcDateScheduledForDeletionSince;
+        this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
 
         this.froca.attachments[this.attachmentId] = this;
     }

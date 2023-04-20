@@ -21,6 +21,7 @@ const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const fs = require("fs");
+const BAttachment = require("../becca/entities/battachment");
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {
@@ -342,17 +343,17 @@ function checkImageAttachments(note, content) {
     let match;
 
     while (match = re.exec(content)) {
-        foundAttachmentIds.push(match[1]);
+        foundAttachmentIds.add(match[1]);
     }
 
     for (const attachment of note.getAttachmentByRole('image')) {
         const imageInContent = foundAttachmentIds.has(attachment.attachmentId);
 
-        if (attachment.utcDateScheduledForDeletionSince && imageInContent) {
-            attachment.utcDateScheduledForDeletionSince = null;
+        if (attachment.utcDateScheduledForErasureSince && imageInContent) {
+            attachment.utcDateScheduledForErasureSince = null;
             attachment.save();
-        } else if (!attachment.utcDateScheduledForDeletionSince && !imageInContent) {
-            attachment.utcDateScheduledForDeletionSince = dateUtils.utcNowDateTime();
+        } else if (!attachment.utcDateScheduledForErasureSince && !imageInContent) {
+            attachment.utcDateScheduledForErasureSince = dateUtils.utcNowDateTime();
             attachment.save();
         }
     }
@@ -841,6 +842,33 @@ function eraseAttributes(attributeIdsToErase) {
     log.info(`Erased attributes: ${JSON.stringify(attributeIdsToErase)}`);
 }
 
+function eraseAttachments(attachmentIdsToErase) {
+    if (attachmentIdsToErase.length === 0) {
+        return;
+    }
+
+    sql.executeMany(`DELETE FROM attachments WHERE attachmentId IN (???)`, attachmentIdsToErase);
+
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'attachments' AND entityId IN (???)`, attachmentIdsToErase));
+
+    log.info(`Erased attachments: ${JSON.stringify(attachmentIdsToErase)}`);
+}
+
+function eraseUnusedBlobs() {
+    const unusedBlobIds = sql.getColumn(`
+        SELECT blobId
+        FROM blobs
+        LEFT JOIN notes ON notes.blobId = blobs.blobId
+        LEFT JOIN attachments ON attachments.blobId = blobs.blobId
+        WHERE notes.noteId IS NULL AND attachments.attachmentId IS NULL`);
+
+    sql.executeMany(`DELETE FROM blobs WHERE blobId IN (???)`, unusedBlobIds);
+
+    setEntityChangesAsErased(sql.getManyRows(`SELECT * FROM entity_changes WHERE entityName = 'blobs' AND entityId IN (???)`, unusedBlobIds));
+
+    log.info(`Erased unused blobs: ${JSON.stringify(unusedBlobIds)}`);
+}
+
 function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
     // this is important also so that the erased entity changes are sent to the connected clients
     sql.transactional(() => {
@@ -861,6 +889,12 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
         const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
 
         eraseAttributes(attributeIdsToErase);
+
+        const attachmentIdsToErase = sql.getColumn("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND utcDateModified <= ?", [dateUtils.utcDateTimeStr(cutoffDate)]);
+
+        eraseAttachments(attachmentIdsToErase);
+
+        eraseUnusedBlobs();
     });
 }
 
@@ -1013,11 +1047,21 @@ function getNoteIdMapping(origNote) {
     return noteIdMapping;
 }
 
+function eraseScheduledAttachments() {
+    const eraseIntervalSeconds = optionService.getOptionInt('eraseUnusedImageAttachmentsAfterSeconds');
+    const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseIntervalSeconds * 1000)));
+    const attachmentIdsToErase = sql.getColumn('SELECT attachmentId FROM attachments WHERE utcDateScheduledForErasureSince < ?', [cutOffDate]);
+
+    eraseAttachments(attachmentIdsToErase);
+}
+
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
     setTimeout(cls.wrap(() => eraseDeletedEntities()), 5 * 60 * 1000);
+    setTimeout(cls.wrap(() => eraseScheduledAttachments()), 6 * 60 * 1000);
 
     setInterval(cls.wrap(() => eraseDeletedEntities()), 4 * 3600 * 1000);
+    setInterval(cls.wrap(() => eraseScheduledAttachments()), 3600 * 1000);
 });
 
 module.exports = {

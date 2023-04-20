@@ -61,7 +61,8 @@ const ALLOWED_OPTIONS = new Set([
     'downloadImagesAutomatically',
     'minTocHeadings',
     'checkForUpdates',
-    'disableTray'
+    'disableTray',
+    'eraseUnusedImageAttachmentsAfterSeconds'
 ]);
 
 function getOptions() {

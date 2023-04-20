@@ -27,6 +27,39 @@ function formatTimeWithSeconds(date) {
     return `${padNum(date.getHours())}:${padNum(date.getMinutes())}:${padNum(date.getSeconds())}`;
 }
 
+function formatTimeInterval(ms) {
+    const seconds = Math.round(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const plural = (count, name) => `${count} ${name}${count > 1 ? 's' : ''}`;
+    const segments = [];
+
+    if (days > 0) {
+        segments.push(plural(days, 'day'));
+    }
+
+    if (days < 2) {
+        if (hours % 24 > 0) {
+            segments.push(plural(hours % 24, 'hour'));
+        }
+
+        if (hours < 4) {
+            if (minutes % 60 > 0) {
+                segments.push(plural(minutes % 60, 'minute'));
+            }
+
+            if (minutes < 5) {
+                if (seconds % 60 > 0) {
+                    segments.push(plural(seconds % 60, 'second'));
+                }
+            }
+        }
+    }
+
+    return segments.join(", ");
+}
+
 // this is producing local time!
 function formatDate(date) {
     //    return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
@@ -489,6 +522,7 @@ export default {
     formatDate,
     formatDateISO,
     formatDateTime,
+    formatTimeInterval,
     formatSize,
     localNowDateTime,
     now,

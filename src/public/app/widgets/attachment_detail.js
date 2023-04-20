@@ -2,6 +2,7 @@ import utils from "../services/utils.js";
 import AttachmentActionsWidget from "./buttons/attachments_actions.js";
 import BasicWidget from "./basic_widget.js";
 import server from "../services/server.js";
+import options from "../services/options.js";
 
 const TPL = `
 <div class="attachment-detail">
@@ -44,6 +45,10 @@ const TPL = `
             max-width: 90%; 
             object-fit: contain;
         }
+        
+        .attachment-detail-wrapper.scheduled-for-deletion .attachment-content img {
+            filter: contrast(10%);
+        }
     </style>
 
     <div class="attachment-detail-wrapper">
@@ -53,6 +58,8 @@ const TPL = `
             <div style="flex: 1 1;"></div>
             <div class="attachment-actions-container"></div>
         </div>
+        
+        <div class="attachment-deletion-warning alert alert-info"></div>
         
         <div class="attachment-content"></div>
     </div>
@@ -100,15 +107,29 @@ export default class AttachmentDetailWidget extends BasicWidget {
                 .text(this.attachment.title);
         }
 
-        const {utcDateScheduledForDeletionSince} = this.attachment;
+        const $deletionWarning = this.$wrapper.find('.attachment-deletion-warning');
+        const {utcDateScheduledForErasureSince} = this.attachment;
 
-        if (utcDateScheduledForDeletionSince) {
-            const scheduledSinceTimestamp = utils.parseDate(utcDateScheduledForDeletionSince)?.getTime();
-            const interval = 3600 * 1000;
-            const deletionTimestamp = scheduledSinceTimestamp + interval;
-            const willBeDeletedInSeconds = Math.round((deletionTimestamp - Date.now()) / 1000);
+        if (utcDateScheduledForErasureSince) {
+            this.$wrapper.addClass("scheduled-for-deletion");
 
-            this.$wrapper.find('.attachment-title').append(`Will be deleted in ${willBeDeletedInSeconds} seconds.`);
+            const scheduledSinceTimestamp = utils.parseDate(utcDateScheduledForErasureSince)?.getTime();
+            const intervalMs = options.getInt('eraseUnusedImageAttachmentsAfterSeconds') * 1000;
+            const deletionTimestamp = scheduledSinceTimestamp + intervalMs;
+            const willBeDeletedInMs = deletionTimestamp - Date.now();
+
+            $deletionWarning.show();
+
+            if (willBeDeletedInMs >= 60000) {
+                $deletionWarning.text(`This attachment will be deleted in ${utils.formatTimeInterval(willBeDeletedInMs)}`);
+            } else {
+                $deletionWarning.text(`This attachment will be deleted soon`);
+            }
+
+            $deletionWarning.append(", because the image attachment is not used. To prevent deletion, add the image back into the note.");
+        } else {
+            this.$wrapper.removeClass("scheduled-for-deletion");
+            $deletionWarning.hide();
         }
 
         this.$wrapper.find('.attachment-details')
