@@ -22,7 +22,8 @@
     "build-backend-docs": "rm -rf ./docs/backend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/becca/entities/*.js src/services/backend_script_api.js src/services/sql.js",
     "build-frontend-docs": "rm -rf ./docs/frontend_api && ./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/app/entities/*.js src/public/app/services/frontend_script_api.js src/public/app/widgets/right_panel_widget.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
-    "webpack": "webpack -c webpack.config.js",
+    "webpack": "webpack -c webpack.config.js && npm run postcss",
+    "postcss": "postcss  src/public/stylesheets --dir src/public/stylesheets-dist  -u cssnano --no-map",
     "test-jasmine": "jasmine",
     "test-es6": "node -r esm spec-es6/attribute_parser.spec.js ",
     "test": "npm run test-jasmine && npm run test-es6",
@@ -97,6 +98,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
+    "cssnano": "^6.0.0",
     "electron": "16.2.8",
     "electron-builder": "23.6.0",
     "electron-packager": "17.1.1",
@@ -116,6 +118,8 @@
     "lorem-ipsum": "2.0.8",
     "prettier": "2.8.7",
     "nodemon": "^2.0.22",
+    "postcss": "^8.4.23",
+    "postcss-cli": "^10.1.0",
     "rcedit": "3.0.1",
     "webpack": "5.78.0",
     "webpack-cli": "5.0.1"

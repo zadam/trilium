@@ -48,3 +48,4 @@ cp $DIR/src/public/app/share.js $DIR/src/public/app-dist/
 cp -r $DIR/src/public/app/doc_notes $DIR/src/public/app-dist/
 
 rm -rf $DIR/src/public/app
+rm -rf $DIR/src/public/stylesheets

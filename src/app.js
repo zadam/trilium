@@ -12,6 +12,7 @@ const dataDir = require('./services/data_dir');
 const utils = require('./services/utils');
 const assetPath = require('./services/asset_path');
 const env = require('./services/env');
+const isDev = env.isDev();
 require('./services/handlers');
 require('./becca/becca_loader');
 
@@ -32,7 +33,7 @@ app.use(helmet({
 }));
 
 const persistentCacheStatic = (root, options) => {
-    if (!env.isDev()) {
+    if (!isDev) {
         options = {
             maxAge: '1y',
             ...options
@@ -51,8 +52,10 @@ app.use(`/${assetPath}/app`, persistentCacheStatic(path.join(__dirname, 'public/
 app.use(`/${assetPath}/app-dist`, persistentCacheStatic(path.join(__dirname, 'public/app-dist')));
 app.use(`/${assetPath}/fonts`, persistentCacheStatic(path.join(__dirname, 'public/fonts')));
 app.use(`/assets/vX/fonts`, express.static(path.join(__dirname, 'public/fonts')));
-app.use(`/${assetPath}/stylesheets`, persistentCacheStatic(path.join(__dirname, 'public/stylesheets')));
-app.use(`/assets/vX/stylesheets`, express.static(path.join(__dirname, 'public/stylesheets')));
+
+app.use(`/${assetPath}/stylesheets`, persistentCacheStatic(path.join(__dirname, `public/stylesheets${isDev ? '' : '-dist'}`)));
+app.use(`/assets/vX/stylesheets`, express.static(path.join(__dirname, `public/stylesheets${isDev ? '' : '-dist'}`)));
+
 app.use(`/${assetPath}/libraries`, persistentCacheStatic(path.join(__dirname, '..', 'libraries')));
 app.use(`/assets/vX/libraries`, express.static(path.join(__dirname, '..', 'libraries')));
 // excalidraw-view mode in shared notes
