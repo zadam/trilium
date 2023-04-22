@@ -19,7 +19,7 @@ function handleRequest(req, res) {
             continue;
         }
 
-        const regex = new RegExp(attr.value);
+        const regex = new RegExp(`^${attr.value}$`);
         let match;
 
         try {
