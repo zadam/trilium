@@ -1,19 +1,24 @@
 {
     "version": "0.2.0",
     "configurations": [
+        // nodemon should be installed globally, use npm i -g nodemon
         {
-            "type": "node",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "name": "nodemon start-server",
+            "program": "${workspaceFolder}/src/www",
             "request": "launch",
-            "name": "start-server",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "restart": true,
+            "runtimeExecutable": "nodemon",
             "env": {
                 "TRILIUM_ENV": "dev",
                 "TRILIUM_DATA_DIR": "./data"
             },
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
             "outputCapture": "std",
-            "program": "${workspaceFolder}/src/www"
-        }
+        },
     ]
 }
