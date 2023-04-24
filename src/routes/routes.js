@@ -293,6 +293,7 @@ function register(app) {
 
     apiRoute(PST, '/api/relation-map', relationMapApiRoute.getRelationMap);
     apiRoute(PST, '/api/notes/erase-deleted-notes-now', notesApiRoute.eraseDeletedNotesNow);
+    apiRoute(PST, '/api/notes/erase-unused-attachments-now', notesApiRoute.eraseUnusedAttachmentsNow);
     apiRoute(GET, '/api/similar-notes/:noteId', similarNotesRoute.getSimilarNotes);
     apiRoute(GET, '/api/backend-log', backendLogRoute.getBackendLog);
     apiRoute(GET, '/api/stats/note-size/:noteId', statsRoute.getNoteSize);

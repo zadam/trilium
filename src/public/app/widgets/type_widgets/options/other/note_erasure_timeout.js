@@ -16,7 +16,7 @@ const TPL = `
         <input class="erase-entities-after-time-in-seconds form-control" type="number" min="0">
     </div>
     
-    <p>You can also trigger erasing manually:</p>
+    <p>You can also trigger erasing manually (without considering the timeout defined above):</p>
     
     <button class="erase-deleted-notes-now-button btn">Erase deleted notes now</button>
 </div>`;

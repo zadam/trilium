@@ -28,6 +28,7 @@ import ConsistencyChecksOptions from "./options/advanced/consistency_checks.js";
 import VacuumDatabaseOptions from "./options/advanced/vacuum_database.js";
 import DatabaseAnonymizationOptions from "./options/advanced/database_anonymization.js";
 import BackendLogWidget from "./content/backend_log.js";
+import AttachmentErasureTimeoutOptions from "./options/other/attachment_erasure_timeout.js";
 
 const TPL = `<div class="note-detail-content-widget note-detail-printable">
     <style>
@@ -77,6 +78,7 @@ const CONTENT_WIDGETS = {
     _optionsOther: [
         TrayOptions,
         NoteErasureTimeoutOptions,
+        AttachmentErasureTimeoutOptions,
         NoteRevisionsSnapshotIntervalOptions,
         NetworkConnectionsOptions
     ],

@@ -168,6 +168,10 @@ function eraseDeletedNotesNow() {
     noteService.eraseDeletedNotesNow();
 }
 
+function eraseUnusedAttachmentsNow() {
+    noteService.eraseUnusedAttachmentsNow();
+}
+
 function getDeleteNotesPreview(req) {
     const {branchIdsToDelete, deleteAllClones} = req.body;
 
@@ -275,6 +279,7 @@ module.exports = {
     changeTitle,
     duplicateSubtree,
     eraseDeletedNotesNow,
+    eraseUnusedAttachmentsNow,
     getDeleteNotesPreview,
     uploadModifiedFile,
     forceSaveNoteRevision

@@ -899,21 +899,31 @@ function eraseDeletedEntities(eraseEntitiesAfterTimeInSeconds = null) {
 }
 
 function eraseNotesWithDeleteId(deleteId) {
-    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE deleteId = ?", [deleteId]);
+    const noteIdsToErase = sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
 
     eraseNotes(noteIdsToErase);
 
-    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE deleteId = ?", [deleteId]);
+    const branchIdsToErase = sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
 
     eraseBranches(branchIdsToErase);
 
-    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE  deleteId = ?", [deleteId]);
+    const attributeIdsToErase = sql.getColumn("SELECT attributeId FROM attributes WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
 
     eraseAttributes(attributeIdsToErase);
+
+    const attachmentIdsToErase = sql.getColumn("SELECT attachmentId FROM attachments WHERE isDeleted = 1 AND deleteId = ?", [deleteId]);
+
+    eraseAttachments(attachmentIdsToErase);
+
+    eraseUnusedBlobs();
 }
 
 function eraseDeletedNotesNow() {
     eraseDeletedEntities(0);
+}
+
+function eraseUnusedAttachmentsNow() {
+    eraseScheduledAttachments(0);
 }
 
 // do a replace in str - all keys should be replaced by the corresponding values
@@ -962,7 +972,7 @@ function duplicateSubtreeWithoutRoot(origNoteId, newNoteId) {
 
 function duplicateSubtreeInner(origNote, origBranch, newParentNoteId, noteIdMapping) {
     if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
-        throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available. Enter protected session and try again.`);
+        throw new Error(`Cannot duplicate note '${origNote.noteId}' because it is protected and protected session is not available. Enter protected session and try again.`);
     }
 
     const newNoteId = noteIdMapping[origNote.noteId];
@@ -1047,9 +1057,12 @@ function getNoteIdMapping(origNote) {
     return noteIdMapping;
 }
 
-function eraseScheduledAttachments() {
-    const eraseIntervalSeconds = optionService.getOptionInt('eraseUnusedImageAttachmentsAfterSeconds');
-    const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseIntervalSeconds * 1000)));
+function eraseScheduledAttachments(eraseUnusedImageAttachmentsAfterSeconds = null) {
+    if (eraseUnusedImageAttachmentsAfterSeconds === null) {
+        eraseUnusedImageAttachmentsAfterSeconds = optionService.getOptionInt('eraseUnusedImageAttachmentsAfterSeconds');
+    }
+
+    const cutOffDate = dateUtils.utcDateTimeStr(new Date(Date.now() - (eraseUnusedImageAttachmentsAfterSeconds * 1000)));
     const attachmentIdsToErase = sql.getColumn('SELECT attachmentId FROM attachments WHERE utcDateScheduledForErasureSince < ?', [cutOffDate]);
 
     eraseAttachments(attachmentIdsToErase);
@@ -1075,6 +1088,7 @@ module.exports = {
     getUndeletedParentBranchIds,
     triggerNoteTitleChanged,
     eraseDeletedNotesNow,
+    eraseUnusedAttachmentsNow,
     eraseNotesWithDeleteId,
     saveNoteRevisionIfNeeded,
     downloadImages,
