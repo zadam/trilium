@@ -834,11 +834,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         await this.filterHoistedBranch();
 
-        const activeNode = await this.getNodeFromPath(appContext.tabManager.getActiveContextNotePath());
-
-        if (activeNode) {
-            activeNode.setActive({noEvents: true, noFocus: false});
-        }
+        // don't activate the active note, see discussion in https://github.com/zadam/trilium/issues/3664
     }
 
     async expandTree(node = null) {

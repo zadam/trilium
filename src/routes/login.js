@@ -76,7 +76,7 @@ function login(req, res) {
         // note that logged IP address is usually meaningless since the traffic should come from a reverse proxy
         log.info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
 
-        res.render('login', {
+        res.status(401).render('login', {
             failedAuth: true,
             assetPath: assetPath
         });
