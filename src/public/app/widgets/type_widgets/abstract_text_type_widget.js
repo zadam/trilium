@@ -44,8 +44,6 @@ export default class AbstractTextTypeWidget extends TypeWidget {
     }
 
     async parseFromImage($img) {
-        let noteId, viewScope;
-
         const imgSrc = $img.prop("src");
 
         const imageNoteMatch = imgSrc.match(/\/api\/images\/([A-Za-z0-9_]+)\//);

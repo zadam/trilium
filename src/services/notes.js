@@ -346,7 +346,9 @@ function checkImageAttachments(note, content) {
         foundAttachmentIds.add(match[1]);
     }
 
-    for (const attachment of note.getAttachmentByRole('image')) {
+    const imageAttachments = note.getAttachmentByRole('image');
+
+    for (const attachment of imageAttachments) {
         const imageInContent = foundAttachmentIds.has(attachment.attachmentId);
 
         if (attachment.utcDateScheduledForErasureSince && imageInContent) {
@@ -357,6 +359,20 @@ function checkImageAttachments(note, content) {
             attachment.save();
         }
     }
+
+    const existingAttachmentIds = new Set(imageAttachments.map(att => att.attachmentId));
+    const unknownAttachmentIds = Array.from(foundAttachmentIds).filter(foundAttId => !existingAttachmentIds.has(foundAttId));
+
+    for (const unknownAttachment of becca.getAttachments(unknownAttachmentIds)) {
+        // the attachment belongs to a different note (was copy pasted), we need to make a copy for this note.
+        const newAttachment = unknownAttachment.copy();
+        newAttachment.parentId = note.noteId;
+        newAttachment.setContent(unknownAttachment.getContent(), { forceSave: true });
+
+        content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${newAttachment.attachmentId}/image`);
+    }
+
+    return content;
 }
 
 
@@ -581,7 +597,7 @@ function saveLinks(note, content) {
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
 
-        checkImageAttachments(note, content);
+        content = checkImageAttachments(note, content);
     }
     else if (note.type === 'relationMap') {
         findRelationMapLinks(content, foundLinks);

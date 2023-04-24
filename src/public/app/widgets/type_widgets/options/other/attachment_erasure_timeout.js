@@ -24,8 +24,8 @@ export default class AttachmentErasureTimeoutOptions extends OptionsWidget {
         this.$eraseUnusedAttachmentsAfterTimeInSeconds = this.$widget.find(".erase-unused-attachments-after-time-in-seconds");
         this.$eraseUnusedAttachmentsAfterTimeInSeconds.on('change', () => this.updateOption('eraseUnusedImageAttachmentsAfterSeconds', this.$eraseUnusedAttachmentsAfterTimeInSeconds.val()));
 
-        this.$eraseDeletedNotesButton = this.$widget.find(".erase-unused-attachments-now-button");
-        this.$eraseDeletedNotesButton.on('click', () => {
+        this.$eraseUnusedAttachmentsNowButton = this.$widget.find(".erase-unused-attachments-now-button");
+        this.$eraseUnusedAttachmentsNowButton.on('click', () => {
             server.post('notes/erase-unused-attachments-now').then(() => {
                 toastService.showMessage("Unused image attachments have been erased.");
             });

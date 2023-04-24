@@ -2,6 +2,7 @@
 
 const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
+const BAttachment = require("./entities/battachment.js");
 
 /**
  * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
@@ -127,6 +128,13 @@ class Becca {
 
         const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
         return row ? new BAttachment(row) : null;
+    }
+
+    /** @returns {BAttachment[]} */
+    getAttachments(attachmentIds) {
+        const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
+        return sql.getManyRows("SELECT * FROM attachments WHERE attachmentId IN (???) AND isDeleted = 0", attachmentIds)
+            .map(row => new BAttachment(row));
     }
 
     /** @returns {BOption|null} */

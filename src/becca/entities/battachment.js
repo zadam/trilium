@@ -67,8 +67,7 @@ class BAttachment extends AbstractBeccaEntity {
             mime: this.mime,
             title: this.title,
             blobId: this.blobId,
-            isProtected: this.isProtected,
-            utcDateScheduledForErasureSince: this.utcDateScheduledForErasureSince
+            isProtected: this.isProtected
         });
     }
 

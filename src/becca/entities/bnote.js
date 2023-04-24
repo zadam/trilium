@@ -1580,6 +1580,10 @@ class BNote extends AbstractBeccaEntity {
             noteRevision.save(); // to generate noteRevisionId which is then used to save attachments
 
             for (const noteAttachment of this.getAttachments()) {
+                if (noteAttachment.utcDateScheduledForErasureSince) {
+                    continue;
+                }
+
                 const revisionAttachment = noteAttachment.copy();
                 revisionAttachment.parentId = noteRevision.noteRevisionId;
                 revisionAttachment.setContent(noteAttachment.getContent(), {

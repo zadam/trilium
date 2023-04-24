@@ -148,9 +148,17 @@ class AbstractBeccaEntity {
             content = Buffer.isBuffer(content) ? content : Buffer.from(content);
         }
 
+        let unencryptedContentForHashCalculation = content;
+
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
                 content = protectedSessionService.encrypt(content);
+
+                // this is to make sure that the calculated hash/blobId is different for an encrypted note and decrypted
+                const encryptedPrefixSuffix = "ThisIsEncryptedContent&^$#$1%&8*)(^%$5#@";
+                unencryptedContentForHashCalculation = Buffer.isBuffer(unencryptedContentForHashCalculation)
+                    ? Buffer.concat([Buffer.from(encryptedPrefixSuffix), unencryptedContentForHashCalculation, Buffer.from(encryptedPrefixSuffix)])
+                    : `${encryptedPrefixSuffix}${unencryptedContentForHashCalculation}${encryptedPrefixSuffix}`;
             }
             else {
                 throw new Error(`Cannot update content of blob since we're out of protected session.`);
@@ -158,7 +166,7 @@ class AbstractBeccaEntity {
         }
 
         sql.transactional(() => {
-            let newBlobId = this._saveBlob(content, opts);
+            let newBlobId = this._saveBlob(content, unencryptedContentForHashCalculation, opts);
 
             if (newBlobId !== this.blobId || opts.forceSave) {
                 this.blobId = newBlobId;
@@ -168,7 +176,7 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    _saveBlob(content, opts) {
+    _saveBlob(content, unencryptedContentForHashCalculation, opts) {
         let newBlobId;
         let blobNeedsInsert;
 
@@ -176,7 +184,13 @@ class AbstractBeccaEntity {
             newBlobId = this.blobId || utils.randomBlobId();
             blobNeedsInsert = true;
         } else {
-            newBlobId = utils.hashedBlobId(content);
+            /*
+             * We're using the unencrypted blob for the hash calculation, because otherwise the random IV would
+             * cause every content blob to be unique which would balloon the database size (esp. with revisioning).
+             * This has minor security implications (it's easy to infer that given content is shared between different
+             * notes/attachments, but the trade-off comes out clearly positive.
+             */
+            newBlobId = utils.hashedBlobId(unencryptedContentForHashCalculation);
             blobNeedsInsert = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [newBlobId]);
         }
 
