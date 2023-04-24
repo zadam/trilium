@@ -27,8 +27,8 @@ function buildDescendantCountMap(noteIdsToCount) {
 
         return noteIdToCountMap[noteId];
     }
-    noteIdsToCount.forEach((nodeId) => {
-        getCount(nodeId);
+    noteIdsToCount.forEach((noteId) => {
+        getCount(noteId);
     });
 
     return noteIdToCountMap;
