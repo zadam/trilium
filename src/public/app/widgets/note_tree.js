@@ -363,12 +363,17 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         this.tree.reactivate(true);
                     }
                     else {
-                        const noteId = node.data.noteId;
-                        const notePath = treeService.getNotePath(node);
-                        if (noteId.startsWith('_')) {
+                        const openNoteIn = options.get("openNoteIn")
+                        if (openNoteIn === 'curtab') {
                             node.setActive();
                         } else {
-                            appContext.tabManager.openTabWithNoteWithHoisting(notePath, true);
+                            const noteId = node.data.noteId;
+                            const notePath = treeService.getNotePath(node);
+                            if (noteId.startsWith('_')) {
+                                node.setActive();
+                            } else {
+                                appContext.tabManager.openTabWithNoteWithHoisting(notePath, true);
+                            }
                         }
                     }
 

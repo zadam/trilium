@@ -19,6 +19,7 @@ import EtapiOptions from "./options/etapi.js";
 import BackupOptions from "./options/backup.js";
 import SyncOptions from "./options/sync.js";
 import TrayOptions from "./options/other/tray.js";
+import OpenNoteInOptions from "./options/other/open_note_in.js"
 import NoteErasureTimeoutOptions from "./options/other/note_erasure_timeout.js";
 import NoteRevisionsSnapshotIntervalOptions from "./options/other/note_revisions_snapshot_interval.js";
 import NetworkConnectionsOptions from "./options/other/network_connections.js";
@@ -78,7 +79,8 @@ const CONTENT_WIDGETS = {
         TrayOptions,
         NoteErasureTimeoutOptions,
         NoteRevisionsSnapshotIntervalOptions,
-        NetworkConnectionsOptions
+        NetworkConnectionsOptions,
+        OpenNoteInOptions
     ],
     _optionsAdvanced: [
         DatabaseIntegrityCheckOptions,
