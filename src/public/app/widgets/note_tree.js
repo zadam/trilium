@@ -363,7 +363,13 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         this.tree.reactivate(true);
                     }
                     else {
-                        node.setActive();
+                        const noteId = node.data.noteId;
+                        const notePath = treeService.getNotePath(node);
+                        if (noteId.startsWith('_')) {
+                            node.setActive();
+                        } else {
+                            appContext.tabManager.openTabWithNoteWithHoisting(notePath, true);
+                        }
                     }
 
                     return false;

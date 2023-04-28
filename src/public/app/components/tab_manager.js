@@ -293,6 +293,15 @@ export default class TabManager extends Component {
         const hoistedNoteId = opts.hoistedNoteId || 'root';
         const viewMode = opts.viewMode || "default";
 
+        const targetNoteId = await treeService.getNoteIdFromNotePath(notePath);
+        for (const openedNoteContext of this.getNoteContexts()) {
+            if (openedNoteContext.note && openedNoteContext.note.noteId === targetNoteId) {
+                this.activateNoteContext(openedNoteContext.ntxId, true);
+
+                return;
+            }
+        }
+
         const noteContext = await this.openEmptyTab(ntxId, hoistedNoteId, mainNtxId);
 
         if (notePath) {
