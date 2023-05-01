@@ -61,15 +61,15 @@ function cloneNoteToBranch(noteId, parentBranchId, prefix) {
 
 function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
     if (isNoteDeleted(noteId)) {
-        return { success: false, message: `Note '${noteId}' is deleted.` };
+        return { branch: null, success: false, message: `Note '${noteId}' is deleted.` };
     } else if (isNoteDeleted(parentNoteId)) {
-        return { success: false, message: `Note '${parentNoteId}' is deleted.` };
+        return { branch: null, success: false, message: `Note '${parentNoteId}' is deleted.` };
     }
 
     const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote.type === 'search') {
-        return { success: false, message: "Can't clone into a search note" };
+        return { branch: null, success: false, message: "Can't clone into a search note" };
     }
 
     const validationResult = treeService.validateParentChild(parentNoteId, noteId);
@@ -87,7 +87,7 @@ function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
 
     log.info(`Ensured note '${noteId}' is in parent note '${parentNoteId}' with prefix '${branch.prefix}'`);
 
-    return { success: true };
+    return { branch: branch, success: true };
 }
 
 function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
