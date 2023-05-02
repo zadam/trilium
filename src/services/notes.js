@@ -874,7 +874,7 @@ function eraseAttachments(attachmentIdsToErase) {
 
 function eraseUnusedBlobs() {
     const unusedBlobIds = sql.getColumn(`
-        SELECT blobId
+        SELECT blobs.blobId
         FROM blobs
         LEFT JOIN notes ON notes.blobId = blobs.blobId
         LEFT JOIN attachments ON attachments.blobId = blobs.blobId

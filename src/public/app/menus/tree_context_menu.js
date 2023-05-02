@@ -5,6 +5,9 @@ import noteCreateService from "../services/note_create.js";
 import contextMenu from "./context_menu.js";
 import appContext from "../components/app_context.js";
 import noteTypesService from "../services/note_types.js";
+import server from "../services/server.js";
+import toastService from "../services/toast.js";
+import dialogService from "../services/dialog.js";
 
 export default class TreeContextMenu {
     /**
@@ -66,7 +69,8 @@ export default class TreeContextMenu {
                     { title: 'Collapse subtree <kbd data-command="collapseSubtree"></kbd>', command: "collapseSubtree", uiIcon: "bx bx-collapse", enabled: noSelectedNotes },
                     { title: "Force note sync", command: "forceNoteSync", uiIcon: "bx bx-refresh", enabled: noSelectedNotes },
                     { title: 'Sort by ... <kbd data-command="sortChildNotes"></kbd>', command: "sortChildNotes", uiIcon: "bx bx-empty", enabled: noSelectedNotes && notSearch },
-                    { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "bx bx-history", enabled: noSelectedNotes }
+                    { title: 'Recent changes in subtree', command: "recentChangesInSubtree", uiIcon: "bx bx-history", enabled: noSelectedNotes },
+                    { title: 'Convert to attachment', command: "convertNoteToAttachment", uiIcon: "bx bx-empty", enabled: isNotRoot && !isHoisted }
                 ] },
             { title: "----" },
             { title: "Protect subtree", command: "protectSubtree", uiIcon: "bx bx-check-shield", enabled: noSelectedNotes },
@@ -128,6 +132,27 @@ export default class TreeContextMenu {
             const {ntxId} = subContexts[subContexts.length - 1];
 
             this.treeWidget.triggerCommand("openNewNoteSplit", {ntxId, notePath});
+        }
+        else if (command === 'convertNoteToAttachment') {
+            if (!await dialogService.confirm(`Are you sure you want to convert note selected notes into attachments of their parent notes?`)) {
+                return;
+            }
+
+            let converted = 0;
+
+            for (const noteId of this.treeWidget.getSelectedOrActiveNoteIds(this.node)) {
+                const note = await froca.getNote(noteId);
+
+                if (note.isEligibleForConversionToAttachment()) {
+                    const {attachment} = await server.post(`notes/${note.noteId}/convert-to-attachment`);
+
+                    if (attachment) {
+                        converted++;
+                    }
+                }
+            }
+
+            toastService.showMessage(`${converted} notes have been converted to attachments.`);
         }
         else {
             this.treeWidget.triggerCommand(command, {
