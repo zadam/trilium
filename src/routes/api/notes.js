@@ -267,6 +267,19 @@ function forceSaveNoteRevision(req) {
     note.saveNoteRevision();
 }
 
+function convertNoteToAttachment(req) {
+    const {noteId} = req.params;
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Note '${noteId}' not found.`);
+    }
+
+    return {
+        attachment: note.convertToParentAttachment({ force: true })
+    };
+}
+
 module.exports = {
     getNote,
     updateNoteData,
@@ -282,5 +295,6 @@ module.exports = {
     eraseUnusedAttachmentsNow,
     getDeleteNotesPreview,
     uploadModifiedFile,
-    forceSaveNoteRevision
+    forceSaveNoteRevision,
+    convertNoteToAttachment
 };

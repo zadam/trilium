@@ -30,7 +30,6 @@ const TPL = `
     <div class="dropdown-menu dropdown-menu-right">
         <a data-trigger-command="deleteAttachment" class="dropdown-item">Delete attachment</a>
         <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item">Convert attachment into note</a>
-        <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item pull-attachment-into-note-button">Copy into clipboard</a>
     </div>
 </div>`;
 
@@ -47,22 +46,22 @@ export default class AttachmentActionsWidget extends BasicWidget {
     }
 
     async deleteAttachmentCommand() {
-        if (await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
-            await server.remove(`attachments/${this.attachment.attachmentId}`);
-
-            toastService.showMessage(`Attachment '${this.attachment.title}' has been deleted.`);
+        if (!await dialogService.confirm(`Are you sure you want to delete attachment '${this.attachment.title}'?`)) {
+            return;
         }
+
+        await server.remove(`attachments/${this.attachment.attachmentId}`);
+        toastService.showMessage(`Attachment '${this.attachment.title}' has been deleted.`);
     }
 
     async convertAttachmentIntoNoteCommand() {
-        if (await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`)) {
-            const {note: newNote} = await server.post(`attachments/${this.attachment.attachmentId}/convert-to-note`)
-
-            toastService.showMessage(`Attachment '${this.attachment.title}' has been converted to note.`);
-
-            await ws.waitForMaxKnownEntityChangeId();
-
-            await appContext.tabManager.getActiveContext().setNote(newNote.noteId);
+        if (!await dialogService.confirm(`Are you sure you want to convert attachment '${this.attachment.title}' into a separate note?`)) {
+            return;
         }
+
+        const {note: newNote} = await server.post(`attachments/${this.attachment.attachmentId}/convert-to-note`)
+        toastService.showMessage(`Attachment '${this.attachment.title}' has been converted to note.`);
+        await ws.waitForMaxKnownEntityChangeId();
+        await appContext.tabManager.getActiveContext().setNote(newNote.noteId);
     }
 }

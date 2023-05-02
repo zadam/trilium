@@ -1,6 +1,11 @@
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import utils from "../../services/utils.js";
 import branchService from "../../services/branches.js";
+import dialogService from "../../services/dialog.js";
+import server from "../../services/server.js";
+import toastService from "../../services/toast.js";
+import ws from "../../services/ws.js";
+import appContext from "../../components/app_context.js";
 
 const TPL = `
 <div class="dropdown note-actions">
@@ -25,6 +30,7 @@ const TPL = `
         aria-expanded="false" class="icon-action bx bx-dots-vertical-rounded"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
+        <a data-trigger-command="convertNoteIntoAttachment" class="dropdown-item">Convert into attachment</a>
         <a data-trigger-command="renderActiveNote" class="dropdown-item render-note-button"><kbd data-command="renderActiveNote"></kbd> Re-render note</a>
         <a data-trigger-command="findInText" class="dropdown-item find-in-text-button">Search in note <kbd data-command="findInText"></a>
         <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
@@ -45,6 +51,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        this.$convertNoteIntoAttachmentButton = this.$widget.find("[data-trigger-command='convertNoteIntoAttachment']");
         this.$findInTextButton = this.$widget.find('.find-in-text-button');
         this.$printActiveNoteButton = this.$widget.find('.print-active-note-button');
         this.$showSourceButton = this.$widget.find('.show-source-button');
@@ -80,6 +87,8 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
     }
 
     refreshWithNote(note) {
+        this.$convertNoteIntoAttachmentButton.toggle(note.isEligibleForConversionToAttachment());
+
         this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book', 'search'].includes(note.type));
 
         this.toggleDisabled(this.$showSourceButton, ['text', 'relationMap', 'mermaid'].includes(note.type));
@@ -89,6 +98,28 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$renderNoteButton.toggle(note.type === 'render');
 
         this.$openNoteExternallyButton.toggle(utils.isElectron());
+    }
+
+    async convertNoteIntoAttachmentCommand() {
+        if (!await dialogService.confirm(`Are you sure you want to convert note '${this.note.title}' into an attachment of the parent note?`)) {
+            return;
+        }
+
+        const {attachment: newAttachment} = await server.post(`notes/${this.noteId}/convert-to-attachment`);
+
+        if (!newAttachment) {
+            toastService.showMessage(`Converting note '${this.note.title}' failed.`);
+            return;
+        }
+
+        toastService.showMessage(`Note '${newAttachment.title}' has been converted to attachment.`);
+        await ws.waitForMaxKnownEntityChangeId();
+        await appContext.tabManager.getActiveContext().setNote(newAttachment.parentId, {
+            viewScope: {
+                viewMode: 'attachments',
+                attachmentId: newAttachment.attachmentId
+            }
+        });
     }
 
     toggleDisabled($el, enable) {

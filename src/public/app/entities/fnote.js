@@ -1,7 +1,6 @@
 import server from '../services/server.js';
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import ws from "../services/ws.js";
-import options from "../services/options.js";
 import froca from "../services/froca.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import cssClassManager from "../services/css_class_manager.js";
@@ -244,6 +243,27 @@ class FNote {
         const attachments = await this.getAttachments();
 
         return attachments.find(att => att.attachmentId === attachmentId);
+    }
+
+    isEligibleForConversionToAttachment() {
+        if (this.type !== 'image' || !this.isContentAvailable() || this.hasChildren() || this.getParentBranches().length !== 1) {
+            return false;
+        }
+
+        const targetRelations = this.getTargetRelations().filter(relation => relation.name === 'imageLink');
+
+        if (targetRelations.length !== 1) {
+            return false;
+        }
+
+        const parentNote = this.getParentNotes()[0]; // at this point note can have only one parent
+        const referencingNote = targetRelations[0].getNote();
+
+        if (parentNote !== referencingNote || parentNote.type !== 'text' || !parentNote.isContentAvailable()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

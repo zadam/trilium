@@ -138,6 +138,7 @@ function register(app) {
     // this "hacky" path is used for easier referencing of CSS resources
     route(GET, '/api/notes/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     apiRoute(PST, '/api/notes/:noteId/save-to-tmp-dir', filesRoute.saveToTmpDir);
+    apiRoute(PST, '/api/notes/:noteId/convert-to-attachment', notesApiRoute.convertNoteToAttachment);
 
     apiRoute(PUT, '/api/branches/:branchId/move-to/:parentBranchId', branchesApiRoute.moveBranchToParent);
     apiRoute(PUT, '/api/branches/:branchId/move-before/:beforeBranchId', branchesApiRoute.moveBranchBeforeNote);

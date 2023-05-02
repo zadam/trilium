@@ -1436,6 +1436,28 @@ class BNote extends AbstractBeccaEntity {
 
         return cloningService.cloneNoteToBranch(this.noteId, branch.branchId);
     }
+
+    isEligibleForConversionToAttachment() {
+        if (this.type !== 'image' || !this.isContentAvailable() || this.hasChildren() || this.getParentBranches().length !== 1) {
+            return false;
+        }
+
+        const targetRelations = this.getTargetRelations().filter(relation => relation.name === 'imageLink');
+
+        if (targetRelations.length !== 1) {
+            return false;
+        }
+
+        const parentNote = this.getParentNotes()[0]; // at this point note can have only one parent
+        const referencingNote = targetRelations[0].getNote();
+
+        if (parentNote !== referencingNote || parentNote.type !== 'text' || !parentNote.isContentAvailable()) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Some notes are eligible for conversion into an attachment of its parent, note must have these properties:
      * - it has exactly one target relation
@@ -1456,25 +1478,13 @@ class BNote extends AbstractBeccaEntity {
      * @returns {BAttachment|null} - null if note is not eligible for conversion
      */
     convertToParentAttachment(opts = {force: false}) {
-        if (this.type !== 'image' || !this.isContentAvailable() || this.hasChildren() || this.getParentBranches().length !== 1) {
-            return null;
-        }
-
-        const targetRelations = this.getTargetRelations().filter(relation => relation.name === 'imageLink');
-
-        if (targetRelations.length !== 1) {
-            return null;
-        }
-
-        const parentNote = this.getParentNotes()[0]; // at this point note can have only one parent
-        const referencingNote = targetRelations[0].note;
-
-        if (parentNote !== referencingNote || parentNote.type !== 'text' || !parentNote.isContentAvailable()) {
+        if (!this.isEligibleForConversionToAttachment()) {
             return null;
         }
 
         const content = this.getContent();
 
+        const parentNote = this.getParentNotes()[0];
         const attachment = parentNote.saveAttachment({
             role: 'image',
             mime: this.mime,

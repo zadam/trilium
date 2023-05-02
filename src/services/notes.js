@@ -370,6 +370,8 @@ function checkImageAttachments(note, content) {
         newAttachment.setContent(unknownAttachment.getContent(), { forceSave: true });
 
         content = content.replace(`api/attachments/${unknownAttachment.attachmentId}/image`, `api/attachments/${newAttachment.attachmentId}/image`);
+
+        log.info(`Copied attachment '${unknownAttachment.attachmentId}' to new '${newAttachment.attachmentId}'`);
     }
 
     return content;

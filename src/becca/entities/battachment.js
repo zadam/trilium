@@ -2,9 +2,9 @@
 
 const utils = require('../../services/utils');
 const dateUtils = require('../../services/date_utils');
-const becca = require('../becca');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const sql = require("../../services/sql");
+const protectedSessionService = require("../../services/protected_session.js");
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
@@ -72,12 +72,18 @@ class BAttachment extends AbstractBeccaEntity {
     }
 
     getNote() {
-        return becca.notes[this.parentId];
+        return this.becca.notes[this.parentId];
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
         return utils.isStringNote(this.type, this.mime);
+    }
+
+    isContentAvailable() {
+        return !this.attachmentId // new attachment which was not encrypted yet
+            || !this.isProtected
+            || protectedSessionService.isProtectedSessionAvailable()
     }
 
     /** @returns {*} */
@@ -129,15 +135,17 @@ class BAttachment extends AbstractBeccaEntity {
 
         this.markAsDeleted();
 
-        if (this.role === 'image' && this.type === 'text') {
-            const origContent = this.getContent();
-            const oldAttachmentUrl = `api/attachment/${this.attachmentId}/image/`;
+        const parentNote = this.getNote();
+
+        if (this.role === 'image' && parentNote.type === 'text') {
+            const origContent = parentNote.getContent();
+            const oldAttachmentUrl = `api/attachments/${this.attachmentId}/image/`;
             const newNoteUrl = `api/images/${note.noteId}/`;
 
             const fixedContent = utils.replaceAll(origContent, oldAttachmentUrl, newNoteUrl);
 
-            if (origContent !== fixedContent) {
-                this.setContent(fixedContent);
+            if (fixedContent !== origContent) {
+                parentNote.setContent(fixedContent);
             }
         }
 
