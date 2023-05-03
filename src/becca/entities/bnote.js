@@ -242,6 +242,7 @@ class BNote extends AbstractBeccaEntity {
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BNote entity
      * @param {object} [opts.forceCold=false] - blob has to be saved as cold
+     * @param {object} [opts.forceFrontendReload=false] - override frontend heuristics on when to reload, instruct to reload
      */
     setContent(content, opts) {
         this._setContent(content, opts);
@@ -1640,6 +1641,10 @@ class BNote extends AbstractBeccaEntity {
         }
 
         return attachment;
+    }
+
+    getFileName() {
+        return utils.formatDownloadTitle(this.title, this.type, this.mime);
     }
 
     beforeSaving() {

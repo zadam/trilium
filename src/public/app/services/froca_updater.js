@@ -39,7 +39,7 @@ async function processEntityChanges(entityChanges) {
                 // NOOP
             }
             else {
-                throw new Error(`Unknown entityName ${ec.entityName}`);
+                throw new Error(`Unknown entityName '${ec.entityName}'`);
             }
         }
         catch (e) {
@@ -92,7 +92,7 @@ function processNoteChange(loadResults, ec) {
     loadResults.addNote(ec.entityId, ec.componentId);
 
     if (ec.isErased && ec.entityId in froca.notes) {
-        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
+        utils.reloadFrontendApp(`${ec.entityName} '${ec.entityId}' is erased, need to do complete reload.`);
         return;
     }
 
@@ -106,7 +106,7 @@ function processNoteChange(loadResults, ec) {
 
 async function processBranchChange(loadResults, ec) {
     if (ec.isErased && ec.entityId in froca.branches) {
-        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
+        utils.reloadFrontendApp(`${ec.entityName} '${ec.entityId}' is erased, need to do complete reload.`);
         return;
     }
 
@@ -192,7 +192,7 @@ function processAttributeChange(loadResults, ec) {
     let attribute = froca.attributes[ec.entityId];
 
     if (ec.isErased && ec.entityId in froca.attributes) {
-        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
+        utils.reloadFrontendApp(`${ec.entityName} '${ec.entityId}' is erased, need to do complete reload.`);
         return;
     }
 
@@ -241,7 +241,7 @@ function processAttributeChange(loadResults, ec) {
 
 function processAttachment(loadResults, ec) {
     if (ec.isErased && ec.entityId in froca.attachments) {
-        utils.reloadFrontendApp(`${ec.entityName} ${ec.entityId} is erased, need to do complete reload.`);
+        utils.reloadFrontendApp(`${ec.entityName} '${ec.entityId}' is erased, need to do complete reload.`);
         return;
     }
 

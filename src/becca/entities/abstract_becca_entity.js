@@ -136,6 +136,7 @@ class AbstractBeccaEntity {
         // client code asks to save entity even if blobId didn't change (something else was changed)
         opts.forceSave = !!opts.forceSave;
         opts.forceCold = !!opts.forceCold;
+        opts.forceFrontendReload = !!opts.forceFrontendReload;
 
         if (content === null || content === undefined) {
             throw new Error(`Cannot set null content to ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}'`);
@@ -176,7 +177,7 @@ class AbstractBeccaEntity {
     }
 
     /** @protected */
-    _saveBlob(content, unencryptedContentForHashCalculation, opts) {
+    _saveBlob(content, unencryptedContentForHashCalculation, opts = {}) {
         let newBlobId;
         let blobNeedsInsert;
 
@@ -212,7 +213,10 @@ class AbstractBeccaEntity {
                 hash: hash,
                 isErased: false,
                 utcDateChanged: pojo.utcDateModified,
-                isSynced: true
+                isSynced: true,
+                // overriding componentId will cause frontend to think the change is coming from a different component
+                // and thus reload
+                componentId: opts.forceFrontendReload ? utils.randomString(10) : null
             });
 
             eventService.emit(eventService.ENTITY_CHANGED, {

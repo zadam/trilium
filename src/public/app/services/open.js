@@ -1,11 +1,22 @@
 import utils from "./utils.js";
 import server from "./server.js";
 
-function getFileUrl(noteId) {
-    return getUrlForDownload(`api/notes/${noteId}/download`);
+function checkType(type) {
+    if (type !== 'notes' && type !== 'attachments') {
+        throw new Error(`Unrecognized type '${type}', should be 'notes' or 'attachments'`);
+    }
 }
-function getOpenFileUrl(noteId) {
-    return getUrlForDownload(`api/notes/${noteId}/open`);
+
+function getFileUrl(type, noteId) {
+    checkType(type);
+
+    return getUrlForDownload(`api/${type}/${noteId}/download`);
+}
+
+function getOpenFileUrl(type, noteId) {
+    checkType(type);
+
+    return getUrlForDownload(`api/${type}/${noteId}/open`);
 }
 
 function download(url) {
@@ -19,32 +30,15 @@ function download(url) {
 }
 
 function downloadFileNote(noteId) {
-    const url = `${getFileUrl(noteId)}?${Date.now()}`; // don't use cache
+    const url = `${getFileUrl('notes', noteId)}?${Date.now()}`; // don't use cache
 
     download(url);
 }
 
-async function openNoteExternally(noteId, mime) {
-    if (utils.isElectron()) {
-        const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
+function downloadAttachment(attachmentId) {
+    const url = `${getFileUrl('attachments', attachmentId)}?${Date.now()}`; // don't use cache
 
-        const electron = utils.dynamicRequire('electron');
-        const res = await electron.shell.openPath(resp.tmpFilePath);
-
-        if (res) {
-            // fallback in case there's no default application for this file
-            open(getFileUrl(noteId), {url: true});
-        }
-    }
-    else {
-        // allow browser to handle opening common file
-         if (mime === "application/pdf" ||  mime.startsWith("image") || mime.startsWith("audio") || mime.startsWith("video")){
-            window.open(getOpenFileUrl(noteId));
-        }
-         else {
-            window.location.href = getFileUrl(noteId);
-        }
-    }
+    download(url);
 }
 
 function downloadNoteRevision(noteId, noteRevisionId) {
@@ -67,6 +61,40 @@ function getUrlForDownload(url) {
     }
 }
 
+function canOpenInBrowser(mime) {
+    return mime === "application/pdf"
+        || mime.startsWith("image")
+        || mime.startsWith("audio")
+        || mime.startsWith("video");
+}
+
+async function openExternally(type, entityId, mime) {
+    checkType(type);
+
+    if (utils.isElectron()) {
+        const resp = await server.post(`${type}/${entityId}/save-to-tmp-dir`);
+
+        const electron = utils.dynamicRequire('electron');
+        const res = await electron.shell.openPath(resp.tmpFilePath);
+
+        if (res) {
+            // fallback in case there's no default application for this file
+            window.open(getFileUrl(type, entityId), { url: true });
+        }
+    }
+    else {
+        // allow browser to handle opening common file
+        if (canOpenInBrowser(mime)) {
+            window.open(getOpenFileUrl(type, entityId));
+        } else {
+            window.location.href = getFileUrl(type, entityId);
+        }
+    }
+}
+
+const openNoteExternally = async (noteId, mime) => await openExternally('notes', noteId, mime);
+const openAttachmentExternally = async (attachmentId, mime) => await openExternally('attachments', attachmentId, mime);
+
 function getHost() {
     const url = new URL(window.location.href);
     return `${url.protocol}//${url.hostname}:${url.port}`;
@@ -75,7 +103,9 @@ function getHost() {
 export default {
     download,
     downloadFileNote,
-    openNoteExternally,
     downloadNoteRevision,
-    getUrlForDownload
+    downloadAttachment,
+    getUrlForDownload,
+    openNoteExternally,
+    openAttachmentExternally,
 }

@@ -125,8 +125,6 @@ function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
         hash += `?${paramStr}`;
     }
 
-    console.log(hash);
-
     return hash;
 }
 

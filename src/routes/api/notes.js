@@ -229,29 +229,6 @@ function getDeleteNotesPreview(req) {
     };
 }
 
-function uploadModifiedFile(req) {
-    const noteId = req.params.noteId;
-    const {filePath} = req.body;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' has not been found`);
-    }
-
-    log.info(`Updating note '${noteId}' with content from ${filePath}`);
-
-    note.saveNoteRevision();
-
-    const fileContent = fs.readFileSync(filePath);
-
-    if (!fileContent) {
-        throw new ValidationError(`File '${fileContent}' is empty`);
-    }
-
-    note.setContent(fileContent);
-}
-
 function forceSaveNoteRevision(req) {
     const {noteId} = req.params;
     const note = becca.getNote(noteId);
@@ -294,7 +271,6 @@ module.exports = {
     eraseDeletedNotesNow,
     eraseUnusedAttachmentsNow,
     getDeleteNotesPreview,
-    uploadModifiedFile,
     forceSaveNoteRevision,
     convertNoteToAttachment
 };

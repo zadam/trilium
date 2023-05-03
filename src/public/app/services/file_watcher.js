@@ -1,18 +1,33 @@
 import ws from "./ws.js";
 import appContext from "../components/app_context.js";
 
-const fileModificationStatus = {};
+const fileModificationStatus = {
+    notes: {},
+    attachments: {}
+};
 
-function getFileModificationStatus(noteId) {
-    return fileModificationStatus[noteId];
+function checkType(type) {
+    if (type !== 'notes' && type !== 'attachments') {
+        throw new Error(`Unrecognized type '${type}', should be 'notes' or 'attachments'`);
+    }
 }
 
-function fileModificationUploaded(noteId) {
-    delete fileModificationStatus[noteId];
+function getFileModificationStatus(entityType, entityId) {
+    checkType(entityType);
+
+    return fileModificationStatus[entityType][entityId];
 }
 
-function ignoreModification(noteId) {
-    delete fileModificationStatus[noteId];
+function fileModificationUploaded(entityType, entityId) {
+    checkType(entityType);
+
+    delete fileModificationStatus[entityType][entityId];
+}
+
+function ignoreModification(entityType, entityId) {
+    checkType(entityType);
+
+    delete fileModificationStatus[entityType][entityId];
 }
 
 ws.subscribeToMessages(async message => {
@@ -20,10 +35,13 @@ ws.subscribeToMessages(async message => {
         return;
     }
 
-    fileModificationStatus[message.noteId] = message;
+    checkType(message.entityType);
+
+    fileModificationStatus[message.entityType][message.entityId] = message;
 
     appContext.triggerEvent('openedFileUpdated', {
-        noteId: message.noteId,
+        entityType: message.entityType,
+        entityId: message.entityId,
         lastModifiedMs: message.lastModifiedMs,
         filePath: message.filePath
     });

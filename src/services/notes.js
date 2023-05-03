@@ -362,8 +362,9 @@ function checkImageAttachments(note, content) {
 
     const existingAttachmentIds = new Set(imageAttachments.map(att => att.attachmentId));
     const unknownAttachmentIds = Array.from(foundAttachmentIds).filter(foundAttId => !existingAttachmentIds.has(foundAttId));
+    const unknownAttachments = becca.getAttachments(unknownAttachmentIds);
 
-    for (const unknownAttachment of becca.getAttachments(unknownAttachmentIds)) {
+    for (const unknownAttachment of unknownAttachments) {
         // the attachment belongs to a different note (was copy pasted), we need to make a copy for this note.
         const newAttachment = unknownAttachment.copy();
         newAttachment.parentId = note.noteId;
@@ -374,7 +375,10 @@ function checkImageAttachments(note, content) {
         log.info(`Copied attachment '${unknownAttachment.attachmentId}' to new '${newAttachment.attachmentId}'`);
     }
 
-    return content;
+    return {
+        forceFrontendReload: unknownAttachments.length > 0,
+        content
+    };
 }
 
 
@@ -591,6 +595,7 @@ function saveLinks(note, content) {
     }
 
     const foundLinks = [];
+    let forceFrontendReload = false;
 
     if (note.type === 'text') {
         content = downloadImages(note.noteId, content);
@@ -599,7 +604,7 @@ function saveLinks(note, content) {
         content = findInternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
 
-        content = checkImageAttachments(note, content);
+        ({forceFrontendReload, content} = checkImageAttachments(note, content));
     }
     else if (note.type === 'relationMap') {
         findRelationMapLinks(content, foundLinks);
@@ -643,7 +648,7 @@ function saveLinks(note, content) {
         unusedLink.markAsDeleted();
     }
 
-    return content;
+    return { forceFrontendReload, content };
 }
 
 /** @param {BNote} note */
@@ -677,9 +682,9 @@ function updateNoteData(noteId, content) {
 
     saveNoteRevisionIfNeeded(note);
 
-    content = saveLinks(note, content);
+    const { forceFrontendReload, content: newContent } = saveLinks(note, content);
 
-    note.setContent(content);
+    note.setContent(newContent, { forceFrontendReload });
 }
 
 /**
@@ -780,15 +785,15 @@ function scanForLinks(note, content) {
 
     try {
         sql.transactional(() => {
-            const newContent = saveLinks(note, content);
+            const { forceFrontendReload, content: newContent } = saveLinks(note, content);
 
             if (content !== newContent) {
-                note.setContent(newContent);
+                note.setContent(newContent, { forceFrontendReload });
             }
         });
     }
     catch (e) {
-        log.error(`Could not scan for links note ${note.noteId}: ${e.message} ${e.stack}`);
+        log.error(`Could not scan for links note '${note.noteId}': ${e.message} ${e.stack}`);
     }
 }
 

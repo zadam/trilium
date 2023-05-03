@@ -11,6 +11,7 @@ const chokidar = require('chokidar');
 const ws = require('../../services/ws');
 const becca = require("../../becca/becca");
 const NotFoundError = require("../../errors/not_found_error");
+const ValidationError = require("../../errors/validation_error.js");
 
 function updateFile(req) {
     const {noteId} = req.params;
@@ -38,61 +39,84 @@ function updateFile(req) {
     };
 }
 
-function getFilename(note) {
-    // (one) reason we're not using the originFileName (available as label) is that it's not
-    // available for older note revisions and thus would be inconsistent
-    return utils.formatDownloadTitle(note.title, note.type, note.mime);
+/**
+ * @param {BNote|BAttachment} noteOrAttachment
+ * @param res
+ * @param {boolean} contentDisposition
+ */
+function downloadData(noteOrAttachment, res, contentDisposition) {
+    if (noteOrAttachment.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
+        return res.status(401).send("Protected session not available");
+    }
+
+    if (contentDisposition) {
+        const fileName = noteOrAttachment.getFileName();
+
+        res.setHeader('Content-Disposition', utils.getContentDisposition(fileName));
+    }
+
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader('Content-Type', noteOrAttachment.mime);
+
+    res.send(noteOrAttachment.getContent());
 }
 
-function downloadNoteFile(noteId, res, contentDisposition = true) {
+function downloadNoteInt(noteId, res, contentDisposition = true) {
     const note = becca.getNote(noteId);
 
     if (!note) {
         return res.setHeader("Content-Type", "text/plain")
             .status(404)
-            .send(`Note ${noteId} doesn't exist.`);
+            .send(`Note '${noteId}' doesn't exist.`);
     }
 
-    if (note.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
-        return res.status(401).send("Protected session not available");
+    return downloadData(note, res, contentDisposition);
+}
+
+function downloadAttachmentInt(attachmentId, res, contentDisposition = true) {
+    const attachment = becca.getAttachment(attachmentId);
+
+    if (!attachment) {
+        return res.setHeader("Content-Type", "text/plain")
+            .status(404)
+            .send(`Attachment '${attachmentId}' doesn't exist.`);
     }
 
-    if (contentDisposition) {
-        const filename = getFilename(note);
-
-        res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
-    }
-
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader('Content-Type', note.mime);
-
-    res.send(note.getContent());
+    return downloadData(attachment, res, contentDisposition);
 }
 
-function downloadFile(req, res) {
-    const noteId = req.params.noteId;
+const downloadFile = (req, res) => downloadNoteInt(req.params.noteId, res, true);
+const openFile = (req, res) => downloadNoteInt(req.params.noteId, res, false);
 
-    return downloadNoteFile(noteId, res);
-}
-
-function openFile(req, res) {
-    const noteId = req.params.noteId;
-
-    return downloadNoteFile(noteId, res, false);
-}
+const downloadAttachment = (req, res) => downloadAttachmentInt(req.params.attachmentId, res, true);
+const openAttachment = (req, res) => downloadAttachmentInt(req.params.attachmentId, res, false);
 
 function fileContentProvider(req) {
     // Read file name from route params.
     const note = becca.getNote(req.params.noteId);
-    const fileName = getFilename(note);
-    let content = note.getContent();
+    if (!note) {
+        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
+    }
 
+    return streamContent(note.getContent(), note.getFileName(), note.mime);
+}
+
+function attachmentContentProvider(req) {
+    // Read file name from route params.
+    const attachment = becca.getAttachment(req.params.attachmentId);
+    if (!attachment) {
+        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
+    }
+
+    return streamContent(attachment.getContent(), attachment.getFileName(), attachment.mime);
+}
+
+function streamContent(content, fileName, mimeType) {
     if (typeof content === "string") {
-       content = Buffer.from(content, 'utf8');
+        content = Buffer.from(content, 'utf8');
     }
 
     const totalSize = content.byteLength;
-    const mimeType = note.mime;
 
     const getStream = range => {
         if (!range) {
@@ -100,7 +124,7 @@ function fileContentProvider(req) {
             return Readable.from(content);
         }
         // Partial content request.
-        const { start, end } = range;
+        const {start, end} = range;
 
         return Readable.from(content.slice(start, end + 1));
     }
@@ -113,27 +137,44 @@ function fileContentProvider(req) {
     };
 }
 
-function saveToTmpDir(req) {
-    const noteId = req.params.noteId;
-
-    const note = becca.getNote(noteId);
-
+function saveNoteToTmpDir(req) {
+    const note = becca.getNote(req.params.noteId);
     if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
     }
 
-    const tmpObj = tmp.fileSync({postfix: getFilename(note)});
+    const fileName = note.getFileName();
+    const content = note.getContent();
 
-    fs.writeSync(tmpObj.fd, note.getContent());
+    return saveToTmpDir(fileName, content, 'notes', note.noteId);
+}
+
+function saveAttachmentToTmpDir(req) {
+    const attachment = becca.getAttachment(req.params.attachmentId);
+    if (!attachment) {
+        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
+    }
+
+    const fileName = attachment.getFileName();
+    const content = attachment.getContent();
+
+    return saveToTmpDir(fileName, content, 'attachments', attachment.attachmentId);
+}
+
+function saveToTmpDir(fileName, content, entityType, entityId) {
+    const tmpObj = tmp.fileSync({ postfix: fileName });
+
+    fs.writeSync(tmpObj.fd, content);
     fs.closeSync(tmpObj.fd);
 
-    log.info(`Saved temporary file for note ${noteId} into ${tmpObj.name}`);
+    log.info(`Saved temporary file ${tmpObj.name}`);
 
     if (utils.isElectron()) {
         chokidar.watch(tmpObj.name).on('change', (path, stats) => {
             ws.sendMessageToAllClients({
                 type: 'openedFileUpdated',
-                noteId: noteId,
+                entityType: entityType,
+                entityId: entityId,
                 lastModifiedMs: stats.atimeMs,
                 filePath: tmpObj.name
             });
@@ -145,11 +186,63 @@ function saveToTmpDir(req) {
     };
 }
 
+function uploadModifiedFileToNote(req) {
+    const noteId = req.params.noteId;
+    const {filePath} = req.body;
+
+    const note = becca.getNote(noteId);
+
+    if (!note) {
+        throw new NotFoundError(`Note '${noteId}' has not been found`);
+    }
+
+    log.info(`Updating note '${noteId}' with content from '${filePath}'`);
+
+    note.saveNoteRevision();
+
+    const fileContent = fs.readFileSync(filePath);
+
+    if (!fileContent) {
+        throw new ValidationError(`File '${fileContent}' is empty`);
+    }
+
+    note.setContent(fileContent);
+}
+
+function uploadModifiedFileToAttachment(req) {
+    const {attachmentId} = req.params;
+    const {filePath} = req.body;
+
+    const attachment = becca.getAttachment(attachmentId);
+
+    if (!attachment) {
+        throw new NotFoundError(`Attachment '${attachmentId}' has not been found`);
+    }
+
+    log.info(`Updating attachment '${attachmentId}' with content from '${filePath}'`);
+
+    attachment.getNote().saveNoteRevision();
+
+    const fileContent = fs.readFileSync(filePath);
+
+    if (!fileContent) {
+        throw new ValidationError(`File '${fileContent}' is empty`);
+    }
+
+    attachment.setContent(fileContent);
+}
+
 module.exports = {
     updateFile,
     openFile,
     fileContentProvider,
     downloadFile,
-    downloadNoteFile,
-    saveToTmpDir
+    downloadNoteInt,
+    saveNoteToTmpDir,
+    openAttachment,
+    downloadAttachment,
+    saveAttachmentToTmpDir,
+    attachmentContentProvider,
+    uploadModifiedFileToNote,
+    uploadModifiedFileToAttachment
 };

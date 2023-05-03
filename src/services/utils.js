@@ -199,33 +199,33 @@ function replaceAll(string, replaceWhat, replaceWith) {
     return string.replace(new RegExp(quotedReplaceWhat, "g"), replaceWith);
 }
 
-function formatDownloadTitle(filename, type, mime) {
-    if (!filename) {
-        filename = "untitled";
+function formatDownloadTitle(fileName, type, mime) {
+    if (!fileName) {
+        fileName = "untitled";
     }
 
-    filename = sanitize(filename);
+    fileName = sanitize(fileName);
 
     if (type === 'text') {
-        return `${filename}.html`;
+        return `${fileName}.html`;
     } else if (['relationMap', 'canvas', 'search'].includes(type)) {
-        return `${filename}.json`;
+        return `${fileName}.json`;
     } else {
         if (!mime) {
-            return filename;
+            return fileName;
         }
 
         mime = mime.toLowerCase();
-        const filenameLc = filename.toLowerCase();
+        const filenameLc = fileName.toLowerCase();
         const extensions = mimeTypes.extensions[mime];
 
         if (!extensions || extensions.length === 0) {
-            return filename;
+            return fileName;
         }
 
         for (const ext of extensions) {
             if (filenameLc.endsWith(`.${ext}`)) {
-                return filename;
+                return fileName;
             }
         }
 
@@ -234,10 +234,10 @@ function formatDownloadTitle(filename, type, mime) {
             // the current name without fake extension. It's possible that the title still preserves to correct
             // extension too
 
-            return filename;
+            return fileName;
         }
 
-        return `${filename}.${extensions[0]}`;
+        return `${fileName}.${extensions[0]}`;
     }
 }
 

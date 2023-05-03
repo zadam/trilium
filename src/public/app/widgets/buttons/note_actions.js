@@ -35,7 +35,11 @@ const TPL = `
         <a data-trigger-command="findInText" class="dropdown-item find-in-text-button">Search in note <kbd data-command="findInText"></a>
         <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
         <a data-trigger-command="showAttachments" class="dropdown-item"><kbd data-command="showAttachments"></kbd> Note attachments</a>
-        <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"><kbd data-command="openNoteExternally"></kbd> Open note externally</a>
+        <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"
+           title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">
+            <kbd data-command="openNoteExternally"></kbd> 
+            Open note externally
+        </a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
         <a class="dropdown-item delete-note-button">Delete note</a>

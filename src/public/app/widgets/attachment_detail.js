@@ -3,6 +3,7 @@ import AttachmentActionsWidget from "./buttons/attachments_actions.js";
 import BasicWidget from "./basic_widget.js";
 import server from "../services/server.js";
 import options from "../services/options.js";
+import imageService from "../services/image.js";
 
 const TPL = `
 <div class="attachment-detail">
@@ -146,6 +147,10 @@ export default class AttachmentDetailWidget extends BasicWidget {
         } else {
             return '';
         }
+    }
+
+    copyAttachmentReferenceToClipboard() {
+        imageService.copyImageReferenceToClipboard(this.$wrapper.find('.attachment-content'));
     }
 
     async entitiesReloadedEvent({loadResults}) {

@@ -122,7 +122,6 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/type', notesApiRoute.setNoteTypeMime);
     apiRoute(PUT, '/api/notes/:noteId/title', notesApiRoute.changeTitle);
     apiRoute(PST, '/api/notes/:noteId/duplicate/:parentNoteId', notesApiRoute.duplicateSubtree);
-    apiRoute(PST, '/api/notes/:noteId/upload-modified-file', notesApiRoute.uploadModifiedFile);
     apiRoute(PUT, '/api/notes/:noteId/clone-to-branch/:parentBranchId', cloningApiRoute.cloneNoteToBranch);
     apiRoute(PUT, '/api/notes/:noteId/toggle-in-parent/:parentNoteId/:present', cloningApiRoute.toggleNoteInParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-to-note/:parentNoteId', cloningApiRoute.cloneNoteToParentNote);
@@ -137,7 +136,8 @@ function register(app) {
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
     route(GET, '/api/notes/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
-    apiRoute(PST, '/api/notes/:noteId/save-to-tmp-dir', filesRoute.saveToTmpDir);
+    apiRoute(PST, '/api/notes/:noteId/save-to-tmp-dir', filesRoute.saveNoteToTmpDir);
+    apiRoute(PST, '/api/notes/:noteId/upload-modified-file', filesRoute.uploadModifiedFileToNote);
     apiRoute(PST, '/api/notes/:noteId/convert-to-attachment', notesApiRoute.convertNoteToAttachment);
 
     apiRoute(PUT, '/api/branches/:branchId/move-to/:parentBranchId', branchesApiRoute.moveBranchToParent);
@@ -154,6 +154,16 @@ function register(app) {
     apiRoute(PST, '/api/attachments/:attachmentId/convert-to-note', attachmentsApiRoute.convertAttachmentToNote);
     apiRoute(DEL, '/api/attachments/:attachmentId', attachmentsApiRoute.deleteAttachment);
     route(GET, '/api/attachments/:attachmentId/image/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnAttachedImage);
+    route(GET, '/api/attachments/:attachmentId/open', [auth.checkApiAuthOrElectron], filesRoute.openAttachment);
+    route(GET, '/api/attachments/:attachmentId/open-partial', [auth.checkApiAuthOrElectron],
+        createPartialContentHandler(filesRoute.attachmentContentProvider, {
+            debug: (string, extra) => { console.log(string, extra); }
+        }));
+    route(GET, '/api/attachments/:attachmentId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadAttachment);
+    // this "hacky" path is used for easier referencing of CSS resources
+    route(GET, '/api/attachments/download/:attachmentId', [auth.checkApiAuthOrElectron], filesRoute.downloadAttachment);
+    apiRoute(PST, '/api/attachments/:attachmentId/save-to-tmp-dir', filesRoute.saveAttachmentToTmpDir);
+    apiRoute(PST, '/api/attachments/:attachmentId/upload-modified-file', filesRoute.uploadModifiedFileToAttachment);
 
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
     apiRoute(DEL, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.eraseAllNoteRevisions);

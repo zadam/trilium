@@ -96,6 +96,7 @@ class BAttachment extends AbstractBeccaEntity {
      * @param {object} [opts]
      * @param {object} [opts.forceSave=false] - will also save this BAttachment entity
      * @param {object} [opts.forceCold=false] - blob has to be saved as cold
+     * @param {object} [opts.forceFrontendReload=false] - override frontend heuristics on when to reload, instruct to reload
      */
     setContent(content, opts) {
         this._setContent(content, opts);
@@ -152,6 +153,12 @@ class BAttachment extends AbstractBeccaEntity {
         }
 
         return { note, branch };
+    }
+
+    getFileName() {
+        const type = this.role === 'image' ? 'image' : 'file';
+
+        return utils.formatDownloadTitle(this.title, type, this.mime);
     }
 
     beforeSaving() {

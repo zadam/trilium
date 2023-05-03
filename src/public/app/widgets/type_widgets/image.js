@@ -1,8 +1,8 @@
 import utils from "../../services/utils.js";
-import toastService from "../../services/toast.js";
 import TypeWidget from "./type_widget.js";
 import libraryLoader from "../../services/library_loader.js";
 import contextMenu from "../../menus/context_menu.js";
+import imageService from "../../services/image.js";
 
 const TPL = `
 <div class="note-detail-image note-detail-printable">
@@ -73,7 +73,7 @@ class ImageTypeWidget extends TypeWidget {
                     ],
                     selectMenuItemHandler: ({command}) => {
                         if (command === 'copyImageReferenceToClipboard') {
-                            this.copyImageReferenceToClipboard();
+                            imageService.copyImageReferenceToClipboard(this.$imageWrapper);
                         } else if (command === 'copyImageToClipboard') {
                             const webContents = utils.dynamicRequire('@electron/remote').getCurrentWebContents();
                             utils.dynamicRequire('electron');
@@ -98,36 +98,7 @@ class ImageTypeWidget extends TypeWidget {
             return;
         }
 
-        this.copyImageReferenceToClipboard();
-    }
-
-    copyImageReferenceToClipboard() {
-        this.$imageWrapper.attr('contenteditable','true');
-
-        try {
-            this.selectImage(this.$imageWrapper.get(0));
-
-            const success = document.execCommand('copy');
-
-            if (success) {
-                toastService.showMessage("Image copied to the clipboard");
-            }
-            else {
-                toastService.showAndLogError("Could not copy the image to clipboard.");
-            }
-        }
-        finally {
-            window.getSelection().removeAllRanges();
-            this.$imageWrapper.removeAttr('contenteditable');
-        }
-    }
-
-    selectImage(element) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        selection.removeAllRanges();
-        selection.addRange(range);
+        imageService.copyImageReferenceToClipboard(this.$imageWrapper);
     }
 }
 

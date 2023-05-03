@@ -22,7 +22,7 @@ import NoteIconWidget from "../widgets/note_icon.js";
 import SearchResultWidget from "../widgets/search_result.js";
 import ScrollingContainer from "../widgets/containers/scrolling_container.js";
 import RootContainer from "../widgets/containers/root_container.js";
-import NoteUpdateStatusWidget from "../widgets/note_update_status.js";
+import WatchedFileUpdateStatusWidget from "../widgets/watched_file_update_status.js";
 import SpacerWidget from "../widgets/spacer.js";
 import QuickSearchWidget from "../widgets/quick_search.js";
 import SplitNoteContainer from "../widgets/containers/split_note_container.js";
@@ -150,7 +150,7 @@ export default class DesktopLayout {
                                             .button(new NoteActionsWidget())
                                     )
                                     .child(new SharedInfoWidget())
-                                    .child(new NoteUpdateStatusWidget())
+                                    .child(new WatchedFileUpdateStatusWidget())
                                     .child(new FloatingButtons()
                                         .child(new EditButton())
                                         .child(new CodeButtonsWidget())
