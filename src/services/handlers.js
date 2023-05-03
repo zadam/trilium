@@ -61,6 +61,12 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
 eventService.subscribe(eventService.ENTITY_CHANGED, ({entityName, entity}) => {
     if (entityName === 'note_contents') { // FIXME
         runAttachedRelations(entity, 'runOnNoteContentChange', entity);
+    } else if (entityName === 'branches') {
+        const parentNote = becca.getNote(entity.parentNoteId);
+
+        if (parentNote?.hasLabel("sorted")) {
+            treeService.sortNotesIfNeeded(parentNote.noteId);
+        }
     }
 });
 

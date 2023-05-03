@@ -90,22 +90,29 @@ function sortNotes(parentNoteId, customSortBy = 'title', reverse = false, folder
             }
 
             function fetchValue(note, key) {
-                const rawValue = ['title', 'dateCreated', 'dateModified'].includes(key)
-                    ? note[key]
-                    : note.getLabelValue(key);
+                let rawValue;
+
+                if (key === 'title') {
+                    const branch = note.getParentBranches().find(branch => branch.parentNoteId === parentNoteId);
+                    const prefix = branch?.prefix;
+                    rawValue = prefix ? `${prefix} - ${note.title}` : note.title;
+                } else {
+                    rawValue = ['dateCreated', 'dateModified'].includes(key)
+                        ? note[key]
+                        : note.getLabelValue(key);
+                }
 
                 return normalize(rawValue);
             }
 
             function compare(a, b) {
-                if (!sortNatural){
+                if (!sortNatural) {
                     // alphabetical sort
                     return b === null || b === undefined || a < b ? -1 : 1;
                 } else {
                     // natural sort
                     return a.localeCompare(b, sortLocale, {numeric: true, sensitivity: 'base'});
                 }
-
             }
 
             const topAEl = fetchValue(a, 'top');
