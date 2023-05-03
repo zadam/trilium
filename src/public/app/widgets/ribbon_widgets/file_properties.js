@@ -104,7 +104,7 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
             formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
-                url: `${baseApiUrl}notes/${this.noteId}/file`,
+                url: `${window.glob.baseApiUrl}notes/${this.noteId}/file`,
                 headers: await server.getHeaders(),
                 data: formData,
                 type: 'PUT',

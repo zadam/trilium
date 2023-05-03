@@ -182,15 +182,15 @@ function randomString(len) {
 }
 
 function isMobile() {
-    return window.device === "mobile"
-        // window.device is not available in setup
-        || (!window.device && /Mobi/.test(navigator.userAgent));
+    return window.glob?.device === "mobile"
+        // window.glob.device is not available in setup
+        || (!window.glob?.device && /Mobi/.test(navigator.userAgent));
 }
 
 function isDesktop() {
-    return window.device === "desktop"
-        // window.device is not available in setup
-        || (!window.device && !/Mobi/.test(navigator.userAgent));
+    return window.glob?.device === "desktop"
+        // window.glob.device is not available in setup
+        || (!window.glob?.device && !/Mobi/.test(navigator.userAgent));
 }
 
 // cookie code below works for simple use cases only - ASCII only

@@ -75,7 +75,6 @@ module.exports = {
         glob: true,
         log: true,
         EditorWatchdog: true,
-        baseApiUrl: true,
         // \src\share\canvas_share.js
         React: true,
         appState: true,

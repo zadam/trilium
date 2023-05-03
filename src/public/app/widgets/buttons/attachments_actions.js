@@ -39,6 +39,8 @@ const TPL = `
         <a data-trigger-command="convertAttachmentIntoNote" class="dropdown-item">Convert attachment into note</a>
         <a data-trigger-command="deleteAttachment" class="dropdown-item">Delete attachment</a>
     </div>
+    
+    <input type="file" class="attachment-upload-new-revision-input" style="display: none">
 </div>`;
 
 export default class AttachmentActionsWidget extends BasicWidget {
@@ -56,6 +58,31 @@ export default class AttachmentActionsWidget extends BasicWidget {
         this.$widget = $(TPL);
         this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
         this.$widget.find("[data-trigger-command='copyAttachmentReferenceToClipboard']").toggle(this.attachment.role === 'image');
+
+        this.$uploadNewRevisionInput = this.$widget.find(".attachment-upload-new-revision-input");
+        this.$uploadNewRevisionInput.on('change', async () => {
+            const fileToUpload = this.$uploadNewRevisionInput[0].files[0]; // copy to allow reset below
+            this.$uploadNewRevisionInput.val('');
+
+            const formData = new FormData();
+            formData.append('upload', fileToUpload);
+
+            const result = await $.ajax({
+                url: `${window.glob.baseApiUrl}attachments/${this.attachmentId}/file`,
+                headers: await server.getHeaders(),
+                data: formData,
+                type: 'PUT',
+                timeout: 60 * 60 * 1000,
+                contentType: false, // NEEDED, DON'T REMOVE THIS
+                processData: false, // NEEDED, DON'T REMOVE THIS
+            });
+
+            if (result.uploaded) {
+                toastService.showMessage("New attachment revision has been uploaded.");
+            } else {
+                toastService.showError("Upload of a new attachment revision failed.");
+            }
+        });
     }
 
     async openAttachmentCommand() {
@@ -64,6 +91,10 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     async downloadAttachmentCommand() {
         await openService.downloadAttachment(this.attachmentId);
+    }
+
+    async uploadNewAttachmentRevisionCommand() {
+        this.$uploadNewRevisionInput.trigger('click');
     }
 
     async copyAttachmentReferenceToClipboardCommand() {

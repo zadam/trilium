@@ -105,9 +105,9 @@
 <script type="text/javascript">
     global = globalThis; /* fixes https://github.com/webpack/webpack/issues/10035 */
 
-    window.baseApiUrl = 'api/';
-    window.device = "mobile";
     window.glob = {
+        device: "mobile",
+        baseApiUrl: 'api/',
         activeDialog: null,
         maxEntityChangeIdAtLoad: <%= maxEntityChangeIdAtLoad %>,
         maxEntityChangeSyncIdAtLoad: <%= maxEntityChangeSyncIdAtLoad %>,

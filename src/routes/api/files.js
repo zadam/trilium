@@ -14,15 +14,12 @@ const NotFoundError = require("../../errors/not_found_error");
 const ValidationError = require("../../errors/validation_error.js");
 
 function updateFile(req) {
-    const {noteId} = req.params;
-    const file = req.file;
-
-    const note = becca.getNote(noteId);
-
+    const note = becca.getNote(req.params.noteId);
     if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
     }
 
+    const file = req.file;
     note.saveNoteRevision();
 
     note.mime = file.mimetype.toLowerCase();
@@ -33,6 +30,23 @@ function updateFile(req) {
     note.setLabel('originalFileName', file.originalname);
 
     noteService.asyncPostProcessContent(note, file.buffer);
+
+    return {
+        uploaded: true
+    };
+}
+
+function updateAttachment(req) {
+    const attachment = becca.getAttachment(req.params.attachmentId);
+    if (!attachment) {
+        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
+    }
+
+    const file = req.file;
+    attachment.getNote().saveNoteRevision();
+
+    attachment.mime = file.mimetype.toLowerCase();
+    attachment.setContent(file.buffer, {forceSave: true});
 
     return {
         uploaded: true
@@ -234,6 +248,7 @@ function uploadModifiedFileToAttachment(req) {
 
 module.exports = {
     updateFile,
+    updateAttachment,
     openFile,
     fileContentProvider,
     downloadFile,

@@ -88,7 +88,7 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
             formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
-                url: `${baseApiUrl}images/${this.noteId}`,
+                url: `${window.glob.baseApiUrl}images/${this.noteId}`,
                 headers: await server.getHeaders(),
                 data: formData,
                 type: 'PUT',

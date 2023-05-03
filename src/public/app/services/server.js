@@ -79,7 +79,7 @@ async function call(method, url, data, headers = {}) {
                 requestId: requestId,
                 headers: headers,
                 method: method,
-                url: `/${baseApiUrl}${url}`,
+                url: `/${window.glob.baseApiUrl}${url}`,
                 data: data
             });
         });
@@ -128,7 +128,7 @@ async function reportError(method, url, statusCode, response) {
 function ajax(url, method, data, headers) {
     return new Promise((res, rej) => {
         const options = {
-            url: baseApiUrl + url,
+            url: window.glob.baseApiUrl + url,
             type: method,
             headers: headers,
             timeout: 60000,
