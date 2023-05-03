@@ -174,15 +174,14 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         if (attachments.length > 0) {
             meta.attachments = attachments
-                .filter(attachment => ["canvasSvg", "mermaidSvg"].includes(attachment.name))
                 .map(attachment => ({
-
-                name: attachment.name,
+                title: attachment.title,
+                role: attachment.role,
                 mime: attachment.mime,
                 dataFileName: getDataFileName(
                     null,
                     attachment.mime,
-                    baseFileName + "_" + attachment.name,
+                    baseFileName + "_" + attachment.title,
                     existingFileNames
                 )
             }));

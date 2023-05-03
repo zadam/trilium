@@ -97,7 +97,7 @@ export default class LoadResults {
     }
 
     addNoteContent(noteIds, componentId) {
-        for (const noteId of noteIds) {
+        for (const noteId of noteIds || []) {
             this.contentNoteIdToComponentId.push({noteId, componentId});
         }
     }
