@@ -417,7 +417,7 @@ ${markdownContent}`;
     const rootMeta = getNoteMeta(branch, { notePath: [] }, existingFileNames);
 
     const metaFile = {
-        formatVersion: 1,
+        formatVersion: 2,
         appVersion: packageInfo.version,
         files: [ rootMeta ]
     };
