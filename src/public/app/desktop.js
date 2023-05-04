@@ -8,6 +8,7 @@ import contextMenu from "./menus/context_menu.js";
 import DesktopLayout from "./layouts/desktop_layout.js";
 import glob from "./services/glob.js";
 import zoomService from './components/zoom.js';
+import options from "./services/options.js";
 
 bundleService.getWidgetBundlesByParent().then(widgetBundles => {
     appContext.setLayout(new DesktopLayout(widgetBundles));
@@ -115,11 +116,27 @@ if (utils.isElectron()) {
                 ? (`${params.selectionText.substr(0, 13)}…`)
                 : params.selectionText;
 
+            // Read the search engine from the options and fallback to DuckDuckGo if the option is not set.
+            const customSearchEngineName = options.get("customSearchEngineName");
+            const customSearchEngineUrl = options.get("customSearchEngineUrl");
+            let searchEngineName;
+            let searchEngineUrl;
+            if (customSearchEngineName && customSearchEngineUrl) {
+                searchEngineName = customSearchEngineName;
+                searchEngineUrl = customSearchEngineUrl;
+            } else {
+                searchEngineName = "Duckduckgo";
+                searchEngineUrl = "https://duckduckgo.com/?q={keyword}";
+            }
+
+            // Replace the placeholder with the real search keyword.
+            let searchUrl = searchEngineUrl.replace("{keyword}", encodeURIComponent(params.selectionText));
+
             items.push({
                 enabled: editFlags.canPaste,
-                title: `Search for "${shortenedSelection}" with DuckDuckGo`,
+                title: `Search for "${shortenedSelection}" with ${searchEngineName}`,
                 uiIcon: "bx bx-search-alt",
-                handler: () => electron.shell.openExternal(`https://duckduckgo.com/?q=${encodeURIComponent(params.selectionText)}`)
+                handler: () => electron.shell.openExternal(searchUrl)
             });
         }
 
