@@ -32,7 +32,7 @@ class MobileDetailMenuWidget extends BasicWidget {
                         const branchId = await treeService.getBranchIdFromNotePath(notePath);
 
                         if (!branchId) {
-                            throw new Error(`Cannot get branchId for notePath ${notePath}`);
+                            throw new Error(`Cannot get branchId for notePath '${notePath}'`);
                         }
 
                         if (await branchService.deleteNotes([branchId])) {

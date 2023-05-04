@@ -218,11 +218,8 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
     if (entityName === 'notes' && entity.noteId.startsWith("_")) {
         // "named" note has been deleted, we will probably need to rebuild the hidden subtree
         // scheduling so that bulk deletes won't trigger so many checks
-        oneTimeTimer.scheduleExecution('hidden-subtree-check', 1000, () => {
-            console.log("Checking hidden subtree");
-
-            hiddenSubtreeService.checkHiddenSubtree();
-        });
+        oneTimeTimer.scheduleExecution('hidden-subtree-check', 1000,
+            () => hiddenSubtreeService.checkHiddenSubtree());
     }
 });
 

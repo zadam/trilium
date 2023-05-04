@@ -20,7 +20,7 @@ const ENTITY_NAME_TO_ENTITY = {
 
 function getEntityFromEntityName(entityName) {
     if (!(entityName in ENTITY_NAME_TO_ENTITY)) {
-        throw new Error(`Entity for table ${entityName} not found!`);
+        throw new Error(`Entity for table '${entityName}' not found!`);
     }
 
     return ENTITY_NAME_TO_ENTITY[entityName];

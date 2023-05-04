@@ -10,7 +10,7 @@ function getOptionOrNull(name) {
         // e.g. in initial sync becca is not loaded because DB is not initialized
         option = sql.getRow("SELECT * FROM options WHERE name = ?", name);
     }
-    
+
     return option ? option.value : null;
 }
 
@@ -33,7 +33,7 @@ function getOptionInt(name) {
     const intVal = parseInt(val);
 
     if (isNaN(intVal)) {
-        throw new Error(`Could not parse "${val}" into integer for option "${name}"`);
+        throw new Error(`Could not parse '${val}' into integer for option '${name}'`);
     }
 
     return intVal;
@@ -46,7 +46,7 @@ function getOptionBool(name) {
     const val = getOption(name);
 
     if (!['true', 'false'].includes(val)) {
-        throw new Error(`Could not parse "${val}" into boolean for option "${name}"`);
+        throw new Error(`Could not parse '${val}' into boolean for option '${name}'`);
     }
 
     return val === 'true';

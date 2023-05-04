@@ -24,7 +24,7 @@ function moveBranchToParent(req) {
     const branchToMove = becca.getBranch(branchId);
 
     if (!parentBranch || !branchToMove) {
-        throw new ValidationError(`One or both branches ${branchId}, ${parentBranchId} have not been found`);
+        throw new ValidationError(`One or both branches '${branchId}', '${parentBranchId}' have not been found`);
     }
 
     return branchService.moveBranchToBranch(branchToMove, parentBranch, branchId);

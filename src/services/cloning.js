@@ -48,7 +48,7 @@ function cloneNoteToBranch(noteId, parentBranchId, prefix) {
     const parentBranch = becca.getBranch(parentBranchId);
 
     if (!parentBranch) {
-        return { success: false, message: `Parent branch ${parentBranchId} does not exist.` };
+        return { success: false, message: `Parent branch '${parentBranchId}' does not exist.` };
     }
 
     const ret = cloneNoteToParentNote(noteId, parentBranch.noteId, prefix);

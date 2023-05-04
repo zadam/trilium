@@ -29,7 +29,7 @@ function register(router, loginMiddleware) {
 
         if (!etapiToken) {
             // shouldn't happen since this already passed auth validation
-            throw new Error(`Cannot find the token ${parsed.etapiTokenId}.`);
+            throw new Error(`Cannot find the token '${parsed.etapiTokenId}'.`);
         }
 
         etapiToken.markAsDeletedSimple();

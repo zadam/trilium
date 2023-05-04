@@ -47,7 +47,7 @@ function parseDateTime(str) {
         return new Date(Date.parse(str));
     }
     catch (e) {
-        throw new Error(`Can't parse date from ${str}: ${e.stack}`);
+        throw new Error(`Can't parse date from '${str}': ${e.stack}`);
     }
 }
 

@@ -1445,14 +1445,16 @@ class BNote extends AbstractBeccaEntity {
 
         const targetRelations = this.getTargetRelations().filter(relation => relation.name === 'imageLink');
 
-        if (targetRelations.length !== 1) {
+        if (targetRelations.length > 1) {
             return false;
         }
 
         const parentNote = this.getParentNotes()[0]; // at this point note can have only one parent
-        const referencingNote = targetRelations[0].getNote();
+        const referencingNote = targetRelations[0]?.getNote();
 
-        if (parentNote !== referencingNote || parentNote.type !== 'text' || !parentNote.isContentAvailable()) {
+        if (referencingNote && parentNote !== referencingNote) {
+            return false;
+        } else if (parentNote.type !== 'text' || !parentNote.isContentAvailable()) {
             return false;
         }
 

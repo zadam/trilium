@@ -200,7 +200,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
     const parentNote = becca.getNote(parentNoteId);
 
     if (parentNote && parentNote.isDeleted) {
-        throw new Error(`Cannot move note to deleted parent note ${parentNoteId}`);
+        throw new Error(`Cannot move note to deleted parent note '${parentNoteId}'`);
     }
 
     // case where there might be more such branches is ignored. It's expected there should be just one
@@ -224,7 +224,7 @@ function setNoteToParent(noteId, prefix, parentNoteId) {
         const note = becca.getNote(noteId);
 
         if (note.isDeleted) {
-            throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
+            throw new Error(`Cannot create a branch for '${noteId}' which is deleted.`);
         }
 
         const branchId = sql.getValue('SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);

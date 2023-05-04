@@ -174,7 +174,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
     getTypeWidget() {
         if (!this.typeWidgets[this.type]) {
-            throw new Error(`Could not find typeWidget for type: ${this.type}`);
+            throw new Error(`Could not find typeWidget for type '${this.type}'`);
         }
 
         return this.typeWidgets[this.type];

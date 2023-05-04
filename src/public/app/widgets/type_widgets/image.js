@@ -79,7 +79,7 @@ class ImageTypeWidget extends TypeWidget {
                             utils.dynamicRequire('electron');
                             webContents.copyImageAt(e.pageX, e.pageY);
                         } else {
-                            throw new Error(`Unrecognized command ${command}`);
+                            throw new Error(`Unrecognized command '${command}'`);
                         }
                     }
                 });

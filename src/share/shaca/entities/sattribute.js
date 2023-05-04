@@ -89,7 +89,7 @@ class SAttribute extends AbstractShacaEntity {
     /** @returns {SNote|null} */
     getTargetNote() {
         if (this.type !== 'relation') {
-            throw new Error(`Attribute ${this.attributeId} is not relation`);
+            throw new Error(`Attribute '${this.attributeId}' is not relation`);
         }
 
         if (!this.value) {

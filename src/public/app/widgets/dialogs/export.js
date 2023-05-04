@@ -203,7 +203,7 @@ export default class ExportDialog extends BasicWidget {
             this.$singleType.prop("checked", true).trigger('change');
         }
         else {
-            throw new Error(`Unrecognized type ${defaultType}`);
+            throw new Error(`Unrecognized type '${defaultType}'`);
         }
 
         this.$widget.find(".opml-v2").prop("checked", true); // setting default

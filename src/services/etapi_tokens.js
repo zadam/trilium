@@ -97,7 +97,7 @@ function renameToken(etapiTokenId, newName) {
     const etapiToken = becca.getEtapiToken(etapiTokenId);
 
     if (!etapiToken) {
-        throw new Error(`Token ${etapiTokenId} does not exist`);
+        throw new Error(`Token '${etapiTokenId}' does not exist`);
     }
 
     etapiToken.name = newName;

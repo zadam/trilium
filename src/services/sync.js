@@ -109,7 +109,7 @@ async function doLogin() {
     });
 
     if (resp.instanceId === instanceId) {
-        throw new Error(`Sync server has member ID ${resp.instanceId} which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
+        throw new Error(`Sync server has member ID '${resp.instanceId}' which is also local. This usually happens when the sync client is (mis)configured to sync with itself (URL points back to client) instead of the correct sync server.`);
     }
 
     syncContext.instanceId = resp.instanceId;
@@ -312,13 +312,13 @@ function getEntityChangeRow(entityName, entityId) {
         const primaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
 
         if (!primaryKey) {
-            throw new Error(`Unknown entity ${entityName}`);
+            throw new Error(`Unknown entity '${entityName}'`);
         }
 
         const entity = sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
         if (!entity) {
-            throw new Error(`Entity ${entityName} ${entityId} not found.`);
+            throw new Error(`Entity ${entityName} '${entityId}' not found.`);
         }
 
         if (entityName === 'blobs' && entity.content !== null) {

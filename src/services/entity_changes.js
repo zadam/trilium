@@ -137,7 +137,7 @@ function fillEntityChanges(entityName, entityPrimaryKey, condition = '') {
         }
 
         if (createdCount > 0) {
-            log.info(`Created ${createdCount} missing entity changes for ${entityName}.`);
+            log.info(`Created ${createdCount} missing entity changes for entity '${entityName}'.`);
         }
     });
 }

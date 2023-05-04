@@ -116,7 +116,7 @@ function getAndValidateParent(params) {
     const parentNote = becca.notes[params.parentNoteId];
 
     if (!parentNote) {
-        throw new ValidationError(`Parent note "${params.parentNoteId}" not found.`);
+        throw new ValidationError(`Parent note '${params.parentNoteId}' was not found.`);
     }
 
     if (parentNote.type === 'launcher' && parentNote.noteId !== '_lbBookmarks') {
@@ -281,7 +281,7 @@ function createNewNoteWithTarget(target, targetBranchId, params) {
         return retObject;
     }
     else {
-        throw new Error(`Unknown target ${target}`);
+        throw new Error(`Unknown target '${target}'`);
     }
 }
 
@@ -883,10 +883,14 @@ function eraseUnusedBlobs() {
         FROM blobs
         LEFT JOIN notes ON notes.blobId = blobs.blobId
         LEFT JOIN attachments ON attachments.blobId = blobs.blobId
-        LEFT JOIN note_revisions ON attachments.blobId = blobs.blobId
+        LEFT JOIN note_revisions ON note_revisions.blobId = blobs.blobId
         WHERE notes.noteId IS NULL 
           AND attachments.attachmentId IS NULL
           AND note_revisions.noteRevisionId IS NULL`);
+
+    if (unusedBlobIds.length === 0) {
+        return;
+    }
 
     sql.executeMany(`DELETE FROM blobs WHERE blobId IN (???)`, unusedBlobIds);
 

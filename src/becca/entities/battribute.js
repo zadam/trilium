@@ -141,7 +141,7 @@ class BAttribute extends AbstractBeccaEntity {
      */
     getTargetNote() {
         if (this.type !== 'relation') {
-            throw new Error(`Attribute ${this.attributeId} is not relation`);
+            throw new Error(`Attribute '${this.attributeId}' is not a relation.`);
         }
 
         if (!this.value) {

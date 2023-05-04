@@ -93,7 +93,7 @@ function updateOptions(req) {
         if (!update(optionName, req.body[optionName])) {
             // this should be improved
             // it should return 400 instead of current 500, but at least it now rollbacks transaction
-            throw new Error(`${optionName} is not allowed to change`);
+            throw new Error(`Option '${optionName}' is not allowed to be changed`);
         }
     }
 }

@@ -101,7 +101,7 @@ export default class BookPropertiesWidget extends NoteContextAwareWidget {
 
     async toggleViewType(type) {
         if (type !== 'list' && type !== 'grid') {
-            throw new Error(`Invalid view type ${type}`);
+            throw new Error(`Invalid view type '${type}'`);
         }
 
         await attributeService.setLabel(this.noteId, 'viewType', type);

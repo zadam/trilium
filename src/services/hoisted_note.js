@@ -17,7 +17,7 @@ function isHoistedInHiddenSubtree() {
     const hoistedNote = becca.getNote(hoistedNoteId);
 
     if (!hoistedNote) {
-        throw new Error(`Cannot find hoisted note ${hoistedNoteId}`);
+        throw new Error(`Cannot find hoisted note '${hoistedNoteId}'`);
     }
 
     return hoistedNote.isHiddenCompletely();

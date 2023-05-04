@@ -182,7 +182,7 @@ function getClient(opts) {
             return require(protocol.substr(0, protocol.length - 1));
         }
         else {
-            throw new Error(`Unrecognized protocol "${protocol}"`);
+            throw new Error(`Unrecognized protocol '${protocol}'`);
         }
     }
 }

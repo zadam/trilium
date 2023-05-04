@@ -475,7 +475,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         } else if (data.hitMode === "over") {
                             branchService.moveToParentNote(selectedBranchIds, node.data.branchId);
                         } else {
-                            throw new Error(`Unknown hitMode=${data.hitMode}`);
+                            throw new Error(`Unknown hitMode '${data.hitMode}'`);
                         }
                     }
                 }
@@ -691,7 +691,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         const note = branch.getNoteFromCache();
 
         if (!note) {
-            throw new Error(`Branch "${branch.branchId}" has no child note "${branch.noteId}"`);
+            throw new Error(`Branch '${branch.branchId}' has no child note '${branch.noteId}'`);
         }
 
         const title = `${branch.prefix ? (`${branch.prefix} - `) : ""}${note.title}`;
