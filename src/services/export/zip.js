@@ -257,11 +257,11 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="${cssUrl}">
     <base target="_parent">
-    <title>${htmlTitle}</title>
+    <title data-trilium-title>${htmlTitle}</title>
 </head>
 <body>
   <div class="content">
-      <h1>${htmlTitle}</h1>
+      <h1 data-trilium-h1>${htmlTitle}</h1>
       
       <div class="ck-content">${content}</div>
   </div>
