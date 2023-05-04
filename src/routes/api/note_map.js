@@ -3,9 +3,12 @@
 const becca = require("../../becca/becca");
 const { JSDOM } = require("jsdom");
 const NotFoundError = require("../../errors/not_found_error");
+function buildDescendantCountMap(noteIdsToCount) {
+    if (!Array.isArray(noteIdsToCount)) {
+        throw new Error('noteIdsToCount: type error');
+    }
 
-function buildDescendantCountMap() {
-    const noteIdToCountMap = {};
+    const noteIdToCountMap = Object.create(null);
 
     function getCount(noteId) {
         if (!(noteId in noteIdToCountMap)) {
@@ -24,12 +27,12 @@ function buildDescendantCountMap() {
 
         return noteIdToCountMap[noteId];
     }
-
-    getCount('root');
+    noteIdsToCount.forEach((noteId) => {
+        getCount(noteId);
+    });
 
     return noteIdToCountMap;
 }
-
 /**
  * @param {BNote} note
  * @param {int} depth
@@ -119,7 +122,9 @@ function getLinkMap(req) {
         noteIds.add(noteId);
     }
 
-    const notes = Array.from(noteIds).map(noteId => {
+    const noteIdsArray = Array.from(noteIds)
+
+    const notes = noteIdsArray.map(noteId => {
         const note = becca.getNote(noteId);
 
         return [
@@ -155,7 +160,7 @@ function getLinkMap(req) {
 
     return {
         notes: notes,
-        noteIdToDescendantCountMap: buildDescendantCountMap(),
+        noteIdToDescendantCountMap: buildDescendantCountMap(noteIdsArray),
         links: links
     };
 }
@@ -209,7 +214,7 @@ function getTreeMap(req) {
         });
     }
 
-    const noteIdToDescendantCountMap = buildDescendantCountMap();
+    const noteIdToDescendantCountMap = buildDescendantCountMap(Array.from(noteIds));
 
     updateDescendantCountMapForSearch(noteIdToDescendantCountMap, subtree.relationships);
 

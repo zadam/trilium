@@ -20,6 +20,7 @@ html {
     --main-background-color: white;
     --main-text-color: black;
     --main-border-color: #ccc;
+    --dropdown-border-color: #ccc;
 
     --accented-background-color: #f5f5f5;
     --more-accented-background-color: #ddd;
