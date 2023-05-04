@@ -1,4 +1,5 @@
 import OptionsWidget from "../options_widget.js";
+import utils from "../../../../services/utils.js";
 
 const TPL = `
 <div class="options-section">
@@ -43,6 +44,10 @@ const SEARCH_ENGINES = {
 }
 
 export default class SearchEngineOptions extends OptionsWidget {
+    isEnabled() {
+        return super.isEnabled() && utils.isElectron();
+    }
+
     doRender() {
         this.$widget = $(TPL);
 
