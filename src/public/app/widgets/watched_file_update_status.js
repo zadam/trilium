@@ -60,8 +60,6 @@ export default class WatchedFileUpdateStatusWidget extends NoteContextAwareWidge
         const { entityType, entityId } = this.getEntity();
         const status = fileWatcher.getFileModificationStatus(entityType, entityId);
 
-        console.log("status", status);
-
         this.$filePath.text(status.filePath);
         this.$fileLastModified.text(dayjs.unix(status.lastModifiedMs / 1000).format("HH:mm:ss"));
     }

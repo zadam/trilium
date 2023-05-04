@@ -883,7 +883,10 @@ function eraseUnusedBlobs() {
         FROM blobs
         LEFT JOIN notes ON notes.blobId = blobs.blobId
         LEFT JOIN attachments ON attachments.blobId = blobs.blobId
-        WHERE notes.noteId IS NULL AND attachments.attachmentId IS NULL`);
+        LEFT JOIN note_revisions ON attachments.blobId = blobs.blobId
+        WHERE notes.noteId IS NULL 
+          AND attachments.attachmentId IS NULL
+          AND note_revisions.noteRevisionId IS NULL`);
 
     sql.executeMany(`DELETE FROM blobs WHERE blobId IN (???)`, unusedBlobIds);
 
