@@ -181,6 +181,7 @@ div.ui-tooltip {
 }
 
 .dropdown-menu {
+    border: 1px solid var(--dropdown-border-color);
     color: var(--menu-text-color) !important;
     background-color: var(--menu-background-color) !important;
 }

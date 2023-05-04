@@ -31,12 +31,12 @@ function getNotes(noteIds) {
 
 function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (['root', '_hidden', '_share', '_lbRoot', '_lbAvailableLaunchers', '_lbVisibleLaunchers'].includes(childNoteId)) {
-        return { success: false, message: `Cannot change this note's location.`};
+        return { branch: null, success: false, message: `Cannot change this note's location.`};
     }
 
     if (parentNoteId === 'none') {
         // this shouldn't happen
-        return { success: false, message: `Cannot move anything into 'none' parent.` };
+        return { branch: null, success: false, message: `Cannot move anything into 'none' parent.` };
     }
 
     const existing = getExistingBranch(parentNoteId, childNoteId);
@@ -46,6 +46,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
         const childNote = becca.getNote(childNoteId);
 
         return {
+            branch: existing,
             success: false,
             message: `Note "${childNote.title}" note already exists in the "${parentNote.title}".`
         };
@@ -53,6 +54,7 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 
     if (!checkTreeCycle(parentNoteId, childNoteId)) {
         return {
+            branch: null,
             success: false,
             message: 'Moving/cloning note here would create cycle.'
         };
@@ -60,12 +62,13 @@ function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 
     if (parentNoteId !== '_lbBookmarks' && becca.getNote(parentNoteId).type === 'launcher') {
         return {
+            branch: null,
             success: false,
             message: 'Launcher note cannot have any children.'
         };
     }
 
-    return { success: true };
+    return { branch: null, success: true };
 }
 
 function getExistingBranch(parentNoteId, childNoteId) {
