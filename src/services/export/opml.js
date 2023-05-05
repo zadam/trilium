@@ -24,13 +24,13 @@ function exportToOpml(taskContext, branch, version, res) {
 
         if (opmlVersion === 1) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.isStringNote() ? prepareText(note.getContent()) : '';
+            const preparedContent = note.hasStringContent() ? prepareText(note.getContent()) : '';
 
             res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
         }
         else if (opmlVersion === 2) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = note.isStringNote() ? escapeXmlAttribute(note.getContent()) : '';
+            const preparedContent = note.hasStringContent() ? escapeXmlAttribute(note.getContent()) : '';
 
             res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
         }

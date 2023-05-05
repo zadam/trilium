@@ -1,6 +1,13 @@
 const becca = require("../../becca/becca");
 const NotFoundError = require("../../errors/not_found_error");
 const utils = require("../../services/utils");
+const blobService = require("../../services/blob.js");
+
+function getAttachmentBlob(req) {
+    const full = req.query.full === 'true';
+
+    return blobService.getBlobPojo('attachments', req.params.attachmentId, { full });
+}
 
 function getAttachments(req) {
     const includeContent = req.query.includeContent === 'true';
@@ -87,6 +94,7 @@ function convertAttachmentToNote(req) {
 }
 
 module.exports = {
+    getAttachmentBlob,
     getAttachments,
     getAttachment,
     saveAttachment,

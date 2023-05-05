@@ -3,7 +3,7 @@ import FNote from "../entities/fnote.js";
 import FAttribute from "../entities/fattribute.js";
 import server from "./server.js";
 import appContext from "../components/app_context.js";
-import FNoteComplement from "../entities/fnote_complement.js";
+import FBlob from "../entities/fblob.js";
 import FAttachment from "../entities/fattachment.js";
 
 /**
@@ -38,8 +38,7 @@ class Froca {
         /** @type {Object.<string, FAttachment>} */
         this.attachments = {};
 
-        // FIXME
-        /** @type {Object.<string, Promise<FNoteComplement>>} */
+        /** @type {Object.<string, Promise<FBlob>>} */
         this.blobPromises = {};
 
         this.addResp(resp);
@@ -321,25 +320,24 @@ class Froca {
         return attachmentRow ? new FAttachment(this, attachmentRow) : null;
     }
 
-    /**
-     * // FIXME
-     * @returns {Promise<FNoteComplement>}
-     */
-    async getNoteComplement(noteId) {
-        if (!this.blobPromises[noteId]) {
-            this.blobPromises[noteId] = server.get(`notes/${noteId}`)
-                .then(row => new FNoteComplement(row))
-                .catch(e => console.error(`Cannot get note complement for note '${noteId}'`));
+    async getBlob(entityType, entityId, opts = {}) {
+        opts.full = !!opts.full;
+        const key = `${entityType}-${entityId}`;
+
+        if (!this.blobPromises[key]) {
+            this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob?full=${opts.full}`)
+                .then(row => new FBlob(row))
+                .catch(e => console.error(`Cannot get blob for ${entityType} '${entityId}'`));
 
             // we don't want to keep large payloads forever in memory, so we clean that up quite quickly
             // this cache is more meant to share the data between different components within one business transaction (e.g. loading of the note into the tab context and all the components)
             // this is also a workaround for missing invalidation after change
-            this.blobPromises[noteId].then(
-                () => setTimeout(() => this.blobPromises[noteId] = null, 1000)
+            this.blobPromises[key].then(
+                () => setTimeout(() => this.blobPromises[key] = null, 1000)
             );
         }
 
-        return await this.blobPromises[noteId];
+        return await this.blobPromises[key];
     }
 }
 

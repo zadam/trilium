@@ -107,7 +107,7 @@ class SNote extends AbstractShacaEntity {
 
         let content = row.content;
 
-        if (this.isStringNote()) {
+        if (this.hasStringContent()) {
             return content === null
                 ? ""
                 : content.toString("UTF-8");
@@ -118,7 +118,7 @@ class SNote extends AbstractShacaEntity {
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
-    isStringNote() {
+    hasStringContent() {
         return utils.isStringNote(this.type, this.mime);
     }
 

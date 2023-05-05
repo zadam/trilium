@@ -30,6 +30,14 @@ class FAttachment {
     getNote() {
         return this.froca.notes[this.parentId];
     }
+
+    /**
+     * @param [opts.full=false] - force retrieval of the full note
+     * @return {FBlob}
+     */
+    async getBlob(opts = {}) {
+        return await this.froca.getBlob('attachments', this.attachmentId, opts);
+    }
 }
 
 export default FAttachment;

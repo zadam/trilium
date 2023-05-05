@@ -301,8 +301,13 @@ class BNote extends AbstractBeccaEntity {
             || (this.type === 'file' && this.mime?.startsWith('image/'));
     }
 
-    /** @returns {boolean} true if the note has string content (not binary) */
+    /** @deprecated use hasStringContent() instead */
     isStringNote() {
+        return this.hasStringContent();
+    }
+
+    /** @returns {boolean} true if the note has string content (not binary) */
+    hasStringContent() {
         return utils.isStringNote(this.type, this.mime);
     }
 

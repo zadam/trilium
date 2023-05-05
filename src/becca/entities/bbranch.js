@@ -103,6 +103,7 @@ class BBranch extends AbstractBeccaEntity {
         return this.becca.notes[this.noteId];
     }
 
+    /** @returns {BNote} */
     getNote() {
         return this.childNote;
     }

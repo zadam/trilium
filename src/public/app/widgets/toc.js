@@ -90,7 +90,7 @@ export default class TocWidget extends RightPanelWidget {
         let $toc = "", headingCount = 0;
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
-            const { content } = await note.getNoteComplement();
+            const { content } = await note.getBlob();
             ({$toc, headingCount} = await this.getToc(content));
         }
 

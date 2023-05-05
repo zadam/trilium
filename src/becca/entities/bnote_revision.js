@@ -61,7 +61,7 @@ class BNoteRevision extends AbstractBeccaEntity {
     }
 
     /** @returns {boolean} true if the note has string content (not binary) */
-    isStringNote() {
+    hasStringContent() {
         return utils.isStringNote(this.type, this.mime);
     }
 

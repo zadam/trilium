@@ -166,15 +166,6 @@ class NoteContext extends Component {
         return this.notePath ? this.notePath.split('/') : [];
     }
 
-    /** @returns {FNoteComplement} */
-    async getNoteComplement() {
-        if (!this.noteId) {
-            return null;
-        }
-
-        return await froca.getNoteComplement(this.noteId);
-    }
-
     isActive() {
         return appContext.tabManager.activeNtxId === this.ntxId;
     }

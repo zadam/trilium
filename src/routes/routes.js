@@ -112,6 +112,7 @@ function register(app) {
     apiRoute(PST, '/api/tree/load', treeApiRoute.load);
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
+    apiRoute(GET, '/api/notes/:noteId/blob', notesApiRoute.getNoteBlob);
     apiRoute(PUT, '/api/notes/:noteId/data', notesApiRoute.updateNoteData);
     apiRoute(DEL, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(PUT, '/api/notes/:noteId/undelete', notesApiRoute.undeleteNote);
@@ -153,6 +154,7 @@ function register(app) {
     apiRoute(GET, '/api/attachments/:attachmentId', attachmentsApiRoute.getAttachment);
     apiRoute(PST, '/api/attachments/:attachmentId/convert-to-note', attachmentsApiRoute.convertAttachmentToNote);
     apiRoute(DEL, '/api/attachments/:attachmentId', attachmentsApiRoute.deleteAttachment);
+    apiRoute(GET, '/api/attachments/:attachmentId/blob', attachmentsApiRoute.getAttachmentBlob);
     route(GET, '/api/attachments/:attachmentId/image/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnAttachedImage);
     route(GET, '/api/attachments/:attachmentId/open', [auth.checkApiAuthOrElectron], filesRoute.openAttachment);
     route(GET, '/api/attachments/:attachmentId/open-partial', [auth.checkApiAuthOrElectron],
@@ -170,6 +172,7 @@ function register(app) {
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
     apiRoute(DEL, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.eraseAllNoteRevisions);
     apiRoute(GET, '/api/revisions/:noteRevisionId', noteRevisionsApiRoute.getNoteRevision);
+    apiRoute(GET, '/api/revisions/:noteRevisionId/blob', noteRevisionsApiRoute.getNoteRevisionBlob);
     apiRoute(DEL, '/api/revisions/:noteRevisionId', noteRevisionsApiRoute.eraseNoteRevision);
     apiRoute(PST, '/api/revisions/:noteRevisionId/restore', noteRevisionsApiRoute.restoreNoteRevision);
     route(GET, '/api/revisions/:noteRevisionId/download', [auth.checkApiAuthOrElectron], noteRevisionsApiRoute.downloadNoteRevision);

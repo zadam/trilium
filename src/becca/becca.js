@@ -137,6 +137,15 @@ class Becca {
             .map(row => new BAttachment(row));
     }
 
+    /** @returns {BBlob|null} */
+    getBlob(blobId) {
+        const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength " +
+                                     "FROM blob WHERE blobId = ?", [blobId]);
+
+        const BBlob = require("./entities/bblob"); // avoiding circular dependency problems
+        return row ? new BBlob(row) : null;
+    }
+
     /** @returns {BOption|null} */
     getOption(name) {
         return this.options[name];
@@ -161,6 +170,8 @@ class Becca {
             return this.getNoteRevision(entityId);
         } else if (entityName === 'attachments') {
             return this.getAttachment(entityId);
+        } else if (entityName === 'blobs') {
+            return this.getBlob(entityId);
         }
 
         const camelCaseEntityName = entityName.toLowerCase().replace(/(_[a-z])/g,

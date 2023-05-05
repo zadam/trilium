@@ -1,13 +1,19 @@
 "use strict";
 
 const beccaService = require('../../becca/becca_service');
-const protectedSessionService = require('../../services/protected_session');
 const noteRevisionService = require('../../services/note_revisions');
 const utils = require('../../services/utils');
 const sql = require('../../services/sql');
 const cls = require('../../services/cls');
 const path = require('path');
 const becca = require("../../becca/becca");
+const blobService = require("../../services/blob.js");
+
+function getNoteRevisionBlob(req) {
+    const full = req.query.full === 'true';
+
+    return blobService.getBlobPojo('note_revisions', req.params.noteRevisionId, { full });
+}
 
 function getNoteRevisions(req) {
     return becca.getNoteRevisionsFromQuery(`
@@ -20,10 +26,11 @@ function getNoteRevisions(req) {
 }
 
 function getNoteRevision(req) {
+    // FIXME
     const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.type === 'file') {
-        if (noteRevision.isStringNote()) {
+        if (noteRevision.hasStringContent()) {
             noteRevision.content = noteRevision.getContent().substr(0, 10000);
         }
     }
@@ -180,6 +187,7 @@ function getNotePathData(note) {
 }
 
 module.exports = {
+    getNoteRevisionBlob,
     getNoteRevisions,
     getNoteRevision,
     downloadNoteRevision,

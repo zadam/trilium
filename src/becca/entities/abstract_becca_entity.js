@@ -142,7 +142,7 @@ class AbstractBeccaEntity {
             throw new Error(`Cannot set null content to ${this.constructor.primaryKeyName} '${this[this.constructor.primaryKeyName]}'`);
         }
 
-        if (this.isStringNote()) {
+        if (this.hasStringContent()) {
             content = content.toString();
         }
         else {
@@ -246,7 +246,7 @@ class AbstractBeccaEntity {
             }
         }
 
-        if (this.isStringNote()) {
+        if (this.hasStringContent()) {
             return content === null
                 ? ""
                 : content.toString("UTF-8");

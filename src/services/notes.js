@@ -21,7 +21,6 @@ const htmlSanitizer = require("./html_sanitizer");
 const ValidationError = require("../errors/validation_error");
 const noteTypesService = require("./note_types");
 const fs = require("fs");
-const BAttachment = require("../becca/entities/battachment");
 
 /** @param {BNote} parentNote */
 function getNewNotePosition(parentNote) {

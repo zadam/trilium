@@ -851,13 +851,17 @@ class FNote {
         return await this.froca.getNotes(targetRelations.map(tr => tr.noteId));
     }
 
-    /**
-     * Return note complement which is most importantly note's content
-     *
-     * @returns {Promise<FNoteComplement>}
-     */
+    /** @deprecated use getBlob() instead */
     async getNoteComplement() {
-        return await this.froca.getNoteComplement(this.noteId);
+        return this.getBlob({ full: true });
+    }
+
+    /**
+     * @param [opts.full=false] - force retrieval of the full note
+     * @return {FBlob}
+     */
+    async getBlob(opts = {}) {
+        return await this.froca.getBlob('notes', this.noteId, opts);
     }
 
     toString() {

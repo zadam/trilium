@@ -10,20 +10,20 @@ const fs = require('fs');
 const becca = require("../../becca/becca");
 const ValidationError = require("../../errors/validation_error");
 const NotFoundError = require("../../errors/not_found_error");
+const blobService = require("../../services/blob");
 
 function getNote(req) {
-    const noteId = req.params.noteId;
-    const note = becca.getNote(noteId);
-
+    const note = becca.getNote(req.params.noteId);
     if (!note) {
-        throw new NotFoundError(`Note '${noteId}' has not been found.`);
+        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
     }
 
     const pojo = note.getPojo();
 
-    if (note.isStringNote()) {
+    if (note.hasStringContent()) {
         pojo.content = note.getContent();
 
+        // FIXME: use blobs instead
         if (note.type === 'file' && pojo.content.length > 10000) {
             pojo.content = `${pojo.content.substr(0, 10000)}\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
         }
@@ -37,6 +37,12 @@ function getNote(req) {
     pojo.combinedDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified;
 
     return pojo;
+}
+
+function getNoteBlob(req) {
+    const full = req.query.full === 'true';
+
+    return blobService.getBlobPojo('notes', req.params.noteId, { full });
 }
 
 function createNote(req) {
@@ -259,6 +265,7 @@ function convertNoteToAttachment(req) {
 
 module.exports = {
     getNote,
+    getNoteBlob,
     updateNoteData,
     deleteNote,
     undeleteNote,
