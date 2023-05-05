@@ -229,8 +229,7 @@ function createNewNote(params) {
             entity: note
         });
 
-        eventService.emit(eventService.ENTITY_CREATED, { // FIXME
-            entityName: 'note_contents',
+        eventService.emit(eventService.NOTE_CONTENT_CHANGE, {
             entity: note
         });
 
@@ -571,10 +570,7 @@ function downloadImages(noteId, content) {
 
                     asyncPostProcessContent(origNote, updatedContent);
 
-                    eventService.emit(eventService.ENTITY_CHANGED, {
-                        entityName: 'note_contents', // FIXME
-                        entity: origNote
-                    });
+                    eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: origNote });
 
                     console.log(`Fixed the image links for note '${noteId}' to the offline saved.`);
                 }
