@@ -31,7 +31,7 @@ paths:
         '201':
           description: note created
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 properties:
                   note:
@@ -43,7 +43,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /notes:
@@ -163,13 +163,13 @@ paths:
         '200':
           description: search response
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /notes/{noteId}:
@@ -186,13 +186,13 @@ paths:
         '200':
           description: note response
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
@@ -208,13 +208,13 @@ paths:
         '200':
           description: note updated
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
@@ -226,7 +226,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /notes/{noteId}/content:
@@ -288,7 +288,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /notes/{noteId}/note-revision:
@@ -315,7 +315,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /branches/{branchId}:
@@ -332,13 +332,13 @@ paths:
         '200':
           description: branch response
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Branch'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
@@ -357,19 +357,19 @@ paths:
         '200':
           description: branch updated (branch between parent note and child note already existed)
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Branch'
         '201':
           description: branch created
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Branch'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
@@ -385,13 +385,13 @@ paths:
         '200':
           description: branch updated
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Branch'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
@@ -405,7 +405,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /attributes/{attributeId}:
@@ -422,13 +422,13 @@ paths:
         '200':
           description: attribute response
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Attribute'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
@@ -444,13 +444,13 @@ paths:
         '201':
           description: attribute created
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Attribute'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
@@ -466,13 +466,13 @@ paths:
         '200':
           description: attribute updated
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Attribute'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
@@ -484,7 +484,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /refresh-note-ordering/{parentNoteId}:
@@ -506,7 +506,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /inbox/{date}:
@@ -527,13 +527,13 @@ paths:
         '200':
           description: inbox note
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /calendar/days/{date}:
@@ -552,13 +552,13 @@ paths:
         '200':
           description: day note
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /calendar/weeks/{date}:
@@ -577,13 +577,13 @@ paths:
         '200':
           description: week note
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /calendar/months/{month}:
@@ -602,13 +602,13 @@ paths:
         '200':
           description: month note
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /calendar/years/{year}:
@@ -627,13 +627,13 @@ paths:
         '200':
           description: year note
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Note'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /auth/login:
@@ -654,7 +654,7 @@ paths:
         '201':
           description: auth token
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 properties:
                   authToken:
@@ -665,7 +665,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /auth/logout:
@@ -678,7 +678,7 @@ paths:
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /app-info:
@@ -689,13 +689,13 @@ paths:
         '200':
           description: app info
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/AppInfo'
         default:
           description: unexpected error
           content:
-            application/json; charset=utf-8:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
 
@@ -774,7 +774,7 @@ components:
           type: string
         type:
           type: string
-          enum: [text, code, render, file, image, search, relationMap, book, noteMap, mermaid, webView, shortcut, doc, contentWidget, launcher]
+          enum: [text, code, render, file, image, search, relationMap, book, noteMap, mermaid, webView, shortcut]
         mime:
           type: string
         isProtected:
@@ -810,6 +810,9 @@ components:
     Branch:
       type: object
       description: Branch places the note into the tree, it represents the relationship between a parent note and child note
+      required:
+        - noteId
+        - parentNoteId
       properties:
         branchId:
           $ref: '#/components/schemas/EntityId'
@@ -834,6 +837,8 @@ components:
     Attribute:
       type: object
       description: Attribute (Label, Relation) is a key-value record attached to a note.
+      required:
+        - noteId
       properties:
         attributeId:
           $ref: '#/components/schemas/EntityId'
@@ -846,7 +851,7 @@ components:
           enum: [label, relation]
         name:
           type: string
-          pattern: '^[a-zA-Z0-9_:]+'
+          pattern: '^[\p{L}\p{N}_:]+'
           example: shareCss
         value:
           type: string
@@ -876,7 +881,7 @@ components:
           description: debugging info on parsing the search query enabled with &debug=true parameter
     EntityId:
       type: string
-      pattern: '[a-zA-Z0-9_]{4,32}'
+      pattern: '[a-zA-Z0-9]{4,32}'
       example: evnnmvHTCgIn
     EntityIdList:
       type: array
@@ -884,7 +889,7 @@ components:
         $ref: '#/components/schemas/EntityId'
     LocalDateTime:
       type: string
-      pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}[\+\-][0-9]{4}'
+      pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{4}'
       example: 2021-12-31 20:18:11.939+0100
     UtcDateTime:
       type: string
@@ -892,6 +897,10 @@ components:
       example: 2021-12-31 19:18:11.939Z
     AppInfo:
       type: object
+      required:
+        - statu
+        - code
+        - message
       properties:
         appVersion:
           type: string

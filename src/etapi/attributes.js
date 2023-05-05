@@ -17,11 +17,10 @@ function register(router) {
         'type': [v.mandatory, v.notNull, v.isAttributeType],
         'name': [v.mandatory, v.notNull, v.isString],
         'value': [v.notNull, v.isString],
-        'isInheritable': [v.notNull, v.isBoolean],
-        'position': [v.notNull, v.isInteger]
+        'isInheritable': [v.notNull, v.isBoolean]
     };
 
-    eu.route(router, 'post' ,'/etapi/attributes/:attributeId', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
         if (req.body.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
@@ -41,9 +40,7 @@ function register(router) {
     });
 
     const ALLOWED_PROPERTIES_FOR_PATCH = {
-        'value': [v.notNull, v.isString],
-        'isInheritable': [v.notNull, v.isBoolean],
-        'position': [v.notNull, v.isInteger]
+        'value': [v.notNull, v.isString]
     };
 
     eu.route(router, 'patch' ,'/etapi/attributes/:attributeId', (req, res, next) => {
