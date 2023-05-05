@@ -47,7 +47,7 @@ export default class MainTreeExecutors extends Component {
         }
 
         const parentNotePath = treeService.getNotePath(node.getParent());
-        const isProtected = await treeService.getParentProtectedStatus(node);
+        const isProtected = treeService.getParentProtectedStatus(node);
 
         if (node.data.noteId === 'root' || node.data.noteId === hoistedNoteService.getHoistedNoteId()) {
             return;

@@ -517,7 +517,7 @@ export default class TabRowWidget extends BasicWidget {
 
             draggabilly.on('dragEnd', _ => {
                 this.isDragging = false;
-                const finalTranslateX = parseFloat(tabEl.style.left, 10);
+                const finalTranslateX = parseFloat(tabEl.style.left);
                 tabEl.style.transform = `translate3d(0, 0, 0)`;
 
                 // Animate dragged tab back into its place
@@ -617,7 +617,10 @@ export default class TabRowWidget extends BasicWidget {
         this.updateTab($tab, noteContext);
     }
 
-    /** @param {NoteContext} noteContext */
+    /**
+     * @param {jQuery} $tab
+     * @param {NoteContext} noteContext
+     */
     async updateTab($tab, noteContext) {
         if (!$tab.length) {
             return;

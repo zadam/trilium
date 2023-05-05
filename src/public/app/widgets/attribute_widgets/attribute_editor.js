@@ -321,9 +321,7 @@ export default class AttributeEditorWidget extends NoteContextAwareWidget {
 
     parseAttributes() {
         try {
-            const attrs = attributesParser.lexAndParse(this.getPreprocessedData());
-
-            return attrs;
+            return attributesParser.lexAndParse(this.getPreprocessedData());
         }
         catch (e) {
             this.$errors.text(e.message).slideDown();

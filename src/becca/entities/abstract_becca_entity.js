@@ -189,7 +189,7 @@ class AbstractBeccaEntity {
              * We're using the unencrypted blob for the hash calculation, because otherwise the random IV would
              * cause every content blob to be unique which would balloon the database size (esp. with revisioning).
              * This has minor security implications (it's easy to infer that given content is shared between different
-             * notes/attachments, but the trade-off comes out clearly positive.
+             * notes/attachments, but the trade-off comes out clearly positive).
              */
             newBlobId = utils.hashedBlobId(unencryptedContentForHashCalculation);
             blobNeedsInsert = !sql.getValue('SELECT 1 FROM blobs WHERE blobId = ?', [newBlobId]);
@@ -228,7 +228,10 @@ class AbstractBeccaEntity {
         return newBlobId;
     }
 
-    /** @protected */
+    /**
+     * @protected
+     * @returns {string|Buffer}
+     */
     _getContent() {
         const row = sql.getRow(`SELECT content FROM blobs WHERE blobId = ?`, [this.blobId]);
 

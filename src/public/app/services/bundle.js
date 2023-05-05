@@ -41,7 +41,7 @@ class WidgetsByParent {
 
     add(widget) {
         if (!widget.parentWidget) {
-            console.log(`Custom widget does not have mandatory 'getParent()' method defined`);
+            console.log(`Custom widget does not have mandatory 'parentWidget' property defined`);
             return;
         }
 

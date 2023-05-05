@@ -68,7 +68,7 @@ export default class CodeButtonsWidget extends NoteContextAwareWidget {
         super.doRender();
     }
 
-    refreshWithNote(note) {
+    async refreshWithNote(note) {
         this.$executeButton.toggle(
             note.mime.startsWith('application/javascript')
             || note.mime === 'text/x-sqlite;schema=trilium'

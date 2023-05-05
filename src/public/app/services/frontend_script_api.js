@@ -322,7 +322,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
      * @method
-     * @returns {Promise<CKEditor>} instance of CKEditor
+     * @returns {Promise<BalloonEditor>} instance of CKEditor
      */
     this.getActiveContextTextEditor = () => appContext.tabManager.getActiveContext()?.getTextEditor();
 

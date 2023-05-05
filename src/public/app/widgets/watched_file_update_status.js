@@ -24,8 +24,6 @@ export default class WatchedFileUpdateStatusWidget extends NoteContextAwareWidge
     isEnabled() {
         const { entityType, entityId } = this.getEntity();
 
-        console.log(entityType, entityId);
-
         return super.isEnabled() && !!fileWatcher.getFileModificationStatus(entityType, entityId);
     }
 
@@ -56,7 +54,7 @@ export default class WatchedFileUpdateStatusWidget extends NoteContextAwareWidge
         });
     }
 
-    refreshWithNote(note) {
+    async refreshWithNote(note) {
         const { entityType, entityId } = this.getEntity();
         const status = fileWatcher.getFileModificationStatus(entityType, entityId);
 

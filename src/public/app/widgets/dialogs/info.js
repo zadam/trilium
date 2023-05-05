@@ -27,7 +27,7 @@ export default class InfoDialog extends BasicWidget {
         super();
 
         this.resolve = null;
-        this.$originallyFocused = null; // element focused before the dialog was opened, so we can return to it afterwards
+        this.$originallyFocused = null; // element focused before the dialog was opened, so we can return to it afterward
     }
 
     doRender() {

@@ -75,14 +75,6 @@ export default class OwnedAttributeListWidget extends NoteContextAwareWidget {
         await this.attributeEditorWidget.updateAttributeList(attributes);
     }
 
-    entitiesReloadedEvent({loadResults}) {
-        if (loadResults.getAttributes(this.componentId).find(attr => attributeService.isAffecting(attr, this.note))) {
-            this.refreshWithNote(this.note, true);
-
-            this.getTitle(this.note);
-        }
-    }
-
     focus() {
         this.attributeEditorWidget.focus();
     }

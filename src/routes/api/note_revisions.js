@@ -26,7 +26,6 @@ function getNoteRevisions(req) {
 }
 
 function getNoteRevision(req) {
-    // FIXME
     const noteRevision = becca.getNoteRevision(req.params.noteRevisionId);
 
     if (noteRevision.type === 'file') {

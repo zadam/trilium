@@ -152,7 +152,7 @@ class NoteContext extends Component {
         return resolvedNotePath;
     }
 
-    /** @property {FNote} */
+    /** @returns {FNote} */
     get note() {
         if (!this.noteId || !(this.noteId in froca.notes)) {
             return null;
@@ -161,7 +161,7 @@ class NoteContext extends Component {
         return froca.notes[this.noteId];
     }
 
-    /** @property {string[]} */
+    /** @returns {string[]} */
     get notePathArray() {
         return this.notePath ? this.notePath.split('/') : [];
     }

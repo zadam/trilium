@@ -80,7 +80,7 @@ class BNoteRevision extends AbstractBeccaEntity {
      * This is the same approach as is used for Note's content.
      */
 
-    /** @returns {*} */
+    /** @returns {string|Buffer} */
     getContent() {
         return this._getContent();
     }

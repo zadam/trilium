@@ -86,7 +86,7 @@ class BAttachment extends AbstractBeccaEntity {
             || protectedSessionService.isProtectedSessionAvailable()
     }
 
-    /** @returns {*} */
+    /** @returns {string|Buffer}  */
     getContent() {
         return this._getContent();
     }

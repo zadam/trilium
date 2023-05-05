@@ -1,6 +1,5 @@
 import libraryLoader from "../services/library_loader.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
-import froca from "../services/froca.js";
 
 const TPL = `<div class="mermaid-widget">
     <style>

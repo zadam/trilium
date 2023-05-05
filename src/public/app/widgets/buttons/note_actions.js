@@ -90,7 +90,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         });
     }
 
-    refreshWithNote(note) {
+    async refreshWithNote(note) {
         this.$convertNoteIntoAttachmentButton.toggle(note.isEligibleForConversionToAttachment());
 
         this.toggleDisabled(this.$findInTextButton, ['text', 'code', 'book', 'search'].includes(note.type));

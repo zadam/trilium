@@ -177,7 +177,7 @@ function register(router) {
         res.send(note.getContent());
     });
 
-    // :filename is not used by trilium, but instead used for "save as" to assign a human readable filename
+    // :filename is not used by trilium, but instead used for "save as" to assign a human-readable filename
     router.get('/share/api/images/:noteId/:filename', (req, res, next) => {
         shacaLoader.ensureLoad();
 

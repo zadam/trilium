@@ -46,7 +46,7 @@ export default class NoteTypeChooserDialog extends BasicWidget {
         super(props);
 
         this.resolve = null;
-        this.$originalFocused = null; // element focused before the dialog was opened, so we can return to it afterwards
+        this.$originalFocused = null; // element focused before the dialog was opened, so we can return to it afterward
         this.$originalDialog = null;
     }
 

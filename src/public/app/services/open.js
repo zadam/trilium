@@ -79,7 +79,7 @@ async function openExternally(type, entityId, mime) {
 
         if (res) {
             // fallback in case there's no default application for this file
-            window.open(getFileUrl(type, entityId), { url: true });
+            window.open(getFileUrl(type, entityId));
         }
     }
     else {

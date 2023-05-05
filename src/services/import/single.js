@@ -65,7 +65,7 @@ function importCodeNote(taskContext, file, parentNote) {
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
 
-    const {note} = noteService.createNewNote({
+    const { note } = noteService.createNewNote({
         parentNoteId: parentNote.noteId,
         title,
         content,

@@ -27,7 +27,7 @@ export default class BookmarkSwitchWidget extends SwitchWidget {
         }
     }
 
-    refreshWithNote(note) {
+    async refreshWithNote(note) {
         const isBookmarked = !!note.getParentBranches().find(b => b.parentNoteId === '_lbBookmarks');
 
         this.$switchOn.toggle(!isBookmarked);

@@ -399,10 +399,10 @@ function escapeRegExp(str) {
 }
 
 function areObjectsEqual () {
-    var i, l, leftChain, rightChain;
+    let i, l, leftChain, rightChain;
 
     function compare2Objects (x, y) {
-        var p;
+        let p;
 
         // remember that NaN === NaN returns false
         // and isNaN(undefined) returns true

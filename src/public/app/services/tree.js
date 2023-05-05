@@ -18,7 +18,7 @@ async function resolveNotePath(notePath, hoistedNoteId = 'root') {
  * notePath as possible. Part of the path might not be valid because of note moving (which causes
  * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
  *
- * @returns {string[]}
+ * @returns {Promise<string[]>}
  */
 async function resolveNotePathToSegments(notePath, hoistedNoteId = 'root', logErrors = true) {
     utils.assertArguments(notePath);
@@ -129,7 +129,7 @@ ws.subscribeToMessages(message => {
 });
 
 function getParentProtectedStatus(node) {
-    return hoistedNoteService.isHoistedNode(node) ? 0 : node.getParent().data.isProtected;
+    return hoistedNoteService.isHoistedNode(node) ? false : node.getParent().data.isProtected;
 }
 
 function getNoteIdFromNotePath(notePath) {

@@ -92,6 +92,7 @@ module.exports = {
         renderMathInElement: true,
         // \src\public\app\widgets\type_widgets\editable_text.js
         BalloonEditor: true,
+        FancytreeNode: true,
         CKEditorInspector: true,
         // \src\public\app\widgets\type_widgets\editable_code.js
         CodeMirror: true,

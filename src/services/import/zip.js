@@ -369,6 +369,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
+    /**
+     * @param {string} filePath
+     * @param {Buffer} content
+     */
     function saveNote(filePath, content) {
         const {parentNoteMeta, noteMeta, attachmentMeta} = getMeta(filePath);
 
@@ -566,6 +570,7 @@ function streamToBuffer(stream) {
     return new Promise((res, rej) => stream.on('end', () => res(Buffer.concat(chunks))));
 }
 
+/** @returns {Buffer} */
 function readContent(zipfile, entry) {
     return new Promise((res, rej) => {
         zipfile.openReadStream(entry, function(err, readStream) {

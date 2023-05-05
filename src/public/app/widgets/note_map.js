@@ -78,7 +78,7 @@ export default class NoteMapWidget extends NoteContextAwareWidget {
             .width($parent.width());
     }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         this.$widget.show();
 
         this.css = {

@@ -1424,11 +1424,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
         const parentNote = froca.getNoteFromCache(node.getParent().data.noteId);
 
-        if (parentNote && parentNote.hasLabel('sorted')) {
-            return false;
-        }
-
-        return true;
+        return !parentNote?.hasLabel('sorted');
     }
 
     moveNoteUpCommand({node}) {

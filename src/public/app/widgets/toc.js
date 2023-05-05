@@ -106,7 +106,7 @@ export default class TocWidget extends RightPanelWidget {
     /**
      * Builds a jquery table of contents.
      *
-     * @param {String} html Note's html content
+     * @param {string} html Note's html content
      * @returns {$toc: jQuery, headingCount: integer} ordered list table of headings, nested by heading level
      *         with an onclick event that will cause the document to scroll to
      *         the desired position.

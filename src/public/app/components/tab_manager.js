@@ -14,6 +14,8 @@ export default class TabManager extends Component {
     constructor() {
         super();
 
+        /** @property {NoteContext[]} */
+        this.children = [];
         this.mutex = new Mutex();
 
         this.activeNtxId = null;
@@ -38,7 +40,7 @@ export default class TabManager extends Component {
         appContext.addBeforeUnloadListener(this);
     }
 
-    /** @type {NoteContext[]} */
+    /** @returns {NoteContext[]} */
     get noteContexts() {
         return this.children;
     }

@@ -5,6 +5,7 @@ import options from "./options.js";
 import noteAttributeCache from "./note_attribute_cache.js";
 import FBranch from "../entities/fbranch.js";
 import FAttribute from "../entities/fattribute.js";
+import FAttachment from "../entities/fattachment.js";
 
 async function processEntityChanges(entityChanges) {
     const loadResults = new LoadResults(entityChanges);

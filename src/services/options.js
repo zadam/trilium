@@ -1,6 +1,7 @@
 const becca = require('../becca/becca');
 const sql = require("./sql");
 
+/** @returns {string|null} */
 function getOptionOrNull(name) {
     let option;
 
@@ -14,11 +15,12 @@ function getOptionOrNull(name) {
     return option ? option.value : null;
 }
 
+/** @returns {string} */
 function getOption(name) {
     const val = getOptionOrNull(name);
 
     if (val === null) {
-        throw new Error(`Option "${name}" doesn't exist`);
+        throw new Error(`Option '${name}' doesn't exist`);
     }
 
     return val;

@@ -60,7 +60,7 @@ export default class SimilarNotesWidget extends NoteContextAwareWidget {
         this.$similarNotesWrapper = this.$widget.find(".similar-notes-wrapper");
     }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         // remember which title was when we found the similar notes
         this.title = this.note.title;
 

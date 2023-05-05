@@ -207,7 +207,7 @@ class BNote extends AbstractBeccaEntity {
      * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
      */
 
-    /** @returns {*} */
+    /** @returns {string|Buffer}  */
     getContent() {
         return this._getContent();
     }
@@ -965,7 +965,7 @@ class BNote extends AbstractBeccaEntity {
         };
     }
 
-    /** @returns {String[]} - includes the subtree root note as well */
+    /** @returns {string[]} - includes the subtree root note as well */
     getSubtreeNoteIds({includeArchived = true, includeHidden = false, resolveSearch = false} = {}) {
         return this.getSubtree({includeArchived, includeHidden, resolveSearch})
             .notes
@@ -1157,13 +1157,10 @@ class BNote extends AbstractBeccaEntity {
         }
 
         const parentNotes = this.getParentNotes();
-        let notePaths = [];
 
-        if (parentNotes.length === 1) { // optimization for most common case
-            notePaths = parentNotes[0].getAllNotePaths();
-        } else {
-            notePaths = parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
-        }
+        const notePaths = parentNotes.length === 1
+            ? parentNotes[0].getAllNotePaths() // optimization for most common case
+            : parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
 
         for (const notePath of notePaths) {
             notePath.push(this.noteId);
@@ -1514,10 +1511,10 @@ class BNote extends AbstractBeccaEntity {
     /**
      * (Soft) delete a note and all its descendants.
      *
-     * @param {string} [deleteId] - optional delete identified
+     * @param {string} [deleteId=null] - optional delete identified
      * @param {TaskContext} [taskContext]
      */
-    deleteNote(deleteId, taskContext) {
+    deleteNote(deleteId = null, taskContext = null) {
         if (this.isDeleted) {
             return;
         }

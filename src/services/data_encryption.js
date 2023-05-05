@@ -51,13 +51,16 @@ function encrypt(key, plainText) {
     return encryptedDataWithIv.toString('base64');
 }
 
+/**
+ * @returns {Buffer|false|null}
+ */
 function decrypt(key, cipherText) {
     if (cipherText === null) {
         return null;
     }
 
     if (!key) {
-        return "[protected]";
+        return Buffer.from("[protected]");
     }
 
     try {
@@ -103,17 +106,13 @@ function decryptString(dataKey, cipherText) {
 
     if (buffer === null) {
         return null;
-    }
-
-    const str = buffer.toString('utf-8');
-
-    if (str === 'false') {
+    } else if (buffer === false) {
         log.error(`Could not decrypt string. Buffer: ${buffer}`);
 
         throw new Error("Could not decrypt string.");
     }
 
-    return str;
+    return buffer.toString('UTF-8');
 }
 
 module.exports = {

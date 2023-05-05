@@ -358,13 +358,10 @@ class FNote {
         }
 
         const parentNotes = this.getParentNotes();
-        let notePaths = [];
 
-        if (parentNotes.length === 1) { // optimization for most common case
-            notePaths = parentNotes[0].getAllNotePaths();
-        } else {
-            notePaths = parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
-        }
+        const notePaths = parentNotes.length === 1
+            ? parentNotes[0].getAllNotePaths() // optimization for most common case
+            : parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
 
         for (const notePath of notePaths) {
             notePath.push(this.noteId);

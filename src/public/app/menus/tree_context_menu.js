@@ -108,7 +108,7 @@ export default class TreeContextMenu {
         }
         else if (command === "insertNoteAfter") {
             const parentNotePath = treeService.getNotePath(this.node.getParent());
-            const isProtected = await treeService.getParentProtectedStatus(this.node);
+            const isProtected = treeService.getParentProtectedStatus(this.node);
 
             noteCreateService.createNote(parentNotePath, {
                 target: 'after',
