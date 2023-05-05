@@ -212,15 +212,9 @@ class BNote extends AbstractBeccaEntity {
         return this._getContent();
     }
 
-    /** @returns {{contentLength, dateModified, utcDateModified}} */
+    /** @returns {{dateModified, utcDateModified}} */
     getContentMetadata() {
-        return sql.getRow(`
-            SELECT 
-                LENGTH(content) AS contentLength, 
-                dateModified,
-                utcDateModified 
-            FROM blobs 
-            WHERE blobId = ?`, [this.blobId]);
+        return sql.getRow(`SELECT dateModified, utcDateModified FROM blobs WHERE blobId = ?`, [this.blobId]);
     }
 
     /** @returns {*} */

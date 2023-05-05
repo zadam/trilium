@@ -32,7 +32,7 @@ class FAttachment {
     }
 
     /**
-     * @param [opts.full=false] - force retrieval of the full note
+     * @param [opts.preview=false] - retrieve only first 10 000 characters for a preview
      * @return {FBlob}
      */
     async getBlob(opts = {}) {

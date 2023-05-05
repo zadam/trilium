@@ -207,6 +207,7 @@ class NoteContext extends Component {
         });
     }
 
+    /** @returns {Promise<boolean>} */
     async isReadOnly() {
         if (this.viewScope.readOnlyTemporarilyDisabled) {
             return false;
@@ -221,14 +222,13 @@ class NoteContext extends Component {
             return true;
         }
 
-        const noteComplement = await this.getNoteComplement();
+        const blob = await this.note.getBlob();
 
         const sizeLimit = this.note.type === 'text'
             ? options.getInt('autoReadonlySizeText')
             : options.getInt('autoReadonlySizeCode');
 
-        return noteComplement.content
-            && noteComplement.content.length > sizeLimit
+        return blob.contentLength > sizeLimit
             && !this.note.hasLabel('autoReadOnlyDisabled');
     }
 

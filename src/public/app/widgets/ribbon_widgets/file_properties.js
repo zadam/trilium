@@ -134,9 +134,9 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileType.text(note.mime);
 
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const blob = await this.note.getBlob();
 
-        this.$fileSize.text(`${noteComplement.contentLength} bytes`);
+        this.$fileSize.text(`${blob.contentLength} bytes`);
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         this.$openButton.toggle(!note.isProtected);

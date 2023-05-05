@@ -139,8 +139,7 @@ class Becca {
 
     /** @returns {BBlob|null} */
     getBlob(blobId) {
-        const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength " +
-                                     "FROM blob WHERE blobId = ?", [blobId]);
+        const row = sql.getRow("SELECT *, LENGTH(content) AS contentLength FROM blobs WHERE blobId = ?", [blobId]);
 
         const BBlob = require("./entities/bblob"); // avoiding circular dependency problems
         return row ? new BBlob(row) : null;

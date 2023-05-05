@@ -156,7 +156,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
         this.currentNoteId = note.noteId;
 
         // get note from backend and put into canvas
-        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const blob = await note.getBlob();
 
         // before we load content into excalidraw, make sure excalidraw has loaded
         while (!this.excalidrawRef || !this.excalidrawRef.current) {
@@ -170,7 +170,7 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
          * note into this fresh note. Probably due to that this note-instance does not get
          * newly instantiated?
          */
-        if (this.excalidrawRef.current && noteComplement.content?.trim() === "") {
+        if (this.excalidrawRef.current && blob.content?.trim() === "") {
             const sceneData = {
                 elements: [],
                 appState: {
@@ -181,16 +181,16 @@ export default class ExcalidrawTypeWidget extends TypeWidget {
 
             this.excalidrawRef.current.updateScene(sceneData);
         }
-        else if (this.excalidrawRef.current && noteComplement.content) {
+        else if (this.excalidrawRef.current && blob.content) {
             // load saved content into excalidraw canvas
             let content;
 
             try {
-                content = JSON.parse(noteComplement.content || "");
+                content = JSON.parse(blob.content || "");
             } catch(err) {
                 console.error("Error parsing content. Probably note.type changed",
                               "Starting with empty canvas"
-                              , note, noteComplement, err);
+                              , note, blob, err);
 
                 content = {
                     elements: [],

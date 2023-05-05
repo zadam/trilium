@@ -10,9 +10,9 @@ const becca = require("../../becca/becca");
 const blobService = require("../../services/blob.js");
 
 function getNoteRevisionBlob(req) {
-    const full = req.query.full === 'true';
+    const preview = req.query.preview === 'true';
 
-    return blobService.getBlobPojo('note_revisions', req.params.noteRevisionId, { full });
+    return blobService.getBlobPojo('note_revisions', req.params.noteRevisionId, { preview });
 }
 
 function getNoteRevisions(req) {

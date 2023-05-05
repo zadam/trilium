@@ -197,11 +197,11 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         };
 
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const blob = await this.note.getBlob();
 
-        if (noteComplement.content) {
+        if (blob.content) {
             try {
-                this.mapData = JSON.parse(noteComplement.content);
+                this.mapData = JSON.parse(blob.content);
             } catch (e) {
                 console.log("Could not parse content: ", e);
             }

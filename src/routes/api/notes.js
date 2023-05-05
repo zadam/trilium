@@ -6,7 +6,6 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
-const fs = require('fs');
 const becca = require("../../becca/becca");
 const ValidationError = require("../../errors/validation_error");
 const NotFoundError = require("../../errors/not_found_error");
@@ -18,31 +17,27 @@ function getNote(req) {
         throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
     }
 
-    const pojo = note.getPojo();
+    return note;
+}
 
-    if (note.hasStringContent()) {
-        pojo.content = note.getContent();
+function getNoteBlob(req) {
+    const preview = req.query.preview === 'true';
 
-        // FIXME: use blobs instead
-        if (note.type === 'file' && pojo.content.length > 10000) {
-            pojo.content = `${pojo.content.substr(0, 10000)}\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
-        }
+    return blobService.getBlobPojo('notes', req.params.noteId, { preview });
+}
+
+function getNoteMetadata(req) {
+    const note = becca.getNote(req.params.noteId);
+    if (!note) {
+        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
     }
 
     const contentMetadata = note.getContentMetadata();
 
-    pojo.contentLength = contentMetadata.contentLength;
-
-    pojo.combinedUtcDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.utcDateModified : contentMetadata.utcDateModified;
-    pojo.combinedDateModified = note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified;
-
-    return pojo;
-}
-
-function getNoteBlob(req) {
-    const full = req.query.full === 'true';
-
-    return blobService.getBlobPojo('notes', req.params.noteId, { full });
+    return {
+        dateCreated: note.dateCreated,
+        combinedDateModified: note.utcDateModified > contentMetadata.utcDateModified ? note.dateModified : contentMetadata.dateModified
+    };
 }
 
 function createNote(req) {
@@ -266,6 +261,7 @@ function convertNoteToAttachment(req) {
 module.exports = {
     getNote,
     getNoteBlob,
+    getNoteMetadata,
     updateNoteData,
     deleteNote,
     undeleteNote,

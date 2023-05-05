@@ -116,10 +116,10 @@ export default class ImagePropertiesWidget extends NoteContextAwareWidget {
 
         this.$widget.show();
 
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const blob = await this.note.getBlob();
 
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(`${noteComplement.contentLength} bytes`);
+        this.$fileSize.text(`${blob.contentLength} bytes`);
         this.$fileType.text(note.mime);
     }
 }

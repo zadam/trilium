@@ -2,7 +2,7 @@ const becca = require('../becca/becca');
 const NotFoundError = require("../errors/not_found_error");
 
 function getBlobPojo(entityName, entityId, opts = {}) {
-    opts.full = !!opts.full;
+    opts.preview = !!opts.preview;
 
     const entity = becca.getEntity(entityName, entityId);
 
@@ -16,7 +16,7 @@ function getBlobPojo(entityName, entityId, opts = {}) {
 
     if (!entity.hasStringContent()) {
         pojo.content = null;
-    } else if (!opts.full && pojo.content.length > 10000) {
+    } else if (opts.preview && pojo.content.length > 10000) {
         pojo.content = `${pojo.content.substr(0, 10000)}\r\n\r\n... and ${pojo.content.length - 10000} more characters.`;
     }
 

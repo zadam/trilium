@@ -93,9 +93,9 @@ export default class ReadOnlyTextTypeWidget extends AbstractTextTypeWidget {
         // (see https://github.com/zadam/trilium/issues/1590 for example of such conflict)
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
-        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const blob = await note.getBlob();
 
-        this.$content.html(noteComplement.content);
+        this.$content.html(blob.content);
 
         this.$content.find("a.reference-link").each(async (_, el) => {
             const notePath = $(el).attr('href');

@@ -11,6 +11,11 @@ import treeService from "./tree.js";
 
 let idCounter = 1;
 
+/**
+ * @param {FNote} note
+ * @param {object} options
+ * @return {Promise<{type: string, $renderedContent: jQuery}>}
+ */
 async function getRenderedContent(note, options = {}) {
     options = Object.assign({
         trim: false,
@@ -22,10 +27,10 @@ async function getRenderedContent(note, options = {}) {
     const $renderedContent = $('<div class="rendered-note-content">');
 
     if (type === 'text') {
-        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const blob = await note.getBlob({ preview: options.trim });
 
-        if (!utils.isHtmlEmpty(noteComplement.content)) {
-            $renderedContent.append($('<div class="ck-content">').html(trim(noteComplement.content, options.trim)));
+        if (!utils.isHtmlEmpty(blob.content)) {
+            $renderedContent.append($('<div class="ck-content">').html(trim(blob.content, options.trim)));
 
             if ($renderedContent.find('span.math-tex').length > 0) {
                 await libraryLoader.requireLibrary(libraryLoader.KATEX);
@@ -108,8 +113,8 @@ async function getRenderedContent(note, options = {}) {
     else if (type === 'mermaid') {
         await libraryLoader.requireLibrary(libraryLoader.MERMAID);
 
-        const noteComplement = await froca.getNoteComplement(note.noteId);
-        const content = noteComplement.content || "";
+        const blob = await note.getBlob();
+        const content = blob.content || "";
 
         $renderedContent
             .css("display", "flex")
@@ -140,8 +145,8 @@ async function getRenderedContent(note, options = {}) {
         // make sure surrounding container has size of what is visible. Then image is shrinked to its boundaries
         $renderedContent.css({height: "100%", width:"100%"});
 
-        const noteComplement = await froca.getNoteComplement(note.noteId);
-        const content = noteComplement.content || "";
+        const blob = await note.getBlob();
+        const content = blob.content || "";
 
         try {
             const placeHolderSVG = "<svg />";

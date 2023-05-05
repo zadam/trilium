@@ -143,9 +143,9 @@ export default class NoteTypeWidget extends NoteContextAwareWidget {
     }
 
     async confirmChangeIfContent() {
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const blob = await this.note.getBlob();
 
-        if (!noteComplement.content || !noteComplement.content.trim().length) {
+        if (!blob.content || !blob.content.trim().length) {
             return true;
         }
 

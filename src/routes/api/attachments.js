@@ -4,9 +4,9 @@ const utils = require("../../services/utils");
 const blobService = require("../../services/blob.js");
 
 function getAttachmentBlob(req) {
-    const full = req.query.full === 'true';
+    const preview = req.query.preview === 'true';
 
-    return blobService.getBlobPojo('attachments', req.params.attachmentId, { full });
+    return blobService.getBlobPojo('attachments', req.params.attachmentId, { preview });
 }
 
 function getAttachments(req) {

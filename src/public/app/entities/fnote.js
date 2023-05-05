@@ -843,7 +843,7 @@ class FNote {
     /**
      * Get relations which target this note
      *
-     * @returns {FNote[]}
+     * @returns {Promise<FNote[]>}
      */
     async getTargetRelationSourceNotes() {
         const targetRelations = this.getTargetRelations();
@@ -851,14 +851,17 @@ class FNote {
         return await this.froca.getNotes(targetRelations.map(tr => tr.noteId));
     }
 
-    /** @deprecated use getBlob() instead */
+    /**
+     * @deprecated use getBlob() instead
+     * @return {Promise<FBlob>}
+     */
     async getNoteComplement() {
-        return this.getBlob({ full: true });
+        return this.getBlob();
     }
 
     /**
-     * @param [opts.full=false] - force retrieval of the full note
-     * @return {FBlob}
+     * @param [opts.preview=false] - retrieve only first 10 000 characters for a preview
+     * @return {Promise<FBlob>}
      */
     async getBlob(opts = {}) {
         return await this.froca.getBlob('notes', this.noteId, opts);

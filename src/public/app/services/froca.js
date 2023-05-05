@@ -320,12 +320,13 @@ class Froca {
         return attachmentRow ? new FAttachment(this, attachmentRow) : null;
     }
 
+    /** @returns {Promise<FBlob>} */
     async getBlob(entityType, entityId, opts = {}) {
-        opts.full = !!opts.full;
-        const key = `${entityType}-${entityId}`;
+        opts.preview = !!opts.preview;
+        const key = `${entityType}-${entityId}-${opts.preview}`;
 
         if (!this.blobPromises[key]) {
-            this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob?full=${opts.full}`)
+            this.blobPromises[key] = server.get(`${entityType}/${entityId}/blob?preview=${opts.preview}`)
                 .then(row => new FBlob(row))
                 .catch(e => console.error(`Cannot get blob for ${entityType} '${entityId}'`));
 

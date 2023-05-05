@@ -183,10 +183,10 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
     }
 
     async doRefresh(note) {
-        const noteComplement = await froca.getNoteComplement(note.noteId);
+        const blob = await note.getBlob();
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.watchdog.editor.setData(noteComplement.content || "");
+            this.watchdog.editor.setData(blob.content || "");
         });
     }
 

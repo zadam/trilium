@@ -99,8 +99,8 @@ export default class MermaidWidget extends NoteContextAwareWidget {
     async renderSvg(cb) {
         idCounter++;
 
-        const noteComplement = await froca.getNoteComplement(this.noteId);
-        const content = noteComplement.content || "";
+        const blob = await this.note.getBlob();
+        const content = blob.content || "";
 
         // this can't be promisified since in case of error this both calls callback with error SVG and throws exception
         // with error details

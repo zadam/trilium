@@ -19,18 +19,22 @@ export default class NoteContextAwareWidget extends BasicWidget {
         return this.noteId === noteId;
     }
 
+    /** @returns {FNote|undefined} */
     get note() {
         return this.noteContext?.note;
     }
 
+    /** @returns {string|undefined} */
     get noteId() {
         return this.note?.noteId;
     }
 
+    /** @returns {string|undefined} */
     get notePath() {
         return this.noteContext?.notePath;
     }
 
+    /** @returns {string} */
     get hoistedNoteId() {
         return this.noteContext?.hoistedNoteId;
     }

@@ -1,4 +1,4 @@
-class FBlob {
+export default class FBlob {
     constructor(row) {
         /** @type {string} */
         this.blobId = row.blobId;
@@ -8,6 +8,7 @@ class FBlob {
          * @type {string}
          */
         this.content = row.content;
+        this.contentLength = row.contentLength;
 
         /** @type {string} */
         this.dateModified = row.dateModified;

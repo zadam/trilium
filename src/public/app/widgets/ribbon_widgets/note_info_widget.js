@@ -120,23 +120,22 @@ export default class NoteInfoWidget extends NoteContextAwareWidget {
     }
 
     async refreshWithNote(note) {
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const metadata = await server.get(`notes/${this.noteId}/metadata`);
 
         this.$noteId.text(note.noteId);
         this.$dateCreated
-            .text(noteComplement.dateCreated.substr(0, 16))
-            .attr("title", noteComplement.dateCreated);
+            .text(metadata.dateCreated.substr(0, 16))
+            .attr("title", metadata.dateCreated);
 
         this.$dateModified
-            .text(noteComplement.combinedDateModified.substr(0, 16))
-            .attr("title", noteComplement.combinedDateModified);
+            .text(metadata.combinedDateModified.substr(0, 16))
+            .attr("title", metadata.combinedDateModified);
 
         this.$type.text(note.type);
 
         if (note.mime) {
             this.$mime.text(`(${note.mime})`);
-        }
-        else {
+        } else {
             this.$mime.empty();
         }
 

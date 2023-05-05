@@ -27,9 +27,9 @@ export default class ReadOnlyCodeTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const noteComplement = await this.noteContext.getNoteComplement();
+        const blob = await this.note.getBlob();
 
-        this.$content.text(noteComplement.content);
+        this.$content.text(blob.content);
     }
 
     async executeWithContentElementEvent({resolve, ntxId}) {
