@@ -20,7 +20,7 @@ function register(router) {
         'isInheritable': [v.notNull, v.isBoolean]
     };
 
-    eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         if (req.body.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
