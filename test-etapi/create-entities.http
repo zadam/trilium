@@ -26,7 +26,7 @@ Content-Type: application/json
 
 ### Clone to another location
 
-POST {{triliumHost}}/etapi/branches
+POST {{triliumHost}}/etapi/branches/dummyBranchId
 Authorization: {{authToken}}
 Content-Type: application/json
 
@@ -93,7 +93,7 @@ Authorization: {{authToken}}
 
 ###
 
-POST {{triliumHost}}/etapi/attributes
+POST {{triliumHost}}/etapi/attributes/dummyAttributeId
 Content-Type: application/json
 Authorization: {{authToken}}
 
