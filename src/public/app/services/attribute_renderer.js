@@ -17,7 +17,7 @@ async function renderAttribute(attribute, renderIsInheritable) {
             return $attr;
         }
 
-        // when the relation has just been created then it might not have a value
+        // when the relation has just been created, then it might not have a value
         if (attribute.value) {
             $attr.append(document.createTextNode(`~${attribute.name}${isInheritable}=`));
             $attr.append(await createNoteLink(attribute.value));

@@ -12,7 +12,7 @@ function runAttachedRelations(note, relationName, originEntity) {
         return;
     }
 
-    // same script note can get here with multiple ways, but execute only once
+    // the same script note can get here with multiple ways, but execute only once
     const notesToRun = new Set(
         note.getRelations(relationName)
             .map(relation => relation.getTargetNote())
@@ -203,7 +203,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, ({ entityName, entity }) => 
 
 eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => {
     processInverseRelations(entityName, entity, (definition, note, targetNote) => {
-        // if one inverse attribute is deleted then the other should be deleted as well
+        // if one inverse attribute is deleted, then the other should be deleted as well
         const relations = targetNote.getOwnedRelations(definition.inverseRelation);
 
         for (const relation of relations) {

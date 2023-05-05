@@ -29,7 +29,7 @@ function installLocalAppIcon() {
     }
 
     if (!fs.existsSync(path.resolve(ELECTRON_APP_ROOT_DIR, "trilium-portable.sh"))) {
-        // simple heuristic to detect ".tar.xz" linux build (i.e. not flatpak, not debian)
+        // simple heuristic to detect ".tar.xz" linux build (i.e., not flatpak, not debian)
         // only in such case it's necessary to create an icon
         return;
     }

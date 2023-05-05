@@ -19,7 +19,7 @@ async function createNoteLink(notePath, options = {}) {
 
     if (!notePath.startsWith("root")) {
         // all note paths should start with "root/" (except for "root" itself)
-        // used e.g. to find internal links
+        // used e.g., to find internal links
         notePath = `root/${notePath}`;
     }
 
@@ -222,7 +222,7 @@ async function loadReferenceLinkTitle(noteId, $el) {
 }
 
 $(document).on('click', "a", goToLink);
-$(document).on('auxclick', "a", goToLink); // to handle middle button
+$(document).on('auxclick', "a", goToLink); // to handle the middle button
 $(document).on('contextmenu', 'a', linkContextMenu);
 $(document).on('dblclick', "a", e => {
     e.preventDefault();

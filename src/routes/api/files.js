@@ -106,7 +106,7 @@ const downloadAttachment = (req, res) => downloadAttachmentInt(req.params.attach
 const openAttachment = (req, res) => downloadAttachmentInt(req.params.attachmentId, res, false);
 
 function fileContentProvider(req) {
-    // Read file name from route params.
+    // Read the file name from route params.
     const note = becca.getNote(req.params.noteId);
     if (!note) {
         throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
@@ -116,7 +116,7 @@ function fileContentProvider(req) {
 }
 
 function attachmentContentProvider(req) {
-    // Read file name from route params.
+    // Read the file name from route params.
     const attachment = becca.getAttachment(req.params.attachmentId);
     if (!attachment) {
         throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);

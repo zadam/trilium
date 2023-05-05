@@ -45,7 +45,7 @@ async function migrate() {
 
     migrations.sort((a, b) => a.dbVersion - b.dbVersion);
 
-    // all migrations are executed in one transaction - upgrade either succeeds or the user can stay at the old version
+    // all migrations are executed in one transaction - upgrade either succeeds, or the user can stay at the old version
     // otherwise if half of the migrations succeed, user can't use any version - DB is too "new" for the old app,
     // and too old for the new app version.
     sql.transactional(() => {

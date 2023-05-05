@@ -5,7 +5,7 @@
  * - if TRILIUM_DATA_DIR environment variable exists, then its value is used as the path
  * - if "trilium-data" dir exists directly in the home dir, then it is used
  * - based on OS convention, if the "app data directory" exists, we'll use or create "trilium-data" directory there
- * - as a fallback if previous step fails, we'll use home dir
+ * - as a fallback if the previous step fails, we'll use home dir
  */
 
 const os = require('os');

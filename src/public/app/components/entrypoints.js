@@ -158,7 +158,7 @@ export default class Entrypoints extends Component {
     async runActiveNoteCommand() {
         const {ntxId, note} = appContext.tabManager.getActiveContext();
 
-        // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
+        // ctrl+enter is also used elsewhere, so make sure we're running only when appropriate
         if (!note || note.type !== 'code') {
             return;
         }

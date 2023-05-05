@@ -1,4 +1,4 @@
-// taken from HTML source of https://boxicons.com/
+// taken from the HTML source of https://boxicons.com/
 
 const categories = [
     {"name": "All categories", "id": 0},

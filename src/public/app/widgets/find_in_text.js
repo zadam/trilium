@@ -64,8 +64,7 @@ export default class FindInText {
         if (totalFound > 0) {
             currentFound = Math.max(0, currentFound);
             // XXX Do this accessing the private data?
-            // See
-            // https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/findnextcommand.js
+            // See https://github.com/ckeditor/ckeditor5/blob/b95e2faf817262ac0e1e21993d9c0bde3f1be594/packages/ckeditor5-find-and-replace/src/findnextcommand.js
             for (let i = 0 ; i < currentFound; ++i) {
                 textEditor.execute('findNext', searchTerm);
             }

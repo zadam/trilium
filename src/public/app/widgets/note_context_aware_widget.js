@@ -72,7 +72,7 @@ export default class NoteContextAwareWidget extends BasicWidget {
     async refreshWithNote(note) {}
 
     async noteSwitchedEvent({noteContext, notePath}) {
-        // if notePath does not match then the noteContext has been switched to another note in the meantime
+        // if notePath does not match, then the noteContext has been switched to another note in the meantime
         if (noteContext.notePath === notePath) {
             await this.noteSwitched();
         }
@@ -92,11 +92,11 @@ export default class NoteContextAwareWidget extends BasicWidget {
         await this.refresh();
     }
 
-    // when note is both switched and activated, this should not produce double refresh
+    // when note is both switched and activated, this should not produce a double refresh
     async noteSwitchedAndActivatedEvent({noteContext, notePath}) {
         this.noteContext = noteContext;
 
-        // if notePath does not match then the noteContext has been switched to another note in the meantime
+        // if notePath does not match, then the noteContext has been switched to another note in the meantime
         if (this.notePath === notePath) {
             await this.refresh();
         }

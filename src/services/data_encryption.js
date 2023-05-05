@@ -13,7 +13,7 @@ function arraysIdentical(a, b) {
 }
 
 function shaArray(content) {
-    // we use this as simple checksum and don't rely on its security so SHA-1 is good enough
+    // we use this as a simple checksum and don't rely on its security, so SHA-1 is good enough
     return crypto.createHash('sha1').update(content).digest();
 }
 

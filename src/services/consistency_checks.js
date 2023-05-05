@@ -239,11 +239,11 @@ class ConsistencyChecks {
     }
 
     findExistencyIssues() {
-        // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related
-        // entities should be also deleted (branches, attributes), but if note is not deleted,
+        // the principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related
+        // entities should be also deleted (branches, attributes), but if the note is not deleted,
         // then at least one branch should exist.
 
-        // the order here is important - first we might need to delete inconsistent branches and after that
+        // the order here is important - first we might need to delete inconsistent branches, and after that
         // another check might create missing branch
         this.findAndFixIssues(`
                     SELECT branchId,
@@ -376,7 +376,7 @@ class ConsistencyChecks {
             ({noteId, type}) => {
                 if (this.autoFix) {
                     const note = becca.getNote(noteId);
-                    note.type = 'file'; // file is a safe option to recover notes if type is not known
+                    note.type = 'file'; // file is a safe option to recover notes if the type is not known
                     note.save();
 
                     this.reloadNeeded = true;
@@ -613,7 +613,7 @@ class ConsistencyChecks {
                     entityChangesService.addEntityChange({
                         entityName,
                         entityId,
-                        hash: utils.randomString(10), // doesn't matter, will force sync but that's OK
+                        hash: utils.randomString(10), // doesn't matter, will force sync, but that's OK
                         isErased: !!entity.isErased,
                         utcDateChanged: entity.utcDateModified || entity.utcDateCreated,
                         isSynced: entityName !== 'options' || entity.isSynced
@@ -690,7 +690,7 @@ class ConsistencyChecks {
                     // - just SQL query will fix it in DB but not notify frontend (or other caches) that it has been fixed
                     // - renaming the attribute would break the invariant that single attribute never changes the name
                     // - deleting the old attribute and creating new will create duplicates across synchronized cluster (specifically in the initial migration)
-                    // But in general we assume there won't be many such problems
+                    // But in general, we assume there won't be many such problems
                     sql.execute('UPDATE attributes SET name = ? WHERE name = ?', [fixedName, origName]);
 
                     this.fixedIssues = true;
@@ -804,7 +804,7 @@ class ConsistencyChecks {
 
 function getBlankContent(isProtected, type, mime) {
     if (isProtected) {
-        return null; // this is wrong for protected non-erased notes, but we cannot create a valid value without password
+        return null; // this is wrong for protected non-erased notes, but we cannot create a valid value without a password
     }
 
     if (mime === 'application/json') {

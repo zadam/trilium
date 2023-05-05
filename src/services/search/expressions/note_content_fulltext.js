@@ -91,7 +91,7 @@ class NoteContentFulltextExp extends Expression {
             const nonMatchingToken = this.tokens.find(token =>
                 !content.includes(token) &&
                 (
-                    // in case of default fulltext search we should consider both title, attrs and content
+                    // in case of default fulltext search, we should consider both title, attrs and content
                     // so e.g. "hello world" should match when "hello" is in title and "world" in content
                     !this.flatText
                     || !becca.notes[noteId].getFlatText().includes(token)

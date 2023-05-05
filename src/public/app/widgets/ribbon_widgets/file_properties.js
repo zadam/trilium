@@ -138,7 +138,7 @@ export default class FilePropertiesWidget extends NoteContextAwareWidget {
 
         this.$fileSize.text(`${blob.contentLength} bytes`);
 
-        // open doesn't work for protected notes since it works through browser which isn't in protected session
+        // open doesn't work for protected notes since it works through a browser which isn't in protected session
         this.$openButton.toggle(!note.isProtected);
         this.$downloadButton.toggle(!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable())
         this.$uploadNewRevisionButton.toggle(!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable())

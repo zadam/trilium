@@ -24,7 +24,7 @@ class Froca {
     async loadInitialTree() {
         const resp = await server.get('tree');
 
-        // clear the cache only directly before adding new content which is important for e.g. switching to protected session
+        // clear the cache only directly before adding new content which is important for e.g., switching to protected session
 
         /** @type {Object.<string, FNote>} */
         this.notes = {};
@@ -67,7 +67,7 @@ class Froca {
             if (note) {
                 note.update(noteRow);
 
-                // search note doesn't have child branches in database and all the children are virtual branches
+                // search note doesn't have child branches in the database and all the children are virtual branches
                 if (note.type !== 'search') {
                     for (const childNoteId of note.children) {
                         const childNote = this.notes[childNoteId];

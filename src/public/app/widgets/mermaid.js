@@ -101,7 +101,7 @@ export default class MermaidWidget extends NoteContextAwareWidget {
         const blob = await this.note.getBlob();
         const content = blob.content || "";
 
-        // this can't be promisified since in case of error this both calls callback with error SVG and throws exception
+        // this can't be promisified since in case of error, this both calls callback with error SVG and throws exception
         // with error details
         mermaid.mermaidAPI.render(`mermaid-graph-${idCounter}`, content, cb);
     }

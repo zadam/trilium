@@ -63,7 +63,7 @@ function addEntityChange(entityChange) {
 
     const entityChangeIds = namespace.get('entityChangeIds') || [];
 
-    // store only ID since the record can be modified (e.g. in erase)
+    // store only ID since the record can be modified (e.g., in erase)
     entityChangeIds.push(entityChange.id);
 
     namespace.set('entityChangeIds', entityChangeIds);

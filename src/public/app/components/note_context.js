@@ -106,7 +106,7 @@ class NoteContext extends Component {
     }
 
     isMainContext() {
-        // if null then this is a main context
+        // if null, then this is a main context
         return !this.mainNtxId;
     }
 
@@ -127,7 +127,7 @@ class NoteContext extends Component {
 
     saveToRecentNotes(resolvedNotePath) {
         setTimeout(async () => {
-            // we include the note into recent list only if the user stayed on the note at least 5 seconds
+            // we include the note in the recent list only if the user stayed on the note at least 5 seconds
             if (resolvedNotePath && resolvedNotePath === this.notePath) {
                 await server.post('recent-notes', {
                     noteId: this.note.noteId,
@@ -172,7 +172,7 @@ class NoteContext extends Component {
 
     getPojoState() {
         if (!this.notePath && this.hoistedNoteId === 'root') {
-            // keeping empty hoisted tab is esp. important for mobile (e.g. opened launcher config)
+            // keeping empty hoisted tab is esp. important for mobile (e.g., opened launcher config)
             return null;
         }
 
@@ -288,7 +288,7 @@ class NoteContext extends Component {
 
     resetViewScope() {
         // view scope contains data specific to one note context and one "view".
-        // it is used to e.g. make read-only note temporarily editable or to hide TOC
+        // it is used to e.g., make read-only note temporarily editable or to hide TOC
         // this is reset after navigating to a different note
         this.viewScope = {};
     }

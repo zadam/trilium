@@ -119,7 +119,7 @@ class BAttachment extends AbstractBeccaEntity {
             throw new Error(`Mapping from attachment role '${this.role}' to note's type is not defined`);
         }
 
-        if (!this.isContentAvailable()) { // isProtected is same for attachment
+        if (!this.isContentAvailable()) { // isProtected is the same for attachment
             throw new Error(`Cannot convert protected attachment outside of protected session`);
         }
 

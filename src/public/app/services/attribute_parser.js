@@ -67,7 +67,7 @@ function lex(str) {
                 finishWord(i - 1);
             }
             else {
-                // it's a quote but within other kind of quotes, so it's valid as a literal character
+                // it's a quote, but within other kind of quotes, so it's valid as a literal character
                 currentWord += chr;
             }
             continue;

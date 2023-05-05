@@ -54,7 +54,7 @@ function getNoteTitleArrayForPath(notePathArray) {
     let parentNoteId = 'root';
     let hoistedNotePassed = false;
 
-    // this is a notePath from outside of hoisted subtree so full title path needs to be returned
+    // this is a notePath from outside of hoisted subtree, so the full title path needs to be returned
     const hoistedNoteId = cls.getHoistedNoteId();
     const outsideOfHoistedSubtree = !notePathArray.includes(hoistedNoteId);
 

@@ -11,7 +11,7 @@ import FindInHtml from "./find_in_html.js";
 const findWidgetDelayMillis = 200;
 const waitForEnter = (findWidgetDelayMillis < 0);
 
-// tabIndex=-1 on the checkbox labels is necessary so when clicking on the label
+// tabIndex=-1 on the checkbox labels is necessary, so when clicking on the label,
 // the focusout handler is called with relatedTarget equal to the label instead
 // of undefined. It's -1 instead of > 0, so they don't tabstop
 const TPL = `
@@ -185,7 +185,7 @@ export default class FindWidget extends NoteContextAwareWidget {
     startSearch() {
         // XXX This should clear the previous search immediately in all cases
         //     (the search is stale when waitforenter but also while the
-        //     delay is running for non waitforenter case)
+        //     delay is running for the non waitforenter case)
         if (!waitForEnter) {
             // Clear the previous timeout if any, it's ok if timeoutId is
             // null or undefined

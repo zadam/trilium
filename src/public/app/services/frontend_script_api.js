@@ -25,9 +25,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     /** @property {jQuery} container of all the rendered script content */
     this.$container = $container;
 
-    /** @property {object} note where script started executing */
+    /** @property {object} note where the script started executing */
     this.startNote = startNote;
-    /** @property {object} note where script is currently executing */
+    /** @property {object} note where the script is currently executing */
     this.currentNote = currentNote;
     /** @property {object|null} entity whose event triggered this execution */
     this.originEntity = originEntity;
@@ -164,7 +164,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
             params: prepareParams(params),
             startNoteId: startNote.noteId,
             currentNoteId: currentNote.noteId,
-            originEntityName: "notes", // currently there's no other entity on frontend which can trigger event
+            originEntityName: "notes", // currently there's no other entity on the frontend which can trigger event
             originEntityId: originEntity ? originEntity.noteId : null
         }, "script");
 
@@ -205,7 +205,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     };
 
     /**
-     * Returns note by given noteId. If note is missing from cache, it's loaded.
+     * Returns note by given noteId. If note is missing from the cache, it's loaded.
      **
      * @method
      * @param {string} noteId
@@ -214,7 +214,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getNote = async noteId => await froca.getNote(noteId);
 
     /**
-     * Returns list of notes. If note is missing from cache, it's loaded.
+     * Returns list of notes. If note is missing from the cache, it's loaded.
      *
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
      * otherwise (by e.g. createNoteLink())
@@ -258,7 +258,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.parseDate = utils.parseDate;
 
     /**
-     * Show info message to the user.
+     * Show an info message to the user.
      *
      * @method
      * @param {string} message
@@ -266,7 +266,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.showMessage = toastService.showMessage;
 
     /**
-     * Show error message to the user.
+     * Show an error message to the user.
      *
      * @method
      * @param {string} message
@@ -292,7 +292,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.triggerEvent = (name, data) => appContext.triggerEvent(name, data);
 
     /**
-     * Create note link (jQuery object) for given note.
+     * Create a note link (jQuery object) for given note.
      *
      * @method
      * @param {string} notePath (or noteId)
@@ -319,7 +319,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
 
     /**
-     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for documentation on the returned instance.
      *
      * @method
      * @returns {Promise<BalloonEditor>} instance of CKEditor
@@ -345,12 +345,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /**
      * @method
-     * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
+     * @returns {Promise<string|null>} returns a note path of active note or null if there isn't active note
      */
     this.getActiveContextNotePath = () => appContext.tabManager.getActiveContextNotePath();
 
     /**
-     * Returns component which owns given DOM element (the nearest parent component in DOM tree)
+     * Returns component which owns the given DOM element (the nearest parent component in DOM tree)
      *
      * @method
      * @param {Element} el - DOM element
@@ -455,11 +455,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.bindGlobalShortcut = shortcutService.bindGlobalShortcut;
 
     /**
-     * Trilium runs in backend and frontend process, when something is changed on the backend from script,
+     * Trilium runs in a backend and frontend process, when something is changed on the backend from a script,
      * frontend will get asynchronously synchronized.
      *
      * This method returns a promise which resolves once all the backend -> frontend synchronization is finished.
-     * Typical use case is when new note has been created, we should wait until it is synced into frontend and only then activate it.
+     * Typical use case is when a new note has been created, we should wait until it is synced into frontend and only then activate it.
      *
      * @method
      * @returns {Promise<void>}

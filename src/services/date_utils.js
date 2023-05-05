@@ -6,7 +6,7 @@ function utcNowDateTime() {
 }
 
 // CLS date time is important in web deployments - server often runs in different time zone than user is located in,
-// so we'd prefer client timezone to be used to record local dates. For this reason requests from client contain
+// so we'd prefer client timezone to be used to record local dates. For this reason, requests from clients contain
 // "trilium-local-now-datetime" header which is then stored in CLS
 function localNowDateTime() {
     return cls.getLocalNowDateTime()

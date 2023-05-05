@@ -237,7 +237,7 @@ async function cloneNoteToParentNote(childNoteId, parentNoteId, prefix) {
     }
 }
 
-// beware that first arg is noteId and second is branchId!
+// beware that the first arg is noteId and the second is branchId!
 async function cloneNoteAfter(noteId, afterBranchId) {
     const resp = await server.put(`notes/${noteId}/clone-after/${afterBranchId}`);
 

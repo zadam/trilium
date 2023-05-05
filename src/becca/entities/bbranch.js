@@ -224,7 +224,7 @@ class BBranch extends AbstractBeccaEntity {
 
             for (const childBranch of this.parentNote.getChildBranches()) {
                 if (maxNotePos < childBranch.notePosition
-                    && childBranch.noteId !== '_hidden' // hidden has very large notePosition to always stay last
+                    && childBranch.noteId !== '_hidden' // hidden has a very large notePosition to always stay last
                 ) {
                     maxNotePos = childBranch.notePosition;
                 }

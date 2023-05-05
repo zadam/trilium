@@ -21,7 +21,7 @@ export default class FindInCode {
 
         // highlightSelectionMatches is the overlay that highlights
         // the words under the cursor. This occludes the search
-        // markers style, save it, disable it. Will be restored when
+        // markers style, save it, disable it. It will be restored when
         // the focus is back into the note
         this.oldHighlightSelectionMatches = codeEditor.getOption("highlightSelectionMatches");
         codeEditor.setOption("highlightSelectionMatches", false);
@@ -69,14 +69,13 @@ export default class FindInCode {
             let curChar = 0;
             let curMatch = null;
             findResult = [];
-            // All those markText take several seconds on e.g. this ~500-line
+            // All those markText take several seconds on e.g., this ~500-line
             // script, batch them inside an operation, so they become
             // unnoticeable. Alternatively, an overlay could be used, see
             // https://codemirror.net/addon/search/match-highlighter.js ?
             codeEditor.operation(() => {
                 for (let i = 0; i < text.length; ++i) {
-                    // Fetch next match if it's the first time or
-                    // if past the current match start
+                    // Fetch the next match if it's the first time or if past the current match start
                     if ((curMatch == null) || (curMatch.index < i)) {
                         curMatch = re.exec(text);
                         if (curMatch == null) {
@@ -88,16 +87,13 @@ export default class FindInCode {
                     // selected marker highlight will be done later
                     if (i === curMatch.index) {
                         let fromPos = { "line" : curLine, "ch" : curChar };
-                        // XXX If multiline is supported, this needs to
-                        //     recalculate curLine since the match may span
-                        //     lines
+                        // If multiline is supported, this needs to recalculate curLine since the match may span lines
                         let toPos = { "line" : curLine, "ch" : curChar + curMatch[0].length};
-                        // XXX or css = "color: #f3"
+                        // or css = "color: #f3"
                         let marker = doc.markText( fromPos, toPos, { "className" : FIND_RESULT_CSS_CLASSNAME });
                         findResult.push(marker);
 
-                        // Set the first match beyond the cursor as current
-                        // match
+                        // Set the first match beyond the cursor as the current match
                         if (currentFound === -1) {
                             const cursorPos = codeEditor.getCursor();
                             if ((fromPos.line > cursorPos.line) ||

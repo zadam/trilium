@@ -191,8 +191,8 @@ async function shrinkImage(buffer, originalName) {
         finalImageBuffer = buffer;
     }
 
-    // if resizing did not help with size then save the original
-    // (can happen when e.g. resizing PNG into JPEG)
+    // if resizing did not help with size, then save the original
+    // (can happen when e.g., resizing PNG into JPEG)
     if (finalImageBuffer.byteLength >= buffer.byteLength) {
         finalImageBuffer = buffer;
     }
@@ -216,7 +216,7 @@ async function resize(buffer, quality) {
 
     image.quality(quality);
 
-    // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
+    // when converting PNG to JPG, we lose the alpha channel, this is replaced by white to match Trilium white background
     image.background(0xFFFFFFFF);
 
     const resultBuffer = await image.getBufferAsync(jimp.MIME_JPEG);

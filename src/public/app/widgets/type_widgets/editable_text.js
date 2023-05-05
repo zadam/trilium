@@ -113,8 +113,8 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
                         label: mt.title
                     }));
 
-        // CKEditor since version 12 needs the element to be visible before initialization. At the same time
-        // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
+        // CKEditor since version 12 needs the element to be visible before initialization. At the same time,
+        // we want to avoid flicker - i.e., show editor only once everything is ready. That's why we have separate
         // display of $widget in both branches.
         this.$widget.show();
 
@@ -131,7 +131,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
             // This prevents an infinite restart loop.
             crashNumberLimit: 3,
             // A minimum number of milliseconds between saving the editor data internally (defaults to 5000).
-            // Note that for large documents this might impact the editor performance.
+            // Note that for large documents, this might impact the editor performance.
             saveInterval: 5000
         });
 
@@ -194,7 +194,7 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const content = this.watchdog.editor.getData();
 
         // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
-        // this is important when setting new note to code
+        // this is important when setting a new note to code
         return {
             content: utils.isHtmlEmpty(content) ? '' : content
         };

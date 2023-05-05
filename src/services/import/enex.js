@@ -317,8 +317,8 @@ function importEnex(taskContext, file, parentNote) {
                     content = content.replace(mediaRegex, imageLink);
 
                     if (!content.includes(imageLink)) {
-                        // if there wasn't any match for the reference, we'll add the image anyway
-                        // otherwise image would be removed since no note would include it
+                        // if there wasn't any match for the reference, we'll add the image anyway,
+                        // otherwise the image would be removed since no note would include it
                         content += imageLink;
                     }
                 } catch (e) {

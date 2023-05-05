@@ -149,7 +149,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             await typeWidget.handleEvent('setNoteContext', {noteContext: this.noteContext});
 
-            // this is happening in update() so note has been already set, and we need to reflect this
+            // this is happening in update(), so note has been already set, and we need to reflect this
             await typeWidget.handleEvent('noteSwitched', {
                 noteContext: this.noteContext,
                 notePath: this.noteContext.notePath
@@ -298,13 +298,13 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
             // FIXME: create a separate event to force hierarchical refresh
 
             // this uses handleEvent to make sure that the ordinary content updates are propagated only in the subtree
-            // to avoid problem in #3365
+            // to avoid the problem in #3365
             this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else if (loadResults.isNoteReloaded(this.noteId, this.componentId)
             && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime)) {
 
-            // this needs to have a triggerEvent so that e.g. note type (not in the component subtree) is updated
+            // this needs to have a triggerEvent so that e.g., note type (not in the component subtree) is updated
             this.triggerEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
         else {

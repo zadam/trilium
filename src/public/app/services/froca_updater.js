@@ -143,8 +143,8 @@ async function processBranchChange(loadResults, ec) {
 
     if (childNote && !childNote.isRoot() && !parentNote) {
         // a branch cannot exist without the parent
-        // a note loaded into froca has to also contain all its ancestors
-        // this problem happened e.g. in sharing where _share was hidden and thus not loaded
+        // a note loaded into froca has to also contain all its ancestors,
+        // this problem happened e.g., in sharing where _share was hidden and thus not loaded
         // sharing meant cloning into _share, which crashed because _share was not loaded
         parentNote = await froca.getNote(ec.entity.parentNoteId);
     }

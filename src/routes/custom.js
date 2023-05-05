@@ -61,7 +61,7 @@ function handleRequest(req, res) {
             throw new Error(`Unrecognized attribute name '${attr.name}'`);
         }
 
-        return; // only first handler is executed
+        return; // only the first handler is executed
     }
 
     const message = `No handler matched for custom '${path}' request.`;

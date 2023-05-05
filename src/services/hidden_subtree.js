@@ -15,8 +15,8 @@ const LBTPL_CUSTOM_WIDGET = "_lbTplCustomWidget";
 
 /*
  * Hidden subtree is generated as a "predictable structure" which means that it avoids generating random IDs to always
- * produce same structure. This is needed because it is run on multiple instances in the sync cluster which might produce
- * duplicate subtrees. This way, all instances will generate the same structure with same IDs.
+ * produce the same structure. This is needed because it is run on multiple instances in the sync cluster which might produce
+ * duplicate subtrees. This way, all instances will generate the same structure with the same IDs.
  */
 
 const HIDDEN_SUBTREE_DEFINITION = {
@@ -24,7 +24,7 @@ const HIDDEN_SUBTREE_DEFINITION = {
     title: 'Hidden Notes',
     type: 'doc',
     icon: 'bx bx-chip',
-    // we want to keep the hidden subtree always last, otherwise there will be problems with e.g. keyboard navigation
+    // we want to keep the hidden subtree always last, otherwise there will be problems with e.g., keyboard navigation
     // over tree when it's in the middle
     notePosition: 999_999_999,
     attributes: [
@@ -298,14 +298,14 @@ function checkHiddenSubtreeRecursively(parentNoteId, item) {
     }
 
     if (note.type !== item.type) {
-        // enforce correct note type
+        // enforce a correct note type
         note.type = item.type;
         note.save();
     }
 
     if (branch) {
         // in case of launchers the branch ID is not preserved and should not be relied upon - launchers which move between
-        // visible and available will change branch since branch's parent-child relationship is immutable
+        // visible and available will change branch since the branch's parent-child relationship is immutable
         if (item.notePosition !== undefined && branch.notePosition !== item.notePosition) {
             branch.notePosition = item.notePosition;
             branch.save();

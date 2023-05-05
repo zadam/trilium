@@ -74,7 +74,7 @@ async function getRenderedContent(note, options = {}) {
         $downloadButton.on('click', () => openService.downloadFileNote(note.noteId));
         $openButton.on('click', () => openService.openNoteExternally(note.noteId, note.mime));
 
-        // open doesn't work for protected notes since it works through browser which isn't in protected session
+        // open doesn't work for protected notes since it works through a browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
 
         const $content = $('<div style="display: flex; flex-direction: column; height: 100%;">');
@@ -163,7 +163,7 @@ async function getRenderedContent(note, options = {}) {
         }
     }
     else if (type === 'book') {
-        // nothing, book doesn't have its own content
+        // nothing, a book doesn't have its own content
     }
     else if (!options.tooltip && type === 'protectedSession') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)

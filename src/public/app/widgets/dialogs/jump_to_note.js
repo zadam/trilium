@@ -67,10 +67,10 @@ export default class JumpToNoteDialog extends BasicWidget {
                 appContext.tabManager.getActiveContext().setNote(suggestion.notePath);
             });
 
-        // if you open the Jump To dialog soon after using it previously it can often mean that you
-        // actually want to search for the same thing (e.g. you opened the wrong note at first try)
+        // if you open the Jump To dialog soon after using it previously, it can often mean that you
+        // actually want to search for the same thing (e.g., you opened the wrong note at first try)
         // so we'll keep the content.
-        // if it's outside of this time limit then we assume it's a completely new search and show recent notes instead.
+        // if it's outside of this time limit, then we assume it's a completely new search and show recent notes instead.
         if (Date.now() - this.lastOpenedTs > KEEP_LAST_SEARCH_FOR_X_SECONDS * 1000) {
             noteAutocompleteService.showRecentNotes(this.$autoComplete);
         } else {

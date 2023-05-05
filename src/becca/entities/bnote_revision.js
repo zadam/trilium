@@ -9,7 +9,7 @@ const sql = require("../../services/sql");
 const BAttachment = require("./battachment");
 
 /**
- * NoteRevision represents snapshot of note's title and content at some point in the past.
+ * NoteRevision represents a snapshot of note's title and content at some point in the past.
  * It's used for seamless note versioning.
  *
  * @extends AbstractBeccaEntity
@@ -73,7 +73,7 @@ class BNoteRevision extends AbstractBeccaEntity {
 
     /*
      * Note revision content has quite special handling - it's not a separate entity, but a lazily loaded
-     * part of NoteRevision entity with its own sync. Reason behind this hybrid design is that
+     * part of NoteRevision entity with its own sync. The reason behind this hybrid design is that
      * content can be quite large, and it's not necessary to load it / fill memory for any note access even
      * if we don't need a content, especially for bulk operations like search.
      *

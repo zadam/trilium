@@ -195,7 +195,7 @@ class FNote {
     }
 
     // will sort the parents so that non-search & non-archived are first and archived at the end
-    // this is done so that non-search & non-archived paths are always explored as first when looking for note path
+    // this is done so that non-search & non-archived paths are always explored as first when looking for a note path
     sortParents() {
         this.parents.sort((aNoteId, bNoteId) => {
             const aBranchId = this.parentToBranch[aNoteId];
@@ -360,7 +360,7 @@ class FNote {
         const parentNotes = this.getParentNotes();
 
         const notePaths = parentNotes.length === 1
-            ? parentNotes[0].getAllNotePaths() // optimization for most common case
+            ? parentNotes[0].getAllNotePaths() // optimization for the most common case
             : parentNotes.flatMap(parentNote => parentNote.getAllNotePaths());
 
         for (const notePath of notePaths) {
@@ -400,7 +400,7 @@ class FNote {
     }
 
     /**
-     * Returns note path considered to be the "best"
+     * Returns the note path considered to be the "best"
      *
      * @param {string} [hoistedNoteId='root']
      * @return {string[]} array of noteIds constituting the particular note path
@@ -410,7 +410,7 @@ class FNote {
     }
 
     /**
-     * Returns note path considered to be the "best"
+     * Returns the note path considered to be the "best"
      *
      * @param {string} [hoistedNoteId='root']
      * @return {string} serialized note path (e.g. 'root/a1h315/js725h')
@@ -553,7 +553,7 @@ class FNote {
         // we're not checking hideArchivedNotes since that would mean we need to lazy load the child notes
         // which would seriously slow down everything.
         // we check this flag only once user chooses to expand the parent. This has the negative consequence that
-        // note may appear as folder but not contain any children when all of them are archived
+        // note may appear as a folder but not contain any children when all of them are archived
 
         return childBranches;
     }
@@ -597,7 +597,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getOwnedAttribute(type, name) {
         const attributes = this.getOwnedAttributes();
@@ -608,7 +608,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {FAttribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     * @returns {FAttribute} attribute of the given type and name. If there are more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     getAttribute(type, name) {
         const attributes = this.getAttributes();
@@ -619,7 +619,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {string} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string} attribute value of the given type and name or null if no such attribute exists.
      */
     getOwnedAttributeValue(type, name) {
         const attr = this.getOwnedAttribute(type, name);
@@ -630,7 +630,7 @@ class FNote {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
-     * @returns {string} attribute value of given type and name or null if no such attribute exists.
+     * @returns {string} attribute value of the given type and name or null if no such attribute exists.
      */
     getAttributeValue(type, name) {
         const attr = this.getAttribute(type, name);
@@ -774,7 +774,7 @@ class FNote {
                 return def && def.isPromoted;
             });
 
-        // attrs are not resorted if position changes after initial load
+        // attrs are not resorted if position changes after the initial load
         promotedAttrs.sort((a, b) => {
             if (a.noteId === b.noteId) {
                 return a.position < b.position ? -1 : 1;

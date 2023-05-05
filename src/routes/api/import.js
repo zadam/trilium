@@ -72,7 +72,7 @@ async function importToBranch(req) {
     }
 
     if (last === "true") {
-        // small timeout to avoid race condition (message is received before the transaction is committed)
+        // small timeout to avoid race condition (the message is received before the transaction is committed)
         setTimeout(() => taskContext.taskSucceeded({
             parentNoteId: parentNoteId,
             importedNoteId: note.noteId

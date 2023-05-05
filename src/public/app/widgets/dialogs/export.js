@@ -141,7 +141,7 @@ export default class ExportDialog extends BasicWidget {
             const exportType = this.$widget.find("input[name='export-type']:checked").val();
 
             if (!exportType) {
-                // this shouldn't happen as we always choose default export type
+                // this shouldn't happen as we always choose a default export type
                 toastService.showError("Choose export type first please");
                 return;
             }
