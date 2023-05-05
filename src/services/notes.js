@@ -229,10 +229,6 @@ function createNewNote(params) {
             entity: note
         });
 
-        eventService.emit(eventService.NOTE_CONTENT_CHANGE, {
-            entity: note
-        });
-
         eventService.emit(eventService.ENTITY_CREATED, {
             entityName: 'branches',
             entity: branch
@@ -569,8 +565,6 @@ function downloadImages(noteId, content) {
                     origNote.setContent(updatedContent);
 
                     asyncPostProcessContent(origNote, updatedContent);
-
-                    eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: origNote });
 
                     console.log(`Fixed the image links for note '${noteId}' to the offline saved.`);
                 }
