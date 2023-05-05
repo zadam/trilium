@@ -21,7 +21,7 @@ function register(router) {
         'position': [v.notNull, v.isInteger]
     };
 
-    eu.route(router, 'post' ,'/etapi/attributes', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/attributes/:attributeId', (req, res, next) => {
         if (req.body.type === 'relation') {
             eu.getAndCheckNote(req.body.value);
         }
