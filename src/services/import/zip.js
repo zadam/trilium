@@ -23,16 +23,19 @@ const BAttachment = require("../../becca/entities/battachment");
  * @returns {Promise<*>}
  */
 async function importZip(taskContext, fileBuffer, importRootNote) {
-    // maps from original noteId (in ZIP file) to newly generated noteId
+    /** @type {Object.<string, string>} maps from original noteId (in ZIP file) to newly generated noteId */
     const noteIdMap = {};
     const attributes = [];
     // path => noteId, used only when meta file is not available
+    /** @type {Object.<string, string>} path => noteId */
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
     const mdReader = new commonmark.Parser();
     const mdWriter = new commonmark.HtmlRenderer();
     let metaFile = null;
+    /** @type {BNote} */
     let firstNote = null;
-    const createdNoteIds = {};
+    /** @type {Set.<string>} */
+    const createdNoteIds = new Set();
 
     function getNewNoteId(origNoteId) {
         // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
@@ -52,6 +55,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return noteIdMap[origNoteId];
     }
 
+    /** @returns {{noteMeta: NoteMeta, parentNoteMeta: NoteMeta, attachmentMeta: AttachmentMeta}} */
     function getMeta(filePath) {
         if (!metaFile) {
             return {};
@@ -99,6 +103,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         };
     }
 
+    /**
+     * @param {string} filePath
+     * @param {NoteMeta} parentNoteMeta
+     * @return {string}
+     */
     function getParentNoteId(filePath, parentNoteMeta) {
         let parentNoteId;
 
@@ -123,6 +132,11 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return parentNoteId;
     }
 
+    /**
+     * @param {NoteMeta} noteMeta
+     * @param {string} filePath
+     * @return {string}
+     */
     function getNoteId(noteMeta, filePath) {
         if (noteMeta) {
             return getNewNoteId(noteMeta.noteId);
@@ -148,6 +162,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return { mime, type };
     }
 
+    /**
+     * @param {BNote} note
+     * @param {NoteMeta} noteMeta
+     */
     function saveAttributes(note, noteMeta) {
         if (!noteMeta) {
             return;
@@ -218,7 +236,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }));
 
-        createdNoteIds[note.noteId] = true;
+        createdNoteIds.add(note.noteId);
 
         saveAttributes(note, noteMeta);
 
@@ -254,6 +272,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return targetNoteId;
     }
 
+    /**
+     * @param {string} content
+     * @param {string} noteTitle
+     * @param {string} filePath
+     * @param {NoteMeta} noteMeta
+     * @return {string}
+     */
     function processTextNoteContent(content, noteTitle, filePath, noteMeta) {
         function isUrlAbsolute(url) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
@@ -344,6 +369,15 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return content;
     }
 
+    /**
+     * @param {NoteMeta} noteMeta
+     * @param {string} type
+     * @param {string} mime
+     * @param {string|Buffer} content
+     * @param {string} noteTitle
+     * @param {string} filePath
+     * @return {string}
+     */
     function processNoteContent(noteMeta, type, mime, content, noteTitle, filePath) {
         if (noteMeta?.format === 'markdown'
             || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
@@ -397,7 +431,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (!parentNoteId) {
-            throw new Error(`Cannot find parentNoteId for ${filePath}`);
+            throw new Error(`Cannot find parentNoteId for '${filePath}'`);
         }
 
         if (noteMeta?.isClone) {
@@ -468,7 +502,7 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 isProtected: isProtected,
             }));
 
-            createdNoteIds[note.noteId] = true;
+            createdNoteIds.add(note.noteId);
 
             saveAttributes(note, noteMeta);
 
@@ -521,12 +555,12 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         zipfile.readEntry();
     });
 
-    for (const noteId in createdNoteIds) { // now the noteIds are unique
+    for (const noteId of createdNoteIds) {
         const note = becca.getNote(noteId);
         await noteService.asyncPostProcessContent(note, note.getContent());
 
         if (!metaFile) {
-            // if there's no meta file then the notes are created based on the order in that zip file but that
+            // if there's no meta file, then the notes are created based on the order in that zip file but that
             // is usually quite random, so we sort the notes in the way they would appear in the file manager
             treeService.sortNotes(noteId, 'title', false, true);
         }

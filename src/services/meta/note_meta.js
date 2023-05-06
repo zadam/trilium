@@ -23,6 +23,8 @@ class NoteMeta {
     dataFileName;
     /** @type {string} */
     dirFileName;
+    /** @type {boolean} - this file should not be imported (e.g., HTML navigation) */
+    noImport = false;
     /** @type {AttributeMeta[]} */
     attributes;
     /** @type {AttachmentMeta[]} */
