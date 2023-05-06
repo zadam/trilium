@@ -112,7 +112,7 @@ function decryptString(dataKey, cipherText) {
         throw new Error("Could not decrypt string.");
     }
 
-    return buffer.toString('UTF-8');
+    return buffer.toString('utf-8');
 }
 
 module.exports = {

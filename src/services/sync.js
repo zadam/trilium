@@ -323,7 +323,7 @@ function getEntityChangeRow(entityName, entityId) {
 
         if (entityName === 'blobs' && entity.content !== null) {
             if (typeof entity.content === 'string') {
-                entity.content = Buffer.from(entity.content, 'UTF-8');
+                entity.content = Buffer.from(entity.content, 'utf-8');
             }
 
             entity.content = entity.content.toString("base64");

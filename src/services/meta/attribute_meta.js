@@ -3,7 +3,7 @@ class AttributeMeta {
     type;
     /** @type {string} */
     name;
-    /** @type {boolean} */
+    /** @type {string} */
     value;
     /** @type {boolean} */
     isInheritable;

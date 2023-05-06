@@ -1120,7 +1120,8 @@ class BNote extends AbstractBeccaEntity {
                 SELECT attachments.*
                 FROM attachments 
                 WHERE parentId = ? 
-                  AND isDeleted = 0`, [this.noteId])
+                  AND isDeleted = 0
+                ORDER BY position`, [this.noteId])
             .map(row => new BAttachment(row));
     }
 
@@ -1142,7 +1143,8 @@ class BNote extends AbstractBeccaEntity {
                 FROM attachments 
                 WHERE parentId = ? 
                   AND role = ?
-                  AND isDeleted = 0`, [this.noteId, role])
+                  AND isDeleted = 0
+                ORDER BY position`, [this.noteId, role])
             .map(row => new BAttachment(row));
     }
 

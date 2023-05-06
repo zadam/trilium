@@ -61,7 +61,7 @@ function importFile(taskContext, file, parentNote) {
 
 function importCodeNote(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
-    const content = file.buffer.toString("UTF-8");
+    const content = file.buffer.toString("utf-8");
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
 
@@ -81,7 +81,7 @@ function importCodeNote(taskContext, file, parentNote) {
 
 function importPlainText(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
-    const plainTextContent = file.buffer.toString("UTF-8");
+    const plainTextContent = file.buffer.toString("utf-8");
     const htmlContent = convertTextToHtml(plainTextContent);
 
     const {note} = noteService.createNewNote({
@@ -119,7 +119,7 @@ function convertTextToHtml(text) {
 function importMarkdown(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
 
-    const markdownContent = file.buffer.toString("UTF-8");
+    const markdownContent = file.buffer.toString("utf-8");
 
     const reader = new commonmark.Parser();
     const writer = new commonmark.HtmlRenderer();
@@ -158,7 +158,7 @@ function handleH1(content, title) {
 
 function importHtml(taskContext, file, parentNote) {
     const title = utils.getNoteTitle(file.originalname, taskContext.data.replaceUnderscoresWithSpaces);
-    let content = file.buffer.toString("UTF-8");
+    let content = file.buffer.toString("utf-8");
 
     content = htmlSanitizer.sanitize(content);
 

@@ -122,7 +122,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
      * @param {Object.<string, integer>} existingFileNames
      * @returns {NoteMeta|null}
      */
-    function getNoteMeta(branch, parentMeta, existingFileNames) {
+    function createNoteMeta(branch, parentMeta, existingFileNames) {
         const note = branch.getNote();
 
         if (note.hasOwnedLabel('excludeFromExport')) {
@@ -200,6 +200,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
                 attMeta.title = attachment.title;
                 attMeta.role = attachment.role;
                 attMeta.mime = attachment.mime;
+                attMeta.position = attachment.position;
                 attMeta.dataFileName = getDataFileName(
                     null,
                     attachment.mime,
@@ -217,7 +218,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             const childExistingNames = {};
 
             for (const childBranch of childBranches) {
-                const note = getNoteMeta(childBranch, meta, childExistingNames);
+                const note = createNoteMeta(childBranch, meta, childExistingNames);
 
                 // can be undefined if export is disabled for this note
                 if (note) {
@@ -234,7 +235,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
      * @param {NoteMeta} sourceMeta
      * @return {string|null}
      */
-    function getTargetUrl(targetNoteId, sourceMeta) {
+    function getNoteTargetUrl(targetNoteId, sourceMeta) {
         const targetMeta = noteIdToMeta[targetNoteId];
 
         if (!targetMeta) {
@@ -271,15 +272,29 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
      * @param {NoteMeta} noteMeta
      * @return {string}
      */
-    function findLinks(content, noteMeta) {
+    function rewriteLinks(content, noteMeta) {
         content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9_]+)\/[^"]*"/g, (match, targetNoteId) => {
-            const url = getTargetUrl(targetNoteId, noteMeta);
+            const url = getNoteTargetUrl(targetNoteId, noteMeta);
+
+            return url ? `src="${url}"` : match;
+        });
+
+        content = content.replace(/src="[^"]*api\/attachments\/([a-zA-Z0-9_]+)\/image\/[^"]*"/g, (match, targetAttachmentId) => {
+            let url;
+
+            const attachmentMeta = noteMeta.attachments.find(attMeta => attMeta.attachmentId === targetAttachmentId);
+            if (attachmentMeta) {
+                // easy job here, because attachment will be in the same directory as the note's data file.
+                url = attachmentMeta.dataFileName;
+            } else {
+                log.info(`Could not find attachment meta object for attachmentId '${targetAttachmentId}'`);
+            }
 
             return url ? `src="${url}"` : match;
         });
 
         content = content.replace(/href="[^"]*#root[a-zA-Z0-9_\/]*\/([a-zA-Z0-9_]+)\/?"/g, (match, targetNoteId) => {
-            const url = getTargetUrl(targetNoteId, noteMeta);
+            const url = getNoteTargetUrl(targetNoteId, noteMeta);
 
             return url ? `href="${url}"` : match;
         });
@@ -297,7 +312,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         if (['html', 'markdown'].includes(noteMeta.format)) {
             content = content.toString();
 
-            content = findLinks(content, noteMeta);
+            content = rewriteLinks(content, noteMeta);
         }
 
         if (noteMeta.format === 'html') {
@@ -347,7 +362,7 @@ ${markdownContent}`;
         log.info(`Exporting note '${noteMeta.noteId}'`);
 
         if (noteMeta.isClone) {
-            const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
+            const targetUrl = getNoteTargetUrl(noteMeta.noteId, noteMeta);
 
             let content = `<p>This is a clone of a note. Go to its <a href="${targetUrl}">primary location</a>.</p>`;
 
@@ -404,7 +419,7 @@ ${markdownContent}`;
             const escapedTitle = utils.escapeHtml(`${meta.prefix ? `${meta.prefix} - ` : ''}${meta.title}`);
 
             if (meta.dataFileName) {
-                const targetUrl = getTargetUrl(meta.noteId, rootMeta);
+                const targetUrl = getNoteTargetUrl(meta.noteId, rootMeta);
 
                 html += `<a href="${targetUrl}" target="detail">${escapedTitle}</a>`;
             }
@@ -449,7 +464,7 @@ ${markdownContent}`;
 
         while (!firstNonEmptyNote) {
             if (curMeta.dataFileName) {
-                firstNonEmptyNote = getTargetUrl(curMeta.noteId, rootMeta);
+                firstNonEmptyNote = getNoteTargetUrl(curMeta.noteId, rootMeta);
             }
 
             if (curMeta.children && curMeta.children.length > 0) {
@@ -486,7 +501,7 @@ ${markdownContent}`;
     }
 
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
-    const rootMeta = getNoteMeta(branch, { notePath: [] }, existingFileNames);
+    const rootMeta = createNoteMeta(branch, { notePath: [] }, existingFileNames);
 
     const metaFile = {
         formatVersion: 1,

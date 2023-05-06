@@ -252,7 +252,7 @@ class AbstractBeccaEntity {
         if (this.hasStringContent()) {
             return content === null
                 ? ""
-                : content.toString("UTF-8");
+                : content.toString("utf-8");
         } else {
             return content;
         }
