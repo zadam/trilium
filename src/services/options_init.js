@@ -89,6 +89,8 @@ const defaultOptions = [
     { name: 'minTocHeadings', value: '5', isSynced: true },
     { name: 'checkForUpdates', value: 'true', isSynced: true },
     { name: 'disableTray', value: 'false', isSynced: false },
+    { name: 'customSearchEngineName', value: 'Duckduckgo', isSynced: false },
+    { name: 'customSearchEngineUrl', value: 'https://duckduckgo.com/?q={keyword}', isSynced: false },
 ];
 
 function initStartupOptions() {

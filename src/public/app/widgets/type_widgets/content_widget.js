@@ -18,6 +18,7 @@ import PasswordOptions from "./options/password.js";
 import EtapiOptions from "./options/etapi.js";
 import BackupOptions from "./options/backup.js";
 import SyncOptions from "./options/sync.js";
+import SearchEngineOptions from "./options/other/search_engine.js";
 import TrayOptions from "./options/other/tray.js";
 import NoteErasureTimeoutOptions from "./options/other/note_erasure_timeout.js";
 import NoteRevisionsSnapshotIntervalOptions from "./options/other/note_revisions_snapshot_interval.js";
@@ -75,6 +76,7 @@ const CONTENT_WIDGETS = {
     _optionsBackup: [ BackupOptions ],
     _optionsSync: [ SyncOptions ],
     _optionsOther: [
+        SearchEngineOptions,
         TrayOptions,
         NoteErasureTimeoutOptions,
         NoteRevisionsSnapshotIntervalOptions,
