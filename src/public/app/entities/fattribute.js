@@ -22,7 +22,7 @@ class FAttribute {
         this.name = row.name;
         /** @type {string} */
         this.value = row.value;
-        /** @type {int} */
+        /** @type {integer} */
         this.position = row.position;
         /** @type {boolean} */
         this.isInheritable = !!row.isInheritable;

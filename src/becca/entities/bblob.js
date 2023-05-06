@@ -4,7 +4,7 @@ class BBlob {
         this.blobId = row.blobId;
         /** @type {string|Buffer} */
         this.content = row.content;
-        /** @type {number} */
+        /** @type {integer} */
         this.contentLength = row.contentLength;
         /** @type {string} */
         this.dateModified = row.dateModified;

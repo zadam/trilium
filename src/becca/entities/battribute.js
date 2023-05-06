@@ -51,7 +51,7 @@ class BAttribute extends AbstractBeccaEntity {
         this.type = type;
         /** @type {string} */
         this.name = name;
-        /** @type {int} */
+        /** @type {integer} */
         this.position = position;
         /** @type {string} */
         this.value = value || "";

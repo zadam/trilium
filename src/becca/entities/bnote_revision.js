@@ -46,7 +46,7 @@ class BNoteRevision extends AbstractBeccaEntity {
         this.utcDateCreated = row.utcDateCreated;
         /** @type {string} */
         this.utcDateModified = row.utcDateModified;
-        /** @type {number} */
+        /** @type {integer} */
         this.contentLength = row.contentLength;
 
         if (this.isProtected && !titleDecrypted) {

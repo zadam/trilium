@@ -16,6 +16,9 @@ const archiver = require('archiver');
 const log = require("../log");
 const TaskContext = require("../task_context");
 const ValidationError = require("../../errors/validation_error");
+const NoteMeta = require("../meta/note_meta");
+const AttachmentMeta = require("../meta/attachment_meta");
+const AttributeMeta = require("../meta/attribute_meta");
 
 /**
  * @param {TaskContext} taskContext
@@ -33,8 +36,14 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         zlib: { level: 9 } // Sets the compression level.
     });
 
+    /** @type {Object.<string, NoteMeta>} */
     const noteIdToMeta = {};
 
+    /**
+     * @param {Object.<string, integer>} existingFileNames
+     * @param {string} fileName
+     * @returns {string}
+     */
     function getUniqueFilename(existingFileNames, fileName) {
         const lcFileName = fileName.toLowerCase();
 
@@ -51,13 +60,20 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
             return `${index}_${fileName}`;
         }
-        else {
+        else {[]
             existingFileNames[lcFileName] = 1;
 
             return fileName;
         }
     }
 
+    /**
+     * @param {string|null} type
+     * @param {string} mime
+     * @param {string} baseFileName
+     * @param {Object.<string, integer>} existingFileNames
+     * @return {string}
+     */
     function getDataFileName(type, mime, baseFileName, existingFileNames) {
         let fileName = baseFileName;
 
@@ -68,7 +84,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             fileName = fileName.substr(0, 30);
         }
 
-        // following two are handled specifically since we always want to have these extensions no matter the automatic detection
+        // the following two are handled specifically since we always want to have these extensions no matter the automatic detection
         // and/or existing detected extensions in the note name
         if (type === 'text' && format === 'markdown') {
             newExtension = 'md';
@@ -100,18 +116,24 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         return getUniqueFilename(existingFileNames, fileName);
     }
 
+    /**
+     * @param {BBranch} branch
+     * @param {NoteMeta} parentMeta
+     * @param {Object.<string, integer>} existingFileNames
+     * @returns {NoteMeta|null}
+     */
     function getNoteMeta(branch, parentMeta, existingFileNames) {
         const note = branch.getNote();
 
         if (note.hasOwnedLabel('excludeFromExport')) {
-            return;
+            return null;
         }
 
         const title = note.getTitleOrProtected();
         const completeTitle = branch.prefix ? (`${branch.prefix} - ${title}`) : title;
         let baseFileName = sanitize(completeTitle);
 
-        if (baseFileName.length > 200) { // actual limit is 256 bytes(!) but let's be conservative
+        if (baseFileName.length > 200) { // the actual limit is 256 bytes(!) but let's be conservative
             baseFileName = baseFileName.substr(0, 200);
         }
 
@@ -120,37 +142,37 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         if (note.noteId in noteIdToMeta) {
             const fileName = getUniqueFilename(existingFileNames, `${baseFileName}.clone.${format === 'html' ? 'html' : 'md'}`);
 
-            return {
-                isClone: true,
-                noteId: note.noteId,
-                notePath: notePath,
-                title: note.getTitleOrProtected(),
-                prefix: branch.prefix,
-                dataFileName: fileName,
-                type: 'text', // export will have text description,
-                format: format
-            };
+            const meta = new NoteMeta();
+            meta.isClone = true;
+            meta.noteId = note.noteId;
+            meta.notePath = notePath;
+            meta.title = note.getTitleOrProtected();
+            meta.prefix = branch.prefix;
+            meta.dataFileName = fileName;
+            meta.type = 'text'; // export will have text description
+            meta.format = format;
+            return meta;
         }
 
-        const meta = {
-            isClone: false,
-            noteId: note.noteId,
-            notePath: notePath,
-            title: note.getTitleOrProtected(),
-            notePosition: branch.notePosition,
-            prefix: branch.prefix,
-            isExpanded: branch.isExpanded,
-            type: note.type,
-            mime: note.mime,
-            // we don't export utcDateCreated and utcDateModified of any entity since that would be a bit misleading
-            attributes: note.getOwnedAttributes().map(attribute => ({
-                    type: attribute.type,
-                    name: attribute.name,
-                    value: attribute.value,
-                    isInheritable: attribute.isInheritable,
-                    position: attribute.position
-            }))
-        };
+        const meta = new NoteMeta();
+        meta.isClone = false;
+        meta.noteId = note.noteId;
+        meta.notePath = notePath;
+        meta.title = note.getTitleOrProtected();
+        meta.notePosition = branch.notePosition;
+        meta.prefix = branch.prefix;
+        meta.isExpanded = branch.isExpanded;
+        meta.type = note.type;
+        meta.mime = note.mime;
+        meta.attributes = note.getOwnedAttributes().map(attribute => {
+            const attrMeta = new AttributeMeta();
+            attrMeta.type = attribute.type;
+            attrMeta.name = attribute.name;
+            attrMeta.value = attribute.value;
+            attrMeta.isInheritable = attribute.isInheritable;
+            attrMeta.position = attribute.position;
+            return attrMeta;
+        });
 
         taskContext.increaseProgressCount();
 
@@ -165,27 +187,27 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
 
-        // if it's a leaf then we'll export it even if it's empty
+        // if it's a leaf, then we'll export it even if it's empty
         if (available && (note.getContent().length > 0 || childBranches.length === 0)) {
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
         const attachments = note.getAttachments();
-
-        if (attachments.length > 0) {
-            meta.attachments = attachments
-                .map(attachment => ({
-                title: attachment.title,
-                role: attachment.role,
-                mime: attachment.mime,
-                dataFileName: getDataFileName(
+        meta.attachments = attachments
+            .map(attachment => {
+                const attMeta = new AttachmentMeta();
+                attMeta.attachmentId = attachment.attachmentId;
+                attMeta.title = attachment.title;
+                attMeta.role = attachment.role;
+                attMeta.mime = attachment.mime;
+                attMeta.dataFileName = getDataFileName(
                     null,
                     attachment.mime,
                     baseFileName + "_" + attachment.title,
                     existingFileNames
-                )
-            }));
-        }
+                );
+                return attMeta;
+        });
 
         if (childBranches.length > 0) {
             meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
@@ -207,6 +229,11 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         return meta;
     }
 
+    /**
+     * @param {string} targetNoteId
+     * @param {NoteMeta} sourceMeta
+     * @return {string|null}
+     */
     function getTargetUrl(targetNoteId, sourceMeta) {
         const targetMeta = noteIdToMeta[targetNoteId];
 
@@ -217,7 +244,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         const targetPath = targetMeta.notePath.slice();
         const sourcePath = sourceMeta.notePath.slice();
 
-        // > 1 for edge case that targetPath and sourcePath are exact same (link to itself)
+        // > 1 for the edge case that targetPath and sourcePath are exact same (a link to itself)
         while (targetPath.length > 1 && sourcePath.length > 1 && targetPath[0] === sourcePath[0]) {
             targetPath.shift();
             sourcePath.shift();
@@ -233,12 +260,17 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
 
-        // link can target note which is only "folder-note" and as such will not have a file in an export
+        // link can target note which is only "folder-note" and as such, will not have a file in an export
         url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
 
         return url;
     }
 
+    /**
+     * @param {string} content
+     * @param {NoteMeta} noteMeta
+     * @return {string}
+     */
     function findLinks(content, noteMeta) {
         content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9_]+)\/[^"]*"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
@@ -255,6 +287,12 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         return content;
     }
 
+    /**
+     * @param {string} title
+     * @param {string|Buffer} content
+     * @param {NoteMeta} noteMeta
+     * @return {string|Buffer}
+     */
     function prepareContent(title, content, noteMeta) {
         if (['html', 'markdown'].includes(noteMeta.format)) {
             content = content.toString();
@@ -287,8 +325,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
             return content.length < 100000
                 ? html.prettyPrint(content, {indent_size: 2})
                 : content;
-        }
-        else if (noteMeta.format === 'markdown') {
+        } else if (noteMeta.format === 'markdown') {
             let markdownContent = mdService.toMarkdown(content);
 
             if (markdownContent.trim().length > 0 && !markdownContent.startsWith("# ")) {
@@ -297,17 +334,17 @@ ${markdownContent}`;
             }
 
             return markdownContent;
-        }
-        else {
+        } else {
             return content;
         }
     }
 
-    // noteId => file path
-    const notePaths = {};
-
+    /**
+     * @param {NoteMeta} noteMeta
+     * @param {string} filePathPrefix
+     */
     function saveNote(noteMeta, filePathPrefix) {
-        log.info(`Exporting note ${noteMeta.noteId}`);
+        log.info(`Exporting note '${noteMeta.noteId}'`);
 
         if (noteMeta.isClone) {
             const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
@@ -323,8 +360,6 @@ ${markdownContent}`;
 
         const note = becca.getNote(noteMeta.noteId);
 
-        notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
-
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, note.getContent(), noteMeta);
 
@@ -336,9 +371,8 @@ ${markdownContent}`;
 
         taskContext.increaseProgressCount();
 
-        for (const attachmentMeta of noteMeta.attachments || []) {
-            // FIXME
-            const attachment = note.getAttachmentByName(attachmentMeta.name);
+        for (const attachmentMeta of noteMeta.attachments) {
+            const attachment = note.getAttachmentById(attachmentMeta.attachmentId);
             const content = attachment.getContent();
 
             archive.append(content, {
@@ -347,7 +381,7 @@ ${markdownContent}`;
             });
         }
 
-        if (noteMeta.children && noteMeta.children.length > 0) {
+        if (noteMeta.children?.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
             // create directory
@@ -359,6 +393,10 @@ ${markdownContent}`;
         }
     }
 
+    /**
+     * @param {NoteMeta} rootMeta
+     * @param {NoteMeta} navigationMeta
+     */
     function saveNavigation(rootMeta, navigationMeta) {
         function saveNavigationInner(meta) {
             let html = '<li>';
@@ -401,6 +439,10 @@ ${markdownContent}`;
         archive.append(prettyHtml, { name: navigationMeta.dataFileName });
     }
 
+    /**
+     * @param {NoteMeta} rootMeta
+     * @param {NoteMeta} indexMeta
+     */
     function saveIndex(rootMeta, indexMeta) {
         let firstNonEmptyNote;
         let curMeta = rootMeta;
@@ -433,6 +475,10 @@ ${markdownContent}`;
         archive.append(fullHtml, { name: indexMeta.dataFileName });
     }
 
+    /**
+     * @param {NoteMeta} rootMeta
+     * @param {NoteMeta} cssMeta
+     */
     function saveCss(rootMeta, cssMeta) {
         const cssContent = fs.readFileSync(`${RESOURCE_DIR}/libraries/ckeditor/ckeditor-content.css`);
 

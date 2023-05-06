@@ -45,7 +45,7 @@ class BAttachment extends AbstractBeccaEntity {
         this.mime = row.mime;
         /** @type {string} */
         this.title = row.title;
-        /** @type {number} */
+        /** @type {integer} */
         this.position = row.position;
         /** @type {string} */
         this.blobId = row.blobId;

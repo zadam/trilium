@@ -27,7 +27,7 @@ function getOption(name) {
 }
 
 /**
- * @returns {number}
+ * @returns {integer}
  */
 function getOptionInt(name) {
     const val = getOption(name);
