@@ -42,7 +42,6 @@ function register(router) {
 
     const ALLOWED_PROPERTIES_FOR_PATCH = {
         'value': [v.notNull, v.isString],
-        'isInheritable': [v.notNull, v.isBoolean],
         'position': [v.notNull, v.isInteger]
     };
 
