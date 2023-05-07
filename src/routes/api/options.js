@@ -62,7 +62,10 @@ const ALLOWED_OPTIONS = new Set([
     'minTocHeadings',
     'checkForUpdates',
     'disableTray',
-    'eraseUnusedImageAttachmentsAfterSeconds'
+    'eraseUnusedImageAttachmentsAfterSeconds',
+    'disableTray',
+    'customSearchEngineName',
+    'customSearchEngineUrl',
 ]);
 
 function getOptions() {
