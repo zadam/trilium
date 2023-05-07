@@ -108,12 +108,16 @@ function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
 }
 
 function parseNavigationStateFromUrl(url) {
-    const hashIdx = url?.indexOf('#');
+    if (!url) {
+        return {};
+    }
+
+    const hashIdx = url.indexOf('#');
     if (hashIdx === -1) {
         return {};
     }
 
-    const hash = url?.substr(hashIdx + 1); // strip also the initial '#'
+    const hash = url.substr(hashIdx + 1); // strip also the initial '#'
     const [notePath, paramString] = hash.split("?");
     const viewScope = {
         viewMode: 'default'

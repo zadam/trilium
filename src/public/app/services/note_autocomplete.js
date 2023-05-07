@@ -247,7 +247,7 @@ function init() {
             .closest(".input-group")
             .find(".go-to-selected-note-button")
             .toggleClass("disabled", !notePath.trim())
-            .attr(SELECTED_NOTE_PATH_KEY, notePath); // we also set attr here so tooltip can be displayed
+            .attr("href", `#${notePath}`); // we also set href here so tooltip can be displayed
     };
 
     $.fn.getSelectedExternalLink = function () {
@@ -259,12 +259,14 @@ function init() {
     };
 
     $.fn.setSelectedExternalLink = function (externalLink) {
-        $(this).attr(SELECTED_EXTERNAL_LINK_KEY, externalLink);
+        console.trace("setSelectedExternalLink");
 
-        $(this)
-            .closest(".input-group")
-            .find(".go-to-selected-note-button")
-            .toggleClass("disabled", true);
+        if (externalLink) {
+            $(this)
+                .closest(".input-group")
+                .find(".go-to-selected-note-button")
+                .toggleClass("disabled", true);
+        }
     }
 
     $.fn.setNote = async function (noteId) {
