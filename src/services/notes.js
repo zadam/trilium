@@ -575,12 +575,12 @@ function downloadImages(noteId, content) {
 }
 
 function saveLinks(note, content) {
-    if (note.type !== 'text' && note.type !== 'relationMap') {
-        return content;
-    }
-
-    if (note.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
-        return content;
+    if ((note.type !== 'text' && note.type !== 'relationMap')
+        || (note.isProtected && !protectedSessionService.isProtectedSessionAvailable())) {
+        return {
+            forceFrontendReload: false,
+            content
+        };
     }
 
     const foundLinks = [];
@@ -599,7 +599,7 @@ function saveLinks(note, content) {
         findRelationMapLinks(content, foundLinks);
     }
     else {
-        throw new Error(`Unrecognized type ${note.type}`);
+        throw new Error(`Unrecognized type '${note.type}'`);
     }
 
     const existingLinks = note.getRelations().filter(rel =>

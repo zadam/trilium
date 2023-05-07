@@ -55,10 +55,10 @@ function createNote(req) {
 }
 
 function updateNoteData(req) {
-    const {content, attachments} = req.body;
+    const {content} = req.body;
     const {noteId} = req.params;
 
-    return noteService.updateNoteData(noteId, content, attachments);
+    return noteService.updateNoteData(noteId, content);
 }
 
 function deleteNote(req) {
