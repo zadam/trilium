@@ -99,8 +99,8 @@ async function createInitialDatabase() {
     await zipImportService.importZip(dummyTaskContext, demoFile, rootNote);
 
     sql.transactional(() => {
-        // this needs to happen after ZIP import
-        // previous solution was to move option initialization here but then the important parts of initialization
+        // this needs to happen after ZIP import,
+        // the previous solution was to move option initialization here, but then the important parts of initialization
         // are not all in one transaction (because ZIP import is async and thus not transactional)
 
         const startNoteId = sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// setup basic error handling even before requiring dependencies, since those can produce errors as well
+
 process.on('unhandledRejection', error => {
     // this makes sure that stacktrace of failed promise is printed out
     console.log(error);
@@ -16,7 +18,8 @@ function exit() {
 process.on('SIGINT', exit);
 process.on('SIGTERM', exit);
 
-const { app, sessionParser } = require('./app');
+const app = require('./app');
+const sessionParser = require('./routes/session_parser');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
@@ -25,7 +28,6 @@ const log = require('./services/log');
 const appInfo = require('./services/app_info');
 const ws = require('./services/ws');
 const utils = require('./services/utils');
-const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
 const host = require('./services/host');
 const semver = require('semver');
@@ -35,9 +37,9 @@ if (!semver.satisfies(process.version, ">=10.5.0")) {
     process.exit(1);
 }
 
-let httpServer;
+startTrilium();
 
-async function startTrilium() {
+function startTrilium() {
     /**
      * The intended behavior is to detect when a second instance is running, in that case open the old instance
      * instead of the new one. This is complicated by the fact that it is possible to run multiple instances of Trilium
@@ -48,13 +50,29 @@ async function startTrilium() {
      *
      * A bit weird is that "second-instance" is triggered also on the valid usecases (different port/data dir) and
      * focuses the existing window. But the new process is start as well and will steal the focus too, it will win, because
-     * its startup is slower than focusing the existing process/window. So in the end it works out without having
-     * to do complex evaluation.
+     * its startup is slower than focusing the existing process/window. So in the end, it works out without having
+     * to do a complex evaluation.
      */
     if (utils.isElectron()) {
         require("electron").app.requestSingleInstanceLock();
     }
 
+    log.info(JSON.stringify(appInfo, null, 2));
+
+    const cpuInfos = require('os').cpus();
+    log.info(`CPU model: ${cpuInfos[0].model}, logical cores: ${cpuInfos.length} freq: ${cpuInfos[0].speed} Mhz`); // for perf. issues it's good to know the rough configuration
+
+    const httpServer = startHttpServer();
+
+    ws.init(httpServer, sessionParser);
+
+    if (utils.isElectron()) {
+        const electronRouting = require('./routes/electron');
+        electronRouting(app);
+    }
+}
+
+function startHttpServer() {
     app.set('port', port);
     app.set('host', host);
 
@@ -64,7 +82,10 @@ async function startTrilium() {
             app.set('trust proxy', config['Network']['trustedReverseProxy'])
         }
     }
+
     log.info(`Trusted reverse proxy: ${app.get('trust proxy')}`)
+
+    let httpServer;
 
     if (config['Network']['https']) {
         if (!config['Network']['keyPath'] || !config['Network']['keyPath'].trim().length) {
@@ -83,17 +104,11 @@ async function startTrilium() {
         httpServer = https.createServer(options, app);
 
         log.info(`App HTTPS server starting up at port ${port}`);
-    }
-    else {
+    } else {
         httpServer = http.createServer(app);
 
         log.info(`App HTTP server starting up at port ${port}`);
     }
-
-    log.info(JSON.stringify(appInfo, null, 2));
-
-    const cpuInfos = require('os').cpus();
-    log.info(`CPU model: ${cpuInfos[0].model}, logical cores: ${cpuInfos.length} freq: ${cpuInfos[0].speed} Mhz`); // for perf. issues it's good to know the rough configuration
 
     /**
      * Listen on provided port, on all network interfaces.
@@ -101,11 +116,13 @@ async function startTrilium() {
 
     httpServer.keepAliveTimeout = 120000 * 5;
     const listenOnTcp = port !== 0;
+
     if (listenOnTcp) {
-      httpServer.listen(port, host); // TCP socket.
+        httpServer.listen(port, host); // TCP socket.
     } else {
-      httpServer.listen(host); // Unix socket.
+        httpServer.listen(host); // Unix socket.
     }
+
     httpServer.on('error', error => {
             if (!listenOnTcp || error.syscall !== 'listen') {
                 throw error;
@@ -137,12 +154,5 @@ async function startTrilium() {
         }
     });
 
-    ws.init(httpServer, sessionParser);
-
-    if (utils.isElectron()) {
-        const electronRouting = require('./routes/electron');
-        electronRouting(app);
-    }
+    return httpServer;
 }
-
-startTrilium();
