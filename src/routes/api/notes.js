@@ -8,16 +8,10 @@ const log = require('../../services/log');
 const TaskContext = require('../../services/task_context');
 const becca = require("../../becca/becca");
 const ValidationError = require("../../errors/validation_error");
-const NotFoundError = require("../../errors/not_found_error");
 const blobService = require("../../services/blob");
 
 function getNote(req) {
-    const note = becca.getNote(req.params.noteId);
-    if (!note) {
-        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
-    }
-
-    return note;
+    return becca.getNoteOrThrow(req.params.noteId);
 }
 
 function getNoteBlob(req) {
@@ -27,11 +21,7 @@ function getNoteBlob(req) {
 }
 
 function getNoteMetadata(req) {
-    const note = becca.getNote(req.params.noteId);
-    if (!note) {
-        throw new NotFoundError(`Note '${req.params.noteId}' has not been found.`);
-    }
-
+    const note = becca.getNoteOrThrow(req.params.noteId);
     const contentMetadata = note.getContentMetadata();
 
     return {
@@ -132,11 +122,7 @@ function changeTitle(req) {
     const noteId = req.params.noteId;
     const title = req.body.title;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' has not been found`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     if (!note.isContentAvailable()) {
         throw new ValidationError(`Note '${noteId}' is not available for change`);
@@ -232,11 +218,7 @@ function getDeleteNotesPreview(req) {
 
 function forceSaveNoteRevision(req) {
     const {noteId} = req.params;
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' not found.`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     if (!note.isContentAvailable()) {
         throw new ValidationError(`Note revision of a protected note cannot be created outside of a protected session.`);
@@ -247,11 +229,7 @@ function forceSaveNoteRevision(req) {
 
 function convertNoteToAttachment(req) {
     const {noteId} = req.params;
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' not found.`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     return {
         attachment: note.convertToParentAttachment({ force: true })

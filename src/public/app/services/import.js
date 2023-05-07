@@ -4,7 +4,11 @@ import ws from "./ws.js";
 import utils from "./utils.js";
 import appContext from "../components/app_context.js";
 
-export async function uploadFiles(parentNoteId, files, options) {
+export async function uploadFiles(entityType, parentNoteId, files, options) {
+    if (!['notes', 'attachments'].includes(entityType)) {
+        throw new Error(`Unrecognized import entity type '${entityType}'.`);
+    }
+
     if (files.length === 0) {
         return;
     }
@@ -25,7 +29,7 @@ export async function uploadFiles(parentNoteId, files, options) {
         }
 
         await $.ajax({
-            url: `${window.glob.baseApiUrl}notes/${parentNoteId}/import`,
+            url: `${window.glob.baseApiUrl}notes/${parentNoteId}/${entityType}-import`,
             headers: await server.getHeaders(),
             data: formData,
             dataType: 'json',

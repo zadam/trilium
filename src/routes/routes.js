@@ -180,7 +180,8 @@ function register(app) {
 
 
     route(GET, '/api/branches/:branchId/export/:type/:format/:version/:taskId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
-    route(PST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importToBranch, apiResultHandler);
+    route(PST, '/api/notes/:parentNoteId/notes-import', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importNotesToBranch, apiResultHandler);
+    route(PST, '/api/notes/:parentNoteId/attachments-import', [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], importRoute.importAttachmentsToNote, apiResultHandler);
 
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getEffectiveNoteAttributes);
     apiRoute(PST, '/api/notes/:noteId/attributes', attributesRoute.addNoteAttribute);

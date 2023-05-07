@@ -3,6 +3,7 @@
 const sql = require("../services/sql");
 const NoteSet = require("../services/search/note_set");
 const BAttachment = require("./entities/battachment.js");
+const NotFoundError = require("../errors/not_found_error.js");
 
 /**
  * Becca is a backend cache of all notes, branches and attributes. There's a similar frontend cache Froca.
@@ -78,6 +79,16 @@ class Becca {
         return this.notes[noteId];
     }
 
+    /** @returns {BNote|null} */
+    getNoteOrThrow(noteId) {
+        const note = this.notes[noteId];
+        if (!note) {
+            throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
+        }
+
+        return note;
+    }
+
     /** @returns {BNote[]} */
     getNotes(noteIds, ignoreMissing = false) {
         const filteredNotes = [];
@@ -104,9 +115,28 @@ class Becca {
         return this.branches[branchId];
     }
 
+    /** @returns {BBranch|null} */
+    getBranchOrThrow(branchId) {
+        const branch = this.getBranch(branchId);
+        if (!branch) {
+            throw new NotFoundError(`Branch '${branchId}' was not found in becca.`);
+        }
+        return branch;
+    }
+
     /** @returns {BAttribute|null} */
     getAttribute(attributeId) {
         return this.attributes[attributeId];
+    }
+
+    /** @returns {BAttribute} */
+    getAttributeOrThrow(attributeId) {
+        const attribute = this.getAttribute(attributeId);
+        if (!attribute) {
+            throw new NotFoundError(`Attribute '${attributeId}' does not exist.`);
+        }
+
+        return attribute;
     }
 
     /** @returns {BBranch|null} */
@@ -128,6 +158,15 @@ class Becca {
 
         const BAttachment = require("./entities/battachment"); // avoiding circular dependency problems
         return row ? new BAttachment(row) : null;
+    }
+
+    /** @returns {BAttachment} */
+    getAttachmentOrThrow(attachmentId) {
+        const attachment = this.getAttachment(attachmentId);
+        if (!attachment) {
+            throw new NotFoundError(`Attachment '${attachmentId}' has not been found.`);
+        }
+        return attachment;
     }
 
     /** @returns {BAttachment[]} */

@@ -442,7 +442,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
                         const importService = await import('../services/import.js');
 
-                        importService.uploadFiles(node.data.noteId, files, {
+                        importService.uploadFiles('notes', node.data.noteId, files, {
                             safeImport: true,
                             shrinkImages: true,
                             textImportedAsText: true,

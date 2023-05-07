@@ -1,6 +1,5 @@
 const sql = require('../../services/sql');
 const becca = require('../../becca/becca');
-const NotFoundError = require("../../errors/not_found_error");
 
 function getNoteSize(req) {
     const {noteId} = req.params;
@@ -23,12 +22,7 @@ function getNoteSize(req) {
 }
 
 function getSubtreeSize(req) {
-    const {noteId} = req.params;
-    const note = becca.notes[noteId];
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' was not found.`);
-    }
+    const note = becca.getNoteOrThrow(req.params.noteId);
 
     const subTreeNoteIds = note.getSubtreeNoteIds();
 

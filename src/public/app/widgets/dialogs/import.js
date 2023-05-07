@@ -154,6 +154,6 @@ export default class ImportDialog extends BasicWidget {
 
         this.$widget.modal('hide');
 
-        await importService.uploadFiles(parentNoteId, files, options);
+        await importService.uploadFiles('notes', parentNoteId, files, options);
     }
 }

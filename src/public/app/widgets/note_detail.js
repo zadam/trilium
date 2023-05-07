@@ -116,7 +116,7 @@ export default class NoteDetailWidget extends NoteContextAwareWidget {
 
             const importService = await import('../services/import.js');
 
-            importService.uploadFiles(activeNote.noteId, files, {
+            importService.uploadFiles('notes', activeNote.noteId, files, {
                 safeImport: true,
                 shrinkImages: true,
                 textImportedAsText: true,

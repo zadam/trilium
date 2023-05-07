@@ -27,7 +27,7 @@ function load() {
     const start = Date.now();
     becca.reset();
 
-    // using raw query and passing arrays to avoid allocating new objects
+    // using a raw query and passing arrays to avoid allocating new objects,
     // this is worth it for becca load since it happens every run and blocks the app until finished
 
     for (const row of sql.getRawRows(`SELECT noteId, title, type, mime, isProtected, blobId, dateCreated, dateModified, utcDateCreated, utcDateModified FROM notes WHERE isDeleted = 0`)) {

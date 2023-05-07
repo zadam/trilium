@@ -5,7 +5,6 @@ const becca = require('../../becca/becca');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 const ValidationError = require("../../errors/validation_error");
-const NotFoundError = require("../../errors/not_found_error");
 
 function returnImage(req, res) {
     const image = becca.getNote(req.params.noteId);
@@ -64,11 +63,7 @@ function uploadImage(req) {
     const {noteId} = req.query;
     const {file} = req;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     if (!["image/png", "image/jpg", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         throw new ValidationError(`Unknown image type '${file.mimetype}'`);
@@ -86,11 +81,7 @@ function updateImage(req) {
     const {noteId} = req.params;
     const {file} = req;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     if (!["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"].includes(file.mimetype)) {
         return {

@@ -10,7 +10,6 @@ const TaskContext = require('../../services/task_context');
 const branchService = require("../../services/branches");
 const log = require("../../services/log");
 const ValidationError = require("../../errors/validation_error");
-const NotFoundError = require("../../errors/not_found_error");
 
 /**
  * Code in this file deals with moving and cloning branches. The relationship between note and parent note is unique
@@ -33,16 +32,8 @@ function moveBranchToParent(req) {
 function moveBranchBeforeNote(req) {
     const {branchId, beforeBranchId} = req.params;
 
-    const branchToMove = becca.getBranch(branchId);
-    const beforeBranch = becca.getBranch(beforeBranchId);
-
-    if (!branchToMove) {
-        throw new NotFoundError(`Can't find branch '${branchId}'`);
-    }
-
-    if (!beforeBranch) {
-        throw new NotFoundError(`Can't find branch '${beforeBranchId}'`);
-    }
+    const branchToMove = becca.getBranchOrThrow(branchId);
+    const beforeBranch = becca.getBranchOrThrow(beforeBranchId);
 
     const validationResult = treeService.validateParentChild(beforeBranch.parentNoteId, branchToMove.noteId, branchId);
 
@@ -192,11 +183,7 @@ function setExpandedForSubtree(req) {
 function deleteBranch(req) {
     const last = req.query.last === 'true';
     const eraseNotes = req.query.eraseNotes === 'true';
-    const branch = becca.getBranch(req.params.branchId);
-
-    if (!branch) {
-        throw new NotFoundError(`Branch '${req.params.branchId}' not found`);
-    }
+    const branch = becca.getBranchOrThrow(req.params.branchId);
 
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 

@@ -12,8 +12,6 @@ const sanitizeFilename = require('sanitize-filename');
 const isSvg = require('is-svg');
 const isAnimated = require('is-animated');
 const htmlSanitizer = require("./html_sanitizer");
-const {attach} = require("jsdom/lib/jsdom/living/helpers/svg/basic-types.js");
-const NotFoundError = require("../errors/not_found_error.js");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const compressImages = optionService.getOptionBool("compressImages");
@@ -142,11 +140,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
     }
 
     const fileName = sanitizeFilename(originalName);
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Could not find note '${noteId}'`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     const attachment = note.saveAttachment({
         role: 'image',

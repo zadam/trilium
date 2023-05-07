@@ -6,7 +6,6 @@ const attributeService = require('../../services/attributes');
 const BAttribute = require('../../becca/entities/battribute');
 const becca = require("../../becca/becca");
 const ValidationError = require("../../errors/validation_error");
-const NotFoundError = require("../../errors/not_found_error");
 
 function getEffectiveNoteAttributes(req) {
     const note = becca.getNote(req.params.noteId);
@@ -20,11 +19,7 @@ function updateNoteAttribute(req) {
 
     let attribute;
     if (body.attributeId) {
-        attribute = becca.getAttribute(body.attributeId);
-
-        if (!attribute) {
-            throw new NotFoundError(`Attribute '${body.attributeId}' does not exist.`);
-        }
+        attribute = becca.getAttributeOrThrow(body.attributeId);
 
         if (attribute.noteId !== noteId) {
             throw new ValidationError(`Attribute '${body.attributeId}' is not owned by ${noteId}`);

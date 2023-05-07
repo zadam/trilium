@@ -10,14 +10,10 @@ const { Readable } = require('stream');
 const chokidar = require('chokidar');
 const ws = require('../../services/ws');
 const becca = require("../../becca/becca");
-const NotFoundError = require("../../errors/not_found_error");
 const ValidationError = require("../../errors/validation_error.js");
 
 function updateFile(req) {
-    const note = becca.getNote(req.params.noteId);
-    if (!note) {
-        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
-    }
+    const note = becca.getNoteOrThrow(req.params.noteId);
 
     const file = req.file;
     note.saveNoteRevision();
@@ -37,11 +33,7 @@ function updateFile(req) {
 }
 
 function updateAttachment(req) {
-    const attachment = becca.getAttachment(req.params.attachmentId);
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
-    }
-
+    const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const file = req.file;
     attachment.getNote().saveNoteRevision();
 
@@ -107,20 +99,14 @@ const openAttachment = (req, res) => downloadAttachmentInt(req.params.attachment
 
 function fileContentProvider(req) {
     // Read the file name from route params.
-    const note = becca.getNote(req.params.noteId);
-    if (!note) {
-        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
-    }
+    const note = becca.getNoteOrThrow(req.params.noteId);
 
     return streamContent(note.getContent(), note.getFileName(), note.mime);
 }
 
 function attachmentContentProvider(req) {
     // Read the file name from route params.
-    const attachment = becca.getAttachment(req.params.attachmentId);
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
-    }
+    const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
 
     return streamContent(attachment.getContent(), attachment.getFileName(), attachment.mime);
 }
@@ -152,11 +138,7 @@ function streamContent(content, fileName, mimeType) {
 }
 
 function saveNoteToTmpDir(req) {
-    const note = becca.getNote(req.params.noteId);
-    if (!note) {
-        throw new NotFoundError(`Note '${req.params.noteId}' doesn't exist.`);
-    }
-
+    const note = becca.getNoteOrThrow(req.params.noteId);
     const fileName = note.getFileName();
     const content = note.getContent();
 
@@ -164,11 +146,7 @@ function saveNoteToTmpDir(req) {
 }
 
 function saveAttachmentToTmpDir(req) {
-    const attachment = becca.getAttachment(req.params.attachmentId);
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${req.params.attachmentId}' doesn't exist.`);
-    }
-
+    const attachment = becca.getAttachmentOrThrow(req.params.attachmentId);
     const fileName = attachment.getFileName();
     const content = attachment.getContent();
 
@@ -204,11 +182,7 @@ function uploadModifiedFileToNote(req) {
     const noteId = req.params.noteId;
     const {filePath} = req.body;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' has not been found`);
-    }
+    const note = becca.getNoteOrThrow(noteId);
 
     log.info(`Updating note '${noteId}' with content from '${filePath}'`);
 
@@ -227,11 +201,7 @@ function uploadModifiedFileToAttachment(req) {
     const {attachmentId} = req.params;
     const {filePath} = req.body;
 
-    const attachment = becca.getAttachment(attachmentId);
-
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${attachmentId}' has not been found`);
-    }
+    const attachment = becca.getAttachmentOrThrow(attachmentId);
 
     log.info(`Updating attachment '${attachmentId}' with content from '${filePath}'`);
 

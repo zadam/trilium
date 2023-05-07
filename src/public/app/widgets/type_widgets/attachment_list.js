@@ -37,7 +37,10 @@ export default class AttachmentListTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.$linksWrapper.append(
             "Owning note: ",
-            await linkService.createNoteLink(this.noteId)
+            await linkService.createNoteLink(this.noteId),
+            $('<button class="btn btn-sm">')
+                .text("Upload attachments")
+                .on('click', () => this.triggerCommand("showUploadAttachmentsDialog", {noteId: this.noteId}))
         );
 
         this.$list.empty();

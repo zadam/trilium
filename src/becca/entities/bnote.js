@@ -11,7 +11,6 @@ const BAttachment = require("./battachment");
 const TaskContext = require("../../services/task_context");
 const dayjs = require("dayjs");
 const utc = require('dayjs/plugin/utc');
-const NotFoundError = require("../../errors/not_found_error.js");
 const eventService = require("../../services/events.js");
 dayjs.extend(utc);
 
@@ -1622,11 +1621,7 @@ class BNote extends AbstractBeccaEntity {
         let attachment;
 
         if (attachmentId) {
-            attachment = this.becca.getAttachment(attachmentId);
-
-            if (!attachment) {
-                throw new NotFoundError(`Attachment '${attachmentId}' has not been found.`);
-            }
+            attachment = this.becca.getAttachmentOrThrow(attachmentId);
         } else {
             attachment = new BAttachment({
                 parentId: this.noteId,

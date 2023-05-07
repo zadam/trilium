@@ -1,5 +1,4 @@
 const becca = require("../../becca/becca");
-const NotFoundError = require("../../errors/not_found_error");
 const utils = require("../../services/utils");
 const blobService = require("../../services/blob.js");
 
@@ -11,13 +10,7 @@ function getAttachmentBlob(req) {
 
 function getAttachments(req) {
     const includeContent = req.query.includeContent === 'true';
-    const {noteId} = req.params;
-
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
+    const note = becca.getNoteOrThrow(req.params.noteId);
 
     return note.getAttachments()
         .map(attachment => processAttachment(attachment, includeContent));
@@ -27,11 +20,7 @@ function getAttachment(req) {
     const includeContent = req.query.includeContent === 'true';
     const {attachmentId} = req.params;
 
-    const attachment = becca.getAttachment(attachmentId);
-
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${attachmentId}' doesn't exist.`);
-    }
+    const attachment = becca.getAttachmentOrThrow(attachmentId);
 
     return processAttachment(attachment, includeContent);
 }
@@ -62,12 +51,7 @@ function saveAttachment(req) {
     const {noteId} = req.params;
     const {attachmentId, role, mime, title, content} = req.body;
 
-    const note = becca.getNote(noteId);
-
-    if (!note) {
-        throw new NotFoundError(`Note '${noteId}' doesn't exist.`);
-    }
-
+    const note = becca.getNoteOrThrow(noteId);
     note.saveAttachment({attachmentId, role, mime, title, content});
 }
 
@@ -84,12 +68,7 @@ function deleteAttachment(req) {
 function convertAttachmentToNote(req) {
     const {attachmentId} = req.params;
 
-    const attachment = becca.getAttachment(attachmentId);
-
-    if (!attachment) {
-        throw new NotFoundError(`Attachment '${attachmentId}' doesn't exist.`);
-    }
-
+    const attachment = becca.getAttachmentOrThrow(attachmentId);
     return attachment.convertToNote();
 }
 
