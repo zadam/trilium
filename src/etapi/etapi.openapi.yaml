@@ -318,29 +318,7 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Error'
-  /branches/{branchId}:
-    parameters:
-      - name: branchId
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/EntityId'
-    get:
-      description: Returns a branch identified by its ID
-      operationId: getBranchById
-      responses:
-        '200':
-          description: branch response
-          content:
-            application/json; charset=utf-8:
-              schema:
-                $ref: '#/components/schemas/Branch'
-        default:
-          description: unexpected error
-          content:
-            application/json; charset=utf-8:
-              schema:
-                $ref: '#/components/schemas/Error'
+  /branches:
     post:
       description: >
         Create a branch (clone a note to a different location in the tree).
@@ -362,6 +340,29 @@ paths:
                 $ref: '#/components/schemas/Branch'
         '201':
           description: branch created
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Branch'
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /branches/{branchId}:
+    parameters:
+      - name: branchId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/EntityId'
+    get:
+      description: Returns a branch identified by its ID
+      operationId: getBranchById
+      responses:
+        '200':
+          description: branch response
           content:
             application/json; charset=utf-8:
               schema:
@@ -408,6 +409,29 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Error'
+  /attributes:
+    post:
+      description: create an attribute for a given note
+      operationId: postAttribute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attribute'
+      responses:
+        '201':
+          description: attribute created
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Attribute'
+        default:
+          description: unexpected error
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
   /attributes/{attributeId}:
     parameters:
       - name: attributeId
@@ -421,28 +445,6 @@ paths:
       responses:
         '200':
           description: attribute response
-          content:
-            application/json; charset=utf-8:
-              schema:
-                $ref: '#/components/schemas/Attribute'
-        default:
-          description: unexpected error
-          content:
-            application/json; charset=utf-8:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
-      description: create an attribute for a given note
-      operationId: postAttribute
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Attribute'
-      responses:
-        '201':
-          description: attribute created
           content:
             application/json; charset=utf-8:
               schema:
