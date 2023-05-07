@@ -76,6 +76,10 @@ class AppContext extends Component {
         $("body").append($renderedWidget);
 
         $renderedWidget.on('click', "[data-trigger-command]", function() {
+            if ($(this).hasClass("disabled")) {
+                return;
+            }
+
             const commandName = $(this).attr('data-trigger-command');
             const $component = $(this).closest(".component");
             const component = $component.prop("component");

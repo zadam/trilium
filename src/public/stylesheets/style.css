@@ -195,6 +195,12 @@ div.ui-tooltip {
     pointer-events: none;
 }
 
+.dropdown-menu .disabled .disabled-tooltip {
+    pointer-events: all;
+    color: var(--menu-text-color);
+    cursor: help;
+}
+
 .dropdown-menu a:hover:not(.disabled), .dropdown-item:hover:not(.disabled) {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;

@@ -67,13 +67,13 @@ const TPL = `
 </div>`;
 
 export default class AttachmentDetailWidget extends BasicWidget {
-    constructor(attachment) {
+    constructor(attachment, isFullDetail) {
         super();
 
         this.contentSized();
         this.attachment = attachment;
-        this.attachmentActionsWidget = new AttachmentActionsWidget(attachment);
-        this.isFullDetail = true;
+        this.attachmentActionsWidget = new AttachmentActionsWidget(attachment, isFullDetail);
+        this.isFullDetail = isFullDetail;
         this.child(this.attachmentActionsWidget);
     }
 

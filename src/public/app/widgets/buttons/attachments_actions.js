@@ -29,10 +29,8 @@ const TPL = `
         aria-expanded="false" class="icon-action icon-action-always-border bx bx-dots-vertical-rounded"></button>
 
     <div class="dropdown-menu dropdown-menu-right">
-        <a data-trigger-command="openAttachment" class="dropdown-item">Open</a>
-        <a data-trigger-command="openAttachmentExternally" class="dropdown-item"
-           title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">
-            Open externally</a>
+        <a data-trigger-command="openAttachment" class="dropdown-item"
+            title="File will be open in an external application and watched for changes. You'll then be able to upload the modified version back to Trilium.">Open externally</a>
         <a data-trigger-command="downloadAttachment" class="dropdown-item">Download</a>
         <a data-trigger-command="uploadNewAttachmentRevision" class="dropdown-item">Upload new revision</a>
         <a data-trigger-command="copyAttachmentReferenceToClipboard" class="dropdown-item">Copy reference to clipboard</a>
@@ -44,10 +42,11 @@ const TPL = `
 </div>`;
 
 export default class AttachmentActionsWidget extends BasicWidget {
-    constructor(attachment) {
+    constructor(attachment, isFullDetail) {
         super();
 
         this.attachment = attachment;
+        this.isFullDetail = isFullDetail;
     }
 
     get attachmentId() {
@@ -83,6 +82,17 @@ export default class AttachmentActionsWidget extends BasicWidget {
                 toastService.showError("Upload of a new attachment revision failed.");
             }
         });
+
+        if (!this.isFullDetail) {
+            // we deactivate this button because the WatchedFileUpdateStatusWidget assumes only one visible attachment
+            // in a note context, so it doesn't work in a list
+            const $openAttachmentButton = this.$widget.find("[data-trigger-command='openAttachment']");
+            $openAttachmentButton
+                .addClass("disabled")
+                .append($('<span class="disabled-tooltip"> (?)</span>')
+                    .attr("title", "Opening attachment externally is available only from the detail page, please first click on the attachment detail first and repeat the action.")
+                );
+        }
     }
 
     async openAttachmentCommand() {
@@ -99,10 +109,6 @@ export default class AttachmentActionsWidget extends BasicWidget {
 
     async copyAttachmentReferenceToClipboardCommand() {
         this.parent.copyAttachmentReferenceToClipboard();
-    }
-
-    async openAttachmentExternallyCommand() {
-        await openService.openAttachmentExternally(this.attachmentId, this.attachment.mime);
     }
 
     async deleteAttachmentCommand() {

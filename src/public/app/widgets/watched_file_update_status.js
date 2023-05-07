@@ -12,7 +12,7 @@ const TPL = `
     </style>
     
     <p>File <code class="file-path"></code> has been last modified on <span class="file-last-modified"></span>.</p> 
-        
+
     <div style="display: flex; flex-direction: row; justify-content: space-evenly;">
         <button class="btn btn-sm file-upload-button">Upload modified file</button>
         

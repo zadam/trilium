@@ -37,8 +37,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
             return;
         }
 
-        const attachmentDetailWidget = new AttachmentDetailWidget(attachment);
-        attachmentDetailWidget.isFullDetail = true;
+        const attachmentDetailWidget = new AttachmentDetailWidget(attachment, true);
         this.child(attachmentDetailWidget);
 
         this.$wrapper.append(attachmentDetailWidget.render());

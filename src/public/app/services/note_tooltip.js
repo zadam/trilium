@@ -27,7 +27,7 @@ async function mouseEnterHandler() {
         return;
     }
 
-    // this is to avoid showing tooltip from inside CKEditor link editor dialog
+    // this is to avoid showing tooltip from inside the CKEditor link editor dialog
     if ($link.closest(".ck-link-actions").length) {
         return;
     }
