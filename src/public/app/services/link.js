@@ -83,7 +83,7 @@ function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
     const params = [
         ntxId ? { ntxId: ntxId } : null,
         (hoistedNoteId && hoistedNoteId !== 'root') ? { hoistedNoteId: hoistedNoteId } : null,
-        viewScope.viewMode !== 'default' ? { viewMode: viewScope.viewMode } : null,
+        viewScope.viewMode && viewScope.viewMode !== 'default' ? { viewMode: viewScope.viewMode } : null,
         viewScope.attachmentId ? { attachmentId: viewScope.attachmentId } : null
     ].filter(p => !!p);
 

@@ -1,6 +1,7 @@
 import TypeWidget from "./type_widget.js";
 import server from "../../services/server.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
+import linkService from "../../services/link.js";
 
 const TPL = `
 <div class="attachment-list note-detail-printable">
@@ -8,7 +9,14 @@ const TPL = `
         .attachment-list {
             padding: 15px;
         }
+        
+        .attachment-list .links-wrapper {
+            font-size: larger;
+            margin-bottom: 15px;
+        }
     </style>
+    
+    <div class="links-wrapper"></div>
 
     <div class="attachment-list-wrapper"></div>
 </div>`;
@@ -21,11 +29,17 @@ export default class AttachmentListTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$list = this.$widget.find('.attachment-list-wrapper');
+        this.$linksWrapper = this.$widget.find('.links-wrapper');
 
         super.doRender();
     }
 
     async doRefresh(note) {
+        this.$linksWrapper.append(
+            "Owning note: ",
+            await linkService.createNoteLink(this.noteId)
+        );
+
         this.$list.empty();
         this.children = [];
         this.renderedAttachmentIds = new Set();

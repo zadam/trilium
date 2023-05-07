@@ -9,6 +9,11 @@ const TPL = `
         .attachment-detail {
             padding: 15px;
         }
+        
+        .attachment-detail .links-wrapper {
+            padding: 16px;
+            font-size: larger;
+        }
     </style>
 
     <div class="links-wrapper"></div>
@@ -24,6 +29,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
     doRender() {
         this.$widget = $(TPL);
         this.$wrapper = this.$widget.find('.attachment-wrapper');
+        this.$linksWrapper = this.$widget.find('.links-wrapper');
 
         super.doRender();
     }
@@ -32,7 +38,17 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
         this.$wrapper.empty();
         this.children = [];
 
-        linkService.createNoteLink(this.noteId, {});
+        this.$linksWrapper.append(
+            "Owning note: ",
+            await linkService.createNoteLink(this.noteId),
+            ", you can also open the ",
+            await linkService.createNoteLink(this.noteId, {
+                title: 'List of all attachments',
+                viewScope: {
+                    viewMode: 'attachments'
+                }
+            })
+        );
 
         const attachment = await server.get(`attachments/${this.attachmentId}/?includeContent=true`);
 
