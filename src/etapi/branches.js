@@ -21,7 +21,7 @@ function register(router) {
         'isExpanded': [v.notNull, v.isBoolean]
     };
 
-    eu.route(router, 'post' ,'/etapi/branches/:branchId', (req, res, next) => {
+    eu.route(router, 'post' ,'/etapi/branches', (req, res, next) => {
         const params = {};
 
         eu.validateAndPatch(params, req.body, ALLOWED_PROPERTIES_FOR_CREATE_BRANCH);
