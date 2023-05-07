@@ -701,9 +701,8 @@ export default class AttributeDetailWidget extends NoteContextAwareWidget {
 
     createNoteLink(noteId) {
         return $("<a>", {
-            href: `#${noteId}`,
-            class: 'reference-link',
-            'data-note-path': noteId
+            href: `#root/${noteId}`,
+            class: 'reference-link'
         });
     }
 

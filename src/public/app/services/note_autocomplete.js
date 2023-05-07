@@ -114,8 +114,7 @@ function initNoteAutocomplete($el, options) {
             .prop("title", "Show recent notes");
 
     const $goToSelectedNoteButton = $("<a>")
-        .addClass("input-group-text go-to-selected-note-button bx bx-arrow-to-right")
-        .attr("data-action", "note");
+        .addClass("input-group-text go-to-selected-note-button bx bx-arrow-to-right");
 
     const $sideButtons = $("<div>")
         .addClass("input-group-append")

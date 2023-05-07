@@ -268,7 +268,7 @@ class NoteListRenderer {
 
         const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
         const notePath = this.parentNote.type === 'search'
-            ? note.noteId // for search note parent we want to display non-search path
+            ? note.noteId // for search note parent, we want to display a non-search path
             : `${this.parentNote.noteId}/${note.noteId}`;
 
         const $card = $('<div class="note-book-card">')
@@ -288,7 +288,7 @@ class NoteListRenderer {
         if (this.viewType === 'grid') {
             $card
                 .addClass("block-link")
-                .attr("data-note-path", notePath)
+                .attr("data-href", `#${notePath}`)
                 .on('click', e => linkService.goToLink(e));
         }
 

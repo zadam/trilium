@@ -55,7 +55,7 @@ export default class HistoryNavigationButton extends ButtonFromNoteWidget {
         for (const idx in this.webContents.history) {
             const url = this.webContents.history[idx];
             const [_, notePathWithTab] = url.split('#');
-            // broken: use treeService.parseNavigationStateFromAddress();
+            // broken: use linkService.parseNavigationStateFromUrl();
             const [notePath, ntxId] = notePathWithTab.split('-');
 
             const title = await treeService.getNotePathTitle(notePath);

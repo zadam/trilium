@@ -32,7 +32,8 @@ async function mouseEnterHandler() {
         return;
     }
 
-    const { notePath, noteId, viewScope } = linkService.parseNotePathAndScope($link);
+    const url = $link.attr("href") || $link.attr("data-href");
+    const { notePath, noteId, viewScope } = linkService.parseNavigationStateFromUrl(url);
 
     if (!notePath || viewScope.viewMode !== 'default') {
         return;

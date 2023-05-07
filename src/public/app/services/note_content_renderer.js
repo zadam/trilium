@@ -54,9 +54,9 @@ async function getRenderedContent(note, options = {}) {
         }
     }
     else if (type === 'code') {
-        const fullNote = await server.get(`notes/${note.noteId}`);
+        const blob = await note.getBlob({ preview: options.trim });
 
-        $renderedContent.append($("<pre>").text(trim(fullNote.content, options.trim)));
+        $renderedContent.append($("<pre>").text(trim(blob.content, options.trim)));
     }
     else if (type === 'image') {
         const sanitizedTitle = note.title.replace(/[^a-z0-9-.]/gi, "");

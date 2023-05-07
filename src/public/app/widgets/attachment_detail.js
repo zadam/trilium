@@ -4,6 +4,7 @@ import BasicWidget from "./basic_widget.js";
 import server from "../services/server.js";
 import options from "../services/options.js";
 import imageService from "../services/image.js";
+import linkService from "../services/link.js";
 
 const TPL = `
 <div class="attachment-detail">
@@ -15,6 +16,7 @@ const TPL = `
         .attachment-title-line {
             display: flex;
             align-items: baseline;
+            gap: 1em;
         }
         
         .attachment-details {
@@ -54,10 +56,10 @@ const TPL = `
 
     <div class="attachment-detail-wrapper">
         <div class="attachment-title-line">
+            <div class="attachment-actions-container"></div>
             <h4 class="attachment-title"></h4>                
             <div class="attachment-details"></div>
             <div style="flex: 1 1;"></div>
-            <div class="attachment-actions-container"></div>
         </div>
         
         <div class="attachment-deletion-warning alert alert-info"></div>
@@ -84,7 +86,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
         super.doRender();
     }
 
-    refresh() {
+    async refresh() {
         this.$widget.find('.attachment-detail-wrapper')
             .empty()
             .append(
@@ -97,11 +99,13 @@ export default class AttachmentDetailWidget extends BasicWidget {
 
         if (!this.isFullDetail) {
             this.$wrapper.find('.attachment-title').append(
-                $('<a href="javascript:">')
-                    .attr("data-note-path", this.attachment.parentId)
-                    .attr("data-view-mode", "attachments")
-                    .attr("data-attachment-id", this.attachment.attachmentId)
-                    .text(this.attachment.title)
+                await linkService.createNoteLink(this.attachment.parentId, {
+                    title: this.attachment.title,
+                    viewScope: {
+                        viewMode: 'attachments',
+                        attachmentId: this.attachment.attachmentId
+                    }
+                })
             );
         } else {
             this.$wrapper.find('.attachment-title')

@@ -279,50 +279,6 @@ async function getNoteTitleWithPathAsSuffix(notePath) {
     return $titleWithPath;
 }
 
-function parseNavigationStateFromAddress() {
-    const str = document.location.hash?.substr(1) || ""; // strip initial #
-
-    const [notePath, paramString] = str.split("?");
-    const viewScope = {
-        viewMode: 'default'
-    };
-    let ntxId = null;
-    let hoistedNoteId = null;
-
-    if (paramString) {
-        for (const pair of paramString.split("&")) {
-            let [name, value] = pair.split("=");
-            name = decodeURIComponent(name);
-            value = decodeURIComponent(value);
-
-            if (name === 'ntxId') {
-                ntxId = value;
-            } else if (name === 'hoistedNoteId') {
-                hoistedNoteId = value;
-            } else if (['viewMode', 'attachmentId'].includes(name)) {
-                viewScope[name] = value;
-            } else {
-                console.warn(`Unrecognized hash parameter '${name}'.`);
-            }
-        }
-    }
-
-    return {
-        notePath,
-        ntxId,
-        hoistedNoteId,
-        viewScope
-    };
-}
-
-function isNotePathInAddress() {
-    const {notePath, ntxId} = parseNavigationStateFromAddress();
-
-    return notePath.startsWith("root")
-        // empty string is for empty/uninitialized tab
-        || (notePath === '' && !!ntxId);
-}
-
 function isNotePathInHiddenSubtree(notePath) {
     return notePath?.includes("root/_hidden");
 }
@@ -338,7 +294,5 @@ export default {
     getNoteTitle,
     getNotePathTitle,
     getNoteTitleWithPathAsSuffix,
-    parseNavigationStateFromAddress,
-    isNotePathInAddress,
     isNotePathInHiddenSubtree
 };

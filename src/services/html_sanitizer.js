@@ -33,7 +33,7 @@ function sanitize(dirtyHtml) {
             'en-media' // for ENEX import
         ],
         allowedAttributes: {
-            'a': [ 'href', 'class', 'data-note-path' ],
+            'a': [ 'href', 'class' ],
             'img': [ 'src' ],
             'section': [ 'class', 'data-note-id' ],
             'figure': [ 'class' ],

@@ -52,14 +52,13 @@ export default class TabManager extends Component {
 
     async loadTabs() {
         try {
-            const noteContextsToOpen = appContext.isMainWindow
-                ? (options.getJson('openNoteContexts') || [])
-                : [];
+            const noteContextsToOpen = (appContext.isMainWindow && options.getJson('openNoteContexts')) || [];
 
             // preload all notes at once
             await froca.getNotes([
-                    ...noteContextsToOpen.map(tab => treeService.getNoteIdFromNotePath(tab.notePath)),
-                    ...noteContextsToOpen.map(tab => tab.hoistedNoteId),
+                    ...noteContextsToOpen.flatMap(tab =>
+                        [ treeService.getNoteIdFromNotePath(tab.notePath), tab.hoistedNoteId]
+                    ),
             ], true);
 
             const filteredNoteContexts = noteContextsToOpen.filter(openTab => {
@@ -81,7 +80,7 @@ export default class TabManager extends Component {
             });
 
             // resolve before opened tabs can change this
-            const parsedFromUrl = treeService.parseNavigationStateFromAddress();
+            const parsedFromUrl = linkService.parseNavigationStateFromUrl(window.location.href);
 
             if (filteredNoteContexts.length === 0) {
                 parsedFromUrl.ntxId = parsedFromUrl.ntxId || NoteContext.generateNtxId(); // generate already here, so that we later know which one to activate
@@ -109,8 +108,8 @@ export default class TabManager extends Component {
                 }
             });
 
-            // if there's notePath in the URL, make sure it's open and active
-            // (useful, for e.g. opening clipped notes from clipper or opening link in an extra window)
+            // if there's a notePath in the URL, make sure it's open and active
+            // (useful, for e.g., opening clipped notes from clipper or opening link in an extra window)
             if (parsedFromUrl.notePath) {
                 await appContext.tabManager.switchToNoteContext(
                     parsedFromUrl.ntxId,

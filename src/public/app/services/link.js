@@ -19,21 +19,17 @@ async function createNoteLink(notePath, options = {}) {
 
     if (!notePath.startsWith("root")) {
         // all note paths should start with "root/" (except for "root" itself)
-        // used e.g., to find internal links
+        // used, e.g., to find internal links
         notePath = `root/${notePath}`;
     }
 
-    let noteTitle = options.title;
     const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
     const showNoteIcon = options.showNoteIcon === undefined ? false : options.showNoteIcon;
     const referenceLink = options.referenceLink === undefined ? false : options.referenceLink;
 
-    const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
-
-    if (!noteTitle) {
-        noteTitle = await treeService.getNoteTitle(noteId, parentNoteId);
-    }
+    const { noteId, parentNoteId } = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+    const noteTitle = options.title || await treeService.getNoteTitle(noteId, parentNoteId);
 
     const $container = $("<span>");
 
@@ -45,11 +41,15 @@ async function createNoteLink(notePath, options = {}) {
             .append(" ");
     }
 
+    const hash = calculateHash({
+        notePath,
+        viewScope: options.viewScope
+    });
+
     const $noteLink = $("<a>", {
-        href: `#${notePath}`,
+        href: hash,
         text: noteTitle
-    }).attr('data-action', 'note')
-        .attr('data-note-path', notePath);
+    });
 
     if (!showTooltip) {
         $noteLink.addClass("no-tooltip-preview");
@@ -76,27 +76,6 @@ async function createNoteLink(notePath, options = {}) {
     }
 
     return $container;
-}
-
-function parseNotePathAndScope($link) {
-    let notePath = $link.attr("data-note-path");
-
-    if (!notePath) {
-        const url = $link.attr('href');
-
-        notePath = url ? getNotePathFromUrl(url) : null;
-    }
-
-    const viewScope = {
-        viewMode: $link.attr('data-view-mode') || 'default',
-        attachmentId: $link.attr('data-attachment-id'),
-    };
-
-    return {
-        notePath,
-        noteId: treeService.getNoteIdFromNotePath(notePath),
-        viewScope
-    };
 }
 
 function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
@@ -128,9 +107,50 @@ function calculateHash({notePath, ntxId, hoistedNoteId, viewScope = {}}) {
     return hash;
 }
 
+function parseNavigationStateFromUrl(url) {
+    const hashIdx = url?.indexOf('#');
+    if (hashIdx === -1) {
+        return {};
+    }
+
+    const hash = url?.substr(hashIdx + 1); // strip also the initial '#'
+    const [notePath, paramString] = hash.split("?");
+    const viewScope = {
+        viewMode: 'default'
+    };
+    let ntxId = null;
+    let hoistedNoteId = null;
+
+    if (paramString) {
+        for (const pair of paramString.split("&")) {
+            let [name, value] = pair.split("=");
+            name = decodeURIComponent(name);
+            value = decodeURIComponent(value);
+
+            if (name === 'ntxId') {
+                ntxId = value;
+            } else if (name === 'hoistedNoteId') {
+                hoistedNoteId = value;
+            } else if (['viewMode', 'attachmentId'].includes(name)) {
+                viewScope[name] = value;
+            } else {
+                console.warn(`Unrecognized hash parameter '${name}'.`);
+            }
+        }
+    }
+
+    return {
+        notePath,
+        noteId: treeService.getNoteIdFromNotePath(notePath),
+        ntxId,
+        hoistedNoteId,
+        viewScope
+    };
+}
+
 function goToLink(evt) {
     const $link = $(evt.target).closest("a,.block-link");
-    const hrefLink = $link.attr('href');
+    const hrefLink = $link.attr('href') || $link.attr('data-href');
 
     if (hrefLink?.startsWith("data:")) {
         return true;
@@ -139,7 +159,7 @@ function goToLink(evt) {
     evt.preventDefault();
     evt.stopPropagation();
 
-    const { notePath, viewScope } = parseNotePathAndScope($link);
+    const { notePath, viewScope } = parseNavigationStateFromUrl(hrefLink);
 
     const ctrlKey = utils.isCtrlKey(evt);
     const isLeftClick = evt.which === 1;
@@ -186,8 +206,9 @@ function goToLink(evt) {
 
 function linkContextMenu(e) {
     const $link = $(e.target).closest("a");
+    const url = $link.attr("href") || $link.attr("data-href");
 
-    const { notePath, viewScope } = parseNotePathAndScope($link);
+    const { notePath, viewScope } = parseNavigationStateFromUrl(url);
 
     if (!notePath) {
         return;
@@ -252,6 +273,6 @@ export default {
     createNoteLink,
     goToLink,
     loadReferenceLinkTitle,
-    parseNotePathAndScope,
-    calculateHash
+    calculateHash,
+    parseNavigationStateFromUrl
 };

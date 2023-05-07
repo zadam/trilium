@@ -1,6 +1,7 @@
 import TypeWidget from "./type_widget.js";
 import server from "../../services/server.js";
 import AttachmentDetailWidget from "../attachment_detail.js";
+import linkService from "../../services/link.js";
 
 const TPL = `
 <div class="attachment-detail note-detail-printable">
@@ -9,6 +10,8 @@ const TPL = `
             padding: 15px;
         }
     </style>
+
+    <div class="links-wrapper"></div>
 
     <div class="attachment-wrapper"></div>
 </div>`;
@@ -28,6 +31,8 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.$wrapper.empty();
         this.children = [];
+
+        linkService.createNoteLink(this.noteId, {});
 
         const attachment = await server.get(`attachments/${this.attachmentId}/?includeContent=true`);
 
