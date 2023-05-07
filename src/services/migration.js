@@ -7,11 +7,6 @@ const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 
 async function migrate() {
-    const migrations = [];
-
-    // backup before attempting migration
-    await backupService.backupNow("before-migration");
-
     const currentDbVersion = getDbVersion();
 
     if (currentDbVersion < 183) {
@@ -21,27 +16,35 @@ async function migrate() {
         return;
     }
 
-    fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
+    // backup before attempting migration
+    await backupService.backupNow(
+        // special name for the pre-0.60 migration to prevent later overwrite
+        currentDbVersion < 214
+            ? `before-migration-v${currentDbVersion}`
+            : 'before-migration'
+    );
+
+    const migrations = fs.readdirSync(resourceDir.MIGRATIONS_DIR).map(file => {
         const match = file.match(/^([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)$/);
-
-        if (match) {
-            const dbVersion = parseInt(match[1]);
-
-            if (dbVersion > currentDbVersion) {
-                const name = match[2];
-                const type = match[3];
-
-                const migrationRecord = {
-                    dbVersion: dbVersion,
-                    name: name,
-                    file: file,
-                    type: type
-                };
-
-                migrations.push(migrationRecord);
-            }
+        if (!match) {
+            return null;
         }
-    });
+
+        const dbVersion = parseInt(match[1]);
+        if (dbVersion > currentDbVersion) {
+            const name = match[2];
+            const type = match[3];
+
+            return {
+                dbVersion: dbVersion,
+                name: name,
+                file: file,
+                type: type
+            };
+        } else {
+            return null;
+        }
+    }).filter(el => !!el);
 
     migrations.sort((a, b) => a.dbVersion - b.dbVersion);
 
