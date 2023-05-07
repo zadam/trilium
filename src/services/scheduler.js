@@ -46,6 +46,8 @@ sqlInit.dbReady.then(() => {
         setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
         setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);
+
+        setInterval(cls.wrap(() => hiddenSubtreeService.checkHiddenSubtree()), 7 * 3600 * 1000);
     }
 
     setInterval(() => protectedSessionService.checkProtectedSessionExpiration(), 30000);
