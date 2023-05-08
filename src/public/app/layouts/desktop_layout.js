@@ -75,6 +75,7 @@ import CodeButtonsWidget from "../widgets/floating_buttons/code_buttons.js";
 import ApiLogWidget from "../widgets/api_log.js";
 import HideFloatingButtonsButton from "../widgets/floating_buttons/hide_floating_buttons_button.js";
 import ScriptExecutorWidget from "../widgets/ribbon_widgets/script_executor.js";
+import UploadAttachmentsDialog from "../widgets/dialogs/upload_attachments.js";
 
 export default class DesktopLayout {
     constructor(customWidgets) {
@@ -200,6 +201,7 @@ export default class DesktopLayout {
             .child(new MoveToDialog())
             .child(new ImportDialog())
             .child(new ExportDialog())
+            .child(new UploadAttachmentsDialog())
             .child(new MarkdownImportDialog())
             .child(new ProtectedSessionPasswordDialog())
             .child(new NoteRevisionsDialog())

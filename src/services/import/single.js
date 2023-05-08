@@ -178,6 +178,34 @@ function importHtml(taskContext, file, parentNote) {
     return note;
 }
 
+/**
+ * @param {TaskContext} taskContext
+ * @param file
+ * @param {BNote} parentNote
+ * @returns {BNote}
+ */
+function importAttachment(taskContext, file, parentNote) {
+    const mime = mimeService.getMime(file.originalname) || file.mimetype;
+
+    console.log("mime", mime);
+
+    if (mime.startsWith("image/")) {
+        imageService.saveImageToAttachment(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
+
+        taskContext.increaseProgressCount();
+    } else {
+        parentNote.saveAttachment({
+            title: file.originalname,
+            content: file.buffer,
+            role: 'file',
+            mime: mime
+        });
+
+        taskContext.increaseProgressCount();
+    }
+}
+
 module.exports = {
-    importSingleFile
+    importSingleFile,
+    importAttachment
 };

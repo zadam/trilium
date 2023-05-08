@@ -21,7 +21,7 @@ const TPL = `
 
                         <input type="file" class="import-file-upload-input form-control-file" multiple />
 
-                        <p>Content of the file will be imported as child note(s) into <strong class="import-note-title"></strong>.
+                        <p>Content of the selected file(s) will be imported as child note(s) into <strong class="import-note-title"></strong>.
                     </div>
 
                     <div class="form-group">

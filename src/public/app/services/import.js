@@ -54,7 +54,7 @@ function makeToast(id, message) {
 }
 
 ws.subscribeToMessages(async message => {
-    if (message.taskType !== 'import') {
+    if (message.taskType !== 'importNotes') {
         return;
     }
 
@@ -71,6 +71,32 @@ ws.subscribeToMessages(async message => {
 
         if (message.result.importedNoteId) {
             await appContext.tabManager.getActiveContext().setNote(message.result.importedNoteId);
+        }
+    }
+});
+
+ws.subscribeToMessages(async message => {
+    if (message.taskType !== 'importAttachments') {
+        return;
+    }
+
+    if (message.type === 'taskError') {
+        toastService.closePersistent(message.taskId);
+        toastService.showError(message.message);
+    } else if (message.type === 'taskProgressCount') {
+        toastService.showPersistent(makeToast(message.taskId, `Import in progress: ${message.progressCount}`));
+    } else if (message.type === 'taskSucceeded') {
+        const toast = makeToast(message.taskId, "Import finished successfully.");
+        toast.closeAfter = 5000;
+
+        toastService.showPersistent(toast);
+
+        if (message.result.parentNoteId) {
+            await appContext.tabManager.getActiveContext().setNote(message.result.importedNoteId, {
+                viewScope: {
+                    viewMode: 'attachments'
+                }
+            });
         }
     }
 });

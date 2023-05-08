@@ -9,7 +9,7 @@ const TPL = `
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Import into note</h5>
+                <h5 class="modal-title">Upload attachments to note</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -21,7 +21,7 @@ const TPL = `
 
                         <input type="file" class="upload-attachment-file-upload-input form-control-file" multiple />
 
-                        <p>Content of the file will be imported as child note(s) into <strong class="upload-attachment-note-title"></strong>.
+                        <p>Files will be uploaded as attachments into <strong class="upload-attachment-note-title"></strong>.
                     </div>
 
                     <div class="form-group">

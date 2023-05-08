@@ -10,7 +10,7 @@ const cls = require('../services/cls');
 const sql = require('../services/sql');
 const entityChangesService = require('../services/entity_changes');
 const csurf = require('csurf');
-const {createPartialContentHandler} = require("express-partial-content");
+const { createPartialContentHandler } = require("express-partial-content");
 const rateLimit = require("express-rate-limit");
 const AbstractBeccaEntity = require("../becca/entities/abstract_becca_entity");
 const NotFoundError = require("../errors/not_found_error");
@@ -71,7 +71,7 @@ const etapiSpecRoute = require('../etapi/spec');
 
 const csrfMiddleware = csurf({
     cookie: true,
-    path: '' // nothing so cookie is valid only for current path
+    path: '' // empty, so cookie is valid only for the current path
 });
 
 const MAX_ALLOWED_FILE_SIZE_MB = 250;

@@ -13,6 +13,8 @@ const TPL = `
         .attachment-list .links-wrapper {
             font-size: larger;
             margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
         }
     </style>
     
@@ -36,9 +38,11 @@ export default class AttachmentListTypeWidget extends TypeWidget {
 
     async doRefresh(note) {
         this.$linksWrapper.append(
-            "Owning note: ",
-            await linkService.createNoteLink(this.noteId),
-            $('<button class="btn btn-sm">')
+            $('<div>').append(
+                "Owning note: ",
+                await linkService.createNoteLink(this.noteId),
+            ),
+            $('<button class="btn btn-xs">')
                 .text("Upload attachments")
                 .on('click', () => this.triggerCommand("showUploadAttachmentsDialog", {noteId: this.noteId}))
         );

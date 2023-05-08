@@ -185,7 +185,7 @@ function deleteBranch(req) {
     const eraseNotes = req.query.eraseNotes === 'true';
     const branch = becca.getBranchOrThrow(req.params.branchId);
 
-    const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
+    const taskContext = TaskContext.getInstance(req.query.taskId, 'deleteNotes');
 
     const deleteId = utils.randomString(10);
     let noteDeleted;

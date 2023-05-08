@@ -182,7 +182,7 @@ function makeToast(id, message) {
 }
 
 ws.subscribeToMessages(async message => {
-    if (message.taskType !== 'delete-notes') {
+    if (message.taskType !== 'deleteNotes') {
         return;
     }
 

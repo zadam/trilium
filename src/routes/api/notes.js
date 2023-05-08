@@ -62,7 +62,7 @@ function deleteNote(req) {
 
     const note = becca.getNote(noteId);
 
-    const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
+    const taskContext = TaskContext.getInstance(taskId, 'deleteNotes');
 
     note.deleteNote(deleteId, taskContext);
 
