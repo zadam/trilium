@@ -24,7 +24,7 @@ const TPL = `
     
     .ribbon-tab-title {
         color: var(--muted-text-color);
-        border-bottom: 1px solid var(--main-border-color); 
+        border-bottom: 3px solid var(--main-border-color); 
         min-width: 24px;
         flex-basis: 24px;
         max-width: max-content;
