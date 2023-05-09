@@ -176,7 +176,7 @@ export default class TocWidget extends RightPanelWidget {
             const headingElement = $container.find(":header")[headingIndex];
 
             if (headingElement != null) {
-                headingElement.scrollIntoView();
+                headingElement.scrollIntoView({ behavior: "smooth" });
             }
         } else {
             const textEditor = await this.noteContext.getTextEditor();
