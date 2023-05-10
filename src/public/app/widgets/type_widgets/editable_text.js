@@ -187,6 +187,11 @@ export default class EditableTextTypeWidget extends AbstractTextTypeWidget {
         const noteComplement = await froca.getNoteComplement(note.noteId);
 
         await this.spacedUpdate.allowUpdateWithoutChange(() => {
+            // https://github.com/zadam/trilium/issues/3914 
+            // todo: quite hacky, but it works. remove it if ckeditor has fixed it.
+            this.$editor.trigger('focus');
+            this.$editor.trigger('blur')
+                    
             this.watchdog.editor.setData(noteComplement.content || "");
         });
     }
