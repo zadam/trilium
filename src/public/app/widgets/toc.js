@@ -49,6 +49,11 @@ const TPL = `<div class="toc-widget">
             top: 2px;
             right: 2px;
         }
+        .collapse-toc {
+            position: absolute;
+            top: 40px;
+            right: 2px;
+        }
     </style>
 
     <span class="toc"></span>
@@ -59,7 +64,9 @@ export default class TocWidget extends RightPanelWidget {
         super();
 
         this.closeTocButton = new CloseTocButton();
+        this.collapseTocButton = new CollapseTocButton();
         this.child(this.closeTocButton);
+        this.child(this.collapseTocButton);
     }
 
     get widgetTitle() {
@@ -76,6 +83,7 @@ export default class TocWidget extends RightPanelWidget {
         this.$body.empty().append($(TPL));
         this.$toc = this.$body.find('.toc');
         this.$body.find('.toc-widget').append(this.closeTocButton.render());
+        this.$body.find('.toc-widget').append(this.collapseTocButton.render());
     }
 
     async refreshWithNote(note) {
@@ -91,7 +99,7 @@ export default class TocWidget extends RightPanelWidget {
         // Check for type text unconditionally in case alwaysShowWidget is set
         if (this.note.type === 'text') {
             const { content } = await note.getNoteComplement();
-            ({$toc, headingCount} = await this.getToc(content));
+            ({ $toc, headingCount } = await this.getToc(content));
         }
 
         this.$toc.html($toc);
@@ -164,6 +172,14 @@ export default class TocWidget extends RightPanelWidget {
     }
 
     async jumpToHeading(headingIndex) {
+        $(`div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h2,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h3,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h4,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h5,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h6`)[headingIndex].scrollIntoView({
+            behavior: 'smooth'
+        });
+        /*
         // A readonly note can change state to "readonly disabled
         // temporarily" (ie "edit this note" button) without any
         // intervening events, do the readonly calculation at navigation
@@ -237,7 +253,7 @@ export default class TocWidget extends RightPanelWidget {
                 });
                 textEditor.editing.view.scrollToTheSelection();
             }
-        }
+        }*/
     }
 
     async closeTocCommand() {
@@ -246,7 +262,18 @@ export default class TocWidget extends RightPanelWidget {
         this.triggerCommand('reEvaluateRightPaneVisibility');
     }
 
-    async entitiesReloadedEvent({loadResults}) {
+    async collapseTocCommand() {
+        if ($("#right-pane").css("width") == "100px") {
+            $("#right-pane").css("width", this.rightPaneWidth);
+        }
+        else {
+            this.rightPaneWidth = $("#right-pane").css("width");
+            $("#right-pane").css("width", "100px");
+        }
+
+    }
+
+    async entitiesReloadedEvent({ loadResults }) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
         } else if (loadResults.getAttributes().find(attr => attr.type === 'label'
@@ -301,5 +328,21 @@ class CloseTocButton extends OnClickButtonWidget {
                 widget.triggerCommand("closeToc");
             })
             .class("icon-action close-toc");
+    }
+}
+
+class CollapseTocButton extends OnClickButtonWidget {
+    constructor() {
+        super();
+
+        this.icon("bx-chevron-right")
+            .title("Collapse TOC")
+            .titlePlacement("bottom")
+            .onClick((widget, e) => {
+                e.stopPropagation();
+
+                widget.triggerCommand("collapseToc");
+            })
+            .class("icon-action collapse-toc");
     }
 }
