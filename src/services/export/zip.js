@@ -248,6 +248,7 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
         if (noteMeta.format === 'html') {
             if (!content.substr(0, 100).toLowerCase().includes("<html")) {
                 const cssUrl = `${"../".repeat(noteMeta.notePath.length - 1)}style.css`;
+                const htmlTitle = utils.escapeHtml(title);
 
                 // <base> element will make sure external links are openable - https://github.com/zadam/trilium/issues/1289#issuecomment-704066809
                 content = `<html>
@@ -256,10 +257,11 @@ async function exportToZip(taskContext, branch, format, res, setHeaders = true) 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="${cssUrl}">
     <base target="_parent">
+    <title data-trilium-title>${htmlTitle}</title>
 </head>
 <body>
   <div class="content">
-      <h1>${utils.escapeHtml(title)}</h1>
+      <h1 data-trilium-h1>${htmlTitle}</h1>
       
       <div class="ck-content">${content}</div>
   </div>
@@ -415,7 +417,7 @@ ${markdownContent}`;
     const rootMeta = getNoteMeta(branch, { notePath: [] }, existingFileNames);
 
     const metaFile = {
-        formatVersion: 1,
+        formatVersion: 2,
         appVersion: packageInfo.version,
         files: [ rootMeta ]
     };

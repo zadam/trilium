@@ -240,6 +240,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             return /^(?:[a-z]+:)?\/\//i.test(url);
         }
 
+        content = removeTrilumTags(content);
+
         content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
             if (noteTitle.trim() === text.trim()) {
                 return ""; // remove whole H1 tag
@@ -322,6 +324,18 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         content = content.trim();
 
+        return content;
+    }
+
+    function removeTrilumTags(content) {
+        const tagsToRemove = [
+            '<h1 data-trilium-h1>([^<]*)<\/h1>',
+            '<title data-trilium-title>([^<]*)<\/title>'
+        ]
+        for (const tag of tagsToRemove) { 
+            let re = new RegExp(tag, "gi");
+            content = content.replace(re, '');
+        }
         return content;
     }
 

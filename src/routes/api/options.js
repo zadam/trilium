@@ -62,6 +62,8 @@ const ALLOWED_OPTIONS = new Set([
     'minTocHeadings',
     'checkForUpdates',
     'disableTray',
+    'customSearchEngineName',
+    'customSearchEngineUrl',,
     'openNoteIn'
 ]);
 
