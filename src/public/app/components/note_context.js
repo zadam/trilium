@@ -222,6 +222,10 @@ class NoteContext extends Component {
             return true;
         }
 
+        if (this.viewScope.viewMode === 'source') {
+            return true;
+        }
+
         const blob = await this.note.getBlob();
 
         const sizeLimit = this.note.type === 'text'
