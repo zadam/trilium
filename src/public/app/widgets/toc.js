@@ -69,7 +69,8 @@ export default class TocWidget extends RightPanelWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-            && !this.noteContext.viewScope.tocTemporarilyHidden;
+            && !this.noteContext.viewScope.tocTemporarilyHidden
+            && this.noteContext.viewScope.viewMode === 'default';
     }
 
     async doRenderBody() {
