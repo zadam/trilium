@@ -11,6 +11,7 @@ span.fancytree-node.fancytree-hide {
 }
 
 .fancytree-title {
+    flex: auto;
     margin-left: 7px;
     outline: none;
     position: relative;
