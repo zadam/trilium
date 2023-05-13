@@ -63,8 +63,8 @@ const ALLOWED_OPTIONS = new Set([
     'checkForUpdates',
     'disableTray',
     'customSearchEngineName',
-    'customSearchEngineUrl',,
-    'openNoteIn'
+    'customSearchEngineUrl',
+    'openNoteIn',
 ]);
 
 function getOptions() {
