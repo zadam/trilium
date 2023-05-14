@@ -262,11 +262,12 @@ export default class TocWidget extends RightPanelWidget {
         $noteSplit = $noteContainer.closest('.component.note-split.type-text.mime-text-html');
         $noteSplit.find(".ribbon-button-container").append(`<button type="button" class="icon-action bx bx-menu-alt-right show-toc" title="Show Toc"></button>`);
         var thisClick = this;
-        $noteSplit.find(".icon-action.bx.bx-menu-alt-right.show-toc").on("click", async function () {
+        var showTocButton = $noteSplit.find(".icon-action.bx.bx-menu-alt-right.show-toc");
+        showTocButton.on("click", async function () {
             thisClick.noteContext.viewScope.tocTemporarilyHidden = false;
             await thisClick.refresh();
             thisClick.triggerCommand('reEvaluateRightPaneVisibility');
-            $noteSplit.find(".icon-action.bx.bx-menu-alt-right.show-toc").remove()
+            showTocButton.remove()
         })
     }
 
