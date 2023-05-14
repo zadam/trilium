@@ -249,6 +249,25 @@ export default class TocWidget extends RightPanelWidget {
         this.noteContext.viewScope.tocTemporarilyHidden = true;
         await this.refresh();
         this.triggerCommand('reEvaluateRightPaneVisibility');
+        //After clicking to close the toc, display a button to allow the user to open the toc again
+        const isReadOnly = await this.noteContext.isReadOnly();
+        var $noteContainer, $noteSplit;
+        if (isReadOnly) {
+            $noteContainer = await this.noteContext.getContentElement();
+
+        } else {
+            const textEditor = await this.noteContext.getTextEditor();
+            $noteContainer = $(textEditor.editing.view.domRoots.values().next().value);
+        }
+        $noteSplit = $noteContainer.closest('.component.note-split.type-text.mime-text-html');
+        $noteSplit.find(".ribbon-button-container").append(`<button type="button" class="icon-action bx bx-menu-alt-right show-toc" title="Show Toc"></button>`);
+        var thisClick = this;
+        $noteSplit.find(".icon-action.bx.bx-menu-alt-right.show-toc").on("click", async function () {
+            thisClick.noteContext.viewScope.tocTemporarilyHidden = false;
+            await thisClick.refresh();
+            thisClick.triggerCommand('reEvaluateRightPaneVisibility');
+            $noteSplit.find(".icon-action.bx.bx-menu-alt-right.show-toc").remove()
+        })
     }
 
     async entitiesReloadedEvent({ loadResults }) {
