@@ -49,11 +49,6 @@ const TPL = `<div class="toc-widget">
             top: 2px;
             right: 2px;
         }
-        .collapse-toc {
-            position: absolute;
-            top: 40px;
-            right: 2px;
-        }
     </style>
 
     <span class="toc"></span>
@@ -64,9 +59,7 @@ export default class TocWidget extends RightPanelWidget {
         super();
 
         this.closeTocButton = new CloseTocButton();
-        this.collapseTocButton = new CollapseTocButton();
         this.child(this.closeTocButton);
-        this.child(this.collapseTocButton);
     }
 
     get widgetTitle() {
@@ -83,7 +76,6 @@ export default class TocWidget extends RightPanelWidget {
         this.$body.empty().append($(TPL));
         this.$toc = this.$body.find('.toc');
         this.$body.find('.toc-widget').append(this.closeTocButton.render());
-        this.$body.find('.toc-widget').append(this.collapseTocButton.render());
     }
 
     async refreshWithNote(note) {
@@ -259,17 +251,6 @@ export default class TocWidget extends RightPanelWidget {
         this.triggerCommand('reEvaluateRightPaneVisibility');
     }
 
-    async collapseTocCommand() {
-        if ($("#right-pane").css("width") == "100px") {
-            $("#right-pane").css("width", this.rightPaneWidth);
-        }
-        else {
-            this.rightPaneWidth = $("#right-pane").css("width");
-            $("#right-pane").css("width", "100px");
-        }
-
-    }
-
     async entitiesReloadedEvent({ loadResults }) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
             await this.refresh();
@@ -325,21 +306,5 @@ class CloseTocButton extends OnClickButtonWidget {
                 widget.triggerCommand("closeToc");
             })
             .class("icon-action close-toc");
-    }
-}
-
-class CollapseTocButton extends OnClickButtonWidget {
-    constructor() {
-        super();
-
-        this.icon("bx-chevron-right")
-            .title("Collapse TOC")
-            .titlePlacement("bottom")
-            .onClick((widget, e) => {
-                e.stopPropagation();
-
-                widget.triggerCommand("collapseToc");
-            })
-            .class("icon-action collapse-toc");
     }
 }
