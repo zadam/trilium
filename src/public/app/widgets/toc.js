@@ -164,6 +164,14 @@ export default class TocWidget extends RightPanelWidget {
     }
 
     async jumpToHeading(headingIndex) {
+        $(`div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h2,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h3,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h4,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h5,  
+        div.component.note-split.type-text:not(.hidden-ext) div.component.scrolling-container div.note-detail.component  h6`)[headingIndex].scrollIntoView({
+            behavior: 'smooth'
+        });
+        /*
         // A readonly note can change state to "readonly disabled
         // temporarily" (ie "edit this note" button) without any
         // intervening events, do the readonly calculation at navigation
@@ -176,9 +184,7 @@ export default class TocWidget extends RightPanelWidget {
             const headingElement = $container.find(":header")[headingIndex];
 
             if (headingElement != null) {
-                headingElement.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                headingElement.scrollIntoView();
             }
         } else {
             const textEditor = await this.noteContext.getTextEditor();
@@ -194,9 +200,6 @@ export default class TocWidget extends RightPanelWidget {
             // navigate (note that the TOC rendering and other TOC
             // entries' navigation could be wrong too)
             if (headingNode != null) {
-                $(textEditor.editing.view.domRoots.values().next().value).find(':header')[headingIndex].scrollIntoView({
-                    behavior: 'smooth'
-                });
                 // Setting the selection alone doesn't scroll to the
                 // caret, needs to be done explicitly and outside of
                 // the writer change callback so the scroll is
@@ -232,17 +235,17 @@ export default class TocWidget extends RightPanelWidget {
                 // Scroll to the end of the note to guarantee the
                 // next scroll is a backwards scroll that places the
                 // caret at the top of the screen
-                // model.change(writer => {
-                //     writer.setSelection(root.getChild(root.childCount - 1), 0);
-                // });
-                // textEditor.editing.view.scrollToTheSelection();
-                // // Backwards scroll to the heading
-                // model.change(writer => {
-                //     writer.setSelection(headingNode, 0);
-                // });
-                // textEditor.editing.view.scrollToTheSelection();
+                model.change(writer => {
+                    writer.setSelection(root.getChild(root.childCount - 1), 0);
+                });
+                textEditor.editing.view.scrollToTheSelection();
+                // Backwards scroll to the heading
+                model.change(writer => {
+                    writer.setSelection(headingNode, 0);
+                });
+                textEditor.editing.view.scrollToTheSelection();
             }
-        }
+        }*/
     }
 
     async closeTocCommand() {
