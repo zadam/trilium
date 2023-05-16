@@ -55,18 +55,15 @@ async function openNoteCustom(noteId, mime) {
       const platform = process.platform;
       if (platform === 'linux') {        
         const terminals = ['gnome-terminal', 'konsole', 'xterm', 'xfce4-terminal', 'mate-terminal', 'rxvt', 'terminator', 'terminology'];
-        let foundTerminal = false;
-        let availableTerminal = null;
         const openFileWithTerminal = (terminal) => {
           const command = `${terminal} -e 'mimeopen -d "${filePath}"'`;
-          console.log(`Open Note custom: ${command}. `);
+          console.log(`Open Note custom: ${command} `);
           exec(command, (error, stdout, stderr) => {
             if (error) {
               console.error(`Open Note custom: Failed to open file with ${terminal}: ${error}`);
               searchTerminal(terminals.indexOf(terminal) + 1);
             } else {
-              console.log(`Open Note custom: File opened with ${terminal}. `);
-              console.log(`Open Note custom: ${stdout}. `);
+              console.log(`Open Note custom: File opened with ${terminal}. ${stdout}`);
             }
           });
         };
@@ -79,11 +76,7 @@ async function openNoteCustom(noteId, mime) {
           }
           exec(`which ${terminal}`, (error, stdout, stderr) => {
             if (stdout.trim()) {
-              foundTerminal = true;
-              availableTerminal = terminal;
-            }
-            if (foundTerminal) {
-              openFileWithTerminal(availableTerminal);
+              openFileWithTerminal(terminal);
             } else {
               searchTerminal(index + 1);
             }
@@ -106,15 +99,6 @@ async function openNoteCustom(noteId, mime) {
       } else {
         console.log('Currently "Open Note custom" only supports linux and windows systems');
         open(getFileUrl(noteId), { url: true });
-      }
-    }
-    else {
-      // allow browser to handle opening common file
-      if (mime === "application/pdf" || mime.startsWith("image") || mime.startsWith("audio") || mime.startsWith("video")) {
-        window.open(getOpenFileUrl(noteId));
-      }
-      else {
-        window.location.href = getFileUrl(noteId);
       }
     }
   }
