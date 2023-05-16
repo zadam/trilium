@@ -47,6 +47,38 @@ async function openNoteExternally(noteId, mime) {
     }
 }
 
+async function openNoteCustom(noteId, mime) {
+    if (utils.isElectron()) {
+        const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
+
+        const electron = utils.dynamicRequire('electron');
+        // const res = await electron.shell.openPath(resp.tmpFilePath);
+        const platform = process.platform;
+        if (platform === 'linux') {
+            console.log('运行在 Linux 系统上');
+          } else if (platform === 'win32') {
+            console.log('运行在 Windows 系统上');
+          } else {
+            console.log('运行在其他系统上');
+          }
+
+
+        // if (res) {
+        //     // fallback in case there's no default application for this file
+        //     open(getFileUrl(noteId), {url: true});
+        // }
+    }
+    else {
+        // allow browser to handle opening common file
+         if (mime === "application/pdf" ||  mime.startsWith("image") || mime.startsWith("audio") || mime.startsWith("video")){
+            window.open(getOpenFileUrl(noteId));
+        }
+         else {
+            window.location.href = getFileUrl(noteId);
+        }
+    }
+}
+
 function downloadNoteRevision(noteId, noteRevisionId) {
     const url = getUrlForDownload(`api/notes/${noteId}/revisions/${noteRevisionId}/download`);
 
@@ -76,6 +108,7 @@ export default {
     download,
     downloadFileNote,
     openNoteExternally,
+    openNoteCustom,
     downloadNoteRevision,
     getUrlForDownload
 }
