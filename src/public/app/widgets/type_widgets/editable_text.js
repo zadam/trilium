@@ -51,7 +51,7 @@ const TPL = `
         cursor: text !important;
     }
     
-    .note-detail-editable-text *:not(figure):first-child {
+    .note-detail-editable-text *:not(figure,.include-note):first-child {
         margin-top: 0 !important;
     }
          
