@@ -2,6 +2,7 @@
 node_modules/
 dist/
 src/public/app-dist/
+src/public/stylesheets-dist/
 npm-debug.log
 yarn-error.log
 *.db

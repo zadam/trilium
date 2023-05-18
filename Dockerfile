@@ -27,7 +27,9 @@ RUN set -x \
     && npm prune --omit=dev \
     && cp src/public/app/share.js src/public/app-dist/. \
     && cp -r src/public/app/doc_notes src/public/app-dist/. \
-    && rm -rf src/public/app
+    && rm -rf src/public/app \
+    && rm -rf src/public/stylesheets 
+
 
 # Some setup tools need to be kept
 RUN apk add --no-cache su-exec shadow
