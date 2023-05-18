@@ -145,10 +145,10 @@ export default class FindWidget extends NoteContextAwareWidget {
         if (!['text', 'code', 'render'].includes(this.note.type)) {
             return;
         }
-        
+
         this.handler = await this.getHandler();
-        var searchTerm = await this.handler.getInitialSearchTerm();
-        searchTerm = searchTerm=="" ? window.getSelection().toString():searchTerm;
+
+        const selectedText = window.getSelection().toString() || "";
 
         this.$findBox.show();
         this.$input.focus();
@@ -156,18 +156,21 @@ export default class FindWidget extends NoteContextAwareWidget {
         const isAlreadyVisible = this.$findBox.is(":visible");
 
         if (isAlreadyVisible) {
-            this.$input.val(searchTerm || "");
-            if (searchTerm !== "") {
-                this.$input.select();
+            if (selectedText) {
+                this.$input.val(selectedText);
+            }
+
+            if (this.$input.val()) {
                 await this.performFind();
             }
+
             this.$input.select();
         } else {
             this.$totalFound.text(0);
             this.$currentFound.text(0);
-            searchTerm = await this.handler.getInitialSearchTerm();
-            this.$input.val(searchTerm || "");
-            if (searchTerm !== "") {
+            this.$input.val(selectedText);
+
+            if (selectedText) {
                 this.$input.select();
                 await this.performFind();
             }

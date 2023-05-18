@@ -16,10 +16,6 @@ export default class FindInHtml {
         this.$results = null;
     }
 
-    async getInitialSearchTerm() {
-        return ""; // FIXME
-    }
-
     async performFind(searchTerm, matchCase, wholeWord) {
         await libraryLoader.requireLibrary(libraryLoader.MARKJS);
 

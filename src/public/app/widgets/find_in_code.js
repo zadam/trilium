@@ -16,23 +16,6 @@ export default class FindInCode {
         return this.parent.noteContext.getCodeEditor();
     }
 
-    async getInitialSearchTerm() {
-        const codeEditor = await this.getCodeEditor();
-
-        // highlightSelectionMatches is the overlay that highlights
-        // the words under the cursor. This occludes the search
-        // markers style, save it, disable it. Will be restored when
-        // the focus is back into the note
-        this.oldHighlightSelectionMatches = codeEditor.getOption("highlightSelectionMatches");
-        codeEditor.setOption("highlightSelectionMatches", false);
-
-        // Fill in the findbox with the current selection if any
-        const selectedText = codeEditor.getSelection()
-        if (selectedText !== "") {
-            return selectedText;
-        }
-    }
-
     async performFind(searchTerm, matchCase, wholeWord) {
         let findResult = null;
         let totalFound = 0;
