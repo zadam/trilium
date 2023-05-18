@@ -226,6 +226,10 @@ class NoteContext extends Component {
             return true;
         }
 
+        if (this.viewScope.viewMode === 'source') {
+            return true;
+        }
+
         const noteComplement = await this.getNoteComplement();
 
         const sizeLimit = this.note.type === 'text'

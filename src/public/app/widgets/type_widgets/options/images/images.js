@@ -48,7 +48,7 @@ export default class ImageOptions extends OptionsWidget {
             this.updateOption('imageMaxWidthHeight', this.$imageMaxWidthHeight.val()));
 
         this.$imageJpegQuality.on('change', () =>
-            this.updateOption('imageJpegQuality', this.$imageJpegQuality.val()));
+            this.updateOption('imageJpegQuality', this.$imageJpegQuality.val().trim() || "75"));
 
         this.$downloadImagesAutomatically = this.$widget.find(".download-images-automatically");
 

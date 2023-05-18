@@ -69,7 +69,8 @@ export default class TocWidget extends RightPanelWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-            && !this.noteContext.viewScope.tocTemporarilyHidden;
+            && !this.noteContext.viewScope.tocTemporarilyHidden
+            && this.noteContext.viewScope.viewMode === 'default';
     }
 
     async doRenderBody() {
@@ -176,9 +177,7 @@ export default class TocWidget extends RightPanelWidget {
             const headingElement = $container.find(":header")[headingIndex];
 
             if (headingElement != null) {
-                headingElement.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                headingElement.scrollIntoView({ behavior: "smooth" });
             }
         } else {
             const textEditor = await this.noteContext.getTextEditor();
