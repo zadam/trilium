@@ -29,6 +29,7 @@ const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
 const host = require('./services/host');
 const semver = require('semver');
+const env = require('./services/env');
 
 if (!semver.satisfies(process.version, ">=10.5.0")) {
     console.error("Trilium only supports node.js 10.5 and later");
@@ -127,13 +128,19 @@ async function startTrilium() {
                     throw error;
             }
         }
-    )
+    );
 
     httpServer.on('listening', () => {
         if (listenOnTcp) {
-            log.info(`Listening on port ${port}`)
+            log.info(`Listening on port ${port}`);
+
+            if (env.isDev() && !utils.isElectron()) {
+                const open = require('open');
+                open(`http://localhost:${port}`);
+            }
+
         } else {
-            log.info(`Listening on unix socket ${host}`)
+            log.info(`Listening on unix socket ${host}`);
         }
     });
 
