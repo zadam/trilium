@@ -5,7 +5,9 @@ import protectedSessionHolder from "../../services/protected_session_holder.js";
 
 export default class EditButton extends OnClickButtonWidget {
     isEnabled() {
-        return super.isEnabled() && this.note;
+        return super.isEnabled()
+            && this.note
+            && this.noteContext.viewScope.viewMode === 'default';
     }
 
     constructor() {

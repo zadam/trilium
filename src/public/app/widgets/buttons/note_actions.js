@@ -29,6 +29,7 @@ const TPL = `
         <a data-trigger-command="findInText" class="dropdown-item find-in-text-button">Search in note <kbd data-command="findInText"></a>
         <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
         <a data-trigger-command="openNoteExternally" class="dropdown-item open-note-externally-button"><kbd data-command="openNoteExternally"></kbd> Open note externally</a>
+        <a data-trigger-command="openNoteCustom" class="dropdown-item open-note-custom-button"><kbd data-command="openNoteCustom"></kbd> Open note custom</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
         <a class="dropdown-item delete-note-button">Delete note</a>
@@ -67,6 +68,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$widget.on('click', '.dropdown-item', () => this.$widget.find("[data-toggle='dropdown']").dropdown('toggle'));
 
         this.$openNoteExternallyButton = this.$widget.find(".open-note-externally-button");
+        this.$openNoteCustomButton = this.$widget.find(".open-note-custom-button");
 
         this.$deleteNoteButton = this.$widget.find(".delete-note-button");
         this.$deleteNoteButton.on("click", () => {
@@ -88,6 +90,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$renderNoteButton.toggle(note.type === 'render');
 
         this.$openNoteExternallyButton.toggle(utils.isElectron());
+        this.$openNoteCustomButton.toggle(utils.isElectron() && !utils.isMac()); // no implementation for Mac yet
     }
 
     toggleDisabled($el, enable) {

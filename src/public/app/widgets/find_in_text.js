@@ -8,19 +8,6 @@ export default class FindInText {
         return this.parent.noteContext.getTextEditor();
     }
 
-    async getInitialSearchTerm() {
-        const textEditor = await this.getTextEditor();
-
-        const selection = textEditor.model.document.selection;
-        const range = selection.getFirstRange();
-
-        // FIXME
-        for (const item of range.getItems()) {
-            // Fill in the findbox with the current selection if any
-            return item.data;
-        }
-    }
-
     async performFind(searchTerm, matchCase, wholeWord) {
         // Do this even if the searchTerm is empty so the markers are cleared and
         // the counters updated

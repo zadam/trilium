@@ -69,7 +69,8 @@ export default class TocWidget extends RightPanelWidget {
     isEnabled() {
         return super.isEnabled()
             && this.note.type === 'text'
-            && !this.noteContext.viewScope.tocTemporarilyHidden;
+            && !this.noteContext.viewScope.tocTemporarilyHidden
+            && this.noteContext.viewScope.viewMode === 'default';
     }
 
     async doRenderBody() {
@@ -176,7 +177,7 @@ export default class TocWidget extends RightPanelWidget {
             const headingElement = $container.find(":header")[headingIndex];
 
             if (headingElement != null) {
-                headingElement.scrollIntoView();
+                headingElement.scrollIntoView({ behavior: "smooth" });
             }
         } else {
             const textEditor = await this.noteContext.getTextEditor();
@@ -192,50 +193,9 @@ export default class TocWidget extends RightPanelWidget {
             // navigate (note that the TOC rendering and other TOC
             // entries' navigation could be wrong too)
             if (headingNode != null) {
-                // Setting the selection alone doesn't scroll to the
-                // caret, needs to be done explicitly and outside of
-                // the writer change callback so the scroll is
-                // guaranteed to happen after the selection is
-                // updated.
-
-                // In addition, scrolling to a caret later in the
-                // document (ie "forward scrolls"), only scrolls
-                // barely enough to place the caret at the bottom of
-                // the screen, which is a usability issue, you would
-                // like the caret to be placed at the top or center
-                // of the screen.
-
-                // To work around that issue, first scroll to the
-                // end of the document, then scroll to the desired
-                // point. This causes all the scrolls to be
-                // "backward scrolls" no matter the current caret
-                // position, which places the caret at the top of
-                // the screen.
-
-                // XXX This could be fixed in another way by using
-                //     the underlying CKEditor5
-                //     scrollViewportToShowTarget, which allows to
-                //     provide a larger "viewportOffset", but that
-                //     has coding complications (requires calling an
-                //     internal CKEditor utils funcion and passing
-                //     an HTML element, not a CKEditor node, and
-                //     CKEditor5 doesn't seem to have a
-                //     straightforward way to convert a node to an
-                //     HTML element? (in CKEditor4 this was done
-                //     with $(node.$) )
-
-                // Scroll to the end of the note to guarantee the
-                // next scroll is a backwards scroll that places the
-                // caret at the top of the screen
-                model.change(writer => {
-                    writer.setSelection(root.getChild(root.childCount - 1), 0);
+                $(textEditor.editing.view.domRoots.values().next().value).find(':header')[headingIndex].scrollIntoView({
+                    behavior: 'smooth'
                 });
-                textEditor.editing.view.scrollToTheSelection();
-                // Backwards scroll to the heading
-                model.change(writer => {
-                    writer.setSelection(headingNode, 0);
-                });
-                textEditor.editing.view.scrollToTheSelection();
             }
         }
     }

@@ -110,8 +110,8 @@ function checkCredentials(req, res, next) {
 
     const header = req.headers['trilium-cred'] || '';
     const auth = new Buffer.from(header, 'base64').toString();
-    const [username, password] = auth.split(/:/);
-
+    const colonIndex = auth.indexOf(':');
+    const password = colonIndex === -1 ? "" : auth.substr(colonIndex + 1);
     // username is ignored
 
     if (!passwordEncryptionService.verifyPassword(password)) {
