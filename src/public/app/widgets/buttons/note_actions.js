@@ -40,7 +40,7 @@ const TPL = `
             <kbd data-command="openNoteExternally"></kbd> 
             Open note externally
         </a>
-        <a data-trigger-command="openNoteCustom" class="dropdown-item open-note-custom-button"><kbd data-command="openNoteCustom"></kbd> Open note custom (beta)</a>
+        <a data-trigger-command="openNoteCustom" class="dropdown-item open-note-custom-button"><kbd data-command="openNoteCustom"></kbd> Open note custom</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
         <a class="dropdown-item delete-note-button">Delete note</a>
@@ -104,7 +104,7 @@ export default class NoteActionsWidget extends NoteContextAwareWidget {
         this.$renderNoteButton.toggle(note.type === 'render');
 
         this.$openNoteExternallyButton.toggle(utils.isElectron());
-        this.$openNoteCustomButton.toggle(utils.isElectron());
+        this.$openNoteCustomButton.toggle(utils.isElectron() && !utils.isMac()); // no implementation for Mac yet
     }
 
     async convertNoteIntoAttachmentCommand() {

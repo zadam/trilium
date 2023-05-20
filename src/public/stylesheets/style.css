@@ -402,6 +402,42 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .bs-tooltip-left .arrow::before   { border-left-color: var(--main-border-color) !important; }
 .bs-tooltip-right .arrow::before  { border-right-color: var(--main-border-color) !important; }
 
+.bs-tooltip-bottom .arrow::after { border-bottom-color: var(--tooltip-background-color) !important; }
+.bs-tooltip-top .arrow::after    { border-top-color: var(--tooltip-background-color) !important; }
+.bs-tooltip-left .arrow::after   { border-left-color: var(--tooltip-background-color) !important; }
+.bs-tooltip-right .arrow::after  { border-right-color: var(--tooltip-background-color) !important; }
+
+.tooltip .arrow::after {
+    position: absolute;
+    content: '';
+    border-color: transparent;
+    border-style: solid;
+}
+
+.bs-tooltip-auto[x-placement^='left'] .arrow::after,
+.bs-tooltip-left .arrow::after {
+    left: -1px;
+    border-width: 0.4rem 0 0.4rem 0.4rem;
+}
+
+.bs-tooltip-auto[x-placement^='bottom'] .arrow::after,
+.bs-tooltip-bottom .arrow::after {
+    bottom: -1px;
+    border-width: 0 0.4rem 0.4rem;
+}
+
+.bs-tooltip-auto[x-placement^='right'] .arrow::after,
+.bs-tooltip-right .arrow::after {
+    right: -1px;
+    border-width: 0.4rem 0.4rem 0.4rem 0;
+}
+
+.bs-tooltip-auto[x-placement^='top'] .arrow::after,
+.bs-tooltip-top .arrow::after {
+    top: -1px;
+    border-width: 0.4rem 0.4rem 0;
+}
+
 .note-tooltip.tooltip .arrow {
     display: none;
 }

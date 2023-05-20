@@ -169,7 +169,7 @@ function saveImageToAttachment(noteId, uploadBuffer, originalName, shrinkImageSw
 }
 
 async function shrinkImage(buffer, originalName) {
-    let jpegQuality = optionService.getOptionInt('imageJpegQuality');
+    let jpegQuality = optionService.getOptionInt('imageJpegQuality', 0);
 
     if (jpegQuality < 10 || jpegQuality > 100) {
         jpegQuality = 75;

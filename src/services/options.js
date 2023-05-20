@@ -29,13 +29,17 @@ function getOption(name) {
 /**
  * @returns {integer}
  */
-function getOptionInt(name) {
+function getOptionInt(name, defaultValue = undefined) {
     const val = getOption(name);
 
     const intVal = parseInt(val);
 
     if (isNaN(intVal)) {
-        throw new Error(`Could not parse '${val}' into integer for option '${name}'`);
+        if (defaultValue === undefined) {
+            throw new Error(`Could not parse '${val}' into integer for option '${name}'`);
+        } else {
+            return defaultValue;
+        }
     }
 
     return intVal;

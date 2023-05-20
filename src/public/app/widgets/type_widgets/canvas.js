@@ -19,6 +19,7 @@ const TPL = `
             display: block;
         }
 
+
         .excalidraw-wrapper {
             height: 100%;
         }

@@ -41,61 +41,66 @@ function downloadAttachment(attachmentId) {
     download(url);
 }
 
-async function openNoteCustom(noteId, mime) {
-    if (utils.isElectron()) {
-      const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
-      const filePath = resp.tmpFilePath;
-      const { exec } = utils.dynamicRequire('child_process');
-      const platform = process.platform;
-      if (platform === 'linux') {
-        const terminals = ['gnome-terminal', 'konsole', 'xterm', 'xfce4-terminal', 'mate-terminal', 'rxvt', 'terminator', 'terminology'];
+async function openNoteCustom(noteId) {
+    if (!utils.isElectron() || utils.isMac()) {
+        return;
+    }
+
+    const resp = await server.post(`notes/${noteId}/save-to-tmp-dir`);
+    let filePath = resp.tmpFilePath;
+    const {exec} = utils.dynamicRequire('child_process');
+    const platform = process.platform;
+
+    if (platform === 'linux') {
+        // we don't know which terminal is available, try in succession
+        const terminals = ['x-terminal-emulator', 'gnome-terminal', 'konsole', 'xterm', 'xfce4-terminal', 'mate-terminal', 'rxvt', 'terminator', 'terminology'];
         const openFileWithTerminal = (terminal) => {
-          const command = `${terminal} -e 'mimeopen -d "${filePath}"'`;
-          console.log(`Open Note custom: ${command} `);
-          exec(command, (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Open Note custom: Failed to open file with ${terminal}: ${error}`);
-              searchTerminal(terminals.indexOf(terminal) + 1);
-            } else {
-              console.log(`Open Note custom: File opened with ${terminal}. ${stdout}`);
-            }
-          });
+            const command = `${terminal} -e 'mimeopen -d "${filePath}"'`;
+            console.log(`Open Note custom: ${command} `);
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Open Note custom: Failed to open file with ${terminal}: ${error}`);
+                    searchTerminal(terminals.indexOf(terminal) + 1);
+                } else {
+                    console.log(`Open Note custom: File opened with ${terminal}: ${stdout}`);
+                }
+            });
         };
+
         const searchTerminal = (index) => {
-          const terminal = terminals[index];
-          if (!terminal) {
-            console.error('Open Note custom: No terminal found!');
-            open(getFileUrl(noteId), { url: true });
-            return;
-          }
-          exec(`which ${terminal}`, (error, stdout, stderr) => {
-            if (stdout.trim()) {
-              openFileWithTerminal(terminal);
-            } else {
-              searchTerminal(index + 1);
+            const terminal = terminals[index];
+            if (!terminal) {
+                console.error('Open Note custom: No terminal found!');
+                open(getFileUrl(noteId), {url: true});
+                return;
             }
-          });
+            exec(`which ${terminal}`, (error, stdout, stderr) => {
+                if (stdout.trim()) {
+                    openFileWithTerminal(terminal);
+                } else {
+                    searchTerminal(index + 1);
+                }
+            });
         };
         searchTerminal(0);
-      } else if (platform === 'win32') {
+    } else if (platform === 'win32') {
         if (filePath.indexOf("/") !== -1) {
-          //Note that the path separator must be \ instead of /
-          filePath = filePath.replace(/\//g, "\\");
+            // Note that the path separator must be \ instead of /
+            filePath = filePath.replace(/\//g, "\\");
         }
         const command = `rundll32.exe shell32.dll,OpenAs_RunDLL ` + filePath;
         exec(command, (err, stdout, stderr) => {
-          if (err) {
-            console.error("Open Note custom: ", err);
-            open(getFileUrl(noteId), { url: true });
-            return;
-          }
+            if (err) {
+                console.error("Open Note custom: ", err);
+                open(getFileUrl(noteId), {url: true});
+                return;
+            }
         });
-      } else {
+    } else {
         console.log('Currently "Open Note custom" only supports linux and windows systems');
-        open(getFileUrl(noteId), { url: true });
-      }
+        open(getFileUrl(noteId), {url: true});
     }
-  }
+}
 
 function downloadNoteRevision(noteId, noteRevisionId) {
     const url = getUrlForDownload(`api/revisions/${noteRevisionId}/download`);
