@@ -3,7 +3,7 @@ import linkService from "./link.js";
 import froca from "./froca.js";
 import utils from "./utils.js";
 import attributeRenderer from "./attribute_renderer.js";
-import noteContentRenderer from "./note_content_renderer.js";
+import contentRenderer from "./content_renderer.js";
 import appContext from "../components/app_context.js";
 
 function setupGlobalTooltip() {
@@ -90,7 +90,7 @@ async function renderTooltip(note) {
 
     const {$renderedAttributes} = await attributeRenderer.renderNormalAttributes(note);
 
-    const {$renderedContent} = await noteContentRenderer.getRenderedContent(note, {
+    const {$renderedContent} = await contentRenderer.getRenderedContent(note, {
         tooltip: true,
         trim: true
     });

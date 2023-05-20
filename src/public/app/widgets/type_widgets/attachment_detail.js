@@ -50,7 +50,7 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
             })
         );
 
-        const attachment = await server.get(`attachments/${this.attachmentId}/?includeContent=true`);
+        const attachment = await server.get(`attachments/${this.attachmentId}`);
 
         if (!attachment) {
             this.$wrapper.html("<strong>This attachment has been deleted.</strong>");
@@ -66,8 +66,6 @@ export default class AttachmentDetailTypeWidget extends TypeWidget {
 
     async entitiesReloadedEvent({loadResults}) {
         const attachmentChange = loadResults.getAttachments().find(att => att.attachmentId === this.attachmentId);
-
-        console.log(attachmentChange);
 
         if (attachmentChange?.isDeleted) {
             this.refresh(); // all other updates are handled within AttachmentDetailWidget

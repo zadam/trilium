@@ -1,5 +1,5 @@
 import linkService from "./link.js";
-import noteContentRenderer from "./note_content_renderer.js";
+import contentRenderer from "./content_renderer.js";
 import froca from "./froca.js";
 import attributeRenderer from "./attribute_renderer.js";
 import libraryLoader from "./library_loader.js";
@@ -333,7 +333,7 @@ class NoteListRenderer {
         const $content = $('<div class="note-book-content">');
 
         try {
-            const {$renderedContent, type} = await noteContentRenderer.getRenderedContent(note, {
+            const {$renderedContent, type} = await contentRenderer.getRenderedContent(note, {
                 trim: this.viewType === 'grid' // for grid only short content is needed
             });
 

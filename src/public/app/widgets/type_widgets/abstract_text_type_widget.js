@@ -2,7 +2,7 @@ import TypeWidget from "./type_widget.js";
 import appContext from "../../components/app_context.js";
 import froca from "../../services/froca.js";
 import linkService from "../../services/link.js";
-import noteContentRenderer from "../../services/note_content_renderer.js";
+import contentRenderer from "../../services/content_renderer.js";
 import utils from "../../services/utils.js";
 
 export default class AbstractTextTypeWidget extends TypeWidget {
@@ -86,7 +86,7 @@ export default class AbstractTextTypeWidget extends TypeWidget {
                     .append($link)
             );
 
-            const {$renderedContent, type} = await noteContentRenderer.getRenderedContent(note);
+            const {$renderedContent, type} = await contentRenderer.getRenderedContent(note);
 
             $wrapper.append(
                 $(`<div class="include-note-content type-${type}">`)

@@ -5,6 +5,7 @@ import server from "../services/server.js";
 import options from "../services/options.js";
 import imageService from "../services/image.js";
 import linkService from "../services/link.js";
+import contentRenderer from "../services/content_renderer.js";
 
 const TPL = `
 <div class="attachment-detail">
@@ -140,17 +141,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
         this.$wrapper.find('.attachment-details')
             .text(`Role: ${this.attachment.role}, Size: ${utils.formatSize(this.attachment.contentLength)}`);
         this.$wrapper.find('.attachment-actions-container').append(this.attachmentActionsWidget.render());
-        this.$wrapper.find('.attachment-content').append(this.renderContent());
-    }
-
-    renderContent() {
-        if (this.attachment.content) {
-            return $("<pre>").text(this.attachment.content);
-        } else if (this.attachment.role === 'image') {
-            return `<img src="api/attachments/${this.attachment.attachmentId}/image/${encodeURIComponent(this.attachment.title)}?${this.attachment.utcDateModified}">`;
-        } else {
-            return '';
-        }
+        this.$wrapper.find('.attachment-content').append(contentRenderer.getRenderedContent(this.attachment));
     }
 
     copyAttachmentReferenceToClipboard() {
@@ -164,7 +155,7 @@ export default class AttachmentDetailWidget extends BasicWidget {
             if (attachmentChange.isDeleted) {
                 this.toggleInt(false);
             } else {
-                this.attachment = await server.get(`attachments/${this.attachment.attachmentId}?includeContent=true`);
+                this.attachment = await server.get(`attachments/${this.attachment.attachmentId}`);
 
                 this.refresh();
             }

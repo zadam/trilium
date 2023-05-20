@@ -311,18 +311,19 @@ function protectNote(note, protect) {
             const content = note.getContent();
 
             note.isProtected = protect;
-
-            // see https://github.com/zadam/trilium/issues/3523
-            // IIRC a zero-sized buffer can be returned as null from the database
-            if (content !== null) {
-                // this will force de/encryption
-                note.setContent(content);
-            }
-
-            note.save();
+            note.setContent(content, { forceSave: true });
         }
 
         noteRevisionService.protectNoteRevisions(note);
+
+        for (const attachment of note.getAttachments()) {
+            if (protect !== attachment.isProtected) {
+                const content = attachment.getContent();
+
+                attachment.isProtected = protect;
+                attachment.setContent(content, { forceSave: true });
+            }
+        }
     }
     catch (e) {
         log.error(`Could not un/protect note '${note.noteId}'`);

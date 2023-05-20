@@ -254,6 +254,13 @@ class AbstractBeccaEntity {
                 ? ""
                 : content.toString("utf-8");
         } else {
+            // see https://github.com/zadam/trilium/issues/3523
+            // IIRC a zero-sized buffer can be returned as null from the database
+            if (content === null) {
+                // this will force de/encryption
+                content = Buffer.alloc(0);
+            }
+
             return content;
         }
     }

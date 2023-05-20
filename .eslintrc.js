@@ -98,7 +98,7 @@ module.exports = {
         CodeMirror: true,
         // \src\public\app\services\resizer.js
         Split: true,
-        // \src\public\app\services\note_content_renderer.js
+        // \src\public\app\services\content_renderer.js
         mermaid: true,
         // src\public\app\services\frontend_script_api.js
         dayjs: true,

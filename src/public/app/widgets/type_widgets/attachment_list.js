@@ -51,7 +51,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
         this.children = [];
         this.renderedAttachmentIds = new Set();
 
-        const attachments = await server.get(`notes/${this.noteId}/attachments?includeContent=true`);
+        const attachments = await server.get(`notes/${this.noteId}/attachments`);
 
         if (attachments.length === 0) {
             this.$list.html('<div class="alert alert-info">This note has no attachments.</div>');
@@ -73,7 +73,7 @@ export default class AttachmentListTypeWidget extends TypeWidget {
     async entitiesReloadedEvent({loadResults}) {
         // updates and deletions are handled by the detail, for new attachments the whole list has to be refreshed
         const attachmentsAdded = loadResults.getAttachments()
-            .find(att => this.renderedAttachmentIds.has(att.attachmentId));
+            .some(att => !this.renderedAttachmentIds.has(att.attachmentId));
 
         if (attachmentsAdded) {
             this.refresh();

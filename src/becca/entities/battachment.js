@@ -5,6 +5,7 @@ const dateUtils = require('../../services/date_utils');
 const AbstractBeccaEntity = require("./abstract_becca_entity");
 const sql = require("../../services/sql");
 const protectedSessionService = require("../../services/protected_session.js");
+const log = require("../../services/log.js");
 
 const attachmentRoleToNoteTypeMapping = {
     'image': 'image'
@@ -57,6 +58,8 @@ class BAttachment extends AbstractBeccaEntity {
         this.utcDateModified = row.utcDateModified;
         /** @type {string} */
         this.utcDateScheduledForErasureSince = row.utcDateScheduledForErasureSince;
+
+        this.decrypt();
     }
 
     /** @returns {BAttachment} */
@@ -84,6 +87,22 @@ class BAttachment extends AbstractBeccaEntity {
         return !this.attachmentId // new attachment which was not encrypted yet
             || !this.isProtected
             || protectedSessionService.isProtectedSessionAvailable()
+    }
+
+    getTitleOrProtected() {
+        return this.isContentAvailable() ? this.title : '[protected]';
+    }
+
+    decrypt() {
+        if (this.isProtected && !this.isDecrypted && protectedSessionService.isProtectedSessionAvailable()) {
+            try {
+                this.title = protectedSessionService.decryptString(this.title);
+                this.isDecrypted = true;
+            }
+            catch (e) {
+                log.error(`Could not decrypt attachment ${this.attachmentId}: ${e.message} ${e.stack}`);
+            }
+        }
     }
 
     /** @returns {string|Buffer}  */
@@ -192,7 +211,19 @@ class BAttachment extends AbstractBeccaEntity {
     }
 
     getPojoToSave() {
-        return this.getPojo();
+        const pojo = this.getPojo();
+
+        if (pojo.isProtected) {
+            if (this.isDecrypted) {
+                pojo.title = protectedSessionService.encrypt(pojo.title);
+            }
+            else {
+                // updating protected note outside of protected session means we will keep original ciphertexts
+                delete pojo.title;
+            }
+        }
+
+        return pojo;
     }
 }
 

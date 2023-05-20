@@ -1,5 +1,4 @@
 const becca = require("../../becca/becca");
-const utils = require("../../services/utils");
 const blobService = require("../../services/blob.js");
 
 function getAttachmentBlob(req) {
@@ -9,42 +8,15 @@ function getAttachmentBlob(req) {
 }
 
 function getAttachments(req) {
-    const includeContent = req.query.includeContent === 'true';
     const note = becca.getNoteOrThrow(req.params.noteId);
 
-    return note.getAttachments()
-        .map(attachment => processAttachment(attachment, includeContent));
+    return note.getAttachments();
 }
 
 function getAttachment(req) {
-    const includeContent = req.query.includeContent === 'true';
     const {attachmentId} = req.params;
 
-    const attachment = becca.getAttachmentOrThrow(attachmentId);
-
-    return processAttachment(attachment, includeContent);
-}
-
-function processAttachment(attachment, includeContent) {
-    const pojo = attachment.getPojo();
-
-    if (includeContent) {
-        if (utils.isStringNote(null, attachment.mime)) {
-            pojo.content = attachment.getContent()?.toString();
-            pojo.contentLength = pojo.content.length;
-
-            const MAX_ATTACHMENT_LENGTH = 1_000_000;
-
-            if (pojo.content.length > MAX_ATTACHMENT_LENGTH) {
-                pojo.content = pojo.content.substring(0, MAX_ATTACHMENT_LENGTH);
-            }
-        } else {
-            const content = attachment.getContent();
-            pojo.contentLength = content?.length;
-        }
-    }
-
-    return pojo;
+    return becca.getAttachmentOrThrow(attachmentId);
 }
 
 function saveAttachment(req) {
